@@ -1,0 +1,26 @@
+#---------------------------------------------------------------------------# 
+# Current Work In Progress
+#---------------------------------------------------------------------------# 
+
+** Protocols **
+
+  - Serial ASCII
+  - Serial RTU
+  - UDP
+
+** Functions **
+
+  - Diagnostic
+  - Server informtation
+  - Sever settings
+  - Mask functions
+
+** Server Context **
+
+  - Plug into server object
+  - Add to dump
+
+** Client **
+
+  - Rework transaction flow and response data
+  - Finish ascii/rtu framers

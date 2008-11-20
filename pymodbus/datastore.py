@@ -158,19 +158,20 @@ class ModbusControlBlock(Singleton):
 	'''
 
 	__counter = {
-		'BusMessage'			: 0,
-		'BusExceptionError'		: 0,
-		'SlaveMessage'			: 0,
-		'SlaveNoResponse'		: 0,
-		'SlaveNAK'				: 0,
-		'SlaveBusy'				: 0,
-		'BusCharacterOverrun'	: 0,
+		'BusMessage'			: 0x0000,
+		'BusCommunicationError'	: 0x0000,
+		'BusExceptionError'		: 0x0000,
+		'SlaveMessage'			: 0x0000,
+		'SlaveNoResponse'		: 0x0000,
+		'SlaveNAK'				: 0x0000,
+		'SlaveBusy'				: 0x0000,
+		'BusCharacterOverrun'	: 0x0000,
 	}
 	__mode = 'ASCII'
 	__diagnostic = [False] * 16
 	__instance = None
 	__listen_only = False
-	Delimiter = ':' # "\r"
+	__delimiter = '\r'
 	Identity = ModbusDeviceIdentification()
 
 	def __str__(self):
@@ -179,10 +180,10 @@ class ModbusControlBlock(Singleton):
 	#---------------------------------------------------------------------------# 
 	# Conter Properties
 	#---------------------------------------------------------------------------# 
-	def clearCounters(self):
+	def resetAllCounters(self):
 		''' This clears all of the system counters and diagnostic flags '''
-		for i in self._counter.keys():
-			self.__counter[i] = 0
+		for i in self.__counter.keys():
+			self.__counter[i] = 0x0000
 		self.__diagnostic = [False] * 16
 
 	def incrementCounter(self, counter):
@@ -190,12 +191,22 @@ class ModbusControlBlock(Singleton):
 		This increments a system counter
 		@param counter The counter to increment
 		'''
-		if counter in self._counter.keys():
+		if counter in self.__counter.keys():
 			self.__counter[counter] += 1
 
-	def clearOverrun(self):
-		''' This clears the overrun counter and clears its error '''
-		self.__counter['BusCharacterOverrun'] = 0
+	def getCounter(self, counter):
+		'''
+		This returns the requested counter
+		@param counter The counter to return
+		'''
+		if counter in self.__counter.keys():
+			return self.__counter[counter]
+		return None
+
+	def resetCounter(self, counter):
+		''' This clears the selected counter '''
+		if counter in self.__counter.keys():
+			self.__counter[counter] = 0x0000
 
 	#---------------------------------------------------------------------------# 
 	# Listen Properties
@@ -224,6 +235,23 @@ class ModbusControlBlock(Singleton):
 		return self.__mode
 
 	#---------------------------------------------------------------------------# 
+	# Delimiter Properties
+	#---------------------------------------------------------------------------# 
+	def setDelimiter(self, char):
+		'''
+		This changes the serial delimiter character
+		@param char The new serial delimiter character
+		'''
+		if isinstance(char, str):
+			self.__delimiter = char
+		elif isinstance(char, int):
+			self.__delimiter = chr(char)
+
+	def getDelimiter(self):
+		''' Returns the current serial delimiter character '''
+		return self.__delimiter
+
+	#---------------------------------------------------------------------------# 
 	# Diagnostic Properties
 	#---------------------------------------------------------------------------# 
 	def setDiagnostic(self, bit, value):
@@ -235,7 +263,7 @@ class ModbusControlBlock(Singleton):
 		if (bit >= 0) or (bit < len(self.__diagnostic)):
 			self.__diagnostic[bit] = (value != 0)
 
-	def getDiagnostic(self, bit):
+	def getDiagnosticRegisterBit(self, bit):
 		'''
 		This gets the value in the diagnostic register
 		@param bit The bit to set
@@ -243,6 +271,12 @@ class ModbusControlBlock(Singleton):
 		if (bit >= 0) or (bit < len(self.__diagnostic)):
 			return self.__diagnostic[bit]
 		return None
+
+	def getDiagnosticRegister(self):
+		'''
+		This gets the entire diagnostic register
+		'''
+		return self.__diagnostic
 
 #---------------------------------------------------------------------------# 
 # Datablock Storage

@@ -47,20 +47,20 @@ class ClientScraper:
 		elif isinstance(port, str):
 			self.port = int(port)
 
-		requests = []
+		self.requests = []
 		for rqst in [
 			ReadCoilsRequest,
 			ReadDiscreteInputsRequest,
 			ReadInputRegistersRequest,
 			ReadHoldingRegistersRequest]:
 			for i in range(351):
-				requests.append(rqst(i,1))
+				self.requests.append(rqst(i,1))
 	
 	def start(self):
 		'''
 		Starts the device scrape
 		'''
-		f = ModbusClientFactory(requests)
+		f = ModbusClientFactory(self.requests)
 		self.p = reactor.connectTCP(self.host, self.port, f)
 
 	def process(self, data):

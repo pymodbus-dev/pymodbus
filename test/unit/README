@@ -1,0 +1,39 @@
+#---------------------------------------------------------------------------# 
+# Unit Testing
+#---------------------------------------------------------------------------# 
+"Unit Testing" is a method of testing that verifies the individual units of
+source code are working properly. A unit is the smallest testable part of an
+application. In procedural programming a unit may be an individual program,
+function, procedure, etc., while in object-oriented programming, the smallest
+unit is a method, which may belong to a base/super class, abstract class or
+derived/child class.
+
+#---------------------------------------------------------------------------# 
+# Tools
+#---------------------------------------------------------------------------# 
+doctest
+	Uses the modules docstring to implement the unit tests
+
+unittest
+	First unit test framework to be included in Python standard library;
+	easy to use by people familiar with the xUnit frameworks; strong support
+	for test organization and reuse via test suites
+
+py.test
+	No API! automatic collection of tests; simple asserts; strong support
+	for test fixture/state management via setup/teardown hooks; strong
+	debugging support via customized traceback
+
+nose
+	unit test framework, used most notably by TurboGears and Pylons;
+	provides an alternate test discovery and running process for unittest,
+	one that is intended to mimic the behavior of py.test as much as is
+	reasonably possible without resorting to too much magic. More friendly
+	with unittest.TestCase-based tests than py.test. There are also many
+	plugins available.
+
+zope.testing
+	Powerful test runner that includes support for post-mortem debugging of
+	test failures. Also includes profiling and coverage reporting. This is
+	a standalone package that has no dependencies on Zope and works just
+	fine with projects that don't use Zope.

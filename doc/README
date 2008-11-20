@@ -1,0 +1,46 @@
+#---------------------------------------------------------------------------# 
+# About Pymodbus
+#---------------------------------------------------------------------------# 
+Pymodbus is a full Modbus protocol implementation using twisted for its
+comunications core.
+
+This package can supply modbus clients and servers:
+	client:
+	- Can perform single get/set on discretes and registers
+	- Can perform multiple get/set on discretes and registers
+	- Working on diagnostic/file/pipe/setting/info requets
+	- Can fully scrape a host to be cloned
+
+	server:
+	- Can funtion as a fully implemented TCP modbus server
+	- Working on creating server control context
+	- Working on serial communication
+	- Working on funtioning as a RTU/ASCII
+	- Can mimic a server based on the supplied input data
+
+#---------------------------------------------------------------------------# 
+# Use Cases
+#---------------------------------------------------------------------------# 
+Although most system administrators will find little need for a modbus
+server on any modern hardware, they may find the need to query devices on
+their network for status (PDU, PDR, UPS, etc).  Since the library is written
+in python, it allows for easy scripting and/or integration into their existing
+solutions.
+
+Continuing, most monitoring software needs to be stress tested against
+hundreds or even thousands of devices (why this was originally written), but
+getting access to that many is unweildy at best.  The server will allow
+one to test as many devices as the base operating system will allow ip
+address leases (linux allows just about as many virtual interfaces as you want)
+   
+#---------------------------------------------------------------------------# 
+# License Information
+#---------------------------------------------------------------------------# 
+PyModbus is built on top of the Pymodbus developed from code by:
+	Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
+	Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
+	Hynek Petrak <hynek@swac.cz>
+
+Under the terms of the GPLv2 (with which the code was released) the
+modified code is redistributed in full with the license affixed to
+the new code.

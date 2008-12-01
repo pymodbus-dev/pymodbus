@@ -39,12 +39,14 @@ class DiagnosticStatusRequest(ModbusRequest):
 		we encode the data set in self.message
 		'''
 		ret = struct.pack('>H', self.sub_function_code)
-		if self.message:
+		if self.message is not None:
 			if isinstance(self.message, str):
-				ret + self.message
-			else:
+				ret += self.message
+			elif isinstance(self.message, list):
 				for r in self.message:
 					ret += struct.pack('>H', r)
+			elif isinstance(self.message, int):
+				ret += struct.pack('>H', self.message)
 		return ret
 
 	def decode(self, data):
@@ -76,12 +78,14 @@ class DiagnosticStatusResponse(ModbusResponse):
 		we encode the data set in self.message
 		'''
 		ret = struct.pack('>H', self.sub_function_code)
-		if self.message:
+		if self.message is not None:
 			if isinstance(self.message, str):
-				ret + self.message
-			else:
+				ret += self.message
+			elif isinstance(self.message, list):
 				for r in self.message:
 					ret += struct.pack('>H', r)
+			elif isinstance(self.message, int):
+				ret += struct.pack('>H', self.message)
 		return ret
 
 	def decode(self, data):

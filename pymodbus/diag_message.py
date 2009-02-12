@@ -229,7 +229,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 #---------------------------------------------------------------------------# 
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 	'''
-	The contents of the remote device’s 16–bit diagnostic register are
+	The contents of the remote device's 16-bit diagnostic register are
 	returned in the response
 	'''
 	sub_function_code = 0x0002
@@ -240,7 +240,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
 	'''
-	The contents of the remote device’s 16–bit diagnostic register are
+	The contents of the remote device's 16-bit diagnostic register are
 	returned in the response
 	'''
 	sub_function_code = 0x0002
@@ -250,7 +250,7 @@ class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
 #---------------------------------------------------------------------------# 
 class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 	'''
-	The character ‘CHAR’ passed in the request data field becomes the end of
+	The character 'CHAR' passed in the request data field becomes the end of
 	message delimiter for future messages (replacing the default LF
 	character). This function is useful in cases of a Line Feed is not
 	required at the end of ASCII messages.
@@ -268,7 +268,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 
 class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
 	'''
-	The character ‘CHAR’ passed in the request data field becomes the end of
+	The character 'CHAR' passed in the request data field becomes the end of
 	message delimiter for future messages (replacing the default LF
 	character). This function is useful in cases of a Line Feed is not
 	required at the end of ASCII messages.
@@ -457,7 +457,7 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device for which it returned a Negative Acknowledge (NAK) exception
-	response, since its last restart, clear counters operation, or power–up.
+	response, since its last restart, clear counters operation, or power-up.
 	Exception responses are described and listed in section 7 .
 	'''
 	sub_function_code = 0x0010
@@ -471,8 +471,8 @@ class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device for which it returned a Negative Acknowledge (NAK) exception
-	response, since its last restart, clear counters operation, or power–up.
-	Exception responses are described and listed in section 7 .
+	response, since its last restart, clear counters operation, or power-up.
+	Exception responses are described and listed in section 7.
 	'''
 	sub_function_code = 0x0010
 
@@ -483,7 +483,7 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device for which it returned a Slave Device Busy exception response,
-	since its last restart, clear counters operation, or power–up.
+	since its last restart, clear counters operation, or power-up.
 	'''
 	sub_function_code = 0x0011
 
@@ -496,7 +496,7 @@ class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device for which it returned a Slave Device Busy exception response,
-	since its last restart, clear counters operation, or power–up.
+	since its last restart, clear counters operation, or power-up.
 	'''
 	sub_function_code = 0x0011
 
@@ -507,7 +507,7 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device that it could not handle due to a character overrun condition,
-	since its last restart, clear counters operation, or power–up. A character
+	since its last restart, clear counters operation, or power-up. A character
 	overrun is caused by data characters arriving at the port faster than they
 	can be stored, or by the loss of a character due to a hardware malfunction.
 	'''
@@ -522,7 +522,7 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
 	'''
 	The response data field returns the quantity of messages addressed to the
 	remote device that it could not handle due to a character overrun condition,
-	since its last restart, clear counters operation, or power–up. A character
+	since its last restart, clear counters operation, or power-up. A character
 	overrun is caused by data characters arriving at the port faster than they
 	can be stored, or by the loss of a character due to a hardware malfunction.
 	'''

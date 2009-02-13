@@ -128,26 +128,37 @@ class ModbusDeviceIdentification:
 				if (i < 0x07) or (i >= 0x80) or (i <= 0xff):
 					self._data[i] = info[i]
 
-	def getValue(self, address):
+	def __setitem__(self, key, item):
 		'''
 		Wrapper used to access the device information
-		@param value The register to read
+		@param key The register to set
+		@param item The new value for referenced register
 		'''
-		if address in self._data.keys():
-			return self._data[address]
-		return None
+		if key not in [0x07, 0x08]:
+			self._data[key] = item
 
-	def setValue(self, address, value):
+	def __getitem__(self, key):
 		'''
 		Wrapper used to access the device information
-		@param address The register to set
-		@param value The new value for referenced register
+		@param key The register to read
 		'''
-		if address not in [0x07, 0x08]:
-			self._data[address] = value
+		if key not in self._data.keys():
+			self._data[key] = ''
+		return self._data[key]
 
 	def __str__(self):
 		return "DeviceIdentity"
+
+	#---------------------------------------------------------------------------# 
+	# Eases access
+	#---------------------------------------------------------------------------# 
+	vendor_name				= property(lambda self: self._data[0])
+	product_code			= property(lambda self: self._data[1])
+	major_minor_revision	= property(lambda self: self._data[2])
+	vendor_url				= property(lambda self: self._data[3])
+	product_name			= property(lambda self: self._data[4])
+	model_name				= property(lambda self: self._data[5])
+	user_application_name	= property(lambda self: self._data[6])
 
 class ModbusControlBlock(Singleton):
 	'''

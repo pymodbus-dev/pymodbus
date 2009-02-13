@@ -15,6 +15,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore import ModbusControlBlock
 from pymodbus.datastore import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusTCPFramer
+from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.log import server_log as log
@@ -27,7 +28,7 @@ class ModbusProtocol(Protocol):
 
 	def __init__(self):
 		''' Initializes server '''
-		self.frame = ModbusTCPFramer()
+		self.frame = ModbusTCPFramer()#self.factory.framer()
 
 	def connectionMade(self):
 		''' Callback for when a client connects '''
@@ -57,23 +58,8 @@ class ModbusProtocol(Protocol):
 					raise ModbusIOException("Unable to decode response")
 				self.frame.populateResult(result)
 				self.frame.advanceFrame()
-				self.execute(result) # defer?
+				self.execute(result) # defer or push to a thread?
 			else: break
-
-		#while len(data) > 0:
-		#	tid, pid, size, uid = struct.unpack('>HHHB', data[0:MBAP_LENGTH])
-		#	if size > 1:
-		#		result = self.decode(data[MBAP_LENGTH:MBAP_LENGTH + size - 1])
-		#		if result is None:
-		#			raise ModbusIOException("Unable to decode response")
-		#		result.transaction_id = tid
-		#		result.protocol_id = pid
-		#		result.uint_id = uid
-		#		self.execute(result)
-		#		data = data[MBAP_LENGTH + size - 1:]
-		#	else:
-		#		log.debug("Request data too small")
-		#		data = []
 
 #---------------------------------------------------------------------------# 
 # Extra Helper Functions
@@ -121,15 +107,20 @@ class ModbusServerFactory(ServerFactory):
 
 	protocol = ModbusProtocol
 	
-	def __init__(self, store, identity=None):
+	def __init__(self, store, framer=None, identity=None):
 		'''
 		Overloaded initializer for the modbus factory
 		@param store The ModbusServerContext datastore
+		@param framer The framer strategy to use
 		@param identity An optional identify structure
 
 		If the identify structure is not passed in, the ModbusControlBlock
 		uses its own empty structure.
 		'''
+		if isinstance(framer, IModbusFramer):
+			self.framer = framer
+		else: self.framer = ModbusTCPFramer
+
 		if isinstance(store, ModbusServerContext):
 			self.store = store
 		else: self.store = ModbusServerContext()

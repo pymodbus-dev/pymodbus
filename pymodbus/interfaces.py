@@ -22,7 +22,7 @@ class Singleton(object):
 #---------------------------------------------------------------------------# 
 class IModbusFramer(Interface):
 	'''
-	I guess these are builders, but the idea is that we abstract away all the
+	A framer strategy interface. The idea is that we abstract away all the
 	detail about how to detect if a current message frame exists, decoding it,
 	sending it, etc so that we can plug in a new Framer object (tcp, rtu, ascii)
 	'''

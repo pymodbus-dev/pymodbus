@@ -15,13 +15,13 @@ Datastore Implementation
 There are two ways that the server datastore can be implemented.
 The first is a complete range from 'address' start to 'count'
 number of indecies.  This can be thought of as a straight array:
-	data = range(1, 1 + count)
-	[1,2,3,...,count]
+        data = range(1, 1 + count)
+        [1,2,3,...,count]
 
 The other way that the datastore can be implemented (and how
 many devices implement it) is a associate-array:
-	data = {1:'1', 3:'3', ..., count:'count'}
-	[1,3,...,count]
+        data = {1:'1', 3:'3', ..., count:'count'}
+        [1,3,...,count]
 
 The difference between the two is that the latter will allow
 arbitrary gaps in its datastore while the former will not.
@@ -32,9 +32,9 @@ Say a company makes two devices to monitor power usage on a rack.
 One works with three-phase and the other with a single phase. The
 company will dictate a modbus data mapping such that registers
 
-	n:		phase 1 power
-	n+1:	phase 2 power
-	n+2:	phase 3 power
+        n:              phase 1 power
+        n+1:    phase 2 power
+        n+2:    phase 3 power
 
 Using this, layout, the first device will implement n, n+1, and n+2,
 however, the second device may set the latter two values to 0 or
@@ -46,234 +46,234 @@ based on their preference
 '''
 from pymodbus.mexceptions import *
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Datablock Storage
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class ModbusDataBlock:
-	'''
-	Base class for a modbus datastore
+    '''
+    Base class for a modbus datastore
 
-	Derived classes must create the following fields:
-		@address The starting address point
-		@defult_value The default value of the datastore
-		@values The actual datastore values 
+    Derived classes must create the following fields:
+            @address The starting address point
+            @defult_value The default value of the datastore
+            @values The actual datastore values
 
-	Derived classes must implemented the following methods:
-		checkAddress(self, address, count=1)
-		getValues(self, address, count=1)
-		setValues(self, address, values)
-	'''
+    Derived classes must implemented the following methods:
+            checkAddress(self, address, count=1)
+            getValues(self, address, count=1)
+            setValues(self, address, values)
+    '''
 
-	def default(self, count, value):
-		''' Used to initialize a store to one value '''
-		self.default_value = value
-		self.values = [default_value] * count
+    def default(self, count, value):
+        ''' Used to initialize a store to one value '''
+        self.default_value = value
+        self.values = [default_value] * count
 
-	def reset(self):
-		''' Resets the datastore to the initialized default value '''
-		for i in self.values:
-			i = self.default_value
+    def reset(self):
+        ''' Resets the datastore to the initialized default value '''
+        for i in self.values:
+            i = self.default_value
 
-	def checkAddress(self, address, count=1):
-		'''
-		Checks to see if the request is in range
-		@param address The starting address
-		@param count The number of values to test for
-		'''
-		raise NotImplementedException("Datastore Address Check")
+    def checkAddress(self, address, count=1):
+        '''
+        Checks to see if the request is in range
+        @param address The starting address
+        @param count The number of values to test for
+        '''
+        raise NotImplementedException("Datastore Address Check")
 
-	def getValues(self, address, count=1):
-		'''
-		Returns the requested values from the datastore
-		@param address The starting address
-		@param count The number of values to retrieve
-		'''
-		raise NotImplementedException("Datastore Value Retrieve")
+    def getValues(self, address, count=1):
+        '''
+        Returns the requested values from the datastore
+        @param address The starting address
+        @param count The number of values to retrieve
+        '''
+        raise NotImplementedException("Datastore Value Retrieve")
 
-	def setValues(self, address, values):
-		'''
-		Returns the requested values from the datastore
-		@param address The starting address
-		@param values The values to store
-		'''
-		raise NotImplementedException("Datastore Value Retrieve")
+    def setValues(self, address, values):
+        '''
+        Returns the requested values from the datastore
+        @param address The starting address
+        @param values The values to store
+        '''
+        raise NotImplementedException("Datastore Value Retrieve")
 
-	def __str__(self):
-		return "DataStore(%d, %d)" % (self.address, self.default_value)
+    def __str__(self):
+        return "DataStore(%d, %d)" % (self.address, self.default_value)
 
 class ModbusSequentialDataBlock(ModbusDataBlock):
-	''' Creates a sequential modbus datastore '''
+    ''' Creates a sequential modbus datastore '''
 
-	def __init__(self, address, values):
-		'''
-		Initializes the datastore
-		@address The starting address of the datastore
-		@values Either a list or a dictionary of values
-		'''
-		self.address = address
-		if isinstance(values, list):
-			self.values = values
-		else: self.values = [values]
-		self.default_value = self.values[0]
+    def __init__(self, address, values):
+        '''
+        Initializes the datastore
+        @address The starting address of the datastore
+        @values Either a list or a dictionary of values
+        '''
+        self.address = address
+        if isinstance(values, list):
+            self.values = values
+        else: self.values = [values]
+        self.default_value = self.values[0]
 
-	def checkAddress(self, address, count=1):
-		'''
-		Checks to see if the request is in range
-		@param address The starting address
-		@param count The number of values to test for
-		'''
-		if self.address > address:
-			return False
-		if ((self.address + len(self.values)) < 
-			(address + count)): return False
-		return True
+    def checkAddress(self, address, count=1):
+        '''
+        Checks to see if the request is in range
+        @param address The starting address
+        @param count The number of values to test for
+        '''
+        if self.address > address:
+            return False
+        if ((self.address + len(self.values)) <
+                (address + count)): return False
+        return True
 
-	def getValues(self, address, count=1):
-		'''
-		Returns the requested values of the datastore
-		@param address The starting address
-		@param count The number of values to retrieve
-		'''
-		b = address - self.address
-		ret = self.values[b:b+count]
-		return ret
+    def getValues(self, address, count=1):
+        '''
+        Returns the requested values of the datastore
+        @param address The starting address
+        @param count The number of values to retrieve
+        '''
+        b = address - self.address
+        ret = self.values[b:b+count]
+        return ret
 
-	def setValues(self, address, values):
-		'''
-		Sets the requested values of the datastore
-		@param address The starting address
-		@param values The new values to be set
-		'''
-		b = address - self.address
-		self.values[b:b+len(values)] = values
+    def setValues(self, address, values):
+        '''
+        Sets the requested values of the datastore
+        @param address The starting address
+        @param values The new values to be set
+        '''
+        b = address - self.address
+        self.values[b:b+len(values)] = values
 
 class ModbusSparseDataBlock(ModbusDataBlock):
-	''' Creates a sparse modbus datastore '''
+    ''' Creates a sparse modbus datastore '''
 
-	def __init__(self, values):
-		'''
-		Initializes the datastore
-		@values Either a list or a dictionary of values
+    def __init__(self, values):
+        '''
+        Initializes the datastore
+        @values Either a list or a dictionary of values
 
-		Using @values we create the default datastore value
-		and the starting address
-		'''
-		if isinstance(values, dict):
-			self.values = values
-		elif isinstance(values, list):
-			self.values = dict([(i,v) for i,v in enumerate(values)])
-		else: raise ParameterException(
-				"Values for datastore must be a list or dictionary")
-		self.default_value = self.values.values()[0]
-		self.address = self.values.iterkeys().next()
+        Using @values we create the default datastore value
+        and the starting address
+        '''
+        if isinstance(values, dict):
+            self.values = values
+        elif isinstance(values, list):
+            self.values = dict([(i,v) for i,v in enumerate(values)])
+        else: raise ParameterException(
+                        "Values for datastore must be a list or dictionary")
+        self.default_value = self.values.values()[0]
+        self.address = self.values.iterkeys().next()
 
-	def checkAddress(self, address, count=1):
-		'''
-		Checks to see if the request is in range
-		@param address The starting address
-		@param count The number of values to test for
-		'''
-		return set(range(address, address + count)
-				).issubset(set(self.values.iterkeys()))
+    def checkAddress(self, address, count=1):
+        '''
+        Checks to see if the request is in range
+        @param address The starting address
+        @param count The number of values to test for
+        '''
+        return set(range(address, address + count)
+                        ).issubset(set(self.values.iterkeys()))
 
-	def getValues(self, address, count=1):
-		'''
-		Returns the requested values of the datastore
-		@param address The starting address
-		@param count The number of values to retrieve
-		'''
-		return [self.values[i]
-			for i in range(address, address + count)]
+    def getValues(self, address, count=1):
+        '''
+        Returns the requested values of the datastore
+        @param address The starting address
+        @param count The number of values to retrieve
+        '''
+        return [self.values[i]
+                for i in range(address, address + count)]
 
-	def setValues(self, address, values):
-		'''
-		Sets the requested values of the datastore
-		@param address The starting address
-		@param values The new values to be set
-		'''
-		for i,v in enumerate(values):
-			self.values[address + i] = v
+    def setValues(self, address, values):
+        '''
+        Sets the requested values of the datastore
+        @param address The starting address
+        @param values The new values to be set
+        '''
+        for i,v in enumerate(values):
+            self.values[address + i] = v
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Device Data Control
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class ModbusServerContext:
-	'''
-	This creates a modbus data model with each data access
-	stored in its own personal block
-	'''
+    '''
+    This creates a modbus data model with each data access
+    stored in its own personal block
+    '''
 
-	def __init__(self, **kwargs):
-		'''
-		Initializes the datastores
-		@param kwargs
-			Each element is a ModbusDataBlock
-			'd' - Discrete Inputs initializer
-			'c' - Coils initializer
-			'h' - Holding Register initializer
-			'i' - Input Registers iniatializer
-		'''
-		for k in ['d', 'c', 'h', 'i']:
-			if not kwargs.has_key(k):
-				kwargs[k] = ModbusSequentialDataBlock(0, 0)
-			if not isinstance(kwargs[k], ModbusDataBlock):
-				raise ParameterException(
-					"Assigned datastore is not a ModbusDataBlock")
-		self.di = kwargs['d']
-		self.co = kwargs['c']
-		self.ir = kwargs['i']
-		self.hr = kwargs['h']
+    def __init__(self, **kwargs):
+        '''
+        Initializes the datastores
+        @param kwargs
+                Each element is a ModbusDataBlock
+                'd' - Discrete Inputs initializer
+                'c' - Coils initializer
+                'h' - Holding Register initializer
+                'i' - Input Registers iniatializer
+        '''
+        for k in ['d', 'c', 'h', 'i']:
+            if not kwargs.has_key(k):
+                kwargs[k] = ModbusSequentialDataBlock(0, 0)
+            if not isinstance(kwargs[k], ModbusDataBlock):
+                raise ParameterException(
+                        "Assigned datastore is not a ModbusDataBlock")
+        self.di = kwargs['d']
+        self.co = kwargs['c']
+        self.ir = kwargs['i']
+        self.hr = kwargs['h']
 
-	def __str__(self):
-		return "Server Context\n", [self.co, self.di, self.ir, self.hr]
+    def __str__(self):
+        return "Server Context\n", [self.co, self.di, self.ir, self.hr]
 
-	def default(self, **kwargs):
-		''' Restores each datastore to its default '''
-		for i in [self.di, self.co, self.ir, self.hr]:
-			i.default()
-	
-	def reset(self):
-		''' Resets all the datastores '''
-		for i in [self.di, self.co, self.ir, self.hr]:
-			i.reset()
+    def default(self, **kwargs):
+        ''' Restores each datastore to its default '''
+        for i in [self.di, self.co, self.ir, self.hr]:
+            i.default()
 
-	#--------------------------------------------------------------------------#
-	# Address Range Checkers
-	#--------------------------------------------------------------------------#
-	def checkCoilAddress(self, address, count=1):
-		return self.co.checkAddress(address, count)
-	
-	def checkDiscreteInputAddress(self, address, count=1):
-		return self.di.checkAddress(address, count)
-	
-	def checkInputRegisterAddress(self, address, count=1):
-		return self.ir.checkAddress(address, count)
-	
-	def checkHoldingRegisterAddress(self, address, count=1):
-		return self.hr.checkAddress(address, count)
+    def reset(self):
+        ''' Resets all the datastores '''
+        for i in [self.di, self.co, self.ir, self.hr]:
+            i.reset()
 
-	#--------------------------------------------------------------------------#
-	# Current Value Getters
-	#--------------------------------------------------------------------------#
-	def getCoilValues(self, address, count=1):
-		return self.co.getValues(address, count)
-	
-	def getDiscreteInputValues(self, address, count=1):
-		return self.di.getValues(address, count)
-	
-	def getInputRegisterValues(self, address, count=1):
-		return self.ir.getValues(address, count)
-	
-	def getHoldingRegisterValues(self, address, count=1):
-		return self.hr.getValues(address, count)
-	
-	#--------------------------------------------------------------------------#
-	# Current Value Setters
-	#--------------------------------------------------------------------------#
-	def setCoilValues(self, address, values):
-		self.co.setValues(address, values)
-	
-	def setHoldingRegisterValues(self, address, values):
-		self.hr.setValues(address, values)
+    #--------------------------------------------------------------------------#
+    # Address Range Checkers
+    #--------------------------------------------------------------------------#
+    def checkCoilAddress(self, address, count=1):
+        return self.co.checkAddress(address, count)
+
+    def checkDiscreteInputAddress(self, address, count=1):
+        return self.di.checkAddress(address, count)
+
+    def checkInputRegisterAddress(self, address, count=1):
+        return self.ir.checkAddress(address, count)
+
+    def checkHoldingRegisterAddress(self, address, count=1):
+        return self.hr.checkAddress(address, count)
+
+    #--------------------------------------------------------------------------#
+    # Current Value Getters
+    #--------------------------------------------------------------------------#
+    def getCoilValues(self, address, count=1):
+        return self.co.getValues(address, count)
+
+    def getDiscreteInputValues(self, address, count=1):
+        return self.di.getValues(address, count)
+
+    def getInputRegisterValues(self, address, count=1):
+        return self.ir.getValues(address, count)
+
+    def getHoldingRegisterValues(self, address, count=1):
+        return self.hr.getValues(address, count)
+
+    #--------------------------------------------------------------------------#
+    # Current Value Setters
+    #--------------------------------------------------------------------------#
+    def setCoilValues(self, address, values):
+        self.co.setValues(address, values)
+
+    def setHoldingRegisterValues(self, address, values):
+        self.hr.setValues(address, values)
 
 #__all__ = []

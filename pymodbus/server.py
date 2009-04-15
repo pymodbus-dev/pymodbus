@@ -18,7 +18,8 @@ from pymodbus.transaction import ModbusTCPFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.log import server_log as log
+from binascii import b2a_hex
+import logging
 
 #---------------------------------------------------------------------------#
 # Server
@@ -29,10 +30,11 @@ class ModbusProtocol(Protocol):
 	def __init__(self):
 		''' Initializes server '''
 		self.frame = ModbusTCPFramer()#self.factory.framer()
+		self.logger = logging.getLogger("pymodbus.protocol")
 
 	def connectionMade(self):
 		''' Callback for when a client connects '''
-		log.debug("Client Connected [%s]" % self.transport.getHost())
+		self.logger.debug("Client Connected [%s]" % self.transport.getHost())
 		#self.factory.control.counter + 1 ?
 	
 	def connectionLost(self, reason):
@@ -40,7 +42,7 @@ class ModbusProtocol(Protocol):
 		Callback for when a client disconnects
 		@param reason The client's reason for disconnecting
 		'''
-		log.debug("Client Disconnected")
+		self.logger.debug("Client Disconnected")
 		#self.factory.control.counter - 1 ?
 	
 	def dataReceived(self, data):
@@ -49,7 +51,7 @@ class ModbusProtocol(Protocol):
 		@param data The data sent by the client
 		'''
 		# if self.factory.control.isListenOnly == False:
-		log.debug(" ".join([hex(ord(x)) for x in data]))
+		self.logger.debug(" ".join([hex(ord(x)) for x in data]))
 		self.frame.addToFrame(data)
 		while self.frame.isFrameReady():
 			if self.frame.checkFrame():
@@ -72,7 +74,7 @@ class ModbusProtocol(Protocol):
 		try:
 			response = request.execute(self.factory.store)
 		except:
-			log.debug("Datastore unable to fulfill request")
+			self.logger.debug("Datastore unable to fulfill request")
 			response = request.doException(merror.SlaveFailure)
 		response.transaction_id = request.transaction_id
 		response.uint_id = request.unit_id
@@ -83,7 +85,9 @@ class ModbusProtocol(Protocol):
 		Send a request (string) to the network
 		@param message The unencoded modbus response
 		'''
-		return self.transport.write(self.frame.buildPacket(message))
+		pdu = self.frame.buildPacket(message)
+		self.logger.debug('send: %s' % b2a_hex(pdu))
+		return self.transport.write(pdu)
 
 	def decode(self, message):
 		'''
@@ -93,7 +97,7 @@ class ModbusProtocol(Protocol):
 		try:
 			return decodeModbusRequestPDU(message)
 		except ModbusException, er:
-			log.warn("Unable to decode request")
+			self.logger.warn("Unable to decode request")
 		return None
 
 
@@ -117,6 +121,7 @@ class ModbusServerFactory(ServerFactory):
 		If the identify structure is not passed in, the ModbusControlBlock
 		uses its own empty structure.
 		'''
+		self.logger = logging.getLogger("pymodbus.server")
 		if isinstance(framer, IModbusFramer):
 			self.framer = framer
 		else: self.framer = ModbusTCPFramer

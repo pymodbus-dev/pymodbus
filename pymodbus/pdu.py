@@ -1,9 +1,13 @@
 '''
 Contains base classes for modbus request/response/error packets
 '''
-
 from pymodbus.mexceptions import NotImplementedException
-from pymodbus.log import protocol_log as log
+
+#---------------------------------------------------------------------------# 
+# Logging
+#---------------------------------------------------------------------------# 
+import logging
+_logger = logging.getLogger('pymodbus.protocol')
 
 #---------------------------------------------------------------------------# 
 # Base PDU's
@@ -12,7 +16,7 @@ class ModbusPDU:
 	'''
 	Base class for all Modbus mesages
 
-	@param transaction_id This value is used to uniquely identify a request/
+	@param transaction_id This value is used to uniquely identify a request
 	response pair.  It can be implemented as a simply counter
 
 	@param protocol_id This is a constant set at 0 to indicate Modbus.  It is
@@ -35,6 +39,7 @@ class ModbusPDU:
 	
 	def encode(self):
 		''' Encodes the message '''
+		_logger.error("Method not implemented")
 		raise NotImplementedException()
 	
 	def decode(self, data):
@@ -42,6 +47,7 @@ class ModbusPDU:
 		Decodes data part of the message.
 		@param data is a string object
 		'''
+		_logger.error("Method not implemented")
 		raise NotImplementedException()
       
 class ModbusRequest(ModbusPDU):
@@ -56,7 +62,7 @@ class ModbusRequest(ModbusPDU):
 		Builds an error response based on the function
 		@param exception The exception to return
 		'''
-		log.debug("Exception Response F(%d) E(%d)" %
+		_logger.error("Exception Response F(%d) E(%d)" %
 			(self.function_code, exception))
 		return ExceptionResponse(self.function_code, exception)
 

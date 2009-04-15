@@ -9,7 +9,7 @@ This package can supply modbus clients and servers:
 	- Can fully scrape a host to be cloned
 
 	server:
-	- Can funtion as a fully implemented TCP modbus server
+	- Can function as a fully implemented TCP modbus server
 	- Working on creating server control context
 	- Working on serial communication
 	- Working on funtioning as a RTU/ASCII
@@ -27,6 +27,20 @@ the new code.
 
 from pymodbus.version import version
 __version__ = version.short()
+
+
+#---------------------------------------------------------------------------# 
+# Block unhandled logging
+#---------------------------------------------------------------------------# 
+import logging
+class NullHandler(logging.Handler):
+	def emit(self, record):
+		pass
+
+h = NullHandler()
+logging.getLogger("pymodbus").addHandler(h)
+
+
 
 #__all__ = [
 #    "ReadBitsResponseBase", "ReadRegistersResponseBase",

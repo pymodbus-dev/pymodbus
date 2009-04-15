@@ -8,60 +8,11 @@ class SimpleDataStoreTest(unittest.TestCase):
 	'''
 
 	def setUp(self):
-		info = {
-			0x00: 'Bashwork',				# VendorName
-			0x01: 'PTM',					# ProductCode
-			0x02: '1.0',					# MajorMinorRevision
-			0x03: 'http://internets.com',	# VendorUrl
-			0x04: 'pymodbus',				# ProductName
-			0x05: 'bashwork',				# ModelName
-			0x06: 'unittest',				# UserApplicationName
-			0x07: 'x',						# reserved
-			0x08: 'x',						# reserved
-			0x10: 'private'					# private data
-		}
-		self.ident = ModbusDeviceIdentification(info)
-		self.control = ModbusControlBlock()
+		pass
 	
 	def tearDown(self):
 		''' Cleans up the test environment '''
-		del self.ident
-		del self.control
-
-	def testModbusDeviceIdentificationGet(self):
-		''' Test device identification reading '''
-		self.assertTrue(self.ident.getValue(0x00) == 'Bashwork')
-		self.assertTrue(self.ident.getValue(0x01) == 'PTM')
-		self.assertTrue(self.ident.getValue(0x02) == '1.0')
-		self.assertTrue(self.ident.getValue(0x03) == 'http://internets.com')
-		self.assertTrue(self.ident.getValue(0x04) == 'pymodbus')
-		self.assertTrue(self.ident.getValue(0x05) == 'bashwork')
-		self.assertTrue(self.ident.getValue(0x06) == 'unittest')
-		self.assertTrue(self.ident.getValue(0x07) == 'x')
-		self.assertTrue(self.ident.getValue(0x08) == 'x')
-		self.assertTrue(self.ident.getValue(0x10) == 'private')
-		self.assertTrue(self.ident.getValue(0x54) == None)
-
-	def testModbusDeviceIdentificationSet(self):
-		''' Test a device identification writing '''
-		self.ident.setValue(0x07, 'y')
-		self.ident.setValue(0x08, 'y')
-		self.ident.setValue(0x10, 'public')
-		self.ident.setValue(0x54, 'testing')
-
-		self.assertFalse(self.ident.getValue(0x07) == 'y')
-		self.assertFalse(self.ident.getValue(0x08) == 'y')
-		self.assertTrue(self.ident.getValue(0x10) == 'public')
-		self.assertTrue(self.ident.getValue(0x54) == 'testing')
-
-	def testModbusControlBlock(self):
-		''' Test a server control block '''
-		self.assertTrue(id(self.control) == id(ModbusControlBlock()))
-		self.control.Identity = self.ident
-		self.control.setMode('RTU')
-		self.assertTrue(self.control.getMode() == 'RTU')
-		self.control.setMode('FAKE')
-		self.assertFalse(self.control.getMode() == 'FAKE')
+		pass
 
 	def testModbusDataBlock(self):
 		''' Test a base data block store '''

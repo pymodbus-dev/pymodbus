@@ -48,7 +48,6 @@ from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet import reactor
 from twisted.internet.interfaces import IPullProducer
 
-from pymodbus.log import client_log as log
 from pymodbus.factory import decodeModbusResponsePDU
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import ReadBitsResponseBase
@@ -56,6 +55,9 @@ from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.transaction import ModbusTCPFramer
 
 import struct
+import logging
+_logger = logging.getLogger('pymodbus.client')
+
 
 #---------------------------------------------------------------------------#
 # Client Producer/Consumer
@@ -98,6 +100,7 @@ class ModbusMessageProducer:
 
 	def stopProducing(self):
 		''' I don't actually know yet, but they complain otherwise '''
+		_logger.debug("Client stopped producing")
 		self.consumer.unregisterProducer()
 
 	def __getNextTID(self):
@@ -136,7 +139,7 @@ class ModbusClientProtocol(Protocol):
 		Get response, check for valid message, decode result
 		@param data The data returned from the server
 		'''
-		log.debug("[R]" + " ".join([hex(ord(x)) for x in data]))
+		_logger.debug("[R]" + " ".join([hex(ord(x)) for x in data]))
 		self.framer.addToFrame(data)
 		while self.framer.isFrameReady():
 			if self.framer.checkFrame():
@@ -174,7 +177,7 @@ class ModbusClientProtocol(Protocol):
 		try:
 			return decodeModbusResponsePDU(message)
 		except ModbusException, er:
-			log.debug("Unable to decode response")
+			_logger.debug("Unable to decode response")
 		return None
 
 #---------------------------------------------------------------------------#
@@ -185,7 +188,7 @@ class ModbusClientFactory(ClientFactory):
 
 	protocol = ModbusClientProtocol
 
-	def __init__(self, requests=None):
+	def __init__(self, requests=None, results=None):
 		'''
 		Initializes a transaction to a modbus server
 		@param requests A list of requests to send to server
@@ -197,6 +200,13 @@ class ModbusClientFactory(ClientFactory):
 			self.requests = [requests]
 		else: pass
 
+		# initialize the results structure
+		if results != None:
+			self.results = results
+		else:
+			self.results = {}
+		for key in ('ci', 'di', 'hr', 'ir'): self.results[key]= {}
+
 	#def buildProtocol(self, addr):
 	#	p = protocol.ClientFactory.buildProtocol(self, addr)
 	#	# handle timeout/retry?
@@ -207,7 +217,7 @@ class ModbusClientFactory(ClientFactory):
 		Initiated on protocol connection start
 		@param connector The connection handler
 		'''
-		log.debug("Client Connection Made")
+		_logger.debug("Client Connection Made")
 
 	def clientConnectionLost(self, connector, reason):
 		'''
@@ -215,9 +225,9 @@ class ModbusClientFactory(ClientFactory):
 		@param connector The connection handler
 		@param reason The reason for a disconnection
 		'''
-		log.debug("Client Connection Lost")
+		_logger.debug("Client Connection Lost")
 		if self.requests:
-			log.debug("Client Connection Reconnect")
+			_logger.debug("Client Connection Reconnect")
 			connector.connect()
 		else: reactor.stop()
 
@@ -228,7 +238,7 @@ class ModbusClientFactory(ClientFactory):
 		@param connector The connection handler
 		@param reason The reason for a disconnection
 		'''
-		log.debug("Client Connection Failed")
+		_logger.debug("Client Connection Failed")
 
 	#----------------------------------------------------------------------# 
 	# Extra Functions

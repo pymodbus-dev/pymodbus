@@ -1,8 +1,10 @@
 from zope.interface import implements
-from pymodbus.log import client_log as log
 from pymodbus import interfaces
 from pymodbus.utilities import computeCRC
 import struct
+
+import logging
+_logger = logging.getLogger('pymodbus.protocol')
 
 #---------------------------------------------------------------------------# 
 # TCP Transaction
@@ -40,7 +42,7 @@ class ModbusTCPTransaction:
 	def execute(self):
 		retries = self.retries
 		self.req.transaction_id = self.getUniqueTransactionId() 
-		log.debug("Running transaction %d" % self.req.transaction_id)
+		_logger.debug("Running transaction %d" % self.req.transaction_id)
 		while (1):
 			try:
 				self.con.connect()
@@ -51,8 +53,8 @@ class ModbusTCPTransaction:
 			except socket.error, msg:
 				self.con.close()
 				if retries > 0:
-					log.debug("Attemp to execute transaction failed. (%s) " % msg)
-					log.debug("Will try %d more times." % self.retries)
+					_logger.debug("Attemp to execute transaction failed. (%s) " % msg)
+					_logger.debug("Will try %d more times." % self.retries)
 					retries -= 1
 					continue
 				raise

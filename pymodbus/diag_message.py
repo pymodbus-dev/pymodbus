@@ -8,7 +8,7 @@ or linked to the appropriate data
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.datastore import ModbusControlBlock
+from pymodbus.device import ModbusControlBlock
 from pymodbus.mexceptions import NotImplementedException
 from pymodbus.utilities import packBitsToString
 import struct

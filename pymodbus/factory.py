@@ -24,7 +24,8 @@ from pymodbus.register_write_message import *
 #---------------------------------------------------------------------------# 
 # Logging
 #---------------------------------------------------------------------------# 
-from pymodbus.log import protocol_log as log
+import logging
+_logger = logging.getLogger('pymodbus.protocol')
 
 #---------------------------------------------------------------------------# 
 # Request Message Factory
@@ -52,7 +53,7 @@ def decodeModbusRequestPDU(data):
 	@return The decoded request or illegal function request object
 	'''
 	function_code = ord(data[0])
-	log.debug("Factory Request[%d]" % function_code)
+	_logger.debug("Factory Request[%d]" % function_code)
 	if function_code in __request_function_codes:
 		request = __request_function_table[
 			__request_function_codes.index(function_code)]()
@@ -87,7 +88,7 @@ def decodeModbusResponsePDU(data):
 	@return The decoded request or an exception response object
 	'''
 	function_code = ord(data[0])
-	log.debug("Factory Response[%d]" % function_code)
+	_logger.debug("Factory Response[%d]" % function_code)
 	if function_code in __response_function_codes:
 		response = __response_function_table[
 			__response_function_codes.index(function_code)]()

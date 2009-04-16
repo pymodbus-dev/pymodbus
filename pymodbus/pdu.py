@@ -35,7 +35,7 @@ class ModbusPDU:
         self.transaction_id     = 0
         self.protocol_id        = 0
         self.unit_id            = 0x00 # can also be 0xff
-        self.check                      = 0x0000
+        self.check              = 0x0000
 
     def encode(self):
         ''' Encodes the message '''
@@ -84,10 +84,10 @@ class ModbusExceptions:
     IllegalAddress                  = 0x2
     IllegalValue                    = 0x3
     SlaveFailure                    = 0x4
-    Acknowledge                             = 0x5
-    SlaveBusy                               = 0x6
+    Acknowledge                     = 0x5
+    SlaveBusy                       = 0x6
     MemoryParityError               = 0x8
-    GatewayPathUnavailable  = 0xA
+    GatewayPathUnavailable          = 0xA
     GatewayNoResponse               = 0xB
 
 class ExceptionResponse(ModbusResponse):

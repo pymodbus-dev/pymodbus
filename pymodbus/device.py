@@ -113,12 +113,12 @@ class ModbusDeviceIdentification:
     #---------------------------------------------------------------------------#
     # Eases access
     #---------------------------------------------------------------------------#
-    vendor_name                             = property(lambda self: self._data[0])
-    product_code                    = property(lambda self: self._data[1])
+    vendor_name             = property(lambda self: self._data[0])
+    product_code            = property(lambda self: self._data[1])
     major_minor_revision    = property(lambda self: self._data[2])
-    vendor_url                              = property(lambda self: self._data[3])
-    product_name                    = property(lambda self: self._data[4])
-    model_name                              = property(lambda self: self._data[5])
+    vendor_url              = property(lambda self: self._data[3])
+    product_name            = property(lambda self: self._data[4])
+    model_name              = property(lambda self: self._data[5])
     user_application_name   = property(lambda self: self._data[6])
 
 #---------------------------------------------------------------------------#
@@ -133,13 +133,13 @@ class ModbusControlBlock(Singleton):
     '''
 
     __counter = {
-            'BusMessage'                    : 0x0000,
+            'BusMessage'            : 0x0000,
             'BusCommunicationError' : 0x0000,
-            'BusExceptionError'             : 0x0000,
-            'SlaveMessage'                  : 0x0000,
-            'SlaveNoResponse'               : 0x0000,
-            'SlaveNAK'                              : 0x0000,
-            'SlaveBusy'                             : 0x0000,
+            'BusExceptionError'     : 0x0000,
+            'SlaveMessage'          : 0x0000,
+            'SlaveNoResponse'       : 0x0000,
+            'SlaveNAK'              : 0x0000,
+            'SlaveBusy'             : 0x0000,
             'BusCharacterOverrun'   : 0x0000,
     }
     __mode = 'ASCII'
@@ -252,8 +252,6 @@ class ModbusControlBlock(Singleton):
         This gets the entire diagnostic register
         '''
         return self.__diagnostic
-
-        return self.co.checkAddress(address, count)
 
 __all__ = [
         "ModbusAccessControl",

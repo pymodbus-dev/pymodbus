@@ -64,7 +64,7 @@ _logger = logging.getLogger('pymodbus.client')
 #---------------------------------------------------------------------------#
 class ModbusMessageProducer:
     '''
-    This is a simply pull producer that feeds requets to the modbus client
+    This is a simply pull producer that feeds requests to the modbus client
     '''
 
     implements(IPullProducer)
@@ -177,7 +177,7 @@ class ModbusClientProtocol(Protocol):
         try:
             return decodeModbusResponsePDU(message)
         except ModbusException, er:
-            _logger.debug("Unable to decode response")
+            _logger.error("Unable to decode response %s" % er)
         return None
 
 #---------------------------------------------------------------------------#

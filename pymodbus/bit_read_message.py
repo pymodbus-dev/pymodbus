@@ -118,9 +118,9 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         '''
         if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
-        if not context.checkCoilAddress(self.address, self.count):
+        if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getCoilValues(self.address, self.count)
+        values = context.getValues(self.function_code, self.address, self.count)
         return ReadCoilsResponse(values)
 
 
@@ -166,9 +166,9 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         '''
         if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
-        if not context.checkDiscreteInputAddress(self.address, self.count):
+        if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getDiscreteInputValues(self.address, self.count)
+        values = context.getValues(self.function_code, self.address, self.count)
         return ReadDiscreteInputsResponse(values)
 
 class ReadDiscreteInputsResponse(ReadBitsResponseBase):

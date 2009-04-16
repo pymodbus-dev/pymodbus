@@ -45,6 +45,8 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference
 '''
 from pymodbus.mexceptions import *
+import logging;
+_logger = logging.getLogger("pymodbus.protocol")
 
 #---------------------------------------------------------------------------#
 # Datablock Storage
@@ -223,6 +225,11 @@ class ModbusServerContext:
         self.co = kwargs['c']
         self.ir = kwargs['i']
         self.hr = kwargs['h']
+        self.__mapping = {
+            2:self.di, 3:self.ir, 4:self.ir,
+            1:self.co, 5:self.co, 15:self.co,
+            6:self.hr, 16:self.hr, 23:self.hr
+       }
 
     def __str__(self):
         return "Server Context\n", [self.co, self.di, self.ir, self.hr]
@@ -237,43 +244,31 @@ class ModbusServerContext:
         for i in [self.di, self.co, self.ir, self.hr]:
             i.reset()
 
-    #--------------------------------------------------------------------------#
-    # Address Range Checkers
-    #--------------------------------------------------------------------------#
-    def checkCoilAddress(self, address, count=1):
-        return self.co.checkAddress(address, count)
+    def validate(self, fx, address, count=1):
+        ''' Validates the request to make sure it is in range
+        @param fx The function we are working with
+        @param address The starting address
+        @param count The number of values to test
+        '''
+        _logger.debug("validate[%d] %d:%d" % (fx, address, count))
+        return self.__mapping[fx].checkAddress(address, count)
 
-    def checkDiscreteInputAddress(self, address, count=1):
-        return self.di.checkAddress(address, count)
+    def getValues(self, fx, address, count=1):
+        ''' Validates the request to make sure it is in range
+        @param fx The function we are working with
+        @param address The starting address
+        @param count The number of values to retrieve
+        '''
+        _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
+        return self.__mapping[fx].getValues(address, count)
 
-    def checkInputRegisterAddress(self, address, count=1):
-        return self.ir.checkAddress(address, count)
-
-    def checkHoldingRegisterAddress(self, address, count=1):
-        return self.hr.checkAddress(address, count)
-
-    #--------------------------------------------------------------------------#
-    # Current Value Getters
-    #--------------------------------------------------------------------------#
-    def getCoilValues(self, address, count=1):
-        return self.co.getValues(address, count)
-
-    def getDiscreteInputValues(self, address, count=1):
-        return self.di.getValues(address, count)
-
-    def getInputRegisterValues(self, address, count=1):
-        return self.ir.getValues(address, count)
-
-    def getHoldingRegisterValues(self, address, count=1):
-        return self.hr.getValues(address, count)
-
-    #--------------------------------------------------------------------------#
-    # Current Value Setters
-    #--------------------------------------------------------------------------#
-    def setCoilValues(self, address, values):
-        self.co.setValues(address, values)
-
-    def setHoldingRegisterValues(self, address, values):
-        self.hr.setValues(address, values)
+    def setValues(self, fx, address, values):
+        ''' Sets the datastore with the supplied values
+        @param fx The function we are working with
+        @param address The starting address
+        @param values The new values to be set
+        '''
+        _logger.debug("setValues[%d] %d:%d" % (fx, address, count))
+        return self.__mapping[fx].setValues(address, values)
 
 #__all__ = []

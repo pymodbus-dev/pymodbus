@@ -42,10 +42,10 @@ class WriteSingleRegisterRequest(ModbusRequest):
         '''
         if not (0 <= self.value <= 0xffff):
             return self.doException(merror.IllegalValue)
-        if not context.checkHoldingRegisterAddress(self.address):
+        if not context.validate(self.function_code, self.address):
             return self.doException(merror.IllegalAddress)
-        context.setHoldingRegisterValues(self.address, [self.value])
-        values = context.getHoldingRegisterValues(self.address)
+        context.setValues(self.function_code, self.address, [self.value])
+        values = context.getValues(self.function_code, self.address)
         return WriteSingleRegisterResponse(self.address, values[0])
 
     def __str__(self):
@@ -126,9 +126,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if (self.byte_count != count * 2):
             return self.doException(merror.IllegalValue)
-        if not context.checkHoldingRegisterAddress(self.address, count):
+        if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
-        context.setHoldingRegisterValues(self.address, self.registers)
+        context.setValues(self.function_code, self.address, self.registers)
         return WriteMultipleRegistersResponse(self.address, count)
 
     def __str__(self):

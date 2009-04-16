@@ -117,7 +117,7 @@ class ExceptionResponse(ModbusResponse):
         self.exception_code = ord(data[0])
 
     def __str__(self):
-        return "ExceptionResponse (%d, %d)" % (self.function_code,
+        return "Exception Response (%d, %d)" % (self.function_code,
                 self.exception_code)
 
 class IllegalFunctionRequest(ModbusRequest):

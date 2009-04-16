@@ -14,8 +14,9 @@ import pickle
 # Logging
 #--------------------------------------------------------------------------#
 import logging
-from pymodbus.log import server_log
-from pymodbus.log import protocol_log
+logging.basicConfig()
+server_log   = logging.getLogger("pymodbus.server")
+protocol_log = logging.getLogger("pymodbus.protocol")
 
 #---------------------------------------------------------------------------#
 # Extra Global Functions
@@ -93,8 +94,11 @@ def main():
 
     # enable debugging information
     if opt.debug:
-        server_log.setLevel(logging.DEBUG)
-        protocol_log.setLevel(logging.DEBUG)
+        try:
+            server_log.setLevel(logging.DEBUG)
+            protocol_log.setLevel(logging.DEBUG)
+        except Exception, e:
+    	    print "Logging is not supported on this system"
 
     # parse configuration file and run
     try:

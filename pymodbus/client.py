@@ -50,8 +50,8 @@ from twisted.internet.interfaces import IPullProducer
 
 from pymodbus.factory import decodeModbusResponsePDU
 from pymodbus.mexceptions import *
-from pymodbus.bit_read_message import ReadBitsResponseBase
-from pymodbus.register_read_message import ReadRegistersResponseBase
+from pymodbus.bit_read_message import *
+from pymodbus.register_read_message import *
 from pymodbus.transaction import ModbusTCPFramer
 
 import struct
@@ -131,6 +131,7 @@ class ModbusClientProtocol(Protocol):
         Called upon a successful connection. Is used to instantiate and
         run the producer.
         '''
+        _logger.debug("Client connected to modbus serveR")
         self.producer = ModbusMessageProducer(self.transport,
                 self.factory.requests, self.factory.handler, self.framer)
 
@@ -145,6 +146,7 @@ class ModbusClientProtocol(Protocol):
             if self.framer.checkFrame():
                 result = self.decode(self.framer.getFrame())
                 if result is None:
+                    _logger.error("Client could not decode response")
                     raise ModbusIOException("Unable to decode response")
                 self.framer.populateResult(result)
                 self.framer.advanceFrame()
@@ -254,9 +256,9 @@ class ModbusClientFactory(ClientFactory):
         try:
             a = self.handler[response.transaction_id].address
             if isinstance(response, ReadCoilsResponse):
-                self.results['ci'][a] = response.getBit[0]
+                self.results['ci'][a] = response.getBit(0)
             elif isinstance(response, ReadDiscreteInputsResponse):
-                self.results['di'][a] = response.getBit[0]
+                self.results['di'][a] = response.getBit(0)
             elif isinstance(response, ReadHoldingRegistersResponse):
                 self.results['hr'][a] = response.registers[0]
             elif isinstance(response, ReadInputRegistersResponse):

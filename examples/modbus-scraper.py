@@ -8,7 +8,6 @@ simulator.
 from twisted.internet import reactor
 
 from pymodbus.client import ModbusClientFactory
-from pymodbus.log import client_log as log
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.bit_read_message import ReadDiscreteInputsRequest
 from pymodbus.register_read_message import ReadHoldingRegistersRequest
@@ -16,7 +15,12 @@ from pymodbus.register_read_message import ReadInputRegistersRequest
 
 from optparse import OptionParser
 import pickle
+
+#--------------------------------------------------------------------------#
+# Logging
+#--------------------------------------------------------------------------#
 import logging
+client_log = logging.getLogger("pymodbus.client")
 
 #--------------------------------------------------------------------------#
 # Helper Classes
@@ -38,7 +42,8 @@ class ClientScraper:
         '''
         Initializes the connection paramaters and requests
         @param host The host to connect to
-        @param port the port the server resides on
+        @param port The port the server resides on
+        @param address The range to read to:from
         '''
         self.host = host
 
@@ -53,7 +58,7 @@ class ClientScraper:
                 ReadDiscreteInputsRequest,
                 ReadInputRegistersRequest,
                 ReadHoldingRegistersRequest]:
-            for i in range(351):
+            for i in range(*[int(j) for j in address.split(':')]):
                 self.requests.append(rqst(i,1))
 
     def start(self):
@@ -128,7 +133,11 @@ def main():
 
     # enable debugging information
     if opt.debug:
-        log.setLevel(logging.DEBUG)
+        try:
+            client_log.setLevel(logging.DEBUG)
+    	    logging.basicConfig()
+        except Exception, e:
+    	    print "Logging is not supported on this system"
 
     # Begin scrape
     try:

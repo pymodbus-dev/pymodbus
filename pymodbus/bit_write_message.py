@@ -77,10 +77,10 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         if self.value != 0 and self.value != 0xff00:
             return self.doException(merror.IllegalValue)
-        if not context.checkCoilAddress(self.address):
+        if not context.validate(self.function_code, self.address):
             return self.doException(merror.IllegalAddress)
-        context.setCoilValues(self.address, [self.value == 0xff00])
-        values = context.getCoilValues(self.address)
+        context.setValues(self.function_code, self.address, [self.value == 0xff00])
+        values = context.getValues(self.function_code, self.address)
         return WriteSingleCoilResponse(self.address, values[0])
 
     def __str__(self):
@@ -184,9 +184,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
             return self.createExceptionResponse(merror.IllegalValue)
         if (self.byte_count != (count + 7) / 8):
             return self.doException(merror.IllegalValue)
-        if not context.checkCoilAddress(self.address, count):
+        if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
-        context.setCoilValues(self.address, self.coils)
+        context.setValues(self.function_code, self.address, self.coils)
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):

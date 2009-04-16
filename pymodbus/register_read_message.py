@@ -85,9 +85,9 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         '''
         if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
-        if not context.checkHoldingRegisterAddress(self.address, self.count):
+        if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getHoldingRegisterValues(self.address, self.count)
+        values = context.getValues(self.function_code, self.address, self.count)
         return ReadHoldingRegistersResponse(values)
 
 class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
@@ -123,9 +123,9 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         '''
         if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
-        if not context.checkInputRegisterAddress(self.address, self.count):
+        if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
-        values = context.getInputRegisterValues(self.address, self.count)
+        values = context.getValues(self.function_code, self.address, self.count)
         return ReadInputRegistersResponse(values)
 
 class ReadInputRegistersResponse(ReadRegistersResponseBase):
@@ -194,14 +194,12 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if (self.wbyte_count != wcount * 2):
             return self.createExceptionResponse(IllegalValue)
-        if not context.checkHoldingRegisterAddress(self.waddress, wcount):
+        if not context.validate(self.function_code, self.waddress, wcount):
             return self.doException(merror.IllegalAddress)
-        if not context.checkHoldingRegisterAddress(self.raddress,
-                self.rcount):
+        if not context.validate(self.function_code, self.raddress, self.rcount):
             return self.doException(merror.IllegalAddress)
-        context.setHoldingRegisterValues(self.waddress, self.wregisters)
-        rvalues = context.getHoldingRegisterValues(self.raddress,
-                self.rcount)
+        context.setValues(self.function_code, self.waddress, self.wregisters)
+        rvalues = context.getValues(self.function_code, self.raddress, self.rcount)
         return ReadWriteMultipleRegistersResponse(rvalues)
 
     def __str__(self):

@@ -6,7 +6,6 @@ maintained in the server context and the various methods
 should be inserted in the correct locations.
 '''
 from pymodbus.interfaces import Singleton
-#from pymodbus.mexceptions import *
 
 #---------------------------------------------------------------------------#
 # Network Access Control

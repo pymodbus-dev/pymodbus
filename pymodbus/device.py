@@ -237,7 +237,7 @@ class ModbusControlBlock(Singleton):
         if (bit >= 0) or (bit < len(self.__diagnostic)):
             self.__diagnostic[bit] = (value != 0)
 
-    def getDiagnosticRegisterBit(self, bit):
+    def getDiagnostic(self, bit):
         '''
         This gets the value in the diagnostic register
         @param bit The bit to set

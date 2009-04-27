@@ -39,10 +39,12 @@ setup(name = 'pymodbus',
     license = 'LGPL',
     packages = find_packages(exclude=['ez_setup', 'examples', 'tests', 'doc']),
     include_package_data = True,
-    zip_safe = False,
+    zip_safe = True,
     install_requires = [
         'twisted >= 2.5.0'
+        'nose >= 0.9.3'
     ],
+    test_suite = 'nose.collector'
     entry_points = """
     # -*- Entry points: -*-
     """,

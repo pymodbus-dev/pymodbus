@@ -41,10 +41,10 @@ setup(name = 'pymodbus',
     include_package_data = True,
     zip_safe = True,
     install_requires = [
-        'twisted >= 2.5.0'
+        'twisted >= 2.5.0',
         'nose >= 0.9.3'
     ],
-    test_suite = 'nose.collector'
+    test_suite = 'nose.collector',
     entry_points = """
     # -*- Entry points: -*-
     """,

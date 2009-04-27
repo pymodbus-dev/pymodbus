@@ -317,7 +317,8 @@ class ModbusRTUFramer:
         data = message.encode()
         packet = struct.pack('>BB',
                 message.unit_id,
-                message.function_code) + data + computeCRC(data)
+                message.function_code) + data
+        packet = packet + struct.pack(">H", computeCRC(packet))
         return packet
 
 
@@ -418,5 +419,6 @@ class ModbusASCIIFramer:
         data = message.encode()
         packet = struct.pack('>BB',
                 message.unit_id,
-                message.function_code) + data + computeLRC(data)
+                message.function_code) + data
+        packet = packet + struct.pack(">H", computeLRC(packet))
         return packet

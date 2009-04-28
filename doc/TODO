@@ -1,7 +1,6 @@
 #---------------------------------------------------------------------------# 
 # Current Work In Progress
 #---------------------------------------------------------------------------# 
-
 ** Protocols **
   - Serial ASCII
   - Serial RTU
@@ -23,3 +22,4 @@
 
 ** Tools **
   - Unify a quick testing tool (unit/lint/coverage/figleaf/etc...)
+  - Get 100% code coverage with solid unit testing to ensure reliability

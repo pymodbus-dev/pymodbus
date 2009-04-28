@@ -24,7 +24,8 @@ class SimpleExceptionsTest(unittest.TestCase):
         for ex in self.exceptions:
             try:
                 raise ex
-            except ModbusException:
+            except ModbusException, ex:
+                self.assertTrue("Modbus Error:" in str(ex))
                 pass
             else: self.fail("Excepted a ModbusExceptions")
 

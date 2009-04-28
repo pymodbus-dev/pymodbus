@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Installs twistedmodbus using distutils
+Installs pymodbus using distutils
 
 Run:
     python setup.py install
@@ -17,8 +17,12 @@ version = '0.1'
 
 setup(name = 'pymodbus',
     version = version,
-    description = "Python modbus library",
-    long_description=''' Python modbus library ''',
+    description = "A fully featured modbus protocol stack in python",
+    long_description='''
+    Pymodbus aims to be a fully implemented modbus protocol stack implemented
+    using twisted.  Its orignal goal was to allow simulation of thousands of
+    modbus devices on a single machine for monitoring software testing.
+    ''',
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
@@ -35,7 +39,7 @@ setup(name = 'pymodbus',
     keywords = 'modbus,twisted',
     author = 'Galen Collins',
     author_email = 'bashwork@gmail.com',
-    url='',
+    url='http://code.google.com/p/pymodbus/',
     license = 'LGPL',
     packages = find_packages(exclude=['ez_setup', 'examples', 'tests', 'doc']),
     include_package_data = True,

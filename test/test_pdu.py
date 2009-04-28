@@ -43,6 +43,14 @@ class SimplePduTest(unittest.TestCase):
         self.assertTrue(self.exception.exception_code == 1,
                 "ExceptionResponse decoded incorrectly")
 
+    def testRequestExceptionFactory(self):
+        ''' Test all error methods '''
+        request = ModbusRequest()
+        request.function_code = 1
+        for error in [getattr(ModbusExceptions, i) for i in dir(ModbusExceptions) if '__' not in i]:
+            result = request.doException(error)
+            self.assertTrue(str(result) == "Exception Response (129, %d)" % error)
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

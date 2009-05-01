@@ -25,7 +25,7 @@ class ModbusAccessControl(Singleton):
             "127.0.0.1",
     ]
 
-    def addAllowedHost(self, host):
+    def add(self, host):
         '''
         Add allowed host(s) from the NMS table
         @param host The host to add
@@ -33,9 +33,10 @@ class ModbusAccessControl(Singleton):
         if not isinstance(host, list):
             host = [host]
         for entry in host:
-            self.__nmstable.append(host)
+            if entry not in self.__nmstable:
+                self.__nmstable.append(entry)
 
-    def removeAllowedHost(self, host):
+    def remove(self, host):
         '''
         Remove allowed host(s) from the NMS table
         @param host The host to remove
@@ -43,10 +44,10 @@ class ModbusAccessControl(Singleton):
         if not isinstance(host, list):
             host = [host]
         for entry in host:
-            if host in self.__nmstable:
-                self.__nmstable.remove(host)
+            if entry in self.__nmstable:
+                self.__nmstable.remove(entry)
 
-    def checkHost(self, host):
+    def check(self, host):
         '''
         Check if a host is allowed to access resources
         @param host The host to check
@@ -228,21 +229,21 @@ class ModbusControlBlock(Singleton):
     #---------------------------------------------------------------------------#
     # Diagnostic Properties
     #---------------------------------------------------------------------------#
-    def setDiagnostic(self, bit, value):
+    def setDiagnostic(self, mapping):
         '''
         This sets the value in the diagnostic register
-        @param bit The bit to set
-        @param value The value of set the bit as
+        @param mapping Dictionary of key:value pairs to set
         '''
-        if (bit >= 0) or (bit < len(self.__diagnostic)):
-            self.__diagnostic[bit] = (value != 0)
+        for entry in mapping.iteritems():
+            if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
+                self.__diagnostic[entry[0]] = (entry[1] != 0)
 
     def getDiagnostic(self, bit):
         '''
         This gets the value in the diagnostic register
         @param bit The bit to set
         '''
-        if (bit >= 0) or (bit < len(self.__diagnostic)):
+        if bit >= 0 and bit < len(self.__diagnostic):
             return self.__diagnostic[bit]
         return None
 

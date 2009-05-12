@@ -22,4 +22,5 @@
 
 ** Tools **
   - Unify a quick testing tool (unit/lint/coverage/figleaf/etc...)
+  - Unify a quick documentation tool (pydoc, pydoctor, epydoc, sphinx)
   - Get 100% code coverage with solid unit testing to ensure reliability

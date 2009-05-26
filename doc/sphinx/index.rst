@@ -13,6 +13,7 @@ Contents:
 
    Enabling Logging <logging>
    PyModbus Client Example <client>
+   library/index.rst
 
 Indices and tables
 ==================

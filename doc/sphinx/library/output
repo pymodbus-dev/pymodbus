@@ -1,0 +1,17 @@
+../../../pymodbus/bit_read_message.py
+../../../pymodbus/bit_write_message.py
+../../../pymodbus/datastore.py
+../../../pymodbus/device.py
+../../../pymodbus/diag_message.py
+../../../pymodbus/factory.py
+../../../pymodbus/file_message.py
+../../../pymodbus/interfaces.py
+../../../pymodbus/mexceptions.py
+../../../pymodbus/other_message.py
+../../../pymodbus/pdu.py
+../../../pymodbus/register_read_message.py
+../../../pymodbus/register_write_message.py
+../../../pymodbus/server.py
+../../../pymodbus/transaction.py
+../../../pymodbus/utilities.py
+../../../pymodbus/version.py

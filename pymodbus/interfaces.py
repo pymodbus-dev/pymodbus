@@ -1,6 +1,9 @@
 '''
-Contained is a collection of base classes that are used
-throughout the pymodbus library
+Pymodbus Interfaces
+---------------------
+
+A collection of base classes that are used throughout
+the pymodbus library.
 '''
 from zope.interface import Interface, Attribute
 
@@ -28,47 +31,48 @@ class IModbusFramer(Interface):
     '''
 
     def checkFrame():
-        '''
-        Check and decode the next frame Return true if we were successful
+        ''' Check and decode the next frame
+        @return True if we successful, False otherwise
         '''
 
     def advanceFrame():
-        '''
+        ''' Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
 
     def addToFrame(message):
-        '''
+        ''' Add the next message to the frame buffer
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
         @param message The most recent packet
         '''
 
     def isFrameReady():
-        '''
+        ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
+        @return True if ready, False otherwise
         '''
 
     def getFrame():
-        '''
-        Return the next frame from the buffered data
+        ''' Get the next frame from the buffer
+        @return The frame data or ''
         '''
 
     def populateResult(result):
-        '''
-        Populates the modbus result with the transport specific header
-        information (pid, tid, uid, checksum, etc)
+        ''' Populates the modbus result with current frame header
+        We basically copy the data back over from the current header
+        to the result header. This may not be needed for serial messages.
         @param result The response packet
         '''
 
     def buildPacket(message):
-        '''
-        Creates a ready to send modbus packet from a modbus request/response
-        unencoded message.
+        ''' Creates a ready to send modbus packet
+        Built off of a  modbus request/response
         @param message The request/response to send
+        @return The built packet
         '''
 
 __all__ = ['Singleton', 'IModbusFramer']

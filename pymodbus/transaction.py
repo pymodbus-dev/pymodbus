@@ -1,3 +1,5 @@
+""" Collection of transaction based abstractions
+"""
 from zope.interface import implements
 from pymodbus import interfaces
 from pymodbus.utilities import computeCRC, computeLRC
@@ -163,7 +165,7 @@ class ModbusTCPFramer:
         return False
 
     def advanceFrame(self):
-        '''
+        ''' Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
@@ -172,9 +174,10 @@ class ModbusTCPFramer:
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
 
     def isFrameReady(self):
-        '''
+        ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
+        @return True if ready, False otherwise
         '''
         return len(self.__buffer) > self.__hsize
 
@@ -230,11 +233,22 @@ class ModbusTCPFramer:
 # wait of 1.5 characters at any point, we must trigger an error message.
 # Also, it appears as though this message is little endian.
 #
-#  read until stream == ':':
-#    buffer until stream waits for 3.5
-#    check for errors
-#    decode
+#  block-on-read:
+#      read until 3.5 delay
+#      check for errors
+#      decode
 #
+#---------------------------------------------------------------------------#
+#  Baud  1.5c (18 bits)   3.5c (38 bits)
+#---------------------------------------------------------------------------#
+#  1200   13333.3 us       31666.7 us
+#  4800    3333.3 us        7916.7 us
+#  9600    1666.7 us        3958.3 us
+# 19200     833.3 us        1979.2 us
+# 38400     416.7 us         989.6 us
+#---------------------------------------------------------------------------#
+# 1 Byte = start + 8 bits + parity + stop = 11 bits
+# (1/Baud)(bits) = delay seconds
 #---------------------------------------------------------------------------#
 class ModbusRTUFramer:
     '''
@@ -257,7 +271,7 @@ class ModbusRTUFramer:
         return False
 
     def advanceFrame(self):
-        '''
+        ''' Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
@@ -266,9 +280,10 @@ class ModbusRTUFramer:
         self.__header = {'crc':0x0000, 'len':0}
 
     def isFrameReady(self):
-        '''
+        ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
+        @return True if ready, False otherwise
         '''
         return len(self.__buffer) > 1
 
@@ -281,8 +296,8 @@ class ModbusRTUFramer:
         self.__buffer += message
 
     def getFrame(self):
-        '''
-        Return the next frame from the buffered data
+        ''' Get the next frame from the buffer
+        @return The frame data or ''
         '''
         return self.__buffer[:self.__header['len'] - 2]
 
@@ -292,7 +307,7 @@ class ModbusRTUFramer:
         information (pid, tid, uid, checksum, etc)
         @param result The response packet
         '''
-        pass
+        pass # no header for serial
 
     def buildPacket(self, message):
         '''
@@ -343,8 +358,8 @@ class ModbusASCIIFramer:
         self.__header = {'lrc':0x0000, 'len':0}
 
     def checkFrame(self):
-        '''
-        Check and decode the next frame Return true if we were successful
+        ''' Check and decode the next frame
+        @return True if we successful, False otherwise
         '''
         start = self.__buffer.find(':')
         if start == -1: return False
@@ -361,7 +376,7 @@ class ModbusASCIIFramer:
         return False
 
     def advanceFrame(self):
-        '''
+        ''' Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
@@ -370,14 +385,15 @@ class ModbusASCIIFramer:
         self.__header = {'lrc':0x0000, 'len':0}
 
     def isFrameReady(self):
-        '''
+        ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
+        @return True if ready, False otherwise
         '''
         return len(self.__buffer) > 1
 
     def addToFrame(self, message):
-        '''
+        ''' Add the next message to the frame buffer
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
         @param message The most recent packet
@@ -385,24 +401,22 @@ class ModbusASCIIFramer:
         self.__buffer += message
 
     def getFrame(self):
-        '''
-        Return the next frame from the buffered data
+        ''' Get the next frame from the buffer
+        @return The frame data or ''
         '''
         return self.__buffer[1:self.__header['len']]
 
     def populateResult(self, result):
-        '''
-        Populates the modbus result with the transport specific header
-        information (checksum)
+        ''' Populates the modbus result with current frame header
         @param result The response packet
         '''
-        pass
+        pass # no header for serial
 
     def buildPacket(self, message):
-        '''
-        Creates a ready to send modbus packet from a modbus request/response
-        unencoded message.
+        ''' Creates a ready to send modbus packet
+        Built off of a  modbus request/response
         @param message The request/response to send
+        @return The built packet
         '''
         data   = message.encode()
         packet = struct.pack('>BB',

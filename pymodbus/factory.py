@@ -1,12 +1,17 @@
-'''
-The following implement modbus decoder factories
+"""
+Modbus Request/Response Decoder Factories
+-------------------------------------------
 
-  * decodeModbusResponsePdu:
-    decodes a modbus response message or returns an error response
+decodeModbusResponsePdu
 
-  * decodeModbusRequestPdu:
-    decodes a modbus request message or returns an illegal request message
-'''
+    Decodes a modbus response message from the list of currently
+    implemented messages or returns an error response.
+
+decodeModbusRequestPdu:
+
+    Decodes a modbus request message from the list of currently
+    implemented messages or returns an illegal request message.
+"""
 
 from pdu import IllegalFunctionRequest
 from pdu import ExceptionResponse

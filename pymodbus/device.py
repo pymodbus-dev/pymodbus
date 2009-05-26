@@ -1,10 +1,11 @@
-'''
+"""
 Modbus Device Controller
+-------------------------
 
 These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
-'''
+"""
 from pymodbus.interfaces import Singleton
 
 #---------------------------------------------------------------------------#

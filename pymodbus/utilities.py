@@ -3,8 +3,7 @@ Extra utilites that do not neccessarily require a class
 '''
 
 def packBitsToString(bits):
-    '''
-    Creates a string out of an array of bits
+    ''' Creates a string out of an array of bits
     @param bits A bit array
 
     example:
@@ -25,8 +24,7 @@ def packBitsToString(bits):
     return ret
 
 def unpackBitsFromString(string):
-    '''
-    Creates bit array out of a string
+    ''' Creates bit array out of a string
     @param string The modbus data packet to decode
 
     example:
@@ -46,6 +44,8 @@ def unpackBitsFromString(string):
 # Error Detection Functions
 #---------------------------------------------------------------------------#
 def __generate_crc16_table():
+    """ Generates the crc16 lookup table
+    """
     result = []
     for byte in range(256):
         crc = 0x0000
@@ -59,10 +59,9 @@ def __generate_crc16_table():
 __crc16_table = __generate_crc16_table()
 
 def computeCRC(data):
-    '''
-    Computes a crc16 on the passed in data. The difference between modbus's
-    crc16 and a normal crc16 is that modbus starts the crc value out at
-    0xffff.
+    ''' Computes a crc16 on the passed in data.
+    The difference between modbus's crc16 and a normal crc16
+    is that modbus starts the crc value out at 0xffff.
     @param data The data to create a crc16 of
 
     Accepts a string or a integer list
@@ -76,16 +75,14 @@ def computeCRC(data):
     return crc
 
 def checkCRC(data, check):
-    '''
-    Checks if the data matches the passed in CRC
+    ''' Checks if the data matches the passed in CRC
     @param data The data to create a crc16 of
     @param check The CRC to validate
     '''
     return computeCRC(data) == check
 
 def computeLRC(data):
-    '''
-    Wrapper to computer LRC of multiple types of data
+    ''' Wrapper to computer LRC of multiple types of data
     @param data The data to apply a lrc to
 
     Accepts a string or a integer list
@@ -98,14 +95,16 @@ def computeLRC(data):
     return lrc
 
 def checkLRC(data, check):
-    '''
-    Checks if the passed in data matches the LRC
+    ''' Checks if the passed in data matches the LRC
     @param data The data to calculate
     @param check The LRC to validate
     '''
     return computeLRC(data) == check
 
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
 __all__ = [
-        'packBitsToString', 'unpackBitsFromString', 'computeCRC',
-        'checkCRC', 'computeLRC', 'checkLRC'
+        'packBitsToString', 'unpackBitsFromString',
+        'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
 ]

@@ -1,47 +1,58 @@
-'''
-Implementation of a modbus client using Twisted
+"""
+Implementation of a Modbus Client Using Twisted
+--------------------------------------------------
 
 This attempts to fire off requets in succession so as to work as fast as
 possible, but still refrain from overloading the remote device (usually
-very mediocre in hardware)
+very mediocre in hardware).
 
-Example Run:
-def clientTest():
+Example Run::
+
+    def clientTest():
         requests = [ ReadCoilsRequest(0,99) ]
         p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-
-if __name__ == "__main__":
-        reactor.callLater(1, clientTest)
-        reactor.run()
+    
+    if __name__ == "__main__":
+       reactor.callLater(1, clientTest)
+       reactor.run()
 
 What follows is a quick layout of the client logic:
-  1. Build request array and instantiate a client factory
-  2. Defer it until the reactor is running
-  3. Upon connection, instantiate the producer and pass it
+
+  #. Build request array and instantiate a client factory
+  #. Defer it until the reactor is running
+  #. Upon connection, instantiate the producer and pass it
+
      * A handle to the transport
      * A handle to the request array
      * A handle to a sent request handler
      * A handle to the current framing object
-  4. It then sends a request and waits
-  ...
-  5. The protocol recieves data and processes its frame
+
+  #. It then sends a request and waits
+  #..
+  #. The protocol recieves data and processes its frame
+
      * If we have a valid frame, we decode it and add the result(7)
      * Otherwise we continue(6)
-  6. Afterwards, we instruct the producer to send the next request
-  ...
-  7. Upon adding a result
+
+  #. Afterwards, we instruct the producer to send the next request
+  #. <work with data>
+  #. Upon adding a result
+
      * The factory uses the handler object to translate the TID to a request
          * Using the request paramaters, we corretly store the resulting data
          * Each result is put into the appropriate store
-  7. When all the requests have been processed
+
+  #. When all the requests have been processed
+
      * we stop the producer
          * disconnect the protocol
          * return the factory results
 
-TODO
+TODO:
+
   * Build a repeated request producer?
   * Simplify request <-> response linking
-'''
+"""
 from zope.interface import implements
 
 from twisted.internet.protocol import Protocol, ClientFactory
@@ -58,7 +69,6 @@ import struct
 import logging
 _logger = logging.getLogger('pymodbus.client')
 
-
 #---------------------------------------------------------------------------#
 # Client Producer/Consumer
 #---------------------------------------------------------------------------#
@@ -71,8 +81,7 @@ class ModbusMessageProducer:
     __tid = 0
 
     def __init__(self, consumer, requests, handler, framer):
-        '''
-        Sets up the producer to begin sending requests
+        ''' Sets up the producer to begin sending requests
         @param consumer The consuming protocol to register with
         @param requests Initialize the request list
         @param handler We copy each message so we know what we were requesting
@@ -87,8 +96,7 @@ class ModbusMessageProducer:
             self.consumer.registerProducer(self, False)
 
     def resumeProducing(self):
-        '''
-        Starts the producer to send the next request to
+        ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
         if self.requests:
@@ -104,8 +112,7 @@ class ModbusMessageProducer:
         self.consumer.unregisterProducer()
 
     def __getNextTID(self):
-        '''
-        Used internally to handle the transaction identifiers
+        ''' Used internally to handle the transaction identifiers.
         As the transaction identifier is represented with two
         bytes, the highest TID is 0xffff
         '''
@@ -120,8 +127,7 @@ class ModbusClientProtocol(Protocol):
     ''' Implements a modbus client in twisted '''
 
     def __init__(self):
-        '''
-        Initializes the framer module
+        ''' Initializes the framer module
         '''
         self.done = False
         self.framer = ModbusTCPFramer()
@@ -172,8 +178,7 @@ class ModbusClientProtocol(Protocol):
     #       return self.transport.write(self.framer.buildPacket(message))
 
     def decode(self, message):
-        '''
-        Wrapper to decode a resulting packet
+        ''' Wrapper to decode a resulting packet
         @param message The raw packet to decode
         '''
         try:
@@ -191,8 +196,7 @@ class ModbusClientFactory(ClientFactory):
     protocol = ModbusClientProtocol
 
     def __init__(self, requests=None, results=None):
-        '''
-        Initializes a transaction to a modbus server
+        ''' Initializes a transaction to a modbus server
         @param requests A list of requests to send to server
         '''
         self.handler = {}
@@ -215,15 +219,13 @@ class ModbusClientFactory(ClientFactory):
     #       return p
 
     def startedConnecting(self, connector):
-        '''
-        Initiated on protocol connection start
+        ''' Initiated on protocol connection start
         @param connector The connection handler
         '''
         _logger.debug("Client Connection Made")
 
     def clientConnectionLost(self, connector, reason):
-        '''
-        If we still have pending requets, reconnect
+        ''' If we still have pending requets, reconnect
         @param connector The connection handler
         @param reason The reason for a disconnection
         '''
@@ -235,8 +237,7 @@ class ModbusClientFactory(ClientFactory):
 
 
     def clientConnectionFailed(self, connector, reason):
-        '''
-        If this happens, alert the user
+        ''' If this happens, alert the user
         @param connector The connection handler
         @param reason The reason for a disconnection
         '''
@@ -266,3 +267,11 @@ class ModbusClientFactory(ClientFactory):
             else: pass
             del self.handler[response.transaction_id].address
         except KeyError: pass
+
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ModbusMessageProducer",
+    "ModbusClientProtocol", "ModbusClientFactory",
+]

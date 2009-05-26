@@ -1,5 +1,6 @@
-'''
+"""
 Modbus Server Datastore
+-------------------------
 
 For each server, you will create a ModbusServerContext and pass
 in the default address space for each data access.  The class
@@ -8,20 +9,21 @@ will create and manage the data.
 Further modification of said data accesses should be performed
 with [get,set][access]Values(address, count)
 
-
-
 Datastore Implementation
+-------------------------
 
 There are two ways that the server datastore can be implemented.
 The first is a complete range from 'address' start to 'count'
-number of indecies.  This can be thought of as a straight array:
-        data = range(1, 1 + count)
-        [1,2,3,...,count]
+number of indecies.  This can be thought of as a straight array::
+
+    data = range(1, 1 + count)
+    [1,2,3,...,count]
 
 The other way that the datastore can be implemented (and how
-many devices implement it) is a associate-array:
-        data = {1:'1', 3:'3', ..., count:'count'}
-        [1,3,...,count]
+many devices implement it) is a associate-array::
+
+    data = {1:'1', 3:'3', ..., count:'count'}
+    [1,3,...,count]
 
 The difference between the two is that the latter will allow
 arbitrary gaps in its datastore while the former will not.
@@ -30,11 +32,11 @@ What follows is a clear example from the field:
 
 Say a company makes two devices to monitor power usage on a rack.
 One works with three-phase and the other with a single phase. The
-company will dictate a modbus data mapping such that registers
+company will dictate a modbus data mapping such that registers::
 
-        n:              phase 1 power
-        n+1:    phase 2 power
-        n+2:    phase 3 power
+    n:              phase 1 power
+    n+1:    phase 2 power
+    n+2:    phase 3 power
 
 Using this, layout, the first device will implement n, n+1, and n+2,
 however, the second device may set the latter two values to 0 or
@@ -42,8 +44,8 @@ will simply not implmented the registers thus causing a single read
 or a range read to fail.
 
 I have both methods implemented, and leave it up to the user to change
-based on their preference
-'''
+based on their preference.
+"""
 from pymodbus.mexceptions import *
 import logging;
 _logger = logging.getLogger("pymodbus.protocol")
@@ -271,4 +273,10 @@ class ModbusServerContext:
         _logger.debug("setValues[%d] %d:%d" % (fx, address, count))
         return self.__mapping[fx].setValues(address, values)
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ModbusSequentialDataBlock", "ModbusSparseDataBlock",
+    "ModbusServerContext",
+]

@@ -1,5 +1,6 @@
 '''
-Diagnostic record read/write
+Diagnostic Record Read/Write
+------------------------------
 
 These need to be tied into a the current server context
 or linked to the appropriate data

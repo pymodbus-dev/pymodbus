@@ -1,10 +1,12 @@
 '''
-Implements a twisted modbus server.
+Implementation of a Twisted Modbus Server
+------------------------------------------
 
-Example run:
-        context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-        reactor.listenTCP(502, ModbusServerFactory(context))
-        reactor.run()
+Example run::
+
+    context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
+    reactor.listenTCP(502, ModbusServerFactory(context))
+    reactor.run()
 '''
 from twisted.internet.protocol import Protocol, ServerFactory
 from twisted.internet import reactor
@@ -136,3 +138,10 @@ class ModbusServerFactory(ServerFactory):
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity = identity
+
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ModbusProtocol", "ModbusServerFactory",
+]

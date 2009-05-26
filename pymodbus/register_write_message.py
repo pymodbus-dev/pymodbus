@@ -161,4 +161,10 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     def __str__(self):
         return "WriteNRegisterResponse (%d,%d)" % (self.address, self.count)
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "WriteSingleRegisterRequest", "WriteSingleRegisterResponse",
+    "WriteMultipleRegistersRequest", "WriteMultipleRegistersResponse",
+]

@@ -1,8 +1,9 @@
-'''
+"""
 Bit Writing Request/Response
+------------------------------
 
 TODO write mask request/response
-'''
+"""
 
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
@@ -226,4 +227,10 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     def __str__(self):
         return "WriteNCoilResponse(%d,%d)" % (self.address, self.count)
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "WriteSingleCoilRequest", "WriteSingleCoilResponse",
+    "WriteMultipleCoilsRequest", "WriteMultipleCoilsResponse",
+]

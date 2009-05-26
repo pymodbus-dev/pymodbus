@@ -234,4 +234,11 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     def __str__(self):
         return "ReadWriteNRegisterResponse", self.rregisters
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ReadHoldingRegistersRequest", "ReadHoldingRegistersResponse",
+    "ReadInputRegistersRequest", "ReadInputRegistersResponse",
+    "ReadWriteMultipleRegistersRequest", "ReadWriteMultipleRegistersResponse",
+]

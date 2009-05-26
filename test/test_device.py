@@ -9,20 +9,20 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def setUp(self):
         info = {
-                0x00: 'Bashwork',                               # VendorName
-                0x01: 'PTM',                                    # ProductCode
-                0x02: '1.0',                                    # MajorMinorRevision
+                0x00: 'Bashwork',               # VendorName
+                0x01: 'PTM',                    # ProductCode
+                0x02: '1.0',                    # MajorMinorRevision
                 0x03: 'http://internets.com',   # VendorUrl
-                0x04: 'pymodbus',                               # ProductName
-                0x05: 'bashwork',                               # ModelName
-                0x06: 'unittest',                               # UserApplicationName
-                0x07: 'x',                                              # reserved
-                0x08: 'x',                                              # reserved
-                0x10: 'private'                                 # private data
+                0x04: 'pymodbus',               # ProductName
+                0x05: 'bashwork',               # ModelName
+                0x06: 'unittest',               # UserApplicationName
+                0x07: 'x',                      # reserved
+                0x08: 'x',                      # reserved
+                0x10: 'private'                 # private data
         }
-        self.ident = ModbusDeviceIdentification(info)
+        self.ident   = ModbusDeviceIdentification(info)
         self.control = ModbusControlBlock()
-        self.access = ModbusAccessControl()
+        self.access  = ModbusAccessControl()
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -32,22 +32,22 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testBasicCommands(self):
         ''' Test device identification reading '''
-        self.assertTrue(str(self.ident) == "DeviceIdentity")
-        self.assertTrue(str(self.control) == "ModbusControl")
+        self.assertEqual(str(self.ident),   "DeviceIdentity")
+        self.assertEqual(str(self.control), "ModbusControl")
 
     def testModbusDeviceIdentificationGet(self):
         ''' Test device identification reading '''
-        self.assertTrue(self.ident[0x00] == 'Bashwork')
-        self.assertTrue(self.ident[0x01] == 'PTM')
-        self.assertTrue(self.ident[0x02] == '1.0')
-        self.assertTrue(self.ident[0x03] == 'http://internets.com')
-        self.assertTrue(self.ident[0x04] == 'pymodbus')
-        self.assertTrue(self.ident[0x05] == 'bashwork')
-        self.assertTrue(self.ident[0x06] == 'unittest')
-        self.assertTrue(self.ident[0x07] == 'x')
-        self.assertTrue(self.ident[0x08] == 'x')
-        self.assertTrue(self.ident[0x10] == 'private')
-        self.assertTrue(self.ident[0x54] == '')
+        self.assertEqual(self.ident[0x00], 'Bashwork')
+        self.assertEqual(self.ident[0x01], 'PTM')
+        self.assertEqual(self.ident[0x02], '1.0')
+        self.assertEqual(self.ident[0x03], 'http://internets.com')
+        self.assertEqual(self.ident[0x04], 'pymodbus')
+        self.assertEqual(self.ident[0x05], 'bashwork')
+        self.assertEqual(self.ident[0x06], 'unittest')
+        self.assertEqual(self.ident[0x07], 'x')
+        self.assertEqual(self.ident[0x08], 'x')
+        self.assertEqual(self.ident[0x10], 'private')
+        self.assertEqual(self.ident[0x54], '')
 
     def testModbusDeviceIdentificationSet(self):
         ''' Test a device identification writing '''
@@ -56,19 +56,19 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.ident[0x10] = 'public'
         self.ident[0x54] = 'testing'
 
-        self.assertFalse(self.ident[0x07] == 'y')
-        self.assertFalse(self.ident[0x08] == 'y')
-        self.assertTrue(self.ident[0x10] == 'public')
-        self.assertTrue(self.ident[0x54] == 'testing')
+        self.assertNotEqual('y', self.ident[0x07])
+        self.assertNotEqual('y', self.ident[0x08])
+        self.assertEqual('public', self.ident[0x10])
+        self.assertEqual('testing', self.ident[0x54])
 
     def testModbusControlBlockAsciiModes(self):
         ''' Test a server control block ascii mode '''
-        self.assertTrue(id(self.control) == id(ModbusControlBlock()))
+        self.assertEqual(id(self.control), id(ModbusControlBlock()))
         self.control.Identity = self.ident
         self.control.setMode('RTU')
-        self.assertTrue(self.control.getMode() == 'RTU')
+        self.assertEqual('RTU', self.control.getMode())
         self.control.setMode('FAKE')
-        self.assertFalse(self.control.getMode() == 'FAKE')
+        self.assertNotEqual('FAKE', self.control.getMode())
 
     def testModbusControlBlockInvalidCounters(self):
         ''' Tests querying invalid MCB counters methods '''
@@ -78,40 +78,52 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusControlBlockCounters(self):
         ''' Tests the MCB counters methods '''
-        self.assertTrue(self.control.getCounter("BusMessage") == 0)
+        self.assertEqual(0, self.control.getCounter("BusMessage"))
         for i in range(10):
             self.control.incrementCounter("BusMessage")
             self.control.incrementCounter("SlaveMessage")
-        self.assertTrue(self.control.getCounter("BusMessage") == 10)
+        self.assertEqual(10, self.control.getCounter("BusMessage"))
         self.control.resetCounter("BusMessage")
-        self.assertTrue(self.control.getCounter("BusMessage") == 0)
-        self.assertTrue(self.control.getCounter("SlaveMessage") == 10)
+        self.assertEqual(0,  self.control.getCounter("BusMessage"))
+        self.assertEqual(10, self.control.getCounter("SlaveMessage"))
         self.control.resetAllCounters()
-        self.assertTrue(self.control.getCounter("SlaveMessage") == 0)
+        self.assertEqual(0, self.control.getCounter("SlaveMessage"))
+
+    def testModbusControlBlockCounterSummary(self):
+        ''' Tests retrieving the current counter summary '''
+        self.assertEqual(0x00, self.control.getCounterSummary())
+        for i in range(10):
+            self.control.incrementCounter("BusMessage")
+            self.control.incrementCounter("SlaveMessage")
+            self.control.incrementCounter("SlaveNAK")
+            self.control.incrementCounter("BusCharacterOverrun")
+        self.assertEqual(0xe2, self.control.getCounterSummary())
+        self.control.resetAllCounters()
+        self.assertEqual(0x00, self.control.getCounterSummary())
 
     def testModbusControlBlockListen(self):
         ''' Tests the MCB listen flag methods '''
-        self.assertTrue(self.control.isListenOnly() == False)
+        self.assertEqual(self.control.isListenOnly(), False)
         self.control.toggleListenOnly()
-        self.assertTrue(self.control.isListenOnly() == True)
+        self.assertEqual(self.control.isListenOnly(), True)
 
     def testModbusControlBlockDelimiter(self):
         ''' Tests the MCB delimiter setting methods '''
-        self.assertTrue(self.control.getDelimiter() == '\r')
+        self.assertEqual(self.control.getDelimiter(), '\r')
         self.control.setDelimiter('=')
-        self.assertTrue(self.control.getDelimiter() == '=')
+        self.assertEqual(self.control.getDelimiter(), '=')
         self.control.setDelimiter(61)
-        self.assertTrue(self.control.getDelimiter() == '=')
+        self.assertEqual(self.control.getDelimiter(), '=')
 
     def testModbusControlBlockDiagnostic(self):
         ''' Tests the MCB delimiter setting methods '''
-        self.assertTrue(self.control.getDiagnosticRegister() == [False] * 16)
+        self.assertEqual([False] * 16, self.control.getDiagnosticRegister())
         for i in [1,3,4,6]:
             self.control.setDiagnostic({i:True});
-        self.assertTrue(self.control.getDiagnostic(1) == True)
-        self.assertTrue(self.control.getDiagnostic(2) == False)
+        self.assertEqual(True, self.control.getDiagnostic(1))
+        self.assertEqual(False, self.control.getDiagnostic(2))
         actual = [False, True, False, True, True, False, True] + [False] * 9
-        self.assertTrue(self.control.getDiagnosticRegister() == actual)
+        self.assertEqual(actual, self.control.getDiagnosticRegister())
         for i in range(16):
             self.control.setDiagnostic({i:False});
 

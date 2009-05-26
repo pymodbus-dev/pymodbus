@@ -18,10 +18,8 @@ class SimpleUtilityTest(unittest.TestCase):
 
     def testBitPacking(self):
         ''' Test all string <=> bit packing functions '''
-        self.assertTrue(unpackBitsFromString('\01U') == (self.bits,1),
-                "Bit unpack did not match")
-        self.assertTrue(packBitsToString(self.bits) == 'U',
-                "Bit pack did not match")
+        self.assertEqual(unpackBitsFromString('\01U'), (self.bits,1))
+        self.assertEqual(packBitsToString(self.bits), 'U')
 
     def testDataErrorChecking(self):
         ''' Test all error detection computations '''

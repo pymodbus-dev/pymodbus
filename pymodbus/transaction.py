@@ -1,6 +1,6 @@
 from zope.interface import implements
 from pymodbus import interfaces
-from pymodbus.utilities import computeCRC
+from pymodbus.utilities import computeCRC, computeLRC
 import struct
 
 import logging
@@ -9,19 +9,21 @@ _logger = logging.getLogger('pymodbus.protocol')
 #---------------------------------------------------------------------------#
 # TCP Transaction
 #---------------------------------------------------------------------------#
-# [         MBAP Header         ] [ Function Code] [ Data ]
-# [ tid ][ pid ][ length ][ uid ]
-#   2b     2b     2b        1b
-#
-# Transaction Identifier(tid) - identification of a rqst/rsp transaction
-# Protocol Identifier(pid) - identifies the protocol in use (0 = Modbus)
-# Length - Number of following bytes
-# Unit Identifier(uid) -  Identification of a remote slave on serial line
+# count = 0
+# do
+#   result = send(message)
+#   if (timeout or result == bad)
+#      count++
+#   else break
+# while (count < 3)
 #
 # Default port is tcp(502)
 #---------------------------------------------------------------------------#
 class ModbusTCPTransaction:
-    ''' Impelements a transaction for a tcp/ip request '''
+    ''' Impelements a transaction for a tcp/ip request
+
+    This is currently not used, although it should...
+    '''
 
     def __init__(self, request=None):
         '''
@@ -97,7 +99,7 @@ class ModbusTransactionManager(interfaces.Singleton):
         '''
         for k,v in enumerate(self.__transactions):
             if v.transaction_id == tid:
-                self.__transactions.remove(k)
+                del self.__transactions[k]
 
     def getNextTID(self):
         '''
@@ -111,10 +113,6 @@ class ModbusTransactionManager(interfaces.Singleton):
     def resetTID(self):
         ''' Resets the transaction identifier to 0 '''
         self.__tid = 0
-
-#---------------------------------------------------------------------------#
-# Modbus Frames
-#---------------------------------------------------------------------------#
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Message
@@ -144,14 +142,15 @@ class ModbusTCPFramer:
     def __init__(self):
         self.__buffer = ''
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
-        self.__hsize = 0x07
+        self.__hsize  = 0x07
 
     def checkFrame(self):
         '''
         Check and decode the next frame Return true if we were successful
         '''
         if len(self.__buffer) > self.__hsize:
-            self.__header['tid'], self.__header['pid'], self.__header['len'], self.__header['uid'] = struct.unpack(
+            self.__header['tid'], self.__header['pid'], \
+            self.__header['len'], self.__header['uid'] = struct.unpack(
                     '>HHHB', self.__buffer[0:self.__hsize])
 
             # someone sent us an error? ignore it
@@ -160,8 +159,7 @@ class ModbusTCPFramer:
             # we have at least a complete message, continue
             elif len(self.__buffer) >= self.__header['len']:
                 return True
-            # we don't have enough of a message yet, wait
-            else: pass
+        # we don't have enough of a message yet, wait
         return False
 
     def advanceFrame(self):
@@ -189,8 +187,8 @@ class ModbusTCPFramer:
         self.__buffer += message
 
     def getFrame(self):
-        '''
-        Return the next frame from the buffered data
+        ''' Return the next frame from the buffered data
+        @return The next full frame buffer
         '''
         return self.__buffer[self.__hsize:self.__hsize +
                 self.__header['len'] - 1]
@@ -247,26 +245,15 @@ class ModbusRTUFramer:
 
     def __init__(self):
         self.__buffer = ''
-        self.__header = {'crc':0x0000, 'uid':0, 'len':0}
-        self.__end = '\x0d\x0a'
-        self.__start = '\x3a'
+        self.__header = {'crc':0x0000, 'len':0}
+        self.__end    = '\x0d\x0a'
+        self.__start  = '\x3a'
 
     def checkFrame(self):
         '''
         Check and decode the next frame Return true if we were successful
         '''
-        if len(self.__buffer) > 1:#self.__hsize:
-            #self.__header['uid'] = struct.unpack(
-            #       '>xHHB', self.__buffer[0:self.__hsize])
-
-            # someone sent us an error? ignore it
-            if self.__header['len'] < 2:
-                self.advanceFrame()
-            # we have at least a complete message, continue
-            elif len(self.__buffer) >= self.__header['len']:
-                return True
-            # we don't have enough of a message yet, wait
-            else: pass
+        # i dunno yet
         return False
 
     def advanceFrame(self):
@@ -275,15 +262,15 @@ class ModbusRTUFramer:
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        self.__buffer = 0#self.__buffer[self.__hsize + self.__header['len'] - 1:]
-        self.__header = {'crc':0x0000, 'uid':0, 'len':0}
+        self.__buffer = self.__buffer[-1:]
+        self.__header = {'crc':0x0000, 'len':0}
 
     def isFrameReady(self):
         '''
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
         '''
-        return len(self.__buffer) > 1#self.__hsize
+        return len(self.__buffer) > 1
 
     def addToFrame(self, message):
         '''
@@ -297,7 +284,7 @@ class ModbusRTUFramer:
         '''
         Return the next frame from the buffered data
         '''
-        return self.__buffer[1:1 + self.__header['len'] - 1]
+        return self.__buffer[:self.__header['len'] - 2]
 
     def populateResult(self, result):
         '''
@@ -305,8 +292,7 @@ class ModbusRTUFramer:
         information (pid, tid, uid, checksum, etc)
         @param result The response packet
         '''
-        result.crc = self.__header['crc']
-        result.uid = self.__header['uid']
+        pass
 
     def buildPacket(self, message):
         '''
@@ -342,6 +328,9 @@ class ModbusRTUFramer:
 #    decode
 #
 #---------------------------------------------------------------------------#
+# @todo This is actually being encoded as binary instead of ascii, so
+#       I need to fix that. I need to re-read the spec.
+#---------------------------------------------------------------------------#
 class ModbusASCIIFramer:
     '''
     Modbus ASCII Frame controller
@@ -351,24 +340,24 @@ class ModbusASCIIFramer:
 
     def __init__(self):
         self.__buffer = ''
-        self.__header = {'lrc':0x0000, 'uid':0, 'len':0}
+        self.__header = {'lrc':0x0000, 'len':0}
 
     def checkFrame(self):
         '''
         Check and decode the next frame Return true if we were successful
         '''
-        if len(self.__buffer) > 1:#self.__hsize:
-            #self.__header['uid'] = struct.unpack(
-            #       '>x2s', self.__buffer[0:self.__hsize])
+        start = self.__buffer.find(':')
+        if start == -1: return False
+        # go ahead and skip old bad data
+        if start > 0 :
+            self.__buffer = self.__buffer[start:]
 
-            # someone sent us an error? ignore it
-            if self.__header['len'] < 2:
-                self.advanceFrame()
-            # we have at least a complete message, continue
-            elif len(self.__buffer) >= self.__header['len']:
-                return True
-            # we don't have enough of a message yet, wait
-            else: pass
+        end = self.__buffer.find('\r\n')
+        if (end != -1):
+            self.__header['len'] = end
+            self.__header['lrc'] = struct.unpack(">H", self.__buffer[end-2:end])
+            # if correct lrc
+            return True
         return False
 
     def advanceFrame(self):
@@ -377,15 +366,15 @@ class ModbusASCIIFramer:
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        self.__buffer = self.__buffer[1 + self.__header['len'] - 1:]
-        self.__header = {'lrc':0x0000, 'uid':0, 'len':0}
+        self.__buffer = self.__buffer[self.__header['len'] + 2:]
+        self.__header = {'lrc':0x0000, 'len':0}
 
     def isFrameReady(self):
         '''
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
         '''
-        return len(self.__buffer) > 1#self.__hsize
+        return len(self.__buffer) > 1
 
     def addToFrame(self, message):
         '''
@@ -399,16 +388,15 @@ class ModbusASCIIFramer:
         '''
         Return the next frame from the buffered data
         '''
-        return self.__buffer[1:1 + self.__header['len'] - 1]
+        return self.__buffer[1:self.__header['len']]
 
     def populateResult(self, result):
         '''
         Populates the modbus result with the transport specific header
-        information (pid, tid, uid, checksum, etc)
+        information (checksum)
         @param result The response packet
         '''
-        result.crc = self.__header['crc']
-        result.uid = self.__header['uid']
+        pass
 
     def buildPacket(self, message):
         '''
@@ -416,9 +404,17 @@ class ModbusASCIIFramer:
         unencoded message.
         @param message The request/response to send
         '''
-        data = message.encode()
+        data   = message.encode()
         packet = struct.pack('>BB',
-                message.unit_id,
-                message.function_code) + data
-        packet = packet + struct.pack(">H", computeLRC(packet))
+            message.unit_id, message.function_code) + data
+        packet = ':' + packet + struct.pack(">H",
+                computeLRC(packet)) + '\r\n'
         return packet
+
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ModbusTCPTransaction", "ModbusTransactionManager",
+    "ModbusTCPFramer", "ModbusRTUFramer", "ModbusASCIIFramer",
+]

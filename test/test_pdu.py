@@ -38,18 +38,17 @@ class SimplePduTest(unittest.TestCase):
 
         result = self.exception.encode()
         self.exception.decode(result)
-        self.assertTrue(result == '\x01',
-                "ExceptionResponse encoded incorrectly")
-        self.assertTrue(self.exception.exception_code == 1,
-                "ExceptionResponse decoded incorrectly")
+        self.assertEqual(result, '\x01')
+        self.assertEqual(self.exception.exception_code, 1)
 
     def testRequestExceptionFactory(self):
         ''' Test all error methods '''
         request = ModbusRequest()
         request.function_code = 1
-        for error in [getattr(ModbusExceptions, i) for i in dir(ModbusExceptions) if '__' not in i]:
+        for error in [getattr(ModbusExceptions, i)
+            for i in dir(ModbusExceptions) if '__' not in i]:
             result = request.doException(error)
-            self.assertTrue(str(result) == "Exception Response (129, %d)" % error)
+            self.assertEqual(str(result), "Exception Response (129, %d)" % error)
 
 #---------------------------------------------------------------------------#
 # Main

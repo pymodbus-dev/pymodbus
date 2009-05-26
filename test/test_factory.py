@@ -11,50 +11,50 @@ class SimpleFactoryTest(unittest.TestCase):
     def setUp(self):
         ''' Initializes the test environment '''
         self.request = (
-                (0x01, '\x01\x00\x01\x00\x01'),                 # read coils
-                (0x02, '\x02\x00\x01\x00\x01'),                 # read discrete inputs
-                (0x03, '\x03\x00\x01\x00\x01'),                 # read holding registers
-                (0x04, '\x04\x00\x01\x00\x01'),                 # read input registers
-                (0x05, '\x05\x00\x01\x00\x01'),                 # write single coil
-                (0x06, '\x06\x00\x01\x00\x01'),                 # write single register
-                #(0x07, '\x07'),                                                # read exception status
-                #(0x08, '\x08\x00\x00'),                                # read diagnostic
-                #(0x0b, '\x0b'),                                                # get comm event counters
-                #(0x0c, '\x0c'),                                                # get comm event log
-                #(0x0f, '\x0f\x00\x01\x00\x08\x010\xff'),# write multiple coils
-                #(0x10, '\x10\x00\x01\x00\x02\x04\0xff\xff'),# write multiple registers
-                #(0x11, '\x11'),                                                # report slave id
-                #(0x14, '\x14'),                                                # read file record
-                #(0x15, '\x15'),                                                # write file record
-                #(0x16, '\x16\x00\x01\x00\xff\xff\x00'),# mask write register
+                (0x01, '\x01\x00\x01\x00\x01'),                       # read coils
+                (0x02, '\x02\x00\x01\x00\x01'),                       # read discrete inputs
+                (0x03, '\x03\x00\x01\x00\x01'),                       # read holding registers
+                (0x04, '\x04\x00\x01\x00\x01'),                       # read input registers
+                (0x05, '\x05\x00\x01\x00\x01'),                       # write single coil
+                (0x06, '\x06\x00\x01\x00\x01'),                       # write single register
+                #(0x07, '\x07'),                                      # read exception status
+                #(0x08, '\x08\x00\x00'),                              # read diagnostic
+                #(0x0b, '\x0b'),                                      # get comm event counters
+                #(0x0c, '\x0c'),                                      # get comm event log
+                #(0x0f, '\x0f\x00\x01\x00\x08\x010\xff'),             # write multiple coils
+                #(0x10, '\x10\x00\x01\x00\x02\x04\0xff\xff'),         # write multiple registers
+                #(0x11, '\x11'),                                      # report slave id
+                #(0x14, '\x14'),                                      # read file record
+                #(0x15, '\x15'),                                      # write file record
+                #(0x16, '\x16\x00\x01\x00\xff\xff\x00'),              # mask write register
                 #(0x17, '\x17\x00\x01\x00\x01\x00\x01\x00\x01\x02\x12\x34'),# read/write multiple registers
-                #(0x2b, '\x2b\x0e\x01\x00'),                    # read device identification
+                #(0x2b, '\x2b\x0e\x01\x00'),                          # read device identification
         )
 
         self.response = (
-                (0x01, '\x01\x01\x01'),                                 # read coils
-                (0x02, '\x02\x01\x01'),                                 # read discrete inputs
-                (0x03, '\x03\x02\x01\x01'),                             # read holding registers
-                (0x04, '\x04\x02\x01\x01'),                             # read input registers
-                (0x05, '\x05\x00\x01\x00\x01'),                 # write single coil
-                (0x06, '\x06\x00\x01\x00\x01'),                 # write single register
-                #(0x07, '\x07\x00'),                                    # read exception status
-                #(0x08, '\x08\x00\x00'),                                # read diagnostic
-                #(0x0b, '\x0b\x00\x00\x00\x00'),                # get comm event counters
-                #(0x0c, '\x0c\x08\x00\x00\x01\x08\x01\x21\x20\x00'),# get comm event log
-                #(0x0f, '\x0f\x00\x01\x00\x08'),                # write multiple coils
-                #(0x10, '\x10\x00\x01\x00\x02'),                # write multiple registers
-                #(0x11, '\x11\x03\x05\x01\x54'),                # report slave id (device specific)
-                #(0x14, '\x14'),                                                # read file record
-                #(0x15, '\x15'),                                                # write file record
-                #(0x16, '\x16\x00\x01\x00\xff\xff\x00'),# mask write register
-                #(0x17, '\x17\x02\x12\x34'),                    # read/write multiple registers
+                (0x01, '\x01\x01\x01'),                               # read coils
+                (0x02, '\x02\x01\x01'),                               # read discrete inputs
+                (0x03, '\x03\x02\x01\x01'),                           # read holding registers
+                (0x04, '\x04\x02\x01\x01'),                           # read input registers
+                (0x05, '\x05\x00\x01\x00\x01'),                       # write single coil
+                (0x06, '\x06\x00\x01\x00\x01'),                       # write single register
+                #(0x07, '\x07\x00'),                                  # read exception status
+                #(0x08, '\x08\x00\x00'),                              # read diagnostic
+                #(0x0b, '\x0b\x00\x00\x00\x00'),                      # get comm event counters
+                #(0x0c, '\x0c\x08\x00\x00\x01\x08\x01\x21\x20\x00'),  # get comm event log
+                #(0x0f, '\x0f\x00\x01\x00\x08'),                      # write multiple coils
+                #(0x10, '\x10\x00\x01\x00\x02'),                      # write multiple registers
+                #(0x11, '\x11\x03\x05\x01\x54'),                      # report slave id (device specific)
+                #(0x14, '\x14'),                                      # read file record
+                #(0x15, '\x15'),                                      # write file record
+                #(0x16, '\x16\x00\x01\x00\xff\xff\x00'),              # mask write register
+                #(0x17, '\x17\x02\x12\x34'),                          # read/write multiple registers
                 #(0x2b, '\x2b\x0e\x01\x01\0x00\0x00\x01\x00\x01\x77'),# read device identification
         )
 
         self.bad = (
-                (0x80, '\x80\x00\x00\x00'),             # Unknown Function
-                (0x81, '\x81\x00\x00\x00'),             # error message
+                (0x80, '\x80\x00\x00\x00'),                           # Unknown Function
+                (0x81, '\x81\x00\x00\x00'),                           # error message
         )
 
     def tearDown(self):
@@ -74,7 +74,7 @@ class SimpleFactoryTest(unittest.TestCase):
     def testResponseErrors(self):
         ''' Test a response factory decoder exceptions '''
         self.assertRaises(ModbusException, decodeRsp, self.bad[0][1])
-        self.assertTrue(decodeRsp(self.bad[1][1]).function_code == self.bad[1][0],
+        self.assertEqual(decodeRsp(self.bad[1][1]).function_code, self.bad[1][0],
                 "Failed to decode error PDU")
 
     def testRequestsWorking(self):
@@ -93,9 +93,9 @@ class SimpleFactoryTest(unittest.TestCase):
         ''' Test a request factory decoder exceptions '''
         for func, msg in self.bad:
             result = decodeRqst(msg)
-            self.assertTrue(result.ErrorCode == 1,
+            self.assertEqual(result.ErrorCode, 1,
                     "Failed to decode invalid requests")
-            self.assertTrue(result.execute(None).function_code == func,
+            self.assertEqual(result.execute(None).function_code, func,
                     "Failed to create correct response message")
 
 #---------------------------------------------------------------------------#

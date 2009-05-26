@@ -60,7 +60,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testDiagnosticRequests(self):
         ''' Testing diagnostic request messages encoding '''
         for msg,enc,exe in self.requests:
-            self.assertTrue(msg,msg().encode() == enc)
+            self.assertEqual(msg().encode(), enc)
 
     def testDiagnosticLoopbackRequest(self):
         ''' Testing diagnostic request messages encoding '''
@@ -70,12 +70,12 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testDiagnosticResponse(self):
         ''' Testing diagnostic request messages '''
         for msg,enc in self.responses:
-            self.assertTrue(msg,msg().encode() == enc)
+            self.assertEqual(msg().encode(), enc)
 
     def testDiagnosticExecute(self):
         ''' Testing diagnostic message execution '''
         for msg,enc,exe in self.requests:
-            self.assertTrue(msg().execute().encode() == exe)
+            self.assertEqual(msg().execute().encode(), exe)
 
 #---------------------------------------------------------------------------#
 # Main

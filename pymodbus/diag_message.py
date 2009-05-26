@@ -180,8 +180,6 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 01
 #---------------------------------------------------------------------------#
-# TODO check for listen only mode
-#---------------------------------------------------------------------------#
 class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     '''
     The remote device serial line port must be initialized and restarted, and
@@ -203,6 +201,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         '''
         Clear event log and restart
         '''
+        #if _MCB.isListenOnly():
         return RestartCommunicationsOptionResponse(self.message)
 
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
@@ -225,8 +224,6 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 02
 #---------------------------------------------------------------------------#
-# TODO check for listen only mode
-#---------------------------------------------------------------------------#
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
     '''
     The contents of the remote device's 16-bit diagnostic register are
@@ -235,6 +232,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
     sub_function_code = 0x0002
 
     def execute(self):
+        #if _MCB.isListenOnly():
         register = packBitsToString(_MCB.getDiagnosticRegister())
         return ReturnDiagnosticRegisterResponse(register)
 
@@ -288,6 +286,7 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
     sub_function_code = 0x0004
 
     def execute(self):
+        _MCB.toggleListenOnly()
         return ForceListenOnlyModeResponse()
 
 class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
@@ -548,4 +547,23 @@ class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''
     sub_function_code = 0x0014
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ReturnQueryDataRequest", "ReturnQueryDataResponse",
+    "RestartCommunicationsOptionRequest", "RestartCommunicationsOptionResponse",
+    "ReturnDiagnosticRegisterRequest", "ReturnDiagnosticRegisterResponse",
+    "ChangeAsciiInputDelimiterRequest", "ChangeAsciiInputDelimiterResponse",
+    "ForceListenOnlyModeRequest", "ForceListenOnlyModeResponse",
+    "ClearCountersRequest", "ClearCountersResponse",
+    "ReturnBusMessageCountRequest", "ReturnBusMessageCountResponse",
+    "ReturnBusCommunicationErrorCountRequest", "ReturnBusCommunicationErrorCountResponse",
+    "ReturnBusExceptionErrorCountRequest", "ReturnBusExceptionErrorCountResponse",
+    "ReturnSlaveMessageCountRequest", "ReturnSlaveMessageCountResponse",
+    "ReturnSlaveNoResponseCountRequest", "ReturnSlaveNoReponseCountResponse",
+    "ReturnSlaveNAKCountRequest", "ReturnSlaveNAKCountResponse",
+    "ReturnSlaveBusyCountRequest", "ReturnSlaveBusyCountResponse",
+    "ReturnSlaveBusCharacterOverrunCountRequest", "ReturnSlaveBusCharacterOverrunCountResponse",
+    "ClearOverrunCountRequest", "ClearOverrunCountResponse",
+]

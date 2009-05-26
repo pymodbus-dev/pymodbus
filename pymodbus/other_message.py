@@ -1,17 +1,19 @@
 '''
 Diagnostic record read/write
 
-Currently not implemented
+Currently not all implemented
 '''
 
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
+from pymodbus.device import ModbusControlBlock
 import struct
+
+_MCB = ModbusControlBlock()
 
 #---------------------------------------------------------------------------#
 # TODO
 # - Make these only work on serial
-# - Link the execute with the server context
 #---------------------------------------------------------------------------#
 class ReadExceptionStatusRequest(ModbusRequest):
     '''
@@ -25,9 +27,8 @@ class ReadExceptionStatusRequest(ModbusRequest):
     def __init__(self):
         ModbusRequest.__init__(self)
 
-    def execute(self, status):
-        #if cannot_read_status:
-        #       return self.doException(merror.SlaveFailure)
+    def execute(self):
+        status = _MCB.getCounterSummary()
         return ReadExceptionStatusResponse(status)
 
 class ReadExceptionStatusResponse(ModbusResponse):
@@ -75,4 +76,10 @@ class ReadExceptionStatusResponse(ModbusResponse):
 #---------------------------------------------------------------------------#
 # report device identification 43, 14
 
-#__all__ = []
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
+__all__ = [
+    "ReadExceptionStatusRequest",
+    "ReadExceptionStatusResponse"
+]

@@ -99,4 +99,7 @@ def decodeModbusResponsePDU(data):
     response.decode(data[1:])
     return response
 
+#---------------------------------------------------------------------------# 
+# Exported symbols
+#---------------------------------------------------------------------------# 
 __all__ = ['decodeModbusResponsePdu', 'decodeModbusRequestPdu']

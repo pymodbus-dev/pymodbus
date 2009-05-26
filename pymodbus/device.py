@@ -162,24 +162,36 @@ class ModbusControlBlock(Singleton):
         self.__diagnostic = [False] * 16
 
     def incrementCounter(self, counter):
-        '''
-        This increments a system counter
+        ''' This increments a system counter
         @param counter The counter to increment
         '''
         if counter in self.__counter.keys():
             self.__counter[counter] += 1
 
     def getCounter(self, counter):
-        '''
-        This returns the requested counter
+        ''' This returns the requested counter
         @param counter The counter to return
+        @return The requested counter or None if it doesn't exist
         '''
         if counter in self.__counter.keys():
             return self.__counter[counter]
         return None
 
+    def getCounterSummary(self):
+        ''' Returns a summary of the counters current status
+        @return A byte with each bit representing each counter
+        '''
+        result = 0x00
+        count  = 0x01
+        for i in self.__counter.values():
+            if i != 0x00: result |= count
+            count <<= 1
+        return result
+
     def resetCounter(self, counter):
-        ''' This clears the selected counter '''
+        ''' This clears the selected counter
+        @param counter The counter to reset
+        '''
         if counter in self.__counter.keys():
             self.__counter[counter] = 0x0000
 
@@ -191,30 +203,32 @@ class ModbusControlBlock(Singleton):
         self.__listen_only = not self.__listen_only
 
     def isListenOnly(self):
-        ''' This returns weither we should listen only '''
+        ''' This returns weither we should listen only
+        @return True if we are listen-only, False otherwise
+        '''
         return self.__listen_only
 
     #---------------------------------------------------------------------------#
     # Mode Properties
     #---------------------------------------------------------------------------#
     def setMode(self, mode):
-        '''
-        This toggles the current serial mode
+        ''' This toggles the current serial mode
         @param mode The data transfer method in (RTU, ASCII)
         '''
         if mode in ['ASCII', 'RTU']:
             self.__mode = mode
 
     def getMode(self):
-        ''' Returns the current transfer mode '''
+        ''' Returns the current transfer mode
+        @return one of ASCII or RTU
+        '''
         return self.__mode
 
     #---------------------------------------------------------------------------#
     # Delimiter Properties
     #---------------------------------------------------------------------------#
     def setDelimiter(self, char):
-        '''
-        This changes the serial delimiter character
+        ''' This changes the serial delimiter character
         @param char The new serial delimiter character
         '''
         if isinstance(char, str):
@@ -223,15 +237,16 @@ class ModbusControlBlock(Singleton):
             self.__delimiter = chr(char)
 
     def getDelimiter(self):
-        ''' Returns the current serial delimiter character '''
+        ''' Returns the current serial delimiter character
+        @return Char representation of the delimiter
+        '''
         return self.__delimiter
 
     #---------------------------------------------------------------------------#
     # Diagnostic Properties
     #---------------------------------------------------------------------------#
     def setDiagnostic(self, mapping):
-        '''
-        This sets the value in the diagnostic register
+        ''' This sets the value in the diagnostic register
         @param mapping Dictionary of key:value pairs to set
         '''
         for entry in mapping.iteritems():
@@ -239,20 +254,23 @@ class ModbusControlBlock(Singleton):
                 self.__diagnostic[entry[0]] = (entry[1] != 0)
 
     def getDiagnostic(self, bit):
-        '''
-        This gets the value in the diagnostic register
-        @param bit The bit to set
+        ''' This gets the value in the diagnostic register
+        @param bit The bit to get
+        @return The current value of the requested bit
         '''
         if bit >= 0 and bit < len(self.__diagnostic):
             return self.__diagnostic[bit]
         return None
 
     def getDiagnosticRegister(self):
-        '''
-        This gets the entire diagnostic register
+        ''' This gets the entire diagnostic register
+        @return The diagnostic register collection
         '''
         return self.__diagnostic
 
+#---------------------------------------------------------------------------# 
+# Exported Identifiers
+#---------------------------------------------------------------------------# 
 __all__ = [
         "ModbusAccessControl",
         "ModbusDeviceIdentification",

@@ -1,13 +1,19 @@
 '''
-Extra utilites that do not neccessarily require a class
+Modbus Utilities
+-----------------
+
+A collection of utilities for packing data, unpacking
+data computing checksums, and decode checksums.
 '''
 
 def packBitsToString(bits):
     ''' Creates a string out of an array of bits
     @param bits A bit array
 
-    example:
-            bits = [False, True, False, ...]
+    example::
+
+        bits = [False, True, False, True]
+        result = packBitsToString(bits)
     '''
     ret = ''
     i = packed = 0
@@ -27,9 +33,10 @@ def unpackBitsFromString(string):
     ''' Creates bit array out of a string
     @param string The modbus data packet to decode
 
-    example:
-            string[0]   = bytes to follow
-            string[1-N] = bytes to decode
+    example::
+
+        string[0]   = bytes to follow
+        string[1-N] = bytes to decode
     '''
     byte_count = ord(string[0])
     bits = []
@@ -44,8 +51,10 @@ def unpackBitsFromString(string):
 # Error Detection Functions
 #---------------------------------------------------------------------------#
 def __generate_crc16_table():
-    """ Generates the crc16 lookup table
-    """
+    ''' Generates a crc16 lookup table
+
+    .. note:: This will only be generated once
+    '''
     result = []
     for byte in range(256):
         crc = 0x0000
@@ -60,9 +69,10 @@ __crc16_table = __generate_crc16_table()
 
 def computeCRC(data):
     ''' Computes a crc16 on the passed in data.
+    @param data The data to create a crc16 of
+
     The difference between modbus's crc16 and a normal crc16
     is that modbus starts the crc value out at 0xffff.
-    @param data The data to create a crc16 of
 
     Accepts a string or a integer list
     '''

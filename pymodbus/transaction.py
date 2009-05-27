@@ -319,7 +319,7 @@ class ModbusRTUFramer:
         packet = struct.pack('>BB',
                 message.unit_id,
                 message.function_code) + data
-        packet = packet + struct.pack(">H", computeCRC(packet))
+        packet = packet + struct.pack("<H", computeCRC(packet))
         return packet
 
 

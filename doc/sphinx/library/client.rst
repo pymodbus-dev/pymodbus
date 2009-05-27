@@ -4,9 +4,8 @@
 .. module:: client
    :synopsis: Twisted Modbus Client
 
-
-   .. moduleauthor:: Galen Collins <bashwork@gmail.com>
-   .. sectionauthor:: Galen Collins <bashwork@gmail.com>
+.. moduleauthor:: Galen Collins <bashwork@gmail.com>
+.. sectionauthor:: Galen Collins <bashwork@gmail.com>
 
 API Documentation
 -------------------

@@ -8,6 +8,10 @@ Contents:
    :maxdepth: 2
 
    client.rst
+   device.rst
+   factory.rst
+   interfaces.rst
+   mexceptions.rst
    pymodbus.rst
    transaction.rst
    utilities.rst

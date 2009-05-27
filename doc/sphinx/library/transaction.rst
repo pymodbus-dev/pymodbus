@@ -4,9 +4,8 @@
 .. module:: transaction
    :synopsis: Transaction controllers for pymodbus
 
-
-   .. moduleauthor:: Galen Collins <vinay_sajip@red-dove.com>
-   .. sectionauthor:: Galen Collins <vinay_sajip@red-dove.com>
+.. moduleauthor:: Galen Collins <bashwork@gmail.com>
+.. sectionauthor:: Galen Collins <bashwork@gmail.com>
 
 API Documentation
 -------------------

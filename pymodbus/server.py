@@ -99,6 +99,7 @@ class ModbusProtocol(Protocol):
         '''
         Decodes a request packet
         @param message The raw modbus request packet
+        @return The decoded modbus message or None if error
         '''
         try:
             return decodeModbusRequestPDU(message)

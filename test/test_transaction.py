@@ -184,9 +184,11 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     # ASCII tests
     #---------------------------------------------------------------------------# 
+    # I am not sure about these tests so I need to double check them
+    #---------------------------------------------------------------------------# 
     def testASCIIFramerTransactionReady(self):
         ''' Test a tcp frame transaction '''
-        msg = ":\xab\xcd\x12\x34\x12\x34\xaa\xaa\r\n"
+        msg = ":abcd12341234aaaa\r\n"
         self.assertFalse(self._ascii.isFrameReady())
         self.assertFalse(self._ascii.checkFrame())
         self._ascii.addToFrame(msg)
@@ -199,7 +201,7 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testASCIIFramerTransactionFull(self):
         ''' Test a full ascii frame transaction '''
-        msg = "sss:\xab\xcd\x12\x34\x12\x34\xaa\xaa\r\n"
+        msg = "sss:abcd12341234aaaa\r\n"
         self._ascii.addToFrame(msg)
         self.assertTrue(self._ascii.checkFrame())
         result = self._ascii.getFrame()
@@ -208,8 +210,8 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testASCIIFramerTransactionHalf(self):
         ''' Test a half completed ascii frame transaction '''
-        msg1 = "sss:\xab\xcd\x12\x34"
-        msg2 = "\x12\x34\xaa\xaa\r\n"
+        msg1 = "sss:abcd1234"
+        msg2 = "1234aaaa\r\n"
         self._ascii.addToFrame(msg1)
         self.assertFalse(self._ascii.checkFrame())
         result = self._ascii.getFrame()
@@ -231,7 +233,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         message = ModbusRequest()
         message.unit_id        = 0xff
         message.function_code  = 0x01
-        expected = ":\xff\x01\x00\xfe\r\n"
+        expected = ":ff0101\r\n"
         actual = self._ascii.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode

@@ -3,6 +3,7 @@
 from zope.interface import implements
 from pymodbus import interfaces
 from pymodbus.utilities import computeCRC, computeLRC
+from binascii import b2a_hex
 import struct
 
 import logging
@@ -355,22 +356,24 @@ class ModbusASCIIFramer:
 
     def __init__(self):
         self.__buffer = ''
-        self.__header = {'lrc':0x0000, 'len':0}
+        self.__header = {'lrc':'0000', 'len':0}
+        self.__start  = ':'
+        self.__end    = "\r\n"
 
     def checkFrame(self):
         ''' Check and decode the next frame
         @return True if we successful, False otherwise
         '''
-        start = self.__buffer.find(':')
+        start = self.__buffer.find(self.__start)
         if start == -1: return False
         # go ahead and skip old bad data
         if start > 0 :
             self.__buffer = self.__buffer[start:]
 
-        end = self.__buffer.find('\r\n')
+        end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
-            self.__header['lrc'] = struct.unpack(">H", self.__buffer[end-2:end])
+            self.__header['lrc'] = self.__buffer[end-2:end]
             # if correct lrc
             return True
         return False
@@ -382,7 +385,7 @@ class ModbusASCIIFramer:
         current frame header handle
         '''
         self.__buffer = self.__buffer[self.__header['len'] + 2:]
-        self.__header = {'lrc':0x0000, 'len':0}
+        self.__header = {'lrc':'0000', 'len':0}
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -418,11 +421,9 @@ class ModbusASCIIFramer:
         @param message The request/response to send
         @return The built packet
         '''
-        data   = message.encode()
-        packet = struct.pack('>BB',
-            message.unit_id, message.function_code) + data
-        packet = ':' + packet + struct.pack(">H",
-                computeLRC(packet)) + '\r\n'
+        data   = b2a_hex(message.encode())
+        packet = '%02x%02x%s' % (message.unit_id, message.function_code, data)
+        packet = '%c%s%02x%s' % (self.__start, packet, computeLRC(packet), self.__end)
         return packet
 
 #---------------------------------------------------------------------------# 

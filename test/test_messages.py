@@ -1,7 +1,11 @@
 import unittest
 from pymodbus.bit_read_message import *
+from pymodbus.bit_read_message import ReadBitsRequestBase
+from pymodbus.bit_read_message import ReadBitsResponseBase
 from pymodbus.bit_write_message import *
 from pymodbus.register_read_message import *
+from pymodbus.register_read_message import ReadRegistersRequestBase
+from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.register_write_message import *
 from pymodbus.mexceptions import *
 

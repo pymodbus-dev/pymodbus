@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """reindent [-d][-r][-v] path ...
 
 -d  Dry run.  Analyze, but don't make any changes to, files.

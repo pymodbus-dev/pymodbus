@@ -1,3 +1,7 @@
+'''
+TODO: Split this off into a few different fixtures, it is getting
+much too big
+'''
 import unittest
 from pymodbus.bit_read_message import *
 from pymodbus.bit_read_message import ReadBitsRequestBase
@@ -8,6 +12,11 @@ from pymodbus.register_read_message import ReadRegistersRequestBase
 from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.register_write_message import *
 from pymodbus.mexceptions import *
+from pymodbus.pdu import ModbusExceptions
+
+class Context:
+    def validate(self, a,b,c):
+        return False
 
 class SimpleMessageTest(unittest.TestCase):
     '''
@@ -76,6 +85,39 @@ class SimpleMessageTest(unittest.TestCase):
         ''' Test register read request encoding '''
         for rqst, rsp in self.rread.iteritems():
             self.assertEqual(rqst.encode(), rsp)
+
+    def testRegisterReadRequestsCountErrors(self):
+        '''
+        This tests that the register request messages
+        will break on counts that are out of range
+        '''
+        requests = [
+            ReadHoldingRegistersRequest(1, 0x800),
+            ReadInputRegistersRequest(1,0x800),
+            ReadWriteMultipleRegistersRequest(1,0x800,1,5),
+            ReadWriteMultipleRegistersRequest(1,5,1,0x800),
+        ]
+        for request in requests:
+            result = request.execute(None)
+            self.assertEqual(ModbusExceptions.IllegalValue,
+                result.exception_code)
+
+    def testRegisterReadRequestsValidateErrors(self):
+        '''
+        This tests that the register request messages
+        will break on counts that are out of range
+        '''
+        context = Context()
+        requests = [
+            ReadHoldingRegistersRequest(-1, 5),
+            ReadInputRegistersRequest(-1,5),
+            #ReadWriteMultipleRegistersRequest(-1,5,1,5),
+            #ReadWriteMultipleRegistersRequest(1,5,-1,5),
+        ]
+        for request in requests:
+            result = request.execute(context)
+            self.assertEqual(ModbusExceptions.IllegalAddress,
+                result.exception_code)
 
     def testRegisterWriteRequests(self):
         ''' Test register write request encoding '''

@@ -1,5 +1,6 @@
 '''
-Register Writing Request/Response
+Register Writing Request/Response Messages
+-------------------------------------------
 '''
 
 from pymodbus.pdu import ModbusRequest
@@ -19,26 +20,32 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code = 6
 
     def __init__(self, address=None, value=None):
+        ''' Initializes a new instance
+        @param address The address to start writing add
+        @param value The values to write
+        '''
         ModbusRequest.__init__(self)
         self.address = address
         self.value = value
 
     def encode(self):
-        ''' Encode a write single register packet packet request '''
+        ''' Encode a write single register packet packet request
+        @return The encoded packet
+        '''
         ret = struct.pack('>HH', self.address, self.value)
         return ret
 
     def decode(self, data):
-        '''
-        Decode a write single register packet packet request
+        ''' Decode a write single register packet packet request
         @param data The request to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
 
     def execute(self, context):
-        '''
-        Run a write single register request against a datastore
+        ''' Run a write single register request against a datastore
         @param context The datastore to request from
+        @return A WriteSingleRegisterResponse or a ModbusException
+        if there were any errors
         '''
         if not (0 <= self.value <= 0xffff):
             return self.doException(merror.IllegalValue)
@@ -49,6 +56,9 @@ class WriteSingleRegisterRequest(ModbusRequest):
         return WriteSingleRegisterResponse(self.address, values[0])
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteRegisterRequest %d => %d" % (self.address, self.value)
 
 class WriteSingleRegisterResponse(ModbusResponse):
@@ -59,23 +69,31 @@ class WriteSingleRegisterResponse(ModbusResponse):
     function_code = 6
 
     def __init__(self, address=None, value=None):
+        ''' Initializes a new instance
+        @param address The address to start writing add
+        @param value The values to write
+        '''
         ModbusResponse.__init__(self)
         self.address = address
         self.value = value
 
     def encode(self):
-        ''' Encode a write single register packet packet request '''
+        ''' Encode a write single register packet packet request
+        @return The encoded packet
+        '''
         ret = struct.pack('>HH', self.address, self.value)
         return ret
 
     def decode(self, data):
-        '''
-        Decode a write single register packet packet request
+        ''' Decode a write single register packet packet request
         @param data The request to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteRegisterResponse %d => %d" % (self.address, self.value)
 
 #---------------------------------------------------------------------------#
@@ -93,6 +111,10 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     function_code = 16
 
     def __init__(self, address=None, count=None):
+        ''' Initializes a new instance
+        @param address The address to start writing to
+        @param count The number of registers to write to
+        '''
         ModbusRequest.__init__(self)
         self.address = address
         if count != None and count > 0:
@@ -100,7 +122,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         else: self.registers = []
 
     def encode(self):
-        ''' Encode a write single register packet packet request '''
+        ''' Encode a write single register packet packet request
+        @return The encoded packet
+        '''
         count = len(self.registers)
         ret = struct.pack('>HHB', self.address, count, count*2)
         for reg in self.registers:
@@ -108,8 +132,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         return ret
 
     def decode(self, data):
-        '''
-        Decode a write single register packet packet request
+        ''' Decode a write single register packet packet request
         @param data The request to decode
         '''
         self.address, count, self.byte_count = struct.unpack('>HHB', data[:5])
@@ -117,8 +140,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
             self.registers.append(struct.unpack('>H', data[i:i+2])[0])
 
     def execute(self, context):
-        '''
-        Run a write single register request against a datastore
+        ''' Run a write single register request against a datastore
         @param context The datastore to request from
         '''
         count = len(self.registers)
@@ -132,6 +154,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         return WriteMultipleRegistersResponse(self.address, count)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteNRegisterRequest %d => " % self.address, self.registers
 
 class WriteMultipleRegistersResponse(ModbusResponse):
@@ -142,23 +167,31 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     function_code = 16
 
     def __init__(self, address=None, count=None):
+        ''' Initializes a new instance
+        @param address The address to start writing to
+        @param count The number of registers to write to
+        '''
         ModbusResponse.__init__(self)
         self.address = address
         self.count = count
 
     def encode(self):
-        ''' Encode a write single register packet packet request '''
+        ''' Encode a write single register packet packet request
+        @return The encoded packet
+        '''
         ret = struct.pack('>HH', self.address, self.count)
         return ret
 
     def decode(self, data):
-        '''
-        Decode a write single register packet packet request
+        ''' Decode a write single register packet packet request
         @param data The request to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteNRegisterResponse (%d,%d)" % (self.address, self.count)
 
 #---------------------------------------------------------------------------# 

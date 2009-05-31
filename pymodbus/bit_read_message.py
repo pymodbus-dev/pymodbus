@@ -33,7 +33,7 @@ class ReadBitsRequestBase(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.count = count
+        self.count   = count
 
     def encode(self):
         ''' Encodes request pdu '''
@@ -48,14 +48,16 @@ class ReadBitsRequestBase(ModbusRequest):
         self.address, self.count = struct.unpack('>HH', data)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "ReadBitRequest(%d,%d)" % (self.address, self.count)
 
 class ReadBitsResponseBase(ModbusResponse):
     ''' Base class for Messages responding to bit-reading values '''
 
     def __init__(self, values):
-        '''
-        Initializes the response message
+        ''' Initializes a new instance
         @param values The requested values to be returned
         '''
         ModbusResponse.__init__(self)
@@ -64,40 +66,41 @@ class ReadBitsResponseBase(ModbusResponse):
         else: self.bits = []
 
     def encode(self):
-        ''' Encodes response pdu '''
+        ''' Encodes response pdu
+        @return The encoded packet message
+        '''
         ret = packBitsToString(self.bits)
         return chr(len(ret)) + ret
 
     def decode(self, data):
-        '''
-        Decodes response pdu
+        ''' Decodes response pdu
         @param data The packet data to decode
         '''
         self.bits = unpackBitsFromString(data)[0]
 
     def setBit(self, address, value=1):
-        '''
-        Helper function to set the specified bit
+        ''' Helper function to set the specified bit
         @param address The bit to set
         @param value The value to set the bit to
         '''
         self.bits[address] = value != 0
 
     def resetBit(self, address):
-        '''
-        Helper function to set the specified bit to 0
+        ''' Helper function to set the specified bit to 0
         @param address The bit to reset
         '''
         self.setBit(address, 0)
 
     def getBit(self, address):
-        '''
-        Helper function to get the specified bit's value
+        ''' Helper function to get the specified bit's value
         @param address The bit to query
         '''
         return self.bits[address]
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "ReadBitResponse ", self.bits
 
 class ReadCoilsRequest(ReadBitsRequestBase):
@@ -111,11 +114,14 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     function_code = 1
 
     def __init__(self, address=None, count=None):
+        ''' Initializes a new instance
+        @param address The address to start reading from
+        @param count The number of bits to read
+        '''
         ReadBitsRequestBase.__init__(self, address, count)
 
     def execute(self, context):
-        '''
-        Run a read coils request against a datastore
+        ''' Run a read coils request against a datastore
         @param context The datastore to request from
         '''
         if not (1 <= self.count <= 0x7d0):
@@ -142,8 +148,7 @@ class ReadCoilsResponse(ReadBitsResponseBase):
     function_code = 1
 
     def __init__(self, values=None):
-        '''
-        Intializes the base message
+        ''' Intializes a new instance
         @param values The request values to respond with
         '''
         ReadBitsResponseBase.__init__(self, values)
@@ -159,11 +164,14 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     function_code = 2
 
     def __init__(self, address=None, count=None):
+        ''' Intializes a new instance
+        @param address The address to start reading from
+        @param count The number of bits to read
+        '''
         ReadBitsRequestBase.__init__(self, address, count)
 
     def execute(self, context):
-        '''
-        Run a read discrete input request against a datastore
+        ''' Run a read discrete input request against a datastore
         @param context The datastore to request from
         '''
         if not (1 <= self.count <= 0x7d0):
@@ -189,8 +197,7 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
     function_code = 2
 
     def __init__(self, values=None):
-        '''
-        Intializes the base message
+        ''' Intializes a new instance
         @param values The request values to respond with
         '''
         ReadBitsResponseBase.__init__(self, values)

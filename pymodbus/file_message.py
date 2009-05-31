@@ -1,7 +1,8 @@
 '''
-File record read/write
+File Record Read/Write Messages
+-------------------------------
 
-Currently not implemented
+Currently none of these messages are implemented
 '''
 
 from pymodbus.pdu import ModbusRequest
@@ -13,4 +14,4 @@ import struct
 # read fifo queue 24
 # mask write register 22
 
-#__all__ = []
+__all__ = []

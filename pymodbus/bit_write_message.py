@@ -39,8 +39,7 @@ class WriteSingleCoilRequest(ModbusRequest):
     function_code = 5
 
     def __init__(self, address=None, value=None):
-        '''
-        Initializes the request paramaters
+        ''' Initializes a new instance
         @param address The variable address to write
         @param value The value to write at address
         '''
@@ -52,8 +51,7 @@ class WriteSingleCoilRequest(ModbusRequest):
             self.value = 0
 
     def encode(self):
-        '''
-        Encodes write coil request
+        ''' Encodes write coil request
         @return The byte encoded message
         '''
         ret = struct.pack('>H', self.address)
@@ -64,15 +62,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         return ret
 
     def decode(self, data):
-        '''
-        Decodes a write coil request
+        ''' Decodes a write coil request
         @param data The packet data to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
 
     def execute(self, context):
-        '''
-        Run a write coil request against a datastore
+        ''' Run a write coil request against a datastore
         @param context The datastore to request from
         @return The populated response or exception message
         '''
@@ -85,6 +81,9 @@ class WriteSingleCoilRequest(ModbusRequest):
         return WriteSingleCoilResponse(self.address, values[0])
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteCoilRequest(%d)" % self.address, self.value
 
 class WriteSingleCoilResponse(ModbusResponse):
@@ -95,8 +94,7 @@ class WriteSingleCoilResponse(ModbusResponse):
     function_code = 5
 
     def __init__(self, address=None, value=None):
-        '''
-        Initializes the request paramaters
+        ''' Initializes a new instance
         @param address The variable address written to
         @param value The value written at address
         '''
@@ -105,8 +103,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         self.value = value
 
     def encode(self):
-        '''
-        Encodes write coil response
+        ''' Encodes write coil response
         @return The byte encoded message
         '''
         ret = struct.pack('>H', self.address)
@@ -117,14 +114,16 @@ class WriteSingleCoilResponse(ModbusResponse):
         return ret
 
     def decode(self, data):
-        '''
-        Decodes a write coil response
+        ''' Decodes a write coil response
         @param data The packet data to decode
         '''
         self.address, value = struct.unpack('>HH', data)
         self.value = (value != 0)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteCoilResponse(%d)" % self.address, self.value
 
 #---------------------------------------------------------------------------#
@@ -144,8 +143,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     function_code = 15
 
     def __init__(self, address=None, count=None):
-        '''
-        Initializes the request paramaters
+        ''' Initializes a new instance
         @param address The starting request address
         @param count Number of bits to read after address
         '''
@@ -156,8 +154,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         else: self.coils = []
 
     def encode(self):
-        '''
-        Encodes write coils request
+        ''' Encodes write coils request
         @return The byte encoded message
         '''
         count = len(self.coils)
@@ -166,8 +163,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         return ret
 
     def decode(self, data):
-        '''
-        Decodes a write coils request
+        ''' Decodes a write coils request
         @param data The packet data to decode
         '''
         self.address, count = struct.pack('>HH', data[0:2])
@@ -175,8 +171,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         self.coils = coils[:count]
 
     def execute(self, context):
-        '''
-        Run a write coils request against a datastore
+        ''' Run a write coils request against a datastore
         @param context The datastore to request from
         @return The populated response or exception message
         '''
@@ -191,6 +186,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteNCoilRequest %d => " % self.address, self.coils
 
 class WriteMultipleCoilsResponse(ModbusResponse):
@@ -201,7 +199,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     function_code = 15
 
     def __init__(self, address=None, count=None):
-        '''
+        ''' Initializes a new instance
         @param address The starting variable address written to
         @param count The number of values written
         '''
@@ -210,21 +208,22 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         self.count = count
 
     def encode(self):
-        '''
-        Encodes write coils response
+        ''' Encodes write coils response
         @return The byte encoded message
         '''
         ret = struct.pack('>HH', self.address, self.count)
         return ret
 
     def decode(self, data):
-        '''
-        Decodes a write coils response
+        ''' Decodes a write coils response
         @param data The packet data to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
     def __str__(self):
+        ''' Returns a string representation of the instance
+        @return A string representation of the instance
+        '''
         return "WriteNCoilResponse(%d,%d)" % (self.address, self.count)
 
 #---------------------------------------------------------------------------# 

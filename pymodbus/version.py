@@ -7,7 +7,7 @@ the svn version as well using the local .entries file.
 '''
 from twisted.python import versions
 
-version = versions.Version('pymodbus', 1, 0, 1)
+version = versions.Version('pymodbus', 0, 5, 0)
 version.__name__ = "Pymodbus" # fix epydoc error
 
 #---------------------------------------------------------------------------# 

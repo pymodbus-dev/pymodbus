@@ -13,7 +13,7 @@ http://peak.telecommunity.com/DevCenter/setuptools#new-and-changed-setup-keyword
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1'
+version = '0.5'
 
 setup(name = 'pymodbus',
     version = version,
@@ -24,7 +24,7 @@ setup(name = 'pymodbus',
     modbus devices on a single machine for monitoring software testing.
     ''',
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Environment :: X11 Applications :: GTK',
         'Framework :: Twisted',
@@ -36,12 +36,15 @@ setup(name = 'pymodbus',
         'Topic :: System :: Networking',
         'Topic :: Utilities'
     ],
-    keywords = 'modbus,twisted',
+    keywords = 'modbus, twisted',
     author = 'Galen Collins',
     author_email = 'bashwork@gmail.com',
+    maintainer = 'Galen Collins',
+    maintainer_email = 'bashwork@gmail.com',
     url='http://code.google.com/p/pymodbus/',
     license = 'LGPL',
     packages = find_packages(exclude=['ez_setup', 'examples', 'tests', 'doc']),
+    platforms = ["Linux","Mac OS X","Win"],
     include_package_data = True,
     zip_safe = True,
     install_requires = [

@@ -26,8 +26,7 @@ class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
     def __init__(self, address, count):
-        '''
-        Initializes the read request data
+        ''' Initializes the read request data
         @param address The start address to read from
         @param count The number of bits after 'address' to read
         '''
@@ -36,13 +35,13 @@ class ReadBitsRequestBase(ModbusRequest):
         self.count   = count
 
     def encode(self):
-        ''' Encodes request pdu '''
-        ret = struct.pack('>HH', self.address, self.count)
-        return ret
+        ''' Encodes a request pdu
+        @return The encoded pdu
+        '''
+        return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        '''
-        Decodes request pdu
+        ''' Decodes a request pdu
         @param data The packet data to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
@@ -101,7 +100,7 @@ class ReadBitsResponseBase(ModbusResponse):
         ''' Returns a string representation of the instance
         @return A string representation of the instance
         '''
-        return "ReadBitResponse ", self.bits
+        return "ReadBitResponse"
 
 class ReadCoilsRequest(ReadBitsRequestBase):
     '''

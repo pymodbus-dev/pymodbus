@@ -438,10 +438,8 @@ class PackageDocumentationGenerator:
 # Main Runner
 #---------------------------------------------------------------------------# 		
 if __name__ == "__main__":
+    if not os.path.exists("./html"): os.mkdir("./html")
 	excludes = [
-		"Numeric",
-		"_tkinter",
-		"Tkinter",
 		"math",
 		"string",
 		"twisted",
@@ -455,7 +453,7 @@ if __name__ == "__main__":
 	]	
 	PackageDocumentationGenerator(
 		baseModules = modules,
-		destinationDirectory = ".",
+		destinationDirectory = "./html/",
 		exclusions = excludes,
 		recursionStops = stops,
 	).process ()

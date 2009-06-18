@@ -1,20 +1,53 @@
 Requirements
+-------------
 
-  Python 2.3 or later.
+Python 2.3 or later.
 
-  Zope Interfaces 3.0.1 (http://zope.org/Products/ZopeInterface) - if
-  you have ZopeX3 (at least version 3.0.0c1) installed that should
-  work too.
+Zope Interfaces 3.0.1 (http://zope.org/Products/ZopeInterface) - if
+you have ZopeX3 (at least version 3.0.0c1) installed that should
+work too.
 
-  On Windows pywin32 is recommended (this is built in to ActivePython,
-  so no need to reinstall if you use it instead of standard Python)
-      http://sourceforge.net/project/showfiles.php?group_id=78018
-  The Windows IOCP reactor requires pywin32 build 205 or later.
+On Windows pywin32 is recommended (this is built in to ActivePython,
+so no need to reinstall if you use it instead of standard Python):
+
+    http://sourceforge.net/project/showfiles.php?group_id=78018
+
+The Windows IOCP reactor requires pywin32 build 205 or later.
 
 Installation
+-------------
 
-  * Linux Only
-    As with other Python packages, the standard way of installing from source
-    is (as root):
+As with other Python packages, the standard way of installing from source
+is (as root or administrator)::
 
-      python setup.py install
+    python setup.py install
+
+Running Tests
+--------------
+
+The tests can be run with the built in unittest module, however, it is
+much easier to run with the nose package.  With that installed, you can
+use either of the following::
+
+    python setup.py test
+    nosetests
+
+Building Documentation
+----------------------
+
+The documentation is written in restructured text using the sphinx module.
+Building it is as simple as::
+
+    python setup build_sphinx
+
+The API documents can be generated using one of four programs:
+
+* epydoc
+* pydoc
+* pydoctor
+* doxygen
+
+To bulid these, simply run the following command and the available
+packages will sipmly be built::
+
+    python setup build_api

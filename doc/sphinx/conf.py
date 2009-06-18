@@ -37,7 +37,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyModbus'
+project = u'Pymodbus'
 copyright = u'2009, Galen Collins'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -64,7 +64,7 @@ release = '1.0'
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = ['_build']
+exclude_trees = ['build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -78,7 +78,7 @@ exclude_trees = ['_build']
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
-#show_authors = False
+show_authors = True
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -158,7 +158,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyModbusdoc'
+htmlhelp_basename = 'Pymodbus'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -172,7 +172,7 @@ htmlhelp_basename = 'PyModbusdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PyModbus.tex', ur'PyModbus Documentation',
+  ('index', 'Pymodbus.tex', ur'Pymodbus Documentation',
    ur'Galen Collins', 'manual'),
 ]
 

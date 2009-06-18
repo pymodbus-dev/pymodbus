@@ -11,10 +11,38 @@ http://peak.telecommunity.com/DevCenter/setuptools#new-and-changed-setup-keyword
 '''
 
 from setuptools import setup, find_packages
+from distutils.core import command
 import sys, os
 
-version = '0.5'
+#---------------------------------------------------------------------------# 
+# Extra Commands
+#---------------------------------------------------------------------------# 
+command_classes = {}
 
+class BuildApiDocs(command):
+    ''' Helper command to build the available api documents
+    '''
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        old_cwd = os.getcwd()
+        for entry in os.listdir('./api'):
+            os.chdir('./api/%s' % entry)
+            os.system('python build.py')
+            os.chdir(old_cwd)
+
+command_classes['build_apidocs'] = BuildApiDocs
+
+#---------------------------------------------------------------------------# 
+# Configuration
+#---------------------------------------------------------------------------# 
+version = '0.5' # to be pulled from the source
 setup(name = 'pymodbus',
     version = version,
     description = "A fully featured modbus protocol stack in python",
@@ -52,7 +80,5 @@ setup(name = 'pymodbus',
         'nose >= 0.9.3'
     ],
     test_suite = 'nose.collector',
-    entry_points = """
-    # -*- Entry points: -*-
-    """,
-    )
+    cmdclass = command_classes,
+)

@@ -1,13 +1,22 @@
-#!/usr/bin/env python
-from pydoctor.driver import main
+#!/usr/bin/python
+'''
+Pydoctor API Runner
+---------------------
 
-#---------------------------------------------------------------------------# 
-# A simple runner to build pydoctors documentation
-#---------------------------------------------------------------------------# 
-if __name__ == "__main__":
-    main(
-        ["--project-name", "Pymodbus"
-         "--project-url",  "http://code.google.com/p/pymodbus/",
-         "--add-package",  "../../pymodbus",
-         "--html-output",  "pydoctor",
-         "--html-write-function-pages", "--quiet", "--make-html"])
+Using pkg_resources, we attempt to see if pydoctor is installed,
+if so, we use its cli program to compile the documents
+'''
+try:
+    import sys, os
+    import pkg_resources
+    pkg_resources.require("epydoc")
+
+    from pydoctor.driver import main
+    sys.argv = '''pydoctor.py --quiet
+        --project-name=Pymodbus
+        --project-url=http://code.google.com/p/pymodbus/
+        --add-package=../../pymodbus
+        --html-output=pydoctor
+        --html-write-function-pages --make-html'''.split()
+    main()
+except: pass

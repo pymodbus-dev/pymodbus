@@ -533,7 +533,7 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
 #---------------------------------------------------------------------------#
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
     '''
-    Clears the overrun error counter and restet the error flag
+    Clears the overrun error counter and reset the error flag
     '''
     sub_function_code = 0x0014
 
@@ -544,7 +544,7 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
 class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''
-    Clears the overrun error counter and restet the error flag
+    Clears the overrun error counter and reset the error flag
     '''
     sub_function_code = 0x0014
 

@@ -439,22 +439,21 @@ class PackageDocumentationGenerator:
 #---------------------------------------------------------------------------# 		
 if __name__ == "__main__":
     if not os.path.exists("./html"): os.mkdir("./html")
-	excludes = [
-		"math",
-		"string",
-		"twisted",
-	]
-	stops = [
-	]
-
-	modules = [
-		'pymodbus',
-		'__builtin__',
-	]	
-	PackageDocumentationGenerator(
-		baseModules = modules,
-		destinationDirectory = "./html/",
-		exclusions = excludes,
-		recursionStops = stops,
-	).process ()
-	
+    excludes = [
+        "math",
+        "string",
+        "twisted",
+    ]
+    stops = [
+    ]
+    
+    modules = [
+        'pymodbus',
+        '__builtin__',
+    ]	
+    PackageDocumentationGenerator(
+        baseModules = modules,
+        destinationDirectory = "./html/",
+        exclusions = excludes,
+        recursionStops = stops,
+    ).process ()

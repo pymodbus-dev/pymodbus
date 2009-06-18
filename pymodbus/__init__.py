@@ -28,8 +28,8 @@ TwistedModbus is built on top of the Pymodbus developed from code by:
 Released under the the GPLv2
 """
 
-from pymodbus.version import version
-__version__ = version.short()
+from pymodbus.version import _version
+__version__ = _version.short()
 
 
 #---------------------------------------------------------------------------#

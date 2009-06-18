@@ -11,7 +11,7 @@ http://peak.telecommunity.com/DevCenter/setuptools#new-and-changed-setup-keyword
 '''
 
 from setuptools import setup, find_packages
-from distutils.core import command
+from distutils.core import Command
 import sys, os
 
 #---------------------------------------------------------------------------# 
@@ -19,7 +19,7 @@ import sys, os
 #---------------------------------------------------------------------------# 
 command_classes = {}
 
-class BuildApiDocs(command):
+class BuildApiDocs(Command):
     ''' Helper command to build the available api documents
     '''
     user_options = []

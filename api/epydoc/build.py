@@ -16,10 +16,10 @@ try:
         --html --simple-term
         --exclude=._
         --exclude=tests
-        --docformat=reStructuredText
+        --docformat=epytext
         --output=html/
     '''.split()
 
     if not os.path.exists("./html"): os.mkdir("./html")
     cli()
-except: pass
+except: print "Epydoc not avaliable...not building"

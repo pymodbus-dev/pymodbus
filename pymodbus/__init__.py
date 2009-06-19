@@ -29,7 +29,7 @@ Released under the the GPLv2
 """
 
 from pymodbus.version import _version
-__version__ = _version.short()
+__version__ = _version.short().split('+')[0]
 
 
 #---------------------------------------------------------------------------#
@@ -43,13 +43,3 @@ class NullHandler(logging.Handler):
 h = NullHandler()
 logging.getLogger("pymodbus").addHandler(h)
 
-#__all__ = [
-#    "ReadBitsResponseBase", "ReadRegistersResponseBase",
-#    "ParameterException", "ReadCoilsRequest", "ReadDiscreteInputsRequest",
-#    "ReadHoldingRegistersRequest", "ReadInputRegistersRequest",
-#    "WriteSingleCoilRequest", "WriteSingleRegisterRequest",
-#    "ReadWriteMultipleRegistersRequest",
-#    "ReadWriteMultipleRegistersResponse",
-#    "WriteMultipleCoilsRequest", "WriteMultipleRegistersRequest",
-#    "ExceptionResponse", "TCPMasterConnection",
-#    "ModbusTCPServer", "ModbusServerContext"]

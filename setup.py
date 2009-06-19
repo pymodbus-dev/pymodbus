@@ -21,16 +21,22 @@ command_classes = {}
 
 class BuildApiDocs(Command):
     ''' Helper command to build the available api documents
+    This scans all the subdirectories under api and runs the
+    build.py script underneath trying to build the api
+    documentation for the given format.
     '''
     user_options = []
 
     def initialize_options(self):
+        ''' options setup '''
         pass
 
     def finalize_options(self):
+        ''' options teardown '''
         pass
 
     def run(self):
+        ''' command runner '''
         old_cwd = os.getcwd()
         for entry in os.listdir('./api'):
             os.chdir('./api/%s' % entry)
@@ -42,9 +48,10 @@ command_classes['build_apidocs'] = BuildApiDocs
 #---------------------------------------------------------------------------# 
 # Configuration
 #---------------------------------------------------------------------------# 
-version = '0.5' # to be pulled from the source
-setup(name = 'pymodbus',
-    version = version,
+from pymodbus import __version__
+
+setup(name  = 'pymodbus',
+    version = __version__,
     description = "A fully featured modbus protocol stack in python",
     long_description='''
     Pymodbus aims to be a fully implemented modbus protocol stack implemented

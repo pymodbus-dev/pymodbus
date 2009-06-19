@@ -1,4 +1,9 @@
-"""Pydoc sub-class for generating documentation for entire packages"""
+"""
+Pydoc sub-class for generating documentation for entire packages.
+
+Taken from: http://pyopengl.sourceforge.net/pydoc/OpenGLContext.pydoc.pydoc2.html
+Author: Mike Fletcher
+"""
 import pydoc, inspect, os, string
 import sys, imp, os, stat, re, types, inspect
 from repr import Repr
@@ -438,22 +443,11 @@ class PackageDocumentationGenerator:
 # Main Runner
 #---------------------------------------------------------------------------# 		
 if __name__ == "__main__":
-    if not os.path.exists("./html"): os.mkdir("./html")
-    excludes = [
-        "math",
-        "string",
-        "twisted",
-    ]
-    stops = [
-    ]
-    
-    modules = [
-        'pymodbus',
-        '__builtin__',
-    ]	
+    if not os.path.exists("./html"):
+        os.mkdir("./html")
     PackageDocumentationGenerator(
-        baseModules = modules,
+        baseModules = ['pymodbus', '__builtin__'],
         destinationDirectory = "./html/",
-        exclusions = excludes,
-        recursionStops = stops,
+        exclusions = ['math', 'string', 'twisted'],
+        recursionStops = [],
     ).process ()

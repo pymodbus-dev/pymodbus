@@ -20,7 +20,7 @@ from gtk import glade
 #---------------------------------------------------------------------------#
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
-from pymodbus.server import ModbusServerFactory
+from pymodbus.server.async import ModbusServerFactory
 from pymodbus.datastore import ModbusServerContext
 
 #--------------------------------------------------------------------------#

@@ -1,11 +1,16 @@
 """ Collection of transaction based abstractions
 """
+import struct
+from binascii import b2a_hex
 from zope.interface import implements
+
+from pymodbus.constants import Defaults
 from pymodbus import interfaces
 from pymodbus.utilities import computeCRC, computeLRC
-from binascii import b2a_hex
-import struct
 
+#---------------------------------------------------------------------------#
+# Logging
+#---------------------------------------------------------------------------#
 import logging
 _logger = logging.getLogger('pymodbus.protocol')
 
@@ -22,47 +27,6 @@ _logger = logging.getLogger('pymodbus.protocol')
 #
 # Default port is tcp(502)
 #---------------------------------------------------------------------------#
-class ModbusTCPTransaction:
-    ''' Impelements a transaction for a tcp/ip request
-
-    This is currently not used, although it should...
-    '''
-
-    def __init__(self, request=None):
-        '''
-        Initializes a transaction handle
-        @param request The request to manage
-        '''
-        self.request = request
-        self.retries = 3
-        self.timeout = 5
-
-    def doRetry(self):
-        ''' Checks to see if we should retry the request '''
-        if self.retries > 0:
-            self.retries -= 1
-            return True
-        return False
-
-    def execute(self):
-        retries = self.retries
-        self.req.transaction_id = self.getUniqueTransactionId()
-        _logger.debug("Running transaction %d" % self.req.transaction_id)
-        while (1):
-            try:
-                self.con.connect()
-                tr = self.con.modbus_transport
-                tr.writeMessage(self.req)
-                res = tr.readResponse()
-                return res
-            except socket.error, msg:
-                self.con.close()
-                if retries > 0:
-                    _logger.debug("Attemp to execute transaction failed. (%s) " % msg)
-                    _logger.debug("Will try %d more times." % self.retries)
-                    retries -= 1
-                    continue
-                raise
 
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager
@@ -70,7 +34,7 @@ class ModbusTCPTransaction:
 class ModbusTransactionManager(interfaces.Singleton):
     ''' Impelements a transaction for a manager '''
 
-    __tid = 0
+    __tid = Defaults.TransactionId
     __transactions = []
 
     def __init__(self):
@@ -81,7 +45,7 @@ class ModbusTransactionManager(interfaces.Singleton):
         Adds a transaction to the handler in case it needs to be resent
         @param request The request to hold on to
         '''
-        self.__transactions.append(request)
+        ModbusTransactionManager.__transactions.append(request)
 
     def getTransaction(self, tid):
         '''
@@ -90,9 +54,9 @@ class ModbusTransactionManager(interfaces.Singleton):
 
         If the transaction does not exist, None is returned
         '''
-        for k,v in enumerate(self.__transactions):
+        for k,v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
-                return self.__transactions[k]
+                return ModbusTransactionManager.__transactions[k]
         return None
 
     def delTransaction(self, tid):
@@ -100,22 +64,24 @@ class ModbusTransactionManager(interfaces.Singleton):
         Removes a transaction matching the referenced tid
         @param tid The transaction to remove
         '''
-        for k,v in enumerate(self.__transactions):
+        for k,v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
-                del self.__transactions[k]
+                del ModbusTransactionManager.__transactions[k]
 
     def getNextTID(self):
+        ''' Retrieve the next unique transaction identifier
+        :returns: The next unique transaction identifier
+        
+        This handles incrementing the identifier after
+        retrieval
         '''
-        Gets the next available transaction identifier
-        and increments the global handler
-        '''
-        tid = self.__tid
-        self.__tid += 1
+        tid = ModbusTransactionManager.__tid
+        ModbusTransactionManager.__tid += 1
         return tid
 
     def resetTID(self):
-        ''' Resets the transaction identifier to 0 '''
-        self.__tid = 0
+        ''' Resets the transaction identifier '''
+        ModbusTransactionManager.__tid = Defaults.TransactionId
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Message
@@ -405,21 +371,21 @@ class ModbusASCIIFramer:
 
     def getFrame(self):
         ''' Get the next frame from the buffer
-        @return The frame data or ''
+        :return: The frame data or ''
         '''
         return self.__buffer[1:self.__header['len']]
 
     def populateResult(self, result):
         ''' Populates the modbus result with current frame header
-        @param result The response packet
+        :param result: The response packet
         '''
         pass # no header for serial
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
         Built off of a  modbus request/response
-        @param message The request/response to send
-        @return The built packet
+        :param message: The request/response to send
+        :return: The built packet
         '''
         data   = b2a_hex(message.encode())
         packet = '%02x%02x%s' % (message.unit_id, message.function_code, data)
@@ -430,6 +396,6 @@ class ModbusASCIIFramer:
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusTCPTransaction", "ModbusTransactionManager",
+    "ModbusTransactionManager",
     "ModbusTCPFramer", "ModbusRTUFramer", "ModbusASCIIFramer",
 ]

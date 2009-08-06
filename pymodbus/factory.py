@@ -54,8 +54,8 @@ def decodeModbusRequestPDU(data):
     '''
     This factory is used to generate the correct request object
     from a valid request packet
-    @param data The request packet to decode
-    @return The decoded request or illegal function request object
+    :param data: The request packet to decode
+    :return: The decoded request or illegal function request object
     '''
     function_code = ord(data[0])
     _logger.debug("Factory Request[%d]" % function_code)
@@ -89,8 +89,8 @@ def decodeModbusResponsePDU(data):
     '''
     This factory is used to generate the correct response object
     from a valid response packet
-    @param data The response packet to decode
-    @return The decoded request or an exception response object
+    :param data: The response packet to decode
+    :return: The decoded request or an exception response object
     '''
     function_code = ord(data[0])
     _logger.debug("Factory Response[%d]" % function_code)

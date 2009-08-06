@@ -10,7 +10,7 @@ class ModbusException(Exception):
 
     def __init__(self, string):
         ''' Initialize the exception
-        @param string The message to append to the error
+        :param string: The message to append to the error
         '''
         self.string = string
 
@@ -22,7 +22,7 @@ class ModbusIOException(ModbusException):
 
     def __init__(self, string=""):
         ''' Initialize the exception
-        @param string The message to append to the error
+        :param string: The message to append to the error
         '''
         message = "[Input/Output] %s" % string
         ModbusException.__init__(self, message)
@@ -32,7 +32,7 @@ class ParameterException(ModbusException):
 
     def __init__(self, string=""):
         ''' Initialize the exception
-        @param string The message to append to the error
+        :param string: The message to append to the error
         '''
         message = "[Invalid Paramter] %s" % string
         ModbusException.__init__(self, message)
@@ -42,9 +42,19 @@ class NotImplementedException(ModbusException):
 
     def __init__(self, string=""):
         ''' Initialize the exception
-        @param string The message to append to the error
+        :param string: The message to append to the error
         '''
         message = "[Not Implemented] %s" % string
+        ModbusException.__init__(self, message)
+
+class ConnectionException(ModbusException):
+    ''' Error resulting from a bad connection '''
+
+    def __init__(self, string=""):
+        ''' Initialize the exception
+        :param string: The message to append to the error
+        '''
+        message = "[Connection] %s" % string
         ModbusException.__init__(self, message)
 
 #---------------------------------------------------------------------------# 
@@ -53,4 +63,5 @@ class NotImplementedException(ModbusException):
 __all__ = [
     "ModbusException", "ModbusIOException",
     "ParameterException", "NotImplementedException",
+    "ConnectionException",
 ]

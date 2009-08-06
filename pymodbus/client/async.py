@@ -50,8 +50,9 @@ What follows is a quick layout of the client logic:
 
 TODO:
 
-  * Build a repeated request producer?
-  * Simplify request <-> response linking
+This is broken right now, and I have been to lazy to fix it
+I need to modify this to return defers and maybe pump requests
+into the producer.
 """
 from zope.interface import implements
 
@@ -82,10 +83,10 @@ class ModbusMessageProducer:
 
     def __init__(self, consumer, requests, handler, framer):
         ''' Sets up the producer to begin sending requests
-        @param consumer The consuming protocol to register with
-        @param requests Initialize the request list
-        @param handler We copy each message so we know what we were requesting
-        @param framer Framer object that is used to build the request
+        :param consumer: The consuming protocol to register with
+        :param requests: Initialize the request list
+        :param handler: We copy each message so we know what we were requesting
+        :param framer: Framer object that is used to build the request
         '''
         self.requests = requests
         self.framer = framer
@@ -107,17 +108,21 @@ class ModbusMessageProducer:
         else: self.consumer.unregisterProducer()
 
     def stopProducing(self):
-        ''' I don't actually know yet, but they complain otherwise '''
+        ''' I don't actually know yet, but they complain otherwise
+        '''
         _logger.debug("Client stopped producing")
         self.consumer.unregisterProducer()
 
     def __getNextTID(self):
-        ''' Used internally to handle the transaction identifiers.
+        ''' Used to retrieve the next transaction id
+        :return: The next unique transaction id
+
         As the transaction identifier is represented with two
         bytes, the highest TID is 0xffff
         '''
-        tid = self.__tid
-        self.__tid = (1 + self.__tid) & 0xffff
+        tid = ModbusMessageProducer.__tid
+        ModbusMessageProducer.__tid = (1 +
+            ModbusMessageProducer.__tid) & 0xffff
         return tid
 
 #---------------------------------------------------------------------------#
@@ -144,7 +149,7 @@ class ModbusClientProtocol(Protocol):
     def dataReceived(self, data):
         '''
         Get response, check for valid message, decode result
-        @param data The data returned from the server
+        :param data: The data returned from the server
         '''
         _logger.debug("[R]" + " ".join([hex(ord(x)) for x in data]))
         self.framer.addToFrame(data)
@@ -179,7 +184,8 @@ class ModbusClientProtocol(Protocol):
 
     def decode(self, message):
         ''' Wrapper to decode a resulting packet
-        @param message The raw packet to decode
+        :param message: The raw packet to decode
+        :return: The decoded message response, or None if a bad decode
         '''
         try:
             return decodeModbusResponsePDU(message)
@@ -197,7 +203,8 @@ class ModbusClientFactory(ClientFactory):
 
     def __init__(self, requests=None, results=None):
         ''' Initializes a transaction to a modbus server
-        @param requests A list of requests to send to server
+        :param requests: A list of requests to send to server
+        :param results: A handle to the results
         '''
         self.handler = {}
         if isinstance(requests, list):
@@ -220,14 +227,14 @@ class ModbusClientFactory(ClientFactory):
 
     def startedConnecting(self, connector):
         ''' Initiated on protocol connection start
-        @param connector The connection handler
+        :param connector: The connection handler
         '''
         _logger.debug("Client Connection Made")
 
     def clientConnectionLost(self, connector, reason):
         ''' If we still have pending requets, reconnect
-        @param connector The connection handler
-        @param reason The reason for a disconnection
+        :param connector: The connection handler
+        :param reason: The reason for a disconnection
         '''
         _logger.debug("Client Connection Lost")
         if self.requests:
@@ -238,8 +245,8 @@ class ModbusClientFactory(ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         ''' If this happens, alert the user
-        @param connector The connection handler
-        @param reason The reason for a disconnection
+        :param connector: The connection handler
+        :param reason: The reason for a disconnection
         '''
         _logger.debug("Client Connection Failed")
 
@@ -249,7 +256,7 @@ class ModbusClientFactory(ClientFactory):
     def addResponse(self, response):
         '''
         Callback for the client protocol that adds request responses
-        @param response The resulting message
+        :param response: The resulting message
 
         We only care about returned data from a read request. Everything
         else is simply ignored for now

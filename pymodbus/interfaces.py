@@ -16,9 +16,24 @@ class Singleton(object):
     http://mail.python.org/pipermail/python-list/2007-July/450681.html
     '''
     def __new__(cls, *args, **kwargs):
+        ''' Create a new instance
+        '''
         if '_inst' not in vars(cls):
             cls._inst = object.__new__(cls, *args, **kwargs)
         return cls._inst
+
+class Borg(object):
+    '''
+    Borg base class
+    http://code.activestate.com/recipes/66531/
+    '''
+    __shared_state = {}
+
+    def __init__(self):
+        ''' Initialize the new instance
+        Make sure this __init__ is called in the child class
+        '''
+        self.__dict__ = self.__shared_state
 
 #---------------------------------------------------------------------------#
 # Specific

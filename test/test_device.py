@@ -23,6 +23,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.ident   = ModbusDeviceIdentification(info)
         self.control = ModbusControlBlock()
         self.access  = ModbusAccessControl()
+        self.control.resetAllCounters()
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -78,7 +79,7 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusControlBlockCounters(self):
         ''' Tests the MCB counters methods '''
-        self.assertEqual(0, self.control.getCounter("BusMessage"))
+        self.assertEqual(0x0, self.control.getCounter("BusMessage"))
         for i in range(10):
             self.control.incrementCounter("BusMessage")
             self.control.incrementCounter("SlaveMessage")
@@ -97,7 +98,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             self.control.incrementCounter("SlaveMessage")
             self.control.incrementCounter("SlaveNAK")
             self.control.incrementCounter("BusCharacterOverrun")
-        self.assertEqual(0xe2, self.control.getCounterSummary())
+        self.assertEqual(0x1b, self.control.getCounterSummary())
         self.control.resetAllCounters()
         self.assertEqual(0x00, self.control.getCounterSummary())
 
@@ -133,8 +134,6 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(None, self.control.getDiagnostic(17))
         self.assertEqual(None, self.control.getDiagnostic(None))
         self.assertEqual(None, self.control.getDiagnostic([1,2,3]))
-
-
 
     def testAddRemoveSingleClients(self):
         ''' Test adding and removing a host '''

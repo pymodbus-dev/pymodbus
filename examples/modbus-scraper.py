@@ -7,7 +7,7 @@ simulator.
 
 from twisted.internet import reactor
 
-from pymodbus.client import ModbusClientFactory
+from pymodbus.client.async import ModbusClientFactory
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.bit_read_message import ReadDiscreteInputsRequest
 from pymodbus.register_read_message import ReadHoldingRegistersRequest

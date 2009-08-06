@@ -1,16 +1,16 @@
 '''
-Implementation of a Twisted Modbus Server
+Implementation of a Threaded Modbus Server
 ------------------------------------------
 
 Example run::
 
     context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-    reactor.listenTCP(502, ModbusServerFactory(context))
-    reactor.run()
+    server = ModbusTcpServer(store, context, identity)
+    server.serve_forever()
 '''
-from twisted.internet.protocol import Protocol, ServerFactory
-from twisted.internet import reactor
+import SocketServer
 
+from pymodbus.constants import Defaults
 from pymodbus.factory import decodeModbusResponsePDU
 from pymodbus.factory import decodeModbusRequestPDU
 from pymodbus.datastore import ModbusServerContext
@@ -26,37 +26,38 @@ from binascii import b2a_hex
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger("pymodbus.protocol")
+_logger = logging.getLogger("pymodbus.server")
 
 #---------------------------------------------------------------------------#
 # Server
 #---------------------------------------------------------------------------#
-class ModbusProtocol(Protocol):
-    ''' Implements a modbus server in twisted '''
+class ModbusRequestHandler(SocketServer.BaseRequestHandler):
+    ''' Implements the modbus server protocol
+
+    This uses the socketserver.BaseRequestHandler to implement
+    the client handler.
+    '''
 
     def __init__(self):
         ''' Initializes server '''
         self.frame = ModbusTCPFramer()#self.factory.framer()
 
-    def connectionMade(self):
+    def setup(self):
         ''' Callback for when a client connects '''
-        _logger.debug("Client Connected [%s]" % self.transport.getHost())
+        _logger.debug("Client Connected [%s]" % self.client_address)
         #self.factory.control.counter + 1 ?
 
-    def connectionLost(self, reason):
+    def finish(self):
+        ''' Callback for when a client disconnects
         '''
-        Callback for when a client disconnects
-        @param reason The client's reason for disconnecting
-        '''
-        _logger.debug("Client Disconnected")
+        _logger.debug("Client Disconnected [%s]" % self.client_address)
         #self.factory.control.counter - 1 ?
 
-    def dataReceived(self, data):
-        '''
-        Callback when we receive any data
-        @param data The data sent by the client
+    def handle(self):
+        ''' Callback when we receive any data
         '''
         # if self.factory.control.isListenOnly == False:
+        data = self.request.recv(1024)
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
         self.frame.addToFrame(data)
         while self.frame.isFrameReady():
@@ -93,7 +94,7 @@ class ModbusProtocol(Protocol):
         '''
         pdu = self.frame.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
-        return self.transport.write(pdu)
+        return self.request.send(pdu)
 
     def decode(self, message):
         '''
@@ -107,23 +108,20 @@ class ModbusProtocol(Protocol):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
-
-class ModbusServerFactory(ServerFactory):
+class ModbusTCPServer(SocketServer.ThreadingTCPServer):
     '''
-    Builder class for a modbus server
+    A modbus threaded tcp socket server
 
-    This also holds the server datastore so that it is
-    persisted between connections
+    We inherit and overload the socket server so that we
+    can control the client threads as well as have a single
+    server context instance.
     '''
 
-    protocol = ModbusProtocol
-
-    def __init__(self, store, framer=None, identity=None):
-        '''
-        Overloaded initializer for the modbus factory
-        @param store The ModbusServerContext datastore
-        @param framer The framer strategy to use
-        @param identity An optional identify structure
+    def __init__(self, context, framer=None, identity=None):
+        ''' Overloaded initializer for the socket server
+        :param context: The ModbusServerContext datastore
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
 
         If the identify structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
@@ -133,16 +131,49 @@ class ModbusServerFactory(ServerFactory):
         else: self.framer = ModbusTCPFramer
 
         if isinstance(store, ModbusServerContext):
-            self.store = store
-        else: self.store = ModbusServerContext()
+            self.context = context
+        else: self.context = ModbusServerContext()
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity = identity
+        self.threads = []
+        SocketServer.ThreadingTCPServer.__init__(self,
+            ("", Defaults.Port), ModbusRequestHandler)
+
+    def process_request(self, request, client):
+        ''' Callback for connecting a new client thread
+        :param request: The request to handle
+        :param client: The address of the client
+        '''
+        _logger.debug("Started thread to serve client at " + str(client_address))
+        SocketServer.ThreadingTCPServer.process_request(
+                self, request, client)
+
+    def server_close(self):
+        ''' Callback for stopping the running server
+        '''
+        _logger.debug("Modbus server stopped")
+        self.socket.close()
+        for t in self.threads:
+            t.run = False
+
+#---------------------------------------------------------------------------# 
+# Starting Factories
+#---------------------------------------------------------------------------# 
+def StartTcpServer(self, context=None, framer=None, identity=None):
+    ''' A factory to start and run a modbus server
+    :param context: The ModbusServerContext datastore
+    :param framer: The framer strategy to use
+    :param identity: An optional identify structure
+    '''
+    server = ModbusTcpServer(context, framer, identity)
+    server.serve_forever()
 
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusProtocol", "ModbusServerFactory",
+    "ModbusTcpServer",
+    "StartTcpServer",
 ]

@@ -5,7 +5,7 @@ with read/write data as well as user configurable base data
 '''
 
 from twisted.internet import reactor
-from pymodbus.server import ModbusServerFactory
+from pymodbus.server.async import ModbusServerFactory
 from pymodbus.datastore import ModbusServerContext
 from optparse import OptionParser
 import pickle

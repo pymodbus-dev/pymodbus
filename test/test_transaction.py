@@ -27,13 +27,6 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     # Other Class tests
     #---------------------------------------------------------------------------# 
-    def testModbusTCPTransaction(self):
-        ''' Test the tcp transaction logic '''
-        trans = ModbusTCPTransaction("request")
-        for i in xrange(3):
-            self.assertTrue(trans.doRetry())
-        self.assertFalse(trans.doRetry())
-
     def testModbusTransactionManagerTID(self):
         ''' Test the tcp transaction manager TID '''
         self.assertEqual(id(self._manager), id(ModbusTransactionManager()))

@@ -1,6 +1,5 @@
 import unittest
-from pymodbus.factory import decodeModbusResponsePDU as decodeRsp
-from pymodbus.factory import decodeModbusRequestPDU as decodeRqst
+from pymodbus.factory import ServerDecoder, ClientDecoder
 from pymodbus.mexceptions import *
 
 class SimpleFactoryTest(unittest.TestCase):
@@ -10,6 +9,8 @@ class SimpleFactoryTest(unittest.TestCase):
 
     def setUp(self):
         ''' Initializes the test environment '''
+        self.client  = ClientDecoder()
+        self.server  = ServerDecoder()
         self.request = (
                 (0x01, '\x01\x00\x01\x00\x01'),                       # read coils
                 (0x02, '\x02\x00\x01\x00\x01'),                       # read discrete inputs
@@ -67,21 +68,21 @@ class SimpleFactoryTest(unittest.TestCase):
         ''' Test a working response factory decoders '''
         for func, msg in self.response:
             try:
-                decodeRsp(msg)
+                self.client.decode(msg)
             except ModbusException:
                 self.fail("Failed to Decode Response Message", func)
 
     def testResponseErrors(self):
         ''' Test a response factory decoder exceptions '''
-        self.assertRaises(ModbusException, decodeRsp, self.bad[0][1])
-        self.assertEqual(decodeRsp(self.bad[1][1]).function_code, self.bad[1][0],
+        self.assertRaises(ModbusException, self.client._helper, self.bad[0][1])
+        self.assertEqual(self.client.decode(self.bad[1][1]).function_code, self.bad[1][0],
                 "Failed to decode error PDU")
 
     def testRequestsWorking(self):
         ''' Test a working request factory decoders '''
         for func, msg in self.request:
             try:
-                decodeRqst(msg)
+                self.server.decode(msg)
             except ModbusException:
                 self.fail("Failed to Decode Request Message", func)
 
@@ -92,7 +93,7 @@ class SimpleFactoryTest(unittest.TestCase):
     def testRequestErrors(self):
         ''' Test a request factory decoder exceptions '''
         for func, msg in self.bad:
-            result = decodeRqst(msg)
+            result = self.server.decode(msg)
             self.assertEqual(result.ErrorCode, 1,
                     "Failed to decode invalid requests")
             self.assertEqual(result.execute(None).function_code, func,

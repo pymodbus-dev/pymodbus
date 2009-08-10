@@ -1,6 +1,7 @@
 import unittest
 from pymodbus.pdu import *
 from pymodbus.transaction import *
+from pymodbus.factory import ServerDecoder
 
 class SimpleDataStoreTest(unittest.TestCase):
     '''
@@ -12,10 +13,11 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def setUp(self):
         ''' Sets up the test environment '''
+        self.decoder  = ServerDecoder()
         self._manager = ModbusTransactionManager()
-        self._tcp     = ModbusTCPFramer()
-        self._rtu     = ModbusRTUFramer()
-        self._ascii   = ModbusASCIIFramer()
+        self._tcp     = ModbusTCPFramer(decoder=self.decoder)
+        self._rtu     = ModbusRTUFramer(decoder=self.decoder)
+        self._ascii   = ModbusASCIIFramer(decoder=self.decoder)
 
     def tearDown(self):
         ''' Cleans up the test environment '''

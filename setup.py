@@ -9,8 +9,12 @@ to install the package from the source archive.
 For information about setuptools
 http://peak.telecommunity.com/DevCenter/setuptools#new-and-changed-setup-keywords
 '''
+try: # if not installed, install and proceed
+    from setuptools import setup, find_packages
+except ImportError:
+    from ez_setup import use_setuptools
+    use_setuptools()
 
-from setuptools import setup, find_packages
 from distutils.core import Command
 import sys, os
 

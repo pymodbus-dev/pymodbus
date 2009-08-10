@@ -58,7 +58,7 @@ class ModbusAccessControl(Singleton):
 #---------------------------------------------------------------------------#
 # Device Information Control
 #---------------------------------------------------------------------------#
-class ModbusDeviceIdentification:
+class ModbusDeviceIdentification(object):
     '''
     This is used to supply the device identification
     for the readDeviceIdentification function
@@ -112,15 +112,15 @@ class ModbusDeviceIdentification:
         return "DeviceIdentity"
 
     #---------------------------------------------------------------------------#
-    # Eases access
+    # Property access (and named to boot)
     #---------------------------------------------------------------------------#
-    vendor_name             = property(lambda self: self._data[0])
-    product_code            = property(lambda self: self._data[1])
-    major_minor_revision    = property(lambda self: self._data[2])
-    vendor_url              = property(lambda self: self._data[3])
-    product_name            = property(lambda self: self._data[4])
-    model_name              = property(lambda self: self._data[5])
-    user_application_name   = property(lambda self: self._data[6])
+    vendor_name           = property(lambda s: s._data[0], lambda s,v: self._data.__setitem__(0,v))
+    product_code          = property(lambda s: s._data[1], lambda s,v: self._data.__setitem__(1,v))
+    major_minor_revision  = property(lambda s: s._data[2], lambda s,v: self._data.__setitem__(2,v))
+    vendor_url            = property(lambda s: s._data[3], lambda s,v: self._data.__setitem__(3,v))
+    product_name          = property(lambda s: s._data[4], lambda s,v: self._data.__setitem__(4,v))
+    model_name            = property(lambda s: s._data[5], lambda s,v: self._data.__setitem__(5,v))
+    user_application_name = property(lambda s: s._data[6], lambda s,v: self._data.__setitem__(6,v))
 
 #---------------------------------------------------------------------------#
 # Main server controll block

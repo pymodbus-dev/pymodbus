@@ -8,7 +8,8 @@ data computing checksums, and decode checksums.
 
 def packBitsToString(bits):
     ''' Creates a string out of an array of bits
-    @param bits A bit array
+
+    :param bits: A bit array
 
     example::
 
@@ -31,7 +32,8 @@ def packBitsToString(bits):
 
 def unpackBitsFromString(string):
     ''' Creates bit array out of a string
-    @param string The modbus data packet to decode
+
+    :param string: The modbus data packet to decode
 
     example::
 
@@ -69,12 +71,17 @@ __crc16_table = __generate_crc16_table()
 
 def computeCRC(data):
     ''' Computes a crc16 on the passed in data.
-    @param data The data to create a crc16 of
 
     The difference between modbus's crc16 and a normal crc16
     is that modbus starts the crc value out at 0xffff.
 
-    Accepts a string or a integer list
+    example::
+
+        return computeCRC(input) == 0x1234
+
+    .. note:: This accepts a string or a integer list
+
+    :param data: The data to create a crc16 of
     '''
     crc = 0xffff
     pre = lambda x: x
@@ -86,16 +93,27 @@ def computeCRC(data):
 
 def checkCRC(data, check):
     ''' Checks if the data matches the passed in CRC
-    @param data The data to create a crc16 of
-    @param check The CRC to validate
+
+    example::
+
+        return checkCRC(input, 0x1234)
+
+    :param data: The data to create a crc16 of
+    :param check: The CRC to validate
     '''
     return computeCRC(data) == check
 
 def computeLRC(data):
     ''' Wrapper to computer LRC of multiple types of data
-    @param data The data to apply a lrc to
 
-    Accepts a string or a integer list
+    .. note:: This accepts a string or a integer list
+
+    example::
+
+        return computeLRC(input) == 2
+
+    :param data: The data to apply a lrc to
+
     '''
     lrc = 0
     pre = lambda x: x
@@ -106,8 +124,13 @@ def computeLRC(data):
 
 def checkLRC(data, check):
     ''' Checks if the passed in data matches the LRC
-    @param data The data to calculate
-    @param check The LRC to validate
+
+    example::
+
+        return checkLRC(input, 2)
+
+    :param data: The data to calculate
+    :param check: The LRC to validate
     '''
     return computeLRC(data) == check
 

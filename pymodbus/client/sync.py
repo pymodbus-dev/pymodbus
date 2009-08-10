@@ -48,7 +48,7 @@ import socket
 import struct
 
 from pymodbus.constants import Defaults
-from pymodbus.factory import decodeModbusResponsePDU
+from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
@@ -110,8 +110,9 @@ class ModbusTransactionManager:
 class ModbusClientProtocol(Object):
     ''' Implements a modbus client in twisted '''
 
-    def __init__(self, framer=ModbusTCPFramer()):
+    def __init__(self, framer=ModbusTCPFramer(ClientDecoder())):
         ''' Initializes the framer module
+
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer
@@ -121,28 +122,13 @@ class ModbusClientProtocol(Object):
         Get response, check for valid message, decode result
         @param data The data returned from the server
         '''
-        _logger.debug("[R]" + " ".join([hex(ord(x)) for x in data]))
-        self.framer.addToFrame(data)
-        while self.framer.isFrameReady():
-            if self.framer.checkFrame():
-                result = self.decode(self.framer.getFrame())
-                if result is None:
-                    _logger.error("Client could not decode response")
-                    raise ModbusIOException("Unable to decode response")
-                self.framer.populateResult(result)
-                self.framer.advanceFrame()
-                self.factory.addResponse(result)
-            else: break
+        self.frame.processIncomingPacket(data, self.execute)
 
-    def decode(self, message):
-        ''' Wrapper to decode a resulting packet
-        @param message The raw packet to decode
+    def execute(self, result):
+        ''' The callback to call with the resulting message
+        :param request: The decoded request message
         '''
-        try:
-            return decodeModbusResponsePDU(message)
-        except ModbusException, er:
-            _logger.error("Unable to decode response %s" % er)
-        return None
+        self.factory.addResponse(result)
 
 class ModbusTcpClient(object):
     ''' Implementation of a modbus tcp client

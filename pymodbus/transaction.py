@@ -1,12 +1,12 @@
-""" Collection of transaction based abstractions
-"""
+'''
+Collection of transaction based abstractions
+'''
 import struct
 from binascii import b2a_hex
-from zope.interface import implements
 
-from pymodbus.constants import Defaults
-from pymodbus import interfaces
-from pymodbus.utilities import computeCRC, computeLRC
+from pymodbus.constants  import Defaults
+from pymodbus.interfaces import Singleton, IModbusFramer
+from pymodbus.utilities  import computeCRC, computeLRC
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -31,7 +31,7 @@ _logger = logging.getLogger('pymodbus.protocol')
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager
 #---------------------------------------------------------------------------#
-class ModbusTransactionManager(interfaces.Singleton):
+class ModbusTransactionManager(Singleton):
     ''' Impelements a transaction for a manager '''
 
     __tid = Defaults.TransactionId
@@ -101,18 +101,24 @@ class ModbusTransactionManager(interfaces.Singleton):
 # * length = uid + function code + data
 # * The -1 is to account for the uid byte
 #---------------------------------------------------------------------------#
-class ModbusTCPFramer:
+class ModbusTCPFramer(IModbusFramer):
     '''
     Modbus TCP Frame controller
     '''
 
-    implements(interfaces.IModbusFramer)
+    def __init__(self, decoder):
+        ''' Initializes a new instance of the framer
 
-    def __init__(self):
+        :param decoder: The decoder implementation to use
+        '''
         self.__buffer = ''
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
         self.__hsize  = 0x07
+        self.decoder  = decoder
 
+    #-----------------------------------------------------------------------#
+    # Private Helper Functions
+    #-----------------------------------------------------------------------#
     def checkFrame(self):
         '''
         Check and decode the next frame Return true if we were successful
@@ -173,6 +179,35 @@ class ModbusTCPFramer:
         result.protocol_id = self.__header['pid']
         result.uint_id = self.__header['uid']
 
+    #-----------------------------------------------------------------------#
+    # Public Member Functions
+    #-----------------------------------------------------------------------#
+    def processIncomingPacket(self, data, callback):
+        ''' The new packet processing pattern
+        :param data: The new packet data
+        :param callback: The function to send results to
+
+        This takes in a new request packet, adds it to the current
+        packet stream, and performs framing on it. That is, checks
+        for complete messages, and once found, will process all that
+        exist.  This handles the case when we read N + 1 or 1 / N
+        messages at a time instead of 1.
+
+        The processed and decoded messages are pushed to the callback
+        function to process and send.
+        '''
+        _logger.debug(" ".join([hex(ord(x)) for x in data]))
+        self.addToFrame(data)
+        while self.isFrameReady():
+            if self.checkFrame():
+                result = self.decoder.decode(self.getFrame())
+                if result is None:
+                    raise ModbusIOException("Unable to decode request")
+                self.populateResult(result)
+                self.advanceFrame()
+                callback(result) # defer or push to a thread?
+            else: break
+
     def buildPacket(self, message):
         '''
         Creates a ready to send modbus packet from a modbus request/response
@@ -217,19 +252,25 @@ class ModbusTCPFramer:
 # 1 Byte = start + 8 bits + parity + stop = 11 bits
 # (1/Baud)(bits) = delay seconds
 #---------------------------------------------------------------------------#
-class ModbusRTUFramer:
+class ModbusRTUFramer(IModbusFramer):
     '''
     Modbus RTU Frame controller
     '''
 
-    implements(interfaces.IModbusFramer)
+    def __init__(self, decoder):
+        ''' Initializes a new instance of the framer
 
-    def __init__(self):
+        :param decoder: The decoder implementation to use
+        '''
         self.__buffer = ''
         self.__header = {'crc':0x0000, 'len':0}
         self.__end    = '\x0d\x0a'
         self.__start  = '\x3a'
+        self.decoder  = decoder
 
+    #-----------------------------------------------------------------------#
+    # Private Helper Functions
+    #-----------------------------------------------------------------------#
     def checkFrame(self):
         '''
         Check and decode the next frame Return true if we were successful
@@ -276,6 +317,34 @@ class ModbusRTUFramer:
         '''
         pass # no header for serial
 
+    #-----------------------------------------------------------------------#
+    # Public Member Functions
+    #-----------------------------------------------------------------------#
+    def processIncomingPacket(self, data, callback):
+        ''' The new packet processing pattern
+        :param data: The new packet data
+        :param callback: The function to send results to
+
+        This takes in a new request packet, adds it to the current
+        packet stream, and performs framing on it. That is, checks
+        for complete messages, and once found, will process all that
+        exist.  This handles the case when we read N + 1 or 1 / N
+        messages at a time instead of 1.
+
+        The processed and decoded messages are pushed to the callback
+        function to process and send.
+        '''
+        self.addToFrame(data)
+        while self.isFrameReady():
+            if self.checkFrame():
+                result = self.decoder.decode(self.getFrame())
+                if result is None:
+                    raise ModbusIOException("Unable to decode response")
+                self.populate(result)
+                self.advanceFrame()
+                callback(result) # defer or push to a thread?
+            else: break
+
     def buildPacket(self, message):
         '''
         Creates a ready to send modbus packet from a modbus request/response
@@ -313,19 +382,25 @@ class ModbusRTUFramer:
 # @todo This is actually being encoded as binary instead of ascii, so
 #       I need to fix that. I need to re-read the spec.
 #---------------------------------------------------------------------------#
-class ModbusASCIIFramer:
+class ModbusASCIIFramer(IModbusFramer):
     '''
     Modbus ASCII Frame controller
     '''
 
-    implements(interfaces.IModbusFramer)
+    def __init__(self, decoder):
+        ''' Initializes a new instance of the framer
 
-    def __init__(self):
+        :param decoder: The decoder implementation to use
+        '''
         self.__buffer = ''
         self.__header = {'lrc':'0000', 'len':0}
         self.__start  = ':'
         self.__end    = "\r\n"
+        self.decoder  = decoder
 
+    #-----------------------------------------------------------------------#
+    # Private Helper Functions
+    #-----------------------------------------------------------------------#
     def checkFrame(self):
         ''' Check and decode the next frame
         @return True if we successful, False otherwise
@@ -380,6 +455,34 @@ class ModbusASCIIFramer:
         :param result: The response packet
         '''
         pass # no header for serial
+
+    #-----------------------------------------------------------------------#
+    # Public Member Functions
+    #-----------------------------------------------------------------------#
+    def processIncomingPacket(self, data, callback):
+        ''' The new packet processing pattern
+        :param data: The new packet data
+        :param callback: The function to send results to
+
+        This takes in a new request packet, adds it to the current
+        packet stream, and performs framing on it. That is, checks
+        for complete messages, and once found, will process all that
+        exist.  This handles the case when we read N + 1 or 1 / N
+        messages at a time instead of 1.
+
+        The processed and decoded messages are pushed to the callback
+        function to process and send.
+        '''
+        self.addToFrame(data)
+        while self.isFrameReady():
+            if self.checkFrame():
+                result = self.decoder.decode(self.getFrame())
+                if result is None:
+                    raise ModbusIOException("Unable to decode response")
+                self.populate(result)
+                self.advanceFrame()
+                callback(result) # defer or push to a thread?
+            else: break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

@@ -19,31 +19,40 @@ class ConversionException(Exception):
     ''' Exception for configuration error '''
 
     def __init__(self, string):
-        '''
-        A base string to make pylint happy
-        @param string Additional information to append to exception
+        ''' Initialize a ConversionException instance
+
+        :param string: Additional information to append to exception
         '''
         Exception.__init__(self, string)
         self.string = string
 
     def __str__(self):
+        ''' Builds a string representation of the object
+
+        :returns: The string representation of the object
+        '''
         return 'Conversion Error: %s' % self.string
 
 #--------------------------------------------------------------------------#
 # Lxml Parser Tree
 #--------------------------------------------------------------------------#
 class ModbusXML:
-    tf = {'true':True, 'false':False}
+    convert = {
+        'true':True,
+        'false':False,
+    }
+    lookup = {
+        'InputRegisters':'ir',
+        'HoldingRegisters':'hr',
+        'CoilDiscretes':'ci',
+        'InputDiscretes':'di'
+    }
 
     def __init__(self):
         '''
         Initializer for the parser object
         '''
-        self.next = 0
-        self.ds = {
-                'InputRegisters':'ir', 'HoldingRegisters':'hr',
-                'CoilDiscretes':'ci', 'InputDiscretes':'di'
-        }
+        self.next  = 0
         self.result = {'di':{}, 'ci':{}, 'ir':{}, 'hr':{}}
 
     def start(self, tag, attrib):
@@ -56,8 +65,8 @@ class ModbusXML:
             try:
                 self.next = attrib['index']
             except KeyError: raise ConversionException("Invalid XML: index")
-        elif tag in self.ds.keys():
-            self.h = self.result[self.ds[tag]]
+        elif tag in self.lookup.keys():
+            self.h = self.result[self.lookup[tag]]
 
     def end(self, tag):
         '''
@@ -71,8 +80,8 @@ class ModbusXML:
         Callback for node data
         @param data The data for the current node
         '''
-        if data in self.tf.keys():
-            result = self.tf[data]
+        if data in self.convert.keys():
+            result = self.convert[data]
         else: result = data
         self.h[self.next] = data
 
@@ -103,9 +112,8 @@ def store_dump(result, file):
     result['hr'] = sblock(result['hr'])
     result['ir'] = sblock(result['ir'])
 
-    f = open(file, "w")
-    pickle.dump(result, f)
-    f.close()
+    with open(file, "w") as input:
+        pickle.dump(result, input)
 
 def main():
     '''

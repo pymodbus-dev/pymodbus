@@ -4,17 +4,19 @@ An example of creating a fully implemented modbus server
 with read/write data as well as user configurable base data
 '''
 
-from twisted.internet import reactor
-from pymodbus.server.async import ModbusServerFactory
-from pymodbus.datastore import ModbusServerContext
-from optparse import OptionParser
 import pickle
+from optparse import OptionParser
+from twisted.internet import reactor
+
+from pymodbus.server.async import StartTcpServer
+from pymodbus.datastore import ModbusServerContext
 
 #--------------------------------------------------------------------------#
 # Logging
 #--------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
+
 server_log   = logging.getLogger("pymodbus.server")
 protocol_log = logging.getLogger("pymodbus.protocol")
 
@@ -26,7 +28,7 @@ protocol_log = logging.getLogger("pymodbus.protocol")
 import getpass
 def root_test():
     ''' Simple test to see if we are running as root '''
-    return True
+    return True # removed for the time being as it isn't portable
     #return getpass.getuser() == "root"
 
 #--------------------------------------------------------------------------#
@@ -36,10 +38,18 @@ class ConfigurationException(Exception):
     ''' Exception for configuration error '''
 
     def __init__(self, string):
+        ''' Initializes the ConfigurationException instance
+
+        :param string: The message to append to the exception
+        '''
         Exception.__init__(self, string)
         self.string = string
 
     def __str__(self):
+        ''' Builds a representation of the object
+
+        :returns: A string representation of the object
+        '''
         return 'Configuration Error: %s' % self.string
 
 class Configuration:
@@ -57,7 +67,7 @@ class Configuration:
         Trys to load a configuration file, lets the file not
         found exception fall through
 
-        @param config The pickled datastore
+        :param config: The pickled datastore
         '''
         try:
             self.file = open(config, "r")
@@ -65,15 +75,14 @@ class Configuration:
             raise ConfigurationException("File not found %s" % config)
 
     def parse(self):
-        ''' Parses the config file and creates a server context '''
+        ''' Parses the config file and creates a server context
+        '''
         handle = pickle.load(self.file)
-        try:
-            # test for existance, or bomb
+        try: # test for existance, or bomb
             dsd = handle['di']
             csd = handle['ci']
             hsd = handle['hr']
             isd = handle['ir']
-
         except Exception:
             raise ConfigurationException("Invalid Configuration")
         return ModbusServerContext(d=dsd, c=csd, h=hsd, i=isd)
@@ -103,8 +112,7 @@ def main():
     # parse configuration file and run
     try:
         conf = Configuration(opt.file)
-        reactor.listenTCP(502, ModbusServerFactory(conf.parse()))
-        reactor.run()
+        StartTcpServer(context=conf.parse())
     except ConfigurationException, err:
         print err
         parser.print_help()

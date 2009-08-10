@@ -8,11 +8,11 @@ Example run::
     server = ModbusTcpServer(store, context, identity)
     server.serve_forever()
 '''
+from binascii import b2a_hex
 import SocketServer
 
 from pymodbus.constants import Defaults
-from pymodbus.factory import decodeModbusResponsePDU
-from pymodbus.factory import decodeModbusRequestPDU
+from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
@@ -20,7 +20,6 @@ from pymodbus.transaction import ModbusTCPFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
-from binascii import b2a_hex
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -39,44 +38,35 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
     '''
 
     def __init__(self):
-        ''' Initializes server '''
+        ''' Initializes server
+        '''
         self.frame = ModbusTCPFramer()#self.factory.framer()
 
     def setup(self):
-        ''' Callback for when a client connects '''
+        ''' Callback for when a client connects
+        '''
         _logger.debug("Client Connected [%s]" % self.client_address)
-        #self.factory.control.counter + 1 ?
 
     def finish(self):
         ''' Callback for when a client disconnects
         '''
         _logger.debug("Client Disconnected [%s]" % self.client_address)
-        #self.factory.control.counter - 1 ?
 
     def handle(self):
         ''' Callback when we receive any data
         '''
+        _logger.debug(" ".join([hex(ord(x)) for x in data]))
         # if self.factory.control.isListenOnly == False:
         data = self.request.recv(1024)
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
-        self.frame.addToFrame(data)
-        while self.frame.isFrameReady():
-            if self.frame.checkFrame():
-                result = self.decode(self.frame.getFrame())
-                if result is None:
-                    raise ModbusIOException("Unable to decode response")
-                self.frame.populateResult(result)
-                self.frame.advanceFrame()
-                self.execute(result) # defer or push to a thread?
-            else: break
+        self.frame.processIncomingPacket(data, self.execute)
 
 #---------------------------------------------------------------------------#
 # Extra Helper Functions
 #---------------------------------------------------------------------------#
     def execute(self, request):
-        '''
-        Executes the request and returns the result
-        @param request The decoded request message
+        ''' The callback to call with the resulting message
+
+        :param request: The decoded request message
         '''
         try:
             response = request.execute(self.factory.store)
@@ -88,19 +78,20 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         self.send(response)
 
     def send(self, message):
+        ''' Send a request (string) to the network
+
+        :param message: The unencoded modbus response
         '''
-        Send a request (string) to the network
-        @param message The unencoded modbus response
-        '''
+        #self.factory.control.incrementCounter('BusMessage')
         pdu = self.frame.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.request.send(pdu)
 
     def decode(self, message):
-        '''
-        Decodes a request packet
-        @param message The raw modbus request packet
-        @return The decoded modbus message or None if error
+        ''' Decodes a request packet
+
+        :param message: The raw modbus request packet
+        :returns: The decoded modbus message or None if error
         '''
         try:
             return decodeModbusRequestPDU(message)
@@ -119,13 +110,16 @@ class ModbusTCPServer(SocketServer.ThreadingTCPServer):
 
     def __init__(self, context, framer=None, identity=None):
         ''' Overloaded initializer for the socket server
+
+        If the identify structure is not passed in, the ModbusControlBlock
+        uses its own empty structure.
+
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
 
-        If the identify structure is not passed in, the ModbusControlBlock
-        uses its own empty structure.
         '''
+        self.decoder = ServerDecoder()
         if isinstance(framer, IModbusFramer):
             self.framer = framer
         else: self.framer = ModbusTCPFramer
@@ -143,6 +137,7 @@ class ModbusTCPServer(SocketServer.ThreadingTCPServer):
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
+
         :param request: The request to handle
         :param client: The address of the client
         '''
@@ -161,14 +156,26 @@ class ModbusTCPServer(SocketServer.ThreadingTCPServer):
 #---------------------------------------------------------------------------# 
 # Starting Factories
 #---------------------------------------------------------------------------# 
-def StartTcpServer(self, context=None, framer=None, identity=None):
-    ''' A factory to start and run a modbus server
+def StartTcpServer(self, context=None, identity=None):
+    ''' A factory to start and run a tcp modbus server
+
     :param context: The ModbusServerContext datastore
-    :param framer: The framer strategy to use
     :param identity: An optional identify structure
     '''
-    server = ModbusTcpServer(context, framer, identity)
+    framer = ModbusTCPFramer
+    server = ModbusTcpServer(context=context, framer=framer, identity=identity)
     server.serve_forever()
+
+def StartUdpServer(self, context=None, identity=None):
+    ''' A factory to start and run a udp modbus server
+
+    :param context: The ModbusServerContext datastore
+    :param identity: An optional identify structure
+    '''
+    framer = ModbusTCPFramer
+    #server = ModbusUdpServer(context, framer, identity)
+    #server.serve_forever()
+    raise Exception("Not Implemented")
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

@@ -54,19 +54,22 @@ This is broken right now, and I have been to lazy to fix it
 I need to modify this to return defers and maybe pump requests
 into the producer.
 """
+import struct
 from zope.interface import implements
 
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet import reactor
 from twisted.internet.interfaces import IPullProducer
 
-from pymodbus.factory import decodeModbusResponsePDU
+from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
 from pymodbus.transaction import ModbusTCPFramer
 
-import struct
+#---------------------------------------------------------------------------#
+# Logging
+#---------------------------------------------------------------------------#
 import logging
 _logger = logging.getLogger('pymodbus.client')
 
@@ -89,9 +92,9 @@ class ModbusMessageProducer:
         :param framer: Framer object that is used to build the request
         '''
         self.requests = requests
-        self.framer = framer
+        self.framer   = framer
         self.consumer = consumer
-        self.handler = handler
+        self.handler  = handler
 
         if self.consumer:
             self.consumer.registerProducer(self, False)
@@ -129,13 +132,16 @@ class ModbusMessageProducer:
 # Client Protocols
 #---------------------------------------------------------------------------#
 class ModbusClientProtocol(Protocol):
-    ''' Implements a modbus client in twisted '''
+    ''' Implements a modbus client in twisted
+    '''
 
-    def __init__(self):
+    def __init__(self, framer=ModbusTCPFramer(ClientDecoder())):
         ''' Initializes the framer module
+
+        :param framer: The framer to use for the protocol
         '''
         self.done = False
-        self.framer = ModbusTCPFramer()
+        self.framer = framer
 
     def connectionMade(self):
         '''
@@ -151,21 +157,16 @@ class ModbusClientProtocol(Protocol):
         Get response, check for valid message, decode result
         :param data: The data returned from the server
         '''
-        _logger.debug("[R]" + " ".join([hex(ord(x)) for x in data]))
-        self.framer.addToFrame(data)
-        while self.framer.isFrameReady():
-            if self.framer.checkFrame():
-                result = self.decode(self.framer.getFrame())
-                if result is None:
-                    _logger.error("Client could not decode response")
-                    raise ModbusIOException("Unable to decode response")
-                self.framer.populateResult(result)
-                self.framer.advanceFrame()
-                self.factory.addResponse(result)
-            else: break
+        self.framer.processIncomingPacket(data, self.execute)
         if self.factory.requests:
             self.producer.resumeProducing()
         else: self.transport.loseConnection()
+
+    def execute(self, result):
+        ''' The callback to call with the resulting message
+        :param request: The decoded request message
+        '''
+        self.factory.addResponse(result)
 
     #----------------------------------------------------------------------#
     # Extra Functions
@@ -181,17 +182,6 @@ class ModbusClientProtocol(Protocol):
     #       @param message The unencoded modbus request
     #       '''
     #       return self.transport.write(self.framer.buildPacket(message))
-
-    def decode(self, message):
-        ''' Wrapper to decode a resulting packet
-        :param message: The raw packet to decode
-        :return: The decoded message response, or None if a bad decode
-        '''
-        try:
-            return decodeModbusResponsePDU(message)
-        except ModbusException, er:
-            _logger.error("Unable to decode response %s" % er)
-        return None
 
 #---------------------------------------------------------------------------#
 # Client Factories

@@ -10,6 +10,7 @@ Contents:
    bit-read-message.rst
    bit-write-message.rst
    client.rst
+   constants.rst
    datastore.rst
    diag-message.rst
    device.rst

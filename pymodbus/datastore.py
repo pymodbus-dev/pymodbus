@@ -27,14 +27,14 @@ many devices implement it) is a associate-array::
 
 The difference between the two is that the latter will allow
 arbitrary gaps in its datastore while the former will not.
-This is seen quite commonly in devices with modbus implementations.
+This is seen quite commonly in some modbus implementations.
 What follows is a clear example from the field:
 
 Say a company makes two devices to monitor power usage on a rack.
 One works with three-phase and the other with a single phase. The
 company will dictate a modbus data mapping such that registers::
 
-    n:              phase 1 power
+    n:      phase 1 power
     n+1:    phase 2 power
     n+2:    phase 3 power
 
@@ -47,13 +47,17 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 from pymodbus.mexceptions import *
+
+#---------------------------------------------------------------------------#
+# Logging
+#---------------------------------------------------------------------------#
 import logging;
 _logger = logging.getLogger("pymodbus.protocol")
 
 #---------------------------------------------------------------------------#
 # Datablock Storage
 #---------------------------------------------------------------------------#
-class ModbusDataBlock:
+class ModbusDataBlock(object):
     '''
     Base class for a modbus datastore
 
@@ -63,13 +67,16 @@ class ModbusDataBlock:
             @values The actual datastore values
 
     Derived classes must implemented the following methods:
-            checkAddress(self, address, count=1)
+            validate(self, address, count=1)
             getValues(self, address, count=1)
             setValues(self, address, values)
     '''
 
     def default(self, count, value):
-        ''' Used to initialize a store to one value '''
+        ''' Used to initialize a store to one value
+        :param count: The number of fields to set
+        :param value: The default value to set to the fields
+        '''
         self.default_value = value
         self.values = [default_value] * count
 
@@ -78,41 +85,42 @@ class ModbusDataBlock:
         for i in self.values:
             i = self.default_value
 
-    def checkAddress(self, address, count=1):
-        '''
-        Checks to see if the request is in range
-        @param address The starting address
-        @param count The number of values to test for
+    def validate(self, address, count=1):
+        ''' Checks to see if the request is in range
+        :param address: The starting address
+        :param count: The number of values to test for
+        :returns: True if the request in within range, False otherwise
         '''
         raise NotImplementedException("Datastore Address Check")
 
     def getValues(self, address, count=1):
-        '''
-        Returns the requested values from the datastore
-        @param address The starting address
-        @param count The number of values to retrieve
+        ''' Returns the requested values from the datastore
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
         '''
         raise NotImplementedException("Datastore Value Retrieve")
 
     def setValues(self, address, values):
-        '''
-        Returns the requested values from the datastore
-        @param address The starting address
-        @param values The values to store
+        ''' Returns the requested values from the datastore
+        :param address: The starting address
+        :param values: The values to store
         '''
         raise NotImplementedException("Datastore Value Retrieve")
 
     def __str__(self):
+        ''' Build a representation of the datastore
+        :returns: A string representation of the datastore
+        '''
         return "DataStore(%d, %d)" % (self.address, self.default_value)
 
 class ModbusSequentialDataBlock(ModbusDataBlock):
     ''' Creates a sequential modbus datastore '''
 
     def __init__(self, address, values):
-        '''
-        Initializes the datastore
-        @address The starting address of the datastore
-        @values Either a list or a dictionary of values
+        ''' Initializes the datastore
+        :param address: The starting address of the datastore
+        :param values: Either a list or a dictionary of values
         '''
         self.address = address
         if isinstance(values, list):
@@ -120,11 +128,11 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         else: self.values = [values]
         self.default_value = self.values[0]
 
-    def checkAddress(self, address, count=1):
-        '''
-        Checks to see if the request is in range
-        @param address The starting address
-        @param count The number of values to test for
+    def validate(self, address, count=1):
+        ''' Checks to see if the request is in range
+        :param address: The starting address
+        :param count: The number of values to test for
+        :returns: True if the request in within range, False otherwise
         '''
         if self.address > address:
             return False
@@ -133,20 +141,18 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         return True
 
     def getValues(self, address, count=1):
-        '''
-        Returns the requested values of the datastore
-        @param address The starting address
-        @param count The number of values to retrieve
+        ''' Returns the requested values of the datastore
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
         '''
         b = address - self.address
-        ret = self.values[b:b+count]
-        return ret
+        return self.values[b:b+count]
 
     def setValues(self, address, values):
-        '''
-        Sets the requested values of the datastore
-        @param address The starting address
-        @param values The new values to be set
+        ''' Sets the requested values of the datastore
+        :param address: The starting address
+        :param values: The new values to be set
         '''
         b = address - self.address
         self.values[b:b+len(values)] = values
@@ -155,8 +161,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
 
     def __init__(self, values):
-        '''
-        Initializes the datastore
+        ''' Initializes the datastore
         @values Either a list or a dictionary of values
 
         Using @values we create the default datastore value
@@ -171,29 +176,28 @@ class ModbusSparseDataBlock(ModbusDataBlock):
         self.default_value = self.values.values()[0]
         self.address = self.values.iterkeys().next()
 
-    def checkAddress(self, address, count=1):
-        '''
-        Checks to see if the request is in range
-        @param address The starting address
-        @param count The number of values to test for
+    def validate(self, address, count=1):
+        ''' Checks to see if the request is in range
+        :param address: The starting address
+        :param count: The number of values to test for
+        :returns: True if the request in within range, False otherwise
         '''
         return set(range(address, address + count)
                         ).issubset(set(self.values.iterkeys()))
 
     def getValues(self, address, count=1):
-        '''
-        Returns the requested values of the datastore
-        @param address The starting address
-        @param count The number of values to retrieve
+        ''' Returns the requested values of the datastore
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
         '''
         return [self.values[i]
                 for i in range(address, address + count)]
 
     def setValues(self, address, values):
-        '''
-        Sets the requested values of the datastore
-        @param address The starting address
-        @param values The new values to be set
+        ''' Sets the requested values of the datastore
+        :param address: The starting address
+        :param values: The new values to be set
         '''
         for i,v in enumerate(values):
             self.values[address + i] = v
@@ -201,15 +205,14 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 #---------------------------------------------------------------------------#
 # Device Data Control
 #---------------------------------------------------------------------------#
-class ModbusServerContext:
+class ModbusServerContext(object):
     '''
     This creates a modbus data model with each data access
     stored in its own personal block
     '''
 
     def __init__(self, **kwargs):
-        '''
-        Initializes the datastores
+        ''' Initializes the datastores
         @param kwargs
                 Each element is a ModbusDataBlock
                 'd' - Discrete Inputs initializer
@@ -248,30 +251,32 @@ class ModbusServerContext:
 
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
-        @param fx The function we are working with
-        @param address The starting address
-        @param count The number of values to test
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to test
+        :returns: True if the request in within range, False otherwise
         '''
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        return self.__mapping[fx].checkAddress(address, count)
+        return self.__mapping[fx].validate(address, count)
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
-        @param fx The function we are working with
-        @param address The starting address
-        @param count The number of values to retrieve
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
         '''
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.__mapping[fx].getValues(address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
-        @param fx The function we are working with
-        @param address The starting address
-        @param values The new values to be set
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
         '''
         _logger.debug("setValues[%d] %d:%d" % (fx, address, count))
-        return self.__mapping[fx].setValues(address, values)
+        self.__mapping[fx].setValues(address, values)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

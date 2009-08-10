@@ -8,12 +8,12 @@ Example run::
     reactor.listenTCP(502, ModbusServerFactory(context))
     reactor.run()
 '''
+from binascii import b2a_hex
 from twisted.internet.protocol import Protocol, ServerFactory
 from twisted.internet import reactor
 
 from pymodbus.constants import Defaults
-from pymodbus.factory import decodeModbusResponsePDU
-from pymodbus.factory import decodeModbusRequestPDU
+from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
@@ -21,7 +21,6 @@ from pymodbus.transaction import ModbusTCPFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
-from binascii import b2a_hex
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -35,14 +34,15 @@ _logger = logging.getLogger("pymodbus.server")
 class ModbusProtocol(Protocol):
     ''' Implements a modbus server in twisted '''
 
-    def __init__(self):
-        ''' Initializes server '''
-        self.frame = ModbusTCPFramer()#self.factory.framer()
-
     def connectionMade(self):
-        ''' Callback for when a client connects '''
+        ''' Callback for when a client connects
+       
+        Note, since the protocol factory cannot be accessed from the
+        protocol __init__, the client connection made is essentially our
+        __init__ method.     
+        '''
         _logger.debug("Client Connected [%s]" % self.transport.getHost())
-        #self.factory.control.counter + 1 ?
+        self.framer = self.factory.framer(decoder=self.factory.decoder)
 
     def connectionLost(self, reason):
         '''
@@ -50,25 +50,15 @@ class ModbusProtocol(Protocol):
         @param reason The client's reason for disconnecting
         '''
         _logger.debug("Client Disconnected")
-        #self.factory.control.counter - 1 ?
 
     def dataReceived(self, data):
         '''
         Callback when we receive any data
         @param data The data sent by the client
         '''
-        # if self.factory.control.isListenOnly == False:
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
-        self.frame.addToFrame(data)
-        while self.frame.isFrameReady():
-            if self.frame.checkFrame():
-                result = self.decode(self.frame.getFrame())
-                if result is None:
-                    raise ModbusIOException("Unable to decode response")
-                self.frame.populateResult(result)
-                self.frame.advanceFrame()
-                self.execute(result) # defer or push to a thread?
-            else: break
+        # if self.factory.control.isListenOnly == False:
+        self.framer.processIncomingPacket(data, self.execute)
 
 #---------------------------------------------------------------------------#
 # Extra Helper Functions
@@ -83,6 +73,7 @@ class ModbusProtocol(Protocol):
         except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)
+        #self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
         response.uint_id = request.unit_id
         self.send(response)
@@ -92,21 +83,10 @@ class ModbusProtocol(Protocol):
         Send a request (string) to the network
         @param message The unencoded modbus response
         '''
-        pdu = self.frame.buildPacket(message)
+        #self.factory.control.incrementCounter('BusMessage')
+        pdu = self.framer.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.transport.write(pdu)
-
-    def decode(self, message):
-        '''
-        Decodes a request packet
-        @param message The raw modbus request packet
-        @return The decoded modbus message or None if error
-        '''
-        try:
-            return decodeModbusRequestPDU(message)
-        except ModbusException, er:
-            _logger.warn("Unable to decode request %s" % er)
-        return None
 
 
 class ModbusServerFactory(ServerFactory):
@@ -120,15 +100,17 @@ class ModbusServerFactory(ServerFactory):
     protocol = ModbusProtocol
 
     def __init__(self, store, framer=None, identity=None):
-        '''
-        Overloaded initializer for the modbus factory
-        @param store The ModbusServerContext datastore
-        @param framer The framer strategy to use
-        @param identity An optional identify structure
+        ''' Overloaded initializer for the modbus factory
 
         If the identify structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
+
+        :param store: The ModbusServerContext datastore
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
+
         '''
+        self.decoder = ServerDecoder()
         if isinstance(framer, IModbusFramer):
             self.framer = framer
         else: self.framer = ModbusTCPFramer
@@ -136,8 +118,8 @@ class ModbusServerFactory(ServerFactory):
         if isinstance(store, ModbusServerContext):
             self.store = store
         else: self.store = ModbusServerContext()
-        self.control = ModbusControlBlock()
 
+        self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity = identity
 
@@ -149,8 +131,9 @@ def StartTcpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
+    framer = ModbusTCPFramer
     reactor.listenTCP(Defaults.Port,
-        ModbusServerFactory(store=context, identity=identity))
+        ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
 
 def StartUdpServer(context, identity=None):
@@ -158,8 +141,9 @@ def StartUdpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
+    framer = ModbusTCPFramer
     reactor.listenUDP(Defaults.Port,
-        ModbusServerFactory(store=context, identity=identity))
+        ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
 
 #---------------------------------------------------------------------------# 

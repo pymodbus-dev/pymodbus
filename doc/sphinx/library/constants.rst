@@ -1,8 +1,8 @@
-:mod:`factory` --- Request/Response Decoders
+:mod:`constants` --- Modbus Default Values
 ============================================================
 
-.. module:: factory
-   :synopsis: Request/Response Decoders
+.. module:: constants
+   :synopsis: Modbus Default Values
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
 .. sectionauthor:: Galen Collins <bashwork@gmail.com>
@@ -10,10 +10,7 @@
 API Documentation
 -------------------
 
-.. automodule:: pymodbus.factory
+.. automodule:: pymodbus.constants
 
-.. autoclass:: ServerDecoder
-   :members:
-
-.. autoclass:: ClientDecoder
+.. autoclass:: Defaults
    :members:

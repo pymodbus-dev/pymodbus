@@ -12,6 +12,8 @@
 
 ** Server Context **
   - Plug into server object (only for serial?)
+  - Add support for slaves.  This should be as simple as a dict of 
+    id : Context()
 
 ** Client **
   - Rework transaction flow and response data

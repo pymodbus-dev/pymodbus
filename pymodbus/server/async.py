@@ -17,7 +17,7 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusTCPFramer
+from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
@@ -113,7 +113,7 @@ class ModbusServerFactory(ServerFactory):
         self.decoder = ServerDecoder()
         if isinstance(framer, IModbusFramer):
             self.framer = framer
-        else: self.framer = ModbusTCPFramer
+        else: self.framer = ModbusSocketFramer
 
         if isinstance(store, ModbusServerContext):
             self.store = store
@@ -131,7 +131,7 @@ def StartTcpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
-    framer = ModbusTCPFramer
+    framer = ModbusSocketFramer
     reactor.listenTCP(Defaults.Port,
         ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
@@ -141,7 +141,7 @@ def StartUdpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
-    framer = ModbusTCPFramer
+    framer = ModbusSocketFramer
     reactor.listenUDP(Defaults.Port,
         ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
@@ -150,6 +150,5 @@ def StartUdpServer(context, identity=None):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusProtocol", "ModbusServerFactory",
     "StartTcpServer", "StartUdpServer"
 ]

@@ -52,7 +52,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
-from pymodbus.transaction import ModbusTCPFramer
+from pymodbus.transaction import ModbusSocketFramer
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -110,7 +110,7 @@ class ModbusTransactionManager:
 class ModbusClientProtocol(Object):
     ''' Implements a modbus client in twisted '''
 
-    def __init__(self, framer=ModbusTCPFramer(ClientDecoder())):
+    def __init__(self, framer=ModbusSocketFramer(ClientDecoder())):
         ''' Initializes the framer module
 
         :param framer: The framer to use for the protocol
@@ -192,7 +192,7 @@ class ModbusTcpClient(object):
             return self.transaction(request)
         raise ConnectionException("Client Not Connected")
 
-class ModbusTCPTransport(ModbusTransport):
+class ModbusTcpTransport(ModbusTransport):
     def __init__(self, socket):
         self.socket = socket
     def setSocket(self, socket):

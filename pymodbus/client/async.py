@@ -65,7 +65,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
-from pymodbus.transaction import ModbusTCPFramer
+from pymodbus.transaction import ModbusSocketFramer
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -135,7 +135,7 @@ class ModbusClientProtocol(Protocol):
     ''' Implements a modbus client in twisted
     '''
 
-    def __init__(self, framer=ModbusTCPFramer(ClientDecoder())):
+    def __init__(self, framer=ModbusSocketFramer(ClientDecoder())):
         ''' Initializes the framer module
 
         :param framer: The framer to use for the protocol

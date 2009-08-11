@@ -15,7 +15,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         ''' Sets up the test environment '''
         self.decoder  = ServerDecoder()
         self._manager = ModbusTransactionManager()
-        self._tcp     = ModbusTCPFramer(decoder=self.decoder)
+        self._tcp     = ModbusSocketFramer(decoder=self.decoder)
         self._rtu     = ModbusRTUFramer(decoder=self.decoder)
         self._ascii   = ModbusASCIIFramer(decoder=self.decoder)
 
@@ -115,7 +115,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual('', result)
         self._tcp.advanceFrame()
         self._tcp.addToFrame(msg2)
-        self.assertEqual(10, len(self._tcp._ModbusTCPFramer__buffer))
+        self.assertEqual(10, len(self._tcp._ModbusSocketFramer__buffer))
         self.assertTrue(self._tcp.checkFrame())
         result = self._tcp.getFrame()
         self.assertEqual(msg2[7:], result)

@@ -74,6 +74,7 @@ class ModbusDataBlock(object):
 
     def default(self, count, value):
         ''' Used to initialize a store to one value
+
         :param count: The number of fields to set
         :param value: The default value to set to the fields
         '''
@@ -87,6 +88,7 @@ class ModbusDataBlock(object):
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
+
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
@@ -95,6 +97,7 @@ class ModbusDataBlock(object):
 
     def getValues(self, address, count=1):
         ''' Returns the requested values from the datastore
+
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
@@ -103,6 +106,7 @@ class ModbusDataBlock(object):
 
     def setValues(self, address, values):
         ''' Returns the requested values from the datastore
+
         :param address: The starting address
         :param values: The values to store
         '''
@@ -110,6 +114,7 @@ class ModbusDataBlock(object):
 
     def __str__(self):
         ''' Build a representation of the datastore
+
         :returns: A string representation of the datastore
         '''
         return "DataStore(%d, %d)" % (self.address, self.default_value)
@@ -119,6 +124,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
 
     def __init__(self, address, values):
         ''' Initializes the datastore
+
         :param address: The starting address of the datastore
         :param values: Either a list or a dictionary of values
         '''
@@ -130,6 +136,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
+
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
@@ -142,6 +149,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
+
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
@@ -151,6 +159,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
+
         :param address: The starting address
         :param values: The new values to be set
         '''
@@ -162,10 +171,11 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 
     def __init__(self, values):
         ''' Initializes the datastore
-        @values Either a list or a dictionary of values
 
-        Using @values we create the default datastore value
-        and the starting address
+        Using the input values we create the default
+        datastore value and the starting address
+
+        :param values: Either a list or a dictionary of values
         '''
         if isinstance(values, dict):
             self.values = values
@@ -178,6 +188,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
+
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
@@ -187,6 +198,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
+
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
@@ -196,6 +208,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
+
         :param address: The starting address
         :param values: The new values to be set
         '''
@@ -251,6 +264,7 @@ class ModbusServerContext(object):
 
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
@@ -261,6 +275,7 @@ class ModbusServerContext(object):
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
@@ -271,6 +286,7 @@ class ModbusServerContext(object):
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
+
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set

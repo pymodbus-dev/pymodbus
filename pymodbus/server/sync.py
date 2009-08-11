@@ -16,7 +16,7 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusTCPFramer
+from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
@@ -40,7 +40,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
     def __init__(self):
         ''' Initializes server
         '''
-        self.frame = ModbusTCPFramer()#self.factory.framer()
+        self.frame = ModbusSocketFramer()#self.factory.framer()
 
     def setup(self):
         ''' Callback for when a client connects
@@ -99,7 +99,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
-class ModbusTCPServer(SocketServer.ThreadingTCPServer):
+class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
 
@@ -122,7 +122,7 @@ class ModbusTCPServer(SocketServer.ThreadingTCPServer):
         self.decoder = ServerDecoder()
         if isinstance(framer, IModbusFramer):
             self.framer = framer
-        else: self.framer = ModbusTCPFramer
+        else: self.framer = ModbusSocketFramer
 
         if isinstance(store, ModbusServerContext):
             self.context = context
@@ -153,6 +153,60 @@ class ModbusTCPServer(SocketServer.ThreadingTCPServer):
         for t in self.threads:
             t.run = False
 
+class ModbusUdpServer(SocketServer.ThreadingUDPServer):
+    '''
+    A modbus threaded udp socket server
+
+    We inherit and overload the socket server so that we
+    can control the client threads as well as have a single
+    server context instance.
+    '''
+
+    def __init__(self, context, framer=None, identity=None):
+        ''' Overloaded initializer for the socket server
+
+        If the identify structure is not passed in, the ModbusControlBlock
+        uses its own empty structure.
+
+        :param context: The ModbusServerContext datastore
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
+
+        '''
+        self.decoder = ServerDecoder()
+        if isinstance(framer, IModbusFramer):
+            self.framer = framer
+        else: self.framer = ModbusSocketFramer
+
+        if isinstance(store, ModbusServerContext):
+            self.context = context
+        else: self.context = ModbusServerContext()
+        self.control = ModbusControlBlock()
+
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity = identity
+        self.threads = []
+        SocketServer.ThreadingUDPServer.__init__(self,
+            ("", Defaults.Port), ModbusRequestHandler)
+
+    def process_request(self, request, client):
+        ''' Callback for connecting a new client thread
+
+        :param request: The request to handle
+        :param client: The address of the client
+        '''
+        _logger.debug("Started thread to serve client at " + str(client_address))
+        SocketServer.ThreadingUDPServer.process_request(
+                self, request, client)
+
+    def server_close(self):
+        ''' Callback for stopping the running server
+        '''
+        _logger.debug("Modbus server stopped")
+        self.socket.close()
+        for t in self.threads:
+            t.run = False
+
 #---------------------------------------------------------------------------# 
 # Starting Factories
 #---------------------------------------------------------------------------# 
@@ -162,7 +216,7 @@ def StartTcpServer(self, context=None, identity=None):
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     '''
-    framer = ModbusTCPFramer
+    framer = ModbusSocketFramer
     server = ModbusTcpServer(context=context, framer=framer, identity=identity)
     server.serve_forever()
 
@@ -172,15 +226,13 @@ def StartUdpServer(self, context=None, identity=None):
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     '''
-    framer = ModbusTCPFramer
-    #server = ModbusUdpServer(context, framer, identity)
-    #server.serve_forever()
-    raise Exception("Not Implemented")
+    framer = ModbusSocketFramer
+    server = ModbusUdpServer(context, framer, identity)
+    server.serve_forever()
 
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusTcpServer",
-    "StartTcpServer",
+    "StartTcpServer", "StartUdpServer",
 ]

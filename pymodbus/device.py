@@ -27,9 +27,9 @@ class ModbusAccessControl(Singleton):
     ]
 
     def add(self, host):
-        '''
-        Add allowed host(s) from the NMS table
-        @param host The host to add
+        ''' Add allowed host(s) from the NMS table
+
+        :param host: The host to add
         '''
         if not isinstance(host, list):
             host = [host]
@@ -38,9 +38,9 @@ class ModbusAccessControl(Singleton):
                 self.__nmstable.append(entry)
 
     def remove(self, host):
-        '''
-        Remove allowed host(s) from the NMS table
-        @param host The host to remove
+        ''' Remove allowed host(s) from the NMS table
+
+        :param host: The host to remove
         '''
         if not isinstance(host, list):
             host = [host]
@@ -49,9 +49,9 @@ class ModbusAccessControl(Singleton):
                 self.__nmstable.remove(entry)
 
     def check(self, host):
-        '''
-        Check if a host is allowed to access resources
-        @param host The host to check
+        ''' Check if a host is allowed to access resources
+
+        :param host: The host to check
         '''
         return host in self.__nmstable
 
@@ -83,7 +83,8 @@ class ModbusDeviceIdentification(object):
         '''
         Initialize the datastore with the elements you need.
         (note acceptable range is [0x00-0x07,0x80-0xFF] inclusive)
-        @param info A dictionary of {int:string} of values
+
+        :param info: A dictionary of {int:string} of values
         '''
         if info is not None and isinstance(info, dict):
             for i in info.keys():
@@ -91,24 +92,28 @@ class ModbusDeviceIdentification(object):
                     self._data[i] = info[i]
 
     def __setitem__(self, key, item):
-        '''
-        Wrapper used to access the device information
-        @param key The register to set
-        @param item The new value for referenced register
+        ''' Wrapper used to access the device information
+
+        :param key: The register to set
+        :param item: The new value for referenced register
         '''
         if key not in [0x07, 0x08]:
             self._data[key] = item
 
     def __getitem__(self, key):
-        '''
-        Wrapper used to access the device information
-        @param key The register to read
+        ''' Wrapper used to access the device information
+
+        :param key: The register to read
         '''
         if key not in self._data.keys():
             self._data[key] = ''
         return self._data[key]
 
     def __str__(self):
+        ''' Build a representation of the device
+
+        :returns: A string representation of the device
+        '''
         return "DeviceIdentity"
 
     #---------------------------------------------------------------------------#
@@ -164,15 +169,17 @@ class ModbusControlBlock(Singleton):
 
     def incrementCounter(self, counter):
         ''' This increments a system counter
-        @param counter The counter to increment
+
+        :param counter: The counter to increment
         '''
         if counter in self.__counter.keys():
             self.__counter[counter] += 1
 
     def getCounter(self, counter):
         ''' This returns the requested counter
-        @param counter The counter to return
-        @return The requested counter or None if it doesn't exist
+
+        :param: counter The counter to return
+        :returns: The requested counter or None if it doesn't exist
         '''
         if counter in self.__counter.keys():
             return self.__counter[counter]
@@ -180,7 +187,8 @@ class ModbusControlBlock(Singleton):
 
     def getCounterSummary(self):
         ''' Returns a summary of the counters current status
-        @return A byte with each bit representing each counter
+
+        :returns: A byte with each bit representing each counter
         '''
         result = 0x00
         count  = 0x01
@@ -191,7 +199,8 @@ class ModbusControlBlock(Singleton):
 
     def resetCounter(self, counter):
         ''' This clears the selected counter
-        @param counter The counter to reset
+
+        :param counter: The counter to reset
         '''
         if counter in self.__counter.keys():
             self.__counter[counter] = 0x0000
@@ -205,7 +214,8 @@ class ModbusControlBlock(Singleton):
 
     def isListenOnly(self):
         ''' This returns weither we should listen only
-        @return True if we are listen-only, False otherwise
+
+        :returns: True if we are listen-only, False otherwise
         '''
         return self.__listen_only
 
@@ -214,14 +224,16 @@ class ModbusControlBlock(Singleton):
     #---------------------------------------------------------------------------#
     def setMode(self, mode):
         ''' This toggles the current serial mode
-        @param mode The data transfer method in (RTU, ASCII)
+
+        :param mode: The data transfer method in (RTU, ASCII)
         '''
         if mode in ['ASCII', 'RTU']:
             self.__mode = mode
 
     def getMode(self):
         ''' Returns the current transfer mode
-        @return one of ASCII or RTU
+
+        :returns: one of ASCII or RTU
         '''
         return self.__mode
 
@@ -230,7 +242,8 @@ class ModbusControlBlock(Singleton):
     #---------------------------------------------------------------------------#
     def setDelimiter(self, char):
         ''' This changes the serial delimiter character
-        @param char The new serial delimiter character
+
+        :param char: The new serial delimiter character
         '''
         if isinstance(char, str):
             self.__delimiter = char
@@ -239,7 +252,8 @@ class ModbusControlBlock(Singleton):
 
     def getDelimiter(self):
         ''' Returns the current serial delimiter character
-        @return Char representation of the delimiter
+
+        :returns: Char representation of the delimiter
         '''
         return self.__delimiter
 
@@ -248,7 +262,8 @@ class ModbusControlBlock(Singleton):
     #---------------------------------------------------------------------------#
     def setDiagnostic(self, mapping):
         ''' This sets the value in the diagnostic register
-        @param mapping Dictionary of key:value pairs to set
+
+        :param mapping: Dictionary of key:value pairs to set
         '''
         for entry in mapping.iteritems():
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
@@ -256,8 +271,9 @@ class ModbusControlBlock(Singleton):
 
     def getDiagnostic(self, bit):
         ''' This gets the value in the diagnostic register
-        @param bit The bit to get
-        @return The current value of the requested bit
+
+        :param bit: The bit to get
+        :returns: The current value of the requested bit
         '''
         if bit >= 0 and bit < len(self.__diagnostic):
             return self.__diagnostic[bit]
@@ -265,7 +281,8 @@ class ModbusControlBlock(Singleton):
 
     def getDiagnosticRegister(self):
         ''' This gets the entire diagnostic register
-        @return The diagnostic register collection
+
+        :returns: The diagnostic register collection
         '''
         return self.__diagnostic
 

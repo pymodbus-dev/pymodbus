@@ -38,21 +38,25 @@ class ModbusTransactionManager(Singleton):
     __transactions = []
 
     def __init__(self):
+        ''' Initializes an instance of the ModbusTransactionManager '''
         pass
 
     def addTransaction(self, request):
-        '''
-        Adds a transaction to the handler in case it needs to be resent
-        @param request The request to hold on to
+        ''' Adds a transaction to the handler
+           
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
         '''
         ModbusTransactionManager.__transactions.append(request)
 
     def getTransaction(self, tid):
-        '''
-        Returns a transaction matching the referenced tid
-        @param tid The transaction to retrieve
+        ''' Returns a transaction matching the referenced tid
 
         If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
         '''
         for k,v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
@@ -60,9 +64,9 @@ class ModbusTransactionManager(Singleton):
         return None
 
     def delTransaction(self, tid):
-        '''
-        Removes a transaction matching the referenced tid
-        @param tid The transaction to remove
+        ''' Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
         '''
         for k,v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
@@ -70,10 +74,11 @@ class ModbusTransactionManager(Singleton):
 
     def getNextTID(self):
         ''' Retrieve the next unique transaction identifier
-        :returns: The next unique transaction identifier
         
         This handles incrementing the identifier after
         retrieval
+
+        :returns: The next unique transaction identifier
         '''
         tid = ModbusTransactionManager.__tid
         ModbusTransactionManager.__tid += 1
@@ -101,9 +106,9 @@ class ModbusTransactionManager(Singleton):
 # * length = uid + function code + data
 # * The -1 is to account for the uid byte
 #---------------------------------------------------------------------------#
-class ModbusTCPFramer(IModbusFramer):
+class ModbusSocketFramer(IModbusFramer):
     '''
-    Modbus TCP Frame controller
+    Modbus Socket Frame controller
     '''
 
     def __init__(self, decoder):
@@ -150,21 +155,22 @@ class ModbusTCPFramer(IModbusFramer):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
-        @return True if ready, False otherwise
+
+        :returns: True if ready, False otherwise
         '''
         return len(self.__buffer) > self.__hsize
 
     def addToFrame(self, message):
-        '''
-        This should be used before the decoding while loop to add the received
-        data to the buffer handle.
-        @param message The most recent packet
+        ''' Adds new packet data to the current frame buffer
+
+        :param message: The most recent packet
         '''
         self.__buffer += message
 
     def getFrame(self):
         ''' Return the next frame from the buffered data
-        @return The next full frame buffer
+
+        :returns: The next full frame buffer
         '''
         return self.__buffer[self.__hsize:self.__hsize +
                 self.__header['len'] - 1]
@@ -173,7 +179,8 @@ class ModbusTCPFramer(IModbusFramer):
         '''
         Populates the modbus result with the transport specific header
         information (pid, tid, uid, checksum, etc)
-        @param result The response packet
+
+        :param result: The response packet
         '''
         result.transaction_id = self.__header['tid']
         result.protocol_id = self.__header['pid']
@@ -184,8 +191,6 @@ class ModbusTCPFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     def processIncomingPacket(self, data, callback):
         ''' The new packet processing pattern
-        :param data: The new packet data
-        :param callback: The function to send results to
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -195,6 +200,9 @@ class ModbusTCPFramer(IModbusFramer):
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
+
+        :param data: The new packet data
+        :param callback: The function to send results to
         '''
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
         self.addToFrame(data)
@@ -209,10 +217,9 @@ class ModbusTCPFramer(IModbusFramer):
             else: break
 
     def buildPacket(self, message):
-        '''
-        Creates a ready to send modbus packet from a modbus request/response
-        unencoded message.
-        @param message The request/response to send
+        ''' Creates a ready to send modbus packet
+
+        :param message: The populated request/response to send
         '''
         data = message.encode()
         packet = struct.pack('>HHHBB',
@@ -291,7 +298,8 @@ class ModbusRTUFramer(IModbusFramer):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
-        @return True if ready, False otherwise
+
+        :returns: True if ready, False otherwise
         '''
         return len(self.__buffer) > 1
 
@@ -299,21 +307,25 @@ class ModbusRTUFramer(IModbusFramer):
         '''
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
-        @param message The most recent packet
+
+        :param message: The most recent packet
         '''
         self.__buffer += message
 
     def getFrame(self):
         ''' Get the next frame from the buffer
-        @return The frame data or ''
+
+        :returns: The frame data or ''
         '''
         return self.__buffer[:self.__header['len'] - 2]
 
     def populateResult(self, result):
-        '''
-        Populates the modbus result with the transport specific header
-        information (pid, tid, uid, checksum, etc)
-        @param result The response packet
+        ''' Populates the modbus result header
+   
+        The serial packets do not have any header information
+        that is copied.
+
+        :param result: The response packet
         '''
         pass # no header for serial
 
@@ -322,8 +334,6 @@ class ModbusRTUFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     def processIncomingPacket(self, data, callback):
         ''' The new packet processing pattern
-        :param data: The new packet data
-        :param callback: The function to send results to
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -333,6 +343,9 @@ class ModbusRTUFramer(IModbusFramer):
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
+
+        :param data: The new packet data
+        :param callback: The function to send results to
         '''
         self.addToFrame(data)
         while self.isFrameReady():
@@ -346,10 +359,9 @@ class ModbusRTUFramer(IModbusFramer):
             else: break
 
     def buildPacket(self, message):
-        '''
-        Creates a ready to send modbus packet from a modbus request/response
-        unencoded message.
-        @param message The request/response to send
+        ''' Creates a ready to send modbus packet
+
+        :param message: The populated request/response to send
         '''
         data = message.encode()
         packet = struct.pack('>BB',
@@ -358,33 +370,20 @@ class ModbusRTUFramer(IModbusFramer):
         packet = packet + struct.pack("<H", computeCRC(packet))
         return packet
 
-
 #---------------------------------------------------------------------------#
 # Modbus ASCII Message
 #---------------------------------------------------------------------------#
-#
-# [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
-#   1c        2c         2c         Nc     2c      2c
-#
-# * data can be 0 - 2x252 chars
-# * end is '\r\n' (Carriage return line feed), however the line feed character
-#   can be changed via a special command
-# * start is ':'
-#
-# Also, it appears as though this message is little endian.
-#
-#  read until stream == ':':
-#    buffer until stream == '\r\n'
-#    check for errors
-#    decode
-#
-#---------------------------------------------------------------------------#
-# @todo This is actually being encoded as binary instead of ascii, so
-#       I need to fix that. I need to re-read the spec.
-#---------------------------------------------------------------------------#
 class ModbusASCIIFramer(IModbusFramer):
     '''
-    Modbus ASCII Frame controller
+    Modbus ASCII Frame Controller::
+        
+        [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
+          1c        2c         2c         Nc     2c      2c
+        
+        * data can be 0 - 2x252 chars
+        * end is '\r\n' (Carriage return line feed), however the line feed character
+          can be changed via a special command
+        * start is ':'
     '''
 
     def __init__(self, decoder):
@@ -403,7 +402,8 @@ class ModbusASCIIFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     def checkFrame(self):
         ''' Check and decode the next frame
-        @return True if we successful, False otherwise
+
+        :returns: True if we successful, False otherwise
         '''
         start = self.__buffer.find(self.__start)
         if start == -1: return False
@@ -415,7 +415,7 @@ class ModbusASCIIFramer(IModbusFramer):
         if (end != -1):
             self.__header['len'] = end
             self.__header['lrc'] = self.__buffer[end-2:end]
-            # if correct lrc
+            # return checkLRC(data, self.__header['lrc'])
             return True
         return False
 
@@ -432,7 +432,8 @@ class ModbusASCIIFramer(IModbusFramer):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
-        @return True if ready, False otherwise
+
+        :returns: True if ready, False otherwise
         '''
         return len(self.__buffer) > 1
 
@@ -440,18 +441,24 @@ class ModbusASCIIFramer(IModbusFramer):
         ''' Add the next message to the frame buffer
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
-        @param message The most recent packet
+
+        :param message: The most recent packet
         '''
         self.__buffer += message
 
     def getFrame(self):
         ''' Get the next frame from the buffer
-        :return: The frame data or ''
+
+        :returns: The frame data or ''
         '''
         return self.__buffer[1:self.__header['len']]
 
     def populateResult(self, result):
-        ''' Populates the modbus result with current frame header
+        ''' Populates the modbus result header
+   
+        The serial packets do not have any header information
+        that is copied.
+
         :param result: The response packet
         '''
         pass # no header for serial
@@ -495,10 +502,170 @@ class ModbusASCIIFramer(IModbusFramer):
         packet = '%c%s%02x%s' % (self.__start, packet, computeLRC(packet), self.__end)
         return packet
 
+#---------------------------------------------------------------------------#
+# Modbus Binary Message
+#---------------------------------------------------------------------------#
+class ModbusBinaryFramer(IModbusFramer):
+    '''
+    Modbus Binary Frame Controller::
+
+        [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
+          1c        2c         2c         Nc     2c      1c
+
+        * data can be 0 - 2x252 chars
+        * end is '}'
+        * start is '{'
+
+    The idea here is that we implement the RTU protocol, however,
+    instead of using timing for message delimiting, we use start
+    and end of message characters (in this case { and }). Basically,
+    this is a binary framer.
+
+    The only case we have to watch out for is when a message contains
+    the { or } characters.  If we encounter these characters, we
+    simply duplicate them.  Hopefully we will not encounter those
+    characters that often and will save a little bit of bandwitch
+    without a real-time system.
+
+    Protocol defined by jamod.sourceforge.net.
+    '''
+
+    def __init__(self, decoder):
+        ''' Initializes a new instance of the framer
+
+        :param decoder: The decoder implementation to use
+        '''
+        self.__buffer = ''
+        self.__header = {'crc':0x0000, 'len':0}
+        self.__start  = '{'
+        self.__end    = "}"
+        self.decoder  = decoder
+
+    #-----------------------------------------------------------------------#
+    # Private Helper Functions
+    #-----------------------------------------------------------------------#
+    def checkFrame(self):
+        ''' Check and decode the next frame
+
+        :returns: True if we successful, False otherwise
+        '''
+        start = self.__buffer.find(self.__start)
+        if start == -1: return False
+        if start > 0 : # go ahead and skip old bad data
+            self.__buffer = self.__buffer[start:]
+
+        end = self.__buffer.find(self.__end)
+        if (end != -1):
+            self.__header['len'] = end
+            self.__header['crc'] = self.__buffer[end-1:end]
+            # return checkCRC(data, self.__header['crc'])
+            return True
+        return False
+
+    def advanceFrame(self):
+        ''' Skip over the current framed message
+        This allows us to skip over the current message after we have processed
+        it or determined that it contains an error. It also has to reset the
+        current frame header handle
+        '''
+        self.__buffer = self.__buffer[self.__header['len'] + 2:]
+        self.__header = {'crc':0x0000, 'len':0}
+
+    def isFrameReady(self):
+        ''' Check if we should continue decode logic
+        This is meant to be used in a while loop in the decoding phase to let
+        the decoder know that there is still data in the buffer.
+
+        :returns: True if ready, False otherwise
+        '''
+        return len(self.__buffer) > 1
+
+    def addToFrame(self, message):
+        ''' Add the next message to the frame buffer
+        This should be used before the decoding while loop to add the received
+        data to the buffer handle.
+
+        :param message: The most recent packet
+        '''
+        self.__buffer += message
+
+    def getFrame(self):
+        ''' Get the next frame from the buffer
+
+        :returns: The frame data or ''
+        '''
+        return self.__buffer[1:self.__header['len']]
+
+    def populateResult(self, result):
+        ''' Populates the modbus result header
+   
+        The serial packets do not have any header information
+        that is copied.
+
+        :param result: The response packet
+        '''
+        pass # no header for serial
+
+    #-----------------------------------------------------------------------#
+    # Public Member Functions
+    #-----------------------------------------------------------------------#
+    def processIncomingPacket(self, data, callback):
+        ''' The new packet processing pattern
+
+        This takes in a new request packet, adds it to the current
+        packet stream, and performs framing on it. That is, checks
+        for complete messages, and once found, will process all that
+        exist.  This handles the case when we read N + 1 or 1 / N
+        messages at a time instead of 1.
+
+        The processed and decoded messages are pushed to the callback
+        function to process and send.
+
+        :param data: The new packet data
+        :param callback: The function to send results to
+        '''
+        self.addToFrame(data)
+        while self.isFrameReady():
+            if self.checkFrame():
+                result = self.decoder.decode(self.getFrame())
+                if result is None:
+                    raise ModbusIOException("Unable to decode response")
+                self.populate(result)
+                self.advanceFrame()
+                callback(result) # defer or push to a thread?
+            else: break
+
+    def buildPacket(self, message):
+        ''' Creates a ready to send modbus packet
+
+        :param message: The request/response to send
+        :returns: The encoded packet
+        '''
+        data = self._preflight(message.encode())
+        packet = struct.pack('>BB',
+                message.unit_id,
+                message.function_code) + data
+        packet = packet + struct.pack("<H", computeCRC(packet))
+        return packet
+
+    def _preflight(self, data):
+        ''' Preflight buffer test
+
+        This basically scans the buffer for start and end
+        tags and if found, escapes them.
+
+        :param data: The message to escape
+        :returns: the escaped packet
+        '''
+        def _filter(a):
+            return a*2 if a in ['}', '{'] else a, data
+        return ''.join(map(_filter, data))
+
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
     "ModbusTransactionManager",
-    "ModbusTCPFramer", "ModbusRTUFramer", "ModbusASCIIFramer",
+    "ModbusSocketFramer", "ModbusRTUFramer",
+    "ModbusASCIIFramer", "ModbusBinaryFramer",
 ]

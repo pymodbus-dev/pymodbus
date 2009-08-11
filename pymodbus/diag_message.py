@@ -38,6 +38,8 @@ class DiagnosticStatusRequest(ModbusRequest):
         '''
         Base encoder for a diagnostic response
         we encode the data set in self.message
+
+        :returns: The encoded packet
         '''
         ret = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
@@ -51,9 +53,9 @@ class DiagnosticStatusRequest(ModbusRequest):
         return ret
 
     def decode(self, data):
-        '''
-        Base decoder for a diagnostic request
-        @param data The data to decode into the function code
+        ''' Base decoder for a diagnostic request
+
+        :param data: The data to decode into the function code
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
 
@@ -77,6 +79,8 @@ class DiagnosticStatusResponse(ModbusResponse):
         '''
         Base encoder for a diagnostic response
         we encode the data set in self.message
+
+        :returns: The encoded packet
         '''
         ret = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
@@ -90,9 +94,8 @@ class DiagnosticStatusResponse(ModbusResponse):
         return ret
 
     def decode(self, data):
-        '''
-        Base decoder for a diagnostic response
-        @param data The data to decode into the function code
+        ''' Base decoder for a diagnostic response
+        :param data: The data to decode into the function code
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
 
@@ -131,9 +134,9 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     '''
 
     def __init__(self, data):
-        '''
-        General initializer for a simple diagnostic response
-        @param data The resulting data to return to the client
+        ''' General initializer for a simple diagnostic response
+
+        :param data: The resulting data to return to the client
         '''
         DiagnosticStatusResponse.__init__(self)
         self.message = data
@@ -150,8 +153,9 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
     sub_function_code = 0x0000
 
     def __init__(self, message):
-        '''
-        @param message The message to send to loopback
+        ''' Initializes a new instance of the request
+
+        :param message: The message to send to loopback
         '''
         DiagnosticStatusRequest.__init__(self)
         if isinstance(message, list):
@@ -159,6 +163,9 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         else: self.message = [message]
 
     def execute(self):
+        ''' Executes the loopback request (builds the response)
+        :returns: The populated loopback response message
+        '''
         return ReturnQueryDataResponse(self.message)
 
 class ReturnQueryDataResponse(DiagnosticStatusResponse):
@@ -170,8 +177,9 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
     sub_function_code = 0x0000
 
     def __init__(self, message):
-        '''
-        @param message The message to loopback
+        ''' Initializes a new instance of the response
+
+        :param message: The message to loopback
         '''
         DiagnosticStatusResponse.__init__(self)
         if isinstance(message, list):

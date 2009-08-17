@@ -11,6 +11,7 @@ Example run::
 from binascii import b2a_hex
 from twisted.internet.protocol import Protocol, ServerFactory
 from twisted.internet import reactor
+from twisted.internet.protocol import Protocol, ServerFactory
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder

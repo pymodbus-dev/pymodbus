@@ -10,13 +10,14 @@ Example run::
 '''
 from binascii import b2a_hex
 import SocketServer
+import serial
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import *
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
@@ -55,9 +56,9 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         ''' Callback when we receive any data
         '''
+        data = self.request.recv(1024)
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
         # if self.factory.control.isListenOnly == False:
-        data = self.request.recv(1024)
         self.frame.processIncomingPacket(data, self.execute)
 
 #---------------------------------------------------------------------------#
@@ -99,6 +100,9 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
+#---------------------------------------------------------------------------#
+# Synchronous Transport Implementations
+#---------------------------------------------------------------------------#
 class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
@@ -207,8 +211,55 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         for t in self.threads:
             t.run = False
 
+# TODO wrap this around the request handler
+class ModbusSerialServer(object):
+    '''
+    A modbus threaded udp socket server
+
+    We inherit and overload the socket server so that we
+    can control the client threads as well as have a single
+    server context instance.
+    '''
+
+    def __init__(self, context, framer=None, identity=None):
+        ''' Overloaded initializer for the socket server
+
+        If the identify structure is not passed in, the ModbusControlBlock
+        uses its own empty structure.
+
+        :param context: The ModbusServerContext datastore
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
+
+        '''
+        self.decoder = ServerDecoder()
+        if isinstance(framer, IModbusFramer):
+            self.framer = framer
+        else: self.framer = ModbusSerialFramer
+
+        if isinstance(store, ModbusServerContext):
+            self.context = context
+        else: self.context = ModbusServerContext()
+        self.control = ModbusControlBlock()
+
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity = identity
+
+    def process_request(self, request, client):
+        ''' Callback for connecting a new client thread
+
+        :param request: The request to handle
+        :param client: The address of the client
+        '''
+        _logger.debug("Started thread to serve client at " + str(client_address))
+
+    def server_close(self):
+        ''' Callback for stopping the running server
+        '''
+        _logger.debug("Modbus server stopped")
+
 #---------------------------------------------------------------------------# 
-# Starting Factories
+# Creation Factories
 #---------------------------------------------------------------------------# 
 def StartTcpServer(self, context=None, identity=None):
     ''' A factory to start and run a tcp modbus server
@@ -230,9 +281,19 @@ def StartUdpServer(self, context=None, identity=None):
     server = ModbusUdpServer(context, framer, identity)
     server.serve_forever()
 
+def StartSerialServer(self, context=None, identity=None):
+    ''' A factory to start and run a udp modbus server
+
+    :param context: The ModbusServerContext datastore
+    :param identity: An optional identify structure
+    '''
+    framer = ModbusSerialFramer
+    server = ModbusSerialServer(context, framer, identity)
+    #server.serve_forever()
+
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "StartTcpServer", "StartUdpServer",
+    "StartTcpServer", "StartUdpServer", "StartSerialServer"
 ]

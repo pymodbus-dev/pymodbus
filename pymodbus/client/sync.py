@@ -46,13 +46,14 @@ What follows is a quick layout of the client logic:
 """
 import socket
 import struct
+import serial
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import *
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -104,164 +105,309 @@ class ModbusTransactionManager:
             ModbusTransactionManager.__tid) & 0xffff
         return tid
 
-#---------------------------------------------------------------------------#
-# Client Protocols
-#---------------------------------------------------------------------------#
-class ModbusClientProtocol(Object):
-    ''' Implements a modbus client in twisted '''
+class IModbusClient(object):
+    '''
+    Inteface for a modbus synchronous client. Defined here are all the
+    methods for performing the related request methods.  Derived classes
+    simply need to implement the transport methods and set the correct
+    framer.
+    '''
 
-    def __init__(self, framer=ModbusSocketFramer(ClientDecoder())):
-        ''' Initializes the framer module
+    def __init__(self, framer):
+        ''' Initialize a client instance
 
-        :param framer: The framer to use for the protocol
+        :param framer: The modbus framer implementation to use
         '''
         self.framer = framer
+        self.transaction = ModbusTransactionManager(self)
 
-    def dataReceived(self, data):
-        '''
-        Get response, check for valid message, decode result
-        @param data The data returned from the server
-        '''
-        self.frame.processIncomingPacket(data, self.execute)
+    #-----------------------------------------------------------------------#
+    # Client interface
+    #-----------------------------------------------------------------------#
+    def connect(self):
+        ''' Connect to the modbus remote host
 
-    def execute(self, result):
-        ''' The callback to call with the resulting message
-        :param request: The decoded request message
+        :returns: True if connection succeeded, False otherwise
         '''
-        self.factory.addResponse(result)
+        raise NotImplementedException("Method not implemented by derived class")
+    
+    def close(self):
+        ''' Closes the underlying socket connection
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
 
-class ModbusTcpClient(object):
+    def send(self, request):
+        ''' Sends data on the underlying socket
+
+        :param request: The encoded request to send
+        :return: The number of bytes written
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
+
+    def recv(self, size):
+        ''' Reads data from the underlying descriptor
+
+        :param size: The number of bytes to read
+        :return: The bytes read
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
+
+    #-----------------------------------------------------------------------#
+    # Modbus client methods
+    #-----------------------------------------------------------------------#
+    def execute(self, request=None):
+        '''
+        :param request: The request to process
+        :returns: The result of the request execution
+        '''
+        if self.transaction:
+            return self.transaction(request)
+        raise ConnectionException("Client Not Connected")
+
+    #-----------------------------------------------------------------------#
+    # The magic methods
+    #-----------------------------------------------------------------------#
+    def __enter__(self):
+        ''' Implement the client with enter block
+
+        :returns: The current instance of the client
+        '''
+        if not self.connect()
+            raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
+        return self
+
+    def __exit__(self, type, value, traceback):
+        ''' Implement the client with exit block '''
+        self.close()
+
+    def __del__(self):
+        ''' Class destructor '''
+        self.close()
+
+    def __str__(self):
+        ''' Builds a string representation of the connection
+        
+        :returns: The string representation
+        '''
+        return "Null Transport"
+
+#---------------------------------------------------------------------------#
+# Modbus TCP Client Transport Implementation
+#---------------------------------------------------------------------------#
+class ModbusTcpClient(IModbusClient):
     ''' Implementation of a modbus tcp client
     '''
 
     def __init__(self, host, port=Defaults.Port):
         ''' Initialize a client instance
+
         :param host: The host to connect to
         :param port: The modbus port to connect to (default 502)
         '''
         self.host = host
         self.port = port
+        IModbusClient.__init__(self, ModbuSocketFramer())
     
     def connect(self):
         ''' Connect to the modbus tcp server
+        
+        :returns: True if connection succeeded, False otherwise
         '''
-        if self.socket: return
+        if self.socket: return True
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(Defaults.Timeout)
             self.socket.connect((self.host, self.port))
             self.transaction = ModbusTransactionManager(self)
         except socket.error, msg:
-            _logger.error('Connect to (%s, %s) failed: %s' % \
+            _logger.error('Connection to (%s, %s) failed: %s' % \
                 (self.host, self.port, msg))
             self.close()
+        return self.socket != None
     
     def close(self):
         ''' Closes the underlying socket connection
         '''
-        if self.sock:
+        if self.socket:
             self.socket.close()
         self.socket = None
 
     def send(self, request):
         ''' Sends data on the underlying socket
+
         :param request: The encoded request to send
+        :return: The number of bytes written
         '''
         if request:
-            self.socket.send(request)
+            return self.socket.send(request)
+        return 0
 
-    #-----------------------------------------------------------------------#
-    # with ModbusTcpClient as client:
-    #-----------------------------------------------------------------------#
-    def __enter__(self):
-        ''' Implement the with enter block '''
-        self.connect()
-        if not self.socket:
-            raise ConnectionException("Failed (%s:%s)" % (self.host, self.port))
-        return self
+    def recv(self, size):
+        ''' Reads data from the underlying descriptor
 
-    def __exit__(self, type, value, traceback):
-        ''' Implement the with exit block '''
-        self.close()
+        :param size: The number of bytes to read
+        :return: The bytes read
+        '''
+        return self.socket.recv(size)
 
-    #-----------------------------------------------------------------------#
-    # Client methods
-    #-----------------------------------------------------------------------#
-    def _execute(self, request=None):
-        if self.transaction:
-            return self.transaction(request)
-        raise ConnectionException("Client Not Connected")
+    def __str__(self):
+        ''' Builds a string representation of the connection
+        
+        :returns: The string representation
+        '''
+        return "%s:%s" % (self.host, self.port)
 
-class ModbusTcpTransport(ModbusTransport):
-    def __init__(self, socket):
-        self.socket = socket
-    def setSocket(self, socket):
-        self.socket = socket
-    def writeMessage(self, message):
-        data = message.encodeData()
-        self.socket.send(
-            struct.pack('>HHHBB',
-            message.transaction_id,
-            message.protocol_id,
-            len(data)+2, 
-            message.unit_id,
-            message.function_code) + 
-            data)
-    def readResponse(self):
-        data = self.socket.recv(7)
-        if len(data) == 0:
-            raise ModbusIOException("Remote party has closed connection.")
-        if len(data) != 7:
-            raise ModbusIOException(
-                "Received less bytes (%d) than required." % len(data))
-        transaction_id, protocol_id, data_length, unit_id \
-            = struct.unpack('>HHHB', data)
-        if data_length > 1:
-            data = self.socket.recv(data_length - 1)
-            if len(data) == 0:
-                raise ModbusIOException("Remote party has closed connection.")
-            if len(data) != (data_length - 1):
-                raise ModbusIOException(
-                    "Received less bytes (%d) than required." % len(data))
-        else:
-            raise ModbusIOException(
-                "Wrong response packet received.")
-        response = decodeModbusResponsePDU(data)
-        response.transaction_id = transaction_id
-        response.protocol_id = protocol_id
-        response.unit_id = unit_id
-        return response 
-    def readRequest(self):
-        data = self.socket.recv(7)
-        if len(data) == 0:
-            raise ModbusIOException("Remote party has closed connection.")
-        if len(data) != 7:
-            raise ModbusIOException(
-                "Received less bytes (%d) than required." % len(data))
-        transaction_id, protocol_id, data_length, unit_id \
-            = struct.unpack('>HHHB', data)
-        if protocol_id != DEFAULT_PROTOCOL_ID or data_length > 256:
-            raise ModbusIOException("Wrong request packed received");
-        if data_length > 1:
-            data = self.socket.recv(data_length - 1)
-            if len(data) == 0:
-                raise ModbusIOException("Remote party has closed connection.")
-            if len(data) != (data_length - 1):
-                raise ModbusIOException(
-                    "Received less bytes (%d) than required." % len(data))
-        else:
-            raise ModbusIOException(
-                "Wrong request packet received.")
-        request = decodeModbusRequestPDU(data)
-        request.transaction_id = transaction_id
-        request.protocol_id = protocol_id
-        request.unit_id = unit_id
-        return request
+#---------------------------------------------------------------------------#
+# Modbus UDP Client Transport Implementation
+#---------------------------------------------------------------------------#
+class ModbusUdpClient(IModbusClient):
+    ''' Implementation of a modbus udp client
+    '''
+
+    def __init__(self, host, port=Defaults.Port):
+        ''' Initialize a client instance
+
+        :param host: The host to connect to
+        :param port: The modbus port to connect to (default 502)
+        '''
+        self.host = host
+        self.port = port
+        IModbusClient.__init__(self, ModbuSocketFramer())
+    
+    def connect(self):
+        ''' Connect to the modbus tcp server
+
+        :returns: True if connection succeeded, False otherwise
+        '''
+        if self.socket: return True
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            #self.socket.bind(('localhost', Defaults.Port))
+        except socket.error, msg:
+            _logger.error('Unable to create udp socket')
+            self.close()
+        return self.socket != None
+    
+    def close(self):
+        ''' Closes the underlying socket connection
+        '''
+        self.socket = None
+
+    def send(self, request):
+        ''' Sends data on the underlying socket
+
+        :param request: The encoded request to send
+        :return: The number of bytes written
+        '''
+        if request:
+            return self.socket.sendto(request, (self.host, self.port))
+        return 0
+
+    def recv(self, size):
+        ''' Reads data from the underlying descriptor
+
+        :param size: The number of bytes to read
+        :return: The bytes read
+        '''
+        return self.socket.recvfrom(size)[0]
+
+    def __str__(self):
+        ''' Builds a string representation of the connection
+        
+        :returns: The string representation
+        '''
+        return "%s:%s" % (self.host, self.port)
+
+#---------------------------------------------------------------------------#
+# Modbus Serial Client Transport Implementation
+#---------------------------------------------------------------------------#
+class ModbusSerialClient(IModbusClient):
+    ''' Implementation of a modbus udp client
+    '''
+
+    def __init__(self, method='ascii', **kwargs):
+        ''' Initialize a serial client instance
+
+        The methods to connect are::
+
+          - ascii
+          - rtu
+          - binary
+
+        :param method: The method to use for connection
+        '''
+        self.method   = method
+        IModbusClient.__init__(self, self.__implementation(method))
+
+        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
+        self.parity   = kwargs.get('parity',   Defaults.Parity)
+        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+        self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
+
+    @staticmethod
+    def __implementation(method):
+        ''' Returns the requested framer
+
+        :method: The serial framer to instantiate
+        :returns: The requested serial framer
+        '''
+        method = method.lower()
+        if   method == 'ascii':  return ModbusAsciiFramer()
+        elif method == 'rtu':    return ModbusRtuFramer()
+        elif method == 'binary': return ModbusBinaryFramer()
+        raise ParamterException("Invalid framer method requested")
+    
+    def connect(self):
+        ''' Connect to the modbus tcp server
+
+        :returns: True if connection succeeded, False otherwise
+        '''
+        if self.socket: return True
+        try:
+            self.socket = serial.Serial(port=0, timeout=self.timeout, 
+                bytesize=self.bytesize, stopbits=self.stopbits
+                baudrate=self.baudrate, parity=self.parity)
+        except serial.SerialException, msg:
+            _logger.error(msg)
+            self.close()
+        return self.socket != None
+    
+    def close(self):
+        ''' Closes the underlying socket connection
+        '''
+        if self.socket:
+            self.socket.close()
+        self.socket = None
+
+    def send(self, request):
+        ''' Sends data on the underlying socket
+
+        :param request: The encoded request to send
+        :return: The number of bytes written
+        '''
+        if request:
+            return self.socket.write(request)
+        return 0
+
+    def recv(self, size):
+        ''' Reads data from the underlying descriptor
+
+        :param size: The number of bytes to read
+        :return: The bytes read
+        '''
+        return self.socket.read(1234)
+
+    def __str__(self):
+        ''' Builds a string representation of the connection
+        
+        :returns: The string representation
+        '''
+        return "%s baud[%s]" % (self.method, self.baud)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusMessageProducer",
-    "ModbusClientProtocol", "ModbusClientFactory",
+    "ModbusTcpClient", "ModbusUdpClient", "ModbusSerialClient"
 ]

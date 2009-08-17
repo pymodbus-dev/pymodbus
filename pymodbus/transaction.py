@@ -15,24 +15,23 @@ import logging
 _logger = logging.getLogger('pymodbus.protocol')
 
 #---------------------------------------------------------------------------#
-# TCP Transaction
-#---------------------------------------------------------------------------#
-# count = 0
-# do
-#   result = send(message)
-#   if (timeout or result == bad)
-#      count++
-#   else break
-# while (count < 3)
-#
-# Default port is tcp(502)
-#---------------------------------------------------------------------------#
-
-#---------------------------------------------------------------------------#
 # The Global Transaction Manager
 #---------------------------------------------------------------------------#
 class ModbusTransactionManager(Singleton):
-    ''' Impelements a transaction for a manager '''
+    ''' Impelements a transaction for a manager
+
+    The transaction protocol can be represented by the following pseudo code::
+
+        count = 0
+        do
+          result = send(message)
+          if (timeout or result == bad)
+             count++
+          else break
+        while (count < 3)
+    
+    This module helps to abstract this away from the framer and protocol.
+    '''
 
     __tid = Defaults.TransactionId
     __transactions = []
@@ -40,6 +39,24 @@ class ModbusTransactionManager(Singleton):
     def __init__(self):
         ''' Initializes an instance of the ModbusTransactionManager '''
         pass
+
+    def execute(self, request):
+        ''' Starts the producer to send the next request to
+        consumer.write(Frame(request))
+        '''
+        retries = Defaults.Retries
+        request.transaction_id = self.__getNextTID()
+        _logging.debug("Running transaction %d" % request.transaction_id)
+
+        while retries > 0:
+            try:
+                self.socket.connect()
+                self.socket.send(self.framer.buildPacket(request))
+                #return tr.readResponse()
+            except socket.error, msg:
+                self.socket.close()
+                _logging.debug("Transaction failed. (%s) " % msg)
+                retries -= 1
 
     def addTransaction(self, request):
         ''' Adds a transaction to the handler
@@ -233,35 +250,38 @@ class ModbusSocketFramer(IModbusFramer):
 #---------------------------------------------------------------------------#
 # Modbus RTU Message
 #---------------------------------------------------------------------------#
-#
-# [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC/LRC ][  End Wait  ]
-#   3.5 chars     1b         1b               Nb      2b         3.5 chars
-#
-# Wait refers to the amount of time required to transmist at least x many
-# characters.  In this case it is 3.5 characters.  Also, if we recieve a
-# wait of 1.5 characters at any point, we must trigger an error message.
-# Also, it appears as though this message is little endian.
-#
-#  block-on-read:
-#      read until 3.5 delay
-#      check for errors
-#      decode
-#
-#---------------------------------------------------------------------------#
-#  Baud  1.5c (18 bits)   3.5c (38 bits)
-#---------------------------------------------------------------------------#
-#  1200   13333.3 us       31666.7 us
-#  4800    3333.3 us        7916.7 us
-#  9600    1666.7 us        3958.3 us
-# 19200     833.3 us        1979.2 us
-# 38400     416.7 us         989.6 us
-#---------------------------------------------------------------------------#
-# 1 Byte = start + 8 bits + parity + stop = 11 bits
-# (1/Baud)(bits) = delay seconds
-#---------------------------------------------------------------------------#
 class ModbusRTUFramer(IModbusFramer):
     '''
-    Modbus RTU Frame controller
+    Modbus RTU Frame controller::
+
+        [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC/LRC ][  End Wait  ]
+          3.5 chars     1b         1b               Nb      2b         3.5 chars
+        
+    Wait refers to the amount of time required to transmist at least x many
+    characters.  In this case it is 3.5 characters.  Also, if we recieve a
+    wait of 1.5 characters at any point, we must trigger an error message.
+    Also, it appears as though this message is little endian. The logic is
+    simplified as the following::
+        
+        block-on-read:
+            read until 3.5 delay
+            check for errors
+            decode
+
+    The following table is a listing of the baud wait times for the specified
+    baud rates::
+        
+        --------------------------------------------------------------------------#
+         Baud  1.5c (18 bits)   3.5c (38 bits)
+        --------------------------------------------------------------------------#
+         1200   13333.3 us       31666.7 us
+         4800    3333.3 us        7916.7 us
+         9600    1666.7 us        3958.3 us
+        19200     833.3 us        1979.2 us
+        38400     416.7 us         989.6 us
+        --------------------------------------------------------------------------#
+        1 Byte = start + 8 bits + parity + stop = 11 bits
+        (1/Baud)(bits) = delay seconds
     '''
 
     def __init__(self, decoder):
@@ -381,9 +401,12 @@ class ModbusASCIIFramer(IModbusFramer):
           1c        2c         2c         Nc     2c      2c
         
         * data can be 0 - 2x252 chars
-        * end is '\r\n' (Carriage return line feed), however the line feed character
-          can be changed via a special command
+        * end is '\\r\\n' (Carriage return line feed), however the line feed
+          character can be changed via a special command
         * start is ':'
+   
+    This framer is used for serial transmission.  Unlike the RTU protocol,
+    the data in this framer is transferred in plain text ascii.
     '''
 
     def __init__(self, decoder):
@@ -468,8 +491,6 @@ class ModbusASCIIFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     def processIncomingPacket(self, data, callback):
         ''' The new packet processing pattern
-        :param data: The new packet data
-        :param callback: The function to send results to
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -479,6 +500,9 @@ class ModbusASCIIFramer(IModbusFramer):
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
+
+        :param data: The new packet data
+        :param callback: The function to send results to
         '''
         self.addToFrame(data)
         while self.isFrameReady():
@@ -494,6 +518,7 @@ class ModbusASCIIFramer(IModbusFramer):
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
         Built off of a  modbus request/response
+
         :param message: The request/response to send
         :return: The built packet
         '''

@@ -88,7 +88,8 @@ setup(name  = 'pymodbus',
     zip_safe = True,
     install_requires = [
         'twisted >= 2.5.0',
-        'nose >= 0.9.3'
+        'nose >= 0.9.3',
+        'pyserial >= 2.4'
     ],
     test_suite = 'nose.collector',
     cmdclass = command_classes,

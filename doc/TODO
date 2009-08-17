@@ -22,3 +22,9 @@
 ** Tools **
   - Unify a quick testing tool (unit/lint/coverage/figleaf/etc...)
   - Get 100%ish code coverage with solid unit testing to ensure reliability
+
+
+from twisted.python import log
+observer = log.PythonLoggingObserver()
+observer.start()
+

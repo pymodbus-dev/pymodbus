@@ -12,11 +12,14 @@ API Documentation
 
 .. automodule:: pymodbus.transaction
 
-.. autoclass:: ModbusTCPFramer
+.. autoclass:: ModbusSocketFramer
    :members:
 
 .. autoclass:: ModbusRTUFramer
    :members:
 
 .. autoclass:: ModbusASCIIFramer
+   :members:
+
+.. autoclass:: ModbusBinaryFramer
    :members:

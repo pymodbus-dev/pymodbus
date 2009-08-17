@@ -27,8 +27,9 @@ class ReadBitsRequestBase(ModbusRequest):
 
     def __init__(self, address, count):
         ''' Initializes the read request data
-        @param address The start address to read from
-        @param count The number of bits after 'address' to read
+
+        :param address: The start address to read from
+        :param count: The number of bits after 'address' to read
         '''
         ModbusRequest.__init__(self)
         self.address = address
@@ -36,19 +37,22 @@ class ReadBitsRequestBase(ModbusRequest):
 
     def encode(self):
         ''' Encodes a request pdu
-        @return The encoded pdu
+
+        :returns: The encoded pdu
         '''
         return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
         ''' Decodes a request pdu
-        @param data The packet data to decode
+
+        :param data: The packet data to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
     def __str__(self):
         ''' Returns a string representation of the instance
-        @return A string representation of the instance
+
+        :returns: A string representation of the instance
         '''
         return "ReadBitRequest(%d,%d)" % (self.address, self.count)
 
@@ -57,71 +61,84 @@ class ReadBitsResponseBase(ModbusResponse):
 
     def __init__(self, values):
         ''' Initializes a new instance
-        @param values The requested values to be returned
+
+        :param values: The requested values to be returned
         '''
         ModbusResponse.__init__(self)
-        if values != None:
-            self.bits = values
-        else: self.bits = []
+        self.bits = [] if values == None else values
 
     def encode(self):
         ''' Encodes response pdu
-        @return The encoded packet message
+
+        :returns: The encoded packet message
         '''
         ret = packBitsToString(self.bits)
         return chr(len(ret)) + ret
 
     def decode(self, data):
         ''' Decodes response pdu
-        @param data The packet data to decode
+
+        :param data: The packet data to decode
         '''
         self.bits = unpackBitsFromString(data)[0]
 
     def setBit(self, address, value=1):
         ''' Helper function to set the specified bit
-        @param address The bit to set
-        @param value The value to set the bit to
+
+        :param address: The bit to set
+        :param value: The value to set the bit to
         '''
-        self.bits[address] = value != 0
+        self.bits[address] = (value != 0)
 
     def resetBit(self, address):
         ''' Helper function to set the specified bit to 0
-        @param address The bit to reset
+
+        :param address: The bit to reset
         '''
         self.setBit(address, 0)
 
     def getBit(self, address):
         ''' Helper function to get the specified bit's value
-        @param address The bit to query
+
+        :param address: The bit to query
+        :returns: The value of the requested bit
         '''
         return self.bits[address]
 
     def __str__(self):
         ''' Returns a string representation of the instance
-        @return A string representation of the instance
+
+        :returns: A string representation of the instance
         '''
         return "ReadBitResponse"
 
 class ReadCoilsRequest(ReadBitsRequestBase):
     '''
-    "This function code is used to read from 1 to 2000(0x7d0) contiguous status
+    This function code is used to read from 1 to 2000(0x7d0) contiguous status
     of coils in a remote device. The Request PDU specifies the starting
     address, ie the address of the first coil specified, and the number of
     coils. In the PDU Coils are addressed starting at zero. Therefore coils
-    numbered 1-16 are addressed as 0-15."
+    numbered 1-16 are addressed as 0-15.
     '''
     function_code = 1
 
     def __init__(self, address=None, count=None):
         ''' Initializes a new instance
-        @param address The address to start reading from
-        @param count The number of bits to read
+
+        :param address: The address to start reading from
+        :param count: The number of bits to read
         '''
         ReadBitsRequestBase.__init__(self, address, count)
 
     def execute(self, context):
         ''' Run a read coils request against a datastore
-        @param context The datastore to request from
+
+        Before running the request, we make sure that the request is in
+        the max valid range (0x001-0x7d0). Next we make sure that the
+        request is valid against the current datastore.
+
+        :param context: The datastore to request from
+        :returns: The initializes response message, exception message otherwise
         '''
         if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
@@ -148,7 +165,8 @@ class ReadCoilsResponse(ReadBitsResponseBase):
 
     def __init__(self, values=None):
         ''' Intializes a new instance
-        @param values The request values to respond with
+
+        :param values: The request values to respond with
         '''
         ReadBitsResponseBase.__init__(self, values)
 
@@ -164,14 +182,21 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
 
     def __init__(self, address=None, count=None):
         ''' Intializes a new instance
-        @param address The address to start reading from
-        @param count The number of bits to read
+
+        :param address: The address to start reading from
+        :param count: The number of bits to read
         '''
         ReadBitsRequestBase.__init__(self, address, count)
 
     def execute(self, context):
         ''' Run a read discrete input request against a datastore
-        @param context The datastore to request from
+
+        Before running the request, we make sure that the request is in
+        the max valid range (0x001-0x7d0). Next we make sure that the
+        request is valid against the current datastore.
+
+        :param context: The datastore to request from
+        :returns: The initializes response message, exception message otherwise
         '''
         if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
@@ -197,7 +222,8 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     def __init__(self, values=None):
         ''' Intializes a new instance
-        @param values The request values to respond with
+
+        :param values: The request values to respond with
         '''
         ReadBitsResponseBase.__init__(self, values)
 

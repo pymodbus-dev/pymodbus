@@ -172,7 +172,7 @@ class IModbusClient(object):
 
         :returns: The current instance of the client
         '''
-        if not self.connect()
+        if not self.connect():
             raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
         return self
 
@@ -366,7 +366,7 @@ class ModbusSerialClient(IModbusClient):
         if self.socket: return True
         try:
             self.socket = serial.Serial(port=0, timeout=self.timeout, 
-                bytesize=self.bytesize, stopbits=self.stopbits
+                bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException, msg:
             _logger.error(msg)

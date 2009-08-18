@@ -3,10 +3,10 @@ Register Reading Request/Response
 ---------------------------------
 '''
 
+import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-import struct
 
 class ReadRegistersRequestBase(ModbusRequest):
     '''
@@ -28,8 +28,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
         :return: The encoded packet
         '''
-        ret = struct.pack('>HH', self.address, self.count)
-        return ret
+        return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
         ''' Decode a register request packet
@@ -56,19 +55,17 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param values: The values to write to
         '''
         ModbusResponse.__init__(self)
-        if values != None:
-            self.registers = values
-        else: self.registers = []
+        self.registers = values if values != None else []
 
     def encode(self):
         ''' Encodes the response packet
 
         :returns: The encoded packet
         '''
-        ret = chr(len(self.registers)*2)
-        for reg in self.registers:
-            ret += struct.pack('>H', reg)
-        return ret
+        result = chr(len(self.registers) * 2)
+        for register in self.registers:
+            result += struct.pack('>H', register)
+        return result
 
     def decode(self, data):
         ''' Decode a register response packet
@@ -81,6 +78,11 @@ class ReadRegistersResponseBase(ModbusResponse):
             self.registers.append(struct.unpack('>H', data[i:i+2])[0])
 
     def getRegValue(self, index):
+        ''' Get the requested register
+
+        :param index: The indexed register to retrieve
+        :returns: The request register
+        '''
         return self.registers[index]
 
     def __str__(self):
@@ -104,8 +106,8 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     def __init__(self, address=None, count=None):
         ''' Initializes a new instance of the request
 
-        :param address:
-        :param count:
+        :param address: The starting address to read from
+        :param count: The number of registers to read from address
         '''
         ReadRegistersRequestBase.__init__(self, address, count)
 
@@ -113,6 +115,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         ''' Run a read holding request against a datastore
 
         :param context: The datastore to request from
+        :returns: An initialized response, exception message otherwise
         '''
         if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
@@ -132,6 +135,10 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
     function_code = 3
 
     def __init__(self, values=None):
+        ''' Initializes a new response instance
+
+        :param values: The resulting register values
+        '''
         ReadRegistersResponseBase.__init__(self, values)
 
 class ReadInputRegistersRequest(ReadRegistersRequestBase):
@@ -147,8 +154,8 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     def __init__(self, address=None, count=None):
         ''' Initializes a new instance of the request
 
-        :param address:
-        :param count:
+        :param address: The starting address to read from
+        :param count: The number of registers to read from address
         '''
         ReadRegistersRequestBase.__init__(self, address, count)
 
@@ -156,7 +163,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         ''' Run a read input request against a datastore
 
         :param context: The datastore to request from
-        :returns: The initialized response or exception
+        :returns: An initialized response, exception message otherwise
         '''
         if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
@@ -176,6 +183,10 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
     function_code = 4
 
     def __init__(self, values=None):
+        ''' Initializes a new response instance
+
+        :param values: The resulting register values
+        '''
         ReadRegistersResponseBase.__init__(self, values)
 
 class ReadWriteMultipleRegistersRequest(ModbusRequest):
@@ -195,7 +206,12 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     function_code = 23
 
     def __init__(self, raddress=None, rcount=None, waddress=None, wcount=None):
-        '''
+        ''' Initializes a new request message
+
+        :param raddress: The address to start reading from
+        :param rcount: The number of registers to read from address
+        :param waddress: The address to start writing to
+        :param wcount: The number of registers to write from address
         '''
         ModbusRequest.__init__(self)
         self.raddress = raddress
@@ -233,7 +249,10 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             self.wregisters.append(struct.unpack('>H', data[i:i+2])[0])
 
     def execute(self, context):
-        '''
+        ''' Run a write single register request against a datastore
+
+        :param context: The datastore to request from
+        :returns: An initialized response, exception message otherwise
         '''
         wcount = len(self.wregisters)
         if not (1 <= self.rcount <= 0x07d):
@@ -272,17 +291,15 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         :param values: The register values to write
         '''
         ModbusResponse.__init__(self)
-        if values != None:
-            self.rregisters = values
-        else: self.rregisters = []
+        self.registers = values if values != None else []
 
     def encode(self):
         ''' Encodes the response packet
 
         :returns: The encoded packet
         '''
-        result = chr(len(self.rregisters)*2)
-        for register in self.rregisters:
+        result = chr(len(self.registers)*2)
+        for register in self.registers:
             result += struct.pack('>H', register)
         return result
 
@@ -293,14 +310,14 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         bytes = ord(data[0])
         for i in range(1, bytes, 2):
-            self.rregisters.append(struct.unpack('>H', data[i:i+2])[0])
+            self.registers.append(struct.unpack('>H', data[i:i+2])[0])
 
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        return "ReadWriteNRegisterResponse", self.rregisters
+        return "ReadWriteNRegisterResponse", self.registers
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

@@ -9,7 +9,8 @@ Contents:
 
    bit-read-message.rst
    bit-write-message.rst
-   client.rst
+   sync-client.rst
+   async-client.rst
    constants.rst
    datastore.rst
    diag-message.rst
@@ -22,7 +23,8 @@ Contents:
    pymodbus.rst
    register-read-message.rst
    register-write-message.rst
-   server.rst
+   sync-server.rst
+   async-server.rst
    transaction.rst
    utilities.rst
 

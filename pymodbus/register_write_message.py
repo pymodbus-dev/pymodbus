@@ -47,7 +47,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         ''' Run a write single register request against a datastore
 
         :param context: The datastore to request from
-        :returns: An initialized response or exception
+        :returns: An initialized response, exception message otherwise
         '''
         if not (0 <= self.value <= 0xffff):
             return self.doException(merror.IllegalValue)
@@ -152,7 +152,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         ''' Run a write single register request against a datastore
 
         :param context: The datastore to request from
-        :returns:
+        :returns: An initialized response, exception message otherwise
         '''
         count = len(self.registers)
         if not (1 <= count <= 0x07b):
@@ -193,8 +193,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        ret = struct.pack('>HH', self.address, self.count)
-        return ret
+        return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
         ''' Decode a write single register packet packet request

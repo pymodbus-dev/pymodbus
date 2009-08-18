@@ -1,16 +1,16 @@
-:mod:`client` --- Twisted Modbus Client
-=========================================
+:mod:`client.async` --- Twisted Async Modbus Client
+====================================================
 
-.. module:: client
-   :synopsis: Twisted Modbus Client
+.. module:: client.async
+   :synopsis: Twisted Asynchronous Modbus Client
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
 .. sectionauthor:: Galen Collins <bashwork@gmail.com>
 
 API Documentation
--------------------
+------------------
 
-.. automodule:: pymodbus.client
+.. automodule:: pymodbus.client.async
 
 .. autoclass:: ModbusMessageProducer
    :members:

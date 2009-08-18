@@ -15,12 +15,11 @@ An example flow of data:
   #. Modbus client parses final results
 """
 
+import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.utilities import *
-
-import struct
 
 class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
@@ -72,8 +71,8 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :returns: The encoded packet message
         '''
-        ret = packBitsToString(self.bits)
-        return chr(len(ret)) + ret
+        result = packBitsToString(self.bits)
+        return chr(len(result)) + result
 
     def decode(self, data):
         ''' Decodes response pdu

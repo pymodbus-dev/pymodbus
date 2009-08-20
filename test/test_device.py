@@ -45,8 +45,8 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(self.ident[0x04], 'pymodbus')
         self.assertEqual(self.ident[0x05], 'bashwork')
         self.assertEqual(self.ident[0x06], 'unittest')
-        self.assertEqual(self.ident[0x07], 'x')
-        self.assertEqual(self.ident[0x08], 'x')
+        self.assertNotEqual(self.ident[0x07], 'x')
+        self.assertNotEqual(self.ident[0x08], 'x')
         self.assertEqual(self.ident[0x10], 'private')
         self.assertEqual(self.ident[0x54], '')
 

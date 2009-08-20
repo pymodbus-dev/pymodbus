@@ -32,7 +32,7 @@ class ServerDecoder(IModbusDecoder):
 
     To add more implemented functions, simply add them to the list
     '''
-    __request_function_table = [
+    __function_table = [
             ReadHoldingRegistersRequest,
             ReadDiscreteInputsRequest,
             ReadInputRegistersRequest,
@@ -43,11 +43,11 @@ class ServerDecoder(IModbusDecoder):
             WriteSingleCoilRequest,
             ReadWriteMultipleRegistersRequest
     ]
+    __lookup = dict([(f.function_code, f) for f in __function_table])
 
     def __init__(self):
         ''' Initialize the ServerDecoder instance '''
-        self.__request_function_codes = [i.function_code for i in
-            self.__request_function_table]
+        pass
 
     def decode(self, message):
         ''' Wrapper to decode a request packet
@@ -72,10 +72,8 @@ class ServerDecoder(IModbusDecoder):
         '''
         function_code = ord(data[0])
         _logger.debug("Factory Request[%d]" % function_code)
-        if function_code in self.__request_function_codes:
-            request = self.__request_function_table[
-                    self.__request_function_codes.index(function_code)]()
-        else:
+        request = self.__lookup.get(function_code, lambda: None)()
+        if not request:
             request = IllegalFunctionRequest(function_code)
         request.decode(data[1:])
         return request
@@ -89,7 +87,7 @@ class ClientDecoder(IModbusDecoder):
 
     To add more implemented functions, simply add them to the list
     '''
-    __response_function_table = [
+    __function_table = [
             ReadHoldingRegistersResponse,
             ReadDiscreteInputsResponse,
             ReadInputRegistersResponse,
@@ -100,11 +98,11 @@ class ClientDecoder(IModbusDecoder):
             WriteSingleCoilResponse,
             ReadWriteMultipleRegistersResponse
     ]
+    __lookup = dict([(f.function_code, f) for f in __function_table])
 
     def __init__(self):
         ''' Initializes the ClientDecoder instance '''
-        self.__response_function_codes = [i.function_code for i in
-            self.__response_function_table]
+        pass
 
     def decode(self, message):
         ''' Wrapper to decode a response packet
@@ -129,12 +127,10 @@ class ClientDecoder(IModbusDecoder):
         '''
         function_code = ord(data[0])
         _logger.debug("Factory Response[%d]" % function_code)
-        if function_code in self.__response_function_codes:
-            response = self.__response_function_table[
-                    self.__response_function_codes.index(function_code)]()
-        elif function_code > 0x80:
+        response = self.__lookup.get(function_code, lambda: None)()
+        if function_code > 0x80:
             response = ExceptionResponse(function_code & 0x7f, mexcept.IllegalFunction)
-        else:
+        if not response:
             raise ModbusException("Unknown response %d" % function_code)
         response.decode(data[1:])
         return response

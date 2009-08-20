@@ -26,6 +26,13 @@ class ModbusAccessControl(Singleton):
             "127.0.0.1",
     ]
 
+    def __iter__(self):
+        ''' Iterater over the network access table
+
+        :returns: An iterator of the network access table
+        '''
+        return self.__nmstable.iteritems()
+
     def add(self, host):
         ''' Add allowed host(s) from the NMS table
 
@@ -66,7 +73,7 @@ class ModbusDeviceIdentification(object):
     For more information read section 6.21 of the modbus
     application protocol.
     '''
-    _data = {
+    __data = {
             0x00: '', # VendorName
             0x01: '', # ProductCode
             0x02: '', # MajorMinorRevision
@@ -82,32 +89,38 @@ class ModbusDeviceIdentification(object):
     def __init__(self, info=None):
         '''
         Initialize the datastore with the elements you need.
-        (note acceptable range is [0x00-0x07,0x80-0xFF] inclusive)
+        (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
 
         :param info: A dictionary of {int:string} of values
         '''
         if info is not None and isinstance(info, dict):
-            for i in info.keys():
-                if (i < 0x07) or (i >= 0x80) or (i <= 0xff):
-                    self._data[i] = info[i]
+            for key in info.keys():
+                if (key >= 0x00 and key <= 0x06) or (
+                    key >  0x08 and key <  0x80):
+                    self.__data[key] = info[key]
 
-    def __setitem__(self, key, item):
+    def __iter__(self):
+        ''' Iterater over the device information
+
+        :returns: An iterator of the device information
+        '''
+        return self.__data.iteritems()
+
+    def __setitem__(self, key, value):
         ''' Wrapper used to access the device information
 
         :param key: The register to set
-        :param item: The new value for referenced register
+        :param value: The new value for referenced register
         '''
         if key not in [0x07, 0x08]:
-            self._data[key] = item
+            self.__data[key] = value
 
     def __getitem__(self, key):
         ''' Wrapper used to access the device information
 
         :param key: The register to read
         '''
-        if key not in self._data.keys():
-            self._data[key] = ''
-        return self._data[key]
+        return self.__data.setdefault(key, '')
 
     def __str__(self):
         ''' Build a representation of the device
@@ -119,13 +132,13 @@ class ModbusDeviceIdentification(object):
     #---------------------------------------------------------------------------#
     # Property access (and named to boot)
     #---------------------------------------------------------------------------#
-    vendor_name           = property(lambda s: s._data[0], lambda s,v: self._data.__setitem__(0,v))
-    product_code          = property(lambda s: s._data[1], lambda s,v: self._data.__setitem__(1,v))
-    major_minor_revision  = property(lambda s: s._data[2], lambda s,v: self._data.__setitem__(2,v))
-    vendor_url            = property(lambda s: s._data[3], lambda s,v: self._data.__setitem__(3,v))
-    product_name          = property(lambda s: s._data[4], lambda s,v: self._data.__setitem__(4,v))
-    model_name            = property(lambda s: s._data[5], lambda s,v: self._data.__setitem__(5,v))
-    user_application_name = property(lambda s: s._data[6], lambda s,v: self._data.__setitem__(6,v))
+    vendor_name           = property(lambda s: s.__data[0], lambda s,v: self.__data.__setitem__(0,v))
+    product_code          = property(lambda s: s.__data[1], lambda s,v: self.__data.__setitem__(1,v))
+    major_minor_revision  = property(lambda s: s.__data[2], lambda s,v: self.__data.__setitem__(2,v))
+    vendor_url            = property(lambda s: s.__data[3], lambda s,v: self.__data.__setitem__(3,v))
+    product_name          = property(lambda s: s.__data[4], lambda s,v: self.__data.__setitem__(4,v))
+    model_name            = property(lambda s: s.__data[5], lambda s,v: self.__data.__setitem__(5,v))
+    user_application_name = property(lambda s: s.__data[6], lambda s,v: self.__data.__setitem__(6,v))
 
 #---------------------------------------------------------------------------#
 # Main server controll block
@@ -156,7 +169,18 @@ class ModbusControlBlock(Singleton):
     Identity = ModbusDeviceIdentification()
 
     def __str__(self):
+        ''' Build a representation of the control block
+
+        :returns: A string representation of the control block
+        '''
         return "ModbusControl"
+
+    def __iter__(self):
+        ''' Iterater over the device counters
+
+        :returns: An iterator of the device counters
+        '''
+        return self.__counter.iteritems()
 
     #---------------------------------------------------------------------------#
     # Conter Properties

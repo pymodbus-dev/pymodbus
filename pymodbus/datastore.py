@@ -119,6 +119,15 @@ class ModbusDataBlock(object):
         '''
         return "DataStore(%d, %d)" % (self.address, self.default_value)
 
+    def __iter__(self):
+        ''' Iterater over the data block data
+
+        :returns: An iterator of the data block data
+        '''
+        if isinstance(dict, self.values):
+            return self.values.iteritems()
+        return enumerate(self.values)
+
 class ModbusSequentialDataBlock(ModbusDataBlock):
     ''' Creates a sequential modbus datastore '''
 

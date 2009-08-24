@@ -58,7 +58,7 @@ class ModbusProtocol(Protocol):
         @param data The data sent by the client
         '''
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
-        # if self.factory.control.isListenOnly == False:
+        # if not self.factory.control.ListenOnly:
         self.framer.processIncomingPacket(data, self.execute)
 
 #---------------------------------------------------------------------------#
@@ -84,7 +84,7 @@ class ModbusProtocol(Protocol):
         Send a request (string) to the network
         @param message The unencoded modbus response
         '''
-        #self.factory.control.incrementCounter('BusMessage')
+        #self.factory.control.Counter.BusMessage += 1
         pdu = self.framer.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.transport.write(pdu)
@@ -122,7 +122,7 @@ class ModbusServerFactory(ServerFactory):
 
         self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity = identity
+            self.control.Identity.update(identity)
 
 #---------------------------------------------------------------------------# 
 # Starting Factories

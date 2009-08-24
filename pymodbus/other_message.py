@@ -3,11 +3,10 @@ Diagnostic record read/write
 
 Currently not all implemented
 '''
-
+import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
-import struct
 
 _MCB = ModbusControlBlock()
 
@@ -25,9 +24,15 @@ class ReadExceptionStatusRequest(ModbusRequest):
     function_code = 0x07
 
     def __init__(self):
+        ''' Initializes a new instance
+        '''
         ModbusRequest.__init__(self)
 
     def execute(self):
+        ''' Run a read exeception status request against the store
+
+        :returns: The populated response
+        '''
         status = _MCB.getCounterSummary()
         return ReadExceptionStatusResponse(status)
 
@@ -42,14 +47,25 @@ class ReadExceptionStatusResponse(ModbusResponse):
     function_code = 0x07
 
     def __init__(self, status):
+        ''' Initializes a new instance
+
+        :param status: The status response to report
+        '''
         ModbusRequest.__init__(self)
         self.status = status
 
     def encode(self):
-        ret = struct.pack('>B', self.status)
-        return ret
+        ''' Encodes the response
+
+        :returns: The byte encoded message
+        '''
+        return struct.pack('>B', self.status)
 
     def decode(self, data):
+        ''' Decodes a the response
+
+        :param data: The packet data to decode
+        '''
         self.status = struct.unpack('>B', data)
 
 

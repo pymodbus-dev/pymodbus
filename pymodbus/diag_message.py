@@ -213,7 +213,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
 
         :returns: The initialized response message
         '''
-        #if _MCB.isListenOnly():
+        #if _MCB.ListenOnly:
         return RestartCommunicationsOptionResponse(self.message)
 
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
@@ -277,7 +277,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
         For future serial messages, use char for delimiter
         '''
         char = (self.message & 0xff00) >> 8
-        _MCB.setDelimiter(char)
+        _MCB.Delimiter = char
         return ChangeAsciiInputDelimiterResponse(self.message)
 
 class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
@@ -302,7 +302,7 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
     sub_function_code = 0x0004
 
     def execute(self):
-        _MCB.toggleListenOnly()
+        _MCB.ListenOnly = not _MCB.ListenOnly
         return ForceListenOnlyModeResponse()
 
 class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
@@ -335,7 +335,7 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        _MCB.resetAllCounters()
+        _MCB.reset()
         return ClearCountersResponse(self.message)
 
 class ClearCountersResponse(DiagnosticStatusSimpleResponse):
@@ -359,9 +359,7 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("BusMessage")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.BusMessage
         return ReturnBusMessageCountResponse(count)
 
 class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
@@ -386,9 +384,7 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("BusCommunicationError")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.BusCommunicationError
         return ReturnBusCommunicationErrorCountResponse(count)
 
 class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
@@ -413,9 +409,7 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("BusExceptionError")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.BusExceptionError
         return ReturnBusExceptionErrorCountResponse(count)
 
 class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
@@ -440,9 +434,7 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("SlaveMessage")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.SlaveMessage
         return ReturnSlaveMessageCountResponse(count)
 
 class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
@@ -467,9 +459,7 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("SlaveNoResponse")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.SlaveNoResponse
         return ReturnSlaveNoReponseCountResponse(count)
 
 class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
@@ -495,9 +485,7 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("SlaveNAK")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.SlaveNAK
         return ReturnSlaveNAKCountResponse(count)
 
 class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
@@ -523,9 +511,7 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("SlaveBusy")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.SlaveBusy
         return ReturnSlaveBusyCountResponse(count)
 
 class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
@@ -552,9 +538,7 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        count = _MCB.getCounter("BusCharacterOverrun")
-        if count is None:
-            count = 0x0000
+        count = _MCB.Counter.BusCharacterOverrun
         return ReturnSlaveBusCharacterOverrunCountResponse(count)
 
 class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse):
@@ -579,7 +563,7 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
     def execute(self):
         '''
         '''
-        _MCB.resetCounter("BusCharacterOverrun")
+        _MCB.Counter.BusCharacterOverrun = 0x0000
         # clear error register
         return ClearOverrunCountResponse(self.message)
 

@@ -23,13 +23,19 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.ident   = ModbusDeviceIdentification(info)
         self.control = ModbusControlBlock()
         self.access  = ModbusAccessControl()
-        self.control.resetAllCounters()
+        self.control.reset()
 
     def tearDown(self):
         ''' Cleans up the test environment '''
         del self.ident
         del self.control
         del self.access
+
+    def testUpdateIdentity(self):
+        ''' Test device identification reading '''
+        self.control.Identity.update(self.ident)
+        self.assertEqual(self.control.Identity.vendor_name, "Bashwork")
+        self.assertEqual(self.control.Identity.user_application_name, "unittest")
 
     def testBasicCommands(self):
         ''' Test device identification reading '''
@@ -65,56 +71,49 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusControlBlockAsciiModes(self):
         ''' Test a server control block ascii mode '''
         self.assertEqual(id(self.control), id(ModbusControlBlock()))
-        self.control.Identity = self.ident
-        self.control.setMode('RTU')
-        self.assertEqual('RTU', self.control.getMode())
-        self.control.setMode('FAKE')
-        self.assertNotEqual('FAKE', self.control.getMode())
-
-    def testModbusControlBlockInvalidCounters(self):
-        ''' Tests querying invalid MCB counters methods '''
-        self.assertEqual(None, self.control.getCounter("InvalidCounter"))
-        self.assertEqual(None, self.control.getCounter(None))
-        self.assertEqual(None, self.control.getCounter(["BusMessage"]))
+        self.control.Mode = 'RTU'
+        self.assertEqual('RTU', self.control.Mode)
+        self.control.Mode = 'FAKE'
+        self.assertNotEqual('FAKE', self.control.Mode)
 
     def testModbusControlBlockCounters(self):
         ''' Tests the MCB counters methods '''
-        self.assertEqual(0x0, self.control.getCounter("BusMessage"))
+        self.assertEqual(0x0, self.control.Counter.BusMessage)
         for i in range(10):
-            self.control.incrementCounter("BusMessage")
-            self.control.incrementCounter("SlaveMessage")
-        self.assertEqual(10, self.control.getCounter("BusMessage"))
-        self.control.resetCounter("BusMessage")
-        self.assertEqual(0,  self.control.getCounter("BusMessage"))
-        self.assertEqual(10, self.control.getCounter("SlaveMessage"))
-        self.control.resetAllCounters()
-        self.assertEqual(0, self.control.getCounter("SlaveMessage"))
+            self.control.Counter.BusMessage += 1
+            self.control.Counter.SlaveMessage += 1
+        self.assertEqual(10, self.control.Counter.BusMessage)
+        self.control.Counter.BusMessage = 0x00
+        self.assertEqual(0,  self.control.Counter.BusMessage)
+        self.assertEqual(10, self.control.Counter.SlaveMessage)
+        self.control.Counter.reset()
+        self.assertEqual(0, self.control.Counter.SlaveMessage)
 
     def testModbusControlBlockCounterSummary(self):
         ''' Tests retrieving the current counter summary '''
-        self.assertEqual(0x00, self.control.getCounterSummary())
+        self.assertEqual(0x00, self.control.Counter.summary())
         for i in range(10):
-            self.control.incrementCounter("BusMessage")
-            self.control.incrementCounter("SlaveMessage")
-            self.control.incrementCounter("SlaveNAK")
-            self.control.incrementCounter("BusCharacterOverrun")
-        self.assertEqual(0x1b, self.control.getCounterSummary())
-        self.control.resetAllCounters()
-        self.assertEqual(0x00, self.control.getCounterSummary())
+            self.control.Counter.BusMessage += 1
+            self.control.Counter.SlaveMessage += 1
+            self.control.Counter.SlaveNAK += 1
+            self.control.Counter.BusCharacterOverrun += 1
+        self.assertEqual(0xa9, self.control.Counter.summary())
+        self.control.Counter.reset()
+        self.assertEqual(0x00, self.control.Counter.summary())
 
     def testModbusControlBlockListen(self):
         ''' Tests the MCB listen flag methods '''
-        self.assertEqual(self.control.isListenOnly(), False)
-        self.control.toggleListenOnly()
-        self.assertEqual(self.control.isListenOnly(), True)
+        self.assertEqual(self.control.ListenOnly, False)
+        self.control.ListenOnly = not self.control.ListenOnly
+        self.assertEqual(self.control.ListenOnly, True)
 
     def testModbusControlBlockDelimiter(self):
         ''' Tests the MCB delimiter setting methods '''
-        self.assertEqual(self.control.getDelimiter(), '\r')
-        self.control.setDelimiter('=')
-        self.assertEqual(self.control.getDelimiter(), '=')
-        self.control.setDelimiter(61)
-        self.assertEqual(self.control.getDelimiter(), '=')
+        self.assertEqual(self.control.Delimiter, '\r')
+        self.control.Delimiter = '='
+        self.assertEqual(self.control.Delimiter, '=')
+        self.control.Delimiter = 61
+        self.assertEqual(self.control.Delimiter, '=')
 
     def testModbusControlBlockDiagnostic(self):
         ''' Tests the MCB delimiter setting methods '''

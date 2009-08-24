@@ -52,9 +52,9 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :returns: The byte encoded message
         '''
-        ret = struct.pack('>H', self.address)
-        ret += _turn_coil_on if self.value else _turn_coil_off
-        return ret
+        result  = struct.pack('>H', self.address)
+        result += _turn_coil_on if self.value else _turn_coil_off
+        return result
 
     def decode(self, data):
         ''' Decodes a write coil request
@@ -106,9 +106,9 @@ class WriteSingleCoilResponse(ModbusResponse):
 
         :return: The byte encoded message
         '''
-        ret = struct.pack('>H', self.address)
-        ret += _turn_coil_on if self.value else _turn_coil_off
-        return ret
+        result  = struct.pack('>H', self.address)
+        result += _turn_coil_on if self.value else _turn_coil_off
+        return result
 
     def decode(self, data):
         ''' Decodes a write coil response
@@ -159,9 +159,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: The byte encoded message
         '''
         count = len(self.coils)
-        ret = struct.pack('>HHB', self.address, count, (count + 7) / 8)
-        ret += packBitsToString(self.coils)
-        return ret
+        result  = struct.pack('>HHB', self.address, count, (count + 7) / 8)
+        result += packBitsToString(self.coils)
+        return result
 
     def decode(self, data):
         ''' Decodes a write coils request
@@ -214,6 +214,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 
     def encode(self):
         ''' Encodes write coils response
+
         :returns: The byte encoded message
         '''
         return struct.pack('>HH', self.address, self.count)

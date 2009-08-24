@@ -45,10 +45,6 @@ class ServerDecoder(IModbusDecoder):
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
 
-    def __init__(self):
-        ''' Initialize the ServerDecoder instance '''
-        pass
-
     def decode(self, message):
         ''' Wrapper to decode a request packet
 
@@ -99,10 +95,6 @@ class ClientDecoder(IModbusDecoder):
             ReadWriteMultipleRegistersResponse
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
-
-    def __init__(self):
-        ''' Initializes the ClientDecoder instance '''
-        pass
 
     def decode(self, message):
         ''' Wrapper to decode a response packet

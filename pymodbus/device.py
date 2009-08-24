@@ -6,6 +6,7 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+from itertools import izip
 from pymodbus.interfaces import Singleton
 
 #---------------------------------------------------------------------------#
@@ -106,6 +107,14 @@ class ModbusDeviceIdentification(object):
         '''
         return self.__data.iteritems()
 
+    def update(self, input):
+        ''' Update the values of this identity
+        using another identify as the value
+
+        :param input: The value to copy values from
+        '''
+        self.__data.update(input)
+
     def __setitem__(self, key, value):
         ''' Wrapper used to access the device information
 
@@ -140,6 +149,72 @@ class ModbusDeviceIdentification(object):
     model_name            = property(lambda s: s.__data[5], lambda s,v: self.__data.__setitem__(5,v))
     user_application_name = property(lambda s: s.__data[6], lambda s,v: self.__data.__setitem__(6,v))
 
+
+#---------------------------------------------------------------------------#
+# Counters Handler
+#---------------------------------------------------------------------------#
+class ModbusCountersHandler(object):
+    '''
+    This is a helper class to simplify the properties for the counters
+
+    '''
+    __data = dict([(i,0x0000) for i in range(8)])
+
+    def __iter__(self):
+        ''' Iterater over the device counters
+
+        :returns: An iterator of the device counters
+        '''
+        names = [
+            'BusMessage',
+            'BusCommunicationError',
+            'BusExceptionError',
+            'SlaveMessage',
+            'SlaveNoResponse',
+            'SlaveNAK',
+            'SlaveBusy',
+            'BusCharacterOverrun'
+        ]
+        return izip(names, self.__data.itervalues())
+
+    def update(self, input):
+        ''' Update the values of this identity
+        using another identify as the value
+
+        :param input: The value to copy values from
+        '''
+        for k,v in input:
+            self.__setattr__(k,v)
+
+    def reset(self):
+        ''' This clears all of the system counters
+        '''
+        self.__data = dict([(i,0x0000) for i in range(8)])
+
+    def summary(self):
+        ''' Returns a summary of the counters current status
+
+        :returns: A byte with each bit representing each counter
+        '''
+        result = 0x00
+        count  = 0x01
+        for i in self.__data.values():
+            if i != 0x00: result |= count
+            count <<= 1
+        return result
+
+    #---------------------------------------------------------------------------#
+    # Properties
+    #---------------------------------------------------------------------------#
+    BusMessage            = property(lambda s: s.__data[0], lambda s,v: s.__data.__setitem__(0,v))
+    BusCommunicationError = property(lambda s: s.__data[1], lambda s,v: s.__data.__setitem__(1,v))
+    BusExceptionError     = property(lambda s: s.__data[2], lambda s,v: s.__data.__setitem__(2,v))
+    SlaveMessage          = property(lambda s: s.__data[3], lambda s,v: s.__data.__setitem__(3,v))
+    SlaveNoResponse       = property(lambda s: s.__data[4], lambda s,v: s.__data.__setitem__(4,v))
+    SlaveNAK              = property(lambda s: s.__data[5], lambda s,v: s.__data.__setitem__(5,v))
+    SlaveBusy             = property(lambda s: s.__data[6], lambda s,v: s.__data.__setitem__(6,v))
+    BusCharacterOverrun   = property(lambda s: s.__data[7], lambda s,v: s.__data.__setitem__(7,v))
+
 #---------------------------------------------------------------------------#
 # Main server controll block
 #---------------------------------------------------------------------------#
@@ -151,23 +226,17 @@ class ModbusControlBlock(Singleton):
     should come from here.
     '''
 
-    __counter = {
-            'BusMessage'            : 0x0000,
-            'BusCommunicationError' : 0x0000,
-            'BusExceptionError'     : 0x0000,
-            'SlaveMessage'          : 0x0000,
-            'SlaveNoResponse'       : 0x0000,
-            'SlaveNAK'              : 0x0000,
-            'SlaveBusy'             : 0x0000,
-            'BusCharacterOverrun'   : 0x0000,
-    }
     __mode = 'ASCII'
     __diagnostic = [False] * 16
     __instance = None
     __listen_only = False
     __delimiter = '\r'
-    Identity = ModbusDeviceIdentification()
+    __counters = ModbusCountersHandler()
+    __identity = ModbusDeviceIdentification()
 
+    #---------------------------------------------------------------------------#
+    # Magic
+    #---------------------------------------------------------------------------#
     def __str__(self):
         ''' Build a representation of the control block
 
@@ -180,73 +249,37 @@ class ModbusControlBlock(Singleton):
 
         :returns: An iterator of the device counters
         '''
-        return self.__counter.iteritems()
+        return self.__counters.__iter__()
 
     #---------------------------------------------------------------------------#
-    # Conter Properties
+    # Other Properties
     #---------------------------------------------------------------------------#
-    def resetAllCounters(self):
-        ''' This clears all of the system counters and diagnostic flags '''
-        for i in self.__counter.keys():
-            self.__counter[i] = 0x0000
+    Identity = property(lambda s: s.__identity)
+    Counter  = property(lambda s: s.__counters)
+
+    def reset(self):
+        ''' This clears all of the system counters and the
+            diagnostic register
+        '''
+        self.__counters.reset()
         self.__diagnostic = [False] * 16
-
-    def incrementCounter(self, counter):
-        ''' This increments a system counter
-
-        :param counter: The counter to increment
-        '''
-        if counter in self.__counter.keys():
-            self.__counter[counter] += 1
-
-    def getCounter(self, counter):
-        ''' This returns the requested counter
-
-        :param: counter The counter to return
-        :returns: The requested counter or None if it doesn't exist
-        '''
-        if counter in self.__counter.keys():
-            return self.__counter[counter]
-        return None
-
-    def getCounterSummary(self):
-        ''' Returns a summary of the counters current status
-
-        :returns: A byte with each bit representing each counter
-        '''
-        result = 0x00
-        count  = 0x01
-        for i in self.__counter.values():
-            if i != 0x00: result |= count
-            count <<= 1
-        return result
-
-    def resetCounter(self, counter):
-        ''' This clears the selected counter
-
-        :param counter: The counter to reset
-        '''
-        if counter in self.__counter.keys():
-            self.__counter[counter] = 0x0000
 
     #---------------------------------------------------------------------------#
     # Listen Properties
     #---------------------------------------------------------------------------#
-    def toggleListenOnly(self):
-        ''' This toggles the listen only status '''
-        self.__listen_only = not self.__listen_only
+    def _setListenOnly(self, value):
+        ''' This toggles the listen only status
 
-    def isListenOnly(self):
-        ''' This returns weither we should listen only
-
-        :returns: True if we are listen-only, False otherwise
+        :param value: The value to set the listen status to
         '''
-        return self.__listen_only
+        self.__listen_only = value is not None
+
+    ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 
     #---------------------------------------------------------------------------#
     # Mode Properties
     #---------------------------------------------------------------------------#
-    def setMode(self, mode):
+    def _setMode(self, mode):
         ''' This toggles the current serial mode
 
         :param mode: The data transfer method in (RTU, ASCII)
@@ -254,17 +287,12 @@ class ModbusControlBlock(Singleton):
         if mode in ['ASCII', 'RTU']:
             self.__mode = mode
 
-    def getMode(self):
-        ''' Returns the current transfer mode
-
-        :returns: one of ASCII or RTU
-        '''
-        return self.__mode
+    Mode = property(lambda s: s.__mode, _setMode)
 
     #---------------------------------------------------------------------------#
     # Delimiter Properties
     #---------------------------------------------------------------------------#
-    def setDelimiter(self, char):
+    def _setDelimiter(self, char):
         ''' This changes the serial delimiter character
 
         :param char: The new serial delimiter character
@@ -274,12 +302,7 @@ class ModbusControlBlock(Singleton):
         elif isinstance(char, int):
             self.__delimiter = chr(char)
 
-    def getDelimiter(self):
-        ''' Returns the current serial delimiter character
-
-        :returns: Char representation of the delimiter
-        '''
-        return self.__delimiter
+    Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
     #---------------------------------------------------------------------------#
     # Diagnostic Properties

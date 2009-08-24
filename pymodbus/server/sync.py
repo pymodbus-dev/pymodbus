@@ -58,7 +58,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         '''
         data = self.request.recv(1024)
         _logger.debug(" ".join([hex(ord(x)) for x in data]))
-        # if self.factory.control.isListenOnly == False:
+        # if not self.factory.control.ListenOnly:
         self.frame.processIncomingPacket(data, self.execute)
 
 #---------------------------------------------------------------------------#
@@ -83,7 +83,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
 
         :param message: The unencoded modbus response
         '''
-        #self.factory.control.incrementCounter('BusMessage')
+        #self.factory.control.Counter.BusMessage += 1
         pdu = self.frame.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.request.send(pdu)
@@ -134,7 +134,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity = identity
+            self.control.Identity.update(identity)
         self.threads = []
         SocketServer.ThreadingTCPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
@@ -188,7 +188,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity = identity
+            self.control.Identity.update(identity)
         self.threads = []
         SocketServer.ThreadingUDPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
@@ -243,7 +243,7 @@ class ModbusSerialServer(object):
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity = identity
+            self.control.Identity.update(identity)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread

@@ -15,13 +15,14 @@ class SimpleDataStoreTest(unittest.TestCase):
     '''
 
     def setUp(self):
-        self.t = test_protocols.StringIOWithoutClosing()
-        self.requests = [
-                ReadCoilsRequest(1, 16),
-                ReadCoilsRequest(17,16),
-                ReadCoilsRequest(0,99),
-        ]
-        self.f = ModbusClientFactory(self.requests)
+        pass
+        #self.t = test_protocols.StringIOWithoutClosing()
+        #self.requests = [
+        #        ReadCoilsRequest(1, 16),
+        #        ReadCoilsRequest(17,16),
+        #        ReadCoilsRequest(0,99),
+        #]
+        #self.f = ModbusClientFactory(self.requests)
 
     def testReadRequest(self):
         pass

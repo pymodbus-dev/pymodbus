@@ -51,8 +51,6 @@ import serial
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.mexceptions import *
-from pymodbus.bit_read_message import *
-from pymodbus.register_read_message import *
 from pymodbus.transaction import *
 
 #---------------------------------------------------------------------------#
@@ -71,29 +69,44 @@ class ModbusTransactionManager:
 
     __tid = Defaults.TransactionId
 
-    def __init__(self, socket):
+    def __init__(self, client):
         ''' Sets up the producer to begin sending requests
-        :param socket: The client socket wrapper
+
+        :param client: The client socket wrapper
         '''
-        self.socket = socket
+        self.client = client
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
+        self.response = None
         retries = Defaults.Retries
         request.transaction_id = self.__getNextTID()
-        _logging.debug("Running transaction %d" % request.transaction_id)
+        _logger.debug("Running transaction %d" % request.transaction_id)
 
         while retries > 0:
             try:
-                self.socket.connect()
-                self.socket.send(self.framer.buildPacket(request))
-                #return tr.readResponse()
+                self.client.connect()
+                self.client._send(self.client.framer.buildPacket(request))
+                # I need to fix this to read the header and the result size,
+                # as this may not read the full result set, but right now
+                # it should be fine...
+                result = self.client._recv(1024)
+                self.client.framer.processIncomingPacket(result, self.__set_result)
+                break;
             except socket.error, msg:
-                self.socket.close()
-                _logging.debug("Transaction failed. (%s) " % msg)
+                self.client.close()
+                _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
+        return self.response
+
+    def __set_result(self, message):
+        ''' Quick helper that lets me reuse the async framer
+
+        :param message: The decoded message
+        '''
+        self.response = message
 
     def __getNextTID(self):
         ''' Used internally to handle the transaction identifiers.
@@ -136,7 +149,7 @@ class IModbusClient(object):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
-    def send(self, request):
+    def _send(self, request):
         ''' Sends data on the underlying socket
 
         :param request: The encoded request to send
@@ -144,7 +157,7 @@ class IModbusClient(object):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
-    def recv(self, size):
+    def _recv(self, size):
         ''' Reads data from the underlying descriptor
 
         :param size: The number of bytes to read
@@ -161,7 +174,7 @@ class IModbusClient(object):
         :returns: The result of the request execution
         '''
         if self.transaction:
-            return self.transaction(request)
+            return self.transaction.execute(request)
         raise ConnectionException("Client Not Connected")
 
     #-----------------------------------------------------------------------#
@@ -206,7 +219,8 @@ class ModbusTcpClient(IModbusClient):
         '''
         self.host = host
         self.port = port
-        IModbusClient.__init__(self, ModbuSocketFramer())
+        self.socket = None
+        IModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
     
     def connect(self):
         ''' Connect to the modbus tcp server
@@ -232,7 +246,7 @@ class ModbusTcpClient(IModbusClient):
             self.socket.close()
         self.socket = None
 
-    def send(self, request):
+    def _send(self, request):
         ''' Sends data on the underlying socket
 
         :param request: The encoded request to send
@@ -242,7 +256,7 @@ class ModbusTcpClient(IModbusClient):
             return self.socket.send(request)
         return 0
 
-    def recv(self, size):
+    def _recv(self, size):
         ''' Reads data from the underlying descriptor
 
         :param size: The number of bytes to read
@@ -272,7 +286,8 @@ class ModbusUdpClient(IModbusClient):
         '''
         self.host = host
         self.port = port
-        IModbusClient.__init__(self, ModbuSocketFramer())
+        self.socket = None
+        IModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
     
     def connect(self):
         ''' Connect to the modbus tcp server
@@ -293,7 +308,7 @@ class ModbusUdpClient(IModbusClient):
         '''
         self.socket = None
 
-    def send(self, request):
+    def _send(self, request):
         ''' Sends data on the underlying socket
 
         :param request: The encoded request to send
@@ -303,7 +318,7 @@ class ModbusUdpClient(IModbusClient):
             return self.socket.sendto(request, (self.host, self.port))
         return 0
 
-    def recv(self, size):
+    def _recv(self, size):
         ''' Reads data from the underlying descriptor
 
         :param size: The number of bytes to read
@@ -337,6 +352,7 @@ class ModbusSerialClient(IModbusClient):
         :param method: The method to use for connection
         '''
         self.method   = method
+        self.socket = None
         IModbusClient.__init__(self, self.__implementation(method))
 
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
@@ -353,9 +369,9 @@ class ModbusSerialClient(IModbusClient):
         :returns: The requested serial framer
         '''
         method = method.lower()
-        if   method == 'ascii':  return ModbusAsciiFramer()
-        elif method == 'rtu':    return ModbusRtuFramer()
-        elif method == 'binary': return ModbusBinaryFramer()
+        if   method == 'ascii':  return ModbusAsciiFramer(ClientDecoder())
+        elif method == 'rtu':    return ModbusRtuFramer(ClientDecoder())
+        elif method == 'binary': return ModbusBinaryFramer(ClientDecoder())
         raise ParamterException("Invalid framer method requested")
     
     def connect(self):
@@ -380,7 +396,7 @@ class ModbusSerialClient(IModbusClient):
             self.socket.close()
         self.socket = None
 
-    def send(self, request):
+    def _send(self, request):
         ''' Sends data on the underlying socket
 
         :param request: The encoded request to send
@@ -390,7 +406,7 @@ class ModbusSerialClient(IModbusClient):
             return self.socket.write(request)
         return 0
 
-    def recv(self, size):
+    def _recv(self, size):
         ''' Reads data from the underlying descriptor
 
         :param size: The number of bytes to read

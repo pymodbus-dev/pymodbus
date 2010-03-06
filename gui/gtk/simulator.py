@@ -137,9 +137,9 @@ class NetworkReset(Thread):
 #                       "on_helpBtn_clicked"    : self.help_clicked,
 #                       "on_quitBtn_clicked"    : self.close_clicked,
 #                       "on_startBtn_clicked"   : self.start_clicked,
-#-                      "on_file_changed"               : self.file_changed,
-#+                      #"on_file_changed"              : self.file_changed,
-#                       "on_window_destroy"             : self.close_clicked
+#-                      "on_file_changed"       : self.file_changed,
+#+                      #"on_file_changed"      : self.file_changed,
+#                       "on_window_destroy"     : self.close_clicked
 #               }
 #               self.tree.signal_autoconnect(actions)
 #@@ -235,6 +238,7 @@
@@ -166,11 +166,11 @@ class SimulatorApp:
         #---------------------------------------------------------------------------#
         # Action Handles
         #---------------------------------------------------------------------------#
-        self.tree               = glade.XML(xml)
-        self.bstart             = self.tree.get_widget("startBtn")
-        self.bhelp              = self.tree.get_widget("helpBtn")
-        self.bclose             = self.tree.get_widget("quitBtn")
-        self.window             = self.tree.get_widget("window")
+        self.tree       = glade.XML(xml)
+        self.bstart     = self.tree.get_widget("startBtn")
+        self.bhelp      = self.tree.get_widget("helpBtn")
+        self.bclose     = self.tree.get_widget("quitBtn")
+        self.window     = self.tree.get_widget("window")
         self.tdevice    = self.tree.get_widget("fileTxt")
         self.tsubnet    = self.tree.get_widget("addressTxt")
         self.tnumber    = self.tree.get_widget("deviceTxt")
@@ -182,8 +182,8 @@ class SimulatorApp:
                 "on_helpBtn_clicked"    : self.help_clicked,
                 "on_quitBtn_clicked"    : self.close_clicked,
                 "on_startBtn_clicked"   : self.start_clicked,
-                "on_file_changed"               : self.file_changed,
-                "on_window_destroy"             : self.close_clicked
+                "on_file_changed"       : self.file_changed,
+                "on_window_destroy"     : self.close_clicked
         }
         self.tree.signal_autoconnect(actions)
         if not root_test():
@@ -212,11 +212,11 @@ class SimulatorApp:
     def error_dialog(self, message, quit=False):
         ''' Quick pop-up for error messages '''
         dialog = gtk.MessageDialog(
-                        parent                  = self.window,
-                        flags                   = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-                        type                    = gtk.MESSAGE_ERROR,
-                        buttons                 = gtk.BUTTONS_CLOSE,
-                        message_format  = message)
+            parent          = self.window,
+            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
+            type            = gtk.MESSAGE_ERROR,
+            buttons         = gtk.BUTTONS_CLOSE,
+            message_format  = message)
         dialog.set_title('Error')
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
@@ -278,8 +278,8 @@ class SimulatorApp:
         data.set_name(('Modbus Simulator'))
         data.set_authors(["Galen Collins"])
         data.set_comments(('First Select a device to simulate,\n'
-                                + 'then select the starting subnet of the new devices\n'
-                                + 'then select the number of device to simulate and click start'))
+            + 'then select the starting subnet of the new devices\n'
+            + 'then select the number of device to simulate and click start'))
         data.set_website("http://code.google.com/p/pymodbus/")
         data.connect("response", lambda w,r: w.hide())
         data.run()

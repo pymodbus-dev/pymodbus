@@ -232,7 +232,6 @@ class ModbusClientFactory(ClientFactory):
             connector.connect()
         else: reactor.stop()
 
-
     def clientConnectionFailed(self, connector, reason):
         ''' If this happens, alert the user
         :param connector: The connection handler

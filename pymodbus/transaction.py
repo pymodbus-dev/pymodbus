@@ -201,7 +201,7 @@ class ModbusSocketFramer(IModbusFramer):
         '''
         result.transaction_id = self.__header['tid']
         result.protocol_id = self.__header['pid']
-        result.uint_id = self.__header['uid']
+        result.unit_id = self.__header['uid']
 
     #-----------------------------------------------------------------------#
     # Public Member Functions

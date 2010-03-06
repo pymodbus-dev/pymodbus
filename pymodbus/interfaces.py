@@ -45,7 +45,6 @@ class IModbusDecoder(object):
     decoder factory. These factories are responsible for
     abstracting away converting a raw packet into a request / response
     message object.
-
     '''
 
     def decode(self, message):

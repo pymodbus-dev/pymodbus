@@ -300,7 +300,7 @@ class ModbusServerContext(object):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        _logger.debug("setValues[%d] %d:%d" % (fx, address, count))
+        _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
         self.__mapping[fx].setValues(address, values)
 
 #---------------------------------------------------------------------------# 

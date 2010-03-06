@@ -126,13 +126,13 @@ class SimpleDataStoreTest(unittest.TestCase):
         expected = ModbusRequest()
         expected.transaction_id = 0x0001
         expected.protocol_id    = 0x1234
-        expected.uint_id        = 0xff
+        expected.unit_id        = 0xff
         msg = "\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         self._tcp.addToFrame(msg)
         self.assertTrue(self._tcp.checkFrame())
         actual = ModbusRequest()
         self._tcp.populateResult(actual)
-        for name in ['transaction_id', 'protocol_id', 'uint_id']:
+        for name in ['transaction_id', 'protocol_id', 'unit_id']:
             self.assertEqual(getattr(expected, name), getattr(actual, name))
         self._tcp.advanceFrame()
 

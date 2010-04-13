@@ -372,7 +372,7 @@ class ModbusSerialClient(IModbusClient):
         if   method == 'ascii':  return ModbusAsciiFramer(ClientDecoder())
         elif method == 'rtu':    return ModbusRtuFramer(ClientDecoder())
         elif method == 'binary': return ModbusBinaryFramer(ClientDecoder())
-        raise ParamterException("Invalid framer method requested")
+        raise ParameterException("Invalid framer method requested")
     
     def connect(self):
         ''' Connect to the modbus tcp server
@@ -419,7 +419,7 @@ class ModbusSerialClient(IModbusClient):
         
         :returns: The string representation
         '''
-        return "%s baud[%s]" % (self.method, self.baud)
+        return "%s baud[%s]" % (self.method, self.baudrate)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

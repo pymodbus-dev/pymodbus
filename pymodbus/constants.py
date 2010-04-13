@@ -66,7 +66,7 @@ class Defaults(Singleton):
     '''
     Port          = 502
     Retries       = 3
-    Timeout       = 3000
+    Timeout       = 3
     Reconnects    = 0
     TransactionId = 0
     ProtocolId    = 0

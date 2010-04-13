@@ -691,6 +691,6 @@ class ModbusBinaryFramer(IModbusFramer):
 #---------------------------------------------------------------------------# 
 __all__ = [
     "ModbusTransactionManager",
-    "ModbusSocketFramer", "ModbusRTUFramer",
-    "ModbusASCIIFramer", "ModbusBinaryFramer",
+    "ModbusSocketFramer", "ModbusRtuFramer",
+    "ModbusAsciiFramer", "ModbusBinaryFramer",
 ]

@@ -79,12 +79,11 @@ class ModbusDataBlock(object):
         :param value: The default value to set to the fields
         '''
         self.default_value = value
-        self.values = [default_value] * count
+        self.values = [self.default_value] * count
 
     def reset(self):
         ''' Resets the datastore to the initialized default value '''
-        for i in self.values:
-            i = self.default_value
+        self.values = [self.default_value] * len(self.values)
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
@@ -261,13 +260,8 @@ class ModbusServerContext(object):
     def __str__(self):
         return "Server Context\n", [self.co, self.di, self.ir, self.hr]
 
-    def default(self, **kwargs):
-        ''' Restores each datastore to its default '''
-        for i in [self.di, self.co, self.ir, self.hr]:
-            i.default()
-
     def reset(self):
-        ''' Resets all the datastores '''
+        ''' Resets all the datastores to their default values '''
         for i in [self.di, self.co, self.ir, self.hr]:
             i.reset()
 

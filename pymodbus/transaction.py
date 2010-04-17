@@ -250,7 +250,7 @@ class ModbusSocketFramer(IModbusFramer):
 #---------------------------------------------------------------------------#
 # Modbus RTU Message
 #---------------------------------------------------------------------------#
-class ModbusRTUFramer(IModbusFramer):
+class ModbusRtuFramer(IModbusFramer):
     '''
     Modbus RTU Frame controller::
 
@@ -393,7 +393,7 @@ class ModbusRTUFramer(IModbusFramer):
 #---------------------------------------------------------------------------#
 # Modbus ASCII Message
 #---------------------------------------------------------------------------#
-class ModbusASCIIFramer(IModbusFramer):
+class ModbusAsciiFramer(IModbusFramer):
     '''
     Modbus ASCII Frame Controller::
         

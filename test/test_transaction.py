@@ -16,8 +16,8 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.decoder  = ServerDecoder()
         self._manager = ModbusTransactionManager()
         self._tcp     = ModbusSocketFramer(decoder=self.decoder)
-        self._rtu     = ModbusRTUFramer(decoder=self.decoder)
-        self._ascii   = ModbusASCIIFramer(decoder=self.decoder)
+        self._rtu     = ModbusRtuFramer(decoder=self.decoder)
+        self._ascii   = ModbusAsciiFramer(decoder=self.decoder)
 
     def tearDown(self):
         ''' Cleans up the test environment '''

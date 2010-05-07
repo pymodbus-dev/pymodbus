@@ -76,7 +76,7 @@ class ModbusProtocol(Protocol):
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
-        response.uint_id = request.unit_id
+        response.unit_id = request.unit_id
         self.send(response)
 
     def send(self, message):

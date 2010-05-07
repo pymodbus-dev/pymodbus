@@ -8,6 +8,9 @@ very mediocre in hardware).
 
 Example Run::
 
+    from pymodbus.client.async import ModbusClientFactory
+    from pymodbus.bit_read_message import ReadCoilsRequest
+
     def clientTest():
         requests = [ ReadCoilsRequest(0,99) ]
         p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
@@ -50,7 +53,7 @@ What follows is a quick layout of the client logic:
 
 TODO:
 
-This is broken right now, and I have been to lazy to fix it
+This is broken right now, and I have been too lazy to fix it
 I need to modify this to return defers and maybe pump requests
 into the producer.
 """

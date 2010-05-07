@@ -252,7 +252,7 @@ class ModbusServerContext(object):
         self.ir = kwargs['i']
         self.hr = kwargs['h']
         self.__mapping = {
-            2:self.di, 3:self.ir, 4:self.ir,
+            2:self.di, 3:self.hr, 4:self.ir,
             1:self.co, 5:self.co, 15:self.co,
             6:self.hr, 16:self.hr, 23:self.hr
        }

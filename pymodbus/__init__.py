@@ -25,7 +25,7 @@ TwistedModbus is built on top of the Pymodbus developed from code by:
     Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
     Hynek Petrak <hynek@swac.cz>
 
-Released under the the GPLv2
+Released under the the BSD license
 """
 
 from pymodbus.version import _version

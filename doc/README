@@ -41,6 +41,4 @@ PyModbus is built on top of the Pymodbus developed from code by:
 	Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
 	Hynek Petrak <hynek@swac.cz>
 
-Under the terms of the GPLv2 (with which the code was released) the
-modified code is redistributed in full with the license affixed to
-the new code.
+Under the terms of the BSD license which is included with this distribution.

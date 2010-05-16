@@ -70,7 +70,8 @@ class ModbusProtocol(Protocol):
         @param request The decoded request message
         '''
         try:
-            response = request.execute(self.factory.store)
+            context = self.factory.store[request.unit_id]
+            response = request.execute(context)
         except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)

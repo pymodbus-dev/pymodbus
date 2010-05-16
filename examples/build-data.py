@@ -6,6 +6,7 @@ It is also used to convert datastores to and from a register list
 dump.  This allows users to build their own data from scratch or
 modifiy an exisiting dump.
 '''
+from __future__ import with_statement
 import pickle
 from sys import exit
 from optparse import OptionParser

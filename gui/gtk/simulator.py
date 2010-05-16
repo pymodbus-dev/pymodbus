@@ -21,7 +21,7 @@ from gtk import glade
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
 from pymodbus.server.async import ModbusServerFactory
-from pymodbus.datastore import ModbusServerContext
+from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -86,7 +86,8 @@ class Simulator:
             isd = handle['ir']
         except KeyError:
             raise ConfigurationException("Invalid Configuration")
-        return ModbusServerContext(d=dsd, c=csd, h=hsd, i=isd)
+        slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
+        return ModbusServerContext(slaves=slave)
 
     def _simulator(self):
         ''' Starts the snmp simulator '''

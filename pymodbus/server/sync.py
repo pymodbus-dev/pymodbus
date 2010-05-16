@@ -70,12 +70,13 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         :param request: The decoded request message
         '''
         try:
-            response = request.execute(self.factory.store)
+            context = self.factory.store[request.unit_id]
+            response = request.execute(context)
         except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
-        response.uint_id = request.unit_id
+        response.unit_id = request.unit_id
         self.send(response)
 
     def send(self, message):
@@ -146,8 +147,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         :param client: The address of the client
         '''
         _logger.debug("Started thread to serve client at " + str(client_address))
-        SocketServer.ThreadingTCPServer.process_request(
-                self, request, client)
+        SocketServer.ThreadingTCPServer.process_request(self, request, client)
 
     def server_close(self):
         ''' Callback for stopping the running server

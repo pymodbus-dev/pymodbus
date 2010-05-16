@@ -9,7 +9,7 @@ from optparse import OptionParser
 from twisted.internet import reactor
 
 from pymodbus.server.async import StartTcpServer
-from pymodbus.datastore import ModbusServerContext
+from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -85,7 +85,8 @@ class Configuration:
             isd = handle['ir']
         except Exception:
             raise ConfigurationException("Invalid Configuration")
-        return ModbusServerContext(d=dsd, c=csd, h=hsd, i=isd)
+        slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
+        return ModbusServerContext(slaves=slave)
 
 #--------------------------------------------------------------------------#
 # Main start point
@@ -124,3 +125,4 @@ if __name__ == "__main__":
     if root_test():
         main()
     else: print "This script must be run as root!"
+

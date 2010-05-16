@@ -226,7 +226,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 #---------------------------------------------------------------------------#
 # Device Data Control
 #---------------------------------------------------------------------------#
-class ModbusServerContext(object):
+class ModbusSlaveContext(object):
     '''
     This creates a modbus data model with each data access
     stored in its own personal block
@@ -245,8 +245,7 @@ class ModbusServerContext(object):
             if not kwargs.has_key(k):
                 kwargs[k] = ModbusSequentialDataBlock(0, 0)
             if not isinstance(kwargs[k], ModbusDataBlock):
-                raise ParameterException(
-                        "Assigned datastore is not a ModbusDataBlock")
+                raise ParameterException("Assigned datastore is not a ModbusDataBlock")
         self.di = kwargs['d']
         self.co = kwargs['c']
         self.ir = kwargs['i']
@@ -258,7 +257,11 @@ class ModbusServerContext(object):
        }
 
     def __str__(self):
-        return "Server Context\n", [self.co, self.di, self.ir, self.hr]
+        ''' Returns a string representation of the context
+
+        :returns: A string representation of the context
+        '''
+        return "[Slave Context]\n", [self.co, self.di, self.ir, self.hr]
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
@@ -297,10 +300,59 @@ class ModbusServerContext(object):
         _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
         self.__mapping[fx].setValues(address, values)
 
+class ModbusServerContext(object):
+    ''' This represents a master collection of slave contexts.
+    If single is set to true, it will be treated as a single
+    context so every unit-id returns the same context. If single
+    is set to false, it will be interpreted as a collection of
+    slave contexts.
+    '''
+
+    def __init__(self, slaves=None, single=True):
+        ''' Initializes a new instance of a modbus server context.
+
+        :param clients: A dictionary of client contexts
+        :param single: Set to true to treat this as a single context
+        '''
+        self.single = single
+        self.__slaves = slaves if slaves != None else {}
+
+    def __iter__(self):
+        ''' Iterater over the current collection of slave
+        contexts.
+
+        :returns: An iterator over the slave contexts
+        '''
+        if self.single:
+            return {0x00: self.__slaves}.iteritems()
+        return self.__slaves.iteritems()
+
+    def __setitem__(self, slave, context):
+        ''' Wrapper used to access the slave context
+
+        :param slave: slave The context to set
+        :param context: The new context to set for this slave
+        '''
+        if self.single:
+            self.__slaves = context
+        else: self.__slaves[slave] = context
+
+    def __getitem__(self, slave):
+        ''' Wrapper used to access the slave context
+
+        :param slave: The slave context to get
+        :returns: The requested slave context
+        '''
+        if self.single:
+            return self.__slaves
+        if self.__slaves.has_key(slave):
+            return self.__slaves.get(slave)
+        else: raise ParameterException("Slave does not exist")
+
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
     "ModbusSequentialDataBlock", "ModbusSparseDataBlock",
-    "ModbusServerContext",
+    "ModbusSlaveContext", "ModbusServerContext",
 ]

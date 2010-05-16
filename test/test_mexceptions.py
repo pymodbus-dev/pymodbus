@@ -8,12 +8,13 @@ class SimpleExceptionsTest(unittest.TestCase):
 
     def setUp(self):
         ''' Initializes the test environment '''
-        self.exceptions = (
+        self.exceptions = [
                 ModbusException("bad base"),
                 ModbusIOException("bad register"),
                 ParameterException("bad paramater"),
-                NotImplementedException("bad function")
-        )
+                NotImplementedException("bad function"),
+                ConnectionException("bad connection"),
+        ]
 
     def tearDown(self):
         ''' Cleans up the test environment '''

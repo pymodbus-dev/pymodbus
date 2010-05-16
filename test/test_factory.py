@@ -86,6 +86,18 @@ class SimpleFactoryTest(unittest.TestCase):
             except ModbusException:
                 self.fail("Failed to Decode Request Message", func)
 
+    def testClientFactoryFails(self):
+        ''' Tests that a client factory will fail to decode a bad message '''
+        pass
+        # actual = self.client.decode(None)
+        # self.assertEquals(actual, None)
+
+    def testServerFactoryFails(self):
+        ''' Tests that a server factory will fail to decode a bad message '''
+        pass
+        # actual = self.server.decode(None)
+        # self.assertEquals(actual, None)
+
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that
 # since the high bit is set, it will simply echo the resulting message

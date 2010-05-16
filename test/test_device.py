@@ -89,6 +89,27 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.control.Counter.reset()
         self.assertEqual(0, self.control.Counter.SlaveMessage)
 
+    def testModbusControlBlockUpdate(self):
+        ''' Tests the MCB counters upate methods '''
+        values = {'SlaveMessage':5, 'BusMessage':5}
+        self.control.Counter.BusMessage += 1
+        self.control.Counter.SlaveMessage += 1
+        self.control.Counter.update(values)
+        self.assertEqual(6, self.control.Counter.SlaveMessage)
+        self.assertEqual(6, self.control.Counter.BusMessage)
+
+    def testModbusControlBlockIterator(self):
+        ''' Tests the MCB counters iterator '''
+        self.control.Counter.reset()
+        for name,count in self.control:
+            self.assertEqual(0, count)
+
+    def testModbusCountersHandlerIterator(self):
+        ''' Tests the MCB counters iterator '''
+        self.control.Counter.reset()
+        for name,count in self.control.Counter:
+            self.assertEqual(0, count)
+
     def testModbusControlBlockCounterSummary(self):
         ''' Tests retrieving the current counter summary '''
         self.assertEqual(0x00, self.control.Counter.summary())
@@ -150,6 +171,13 @@ class SimpleDataStoreTest(unittest.TestCase):
         for host in list:
             self.assertTrue(self.access.check(host))
         self.access.remove(list)
+
+    def testNetworkAccessListIterator(self):
+        ''' Test adding and removing a host '''
+        list = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        self.access.add(list)
+        for host in self.access:
+            self.assertTrue(host in list)
 
 #---------------------------------------------------------------------------#
 # Main

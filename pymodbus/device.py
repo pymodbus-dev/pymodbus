@@ -32,7 +32,7 @@ class ModbusAccessControl(Singleton):
 
         :returns: An iterator of the network access table
         '''
-        return self.__nmstable.iteritems()
+        return self.__nmstable.__iter__()
 
     def add(self, host):
         ''' Add allowed host(s) from the NMS table
@@ -183,7 +183,8 @@ class ModbusCountersHandler(object):
 
         :param input: The value to copy values from
         '''
-        for k,v in input:
+        for k,v in input.iteritems():
+            v += self.__getattribute__(k)
             self.__setattr__(k,v)
 
     def reset(self):

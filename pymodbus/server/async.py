@@ -10,7 +10,6 @@ Example run::
 '''
 from binascii import b2a_hex
 from twisted.internet.protocol import Protocol, ServerFactory
-from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ServerFactory
 
 from pymodbus.constants import Defaults
@@ -133,6 +132,7 @@ def StartTcpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
+    from twisted.internet import reactor
     framer = ModbusSocketFramer
     reactor.listenTCP(Defaults.Port,
         ModbusServerFactory(store=context, framer=framer, identity=identity))
@@ -143,14 +143,36 @@ def StartUdpServer(context, identity=None):
     :param context: The server data context
     :param identify: The server identity to use
     '''
+    from twisted.internet import reactor
     framer = ModbusSocketFramer
     reactor.listenUDP(Defaults.Port,
         ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
 
 #---------------------------------------------------------------------------# 
+# Helper Methods
+#---------------------------------------------------------------------------# 
+def install_specialized_reactor():
+    '''
+    This attempts to install a reactor specialized for the given
+    operating system.
+
+    :returns: True if a specialized reactor was installed, False otherwise
+    '''
+    from twisted.internet import epollreactor, kqreactor, iocpreactor
+    for reactor in [epollreactor, kqreactor, iocpreactor]:
+        try:
+            reactor.install()
+            _logger.debug("Installed %s" % reactor.__name__)
+            return True
+        except: pass
+    _logger.debug("No specialized reactor was installed")
+    return False
+
+#---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "StartTcpServer", "StartUdpServer"
+    "StartTcpServer", "StartUdpServer",
+    "install_specialized_reactor",
 ]

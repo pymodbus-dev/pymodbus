@@ -2,10 +2,6 @@
 Implementation of a Modbus Client Using Twisted
 --------------------------------------------------
 
-This attempts to fire off requets in succession so as to work as fast as
-possible, but still refrain from overloading the remote device (usually
-very mediocre in hardware).
-
 Example Run::
 
     from pymodbus.client.async import ModbusClientFactory
@@ -18,44 +14,6 @@ Example Run::
     if __name__ == "__main__":
        reactor.callLater(1, clientTest)
        reactor.run()
-
-What follows is a quick layout of the client logic:
-
-  #. Build request array and instantiate a client factory
-  #. Defer it until the reactor is running
-  #. Upon connection, instantiate the producer and pass it
-
-     * A handle to the transport
-     * A handle to the request array
-     * A handle to a sent request handler
-     * A handle to the current framing object
-
-  #. It then sends a request and waits
-  #..
-  #. The protocol recieves data and processes its frame
-
-     * If we have a valid frame, we decode it and add the result(7)
-     * Otherwise we continue(6)
-
-  #. Afterwards, we instruct the producer to send the next request
-  #. <work with data>
-  #. Upon adding a result
-
-     * The factory uses the handler object to translate the TID to a request
-         * Using the request paramaters, we corretly store the resulting data
-         * Each result is put into the appropriate store
-
-  #. When all the requests have been processed
-
-     * we stop the producer
-         * disconnect the protocol
-         * return the factory results
-
-TODO:
-
-This is broken right now, and I have been too lazy to fix it
-I need to modify this to return defers and maybe pump requests
-into the producer.
 """
 import struct
 from zope.interface import implements

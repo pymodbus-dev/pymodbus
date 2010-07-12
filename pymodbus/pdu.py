@@ -21,7 +21,7 @@ class ModbusPDU(object):
     .. attribute:: transaction_id
 
         This value is used to uniquely identify a request
-        response pair.  It can be implemented as a simply counter
+        response pair.  It can be implemented as a simple counter
 
     .. attribute:: protocol_id
 

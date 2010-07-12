@@ -311,7 +311,7 @@ class ModbusServerContext(object):
     def __init__(self, slaves=None, single=True):
         ''' Initializes a new instance of a modbus server context.
 
-        :param clients: A dictionary of client contexts
+        :param slaves: A dictionary of client contexts
         :param single: Set to true to treat this as a single context
         '''
         self.single = single

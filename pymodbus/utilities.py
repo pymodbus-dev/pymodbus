@@ -61,7 +61,8 @@ def __generate_crc16_table():
     for byte in range(256):
         crc = 0x0000
         for bit in range(8):
-            if (byte ^ crc) & 0x0001: crc = (crc >> 1) ^ 0xa001
+            if (byte ^ crc) & 0x0001:
+                crc = (crc >> 1) ^ 0xa001
             else: crc >>= 1
             byte >>= 1
         result.append(crc)
@@ -84,10 +85,12 @@ def computeCRC(data):
     :param data: The data to create a crc16 of
     '''
     crc = 0xffff
-    pre = lambda x: x
-    if isinstance(data, str): pre = lambda x: ord(x)
+    if isinstance(data, str):
+        pre = lambda x: ord(x)
+    else: pre = lambda x: x
 
-    for a in data: crc = ((crc >> 8) & 0xff) ^ __crc16_table[
+    for a in data:
+        crc = ((crc >> 8) & 0xff) ^ __crc16_table[
             (crc ^ pre(a)) & 0xff];
     return crc
 
@@ -116,10 +119,12 @@ def computeLRC(data):
 
     '''
     lrc = 0
-    pre = lambda x: x
-    if isinstance(data, str): pre = lambda x: ord(x)
+    if isinstance(data, str):
+        pre = lambda x: ord(x)
+    else: pre = lambda x: x
 
-    for a in data: lrc = lrc ^ pre(a);
+    for a in data:
+        lrc = lrc ^ pre(a);
     return lrc
 
 def checkLRC(data, check):

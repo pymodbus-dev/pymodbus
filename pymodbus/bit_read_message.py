@@ -144,8 +144,8 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
-        return ReadCoilsResponse(values)
-
+        values.addCallback(ReadCoilsResponse)
+        return values
 
 class ReadCoilsResponse(ReadBitsResponseBase):
     '''
@@ -202,7 +202,8 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
-        return ReadDiscreteInputsResponse(values)
+        values.addCallback(ReadDiscreteInputsResponse)
+        return values
 
 class ReadDiscreteInputsResponse(ReadBitsResponseBase):
     '''
@@ -226,9 +227,9 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
         '''
         ReadBitsResponseBase.__init__(self, values)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReadCoilsRequest", "ReadCoilsResponse",
     "ReadDiscreteInputsRequest", "ReadDiscreteInputsResponse",

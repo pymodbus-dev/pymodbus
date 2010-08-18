@@ -10,12 +10,11 @@ Example Run::
     def clientTest():
         requests = [ ReadCoilsRequest(0,99) ]
         p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-    
+
     if __name__ == "__main__":
        reactor.callLater(1, clientTest)
        reactor.run()
 """
-import struct
 from zope.interface import implements
 
 from twisted.internet.protocol import Protocol, ClientFactory
@@ -225,9 +224,9 @@ class ModbusClientFactory(ClientFactory):
             del self.handler[response.transaction_id].address
         except KeyError: pass
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusMessageProducer",
     "ModbusClientProtocol", "ModbusClientFactory",

@@ -7,7 +7,7 @@ Example Run::
     def clientTest():
         requests = [ ReadCoilsRequest(0,99) ]
         p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-    
+
     if __name__ == "__main__":
        reactor.callLater(1, clientTest)
        reactor.run()
@@ -111,7 +111,7 @@ class IModbusClient(object):
         :returns: True if connection succeeded, False otherwise
         '''
         raise NotImplementedException("Method not implemented by derived class")
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -167,7 +167,7 @@ class IModbusClient(object):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "Null Transport"
@@ -189,10 +189,10 @@ class ModbusTcpClient(IModbusClient):
         self.port = port
         self.socket = None
         IModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
-    
+
     def connect(self):
         ''' Connect to the modbus tcp server
-        
+
         :returns: True if connection succeeded, False otherwise
         '''
         if self.socket: return True
@@ -206,7 +206,7 @@ class ModbusTcpClient(IModbusClient):
                 (self.host, self.port, msg))
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -234,7 +234,7 @@ class ModbusTcpClient(IModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s:%s" % (self.host, self.port)
@@ -256,7 +256,7 @@ class ModbusUdpClient(IModbusClient):
         self.port = port
         self.socket = None
         IModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
-    
+
     def connect(self):
         ''' Connect to the modbus tcp server
 
@@ -270,7 +270,7 @@ class ModbusUdpClient(IModbusClient):
             _logger.error('Unable to create udp socket')
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -296,7 +296,7 @@ class ModbusUdpClient(IModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s:%s" % (self.host, self.port)
@@ -341,22 +341,22 @@ class ModbusSerialClient(IModbusClient):
         elif method == 'rtu':    return ModbusRtuFramer(ClientDecoder())
         elif method == 'binary': return ModbusBinaryFramer(ClientDecoder())
         raise ParameterException("Invalid framer method requested")
-    
+
     def connect(self):
-        ''' Connect to the modbus tcp server
+        ''' Connect to the serial port.
 
         :returns: True if connection succeeded, False otherwise
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=0, timeout=self.timeout, 
+            self.socket = serial.Serial(port=0, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException, msg:
             _logger.error(msg)
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -384,14 +384,14 @@ class ModbusSerialClient(IModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s baud[%s]" % (self.method, self.baudrate)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusTcpClient", "ModbusUdpClient", "ModbusSerialClient"
 ]

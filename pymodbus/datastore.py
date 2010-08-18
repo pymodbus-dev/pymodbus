@@ -316,6 +316,7 @@ class ModbusServerContext(object):
         '''
         self.single = single
         self.__slaves = slaves if slaves != None else {}
+        print self.__slaves
 
     def __iter__(self):
         ''' Iterater over the current collection of slave
@@ -349,9 +350,9 @@ class ModbusServerContext(object):
             return self.__slaves.get(slave)
         else: raise ParameterException("Slave does not exist")
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusSequentialDataBlock", "ModbusSparseDataBlock",
     "ModbusSlaveContext", "ModbusServerContext",

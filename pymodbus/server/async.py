@@ -10,14 +10,14 @@ Example run::
 '''
 from binascii import b2a_hex
 from twisted.internet.protocol import Protocol, ServerFactory
-from twisted.internet.protocol import Protocol, ServerFactory
+from twisted.internet.defer import maybeDeferred
 
 from pymodbus.constants import Defaults
-from pymodbus.factory import ServerDecoder
+from pymodbus.factory import ServerDecoder, ClientDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
@@ -36,10 +36,10 @@ class ModbusProtocol(Protocol):
 
     def connectionMade(self):
         ''' Callback for when a client connects
-       
+
         Note, since the protocol factory cannot be accessed from the
         protocol __init__, the client connection made is essentially our
-        __init__ method.     
+        __init__ method.
         '''
         _logger.debug("Client Connected [%s]" % self.transport.getHost())
         self.framer = self.factory.framer(decoder=self.factory.decoder)
@@ -73,8 +73,11 @@ class ModbusProtocol(Protocol):
             response = request.execute(context)
         except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
-            response = request.doException(merror.SlaveFailure)
-        #self.framer.populateResult(response)
+            response = maybeDeferred(request.doException, merror.SlaveFailure)
+        response.addCallback(self._execute, request)
+
+    def _execute(self, response, request):
+        print "Ejecutando la rta"
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id
         self.send(response)
@@ -124,9 +127,9 @@ class ModbusServerFactory(ServerFactory):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Starting Factories
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def StartTcpServer(context, identity=None):
     ''' Helper method to start the Modbus Async TCP server
     :param context: The server data context
@@ -149,9 +152,9 @@ def StartUdpServer(context, identity=None):
         ModbusServerFactory(store=context, framer=framer, identity=identity))
     reactor.run()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Helper Methods
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def install_specialized_reactor():
     '''
     This attempts to install a reactor specialized for the given
@@ -169,9 +172,9 @@ def install_specialized_reactor():
     _logger.debug("No specialized reactor was installed")
     return False
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "StartTcpServer", "StartUdpServer",
     "install_specialized_reactor",

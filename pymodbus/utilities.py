@@ -152,7 +152,7 @@ def a2h(a):
         if 64 < O < 71:
             return O - 55
         else:
-            raise ValueError("ASCII value out of hex range.")
+            raise ValueError("ASCII value out of hex range: %s %s %d %d" % (a, A,O, o))
 
 def ascii2hex(buffer):
     '''

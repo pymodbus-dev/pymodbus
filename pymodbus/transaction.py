@@ -511,8 +511,12 @@ class ModbusAsciiFramer(IModbusFramer):
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
-                result = self.decoder.decode(self.getFrame())
+                try:
+                    result = self.decoder.decode(self.getFrame())
+                except:
+                    result = None
                 if result is None:
+                    self.advanceFrame()
                     raise ModbusIOException("Unable to decode response")
                 self.populateResult(result)
                 self.advanceFrame()

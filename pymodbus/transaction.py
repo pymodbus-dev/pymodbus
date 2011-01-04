@@ -164,7 +164,8 @@ class ModbusSocketFramer(IModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        self.__buffer = self.__buffer[self.__hsize + self.__header['len'] - 1:]
+        length = self.__hsize + self.__header['len'] - 1
+        self.__buffer = self.__buffer[length:]
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
 
     def isFrameReady(self):
@@ -188,8 +189,8 @@ class ModbusSocketFramer(IModbusFramer):
 
         :returns: The next full frame buffer
         '''
-        return self.__buffer[self.__hsize:self.__hsize +
-                self.__header['len'] - 1]
+        length = self.__hsize + self.__header['len'] - 1
+        return self.__buffer[self.__hsize:length]
 
     def populateResult(self, result):
         '''
@@ -239,11 +240,11 @@ class ModbusSocketFramer(IModbusFramer):
         '''
         data = message.encode()
         packet = struct.pack('>HHHBB',
-                message.transaction_id,
-                message.protocol_id,
-                len(data) + 2,
-                message.unit_id,
-                message.function_code) + data
+            message.transaction_id,
+            message.protocol_id,
+            len(data) + 2,
+            message.unit_id,
+            message.function_code) + data
         return packet
 
 #---------------------------------------------------------------------------#
@@ -384,9 +385,9 @@ class ModbusRtuFramer(IModbusFramer):
         '''
         data = message.encode()
         packet = struct.pack('>BB',
-                message.unit_id,
-                message.function_code) + data
-        packet = packet + struct.pack("<H", computeCRC(packet))
+            message.unit_id,
+            message.function_code) + data
+        packet += struct.pack("<H", computeCRC(packet))
         return packet
 
 #---------------------------------------------------------------------------#
@@ -667,9 +668,9 @@ class ModbusBinaryFramer(IModbusFramer):
         '''
         data = self._preflight(message.encode())
         packet = struct.pack('>BB',
-                message.unit_id,
-                message.function_code) + data
-        packet = packet + struct.pack("<H", computeCRC(packet))
+            message.unit_id,
+            message.function_code) + data
+        packet += struct.pack("<H", computeCRC(packet))
         return packet
 
     def _preflight(self, data):

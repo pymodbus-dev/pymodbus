@@ -38,28 +38,34 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
     the client handler.
     '''
 
-    def __init__(self):
-        ''' Initializes server
-        '''
-        self.frame = ModbusSocketFramer()#self.factory.framer()
-
     def setup(self):
         ''' Callback for when a client connects
         '''
-        _logger.debug("Client Connected [%s]" % self.client_address)
+        _logger.debug("Client Connected [%s:%s]" % self.client_address)
+        self.running = True
+        self.framer = self.server.framer(self.server.decoder)
+        self.server.threads.append(self)
 
     def finish(self):
         ''' Callback for when a client disconnects
         '''
-        _logger.debug("Client Disconnected [%s]" % self.client_address)
+        _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
+        self.server.threads.remove(self)
 
     def handle(self):
         ''' Callback when we receive any data
         '''
-        data = self.request.recv(1024)
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
-        # if not self.factory.control.ListenOnly:
-        self.frame.processIncomingPacket(data, self.execute)
+        while self.running:
+            try:
+                data = self.request.recv(1024)
+                _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                # if not self.server.control.ListenOnly:
+                self.framer.processIncomingPacket(data, self.execute)
+            except socket.timeout: pass
+            except socket.error, msg:
+                _logger.error("Socket error occurred %s" % msg)
+                self.running = False
+            except: self.running = False
 
 #---------------------------------------------------------------------------#
 # Extra Helper Functions
@@ -70,7 +76,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         :param request: The decoded request message
         '''
         try:
-            context = self.factory.store[request.unit_id]
+            context = self.server.context[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
@@ -84,8 +90,8 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
 
         :param message: The unencoded modbus response
         '''
-        #self.factory.control.Counter.BusMessage += 1
-        pdu = self.frame.buildPacket(message)
+        #self.server.control.Counter.BusMessage += 1
+        pdu = self.framer.buildPacket(message)
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.request.send(pdu)
 
@@ -101,9 +107,6 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
-#---------------------------------------------------------------------------#
-# Synchronous Transport Implementations
-#---------------------------------------------------------------------------#
 class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
@@ -124,19 +127,15 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         :param identity: An optional identify structure
 
         '''
+        self.threads = []
         self.decoder = ServerDecoder()
-        if isinstance(framer, IModbusFramer):
-            self.framer = framer
-        else: self.framer = ModbusSocketFramer
-
-        if isinstance(store, ModbusServerContext):
-            self.context = context
-        else: self.context = ModbusServerContext()
+        self.framer  = framer  or ModbusSocketFramer
+        self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.threads = []
+
         SocketServer.ThreadingTCPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
 
@@ -146,7 +145,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         :param request: The request to handle
         :param client: The address of the client
         '''
-        _logger.debug("Started thread to serve client at " + str(client_address))
+        _logger.debug("Started thread to serve client at " + str(client))
         SocketServer.ThreadingTCPServer.process_request(self, request, client)
 
     def server_close(self):
@@ -154,8 +153,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         '''
         _logger.debug("Modbus server stopped")
         self.socket.close()
-        for t in self.threads:
-            t.run = False
+        for thread in self.threads: thread.running = False
 
 class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     '''
@@ -177,19 +175,15 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         :param identity: An optional identify structure
 
         '''
+        self.threads = []
         self.decoder = ServerDecoder()
-        if isinstance(framer, IModbusFramer):
-            self.framer = framer
-        else: self.framer = ModbusSocketFramer
-
-        if isinstance(store, ModbusServerContext):
-            self.context = context
-        else: self.context = ModbusServerContext()
+        self.framer  = framer  or ModbusSocketFramer
+        self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.threads = []
+
         SocketServer.ThreadingUDPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
 
@@ -199,19 +193,16 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         :param request: The request to handle
         :param client: The address of the client
         '''
-        _logger.debug("Started thread to serve client at " + str(client_address))
-        SocketServer.ThreadingUDPServer.process_request(
-                self, request, client)
+        _logger.debug("Started thread to serve client at " + str(client))
+        SocketServer.ThreadingUDPServer.process_request(self, request, client)
 
     def server_close(self):
         ''' Callback for stopping the running server
         '''
         _logger.debug("Modbus server stopped")
         self.socket.close()
-        for t in self.threads:
-            t.run = False
+        for thread in self.threads: thread.running = False
 
-# TODO wrap this around the request handler
 class ModbusSerialServer(object):
     '''
     A modbus threaded udp socket server
@@ -221,7 +212,7 @@ class ModbusSerialServer(object):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None):
+    def __init__(self, context, framer=None, identity=None, **kwargs):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -233,45 +224,78 @@ class ModbusSerialServer(object):
 
         '''
         self.decoder = ServerDecoder()
-        if isinstance(framer, IModbusFramer):
-            self.framer = framer
-        else: self.framer = ModbusSerialFramer
-
-        if isinstance(store, ModbusServerContext):
-            self.context = context
-        else: self.context = ModbusServerContext()
+        self.framer  = framer  or ModbusAsciiFramer
+        self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-    def process_request(self, request, client):
+        self.device   = kwargs.get('device', 0)
+        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
+        self.parity   = kwargs.get('parity',   Defaults.Parity)
+        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+        self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
+        self._connect()
+
+    def _connect(self):
+        ''' Connect to the serial server
+
+        :returns: True if connection succeeded, False otherwise
+        '''
+        if self.socket: return True
+        try:
+            self.socket = serial.Serial(port=self.device, timeout=self.timeout, 
+                bytesize=self.bytesize, stopbits=self.stopbits,
+                baudrate=self.baudrate, parity=self.parity)
+        except serial.SerialException, msg:
+            _logger.error(msg)
+            self.close()
+        return self.socket != None
+
+    def _build_handler(self):
+        ''' A helper method to create and monkeypatch
+            a serial handler.
+
+        :returns: A patched handler
+        '''
+        request = self.socket
+        request.send = self.request.write
+        request.recv = self.request.read
+        handler = ModbusRequestHandler(request, ('127.0.0.1', self.device), self)
+        return handler
+
+    def serve_forever(self):
         ''' Callback for connecting a new client thread
 
         :param request: The request to handle
         :param client: The address of the client
         '''
-        _logger.debug("Started thread to serve client at " + str(client_address))
+        _logger.debug("Started thread to serve client")
+        handler = self._build_handler()
+        while True: handler.handle()
 
     def server_close(self):
         ''' Callback for stopping the running server
         '''
         _logger.debug("Modbus server stopped")
+        self.socket.close()
 
 #---------------------------------------------------------------------------# 
 # Creation Factories
 #---------------------------------------------------------------------------# 
-def StartTcpServer(self, context=None, identity=None):
+def StartTcpServer(context=None, identity=None):
     ''' A factory to start and run a tcp modbus server
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     '''
     framer = ModbusSocketFramer
-    server = ModbusTcpServer(context=context, framer=framer, identity=identity)
+    server = ModbusTcpServer(context, framer, identity)
     server.serve_forever()
 
-def StartUdpServer(self, context=None, identity=None):
+def StartUdpServer(context=None, identity=None):
     ''' A factory to start and run a udp modbus server
 
     :param context: The ModbusServerContext datastore
@@ -281,7 +305,7 @@ def StartUdpServer(self, context=None, identity=None):
     server = ModbusUdpServer(context, framer, identity)
     server.serve_forever()
 
-def StartSerialServer(self, context=None, identity=None):
+def StartSerialServer(context=None, identity=None):
     ''' A factory to start and run a udp modbus server
 
     :param context: The ModbusServerContext datastore
@@ -289,7 +313,7 @@ def StartSerialServer(self, context=None, identity=None):
     '''
     framer = ModbusSerialFramer
     server = ModbusSerialServer(context, framer, identity)
-    #server.serve_forever()
+    server.serve_forever()
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

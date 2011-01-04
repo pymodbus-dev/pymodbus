@@ -10,14 +10,13 @@ Example run::
 '''
 from binascii import b2a_hex
 from twisted.internet.protocol import Protocol, ServerFactory
-from twisted.internet.protocol import Protocol, ServerFactory
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.mexceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
@@ -41,7 +40,8 @@ class ModbusProtocol(Protocol):
         protocol __init__, the client connection made is essentially our
         __init__ method.     
         '''
-        _logger.debug("Client Connected [%s]" % self.transport.getHost())
+        #_logger.debug("Client Connected [%s]" % self.transport.getHost())
+        _logger.debug("Client Connected [%s]" % self.transport)
         self.framer = self.factory.framer(decoder=self.factory.decoder)
 
     def connectionLost(self, reason):
@@ -112,15 +112,10 @@ class ModbusServerFactory(ServerFactory):
 
         '''
         self.decoder = ServerDecoder()
-        if isinstance(framer, IModbusFramer):
-            self.framer = framer
-        else: self.framer = ModbusSocketFramer
-
-        if isinstance(store, ModbusServerContext):
-            self.store = store
-        else: self.store = ModbusServerContext()
-
+        self.framer = framer or ModbusSocketFramer
+        self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
+
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
@@ -130,23 +125,42 @@ class ModbusServerFactory(ServerFactory):
 def StartTcpServer(context, identity=None):
     ''' Helper method to start the Modbus Async TCP server
     :param context: The server data context
-    :param identify: The server identity to use
+    :param identify: The server identity to use (default empty)
     '''
     from twisted.internet import reactor
+
+    _logger.info("Starting Modbus TCP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
-    reactor.listenTCP(Defaults.Port,
-        ModbusServerFactory(store=context, framer=framer, identity=identity))
+    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    reactor.listenTCP(Defaults.Port, factory)
     reactor.run()
 
 def StartUdpServer(context, identity=None):
     ''' Helper method to start the Modbus Async Udp server
     :param context: The server data context
-    :param identify: The server identity to use
+    :param identify: The server identity to use (default empty)
     '''
     from twisted.internet import reactor
+
+    _logger.info("Starting Modbus UDP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
-    reactor.listenUDP(Defaults.Port,
-        ModbusServerFactory(store=context, framer=framer, identity=identity))
+    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    reactor.listenUDP(Defaults.Port, factory)
+    reactor.run()
+
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs):
+    ''' Helper method to start the Modbus Async Serial server
+    :param context: The server data context
+    :param identify: The server identity to use (default empty)
+    :param framer: The framer to use (default ModbusAsciiFramer)
+    '''
+    from twisted.internet import reactor
+    from twisted.internet.serialport import SerialPort
+
+    _logger.info("Starting Modbus Serial Server on %s" % kwargs['device'])
+    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    protocol = factory.buildProtocol(None)
+    handle = SerialPort(protocol, kwargs['device'], reactor, Defaults.Baudrate)
     reactor.run()
 
 #---------------------------------------------------------------------------# 

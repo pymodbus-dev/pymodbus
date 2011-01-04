@@ -64,7 +64,7 @@ class ReadBitsResponseBase(ModbusResponse):
         :param values: The requested values to be returned
         '''
         ModbusResponse.__init__(self)
-        self.bits = [] if values == None else values
+        self.bits = values or []
 
     def encode(self):
         ''' Encodes response pdu

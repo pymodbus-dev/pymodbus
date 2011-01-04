@@ -149,11 +149,9 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        if self.address > address:
-            return False
-        if ((self.address + len(self.values)) <
-                (address + count)): return False
-        return True
+        result = (self.address <= address)
+        result &= ((self.address + len(self.values)) >= (address + count))
+        return result
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -201,8 +199,8 @@ class ModbusSparseDataBlock(ModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        return set(range(address, address + count)
-                        ).issubset(set(self.values.iterkeys()))
+        handle = range(address, address + count)
+        return set(handle).issubset(set(self.values.iterkeys()))
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -211,8 +209,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        return [self.values[i]
-                for i in range(address, address + count)]
+        return [self.values[i] for i in range(address, address + count)]
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
@@ -265,8 +262,8 @@ class ModbusSlaveContext(object):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for i in [self.di, self.co, self.ir, self.hr]:
-            i.reset()
+        for datastore in [self.di, self.co, self.ir, self.hr]:
+            datastore.reset()
 
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range

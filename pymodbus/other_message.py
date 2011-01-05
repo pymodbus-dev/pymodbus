@@ -217,6 +217,6 @@ class ReportSlaveIdResponse(ModbusResponse):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ReadExceptionStatusRequest", "ReadExceptionStatusResponse"
+    "ReadExceptionStatusRequest", "ReadExceptionStatusResponse",
     "ReportSlaveIdRequest", "ReportSlaveIdResponse",
 ]

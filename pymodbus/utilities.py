@@ -6,6 +6,16 @@ A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
 
+def default(value):
+    '''
+    Given a python object, return the default value
+    of that object.
+
+    :param value: The value to get the default of
+    :returns: The default value
+    '''
+    return type(value)()
+
 def packBitsToString(bits):
     ''' Creates a string out of an array of bits
 
@@ -71,71 +81,52 @@ def __generate_crc16_table():
 __crc16_table = __generate_crc16_table()
 
 def computeCRC(data):
-    ''' Computes a crc16 on the passed in data.
+    ''' Computes a crc16 on the passed in string. For modbus,
+    this is only used on the binary serial protocols (in this
+    case RTU).
 
     The difference between modbus's crc16 and a normal crc16
     is that modbus starts the crc value out at 0xffff.
 
-    example::
-
-        return computeCRC(input) == 0x1234
-
-    .. note:: This accepts a string or a integer list
-
     :param data: The data to create a crc16 of
+    :returns: The calculated CRC
     '''
     crc = 0xffff
-    if isinstance(data, str):
-        pre = lambda x: ord(x)
-    else: pre = lambda x: x
-
     for a in data:
-        crc = ((crc >> 8) & 0xff) ^ __crc16_table[
-            (crc ^ pre(a)) & 0xff];
+        idx = __crc16_table[(crc ^ ord(a)) & 0xff];
+        crc = ((crc >> 8) & 0xff) ^ idx
     return crc
 
 def checkCRC(data, check):
     ''' Checks if the data matches the passed in CRC
 
-    example::
-
-        return checkCRC(input, 0x1234)
-
     :param data: The data to create a crc16 of
     :param check: The CRC to validate
+    :returns: True if matched, False otherwise
     '''
     return computeCRC(data) == check
 
 def computeLRC(data):
-    ''' Wrapper to computer LRC of multiple types of data
-
-    .. note:: This accepts a string or a integer list
-
-    example::
-
-        return computeLRC(input) == 2
+    ''' Used to compute the longitudinal redundancy check
+    against a string. This is only used on the serial ASCII
+    modbus protocol. A full description of this implementation
+    can be found in appendex B of the serial line modbus description.
 
     :param data: The data to apply a lrc to
+    :returns: The calculated LRC
 
     '''
     lrc = 0
-    if isinstance(data, str):
-        pre = lambda x: ord(x)
-    else: pre = lambda x: x
-
-    for a in data:
-        lrc = lrc ^ pre(a);
+    lrc = sum(ord(a) for a in data) & 0xff
+    lrc = (lrc ^ 0xff) + 1
     return lrc
 
 def checkLRC(data, check):
     ''' Checks if the passed in data matches the LRC
 
-    example::
-
-        return checkLRC(input, 2)
-
     :param data: The data to calculate
     :param check: The LRC to validate
+    :returns: True if matched, False otherwise
     '''
     return computeLRC(data) == check
 
@@ -143,6 +134,6 @@ def checkLRC(data, check):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-        'packBitsToString', 'unpackBitsFromString',
+        'packBitsToString', 'unpackBitsFromString', 'default',
         'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
 ]

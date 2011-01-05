@@ -30,6 +30,7 @@ Released under the the BSD license
 
 from pymodbus.version import _version
 __version__ = _version.short().split('+')[0]
+__author__  = 'Galen Collins'
 
 
 #---------------------------------------------------------------------------#

@@ -228,7 +228,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         message = ModbusRequest()
         message.unit_id        = 0xff
         message.function_code  = 0x01
-        expected = ":ff0101\r\n"
+        expected = ":ff01d3\r\n"
         actual = self._ascii.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode

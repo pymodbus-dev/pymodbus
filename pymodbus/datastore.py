@@ -72,7 +72,7 @@ class ModbusDataBlock(object):
             setValues(self, address, values)
     '''
 
-    def default(self, count, value):
+    def default(self, count, value=False):
         ''' Used to initialize a store to one value
 
         :param count: The number of fields to set
@@ -140,7 +140,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         if isinstance(values, list):
             self.values = values
         else: self.values = [values]
-        self.default_value = self.values[0]
+        self.default_value = self.values[0].__class__()
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
@@ -149,7 +149,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        result = (self.address <= address)
+        result  = (self.address <= address)
         result &= ((self.address + len(self.values)) >= (address + count))
         return result
 
@@ -160,8 +160,8 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        b = address - self.address
-        return self.values[b:b+count]
+        start = address - self.address
+        return self.values[start:start+count]
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
@@ -169,8 +169,8 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        b = address - self.address
-        self.values[b:b+len(values)] = values
+        start = address - self.address
+        self.values[start:start+len(values)] = values
 
 class ModbusSparseDataBlock(ModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
@@ -187,9 +187,8 @@ class ModbusSparseDataBlock(ModbusDataBlock):
             self.values = values
         elif isinstance(values, list):
             self.values = dict([(i,v) for i,v in enumerate(values)])
-        else: raise ParameterException(
-                        "Values for datastore must be a list or dictionary")
-        self.default_value = self.values.values()[0]
+        else: raise ParameterException("Values for datastore must be a list or dictionary")
+        self.default_value = self.values.values()[0].__class__()
         self.address = self.values.iterkeys().next()
 
     def validate(self, address, count=1):
@@ -217,8 +216,8 @@ class ModbusSparseDataBlock(ModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        for i,v in enumerate(values):
-            self.values[address + i] = v
+        for idx,val in enumerate(values):
+            self.values[address + idx] = val
 
 #---------------------------------------------------------------------------#
 # Device Data Control
@@ -229,29 +228,29 @@ class ModbusSlaveContext(object):
     stored in its own personal block
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         ''' Initializes the datastores
-        @param kwargs
-                Each element is a ModbusDataBlock
-                'd' - Discrete Inputs initializer
-                'c' - Coils initializer
-                'h' - Holding Register initializer
-                'i' - Input Registers iniatializer
+        :param kwargs: Each element is a ModbusDataBlock
+
+            'di' - Discrete Inputs initializer
+            'co' - Coils initializer
+            'hr' - Holding Register initializer
+            'ir' - Input Registers iniatializer
         '''
-        for k in ['d', 'c', 'h', 'i']:
-            if not kwargs.has_key(k):
-                kwargs[k] = ModbusSequentialDataBlock(0, 0)
-            if not isinstance(kwargs[k], ModbusDataBlock):
-                raise ParameterException("Assigned datastore is not a ModbusDataBlock")
-        self.di = kwargs['d']
-        self.co = kwargs['c']
-        self.ir = kwargs['i']
-        self.hr = kwargs['h']
-        self.__mapping = {
-            2:self.di, 3:self.hr, 4:self.ir,
-            1:self.co, 5:self.co, 15:self.co,
-            6:self.hr, 16:self.hr, 23:self.hr
-       }
+        self.di = kwargs.get('di', ModbusSequentialDataBlock(0, 0))
+        self.co = kwargs.get('co', ModbusSequentialDataBlock(0, 0))
+        self.ir = kwargs.get('ir', ModbusSequentialDataBlock(0, 0))
+        self.hr = kwargs.get('hr', ModbusSequentialDataBlock(0, 0))
+        self.__build_mapping()
+
+    def __build_mapping(self):
+        '''
+        A quick helper method to build the function
+        code mapper.
+        '''
+        self.__mapping = {2:self.di, 4:self.ir}
+        self.__mapping.update([(i, self.hr) for i in [3, 6, 16, 23]])
+        self.__mapping.update([(i, self.co) for i in [1, 5, 15]])
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -312,7 +311,7 @@ class ModbusServerContext(object):
         :param single: Set to true to treat this as a single context
         '''
         self.single = single
-        self.__slaves = slaves if slaves != None else {}
+        self.__slaves = slaves or {}
 
     def __iter__(self):
         ''' Iterater over the current collection of slave

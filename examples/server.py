@@ -5,8 +5,8 @@
 #---------------------------------------------------------------------------# 
 from pymodbus.server.sync import StartTcpServer, StartUdpServer
 from pymodbus.server.sync import StartSerialServer
-from pymodbus.server.async import StartATcpServer, StartAUdpServer
-from pymodbus.server.async import StartASerialServer
+from pymodbus.server.async import StartTcpServer as StartATcpServer
+from pymodbus.server.async import StartSerialServer as StartASerialServer
 
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -23,10 +23,10 @@ log.setLevel(logging.DEBUG)
 # initialize your data store
 #---------------------------------------------------------------------------# 
 store = ModbusSlaveContext(
-    d = ModbusSequentialDataBlock(0, [1]*100),
-    c = ModbusSequentialDataBlock(0, [1]*100),
-    h = ModbusSequentialDataBlock(0, [1]*100),
-    i = ModbusSequentialDataBlock(0, [1]*100))
+    di = ModbusSequentialDataBlock(0, [17]*100),
+    co = ModbusSequentialDataBlock(0, [17]*100),
+    hr = ModbusSequentialDataBlock(0, [17]*100),
+    ir = ModbusSequentialDataBlock(0, [17]*100))
 context = ModbusServerContext(slaves=store, single=True)
 
 #---------------------------------------------------------------------------# 

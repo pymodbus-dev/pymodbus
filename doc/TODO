@@ -1,29 +1,54 @@
-#---------------------------------------------------------------------------# 
-# Current Work In Progress
-#---------------------------------------------------------------------------# 
-** Protocols **
-  - Serial RTU
+---------------------------------------------------------------------------
+General
+---------------------------------------------------------------------------
+- add crc/lrc check on incoming data
+- make framer read header->read header.length
+  - maybe just for sync 
+- finish clients (and interface)
+- fix crc/lrc ascii issue
+- add all modbus control into server
+- add a frontend plugin system
+  - web frontend (bottle)
+  - ssh/telnet frontend (manhole)
+- twisted trial / twisted logging / twisted apps
+- twisted serial server
+- add daemonize code / init.d / config
+- add correct transaction handling (retry, fail, etc)
 
-** Functions **
-  - Diagnostic
-  - Server informtation
-  - Server settings
-  - Mask functions
+---------------------------------------------------------------------------
+Protocols
+---------------------------------------------------------------------------
+- Serial RTU -> just use sleep wait
+- Test serial against devices (and virtual tty)
 
-** Server Context **
-  - Plug into server object (only for serial?)
-  - Add support for slaves.  This should be as simple as a dict of 
-    id : Context()
+---------------------------------------------------------------------------
+Functions
+---------------------------------------------------------------------------
+- Diagnostic
+- Server informtation
+- Server settings
+- Mask functions
 
-** Client **
-  - Rework transaction flow and response data
-  - Finish rtu framers
+---------------------------------------------------------------------------
+Server Context
+---------------------------------------------------------------------------
+- link to other clients (other machines, other instances)
 
-** Tools **
-  - Unify a quick testing tool (unit/lint/coverage/figleaf/etc...)
-  - Get 100%ish code coverage with solid unit testing to ensure reliability
+---------------------------------------------------------------------------
+Client
+---------------------------------------------------------------------------
+- Rework transaction flow and response data
+- Finish rtu framers
 
+---------------------------------------------------------------------------
+Tools
+---------------------------------------------------------------------------
+- Get 100%ish code coverage with solid unit testing to ensure reliability
+- add functional tests
 
+--------------------------------------------------------------------------- 
+Scratch
+--------------------------------------------------------------------------- 
 from twisted.python import log
 observer = log.PythonLoggingObserver()
 observer.start()

@@ -52,7 +52,7 @@ command_classes['build_apidocs'] = BuildApiDocs
 #---------------------------------------------------------------------------# 
 # Configuration
 #---------------------------------------------------------------------------# 
-from pymodbus import __version__
+from pymodbus import __version__, __author__
 
 setup(name  = 'pymodbus',
     version = __version__,
@@ -76,9 +76,9 @@ setup(name  = 'pymodbus',
         'Topic :: Utilities'
     ],
     keywords = 'modbus, twisted',
-    author = 'Galen Collins',
+    author = __author__,
     author_email = 'bashwork@gmail.com',
-    maintainer = 'Galen Collins',
+    maintainer = __author__,
     maintainer_email = 'bashwork@gmail.com',
     url='http://code.google.com/p/pymodbus/',
     license = 'BSD',

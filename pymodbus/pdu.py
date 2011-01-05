@@ -160,7 +160,11 @@ class IllegalFunctionRequest(ModbusRequest):
         self.function_code = function_code
 
     def decode(self, data):
-        pass
+        ''' This is here so this failure will run correctly
+
+        :param data: Not used
+        '''
+        pass # let execute build the error response
 
     def execute(self, context):
         ''' Builds an illegal function request error response

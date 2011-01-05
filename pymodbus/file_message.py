@@ -65,7 +65,7 @@ class ReadFifoQueueResponse(ModbusResponse):
 
         :param values: The list of values of the fifo to return
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.values = values
 
     def encode(self):
@@ -77,6 +77,7 @@ class ReadFifoQueueResponse(ModbusResponse):
         packet = struct.pack('>HH', 2 + length, length)
         for value in self.values:
             packet += struct.pack('>H', value)
+        return packet
 
     def decode(self, data):
         ''' Decodes a the response
@@ -84,9 +85,10 @@ class ReadFifoQueueResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         self.values = []
-        length, count = struct.unpack('>HH', data)
-        for i in xrange(0, count):
-            self.values.append(struct.unpack('>H', data[2 + i * 2]))
+        length, count = struct.unpack('>HH', data[0:4])
+        for index in xrange(0, count - 4):
+            idx = 4 + index * 2
+            self.values.append(struct.unpack('>H', data[idx:idx+2])[0])
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

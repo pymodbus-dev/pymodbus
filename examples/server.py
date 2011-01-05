@@ -6,6 +6,7 @@
 from pymodbus.server.sync import StartTcpServer, StartUdpServer
 from pymodbus.server.sync import StartSerialServer
 from pymodbus.server.async import StartTcpServer as StartATcpServer
+from pymodbus.server.async import StartUdpServer as StartAUdpServer
 from pymodbus.server.async import StartSerialServer as StartASerialServer
 
 from pymodbus.datastore import ModbusSequentialDataBlock
@@ -32,5 +33,5 @@ context = ModbusServerContext(slaves=store, single=True)
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-StartATcpServer(context)
+StartAUdpServer(context)
 #StartSerialServer(context, device='/dev/ptmx')

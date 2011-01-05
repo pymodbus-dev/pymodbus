@@ -5,15 +5,15 @@ General
 - make framer read header->read header.length
   - maybe just for sync 
 - finish clients (and interface)
-- fix crc/lrc ascii issue
 - add all modbus control into server
 - add a frontend plugin system
   - web frontend (bottle)
   - ssh/telnet frontend (manhole)
-- twisted trial / twisted logging / twisted apps
+- twisted trial / twisted logging
 - twisted serial server
-- add daemonize code / init.d / config
+- add daemonize code / init.d / config (or just use twisted)
 - add correct transaction handling (retry, fail, etc)
+- create twisted UDP framer :/
 
 ---------------------------------------------------------------------------
 Protocols

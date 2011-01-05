@@ -37,6 +37,20 @@ class ReadFifoQueueRequest(ModbusRequest):
         ModbusRequest.__init__(self)
         self.address = address
 
+    def encode(self):
+        ''' Encodes the request packet
+
+        :returns: The byte encoded packet
+        '''
+        return struct.pack('>H', self.address)
+
+    def decode(self, data):
+        ''' Decodes the incoming request
+
+        :param data: The data to decode into the address
+        '''
+        self.address = struct.unpack('>H', data)
+
     def execute(self, context):
         ''' Run a read exeception status request against the store
 

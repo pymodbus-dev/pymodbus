@@ -75,7 +75,35 @@ class Defaults(Singleton):
     Bytesize      = 8
     Stopbits      = 1
 
+class ModbusStatus(object):
+    '''
+    These represnt the status the various modbus devices
+    can be in.
+
+    .. attribute:: Waiting
+
+       This indicates that a modbus device is currently
+       waiting for a given request to finish some running task.
+
+    .. attribute:: Ready
+
+       This indicates that a modbus device is currently
+       free to perform the next request task.
+
+    .. attribute:: CoilOn
+
+       This indicates that the given modbus coil is on
+
+    .. attribute:: CoilOff
+
+       This indicates that the given modbus coil is off
+    '''
+    Waiting = 0xffff
+    Ready   = 0x0000
+    CoilOn  = 0xff00
+    CoilOff = 0x0000
+
 #---------------------------------------------------------------------------# 
 # Exported Identifiers
 #---------------------------------------------------------------------------# 
-__all__ = [ "Defaults" ]
+__all__ = [ "Defaults", "ModbusStatus" ]

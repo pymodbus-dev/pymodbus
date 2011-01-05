@@ -4,6 +4,7 @@ Diagnostic record read/write
 Currently not all implemented
 '''
 import struct
+from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
@@ -11,8 +12,7 @@ from pymodbus.device import ModbusControlBlock
 _MCB = ModbusControlBlock()
 
 #---------------------------------------------------------------------------#
-# TODO
-# - Make these only work on serial
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class ReadExceptionStatusRequest(ModbusRequest):
     '''
@@ -27,6 +27,18 @@ class ReadExceptionStatusRequest(ModbusRequest):
         ''' Initializes a new instance
         '''
         ModbusRequest.__init__(self)
+
+    def encode(self):
+        ''' Encodes the message
+        '''
+        return ''
+
+    def decode(self, data):
+        ''' Decodes data part of the message.
+
+        :param data: The incoming data
+        '''
+        pass
 
     def execute(self):
         ''' Run a read exeception status request against the store
@@ -72,12 +84,6 @@ class ReadExceptionStatusResponse(ModbusResponse):
 # Encapsulate interface transport 43, 14
 # CANopen general reference 43, 13
 
-class EventStatus(object):
-    '''
-    '''
-    Waiting = 0xffff
-    Ready   = 0x0000
-
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
 #---------------------------------------------------------------------------#
@@ -103,6 +109,18 @@ class GetCommEventCounterRequest(ModbusRequest):
         ''' Initializes a new instance
         '''
         ModbusRequest.__init__(self)
+
+    def encode(self):
+        ''' Encodes the message
+        '''
+        return ''
+
+    def decode(self, data):
+        ''' Decodes data part of the message.
+
+        :param data: The incoming data
+        '''
+        pass
 
     def execute(self):
         ''' Run a read exeception status request against the store
@@ -136,7 +154,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        ready = EventStatus.Ready if self.status else EventStatus.Waiting
+        ready = ModbusStatus.Ready if self.status else ModbusStatus.Waiting
         return struct.pack('>HH', ready, self.count)
 
     def decode(self, data):
@@ -145,7 +163,7 @@ class GetCommEventCounterResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         ready, self.count = struct.unpack('>HH', data)
-        self.status = (ready == EventStatus.Ready)
+        self.status = (ready == ModbusStatus.Ready)
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
@@ -166,6 +184,18 @@ class ReportSlaveIdRequest(ModbusRequest):
         ''' Initializes a new instance
         '''
         ModbusRequest.__init__(self)
+
+    def encode(self):
+        ''' Encodes the message
+        '''
+        return ''
+
+    def decode(self, data):
+        ''' Decodes data part of the message.
+
+        :param data: The incoming data
+        '''
+        pass
 
     def execute(self):
         ''' Run a read exeception status request against the store

@@ -1,8 +1,8 @@
-:mod:`constants` --- Modbus Default Values
+:mod:`file_message` --- File Modbus Messages
 ============================================================
 
-.. module:: constants
-   :synopsis: Modbus Default Values
+.. module:: file_message
+   :synopsis: File Modbus Messages
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
 .. sectionauthor:: Galen Collins <bashwork@gmail.com>
@@ -10,10 +10,10 @@
 API Documentation
 -------------------
 
-.. automodule:: pymodbus.constants
+.. automodule:: pymodbus.file_message
 
-.. autoclass:: Defaults
+.. autoclass:: ReadFifoQueueRequest
    :members:
 
-.. autoclass:: ModbusStatus
+.. autoclass:: ReadFifoQueueResponse
    :members:

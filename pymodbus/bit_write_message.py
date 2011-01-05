@@ -5,6 +5,7 @@ Bit Writing Request/Response
 TODO write mask request/response
 """
 import struct
+from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
@@ -15,8 +16,8 @@ from pymodbus.utilities import *
 #---------------------------------------------------------------------------#
 # These are defined in the spec to turn a coil on/off
 #---------------------------------------------------------------------------#
-_turn_coil_on   = struct.pack(">BB", 0xff, 0x00)
-_turn_coil_off  = struct.pack(">BB", 0x00, 0x00)
+_turn_coil_on  = struct.pack(">H", ModbusStatus.CoilOn)
+_turn_coil_off = struct.pack(">H", ModbusStatus.CoilOff)
 
 class WriteSingleCoilRequest(ModbusRequest):
     '''
@@ -45,7 +46,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.value = 0xff00 if value else 0x0000
+        self.value = ModbusStatus.CoilOn if value else ModbusStatus.CoilOff
 
     def encode(self):
         ''' Encodes write coil request
@@ -69,11 +70,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response or exception message
         '''
-        if self.value != 0 and self.value != 0xff00:
+        if self.value not in [ModbusStatus.CoilOff, ModbusStatus.CoilOn]:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.address, [self.value == 0xff00])
+
+        value = [self.value == ModbusStatus.CoilOn]
+        context.setValues(self.function_code, self.address, value)
         values = context.getValues(self.function_code, self.address)
         return WriteSingleCoilResponse(self.address, values[0])
 
@@ -116,7 +119,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         self.address, value = struct.unpack('>HH', data)
-        self.value = (value != 0)
+        self.value = (value == ModbusStatus.CoilOn)
 
     def __str__(self):
         ''' Returns a string representation of the instance

@@ -18,3 +18,14 @@ API Documentation
 .. autoclass:: ReadExceptionStatusResponse
    :members:
 
+.. autoclass:: GetCommEventCounterRequest
+   :members:
+
+.. autoclass:: GetCommEventCounterResponse
+   :members:
+
+.. autoclass:: ReportSlaveIdRequest
+   :members:
+
+.. autoclass:: ReportSlaveIdResponse
+   :members:

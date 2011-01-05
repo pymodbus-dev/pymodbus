@@ -131,7 +131,7 @@ def StartTcpServer(context, identity=None):
 
     _logger.info("Starting Modbus TCP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
-    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    factory = ModbusServerFactory(context, framer, identity)
     reactor.listenTCP(Defaults.Port, factory)
     reactor.run()
 
@@ -144,7 +144,7 @@ def StartUdpServer(context, identity=None):
 
     _logger.info("Starting Modbus UDP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
-    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    factory = ModbusServerFactory(context, framer, identity)
     reactor.listenUDP(Defaults.Port, factory)
     reactor.run()
 
@@ -158,7 +158,7 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs
     from twisted.internet.serialport import SerialPort
 
     _logger.info("Starting Modbus Serial Server on %s" % kwargs['device'])
-    factory = ModbusServerFactory(store=context, framer=framer, identity=identity)
+    factory = ModbusServerFactory(context, framer, identity)
     protocol = factory.buildProtocol(None)
     handle = SerialPort(protocol, kwargs['device'], reactor, Defaults.Baudrate)
     reactor.run()

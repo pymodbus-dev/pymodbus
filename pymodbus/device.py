@@ -75,16 +75,16 @@ class ModbusDeviceIdentification(object):
     application protocol.
     '''
     __data = {
-            0x00: '', # VendorName
-            0x01: '', # ProductCode
-            0x02: '', # MajorMinorRevision
-            0x03: '', # VendorUrl
-            0x04: '', # ProductName
-            0x05: '', # ModelName
-            0x06: '', # UserApplicationName
-            0x07: '', # reserved
-            0x08: '', # reserved
-            # 0x80 -> 0xFF are private
+        0x00: '', # VendorName
+        0x01: '', # ProductCode
+        0x02: '', # MajorMinorRevision
+        0x03: '', # VendorUrl
+        0x04: '', # ProductName
+        0x05: '', # ModelName
+        0x06: '', # UserApplicationName
+        0x07: '', # reserved
+        0x08: '', # reserved
+        # 0x80 -> 0xFF are private
     }
 
     def __init__(self, info=None):
@@ -94,10 +94,9 @@ class ModbusDeviceIdentification(object):
 
         :param info: A dictionary of {int:string} of values
         '''
-        if info is not None and isinstance(info, dict):
+        if isinstance(info, dict):
             for key in info.keys():
-                if (key >= 0x00 and key <= 0x06) or (
-                    key >  0x08 and key <  0x80):
+                if (0x06 >= key >= 0x00) or (0x80 > key > 0x08):
                     self.__data[key] = info[key]
 
     def __iter__(self):
@@ -158,24 +157,25 @@ class ModbusCountersHandler(object):
     This is a helper class to simplify the properties for the counters
 
     '''
-    __data = dict([(i,0x0000) for i in range(8)])
+    __data = dict([(i, 0x0000) for i in range(9)])
+    __names   = [
+        'BusMessage',
+        'BusCommunicationError',
+        'BusExceptionError',
+        'SlaveMessage',
+        'SlaveNoResponse',
+        'SlaveNAK',
+        'SlaveBusy',
+        'BusCharacterOverrun'
+        'Event '
+    ]
 
     def __iter__(self):
         ''' Iterater over the device counters
 
         :returns: An iterator of the device counters
         '''
-        names = [
-            'BusMessage',
-            'BusCommunicationError',
-            'BusExceptionError',
-            'SlaveMessage',
-            'SlaveNoResponse',
-            'SlaveNAK',
-            'SlaveBusy',
-            'BusCharacterOverrun'
-        ]
-        return izip(names, self.__data.itervalues())
+        return izip(self.__names, self.__data.itervalues())
 
     def update(self, input):
         ''' Update the values of this identity
@@ -190,15 +190,14 @@ class ModbusCountersHandler(object):
     def reset(self):
         ''' This clears all of the system counters
         '''
-        self.__data = dict([(i,0x0000) for i in range(8)])
+        self.__data = dict([(i, 0x0000) for i in range(9)])
 
     def summary(self):
         ''' Returns a summary of the counters current status
 
         :returns: A byte with each bit representing each counter
         '''
-        result = 0x00
-        count  = 0x01
+        count, result = 0x01, 0x00
         for i in self.__data.values():
             if i != 0x00: result |= count
             count <<= 1
@@ -215,6 +214,7 @@ class ModbusCountersHandler(object):
     SlaveNAK              = property(lambda s: s.__data[5], lambda s,v: s.__data.__setitem__(5,v))
     SlaveBusy             = property(lambda s: s.__data[6], lambda s,v: s.__data.__setitem__(6,v))
     BusCharacterOverrun   = property(lambda s: s.__data[7], lambda s,v: s.__data.__setitem__(7,v))
+    Event                 = property(lambda s: s.__data[8], lambda s,v: s.__data.__setitem__(8,v))
 
 #---------------------------------------------------------------------------#
 # Main server controll block
@@ -234,6 +234,7 @@ class ModbusControlBlock(Singleton):
     __delimiter = '\r'
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
+    __events   = []
 
     #---------------------------------------------------------------------------#
     # Magic
@@ -253,15 +254,37 @@ class ModbusControlBlock(Singleton):
         return self.__counters.__iter__()
 
     #---------------------------------------------------------------------------#
+    # Events
+    #---------------------------------------------------------------------------#
+    def addEvent(self, event):
+        ''' Adds a new event to the event log
+
+        :param event: A new event to add to the log
+        '''
+        self.__events.insert(0, event)
+        self.__events = self.__events[0:64] # chomp to 64 entries
+        self.Counter.Event += 1
+
+    def getEvents(self):
+        ''' Returns an encoded collection of the event log.
+
+        :returns: The encoded events packet
+        '''
+        events = [event.encode() for event in self.__events]
+        return ''.join(events)
+
+    #---------------------------------------------------------------------------#
     # Other Properties
     #---------------------------------------------------------------------------#
     Identity = property(lambda s: s.__identity)
     Counter  = property(lambda s: s.__counters)
+    Events   = property(lambda s: s.__events)
 
     def reset(self):
         ''' This clears all of the system counters and the
             diagnostic register
         '''
+        self.__events = []
         self.__counters.reset()
         self.__diagnostic = [False] * 16
 

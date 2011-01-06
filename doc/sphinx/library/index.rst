@@ -17,7 +17,7 @@ Contents:
    device.rst
    factory.rst
    interfaces.rst
-   mexceptions.rst
+   exceptions.rst
    other-message.rst
    pdu.rst
    pymodbus.rst

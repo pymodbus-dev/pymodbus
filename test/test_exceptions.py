@@ -1,9 +1,9 @@
 import unittest
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 class SimpleExceptionsTest(unittest.TestCase):
     '''
-    This is the unittest for the pymod.mexceptions module
+    This is the unittest for the pymodbus.exceptions module
     '''
 
     def setUp(self):

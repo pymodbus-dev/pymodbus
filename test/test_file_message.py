@@ -10,7 +10,7 @@ bit based request/response messages:
 import unittest
 from pymodbus.utilities import packBitsToString
 from pymodbus.file_message import *
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
 #---------------------------------------------------------------------------#

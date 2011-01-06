@@ -75,10 +75,10 @@ class Defaults(Singleton):
     Bytesize      = 8
     Stopbits      = 1
 
-class ModbusStatus(object):
+class ModbusStatus(Singleton):
     '''
-    These represnt the status the various modbus devices
-    can be in.
+    These represent various status codes in the modbus
+    protocol.
 
     .. attribute:: Waiting
 
@@ -90,18 +90,18 @@ class ModbusStatus(object):
        This indicates that a modbus device is currently
        free to perform the next request task.
 
-    .. attribute:: CoilOn
+    .. attribute:: On
 
-       This indicates that the given modbus coil is on
+       This indicates that the given modbus entity is on
 
-    .. attribute:: CoilOff
+    .. attribute:: Off
 
-       This indicates that the given modbus coil is off
+       This indicates that the given modbus entity is off
     '''
     Waiting = 0xffff
     Ready   = 0x0000
-    CoilOn  = 0xff00
-    CoilOff = 0x0000
+    On      = 0xff00
+    Off     = 0x0000
 
 #---------------------------------------------------------------------------# 
 # Exported Identifiers

@@ -13,7 +13,6 @@ General
 - twisted serial server
 - add daemonize code / init.d / config (or just use twisted)
 - add correct transaction handling (retry, fail, etc)
-- create twisted UDP framer :/
 
 ---------------------------------------------------------------------------
 Protocols

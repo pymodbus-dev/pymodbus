@@ -134,6 +134,6 @@ def checkLRC(data, check):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-        'packBitsToString', 'unpackBitsFromString', 'default',
-        'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
+    'packBitsToString', 'unpackBitsFromString', 'default',
+    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
 ]

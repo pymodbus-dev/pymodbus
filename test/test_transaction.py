@@ -183,7 +183,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def testASCIIFramerTransactionReady(self):
         ''' Test a tcp frame transaction '''
-        msg = ":abcd12341234aaaa\r\n"
+        msg = ":abcd12341234aae6\r\n"
         self.assertFalse(self._ascii.isFrameReady())
         self.assertFalse(self._ascii.checkFrame())
         self._ascii.addToFrame(msg)

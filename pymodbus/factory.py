@@ -6,9 +6,9 @@ Modbus Request/Response Decoder Factories
 
 from pymodbus.pdu import IllegalFunctionRequest
 from pymodbus.pdu import ExceptionResponse
-from pymodbus.pdu import ModbusExceptions as mexcept
+from pymodbus.pdu import ModbusExceptions as ecode
 from pymodbus.interfaces import IModbusDecoder
-from pymodbus.mexceptions import ModbusException
+from pymodbus.exceptions import ModbusException
 from pymodbus.bit_read_message import *
 from pymodbus.bit_write_message import *
 from pymodbus.diag_message import *
@@ -121,7 +121,8 @@ class ClientDecoder(IModbusDecoder):
         _logger.debug("Factory Response[%d]" % function_code)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
-            response = ExceptionResponse(function_code & 0x7f, mexcept.IllegalFunction)
+            code = function_code & 0x7f # strip error portion
+            response = ExceptionResponse(code, ecode.IllegalFunction)
         if not response:
             raise ModbusException("Unknown response %d" % function_code)
         response.decode(data[1:])

@@ -1,10 +1,10 @@
 import unittest
 from pymodbus.datastore import *
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 class SimpleDataStoreTest(unittest.TestCase):
     '''
-    This is the unittest for the pymod.mexceptions module
+    This is the unittest for the pymodbus.datastore module
     '''
 
     def setUp(self):

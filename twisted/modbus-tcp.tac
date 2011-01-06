@@ -15,8 +15,9 @@ def BuildService():
     '''
     A helper method to build the service
     '''
+    context = None
     framer = ModbusSocketFramer
-    factory = ModbusServerFactory(None, framer)
+    factory = ModbusServerFactory(context, framer)
     application = internet.TCPServer(Defaults.Port, factory)
     return application
 

@@ -1,6 +1,6 @@
 import unittest
 from pymodbus.pdu import *
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 class SimplePduTest(unittest.TestCase):
     '''

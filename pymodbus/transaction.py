@@ -6,7 +6,8 @@ from binascii import b2a_hex
 
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import Singleton, IModbusFramer
-from pymodbus.utilities  import computeCRC, computeLRC
+from pymodbus.utilities  import checkCRC, computeCRC
+from pymodbus.utilities  import checkLRC, computeLRC
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -119,7 +120,7 @@ class ModbusSocketFramer(IModbusFramer):
       2b     2b     2b        1b           1b           Nb
     
     while len(message) > 0:
-        tid, pid, length`, uid = struct.unpack("HHHB", message)
+        tid, pid, length`, uid = struct.unpack(">HHHB", message)
         request = message[0:7 + length - 1`]
         message = [7 + length - 1:]
     
@@ -271,15 +272,15 @@ class ModbusRtuFramer(IModbusFramer):
     The following table is a listing of the baud wait times for the specified
     baud rates::
         
-        --------------------------------------------------------------------------#
+        ------------------------------------------------------------------
          Baud  1.5c (18 bits)   3.5c (38 bits)
-        --------------------------------------------------------------------------#
+        ------------------------------------------------------------------
          1200   13333.3 us       31666.7 us
          4800    3333.3 us        7916.7 us
          9600    1666.7 us        3958.3 us
         19200     833.3 us        1979.2 us
         38400     416.7 us         989.6 us
-        --------------------------------------------------------------------------#
+        ------------------------------------------------------------------
         1 Byte = start + 8 bits + parity + stop = 11 bits
         (1/Baud)(bits) = delay seconds
     '''
@@ -387,7 +388,7 @@ class ModbusRtuFramer(IModbusFramer):
         packet = struct.pack('>BB',
             message.unit_id,
             message.function_code) + data
-        packet += struct.pack("<H", computeCRC(packet))
+        packet += struct.pack(">H", computeCRC(packet))
         return packet
 
 #---------------------------------------------------------------------------#
@@ -438,7 +439,9 @@ class ModbusAsciiFramer(IModbusFramer):
         if (end != -1):
             self.__header['len'] = end
             self.__header['lrc'] = self.__buffer[end-2:end]
-            # return checkLRC(data, self.__header['lrc'])
+            #self.__header['lrc'] = int(self.__buffer[end-2:end], 16)
+            #data = self.__buffer[start:end-2]
+            #return checkLRC(data, self.__header['lrc'])
             return True
         return False
 
@@ -572,7 +575,7 @@ class ModbusBinaryFramer(IModbusFramer):
     def checkFrame(self):
         ''' Check and decode the next frame
 
-        :returns: True if we successful, False otherwise
+        :returns: True if we are successful, False otherwise
         '''
         start = self.__buffer.find(self.__start)
         if start == -1: return False
@@ -583,7 +586,9 @@ class ModbusBinaryFramer(IModbusFramer):
         if (end != -1):
             self.__header['len'] = end
             self.__header['crc'] = self.__buffer[end-1:end]
-            # return checkCRC(data, self.__header['crc'])
+            #self.__header['crc'] = struct.unpack('>B', self.__buffer[end-1:end])
+            #data = self.__buffer[start:end-1]
+            #return checkCRC(data, self.__header['crc'])
             return True
         return False
 
@@ -670,7 +675,7 @@ class ModbusBinaryFramer(IModbusFramer):
         packet = struct.pack('>BB',
             message.unit_id,
             message.function_code) + data
-        packet += struct.pack("<H", computeCRC(packet))
+        packet += struct.pack(">H", computeCRC(packet))
         return packet
 
     def _preflight(self, data):

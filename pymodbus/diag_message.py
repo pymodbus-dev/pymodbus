@@ -7,11 +7,12 @@ or linked to the appropriate data
 '''
 import struct
 
+from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.device import ModbusControlBlock
-from pymodbus.mexceptions import NotImplementedException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.utilities import packBitsToString
 
 _MCB = ModbusControlBlock()
@@ -32,6 +33,7 @@ class DiagnosticStatusRequest(ModbusRequest):
         '''
         Base initializer for a diagnostic request
         '''
+        self.message = None
         ModbusRequest.__init__(self)
 
     def encode(self):
@@ -41,16 +43,16 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :returns: The encoded packet
         '''
-        ret = struct.pack('>H', self.sub_function_code)
+        packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
-                ret += self.message
+                packet += self.message
             elif isinstance(self.message, list):
-                for r in self.message:
-                    ret += struct.pack('>H', r)
+                for piece in self.message:
+                    packet += struct.pack('>H', piece)
             elif isinstance(self.message, int):
-                ret += struct.pack('>H', self.message)
-        return ret
+                packet += struct.pack('>H', self.message)
+        return packet
 
     def decode(self, data):
         ''' Base decoder for a diagnostic request
@@ -73,6 +75,7 @@ class DiagnosticStatusResponse(ModbusResponse):
         '''
         Base initializer for a diagnostic response
         '''
+        self.message = None
         ModbusResponse.__init__(self)
 
     def encode(self):
@@ -82,19 +85,20 @@ class DiagnosticStatusResponse(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        ret = struct.pack('>H', self.sub_function_code)
+        packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
-                ret += self.message
+                packet += self.message
             elif isinstance(self.message, list):
-                for r in self.message:
-                    ret += struct.pack('>H', r)
+                for piece in self.message:
+                    packet += struct.pack('>H', piece)
             elif isinstance(self.message, int):
-                ret += struct.pack('>H', self.message)
-        return ret
+                packet += struct.pack('>H', self.message)
+        return packet
 
     def decode(self, data):
         ''' Base decoder for a diagnostic response
+
         :param data: The data to decode into the function code
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
@@ -205,8 +209,8 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     def __init__(self, toggle=False):
         DiagnosticStatusRequest.__init__(self)
         if toggle:
-            self.message = [0xff00]
-        else: self.message = [0x0000]
+            self.message = [ModbusStatus.On]
+        else: self.message = [ModbusStatus.Off]
 
     def execute(self):
         ''' Clear event log and restart
@@ -234,8 +238,8 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
         '''
         DiagnosticStatusResponse.__init__(self)
         if toggle:
-            self.message = [0xff00]
-        else: self.message = [0x0000]
+            self.message = [ModbusStatus.On]
+        else: self.message = [ModbusStatus.Off]
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 02
@@ -268,7 +272,6 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
     message delimiter for future messages (replacing the default LF
     character). This function is useful in cases of a Line Feed is not
     required at the end of ASCII messages.
-    @param data The character to set as the new delimiter
     '''
     sub_function_code = 0x0003
 

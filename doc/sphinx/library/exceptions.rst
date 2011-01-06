@@ -1,7 +1,7 @@
-:mod:`mexceptions` --- Exceptions Used in PyModbus
+:mod:`exceptions` --- Exceptions Used in PyModbus
 ============================================================
 
-.. module:: mexceptions
+.. module:: exceptions
    :synopsis: Exceptions Used in PyModbus
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
@@ -10,7 +10,7 @@
 API Documentation
 -------------------
 
-.. automodule:: pymodbus.mexceptions
+.. automodule:: pymodbus.exceptions
 
 .. autoclass:: ModbusException
    :members:

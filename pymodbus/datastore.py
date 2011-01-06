@@ -46,7 +46,7 @@ or a range read to fail.
 I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 #---------------------------------------------------------------------------#
 # Logging

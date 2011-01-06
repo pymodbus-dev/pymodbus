@@ -1,10 +1,10 @@
 import unittest
 from pymodbus.factory import ServerDecoder, ClientDecoder
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 class SimpleFactoryTest(unittest.TestCase):
     '''
-    This is the unittest for the pymod.mexceptions module
+    This is the unittest for the pymod.exceptions module
     '''
 
     def setUp(self):

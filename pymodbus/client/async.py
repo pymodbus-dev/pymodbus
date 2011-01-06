@@ -23,7 +23,7 @@ from twisted.internet import reactor
 from twisted.internet.interfaces import IPullProducer
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.bit_read_message import *
 from pymodbus.register_read_message import *
 from pymodbus.transaction import ModbusSocketFramer

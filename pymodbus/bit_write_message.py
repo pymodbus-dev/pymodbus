@@ -16,8 +16,8 @@ from pymodbus.utilities import *
 #---------------------------------------------------------------------------#
 # These are defined in the spec to turn a coil on/off
 #---------------------------------------------------------------------------#
-_turn_coil_on  = struct.pack(">H", ModbusStatus.CoilOn)
-_turn_coil_off = struct.pack(">H", ModbusStatus.CoilOff)
+_turn_coil_on  = struct.pack(">H", ModbusStatus.On)
+_turn_coil_off = struct.pack(">H", ModbusStatus.Off)
 
 class WriteSingleCoilRequest(ModbusRequest):
     '''
@@ -46,7 +46,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.value = ModbusStatus.CoilOn if value else ModbusStatus.CoilOff
+        self.value = ModbusStatus.On if value else ModbusStatus.Off
 
     def encode(self):
         ''' Encodes write coil request
@@ -70,12 +70,12 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response or exception message
         '''
-        if self.value not in [ModbusStatus.CoilOff, ModbusStatus.CoilOn]:
+        if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address):
             return self.doException(merror.IllegalAddress)
 
-        value = [self.value == ModbusStatus.CoilOn]
+        value = [self.value == ModbusStatus.On]
         context.setValues(self.function_code, self.address, value)
         values = context.getValues(self.function_code, self.address)
         return WriteSingleCoilResponse(self.address, values[0])
@@ -119,7 +119,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         self.address, value = struct.unpack('>HH', data)
-        self.value = (value == ModbusStatus.CoilOn)
+        self.value = (value == ModbusStatus.On)
 
     def __str__(self):
         ''' Returns a string representation of the instance

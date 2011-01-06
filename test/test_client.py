@@ -6,7 +6,7 @@ finishing...hmmmm
 from twisted.trial import unittest
 from twisted.test import test_protocols
 from pymodbus.client.async import ModbusClientFactory
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.bit_read_message import ReadCoilsRequest
 
 class SimpleDataStoreTest(unittest.TestCase):

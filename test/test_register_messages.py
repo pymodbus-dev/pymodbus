@@ -12,13 +12,13 @@ from pymodbus.register_read_message import *
 from pymodbus.register_read_message import ReadRegistersRequestBase
 from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.register_write_message import *
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
 #---------------------------------------------------------------------------#
 # Mocks
 #---------------------------------------------------------------------------#
-class Context:
+class Context(object):
     def validate(self, a,b,c):
         return False
 

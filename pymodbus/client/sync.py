@@ -18,7 +18,7 @@ import serial
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.transaction import *
 
 #---------------------------------------------------------------------------#

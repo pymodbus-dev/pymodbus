@@ -4,7 +4,7 @@ as many request as it can as fast as it can without stopping, and then
 finishing...hmmmm
 '''
 import unittest
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 from pymodbus.diag_message import *
 
 class SimpleDataStoreTest(unittest.TestCase):

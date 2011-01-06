@@ -5,7 +5,7 @@ Pymodbus Interfaces
 A collection of base classes that are used throughout
 the pymodbus library.
 '''
-from pymodbus.mexceptions import NotImplementedException
+from pymodbus.exceptions import NotImplementedException
 
 #---------------------------------------------------------------------------#
 # Generic

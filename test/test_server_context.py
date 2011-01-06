@@ -1,6 +1,6 @@
 import unittest
 from pymodbus.datastore import *
-from pymodbus.mexceptions import *
+from pymodbus.exceptions import *
 
 class ModbusServerSingleContextTest(unittest.TestCase):
     ''' This is the unittest for the pymodbus.datastore.ModbusServerContext

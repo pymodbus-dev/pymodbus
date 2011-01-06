@@ -2,7 +2,6 @@
 Register Writing Request/Response Messages
 -------------------------------------------
 '''
-
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
@@ -77,9 +76,9 @@ class WriteSingleRegisterResponse(ModbusResponse):
         :param address: The address to start writing add
         :param value: The values to write
         '''
+        ModbusResponse.__init__(self)
         self.address = address
         self.value = value
-        ModbusResponse.__init__(self)
 
     def encode(self):
         ''' Encode a write single register packet packet request

@@ -2,7 +2,7 @@
 Contains base classes for modbus request/response/error packets
 '''
 from pymodbus.interfaces import Singleton
-from pymodbus.mexceptions import NotImplementedException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
 
 #---------------------------------------------------------------------------#
@@ -178,6 +178,6 @@ class IllegalFunctionRequest(ModbusRequest):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-        'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
-        'ExceptionResponse', 'IllegalFunctionRequest',
+    'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
+    'ExceptionResponse', 'IllegalFunctionRequest',
 ]

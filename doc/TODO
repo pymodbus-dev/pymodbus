@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------
 General
 ---------------------------------------------------------------------------
+- put protocol code in protocol namespace
 - add crc/lrc check on incoming data
 - make framer read header->read header.length
   - maybe just for sync 
@@ -8,11 +9,11 @@ General
 - add all modbus control into server
 - add a frontend plugin system
   - web frontend (bottle)
-  - ssh/telnet frontend (manhole)
 - twisted trial / twisted logging
 - twisted serial server
 - add daemonize code / init.d / config (or just use twisted)
 - add correct transaction handling (retry, fail, etc)
+- finish remaining functions
 
 ---------------------------------------------------------------------------
 Protocols
@@ -21,12 +22,10 @@ Protocols
 - Test serial against devices (and virtual tty)
 
 ---------------------------------------------------------------------------
-Functions
+Utilities
 ---------------------------------------------------------------------------
-- Diagnostic
-- Server informtation
-- Server settings
-- Mask functions
+- (tcp/serial) forwarder
+- (udp/serial) forwarder
 
 ---------------------------------------------------------------------------
 Server Context

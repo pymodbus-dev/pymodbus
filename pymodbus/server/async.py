@@ -21,6 +21,7 @@ from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.internal.ptwisted import InstallManagementConsole
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -193,6 +194,7 @@ def StartTcpServer(context, identity=None):
     _logger.info("Starting Modbus TCP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity)
+    InstallManagementConsole({ 'factory' : factory })
     reactor.listenTCP(Defaults.Port, factory)
     reactor.run()
 
@@ -226,29 +228,8 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs
     reactor.run()
 
 #---------------------------------------------------------------------------# 
-# Helper Methods
-#---------------------------------------------------------------------------# 
-def install_specialized_reactor():
-    '''
-    This attempts to install a reactor specialized for the given
-    operating system.
-
-    :returns: True if a specialized reactor was installed, False otherwise
-    '''
-    from twisted.internet import epollreactor, kqreactor, iocpreactor
-    for reactor in [epollreactor, kqreactor, iocpreactor]:
-        try:
-            reactor.install()
-            _logger.debug("Installed %s" % reactor.__name__)
-            return True
-        except: pass
-    _logger.debug("No specialized reactor was installed")
-    return False
-
-#---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
     "StartTcpServer", "StartUdpServer", "StartSerialServer",
-    "install_specialized_reactor",
 ]

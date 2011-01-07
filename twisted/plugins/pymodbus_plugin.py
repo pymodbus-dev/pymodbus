@@ -10,6 +10,7 @@ from twisted.application import internet
 from pymodbus.constants import Defaults
 from pymodbus.server.async import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.internal.ptwisted import InstallManagementConsole
 
 class Options(usage.Options):
     '''
@@ -20,6 +21,7 @@ class Options(usage.Options):
         ["port", "p", Defaults.Port, "The port number to listen on."],
         ["type", "t", "tcp", "The type of server to host (tcp, udp, ascii, rtu)"],
         ["store", "s", "./datastore", "The pickled datastore to use"],
+        ["console", "c", False, "Should the management console be started"],
     ]
 
 class ModbusServiceMaker(object):
@@ -43,6 +45,8 @@ class ModbusServiceMaker(object):
         framer = ModbusSocketFramer
         context = self._build_context(options['store'])
         factory = ModbusServerFactory(None, framer)
+        if options['console']:
+            InstallManagementConsole({ 'server' : factory })
         return server(int(options["port"]), factory)
 
     def _build_context(self, path):

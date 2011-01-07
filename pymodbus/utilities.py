@@ -6,6 +6,9 @@ A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
 
+#---------------------------------------------------------------------------#
+# Helpers
+#---------------------------------------------------------------------------#
 def default(value):
     '''
     Given a python object, return the default value
@@ -16,6 +19,30 @@ def default(value):
     '''
     return type(value)()
 
+def dict_property(store, index):
+    ''' Helper to create class properties from a dictionary.
+    Basically this allows you to remove a lot of possible
+    boilerplate code.
+
+    :param store: The store store to pull from
+    :param index: The index into the store to close over
+    :returns: An initialized property set
+    '''
+    if hasattr(store, '__call__'):
+        get = lambda self: store(self)[index]
+        set = lambda self,value: store(self).__setitem__(index, value)
+    elif isinstance(store, str):
+        get = lambda self: self.__getattribute__(store)[index]
+        set = lambda self,value: self.__getattribute__(store).__setitem__(index, value)
+    else:
+        get = lambda self: store[index]
+        set = lambda self,value: store.__setitem__(index, value)
+
+    return property(get, set)
+
+#---------------------------------------------------------------------------#
+# Bit packing functions
+#---------------------------------------------------------------------------#
 def packBitsToString(bits):
     ''' Creates a string out of an array of bits
 

@@ -34,8 +34,13 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testUpdateIdentity(self):
         ''' Test device identification reading '''
         self.control.Identity.update(self.ident)
-        self.assertEqual(self.control.Identity.vendor_name, "Bashwork")
-        self.assertEqual(self.control.Identity.user_application_name, "unittest")
+        self.assertEqual(self.control.Identity.VendorName, 'Bashwork')
+        self.assertEqual(self.control.Identity.ProductCode, 'PTM')
+        self.assertEqual(self.control.Identity.MajorMinorRevision, '1.0')
+        self.assertEqual(self.control.Identity.VendorUrl, 'http://internets.com')
+        self.assertEqual(self.control.Identity.ProductName, 'pymodbus')
+        self.assertEqual(self.control.Identity.ModelName, 'bashwork')
+        self.assertEqual(self.control.Identity.UserApplicationName, 'unittest')
 
     def testBasicCommands(self):
         ''' Test device identification reading '''

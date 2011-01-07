@@ -8,6 +8,7 @@ should be inserted in the correct locations.
 """
 from itertools import izip
 from pymodbus.interfaces import Singleton
+from pymodbus.utilities import dict_property
 
 #---------------------------------------------------------------------------#
 # Network Access Control
@@ -138,16 +139,15 @@ class ModbusDeviceIdentification(object):
         return "DeviceIdentity"
 
     #---------------------------------------------------------------------------#
-    # Property access (and named to boot)
+    # Properties
     #---------------------------------------------------------------------------#
-    vendor_name           = property(lambda s: s.__data[0], lambda s,v: self.__data.__setitem__(0,v))
-    product_code          = property(lambda s: s.__data[1], lambda s,v: self.__data.__setitem__(1,v))
-    major_minor_revision  = property(lambda s: s.__data[2], lambda s,v: self.__data.__setitem__(2,v))
-    vendor_url            = property(lambda s: s.__data[3], lambda s,v: self.__data.__setitem__(3,v))
-    product_name          = property(lambda s: s.__data[4], lambda s,v: self.__data.__setitem__(4,v))
-    model_name            = property(lambda s: s.__data[5], lambda s,v: self.__data.__setitem__(5,v))
-    user_application_name = property(lambda s: s.__data[6], lambda s,v: self.__data.__setitem__(6,v))
-
+    VendorName          = dict_property(lambda s: s.__data, 0)
+    ProductCode         = dict_property(lambda s: s.__data, 1)
+    MajorMinorRevision  = dict_property(lambda s: s.__data, 2)
+    VendorUrl           = dict_property(lambda s: s.__data, 3)
+    ProductName         = dict_property(lambda s: s.__data, 4)
+    ModelName           = dict_property(lambda s: s.__data, 5)
+    UserApplicationName = dict_property(lambda s: s.__data, 6)
 
 #---------------------------------------------------------------------------#
 # Counters Handler
@@ -206,15 +206,15 @@ class ModbusCountersHandler(object):
     #---------------------------------------------------------------------------#
     # Properties
     #---------------------------------------------------------------------------#
-    BusMessage            = property(lambda s: s.__data[0], lambda s,v: s.__data.__setitem__(0,v))
-    BusCommunicationError = property(lambda s: s.__data[1], lambda s,v: s.__data.__setitem__(1,v))
-    BusExceptionError     = property(lambda s: s.__data[2], lambda s,v: s.__data.__setitem__(2,v))
-    SlaveMessage          = property(lambda s: s.__data[3], lambda s,v: s.__data.__setitem__(3,v))
-    SlaveNoResponse       = property(lambda s: s.__data[4], lambda s,v: s.__data.__setitem__(4,v))
-    SlaveNAK              = property(lambda s: s.__data[5], lambda s,v: s.__data.__setitem__(5,v))
-    SlaveBusy             = property(lambda s: s.__data[6], lambda s,v: s.__data.__setitem__(6,v))
-    BusCharacterOverrun   = property(lambda s: s.__data[7], lambda s,v: s.__data.__setitem__(7,v))
-    Event                 = property(lambda s: s.__data[8], lambda s,v: s.__data.__setitem__(8,v))
+    BusMessage            = dict_property(lambda s: s.__data, 0)
+    BusCommunicationError = dict_property(lambda s: s.__data, 1)
+    BusExceptionError     = dict_property(lambda s: s.__data, 2)
+    SlaveMessage          = dict_property(lambda s: s.__data, 3)
+    SlaveNoResponse       = dict_property(lambda s: s.__data, 4)
+    SlaveNAK              = dict_property(lambda s: s.__data, 5)
+    SlaveBusy             = dict_property(lambda s: s.__data, 6)
+    BusCharacterOverrun   = dict_property(lambda s: s.__data, 7)
+    Event                 = dict_property(lambda s: s.__data, 8)
 
 #---------------------------------------------------------------------------#
 # Main server controll block

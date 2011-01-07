@@ -9,16 +9,16 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def setUp(self):
         info = {
-                0x00: 'Bashwork',               # VendorName
-                0x01: 'PTM',                    # ProductCode
-                0x02: '1.0',                    # MajorMinorRevision
-                0x03: 'http://internets.com',   # VendorUrl
-                0x04: 'pymodbus',               # ProductName
-                0x05: 'bashwork',               # ModelName
-                0x06: 'unittest',               # UserApplicationName
-                0x07: 'x',                      # reserved
-                0x08: 'x',                      # reserved
-                0x10: 'private'                 # private data
+            0x00: 'Bashwork',               # VendorName
+            0x01: 'PTM',                    # ProductCode
+            0x02: '1.0',                    # MajorMinorRevision
+            0x03: 'http://internets.com',   # VendorUrl
+            0x04: 'pymodbus',               # ProductName
+            0x05: 'bashwork',               # ModelName
+            0x06: 'unittest',               # UserApplicationName
+            0x07: 'x',                      # reserved
+            0x08: 'x',                      # reserved
+            0x10: 'private'                 # private data
         }
         self.ident   = ModbusDeviceIdentification(info)
         self.control = ModbusControlBlock()

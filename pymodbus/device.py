@@ -88,6 +88,16 @@ class ModbusDeviceIdentification(object):
         # 0x80 -> 0xFF are private
     }
 
+    __names = [
+        'VendorName',
+        'ProductCode',
+        'MajorMinorRevision',
+        'VendorUrl',
+        'ProductName',
+        'ModelName',
+        'UserApplicationName',
+    ]
+
     def __init__(self, info=None):
         '''
         Initialize the datastore with the elements you need.
@@ -106,6 +116,13 @@ class ModbusDeviceIdentification(object):
         :returns: An iterator of the device information
         '''
         return self.__data.iteritems()
+
+    def summary(self):
+        ''' Return a summary of the main items
+
+        :returns: An dictionary of the main items
+        '''
+        return dict(zip(self.__names, self.__data.itervalues()))
 
     def update(self, input):
         ''' Update the values of this identity
@@ -272,6 +289,11 @@ class ModbusControlBlock(Singleton):
         '''
         events = [event.encode() for event in self.__events]
         return ''.join(events)
+
+    def clearEvents(self):
+        ''' Clears the current list of events
+        '''
+        self.__events = []
 
     #---------------------------------------------------------------------------#
     # Other Properties

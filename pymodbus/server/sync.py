@@ -10,7 +10,7 @@ Example run::
 '''
 from binascii import b2a_hex
 import SocketServer
-import serial
+import serial, socket
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -223,6 +223,7 @@ class ModbusSerialServer(object):
         :param identity: An optional identify structure
 
         '''
+        self.threads = []
         self.decoder = ServerDecoder()
         self.framer  = framer  or ModbusAsciiFramer
         self.context = context or ModbusServerContext()
@@ -237,6 +238,7 @@ class ModbusSerialServer(object):
         self.parity   = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
+        self.socket   = None
         self._connect()
 
     def _connect(self):
@@ -261,8 +263,8 @@ class ModbusSerialServer(object):
         :returns: A patched handler
         '''
         request = self.socket
-        request.send = self.request.write
-        request.recv = self.request.read
+        request.send = request.write
+        request.recv = request.read
         handler = ModbusRequestHandler(request, ('127.0.0.1', self.device), self)
         return handler
 
@@ -305,14 +307,14 @@ def StartUdpServer(context=None, identity=None):
     server = ModbusUdpServer(context, framer, identity)
     server.serve_forever()
 
-def StartSerialServer(context=None, identity=None):
+def StartSerialServer(context=None, identity=None, **kwargs):
     ''' A factory to start and run a udp modbus server
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     '''
-    framer = ModbusSerialFramer
-    server = ModbusSerialServer(context, framer, identity)
+    framer = ModbusAsciiFramer
+    server = ModbusSerialServer(context, framer, identity, **kwargs)
     server.serve_forever()
 
 #---------------------------------------------------------------------------# 

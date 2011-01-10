@@ -320,9 +320,10 @@ class ModbusSerialClient(IModbusClient):
         :param method: The method to use for connection
         '''
         self.method   = method
-        self.socket = None
+        self.socket   = None
         IModbusClient.__init__(self, self.__implementation(method))
 
+        self.port     = kwargs.get('port', 0)
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         self.parity   = kwargs.get('parity',   Defaults.Parity)
@@ -349,7 +350,7 @@ class ModbusSerialClient(IModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=0, timeout=self.timeout, 
+            self.socket = serial.Serial(port=self.port, timeout=self.timeout, 
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException, msg:

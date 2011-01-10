@@ -528,7 +528,7 @@ class ModbusAsciiFramer(IModbusFramer):
         data   = b2a_hex(message.encode())
         packet = '%02x%02x%s' % (message.unit_id, message.function_code, data)
         packet = '%c%s%02x%s' % (self.__start, packet, computeLRC(packet), self.__end)
-        return packet
+        return packet.upper()
 
 #---------------------------------------------------------------------------#
 # Modbus Binary Message

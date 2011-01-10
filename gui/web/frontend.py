@@ -118,7 +118,7 @@ def register_routes(application, register):
         verb, path = pieces[0], pieces[1:]
         path.insert(0, application._namespace)
         path = '/'.join(path)
-        func = application.__getattribute__(method)
+        func = getattr(application, method)
         register.route(path, method=verb, name=method)(func)
 
 def build_application(server):

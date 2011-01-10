@@ -33,5 +33,6 @@ context = ModbusServerContext(slaves=store, single=True)
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-StartATcpServer(context)
-#StartSerialServer(context, device='/dev/ptmx')
+#StartATcpServer(context)
+#StartSerialServer(context, port='/dev/ptmx')
+StartSerialServer(context, port='/tmp/tty1')

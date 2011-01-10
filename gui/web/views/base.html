@@ -1,0 +1,28 @@
+<html> 
+<head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <title>{% block title %}pymodbus | server{% endblock %}</title> 
+ 
+    <link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" /> 
+    <link rel="stylesheet" type="text/css" href="../shared/examples.css" /> 
+
+    <script type="text/javascript" src="/media/js/ext/ext-base.js"></script> 
+    <script type="text/javascript" src="/media/js/ext/ext-all.js"></script> 
+
+    {% block extra-javascript %}
+    {% endblock %}
+    <script type="text/javascript" src="../shared/examples.js"></script> 
+    <script type="text/javascript" src="property-grid.js"></script> 
+</head> 
+
+<body id='main-container'> 
+  <div id='container'>
+  {% block container %}
+  {% endblock %}
+  </div>
+
+  {% block extra-body %}
+  {% endblock %}
+</body> 
+
+</html>

@@ -16,6 +16,7 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
+from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.interfaces import IModbusFramer
@@ -113,6 +114,7 @@ class ModbusServerFactory(ServerFactory):
         self.framer = framer or ModbusSocketFramer
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
+        self.access = ModbusAccessControl()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -138,6 +140,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.framer = framer(decoder=ServerDecoder())
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
+        self.access = ModbusAccessControl()
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)

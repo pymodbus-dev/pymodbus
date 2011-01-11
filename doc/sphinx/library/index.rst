@@ -19,6 +19,8 @@ Contents:
    interfaces.rst
    exceptions.rst
    other-message.rst
+   file-message.rst
+   events.rst
    pdu.rst
    pymodbus.rst
    register-read-message.rst

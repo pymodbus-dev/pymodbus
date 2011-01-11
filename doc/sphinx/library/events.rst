@@ -15,7 +15,7 @@ API Documentation
 .. autoclass:: ModbusEvent
    :members:
 
-.. autoclass:: RemoteReceieveEvent
+.. autoclass:: RemoteReceiveEvent
    :members:
 
 .. autoclass:: RemoteSendEvent

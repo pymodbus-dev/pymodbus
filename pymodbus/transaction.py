@@ -114,19 +114,19 @@ class ModbusSocketFramer(IModbusFramer):
     ''' Modbus Socket Frame controller
 
     Before each modbus TCP message is an MBAP header which is used as a
-    message frame.  It allows us to easily separate messages as follows:
+    message frame.  It allows us to easily separate messages as follows::
     
-    [         MBAP Header         ] [ Function Code] [ Data ]
-    [ tid ][ pid ][ length ][ uid ]
-      2b     2b     2b        1b           1b           Nb
-    
-    while len(message) > 0:
-        tid, pid, length`, uid = struct.unpack(">HHHB", message)
-        request = message[0:7 + length - 1`]
-        message = [7 + length - 1:]
-    
-    * length = uid + function code + data
-    * The -1 is to account for the uid byte
+        [         MBAP Header         ] [ Function Code] [ Data ]
+        [ tid ][ pid ][ length ][ uid ]
+          2b     2b     2b        1b           1b           Nb
+        
+        while len(message) > 0:
+            tid, pid, length`, uid = struct.unpack(">HHHB", message)
+            request = message[0:7 + length - 1`]
+            message = [7 + length - 1:]
+        
+        * length = uid + function code + data
+        * The -1 is to account for the uid byte
     '''
 
     def __init__(self, decoder):

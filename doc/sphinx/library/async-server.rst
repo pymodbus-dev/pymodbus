@@ -12,7 +12,10 @@ API Documentation
 
 .. automodule:: pymodbus.server.async
 
-.. autoclass:: ModbusProtocol
+.. autoclass:: ModbusTcpProtocol
+   :members:
+
+.. autoclass:: ModbusUdpProtocol
    :members:
 
 .. autoclass:: ModbusServerFactory
@@ -21,4 +24,6 @@ API Documentation
 .. autofunction:: StartTcpServer
 
 .. autofunction:: StartUdpServer
+
+.. autofunction:: StartSerialServer
 

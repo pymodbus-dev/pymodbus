@@ -12,7 +12,7 @@ API Documentation
 
 .. automodule:: pymodbus.datastore
 
-.. autoclass:: ModbusDataBlock
+.. autoclass:: BaseModbusDataBlock
    :members:
 
 .. autoclass:: ModbusSequentialDataBlock

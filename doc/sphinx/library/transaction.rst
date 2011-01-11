@@ -15,10 +15,10 @@ API Documentation
 .. autoclass:: ModbusSocketFramer
    :members:
 
-.. autoclass:: ModbusRTUFramer
+.. autoclass:: ModbusRtuFramer
    :members:
 
-.. autoclass:: ModbusASCIIFramer
+.. autoclass:: ModbusAsciiFramer
    :members:
 
 .. autoclass:: ModbusBinaryFramer

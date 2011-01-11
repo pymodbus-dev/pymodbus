@@ -4,12 +4,12 @@ Modbus Remote Events
 
 An event byte returned by the Get Communications Event Log function
 can be any one of four types. The type is defined by bit 7
-(the high–order bit) in each byte. It may be further defined by bit 6.
+(the high-order bit) in each byte. It may be further defined by bit 6.
 '''
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import packBitsToString
-from pymodbus.utilities import unpackBitsToString
+from pymodbus.utilities import unpackBitsFromString
 
 class ModbusEvent(object):
 
@@ -79,8 +79,8 @@ class RemoteSendEvent(ModbusEvent):
     processing a request message. It is stored if the remote device
     returned a normal or exception response, or no response.
         
-    This event is defined by bit 7 set to a logic ‘0’, with bit 6 set to a ‘1’.
-    The other bits will be set to a logic ‘1’ if the corresponding
+    This event is defined by bit 7 set to a logic '0', with bit 6 set to a '1'.
+    The other bits will be set to a logic '1' if the corresponding
     condition is TRUE. The bit layout is::
 
         Bit Contents 
@@ -121,7 +121,8 @@ class RemoteSendEvent(ModbusEvent):
 
         :param event: The event to decode
         '''
-        bits = unpackBitsToString(event)
+        # todo fix the start byte count
+        bits = unpackBitsFromString(event)
         self.read          = bits[0]
         self.slave_abort   = bits[1]
         self.slave_busy    = bits[2]

@@ -109,7 +109,7 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "ReadBitResponse"
+        return "ReadBitResponse(%d)" % len(self.bits)
 
 class ReadCoilsRequest(ReadBitsRequestBase):
     '''

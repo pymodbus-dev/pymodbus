@@ -2,7 +2,7 @@
 Collection of transaction based abstractions
 '''
 import struct
-from binascii import b2a_hex
+from binascii import b2a_hex, a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.constants  import Defaults
@@ -132,7 +132,7 @@ class ModbusSocketFramer(IModbusFramer):
     def __init__(self, decoder):
         ''' Initializes a new instance of the framer
 
-        :param decoder: The decoder implementation to use
+        :param decoder: The decoder factory implementation to use
         '''
         self.__buffer = ''
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
@@ -173,7 +173,7 @@ class ModbusSocketFramer(IModbusFramer):
     def isFrameReady(self):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
-        the decoder know that there is still data in the buffer.
+        the decoder factory know that there is still data in the buffer.
 
         :returns: True if ready, False otherwise
         '''
@@ -289,10 +289,11 @@ class ModbusRtuFramer(IModbusFramer):
     def __init__(self, decoder):
         ''' Initializes a new instance of the framer
 
-        :param decoder: The decoder implementation to use
+        :param decoder: The decoder factory implementation to use
         '''
         self.__buffer = ''
-        self.__header = {'crc':0x0000, 'len':0}
+        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self.__hsize  = 0x01
         self.__end    = '\x0d\x0a'
         self.__start  = '\x3a'
         self.decoder  = decoder
@@ -314,7 +315,7 @@ class ModbusRtuFramer(IModbusFramer):
         current frame header handle
         '''
         self.__buffer = self.__buffer[-1:]
-        self.__header = {'crc':0x0000, 'len':0}
+        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -339,7 +340,10 @@ class ModbusRtuFramer(IModbusFramer):
 
         :returns: The frame data or ''
         '''
-        return self.__buffer[:self.__header['len'] - 2]
+        start  = self.__hsize
+        end    = self.__header['len'] - 2
+        buffer = self.__buffer[start:end]
+        return buffer if end > 0 else ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -349,7 +353,7 @@ class ModbusRtuFramer(IModbusFramer):
 
         :param result: The response packet
         '''
-        pass # no header for serial
+        result.unit_id = self.__header['uid']
 
     #-----------------------------------------------------------------------#
     # Public Member Functions
@@ -375,7 +379,7 @@ class ModbusRtuFramer(IModbusFramer):
                 result = self.decoder.decode(self.getFrame())
                 if result is None:
                     raise ModbusIOException("Unable to decode response")
-                self.populate(result)
+                self.populateResult(result)
                 self.advanceFrame()
                 callback(result) # defer or push to a thread?
             else: break
@@ -417,7 +421,8 @@ class ModbusAsciiFramer(IModbusFramer):
         :param decoder: The decoder implementation to use
         '''
         self.__buffer = ''
-        self.__header = {'lrc':'0000', 'len':0}
+        self.__header = {'lrc':'0000', 'len':0, 'uid':0x00}
+        self.__hsize  = 0x02
         self.__start  = ':'
         self.__end    = "\r\n"
         self.decoder  = decoder
@@ -432,15 +437,14 @@ class ModbusAsciiFramer(IModbusFramer):
         '''
         start = self.__buffer.find(self.__start)
         if start == -1: return False
-        # go ahead and skip old bad data
-        if start > 0 :
+        if start > 0 : # go ahead and skip old bad data
             self.__buffer = self.__buffer[start:]
 
         end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
-            self.__header['lrc'] = self.__buffer[end-2:end]
-            #self.__header['lrc'] = int(self.__buffer[end-2:end], 16)
+            self.__header['uid'] = int(self.__buffer[1:3], 16)
+            self.__header['lrc'] = int(self.__buffer[end-2:end], 16)
             #data = self.__buffer[start:end-2]
             #return checkLRC(data, self.__header['lrc'])
             return True
@@ -453,7 +457,7 @@ class ModbusAsciiFramer(IModbusFramer):
         current frame header handle
         '''
         self.__buffer = self.__buffer[self.__header['len'] + 2:]
-        self.__header = {'lrc':'0000', 'len':0}
+        self.__header = {'lrc':'0000', 'len':0, 'uid':0x00}
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -478,7 +482,10 @@ class ModbusAsciiFramer(IModbusFramer):
 
         :returns: The frame data or ''
         '''
-        return self.__buffer[1:self.__header['len']]
+        start  = self.__hsize + 1
+        end    = self.__header['len'] - 2
+        buffer = self.__buffer[start:end]
+        return a2b_hex(buffer) if end > 0 else ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -488,7 +495,7 @@ class ModbusAsciiFramer(IModbusFramer):
 
         :param result: The response packet
         '''
-        pass # no header for serial
+        result.unit_id = self.__header['uid']
 
     #-----------------------------------------------------------------------#
     # Public Member Functions
@@ -508,16 +515,15 @@ class ModbusAsciiFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        import pdb;pdb.set_trace()
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
                 result = self.decoder.decode(self.getFrame())
                 if result is None:
                     raise ModbusIOException("Unable to decode response")
-                self.populate(result)
+                self.populateResult(result)
                 self.advanceFrame()
-                callback(result) # defer or push to a thread?
+                callback(result) # defer this
             else: break
 
     def buildPacket(self, message):

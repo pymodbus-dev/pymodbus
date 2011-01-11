@@ -1,4 +1,5 @@
 import unittest
+from binascii import a2b_hex
 from pymodbus.pdu import *
 from pymodbus.transaction import *
 from pymodbus.factory import ServerDecoder
@@ -170,7 +171,9 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testRTUFramerPopulate(self):
         ''' Test a rtu frame packet build '''
-        self._rtu.populateResult(None)
+        request = ModbusRequest()
+        self._rtu.populateResult(request)
+        self.assertEqual(0x00, request.unit_id)
 
     def testRTUFramerPacket(self):
         ''' Test a rtu frame packet build '''
@@ -196,17 +199,19 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testASCIIFramerTransactionFull(self):
         ''' Test a full ascii frame transaction '''
-        msg = "sss:abcd12341234aaaa\r\n"
+        msg  ='sss:01030000000AF2\r\n'
+        pack = a2b_hex(msg[6:-4])
         self._ascii.addToFrame(msg)
         self.assertTrue(self._ascii.checkFrame())
         result = self._ascii.getFrame()
-        self.assertEqual(msg[4:-2], result)
+        self.assertEqual(pack, result)
         self._ascii.advanceFrame()
 
     def testASCIIFramerTransactionHalf(self):
         ''' Test a half completed ascii frame transaction '''
         msg1 = "sss:abcd1234"
         msg2 = "1234aaaa\r\n"
+        pack = a2b_hex(msg1[6:] + msg2[:-4])
         self._ascii.addToFrame(msg1)
         self.assertFalse(self._ascii.checkFrame())
         result = self._ascii.getFrame()
@@ -214,12 +219,14 @@ class SimpleDataStoreTest(unittest.TestCase):
         self._ascii.addToFrame(msg2)
         self.assertTrue(self._ascii.checkFrame())
         result = self._ascii.getFrame()
-        self.assertEqual(msg1[4:] + msg2[:-2], result)
+        self.assertEqual(pack, result)
         self._ascii.advanceFrame()
 
     def testASCIIFramerPopulate(self):
         ''' Test a ascii frame packet build '''
-        self._ascii.populateResult(None)
+        request = ModbusRequest()
+        self._ascii.populateResult(request)
+        self.assertEqual(0x00, request.unit_id)
 
     def testASCIIFramerPacket(self):
         ''' Test a ascii frame packet build '''
@@ -228,7 +235,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         message = ModbusRequest()
         message.unit_id        = 0xff
         message.function_code  = 0x01
-        expected = ":FF01D3\r\n"
+        expected = ":FF0100\r\n"
         actual = self._ascii.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode

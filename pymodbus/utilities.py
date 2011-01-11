@@ -146,7 +146,7 @@ def computeLRC(data):
     lrc = 0
     lrc = sum(ord(a) for a in data) & 0xff
     lrc = (lrc ^ 0xff) + 1
-    return lrc
+    return lrc & 0xff
 
 def checkLRC(data, check):
     ''' Checks if the passed in data matches the LRC

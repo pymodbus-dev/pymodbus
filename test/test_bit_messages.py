@@ -56,7 +56,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         msg    = "ReadBitRequest(1,1)"
         self.assertEqual(msg, str(handle))
         handle = ReadBitsResponseBase([1,1])
-        msg    = "ReadBitResponse"
+        msg    = "ReadBitResponse(2)"
         self.assertEqual(msg, str(handle))
 
     def testBitReadBaseRequestEncoding(self):

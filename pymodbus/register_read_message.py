@@ -90,7 +90,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "ReadRegisterResponse ", self.registers
+        return "ReadRegisterResponse (%d)" % len(self.registers)
 
 
 class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
@@ -274,8 +274,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % (self.raddress,
-                self.rcount, self.waddress, self.wcount)
+        params = (self.raddress, self.rcount, self.waddress, self.wcount)
+        return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):
     '''
@@ -317,7 +317,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "ReadWriteNRegisterResponse", self.registers
+        return "ReadWriteNRegisterResponse (%d)" % len(self.registers)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

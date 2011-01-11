@@ -168,7 +168,8 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        return "WriteNRegisterRequest %d => " % self.address, self.registers
+        params = (self.address, len(self.registers))
+        return "WriteNRegisterRequest %d => %d" % params
 
 class WriteMultipleRegistersResponse(ModbusResponse):
     '''

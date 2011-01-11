@@ -138,13 +138,21 @@ class ModbusBitMessageTests(unittest.TestCase):
     def testBitWriteBaseRequests(self):
         ''' Test bit write request encoding '''
         messages = {
-            WriteSingleCoilRequest(1, 0xabcd)  : '\x00\x01\xff\x00',
-            WriteSingleCoilResponse(1, 0xabcd) : '\x00\x01\xff\x00',
-            WriteMultipleCoilsRequest(1, 5)    : '\x00\x01\x00\x05\x01\x00',
-            WriteMultipleCoilsResponse(1, 5)   : '\x00\x01\x00\x05',
+            WriteSingleCoilRequest(1, 0xabcd)      : '\x00\x01\xff\x00',
+            WriteSingleCoilResponse(1, 0xabcd)     : '\x00\x01\xff\x00',
+            WriteMultipleCoilsRequest(1, [True]*5) : '\x00\x01\x00\x05\x01\x1f',
+            WriteMultipleCoilsResponse(1, 5)       : '\x00\x01\x00\x05',
         }
         for request, expected in messages.iteritems():
             self.assertEqual(request.encode(), expected)
+
+    def testWriteMultipleCoilsRequest(self):
+        ''' Test bit write request encoding '''
+        request = WriteMultipleCoilsRequest(1, [True]*5)
+        request.decode('\x00\x01\x00\x05\x01\x1f')
+        self.assertEqual(request.byte_count, 1)
+        self.assertEqual(request.address, 1)
+        self.assertEqual(request.values, [True]*5)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -9,6 +9,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import *
 
 #---------------------------------------------------------------------------#
@@ -128,9 +129,6 @@ class WriteSingleCoilResponse(ModbusResponse):
         '''
         return "WriteCoilResponse(%d) => %d" % (self.address, self.value)
 
-#---------------------------------------------------------------------------#
-# TODO Fix this so we can write more than false to multiple variables
-#---------------------------------------------------------------------------#
 class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     "This function code is used to force each coil in a sequence of coils to
@@ -144,26 +142,27 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     function_code = 15
 
-    def __init__(self, address=None, count=None):
+    def __init__(self, address=None, values=None):
         ''' Initializes a new instance
 
         :param address: The starting request address
-        :param count: Number of bits to read after address
+        :param values: The values to write
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        if count != None and count > 0:
-            self.coils = [False] * count
-        else: self.coils = []
+        if not values:
+            raise ParameterException('No values specified to write')
+        self.values  = values
 
     def encode(self):
         ''' Encodes write coils request
 
         :returns: The byte encoded message
         '''
-        count = len(self.coils)
-        result  = struct.pack('>HHB', self.address, count, (count + 7) / 8)
-        result += packBitsToString(self.coils)
+        count   = len(self.values)
+        self.byte_count = (count + 7) / 8
+        result  = struct.pack('>HHB', self.address, count, self.byte_count)
+        result += packBitsToString(self.values)
         return result
 
     def decode(self, data):
@@ -171,9 +170,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
 
         :param data: The packet data to decode
         '''
-        self.address, count = struct.pack('>HH', data[0:2])
-        coils, self.byte_count = unpackBitsFromString(data[2:])
-        self.coils = coils[:count]
+        self.address, count = struct.unpack('>HH', data[0:4])
+        values, self.byte_count = unpackBitsFromString(data[4:])
+        self.values = values[:count]
 
     def execute(self, context):
         ''' Run a write coils request against a datastore
@@ -181,14 +180,14 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response or exception message
         '''
-        count = len(self.coils)
+        count = len(self.values)
         if not (1 <= count <= 0x07b0):
             return self.createExceptionResponse(merror.IllegalValue)
         if (self.byte_count != (count + 7) / 8):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.address, self.coils)
+        context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleCoilsResponse(self.address, count)
 
     def __str__(self):
@@ -196,7 +195,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        params = (self.address, len(self.coils))
+        params = (self.address, len(self.values))
         return "WriteNCoilRequest (%d) => %d " % params
 
 class WriteMultipleCoilsResponse(ModbusResponse):

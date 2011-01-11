@@ -46,6 +46,7 @@ or a range read to fail.
 I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
+from pymodbus.utilities  import default
 from pymodbus.exceptions import *
 from pymodbus.interfaces import IModbusSlaveContext
 
@@ -125,7 +126,7 @@ class BaseModbusDataBlock(object):
         :returns: An iterator of the data block data
         '''
         if isinstance(dict, self.values):
-            return self.values.iteritems()
+            return self.values.items()
         return enumerate(self.values)
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
@@ -189,8 +190,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         elif isinstance(values, list):
             self.values = dict([(i,v) for i,v in enumerate(values)])
         else: raise ParameterException("Values for datastore must be a list or dictionary")
-        self.default_value = self.values.values()[0].__class__()
-        self.address = self.values.iterkeys().next()
+        self.default_value = default(self.values)
+        self.address = next(self.values.keys())
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
@@ -199,8 +200,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        handle = range(address, address + count)
-        return set(handle).issubset(set(self.values.iterkeys()))
+        handle = list(range(address, address + count))
+        return set(handle).issubset(set(self.values.keys()))
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -361,7 +362,7 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        return self.__slaves.iteritems()
+        return self.__slaves.items()
 
     def __setitem__(self, slave, context):
         ''' Wrapper used to access the slave context
@@ -381,7 +382,7 @@ class ModbusServerContext(object):
         :returns: The requested slave context
         '''
         if self.single: slave = 0x00
-        if self.__slaves.has_key(slave):
+        if slave in self.__slaves:
             return self.__slaves.get(slave)
         else: raise ParameterException("slave does not exist, or is out of range")
 

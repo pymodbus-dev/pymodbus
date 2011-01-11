@@ -6,7 +6,6 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
-from itertools import izip
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
@@ -115,7 +114,7 @@ class ModbusDeviceIdentification(object):
 
         :returns: An iterator of the device information
         '''
-        return self.__data.iteritems()
+        return self.__data.items()
 
     def summary(self):
         ''' Return a summary of the main items
@@ -253,7 +252,7 @@ class ModbusCountersHandler(object):
 
         :returns: An iterator of the device counters
         '''
-        return izip(self.__names, self.__data.itervalues())
+        return zip(self.__names, self.__data.itervalues())
 
     def update(self, input):
         ''' Update the values of this identity
@@ -261,7 +260,7 @@ class ModbusCountersHandler(object):
 
         :param input: The value to copy values from
         '''
-        for k,v in input.iteritems():
+        for k,v in input.items():
             v += self.__getattribute__(k)
             self.__setattr__(k,v)
 
@@ -419,7 +418,7 @@ class ModbusControlBlock(Singleton):
 
         :param mapping: Dictionary of key:value pairs to set
         '''
-        for entry in mapping.iteritems():
+        for entry in mapping.items():
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
                 self.__diagnostic[entry[0]] = (entry[1] != 0)
 

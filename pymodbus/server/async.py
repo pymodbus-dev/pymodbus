@@ -70,7 +70,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
@@ -164,7 +164,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)

@@ -61,7 +61,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadBaseRequestEncoding(self):
         ''' Test basic bit message encoding/decoding '''
-        for i in xrange(20):
+        for i in range(20):
             handle = ReadBitsRequestBase(i, i)
             result = struct.pack('>HH',i, i)
             self.assertEqual(handle.encode(), result)
@@ -70,7 +70,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadBaseResponseEncoding(self):
         ''' Test basic bit message encoding/decoding '''
-        for i in xrange(20):
+        for i in range(20):
             input  = [True] * i
             handle = ReadBitsResponseBase(input)
             result = handle.encode()
@@ -83,7 +83,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         handle = ReadBitsResponseBase(input)
         for i in [1,3,5]: handle.setBit(i, True)
         for i in [1,3,5]: handle.resetBit(i)
-        for i in xrange(8):
+        for i in range(8):
             self.assertEqual(handle.getBit(i), False)
 
     def testBitReadBaseRequests(self):
@@ -92,7 +92,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadBitsRequestBase(12, 14)        : '\x00\x0c\x00\x0e',
             ReadBitsResponseBase([1,0,1,1,0])  : '\x01\x0d',
         }
-        for request, expected in messages.iteritems():
+        for request, expected in messages.items():
             self.assertEqual(request.encode(), expected)
 
     def testBitReadMessageExecuteValueErrors(self):
@@ -143,7 +143,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             WriteMultipleCoilsRequest(1, [True]*5) : '\x00\x01\x00\x05\x01\x1f',
             WriteMultipleCoilsResponse(1, 5)       : '\x00\x01\x00\x05',
         }
-        for request, expected in messages.iteritems():
+        for request, expected in messages.items():
             self.assertEqual(request.encode(), expected)
 
     def testWriteMultipleCoilsRequest(self):

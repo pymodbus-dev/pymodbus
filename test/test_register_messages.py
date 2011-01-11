@@ -63,7 +63,7 @@ class RegisterMessagesTest(unittest.TestCase):
 
     def testRegisterReadRequests(self):
         ''' Test register read request encoding '''
-        for rqst, rsp in self.rread.iteritems():
+        for rqst, rsp in self.rread.items():
             self.assertEqual(rqst.encode(), rsp)
 
     def testRegisterReadRequestsCountErrors(self):
@@ -101,7 +101,7 @@ class RegisterMessagesTest(unittest.TestCase):
 
     def testRegisterWriteRequests(self):
         ''' Test register write request encoding '''
-        for rqst, rsp in self.rwrite.iteritems():
+        for rqst, rsp in self.rwrite.items():
             self.assertEqual(rqst.encode(), rsp)
 
 #---------------------------------------------------------------------------#

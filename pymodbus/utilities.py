@@ -17,6 +17,10 @@ def default(value):
     :param value: The value to get the default of
     :returns: The default value
     '''
+    if isinstance(value, dict):
+        return type(list(value.values())[0])()
+    elif isinstance(value, list):
+        return type(value[0])()
     return type(value)()
 
 def dict_property(store, index):

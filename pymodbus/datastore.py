@@ -47,6 +47,7 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 from pymodbus.exceptions import *
+from pymodbus.interfaces import IModbusSlaveContext
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -57,7 +58,7 @@ _logger = logging.getLogger("pymodbus.protocol")
 #---------------------------------------------------------------------------#
 # Datablock Storage
 #---------------------------------------------------------------------------#
-class ModbusDataBlock(object):
+class BaseModbusDataBlock(object):
     '''
     Base class for a modbus datastore
 
@@ -127,7 +128,7 @@ class ModbusDataBlock(object):
             return self.values.iteritems()
         return enumerate(self.values)
 
-class ModbusSequentialDataBlock(ModbusDataBlock):
+class ModbusSequentialDataBlock(BaseModbusDataBlock):
     ''' Creates a sequential modbus datastore '''
 
     def __init__(self, address, values):
@@ -172,7 +173,7 @@ class ModbusSequentialDataBlock(ModbusDataBlock):
         start = address - self.address
         self.values[start:start+len(values)] = values
 
-class ModbusSparseDataBlock(ModbusDataBlock):
+class ModbusSparseDataBlock(BaseModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
 
     def __init__(self, values):
@@ -222,7 +223,7 @@ class ModbusSparseDataBlock(ModbusDataBlock):
 #---------------------------------------------------------------------------#
 # Device Data Control
 #---------------------------------------------------------------------------#
-class ModbusSlaveContext(object):
+class ModbusSlaveContext(IModbusSlaveContext):
     '''
     This creates a modbus data model with each data access
     stored in its own personal block
@@ -296,6 +297,45 @@ class ModbusSlaveContext(object):
         _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
         self.__mapping[fx].setValues(address, values)
 
+class ModbusRemoteSlaveContext(IModbusSlaveContext):
+    ''' TODO
+    This creates a modbus data model that connects to
+    a remote device (depending on the client used)
+    '''
+
+    def __init__(self, client):
+        ''' Initializes the datastores
+
+        :param client: The client to retrieve values with
+        '''
+        self.client = client
+
+    def getValues(self, fx, address, count=1):
+        ''' Validates the request to make sure it is in range
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        '''
+        raise NotImplementedException("Context Reset")
+
+    def setValues(self, fx, address, values):
+        ''' Sets the datastore with the supplied values
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
+        '''
+        raise NotImplementedException("Context Reset")
+
+    def __str__(self):
+        ''' Returns a string representation of the context
+
+        :returns: A string representation of the context
+        '''
+        return "Remote Slave Context(%s)", self.client
+
 class ModbusServerContext(object):
     ''' This represents a master collection of slave contexts.
     If single is set to true, it will be treated as a single
@@ -310,8 +350,10 @@ class ModbusServerContext(object):
         :param slaves: A dictionary of client contexts
         :param single: Set to true to treat this as a single context
         '''
-        self.single = single
+        self.single   = single
         self.__slaves = slaves or {}
+        if self.single:
+            self.__slaves = {0x00: self.__slaves}
 
     def __iter__(self):
         ''' Iterater over the current collection of slave
@@ -319,8 +361,6 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        if self.single:
-            return {0x00: self.__slaves}.iteritems()
         return self.__slaves.iteritems()
 
     def __setitem__(self, slave, context):
@@ -329,9 +369,10 @@ class ModbusServerContext(object):
         :param slave: slave The context to set
         :param context: The new context to set for this slave
         '''
-        if self.single:
-            self.__slaves = context
-        else: self.__slaves[slave] = context
+        if self.single: slave = 0x00
+        if 0xf7 >= slave >= 0x00:
+            self.__slaves[slave] = context
+        else: raise ParameterException('slave index out of range')
 
     def __getitem__(self, slave):
         ''' Wrapper used to access the slave context
@@ -339,11 +380,10 @@ class ModbusServerContext(object):
         :param slave: The slave context to get
         :returns: The requested slave context
         '''
-        if self.single:
-            return self.__slaves
+        if self.single: slave = 0x00
         if self.__slaves.has_key(slave):
             return self.__slaves.get(slave)
-        else: raise ParameterException("Slave does not exist")
+        else: raise ParameterException("slave does not exist, or is out of range")
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

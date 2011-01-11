@@ -85,7 +85,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :return: A string representation of the instance
         '''
-        return "WriteCoilRequest(%d)" % self.address, self.value
+        return "WriteCoilRequest(%d) => " % self.address, self.value
 
 class WriteSingleCoilResponse(ModbusResponse):
     '''
@@ -126,7 +126,7 @@ class WriteSingleCoilResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "WriteCoilResponse(%d)" % self.address, self.value
+        return "WriteCoilResponse(%d) => " % self.address, self.value
 
 #---------------------------------------------------------------------------#
 # TODO Fix this so we can write more than false to multiple variables
@@ -196,7 +196,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        return "WriteNCoilRequest %d => " % self.address, self.coils
+        return "WriteNCoilRequest (%d) => " % self.address, self.coils
 
 class WriteMultipleCoilsResponse(ModbusResponse):
     '''
@@ -234,7 +234,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "WriteNCoilResponse(%d,%d)" % (self.address, self.count)
+        return "WriteNCoilResponse(%d, %d)" % (self.address, self.count)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

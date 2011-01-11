@@ -171,14 +171,75 @@ class ModbusDeviceIdentification(object):
 #---------------------------------------------------------------------------#
 class ModbusCountersHandler(object):
     '''
-    This is a helper class to simplify the properties for the counters
+    This is a helper class to simplify the properties for the counters::
 
+    0x0B  1  Return Bus Message Count
+
+             Quantity of messages that the remote
+             device has detected on the communications system since its
+             last restart, clear counters operation, or power-up.  Messages
+             with bad CRC are not taken into account. 
+
+    0x0C  2  Return Bus Communication Error Count 
+
+             Quantity of CRC errors encountered by the remote device since its last 
+             restart, clear counters operation, or power-up.  In case of an error 
+             detected on the character level, (overrun, parity error), or in case of a 
+             message length < 3 bytes, the receiving device is not able to calculate 
+             the CRC.  In such cases, this counter is also incremented. 
+
+    0x0D  3  Return Slave Exception Error Count
+
+             Quantity of MODBUS exception error detected by the remote device 
+             since its last restart, clear counters operation, or power-up.  It 
+             comprises also the error detected in broadcast messages even if an 
+             exception message is not returned in this case.  
+             Exception errors are described and listed in "MODBUS Application 
+             Protocol Specification" document. 
+
+    0xOE  4  Return Slave Message Count
+
+             Quantity of messages addressed to the remote device,  including 
+             broadcast messages, that the remote device has processed since its 
+             last restart, clear counters operation, or power-up. 
+
+    0x0F  5  Return Slave No Response Count 
+             Quantity of messages received by the remote device for which it 
+             returned no response (neither a normal response nor an exception 
+             response), since its last restart, clear counters operation, or power-up.  
+             Then, this counter counts the number of broadcast messages it has 
+             received.
+
+    0x10  6  Return Slave NAK Count
+
+             Quantity of messages addressed to the remote device for which it 
+             returned a Negative Acknowledge (NAK) exception response, since its 
+             last restart, clear counters operation, or power-up. Exception 
+             responses are described and listed in "MODBUS Application Protocol 
+             Specification" document. 
+
+    0x11  7  Return Slave Busy Count
+
+             Quantity of messages addressed to the remote device for which it 
+             returned a Slave Device Busy exception response, since its last restart, 
+             clear counters operation, or power-up. Exception responses are 
+             described and listed in "MODBUS Application Protocol Specification" 
+             document
+
+    0x12  8  Return Bus Character Overrun Count
+
+             Quantity of messages addressed to the remote device that it could not
+             handle due to a character overrun condition, since its last restart, clear
+             counters operation, or power-up. A character overrun is caused by data 
+             characters arriving at the port faster than they can 
+
+    .. note:: I threw the event counter in here for convinience
     '''
     __data = dict([(i, 0x0000) for i in range(9)])
     __names   = [
         'BusMessage',
         'BusCommunicationError',
-        'BusExceptionError',
+        'SlaveExceptionError',
         'SlaveMessage',
         'SlaveNoResponse',
         'SlaveNAK',

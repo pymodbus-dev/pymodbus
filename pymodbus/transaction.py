@@ -4,6 +4,7 @@ Collection of transaction based abstractions
 import struct
 from binascii import b2a_hex
 
+from pymodbus.exceptions import ModbusIOException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import Singleton, IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -507,6 +508,7 @@ class ModbusAsciiFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
+        import pdb;pdb.set_trace()
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -523,11 +525,15 @@ class ModbusAsciiFramer(IModbusFramer):
         Built off of a  modbus request/response
 
         :param message: The request/response to send
-        :return: The built packet
+        :return: The encoded packet
         '''
-        data   = b2a_hex(message.encode())
-        packet = '%02x%02x%s' % (message.unit_id, message.function_code, data)
-        packet = '%c%s%02x%s' % (self.__start, packet, computeLRC(packet), self.__end)
+        encoded  = message.encode()
+        buffer   = struct.pack('>BB', message.unit_id, message.function_code)
+        checksum = computeLRC(encoded + buffer)
+
+        params = (message.unit_id, message.function_code, b2a_hex(encoded))
+        packet = '%02x%02x%s' % params
+        packet = '%c%s%02x%s' % (self.__start, packet, checksum, self.__end)
         return packet.upper()
 
 #---------------------------------------------------------------------------#

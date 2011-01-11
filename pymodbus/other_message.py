@@ -49,6 +49,13 @@ class ReadExceptionStatusRequest(ModbusRequest):
         status = _MCB.Counter.summary()
         return ReadExceptionStatusResponse(status)
 
+    def __str__(self):
+        ''' Builds a representation of the request
+
+        :returns: The string representation of the request
+        '''
+        return "ReadExceptionStatusRequest(%d)" % (self.function_code)
+
 class ReadExceptionStatusResponse(ModbusResponse):
     '''
     The normal response contains the status of the eight Exception Status
@@ -80,6 +87,14 @@ class ReadExceptionStatusResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         self.status = struct.unpack('>B', data)
+
+    def __str__(self):
+        ''' Builds a representation of the response
+
+        :returns: The string representation of the response
+        '''
+        arguments = (self.function_code, self.status)
+        return "ReadExceptionStatusResponse(%d, %s)" % arguments
 
 
 # Encapsulate interface transport 43, 14
@@ -131,6 +146,13 @@ class GetCommEventCounterRequest(ModbusRequest):
         status = _MCB.Counter.Event
         return GetCommEventCounterResponseResponse(status)
 
+    def __str__(self):
+        ''' Builds a representation of the request
+
+        :returns: The string representation of the request
+        '''
+        return "GetCommEventCounterRequest(%d)" % (self.function_code)
+
 class GetCommEventCounterResponse(ModbusResponse):
     '''
     The normal response contains a two-byte status word, and a two-byte
@@ -165,6 +187,14 @@ class GetCommEventCounterResponse(ModbusResponse):
         '''
         ready, self.count = struct.unpack('>HH', data)
         self.status = (ready == ModbusStatus.Ready)
+
+    def __str__(self):
+        ''' Builds a representation of the response
+
+        :returns: The string representation of the response
+        '''
+        arguments = (self.function_code, self.count, self.status)
+        return "GetCommEventCounterResponse(%d, %d, %d)" % arguments
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
@@ -220,6 +250,13 @@ class GetCommEventLogRequest(ModbusRequest):
         }
         return GetCommEventLogResponse(**results)
 
+    def __str__(self):
+        ''' Builds a representation of the request
+
+        :returns: The string representation of the request
+        '''
+        return "GetCommEventLogRequest(%d)" % self.function_code
+
 class GetCommEventLogResponse(ModbusResponse):
     '''
     The normal response contains a two-byte status word field,
@@ -270,6 +307,14 @@ class GetCommEventLogResponse(ModbusResponse):
         for e in xrange(6, length):
             self.events.append(struct.unpack('>B', data[6 + e]))
 
+    def __str__(self):
+        ''' Builds a representation of the response
+
+        :returns: The string representation of the response
+        '''
+        arguments = (self.function_code, self.status, self.message_count, self.event_count)
+        return "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments
+
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
 #---------------------------------------------------------------------------#
@@ -305,6 +350,13 @@ class ReportSlaveIdRequest(ModbusRequest):
         status = _MCB.getCounterSummary()
         return ReportSlaveIdResponse(status)
 
+    def __str__(self):
+        ''' Builds a representation of the request
+
+        :returns: The string representation of the request
+        '''
+        return "ResportSlaveIdRequest(%d)" % self.function_code
+
 class ReportSlaveIdResponse(ModbusResponse):
     '''
     The format of a normal response is shown in the following example. The
@@ -337,6 +389,14 @@ class ReportSlaveIdResponse(ModbusResponse):
         '''
         length, self.identifier, status = struct.unpack('>BBB', data)
         self.status = status == 0xFF
+
+    def __str__(self):
+        ''' Builds a representation of the response
+
+        :returns: The string representation of the response
+        '''
+        arguments = (self.function_code, self.identifier, self.status)
+        return "ResportSlaveIdResponse(%d, %d, %d)" % arguments
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial

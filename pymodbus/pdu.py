@@ -95,15 +95,15 @@ class ModbusExceptions(Singleton):
     '''
     An enumeration of the valid modbus exceptions
     '''
-    IllegalFunction         = 0x1
-    IllegalAddress          = 0x2
-    IllegalValue            = 0x3
-    SlaveFailure            = 0x4
-    Acknowledge             = 0x5
-    SlaveBusy               = 0x6
-    MemoryParityError       = 0x8
-    GatewayPathUnavailable  = 0xA
-    GatewayNoResponse       = 0xB
+    IllegalFunction         = 0x01
+    IllegalAddress          = 0x02
+    IllegalValue            = 0x03
+    SlaveFailure            = 0x04
+    Acknowledge             = 0x05
+    SlaveBusy               = 0x06
+    MemoryParityError       = 0x08
+    GatewayPathUnavailable  = 0x0A
+    GatewayNoResponse       = 0x0B
 
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
@@ -164,7 +164,7 @@ class IllegalFunctionRequest(ModbusRequest):
 
         :param data: Not used
         '''
-        pass # let execute build the error response
+        pass
 
     def execute(self, context):
         ''' Builds an illegal function request error response

@@ -58,7 +58,7 @@ unsigned short int crc(const char* data)
 int main(int arc, char **argv)
 {
     char *data = (char *)argv[1];
-    printf("%s [0%x]", data, crc(data));
+    printf("%s [0x%x]\n", data, crc(data));
 
     return 0;
 }

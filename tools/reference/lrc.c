@@ -20,7 +20,7 @@ unsigned char lrc(const char* data)
 int main(int arc, char **argv)
 {
     char *data = (char *)argv[1];
-    printf("%s [0%x]", data, lrc(data));
+    printf("%s [0x%x]\n", data, lrc(data));
 
     return 0;
 }

@@ -86,7 +86,7 @@ class ModbusTransactionManager:
             ModbusTransactionManager.__tid) & 0xffff
         return tid
 
-class IModbusClient(object):
+class BaseModbusClient(object):
     '''
     Inteface for a modbus synchronous client. Defined here are all the
     methods for performing the related request methods.  Derived classes
@@ -175,7 +175,7 @@ class IModbusClient(object):
 #---------------------------------------------------------------------------#
 # Modbus TCP Client Transport Implementation
 #---------------------------------------------------------------------------#
-class ModbusTcpClient(IModbusClient):
+class ModbusTcpClient(BaseModbusClient):
     ''' Implementation of a modbus tcp client
     '''
 
@@ -188,7 +188,7 @@ class ModbusTcpClient(IModbusClient):
         self.host = host
         self.port = port
         self.socket = None
-        IModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
+        BaseModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
     
     def connect(self):
         ''' Connect to the modbus tcp server
@@ -242,7 +242,7 @@ class ModbusTcpClient(IModbusClient):
 #---------------------------------------------------------------------------#
 # Modbus UDP Client Transport Implementation
 #---------------------------------------------------------------------------#
-class ModbusUdpClient(IModbusClient):
+class ModbusUdpClient(BaseModbusClient):
     ''' Implementation of a modbus udp client
     '''
 
@@ -255,7 +255,7 @@ class ModbusUdpClient(IModbusClient):
         self.host = host
         self.port = port
         self.socket = None
-        IModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
+        BaseModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
     
     def connect(self):
         ''' Connect to the modbus tcp server
@@ -304,7 +304,7 @@ class ModbusUdpClient(IModbusClient):
 #---------------------------------------------------------------------------#
 # Modbus Serial Client Transport Implementation
 #---------------------------------------------------------------------------#
-class ModbusSerialClient(IModbusClient):
+class ModbusSerialClient(BaseModbusClient):
     ''' Implementation of a modbus udp client
     '''
 
@@ -321,7 +321,7 @@ class ModbusSerialClient(IModbusClient):
         '''
         self.method   = method
         self.socket   = None
-        IModbusClient.__init__(self, self.__implementation(method))
+        BaseModbusClient.__init__(self, self.__implementation(method))
 
         self.port     = kwargs.get('port', 0)
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)

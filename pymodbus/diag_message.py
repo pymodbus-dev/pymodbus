@@ -126,7 +126,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self)
         self.message = data
 
-    def execute(self):
+    def execute(self, *args):
         ''' Base function to raise if not implemented '''
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 
@@ -167,7 +167,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
             self.message = message
         else: self.message = [message]
 
-    def execute(self):
+    def execute(self, *args):
         ''' Executes the loopback request (builds the response)
 
         :returns: The populated loopback response message
@@ -207,12 +207,16 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     sub_function_code = 0x0001
 
     def __init__(self, toggle=False):
+        ''' Initializes a new request
+
+        :param toggle: Set to True to toggle, False otherwise
+        '''
         DiagnosticStatusRequest.__init__(self)
         if toggle:
-            self.message = [ModbusStatus.On]
+            self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
 
-    def execute(self):
+    def execute(self, *args):
         ''' Clear event log and restart
 
         :returns: The initialized response message
@@ -238,7 +242,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
         '''
         DiagnosticStatusResponse.__init__(self)
         if toggle:
-            self.message = [ModbusStatus.On]
+            self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
 
 #---------------------------------------------------------------------------#
@@ -251,7 +255,11 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0002
 
-    def execute(self):
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
+        '''
         #if _MCB.isListenOnly():
         register = packBitsToString(_MCB.getDiagnosticRegister())
         return ReturnDiagnosticRegisterResponse(register)
@@ -275,9 +283,10 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0003
 
-    def execute(self):
-        '''
-        For future serial messages, use char for delimiter
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         char = (self.message & 0xff00) >> 8
         _MCB.Delimiter = char
@@ -304,8 +313,12 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0004
 
-    def execute(self):
-        _MCB.ListenOnly = not _MCB.ListenOnly
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
+        '''
+        _MCB.ListenOnly = True
         return ForceListenOnlyModeResponse()
 
 class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
@@ -335,8 +348,10 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000A
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         _MCB.reset()
         return ClearCountersResponse(self.message)
@@ -359,8 +374,10 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000B
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.BusMessage
         return ReturnBusMessageCountResponse(count)
@@ -384,8 +401,10 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000C
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.BusCommunicationError
         return ReturnBusCommunicationErrorCountResponse(count)
@@ -409,8 +428,10 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000D
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.BusExceptionError
         return ReturnBusExceptionErrorCountResponse(count)
@@ -434,8 +455,10 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000E
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.SlaveMessage
         return ReturnSlaveMessageCountResponse(count)
@@ -459,8 +482,10 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x000F
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.SlaveNoResponse
         return ReturnSlaveNoReponseCountResponse(count)
@@ -485,8 +510,10 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0010
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.SlaveNAK
         return ReturnSlaveNAKCountResponse(count)
@@ -511,8 +538,10 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0011
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.SlaveBusy
         return ReturnSlaveBusyCountResponse(count)
@@ -538,8 +567,10 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0012
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         count = _MCB.Counter.BusCharacterOverrun
         return ReturnSlaveBusCharacterOverrunCountResponse(count)
@@ -560,14 +591,18 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
     '''
     Clears the overrun error counter and reset the error flag
+    
+    An error flag should be cleared, but nothing else in the
+    specification mentions is, so it is ignored.
     '''
     sub_function_code = 0x0014
 
-    def execute(self):
-        '''
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
         '''
         _MCB.Counter.BusCharacterOverrun = 0x0000
-        # clear error register
         return ClearOverrunCountResponse(self.message)
 
 class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):

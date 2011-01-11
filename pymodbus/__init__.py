@@ -14,9 +14,9 @@ client:
 server:
 
 - Can function as a fully implemented TCP modbus server
-- Working on creating server control context
-- Working on serial communication
-- Working on funtioning as a RTU/ASCII
+- complete server control context
+- complete serial communication
+- working RTU/ASCII
 - Can mimic a server based on the supplied input data
 
 TwistedModbus is built on top of the Pymodbus developed from code by:

@@ -142,6 +142,49 @@ class IModbusFramer(object):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
+class IModbusSlaveContext(object):
+    '''
+    Interface for a modbus slave data context
+
+    Derived classes must implemented the following methods:
+            reset(self)
+            validate(self, fx, address, count=1)
+            getValues(self, fx, address, count=1)
+            setValues(self, fx, address, values)
+    '''
+    def reset(self):
+        ''' Resets all the datastores to their default values '''
+        raise NotImplementedException("Context Reset")
+
+    def validate(self, fx, address, count=1):
+        ''' Validates the request to make sure it is in range
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to test
+        :returns: True if the request in within range, False otherwise
+        '''
+        raise NotImplementedException("validate context values")
+
+    def getValues(self, fx, address, count=1):
+        ''' Validates the request to make sure it is in range
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        '''
+        raise NotImplementedException("get context values")
+
+    def setValues(self, fx, address, values):
+        ''' Sets the datastore with the supplied values
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param values: The new values to be set
+        '''
+        raise NotImplementedException("set context values")
+
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 

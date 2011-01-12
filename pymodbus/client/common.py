@@ -69,7 +69,7 @@ class ModbusClientMixin(object):
 
         :returns: A deferred response handle
         '''
-        request = WriteMultipleRegisterRequest(address, values)
+        request = WriteMultipleRegistersRequest(address, values)
         return self.execute(request)
 
     def read_holding_registers(self, address, count=1):

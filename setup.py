@@ -42,8 +42,9 @@ class BuildApiDocs(Command):
     def run(self):
         ''' command runner '''
         old_cwd = os.getcwd()
-        for entry in os.listdir('./api'):
-            os.chdir('./api/%s' % entry)
+        directories = (d for d in os.listdir('./api') if not d.startswith('.'))
+        for entry in directories:
+            os.chdir('./doc/api/%s' % entry)
             os.system('python build.py')
             os.chdir(old_cwd)
 

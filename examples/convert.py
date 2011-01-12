@@ -3,10 +3,9 @@
 This script is used to convert an XML dump to a
 serialized ModbusDataStore for use with the simulator.
 
-For more information on the windows scraper,
-google for modsrape
+This is used to convert from the nmodbus datastore xml dump
+to our modbus pickled version.
 '''
-
 from pymodbus.datastore import ModbusSparseDataBlock as sblock
 from optparse import OptionParser
 from lxml import etree

@@ -9,6 +9,7 @@ Contents:
 
    bit-read-message.rst
    bit-write-message.rst
+   client-common.rst
    sync-client.rst
    async-client.rst
    constants.rst

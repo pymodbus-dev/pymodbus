@@ -16,17 +16,14 @@ Example Run::
        reactor.run()
 """
 import struct
-from zope.interface import implements
+from collections import deque
 
-from twisted.internet.protocol import Protocol, ClientFactory
-from twisted.internet import reactor
-from twisted.internet.interfaces import IPullProducer
+from twisted.internet import reactor, defer, protocol
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import *
-from pymodbus.bit_read_message import *
-from pymodbus.register_read_message import *
+from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.client.common import ModbusClientMixin
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -35,47 +32,74 @@ import logging
 _logger = logging.getLogger('pymodbus.client')
 
 #---------------------------------------------------------------------------#
-# Client Producer/Consumer
+# Client Protocols
 #---------------------------------------------------------------------------#
-class ModbusMessageProducer:
+class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     '''
-    This is a simply pull producer that feeds requests to the modbus client
+    This represents the base modbus client protocol.  All the application
+    layer code is deferred to a higher level wrapper.
     '''
-
-    implements(IPullProducer)
     __tid = 0
 
-    def __init__(self, consumer, requests, handler, framer):
-        ''' Sets up the producer to begin sending requests
-        :param consumer: The consuming protocol to register with
-        :param requests: Initialize the request list
-        :param handler: We copy each message so we know what we were requesting
-        :param framer: Framer object that is used to build the request
+    def __init__(self, framer=None):
+        ''' Initializes the framer module
+
+        :param framer: The framer to use for the protocol
         '''
-        self.requests = requests
-        self.framer   = framer
-        self.consumer = consumer
-        self.handler  = handler
+        self.framer = framer or ModbusSocketFramer(ClientDecoder())
+        self._requests = deque() # link queue to tid
+        self._connected = False
 
-        if self.consumer:
-            self.consumer.registerProducer(self, False)
+    def connectionMade(self):
+        ''' Called upon a successful client connection.
+        '''
+        _logger.debug("Client connected to modbus server")
+        self._connected = True
 
-    def resumeProducing(self):
+    def connectionLost(self):
+        ''' Called upon a client disconnect
+        '''
+        _logger.debug("Client disconnected from modbus server")
+        self._connected = False
+
+    def dataReceived(self, data):
+        ''' Get response, check for valid message, decode result
+
+        :param data: The data returned from the server
+        '''
+        self.framer.processIncomingPacket(data, self._callback)
+
+    def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        if self.requests:
-            request = self.requests.pop()
-            request.transaction_id = self.__getNextTID()
-            self.handler[request.transaction_id] = request
-            self.consumer.write(self.framer.buildPacket(request))
-        else: self.consumer.unregisterProducer()
+        request.transaction_id = self.__getNextTID()
+        #self.handler[request.transaction_id] = request
+        packet = self.framer.buildPacket(request)
+        self.transport.write(request)
+        return _buildResponse()
 
-    def stopProducing(self):
-        ''' I don't actually know yet, but they complain otherwise
+    def _callback(self, reply):
+        ''' The callback to call with the response message
+
+        :param reply: The decoded response message
         '''
-        _logger.debug("Client stopped producing")
-        self.consumer.unregisterProducer()
+        # todo errback/callback
+        if self._requests:
+            self._requests.popleft().callback(reply)
+
+    def _buildResponse(self):
+        ''' Helper method to return a deferred response
+        for the current request.
+
+        :returns: A defer linked to the latest request
+        '''
+        if not self._connected:
+            return defer.fail(ConnectionException('Client is not connected'))
+
+        d = defer.Deferred()
+        self._requests.append(d)
+        return d
 
     def __getNextTID(self):
         ''' Used to retrieve the next transaction id
@@ -83,51 +107,13 @@ class ModbusMessageProducer:
 
         As the transaction identifier is represented with two
         bytes, the highest TID is 0xffff
+
+        ..todo:: Remove this and use the transaction manager
         '''
-        tid = ModbusMessageProducer.__tid
-        ModbusMessageProducer.__tid = (1 +
-            ModbusMessageProducer.__tid) & 0xffff
+        tid = ModbusBaseClientProtocol.__tid
+        ModbusBaseClientProtocol.__tid = (1 +
+            ModbusBaseClientProtocol.__tid) & 0xffff
         return tid
-
-#---------------------------------------------------------------------------#
-# Client Protocols
-#---------------------------------------------------------------------------#
-class ModbusClientProtocol(Protocol):
-    ''' Implements a modbus client in twisted
-    '''
-
-    def __init__(self, framer=ModbusSocketFramer(ClientDecoder())):
-        ''' Initializes the framer module
-
-        :param framer: The framer to use for the protocol
-        '''
-        self.done = False
-        self.framer = framer
-
-    def connectionMade(self):
-        '''
-        Called upon a successful connection. Is used to instantiate and
-        run the producer.
-        '''
-        _logger.debug("Client connected to modbus serveR")
-        self.producer = ModbusMessageProducer(self.transport,
-                self.factory.requests, self.factory.handler, self.framer)
-
-    def dataReceived(self, data):
-        '''
-        Get response, check for valid message, decode result
-        :param data: The data returned from the server
-        '''
-        self.framer.processIncomingPacket(data, self.execute)
-        if self.factory.requests:
-            self.producer.resumeProducing()
-        else: self.transport.loseConnection()
-
-    def execute(self, result):
-        ''' The callback to call with the resulting message
-        :param request: The decoded request message
-        '''
-        self.factory.addResponse(result)
 
     #----------------------------------------------------------------------#
     # Extra Functions
@@ -136,94 +122,24 @@ class ModbusClientProtocol(Protocol):
     #       if self.retry > 0:
     #               deferLater(clock, self.delay, send, message)
     #               self.retry -= 1
-    #----------------------------------------------------------------------#
-    #def send(self, message):
-    #       '''
-    #       Send a request (string) to the network
-    #       @param message The unencoded modbus request
-    #       '''
-    #       return self.transport.write(self.framer.buildPacket(message))
 
 #---------------------------------------------------------------------------#
 # Client Factories
 #---------------------------------------------------------------------------#
-class ModbusClientFactory(ClientFactory):
-    ''' Simply persistant client protocol factory '''
+class ModbusClientFactory(protocol.ReconnectingClientFactory):
+    ''' Simple client protocol factory '''
 
     protocol = ModbusClientProtocol
 
-    def __init__(self, requests=None, results=None):
-        ''' Initializes a transaction to a modbus server
-        :param requests: A list of requests to send to server
-        :param results: A handle to the results
-        '''
-        self.handler = {}
-        if isinstance(requests, list):
-            self.requests = requests
-        elif requests:
-            self.requests = [requests]
-        else: pass
-
-        # initialize the results structure
-        if results != None:
-            self.results = results
-        else:
-            self.results = {}
-        for key in ('ci', 'di', 'hr', 'ir'): self.results[key]= {}
+    #def __init__(self, *args, **kwargs):
+    #    ''' Initializes a transaction to a modbus server
+    #    '''
+    #    pass
 
     #def buildProtocol(self, addr):
     #       p = protocol.ClientFactory.buildProtocol(self, addr)
     #       # handle timeout/retry?
     #       return p
-
-    def startedConnecting(self, connector):
-        ''' Initiated on protocol connection start
-        :param connector: The connection handler
-        '''
-        _logger.debug("Client Connection Made")
-
-    def clientConnectionLost(self, connector, reason):
-        ''' If we still have pending requets, reconnect
-        :param connector: The connection handler
-        :param reason: The reason for a disconnection
-        '''
-        _logger.debug("Client Connection Lost")
-        if self.requests:
-            _logger.debug("Client Connection Reconnect")
-            connector.connect()
-        else: reactor.stop()
-
-    def clientConnectionFailed(self, connector, reason):
-        ''' If this happens, alert the user
-        :param connector: The connection handler
-        :param reason: The reason for a disconnection
-        '''
-        _logger.debug("Client Connection Failed")
-
-    #----------------------------------------------------------------------#
-    # Extra Functions
-    #----------------------------------------------------------------------#
-    def addResponse(self, response):
-        '''
-        Callback for the client protocol that adds request responses
-        :param response: The resulting message
-
-        We only care about returned data from a read request. Everything
-        else is simply ignored for now
-        '''
-        try:
-            a = self.handler[response.transaction_id].address
-            if isinstance(response, ReadCoilsResponse):
-                self.results['ci'][a] = response.getBit(0)
-            elif isinstance(response, ReadDiscreteInputsResponse):
-                self.results['di'][a] = response.getBit(0)
-            elif isinstance(response, ReadHoldingRegistersResponse):
-                self.results['hr'][a] = response.registers[0]
-            elif isinstance(response, ReadInputRegistersResponse):
-                self.results['ir'][a] = response.registers[0]
-            else: pass
-            del self.handler[response.transaction_id].address
-        except KeyError: pass
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

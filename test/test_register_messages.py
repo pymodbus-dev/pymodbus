@@ -24,6 +24,7 @@ class Context(object):
 
     def getValues(self, a, b, count):
         return [1] * count
+
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
@@ -36,7 +37,7 @@ class RegisterMessagesTest(unittest.TestCase):
         '''
         self.value  = 0xabcd
         self.values = [0xa, 0xb, 0xc]
-        self.rread = {
+        self.rread  = {
             ReadRegistersRequestBase(1, 5)                  :'\x00\x01\x00\x05',
             ReadRegistersResponseBase(self.values)          :'\x06\x00\x0a\x00\x0b\x00\x0c',
             ReadHoldingRegistersRequest(1, 5)               :'\x00\x01\x00\x05',
@@ -51,8 +52,7 @@ class RegisterMessagesTest(unittest.TestCase):
         self.rwrite = {
             WriteSingleRegisterRequest(1, self.value)       : '\x00\x01\xab\xcd',
             WriteSingleRegisterResponse(1, self.value)      : '\x00\x01\xab\xcd',
-            WriteMultipleRegistersRequest(1, 5)             : '\x00\x01\x00\x05\x0a\x00\x00\x00\x00\x00\x00'
-                                                              '\x00\x00\x00\x00',
+            WriteMultipleRegistersRequest(1, self.values)   : '\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c',
             WriteMultipleRegistersResponse(1, 5)            : '\x00\x01\x00\x05',
         }
 
@@ -63,8 +63,8 @@ class RegisterMessagesTest(unittest.TestCase):
 
     def testRegisterReadRequests(self):
         ''' Test register read request encoding '''
-        for rqst, rsp in self.rread.iteritems():
-            self.assertEqual(rqst.encode(), rsp)
+        for request, response in self.rread.iteritems():
+            self.assertEqual(request.encode(), response)
 
     def testRegisterReadRequestsCountErrors(self):
         '''
@@ -101,8 +101,8 @@ class RegisterMessagesTest(unittest.TestCase):
 
     def testRegisterWriteRequests(self):
         ''' Test register write request encoding '''
-        for rqst, rsp in self.rwrite.iteritems():
-            self.assertEqual(rqst.encode(), rsp)
+        for request, response in self.rwrite.iteritems():
+            self.assertEqual(request.encode(), response)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -20,6 +20,7 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import *
 from pymodbus.transaction import *
+from pymodbus.client.common import ModbusClientMixin
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -86,7 +87,7 @@ class ModbusTransactionManager:
             ModbusTransactionManager.__tid) & 0xffff
         return tid
 
-class BaseModbusClient(object):
+class BaseModbusClient(ModbusClientMixin):
     '''
     Inteface for a modbus synchronous client. Defined here are all the
     methods for performing the related request methods.  Derived classes

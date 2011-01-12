@@ -43,7 +43,7 @@ def dict_property(store, index):
 #---------------------------------------------------------------------------#
 # Bit packing functions
 #---------------------------------------------------------------------------#
-def packBitsToString(bits):
+def pack_bitstring(bits):
     ''' Creates a string out of an array of bits
 
     :param bits: A bit array
@@ -51,7 +51,7 @@ def packBitsToString(bits):
     example::
 
         bits = [False, True, False, True]
-        result = packBitsToString(bits)
+        result = pack_bitstring(bits)
     '''
     ret = ''
     i = packed = 0
@@ -67,7 +67,7 @@ def packBitsToString(bits):
         ret += chr(packed)
     return ret
 
-def unpackBitsFromString(string):
+def unpack_bitstring(string):
     ''' Creates bit array out of a string
 
     :param string: The modbus data packet to decode
@@ -161,6 +161,6 @@ def checkLRC(data, check):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    'packBitsToString', 'unpackBitsFromString', 'default',
+    'pack_bitstring', 'unpack_bitstring', 'default',
     'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
 ]

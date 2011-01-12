@@ -24,6 +24,7 @@ def mainRunner(options):
     cmd = "nosetests"
     if options.coverage:
         cmd += " --with-coverage --cover-package=%s" % options.module
+        cmd += " --cover-html --cover-html-dir=./doc/coverage/"
     if options.output != "":
         cmd += " 2>&1 > %s" % options.output
     if options.unittest:

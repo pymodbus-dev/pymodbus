@@ -12,9 +12,9 @@ API Documentation
 
 .. automodule:: pymodbus.utilities
 
-.. autofunction:: packBitsToString
+.. autofunction:: pack_bitstring
 
-.. autofunction:: unpackBitsFromString
+.. autofunction:: unpack_bitstring
 
 .. autofunction:: __generate_crc16_table
 

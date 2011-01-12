@@ -13,7 +13,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.utilities import packBitsToString
+from pymodbus.utilities import pack_bitstring
 
 _MCB = ModbusControlBlock()
 
@@ -261,7 +261,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
         :returns: The initialized response message
         '''
         #if _MCB.isListenOnly():
-        register = packBitsToString(_MCB.getDiagnosticRegister())
+        register = pack_bitstring(_MCB.getDiagnosticRegister())
         return ReturnDiagnosticRegisterResponse(register)
 
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):

@@ -8,7 +8,6 @@ bit based request/response messages:
 * Read Coils
 '''
 import unittest
-from pymodbus.utilities import packBitsToString
 from pymodbus.file_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions

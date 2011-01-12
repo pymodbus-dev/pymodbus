@@ -1,6 +1,7 @@
 import unittest
 from pymodbus.device import *
 from pymodbus.exceptions import *
+from pymodbus.events import *
 
 class SimpleDataStoreTest(unittest.TestCase):
     '''
@@ -8,7 +9,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     '''
 
     def setUp(self):
-        info = {
+        self.info = {
             0x00: 'Bashwork',               # VendorName
             0x01: 'PTM',                    # ProductCode
             0x02: '1.0',                    # MajorMinorRevision
@@ -20,7 +21,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             0x08: 'x',                      # reserved
             0x10: 'private'                 # private data
         }
-        self.ident   = ModbusDeviceIdentification(info)
+        self.ident   = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
         self.access  = ModbusAccessControl()
         self.control.reset()
@@ -60,6 +61,12 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertNotEqual(self.ident[0x08], 'x')
         self.assertEqual(self.ident[0x10], 'private')
         self.assertEqual(self.ident[0x54], '')
+
+    def testModbusDeviceIdentificationSummary(self):
+        ''' Test device identification summary creation '''
+        summary  = sorted(self.ident.summary().values())
+        expected = sorted(self.info.values()[:-3]) # remove private
+        self.assertEqual(summary, expected)
 
     def testModbusDeviceIdentificationSet(self):
         ''' Test a device identification writing '''
@@ -183,6 +190,26 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.access.add(list)
         for host in self.access:
             self.assertTrue(host in list)
+
+    def testClearingControlEvents(self):
+        ''' Test adding and clearing modbus events '''
+        self.assertEqual(self.control.Events, [])
+        event = ModbusEvent()
+        self.control.addEvent(event)
+        self.assertEqual(self.control.Events, [event])
+        self.assertEqual(self.control.Counter.Event, 1)
+        self.control.clearEvents()
+        self.assertEqual(self.control.Events, [])
+        self.assertEqual(self.control.Counter.Event, 1)
+
+    def testRetrievingControlEvents(self):
+        ''' Test adding and removing a host '''
+        self.assertEqual(self.control.Events, [])
+        event = RemoteReceiveEvent()
+        self.control.addEvent(event)
+        self.assertEqual(self.control.Events, [event])
+        packet = self.control.getEvents()
+        self.assertEqual(packet, '\x40')
 
 #---------------------------------------------------------------------------#
 # Main

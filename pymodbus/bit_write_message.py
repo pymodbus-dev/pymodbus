@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.exceptions import ParameterException
-from pymodbus.utilities import *
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 #---------------------------------------------------------------------------#
 # Local Constants
@@ -161,9 +161,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         '''
         count   = len(self.values)
         self.byte_count = (count + 7) / 8
-        result  = struct.pack('>HHB', self.address, count, self.byte_count)
-        result += packBitsToString(self.values)
-        return result
+        packet  = struct.pack('>HHB', self.address, count, self.byte_count)
+        packet += pack_bitstring(self.values)
+        return packet
 
     def decode(self, data):
         ''' Decodes a write coils request
@@ -171,7 +171,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :param data: The packet data to decode
         '''
         self.address, count = struct.unpack('>HH', data[0:4])
-        values, self.byte_count = unpackBitsFromString(data[4:])
+        values, self.byte_count = unpack_bitstring(data[4:])
         self.values = values[:count]
 
     def execute(self, context):
@@ -187,6 +187,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
+
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleCoilsResponse(self.address, count)
 

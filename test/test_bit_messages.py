@@ -8,7 +8,6 @@ bit based request/response messages:
 * Read Coils
 '''
 import unittest, struct
-from pymodbus.utilities import packBitsToString
 from pymodbus.bit_read_message import *
 from pymodbus.bit_read_message import ReadBitsRequestBase
 from pymodbus.bit_read_message import ReadBitsResponseBase

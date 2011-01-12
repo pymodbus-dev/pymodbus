@@ -19,7 +19,7 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.utilities import *
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
@@ -71,15 +71,16 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :returns: The encoded packet message
         '''
-        result = packBitsToString(self.bits)
-        return chr(len(result)) + result
+        result = pack_bitstring(self.bits)
+        packet = struct.pack(">B", len(result)) + result
+        return packet
 
     def decode(self, data):
         ''' Decodes response pdu
 
         :param data: The packet data to decode
         '''
-        self.bits = unpackBitsFromString(data)[0]
+        self.bits, byte_count = unpack_bitstring(data)
 
     def setBit(self, address, value=1):
         ''' Helper function to set the specified bit

@@ -8,8 +8,7 @@ can be any one of four types. The type is defined by bit 7
 '''
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
-from pymodbus.utilities import packBitsToString
-from pymodbus.utilities import unpackBitsFromString
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 class ModbusEvent(object):
 
@@ -49,9 +48,9 @@ class RemoteReceiveEvent(ModbusEvent):
     def __init__(self, **kwargs):
         ''' Initialize a new event instance
         '''
-        self.overrun   = kwargs('overrun', False)
-        self.listen    = kwargs('listen', False)
-        self.broadcast = kwargs('broadcast', False)
+        self.overrun   = kwargs.get('overrun', False)
+        self.listen    = kwargs.get('listen', False)
+        self.broadcast = kwargs.get('broadcast', False)
 
     def encode(self):
         ''' Encodes the status bits to an event message
@@ -60,7 +59,7 @@ class RemoteReceiveEvent(ModbusEvent):
         '''
         bits  = [False] * 3
         bits += [self.overrun, self.listen, self.broadcast, True]
-        packet = packBitsToString(bits)
+        packet = pack_bitstring(bits)
         return packet
 
     def decode(self, event):
@@ -68,7 +67,7 @@ class RemoteReceiveEvent(ModbusEvent):
 
         :param event: The event to decode
         '''
-        bits = unpackBitsToString(event)
+        bits = unpack_bitstring(event)
         self.overrun   = bits[4]
         self.listen    = bits[5]
         self.broadcast = bits[6]
@@ -98,12 +97,12 @@ class RemoteSendEvent(ModbusEvent):
     def __init__(self, **kwargs):
         ''' Initialize a new event instance
         '''
-        self.read          = kwargs('read', False)
-        self.slave_abort   = kwargs('slave_abort', False)
-        self.slave_busy    = kwargs('slave_busy', False)
-        self.slave_nak     = kwargs('slave_nak', False)
-        self.write_timeout = kwargs('write_timeout', False)
-        self.listen        = kwargs('listen', False)
+        self.read          = kwargs.get('read', False)
+        self.slave_abort   = kwargs.get('slave_abort', False)
+        self.slave_busy    = kwargs.get('slave_busy', False)
+        self.slave_nak     = kwargs.get('slave_nak', False)
+        self.write_timeout = kwargs.get('write_timeout', False)
+        self.listen        = kwargs.get('listen', False)
 
     def encode(self):
         ''' Encodes the status bits to an event message
@@ -113,7 +112,7 @@ class RemoteSendEvent(ModbusEvent):
         bits = [self.read, self.slave_abort, self.slave_busy,
             self.slave_nak, self.write_timeout, self.listen]
         bits  += [True, False]
-        packet = packBitsToString(bits)
+        packet = pack_bitstring(bits)
         return packet
 
     def decode(self, event):
@@ -122,7 +121,7 @@ class RemoteSendEvent(ModbusEvent):
         :param event: The event to decode
         '''
         # todo fix the start byte count
-        bits = unpackBitsFromString(event)
+        bits = unpack_bitstring(event)
         self.read          = bits[0]
         self.slave_abort   = bits[1]
         self.slave_busy    = bits[2]

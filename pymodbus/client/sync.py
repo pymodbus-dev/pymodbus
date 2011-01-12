@@ -180,10 +180,10 @@ class ModbusTcpClient(BaseModbusClient):
     ''' Implementation of a modbus tcp client
     '''
 
-    def __init__(self, host, port=Defaults.Port):
+    def __init__(self, host='127.0.0.1', port=Defaults.Port):
         ''' Initialize a client instance
 
-        :param host: The host to connect to
+        :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
         '''
         self.host = host
@@ -247,10 +247,10 @@ class ModbusUdpClient(BaseModbusClient):
     ''' Implementation of a modbus udp client
     '''
 
-    def __init__(self, host, port=Defaults.Port):
+    def __init__(self, host='127.0.0.1', port=Defaults.Port):
         ''' Initialize a client instance
 
-        :param host: The host to connect to
+        :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
         '''
         self.host = host

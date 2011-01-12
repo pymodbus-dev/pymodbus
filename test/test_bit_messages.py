@@ -18,7 +18,7 @@ from pymodbus.pdu import ModbusExceptions
 #---------------------------------------------------------------------------#
 # Mocks
 #---------------------------------------------------------------------------#
-class Context:
+class Context(object):
     def validate(self, a,b,c):
         return False
 

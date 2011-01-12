@@ -1,6 +1,9 @@
 import unittest
 from pymodbus.factory import ServerDecoder, ClientDecoder
-from pymodbus.exceptions import *
+from pymodbus.exceptions import ModbusException
+
+def _raise_exception(_):
+    raise ModbusException('something')
 
 class SimpleFactoryTest(unittest.TestCase):
     '''
@@ -88,15 +91,15 @@ class SimpleFactoryTest(unittest.TestCase):
 
     def testClientFactoryFails(self):
         ''' Tests that a client factory will fail to decode a bad message '''
-        pass
-        # actual = self.client.decode(None)
-        # self.assertEquals(actual, None)
+        self.client._helper = _raise_exception
+        actual = self.client.decode(None)
+        self.assertEquals(actual, None)
 
     def testServerFactoryFails(self):
         ''' Tests that a server factory will fail to decode a bad message '''
-        pass
-        # actual = self.server.decode(None)
-        # self.assertEquals(actual, None)
+        self.server._helper = _raise_exception
+        actual = self.server.decode(None)
+        self.assertEquals(actual, None)
 
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that

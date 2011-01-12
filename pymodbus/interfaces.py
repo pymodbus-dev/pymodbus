@@ -22,19 +22,6 @@ class Singleton(object):
             cls._inst = object.__new__(cls, *args, **kwargs)
         return cls._inst
 
-class Borg(object):
-    '''
-    Borg base class
-    http://code.activestate.com/recipes/66531/
-    '''
-    __shared_state = {}
-
-    def __init__(self):
-        ''' Initialize the new instance
-        Make sure this __init__ is called in the child class
-        '''
-        self.__dict__ = self.__shared_state
-
 #---------------------------------------------------------------------------#
 # Project Specific
 #---------------------------------------------------------------------------#
@@ -189,6 +176,6 @@ class IModbusSlaveContext(object):
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    'Singleton', 'Borg',
-    'IModbusDecoder', 'IModbusFramer',
+    'Singleton',
+    'IModbusDecoder', 'IModbusFramer', 'IModbusSlaveContext',
 ]

@@ -128,6 +128,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         self.address = address
         if not values:
             raise ParameterException('No values specified to write')
+        elif not hasattr(values, '__iter__'): values = [values]
         self.values  = values
 
     def encode(self):

@@ -256,8 +256,8 @@ class ModbusRtuFramer(IModbusFramer):
     '''
     Modbus RTU Frame controller::
 
-        [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC/LRC ][  End Wait  ]
-          3.5 chars     1b         1b               Nb      2b         3.5 chars
+        [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
+          3.5 chars     1b         1b               Nb      2b      3.5 chars
         
     Wait refers to the amount of time required to transmist at least x many
     characters.  In this case it is 3.5 characters.  Also, if we recieve a
@@ -550,10 +550,10 @@ class ModbusBinaryFramer(IModbusFramer):
     Modbus Binary Frame Controller::
 
         [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
-          1c        2c         2c         Nc     2c      1c
+          1b        1b         1b         Nb     2b     1b
 
         * data can be 0 - 2x252 chars
-        * end is '}'
+        * end is   '}'
         * start is '{'
 
     The idea here is that we implement the RTU protocol, however,
@@ -576,9 +576,10 @@ class ModbusBinaryFramer(IModbusFramer):
         :param decoder: The decoder implementation to use
         '''
         self.__buffer = ''
-        self.__header = {'crc':0x0000, 'len':0}
-        self.__start  = '{'
-        self.__end    = "}"
+        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self.__hsize  = 0x02
+        self.__start  = '\x7b' # {
+        self.__end    = '\x7d' # }
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -597,8 +598,9 @@ class ModbusBinaryFramer(IModbusFramer):
         end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
-            self.__header['crc'] = self.__buffer[end-1:end]
-            #self.__header['crc'] = struct.unpack('>B', self.__buffer[end-1:end])
+            self.__header['uid'] = struct.unpack('>B', self.__buffer[1:2])
+            self.__header['crc'] = self.__buffer[end-2:end]
+            #self.__header['crc'] = struct.unpack('>H', self.__buffer[end-2:end])
             #data = self.__buffer[start:end-1]
             #return checkCRC(data, self.__header['crc'])
             return True
@@ -611,7 +613,7 @@ class ModbusBinaryFramer(IModbusFramer):
         current frame header handle
         '''
         self.__buffer = self.__buffer[self.__header['len'] + 2:]
-        self.__header = {'crc':0x0000, 'len':0}
+        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -636,7 +638,10 @@ class ModbusBinaryFramer(IModbusFramer):
 
         :returns: The frame data or ''
         '''
-        return self.__buffer[1:self.__header['len']]
+        start  = self.__hsize + 1
+        end    = self.__header['len'] - 2
+        buffer = self.__buffer[start:end]
+        return buffer if end > 0 else ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -646,7 +651,7 @@ class ModbusBinaryFramer(IModbusFramer):
 
         :param result: The response packet
         '''
-        pass # no header for serial
+        result.unit_id = self.__header['uid']
 
     #-----------------------------------------------------------------------#
     # Public Member Functions
@@ -672,7 +677,7 @@ class ModbusBinaryFramer(IModbusFramer):
                 result = self.decoder.decode(self.getFrame())
                 if result is None:
                     raise ModbusIOException("Unable to decode response")
-                self.populate(result)
+                self.populateResult(result)
                 self.advanceFrame()
                 callback(result) # defer or push to a thread?
             else: break

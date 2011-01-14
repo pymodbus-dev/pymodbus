@@ -19,6 +19,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         self._tcp     = ModbusSocketFramer(decoder=self.decoder)
         self._rtu     = ModbusRtuFramer(decoder=self.decoder)
         self._ascii   = ModbusAsciiFramer(decoder=self.decoder)
+        self._binary  = ModbusBinaryFramer(decoder=self.decoder)
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -182,10 +183,8 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     # ASCII tests
     #---------------------------------------------------------------------------# 
-    # I am not sure about these tests so I need to double check them
-    #---------------------------------------------------------------------------# 
     def testASCIIFramerTransactionReady(self):
-        ''' Test a tcp frame transaction '''
+        ''' Test a ascii frame transaction '''
         msg = ":abcd12341234aae6\r\n"
         self.assertFalse(self._ascii.isFrameReady())
         self.assertFalse(self._ascii.checkFrame())
@@ -237,6 +236,65 @@ class SimpleDataStoreTest(unittest.TestCase):
         message.function_code  = 0x01
         expected = ":FF0100\r\n"
         actual = self._ascii.buildPacket(message)
+        self.assertEqual(expected, actual)
+        ModbusRequest.encode = old_encode
+
+    #---------------------------------------------------------------------------# 
+    # Binary tests
+    #---------------------------------------------------------------------------# 
+    def testBinaryFramerTransactionReady(self):
+        ''' Test a binary frame transaction '''
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d'
+        self.assertFalse(self._binary.isFrameReady())
+        self.assertFalse(self._binary.checkFrame())
+        self._binary.addToFrame(msg)
+        self.assertTrue(self._binary.isFrameReady())
+        self.assertTrue(self._binary.checkFrame())
+        self._binary.advanceFrame()
+        self.assertFalse(self._binary.isFrameReady())
+        self.assertFalse(self._binary.checkFrame())
+        self.assertEqual('', self._binary.getFrame())
+
+    def testBinaryFramerTransactionFull(self):
+        ''' Test a full binary frame transaction '''
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d'
+        pack = msg[3:-3]
+        self._binary.addToFrame(msg)
+        self.assertTrue(self._binary.checkFrame())
+        result = self._binary.getFrame()
+        self.assertEqual(pack, result)
+        self._binary.advanceFrame()
+
+    def testBinaryFramerTransactionHalf(self):
+        ''' Test a half completed binary frame transaction '''
+        msg1 = '\x7b\x01\x03\x00'
+        msg2 = '\x00\x00\x05\x85\xc9\x7d'
+        pack = msg1[3:] + msg2[:-3]
+        self._binary.addToFrame(msg1)
+        self.assertFalse(self._binary.checkFrame())
+        result = self._binary.getFrame()
+        self.assertEqual('', result)
+        self._binary.addToFrame(msg2)
+        self.assertTrue(self._binary.checkFrame())
+        result = self._binary.getFrame()
+        self.assertEqual(pack, result)
+        self._binary.advanceFrame()
+
+    def testBinaryFramerPopulate(self):
+        ''' Test a binary frame packet build '''
+        request = ModbusRequest()
+        self._binary.populateResult(request)
+        self.assertEqual(0x00, request.unit_id)
+
+    def testBinaryFramerPacket(self):
+        ''' Test a binary frame packet build '''
+        old_encode = ModbusRequest.encode
+        ModbusRequest.encode = lambda self: ''
+        message = ModbusRequest()
+        message.unit_id        = 0xff
+        message.function_code  = 0x01
+        expected = '\xff\x01\x80\x81'
+        actual = self._binary.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 

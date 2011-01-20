@@ -46,12 +46,32 @@ class ModbusBitMessageTests(unittest.TestCase):
     # Read Fifo Queue
     #-----------------------------------------------------------------------#
 
+    def testReadFifoQueueRequestEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = ReadFifoQueueRequest(0x1234)
+        result  = handle.encode()
+        self.assertEqual(result, '\x12\x34')
+
+    def testReadFifoQueueRequestDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = ReadFifoQueueRequest(0x0000)
+        handle.decode('\x12\x34')
+        self.assertEqual(handle.address, 0x1234)
+
     def testReadFifoQueueRequest(self):
         ''' Test basic bit message encoding/decoding '''
         context = Context()
         handle  = ReadFifoQueueRequest(0x1234)
         result  = handle.execute(context)
         self.assertTrue(isinstance(result, ReadFifoQueueResponse))
+
+    def testReadFifoQueueRequestError(self):
+        ''' Test basic bit message encoding/decoding '''
+        context = Context()
+        handle  = ReadFifoQueueRequest(0x1234)
+        handle.values = [0x00]*32
+        result = handle.execute(context)
+        self.assertEqual(result.function_code, 0x98)
 
     def testReadFifoQueueResponseEncode(self):
         ''' Test that the read fifo queue response can encode '''

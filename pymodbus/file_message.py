@@ -36,6 +36,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
+        self.values = [] # dunno where this should come from
 
     def encode(self):
         ''' Encodes the request packet
@@ -49,7 +50,7 @@ class ReadFifoQueueRequest(ModbusRequest):
 
         :param data: The data to decode into the address
         '''
-        self.address = struct.unpack('>H', data)
+        self.address = struct.unpack('>H', data)[0]
 
     def execute(self, context):
         ''' Run a read exeception status request against the store
@@ -57,10 +58,9 @@ class ReadFifoQueueRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        values = [] # dunno where this should come from
-        if len(values) > 31:
+        if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
-        return ReadFifoQueueResponse(values)
+        return ReadFifoQueueResponse(self.values)
 
 class ReadFifoQueueResponse(ModbusResponse):
     '''

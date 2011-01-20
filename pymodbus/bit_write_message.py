@@ -47,7 +47,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.value = ModbusStatus.On if value else ModbusStatus.Off
+        self.value = True if value else False
 
     def encode(self):
         ''' Encodes write coil request
@@ -63,7 +63,8 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :param data: The packet data to decode
         '''
-        self.address, self.value = struct.unpack('>HH', data)
+        self.address, value = struct.unpack('>HH', data)
+        self.value = True if value == ModbusStatus.On else False
 
     def execute(self, context):
         ''' Run a write coil request against a datastore
@@ -71,12 +72,11 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response or exception message
         '''
-        if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
-            return self.doException(merror.IllegalValue)
+        #if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
+        #    return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address):
             return self.doException(merror.IllegalAddress)
 
-        value = [self.value == ModbusStatus.On]
         context.setValues(self.function_code, self.address, value)
         values = context.getValues(self.function_code, self.address)
         return WriteSingleCoilResponse(self.address, values[0])
@@ -86,7 +86,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :return: A string representation of the instance
         '''
-        return "WriteCoilRequest(%d) => " % self.address, self.value
+        return "WriteCoilRequest(%d, %s) => " % (self.address, self.value)
 
 class WriteSingleCoilResponse(ModbusResponse):
     '''

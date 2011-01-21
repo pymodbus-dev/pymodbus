@@ -157,7 +157,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
     '''
     sub_function_code = 0x0000
 
-    def __init__(self, message):
+    def __init__(self, message=0x0000):
         ''' Initializes a new instance of the request
 
         :param message: The message to send to loopback
@@ -182,7 +182,7 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
     '''
     sub_function_code = 0x0000
 
-    def __init__(self, message):
+    def __init__(self, message=0x0000):
         ''' Initializes a new instance of the response
 
         :param message: The message to loopback

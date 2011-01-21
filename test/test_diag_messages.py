@@ -6,6 +6,10 @@ finishing...hmmmm
 import unittest
 from pymodbus.exceptions import *
 from pymodbus.diag_message import *
+from pymodbus.diag_message import DiagnosticStatusRequest
+from pymodbus.diag_message import DiagnosticStatusResponse
+from pymodbus.diag_message import DiagnosticStatusSimpleRequest
+from pymodbus.diag_message import DiagnosticStatusSimpleResponse
 
 class SimpleDataStoreTest(unittest.TestCase):
     '''
@@ -20,6 +24,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnDiagnosticRegisterRequest,               '\x00\x02\x00\x00', '\x00\x02\x00\x00'),
             (ChangeAsciiInputDelimiterRequest,              '\x00\x03\x00\x00', '\x00\x03\x00\x00'),
             (ForceListenOnlyModeRequest,                    '\x00\x04\x00\x00', '\x00\x04'),
+            (ReturnQueryDataRequest,                        '\x00\x00\x00\x00', '\x00\x00\x00\x00'),
             (ClearCountersRequest,                          '\x00\x0a\x00\x00', '\x00\x0a\x00\x00'),
             (ReturnBusMessageCountRequest,                  '\x00\x0b\x00\x00', '\x00\x0b\x00\x00'),
             (ReturnBusCommunicationErrorCountRequest,       '\x00\x0c\x00\x00', '\x00\x0c\x00\x00'),
@@ -35,21 +40,22 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.responses = [
             #(DiagnosticStatusResponse,                     '\x00\x00\x00\x00'),
             #(DiagnosticStatusSimpleResponse,               '\x00\x00\x00\x00'),
-            #(ReturnQueryDataResponse,                      '\x00\x00\x00\x00'),
-            #(RestartCommunicationsOptionResponse,          '\x00\x01\x00\x00'),
-            #(ReturnDiagnosticRegisterResponse,             '\x00\x02\x00\x00'),
-            #(ChangeAsciiInputDelimiterResponse,            '\x00\x03\x00\x00'),
-            #(ForceListenOnlyModeResponse,                  '\x00\x04'),
-            #(ClearCountersResponse,                        '\x00\x0a\x00\x00'),
-            #(ReturnBusMessageCountResponse,                '\x00\x0b\x00\x00'),
-            #(ReturnBusCommunicationErrorCountResponse,     '\x00\x0c\x00\x00'),
-            #(ReturnBusExceptionErrorCountResponse,         '\x00\x0d\x00\x00'),
-            #(ReturnSlaveMessageCountResponse,              '\x00\x0e\x00\x00'),
-            #(ReturnSlaveNoReponseCountResponse,            '\x00\x0f\x00\x00'),
-            #(ReturnSlaveNAKCountResponse,                  '\x00\x10\x00\x00'),
-            #(ReturnSlaveBusyCountResponse,                 '\x00\x11\x00\x00'),
-            #(ReturnSlaveBusCharacterOverrunCountResponse,  '\x00\x12\x00\x00'),
-            #(ClearOverrunCountResponse,                    '\x00\x14\x00\x00'),
+            (ReturnQueryDataResponse,                      '\x00\x00\x00\x00'),
+            (RestartCommunicationsOptionResponse,          '\x00\x01\x00\x00'),
+            (ReturnDiagnosticRegisterResponse,             '\x00\x02\x00\x00'),
+            (ChangeAsciiInputDelimiterResponse,            '\x00\x03\x00\x00'),
+            (ForceListenOnlyModeResponse,                  '\x00\x04'),
+            (ReturnQueryDataResponse,                      '\x00\x00\x00\x00'),
+            (ClearCountersResponse,                        '\x00\x0a\x00\x00'),
+            (ReturnBusMessageCountResponse,                '\x00\x0b\x00\x00'),
+            (ReturnBusCommunicationErrorCountResponse,     '\x00\x0c\x00\x00'),
+            (ReturnBusExceptionErrorCountResponse,         '\x00\x0d\x00\x00'),
+            (ReturnSlaveMessageCountResponse,              '\x00\x0e\x00\x00'),
+            (ReturnSlaveNoReponseCountResponse,            '\x00\x0f\x00\x00'),
+            (ReturnSlaveNAKCountResponse,                  '\x00\x10\x00\x00'),
+            (ReturnSlaveBusyCountResponse,                 '\x00\x11\x00\x00'),
+            (ReturnSlaveBusCharacterOverrunCountResponse,  '\x00\x12\x00\x00'),
+            (ClearOverrunCountResponse,                    '\x00\x14\x00\x00'),
         ]
 
     def tearDown(self):
@@ -57,25 +63,60 @@ class SimpleDataStoreTest(unittest.TestCase):
         del self.requests
         del self.responses
 
-    def testDiagnosticRequests(self):
+    def testDiagnosticRequestsDecode(self):
+        ''' Testing diagnostic request messages encoding '''
+        for msg,enc,exe in self.requests:
+            handle = DiagnosticStatusRequest()
+            handle.decode(enc)
+            self.assertEqual(handle.sub_function_code, msg.sub_function_code)
+
+    def testDiagnosticSimpleRequests(self):
+        ''' Testing diagnostic request messages encoding '''
+        request = DiagnosticStatusSimpleRequest('\x12\x34')
+        request.sub_function_code = 0x1234
+        self.assertRaises(NotImplementedException, lambda: request.execute())
+        self.assertEqual(request.encode(), '\x12\x34\x12\x34')
+
+        response = DiagnosticStatusSimpleResponse(None)
+
+    def testDiagnosticResponseDecode(self):
+        ''' Testing diagnostic request messages encoding '''
+        for msg,enc,exe in self.requests:
+            handle = DiagnosticStatusResponse()
+            handle.decode(enc)
+            self.assertEqual(handle.sub_function_code, msg.sub_function_code)
+
+    def testDiagnosticRequestsEncode(self):
         ''' Testing diagnostic request messages encoding '''
         for msg,enc,exe in self.requests:
             self.assertEqual(msg().encode(), enc)
 
-    def testDiagnosticLoopbackRequest(self):
-        ''' Testing diagnostic request messages encoding '''
-        #r  = ReturnQueryDataRequest([0,1,2,3,4])
-        #r.execute()
-
-    def testDiagnosticResponse(self):
-        ''' Testing diagnostic request messages '''
-        for msg,enc in self.responses:
-            self.assertEqual(msg().encode(), enc)
+    #def testDiagnosticResponse(self):
+    #    ''' Testing diagnostic request messages '''
+    #    for msg,enc in self.responses:
+    #        self.assertEqual(msg().encode(), enc)
 
     def testDiagnosticExecute(self):
         ''' Testing diagnostic message execution '''
         for msg,enc,exe in self.requests:
             self.assertEqual(msg().execute().encode(), exe)
+
+    def testReturnQueryDataRequest(self):
+        ''' Testing diagnostic message execution '''
+        message = ReturnQueryDataRequest([0x0000]*2)
+        self.assertEqual(message.encode(), '\x00\x00\x00\x00\x00\x00');
+
+    def testtRestartCommunicationsOption(self):
+        ''' Testing diagnostic message execution '''
+        request = RestartCommunicationsOptionRequest(True);
+        self.assertEqual(request.encode(), '\x00\x01\xff\x00')
+        request = RestartCommunicationsOptionRequest(False);
+        self.assertEqual(request.encode(), '\x00\x01\x00\x00')
+
+        response = RestartCommunicationsOptionResponse(True);
+        self.assertEqual(response.encode(), '\x00\x01\xff\x00')
+        response = RestartCommunicationsOptionResponse(False);
+        self.assertEqual(response.encode(), '\x00\x01\x00\x00')
 
 #---------------------------------------------------------------------------#
 # Main

@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 '''
+This is a little out of date, give me a second to redo it.
 This utility can be used to fully scrape a modbus device
 and store its data as a Mobus Context for use with the
 simulator.
 '''
-
-from twisted.internet import reactor
-
-from pymodbus.client.async import ModbusClientFactory
-from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.bit_read_message import ReadDiscreteInputsRequest
-from pymodbus.register_read_message import ReadHoldingRegistersRequest
-from pymodbus.register_read_message import ReadInputRegistersRequest
-
-from optparse import OptionParser
 import pickle
+from optparse import OptionParser
+from pymodbus.client.sync import ModbusTcpClient
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -35,7 +28,7 @@ class ClientException(Exception):
     def __str__(self):
         return 'Client Error: %s' % self.string
 
-class ClientScraper:
+class ClientScraper(object):
     ''' Exception for configuration error '''
 
     def __init__(self, host, port, address):
@@ -45,37 +38,18 @@ class ClientScraper:
         @param port The port the server resides on
         @param address The range to read to:from
         '''
-        self.host = host
-
-        if isinstance(port, int):
-            self.port = port
-        elif isinstance(port, str):
-            self.port = int(port)
-
-        self.requests = []
-        for rqst in [
-                ReadCoilsRequest,
-                ReadDiscreteInputsRequest,
-                ReadInputRegistersRequest,
-                ReadHoldingRegistersRequest]:
-            for i in range(*[int(j) for j in address.split(':')]):
-                self.requests.append(rqst(i,1))
-
-    def start(self):
-        '''
-        Starts the device scrape
-        '''
-        f = ModbusClientFactory(self.requests)
-        self.p = reactor.connectTCP(self.host, self.port, f)
+        self.client = ModbusTcpClient(host=host, port=port)
+        self.requests = range(*[int(j) for j in address.split(':')])
 
     def process(self, data):
         '''
         Starts the device scrape
         '''
+        if (self.client.connect())
         f = ModbusClientFactory(self.requests)
         self.p = reactor.connectTCP(self.host, self.port, f)
 
-class ContextBuilder:
+class ContextBuilder(object):
     '''
     This class is used to build our server datastore
     for use with the modbus simulator.
@@ -94,7 +68,6 @@ class ContextBuilder:
     def build(self):
         ''' Builds the final output store file '''
         try:
-            pass
             result = self.makeContext()
             pickle.dump(result, self.file)
             print "Device successfully scraped!"
@@ -115,20 +88,20 @@ def main():
     ''' Server launcher '''
     parser = OptionParser()
     parser.add_option("-o", "--output",
-                    help="The resulting output file for the scrape",
-                    dest="file", default="output.store")
+        help="The resulting output file for the scrape",
+        dest="file", default="output.store")
     parser.add_option("-p", "--port",
-                    help="The port to connect to",
-                    dest="port", default="502")
+        help="The port to connect to",
+        dest="port", default=502)
     parser.add_option("-s", "--server",
-                    help="The server to scrape",
-                    dest="host", default="localhost")
+        help="The server to scrape",
+        dest="host", default="127.0.0.1")
     parser.add_option("-r", "--range",
-                    help="The address range to scan",
-                    dest="range", default="0:500")
+        help="The address range to scan",
+        dest="range", default="0:500")
     parser.add_option("-D", "--debug",
-                    help="Enable debug tracing",
-                    action="store_true", dest="debug", default=False)
+        help="Enable debug tracing",
+        action="store_true", dest="debug", default=False)
     (opt, arg) = parser.parse_args()
 
     # enable debugging information
@@ -139,7 +112,7 @@ def main():
         except Exception, e:
     	    print "Logging is not supported on this system"
 
-    # Begin scrape
+    # Begin scraping
     try:
         #ctx = ContextBuilder(opt.file)
         s = ClientScraper(opt.host, opt.port, opt.range)

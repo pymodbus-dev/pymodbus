@@ -43,6 +43,8 @@ Tools
 ---------------------------------------------------------------------------
 - Get 100%ish code coverage with solid unit testing to ensure reliability
 - add functional tests
+- add tk and wx gui frontdends (with editable data tables)
+- rpm and deb packages
 
 --------------------------------------------------------------------------- 
 Scratch

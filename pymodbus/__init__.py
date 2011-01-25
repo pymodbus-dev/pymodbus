@@ -2,23 +2,6 @@
 Pymodbus: Modbus Protocol Implementation
 -----------------------------------------
 
-This package can supply modbus clients and servers:
-
-client:
-
-- Can perform single get/set on discretes and registers
-- Can perform multiple get/set on discretes and registers
-- Working on diagnostic/file/pipe/setting/info requets
-- Can fully scrape a host to be cloned
-
-server:
-
-- Can function as a fully implemented TCP modbus server
-- complete server control context
-- complete serial communication
-- working RTU/ASCII
-- Can mimic a server based on the supplied input data
-
 TwistedModbus is built on top of the Pymodbus developed from code by:
 
     Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
@@ -37,9 +20,12 @@ __author__  = 'Galen Collins'
 # Block unhandled logging
 #---------------------------------------------------------------------------#
 import logging
-class NullHandler(logging.Handler):
-    def emit(self, record):
-        pass
+try:
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
 
 h = NullHandler()
 logging.getLogger("pymodbus").addHandler(h)

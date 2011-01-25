@@ -1,3 +1,6 @@
+'''
+Note that this is not finished
+'''
 #!/usr/bin/python
 #---------------------------------------------------------------------------#
 # System
@@ -10,10 +13,10 @@ from threading import Thread
 #---------------------------------------------------------------------------#
 # For Gui
 #---------------------------------------------------------------------------#
-from twisted.internet import gtk2reactor
-gtk2reactor.install()
-import gtk
-from gtk import glade
+import Tkinter
+from twisted.internet import tksupport
+root = Tkinter.Tk()
+tksupport.install(root)
 
 #---------------------------------------------------------------------------#
 # SNMP Simulator
@@ -127,36 +130,10 @@ class NetworkReset(Thread):
 #---------------------------------------------------------------------------#
 # Main Gui Class
 #---------------------------------------------------------------------------#
-# Note, if you are using gtk2 before 2.12, the file_set signal is not
-# introduced.  To fix this, you need to apply the following patch
-#---------------------------------------------------------------------------#
-#Index: simulator.py
-#===================================================================
-#--- simulator.py       (revision 60)
-#+++ simulator.py       (working copy)
-#@@ -158,7 +161,7 @@
-#                       "on_helpBtn_clicked"    : self.help_clicked,
-#                       "on_quitBtn_clicked"    : self.close_clicked,
-#                       "on_startBtn_clicked"   : self.start_clicked,
-#-                      "on_file_changed"       : self.file_changed,
-#+                      #"on_file_changed"      : self.file_changed,
-#                       "on_window_destroy"     : self.close_clicked
-#               }
-#               self.tree.signal_autoconnect(actions)
-#@@ -235,6 +238,7 @@
-#                       return False
-#
-#               # check input file
-#+              self.file_changed(self.tdevice)
-#               if os.path.exists(self.file):
-#                       self.grey_out()
-#                       handle = Simulator(config=self.file)
-#---------------------------------------------------------------------------#
-class SimulatorApp(object):
+class SimulatorFrame(wx.Frame):
     '''
     This class implements the GUI for the flasher application
     '''
-    file = "none"
     subnet = 205
     number = 1
     restart = 0
@@ -167,24 +144,24 @@ class SimulatorApp(object):
         #---------------------------------------------------------------------------#
         # Action Handles
         #---------------------------------------------------------------------------#
-        self.tree    = glade.XML(xml)
-        self.bstart  = self.tree.get_widget("startBtn")
-        self.bhelp   = self.tree.get_widget("helpBtn")
-        self.bclose  = self.tree.get_widget("quitBtn")
-        self.window  = self.tree.get_widget("window")
-        self.tdevice = self.tree.get_widget("fileTxt")
-        self.tsubnet = self.tree.get_widget("addressTxt")
-        self.tnumber = self.tree.get_widget("deviceTxt")
+        self.tree       = glade.XML(xml)
+        self.bstart     = self.tree.get_widget("startBtn")
+        self.bhelp      = self.tree.get_widget("helpBtn")
+        self.bclose     = self.tree.get_widget("quitBtn")
+        self.window     = self.tree.get_widget("window")
+        self.tdevice    = self.tree.get_widget("fileTxt")
+        self.tsubnet    = self.tree.get_widget("addressTxt")
+        self.tnumber    = self.tree.get_widget("deviceTxt")
 
         #---------------------------------------------------------------------------#
         # Actions
         #---------------------------------------------------------------------------#
         actions = {
-            "on_helpBtn_clicked"  : self.help_clicked,
-            "on_quitBtn_clicked"  : self.close_clicked,
-            "on_startBtn_clicked" : self.start_clicked,
-            "on_file_changed"     : self.file_changed,
-            "on_window_destroy"   : self.close_clicked
+            "on_helpBtn_clicked"    : self.help_clicked,
+            "on_quitBtn_clicked"    : self.close_clicked,
+            "on_startBtn_clicked"   : self.start_clicked,
+            "on_file_changed"       : self.file_changed,
+            "on_window_destroy"     : self.close_clicked
         }
         self.tree.signal_autoconnect(actions)
         if not root_test():
@@ -213,11 +190,11 @@ class SimulatorApp(object):
     def error_dialog(self, message, quit=False):
         ''' Quick pop-up for error messages '''
         dialog = gtk.MessageDialog(
-            parent         = self.window,
-            flags          = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-            type           = gtk.MESSAGE_ERROR,
-            buttons        = gtk.BUTTONS_CLOSE,
-            message_format = message)
+            parent          = self.window,
+            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
+            type            = gtk.MESSAGE_ERROR,
+            buttons         = gtk.BUTTONS_CLOSE,
+            message_format  = message)
         dialog.set_title('Error')
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
@@ -294,6 +271,21 @@ class SimulatorApp(object):
         ''' Callback for the filename change '''
         self.file = widget.get_filename()
 
+class SimulatorApp(wx.App):
+    ''' The main wx application handle for our simulator
+    '''
+
+    def onInit(self):
+        ''' Called by wxWindows to initialize our application
+
+        :returns: Always True
+        '''
+        frame = SimulatorFrame(None, -1, "Pymodbus Simulator")
+        frame.show(True)
+
+        self.SetTopWindow(frame)
+        return True
+
 #---------------------------------------------------------------------------#
 # Main handle function
 #---------------------------------------------------------------------------#
@@ -312,7 +304,7 @@ def main():
     	    logging.basicConfig()
         except Exception, e:
     	    print "Logging is not supported on this system"
-    simulator = SimulatorApp('./simulator.glade')
+    simulator = SimulatorApp(0)
     reactor.run()
 
 #---------------------------------------------------------------------------#

@@ -273,6 +273,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
+        address = address + 1 # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.__mapping[fx].validate(address, count)
 
@@ -284,6 +285,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
+        address = address + 1 # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.__mapping[fx].getValues(address, count)
 
@@ -294,6 +296,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
+        address = address + 1 # section 4.4 of specification
         _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
         self.__mapping[fx].setValues(address, values)
 

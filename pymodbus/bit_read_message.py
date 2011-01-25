@@ -147,7 +147,6 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         values = context.getValues(self.function_code, self.address, self.count)
         return ReadCoilsResponse(values)
 
-
 class ReadCoilsResponse(ReadBitsResponseBase):
     '''
     The coils in the response message are packed as one coil per bit of

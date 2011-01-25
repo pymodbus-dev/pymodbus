@@ -3,11 +3,9 @@
 #---------------------------------------------------------------------------# 
 # the various server implementations
 #---------------------------------------------------------------------------# 
-from pymodbus.server.sync import StartTcpServer, StartUdpServer
-from pymodbus.server.sync import StartSerialServer
-from pymodbus.server.async import StartTcpServer as StartATcpServer
-from pymodbus.server.async import StartUdpServer as StartAUdpServer
-from pymodbus.server.async import StartSerialServer as StartASerialServer
+from pymodbus.server.async import StartTcpServer
+from pymodbus.server.async import StartUdpServer
+from pymodbus.server.async import StartSerialServer
 
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -33,6 +31,6 @@ context = ModbusServerContext(slaves=store, single=True)
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-#StartATcpServer(context)
-#StartSerialServer(context, port='/dev/ptmx')
-StartSerialServer(context, port='/tmp/tty1')
+StartTcpServer(context)
+#StartUdpServer(context)
+#StartSerialServer(context, port='/tmp/tty1')

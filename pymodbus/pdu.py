@@ -52,7 +52,6 @@ class ModbusPDU(object):
 
         :raises: A not implemented exception
         '''
-        _logger.error("Method not implemented")
         raise NotImplementedException()
 
     def decode(self, data):
@@ -61,7 +60,6 @@ class ModbusPDU(object):
         :param data: is a string object
         :raises: A not implemented exception
         '''
-        _logger.error("Method not implemented")
         raise NotImplementedException()
 
 class ModbusRequest(ModbusPDU):

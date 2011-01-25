@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Pymodbus Asynchrnonous Client Examples
 --------------------------------------------------------------------------
@@ -5,7 +6,6 @@ Pymodbus Asynchrnonous Client Examples
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus.
 '''
-#!/usr/bin/env python
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 

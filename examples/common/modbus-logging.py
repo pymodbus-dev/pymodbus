@@ -1,8 +1,8 @@
+#!/usr/bin/env python
 '''
 Pymodbus Logging Examples
 --------------------------------------------------------------------------
 '''
-#!/usr/bin/env python
 import logging
 import logging.handlers as Handlers
 

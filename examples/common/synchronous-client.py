@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Pymodbus Synchrnonous Client Examples
 --------------------------------------------------------------------------
@@ -12,7 +13,6 @@ the guard construct that is available in python 2.5 and up::
         result = client.read_coils(1,10)
         print result
 '''
-#!/usr/bin/env python
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 

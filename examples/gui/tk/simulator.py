@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 '''
 Note that this is not finished
 '''
-#!/usr/bin/python
 #---------------------------------------------------------------------------#
 # System
 #---------------------------------------------------------------------------#
@@ -13,9 +13,10 @@ from threading import Thread
 #---------------------------------------------------------------------------#
 # For Gui
 #---------------------------------------------------------------------------#
-import Tkinter
+from Tkinter import *
+from tkFileDialog import askopenfilename as OpenFilename
 from twisted.internet import tksupport
-root = Tkinter.Tk()
+root = Tk()
 tksupport.install(root)
 
 #---------------------------------------------------------------------------#
@@ -37,13 +38,7 @@ log = logging.getLogger("pymodbus")
 #---------------------------------------------------------------------------#
 class ConfigurationException(Exception):
     ''' Exception for configuration error '''
-
-    def __init__(self, string):
-        Exception.__init__(self, string)
-        self.string = string
-
-    def __str__(self):
-        return 'Configuration Error: %s' % self.string
+    pass
 
 #---------------------------------------------------------------------------#
 # Extra Global Functions
@@ -98,7 +93,7 @@ class Simulator(object):
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print 'listening on port', port
+                log.info('listening on port %d' % port)
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -130,56 +125,83 @@ class NetworkReset(Thread):
 #---------------------------------------------------------------------------#
 # Main Gui Class
 #---------------------------------------------------------------------------#
-class SimulatorFrame(wx.Frame):
+class SimulatorFrame(Frame):
     '''
     This class implements the GUI for the flasher application
     '''
-    subnet = 205
-    number = 1
+    subnet  = 205
+    number  = 1
     restart = 0
 
-    def __init__(self, xml):
+    def __init__(self, master, font):
         ''' Sets up the gui, callback, and widget handles '''
+        Frame.__init__(self, master)
+        self._widgets = []
 
         #---------------------------------------------------------------------------#
-        # Action Handles
+        # Initialize Buttons Handles
         #---------------------------------------------------------------------------#
-        self.tree       = glade.XML(xml)
-        self.bstart     = self.tree.get_widget("startBtn")
-        self.bhelp      = self.tree.get_widget("helpBtn")
-        self.bclose     = self.tree.get_widget("quitBtn")
-        self.window     = self.tree.get_widget("window")
-        self.tdevice    = self.tree.get_widget("fileTxt")
-        self.tsubnet    = self.tree.get_widget("addressTxt")
-        self.tnumber    = self.tree.get_widget("deviceTxt")
+        frame = Frame(self)
+        frame.pack(side=BOTTOM, pady=5)
+
+        button = Button(frame, text="Apply", command=self.start_clicked, font=font)
+        button.pack(side=LEFT, padx=15)
+        self._widgets.append(button)
+
+        button = Button(frame, text="Help",  command=self.help_clicked, font=font)
+        button.pack(side=LEFT, padx=15)
+        self._widgets.append(button)
+
+        button = Button(frame, text="Close", command=self.close_clicked, font=font)
+        button.pack(side=LEFT, padx=15)
+        #self._widgets.append(button) # we don't want to grey this out
 
         #---------------------------------------------------------------------------#
-        # Actions
+        # Initialize Input Fields
         #---------------------------------------------------------------------------#
-        actions = {
-            "on_helpBtn_clicked"    : self.help_clicked,
-            "on_quitBtn_clicked"    : self.close_clicked,
-            "on_startBtn_clicked"   : self.start_clicked,
-            "on_file_changed"       : self.file_changed,
-            "on_window_destroy"     : self.close_clicked
-        }
-        self.tree.signal_autoconnect(actions)
-        if not root_test():
-            self.error_dialog("This program must be run with root permissions!", True)
+        frame = Frame(self)
+        frame.pack(side=TOP, padx=10, pady=5)
+
+        self.tsubnet_value = StringVar()
+        label = Label(frame, text="Starting Address", font=font)
+        label.grid(row=0, column=0, pady=10)
+        entry = Entry(frame, textvariable=self.tsubnet_value, font=font)
+        entry.grid(row=0, column=1, pady=10)
+        self._widgets.append(entry)
+
+        self.tdevice_value = StringVar()
+        label = Label(frame, text="Device to Simulate", font=font)
+        label.grid(row=1, column=0, pady=10)
+        entry = Entry(frame, textvariable=self.tdevice_value, font=font)
+        entry.grid(row=1, column=1, pady=10)
+        self._widgets.append(entry)
+
+        image = PhotoImage(file='fileopen.gif')
+        button = Button(frame, image=image, command=self.file_clicked)
+        button.image = image
+        button.grid(row=1, column=2, pady=10)
+        self._widgets.append(button)
+
+        self.tnumber_value = StringVar()
+        label = Label(frame, text="Number of Devices", font=font)
+        label.grid(row=2, column=0, pady=10)
+        entry = Entry(frame, textvariable=self.tnumber_value, font=font)
+        entry.grid(row=2, column=1, pady=10)
+        self._widgets.append(entry)
+
+        #if not root_test():
+        #    self.error_dialog("This program must be run with root permissions!", True)
 
 #---------------------------------------------------------------------------#
 # Gui helpers
 #---------------------------------------------------------------------------#
 # Not callbacks, but used by them
 #---------------------------------------------------------------------------#
-    def show_buttons(self, state=False, all=0):
+    def show_buttons(self, state=False):
         ''' Greys out the buttons '''
-        if all:
-            self.window.set_sensitive(state)
-        self.bstart.set_sensitive(state)
-        self.tdevice.set_sensitive(state)
-        self.tsubnet.set_sensitive(state)
-        self.tnumber.set_sensitive(state)
+        state = 'active' if state else 'disabled'
+        for widget in self._widgets:
+            widget.configure(state=state)
 
     def destroy_interfaces(self):
         ''' This is used to reset the virtual interfaces '''
@@ -198,8 +220,7 @@ class SimulatorFrame(wx.Frame):
         dialog.set_title('Error')
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
-        else:
-            dialog.connect("response", lambda w, r: w.destroy())
+        else: dialog.connect("response", lambda w, r: w.destroy())
         dialog.show()
 
 #---------------------------------------------------------------------------#
@@ -207,13 +228,13 @@ class SimulatorFrame(wx.Frame):
 #---------------------------------------------------------------------------#
 # These are all callbacks for the various buttons
 #---------------------------------------------------------------------------#
-    def start_clicked(self, widget):
+    def start_clicked(self):
         ''' Starts the simulator '''
         start = 1
         base = "172.16"
 
         # check starting network
-        net = self.tsubnet.get_text()
+        net = self.tsubnet_value.get()
         octets = net.split('.')
         if len(octets) == 4:
             base = "%s.%s" % (octets[0], octets[1])
@@ -224,7 +245,7 @@ class SimulatorFrame(wx.Frame):
             return False
 
         # check interface size
-        size = int(self.tnumber.get_text())
+        size = int(self.tnumber_value.get())
         if (size >= 1):
             for i in range(start, (size + start)):
                 j = i % 255
@@ -237,10 +258,11 @@ class SimulatorFrame(wx.Frame):
             return False
 
         # check input file
-        if os.path.exists(self.file):
+        filename = self.tdevice_value.get()
+        if os.path.exists(filename):
             self.show_buttons(state=False)
             try:
-                handle = Simulator(config=self.file)
+                handle = Simulator(config=filename)
                 handle.run()
             except ConfigurationException, ex:
                 self.error_dialog("Error %s" % ex)
@@ -249,7 +271,7 @@ class SimulatorFrame(wx.Frame):
             self.error_dialog("Device to emulate does not exist!");
             return False
 
-    def help_clicked(self, widget):
+    def help_clicked(self):
         ''' Quick pop-up for about page '''
         data = gtk.AboutDialog()
         data.set_version("0.1")
@@ -262,29 +284,29 @@ class SimulatorFrame(wx.Frame):
         data.connect("response", lambda w,r: w.hide())
         data.run()
 
-    def close_clicked(self, widget):
+    def close_clicked(self):
         ''' Callback for close button '''
-        self.destroy_interfaces()
-        reactor.stop()          # quit twisted
+        #self.destroy_interfaces()
+        reactor.stop()
 
-    def file_changed(self, widget):
+    def file_clicked(self):
         ''' Callback for the filename change '''
-        self.file = widget.get_filename()
+        file = OpenFilename()
+        self.tdevice_value.set(file)
 
-class SimulatorApp(wx.App):
+class SimulatorApp(object):
     ''' The main wx application handle for our simulator
     '''
 
-    def onInit(self):
-        ''' Called by wxWindows to initialize our application
-
-        :returns: Always True
+    def __init__(self, master):
         '''
-        frame = SimulatorFrame(None, -1, "Pymodbus Simulator")
-        frame.show(True)
+        Called by wxWindows to initialize our application
 
-        self.SetTopWindow(frame)
-        return True
+        :param master: The master window to connect to
+        '''
+        font  = ('Helvetica', 12, 'normal')
+        frame = SimulatorFrame(master, font)
+        frame.pack()
 
 #---------------------------------------------------------------------------#
 # Main handle function
@@ -304,7 +326,8 @@ def main():
     	    logging.basicConfig()
         except Exception, e:
     	    print "Logging is not supported on this system"
-    simulator = SimulatorApp(0)
+    simulator = SimulatorApp(root)
+    root.title("Modbus Simulator")
     reactor.run()
 
 #---------------------------------------------------------------------------#

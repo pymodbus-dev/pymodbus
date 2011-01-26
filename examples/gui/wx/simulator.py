@@ -13,9 +13,9 @@ from threading import Thread
 #---------------------------------------------------------------------------#
 # For Gui
 #---------------------------------------------------------------------------#
+import wx
 from twisted.internet import wxreactor
 wxreactor.install()
-import wx
 
 #---------------------------------------------------------------------------#
 # SNMP Simulator
@@ -36,13 +36,7 @@ log = logging.getLogger("pymodbus")
 #---------------------------------------------------------------------------#
 class ConfigurationException(Exception):
     ''' Exception for configuration error '''
-
-    def __init__(self, string):
-        Exception.__init__(self, string)
-        self.string = string
-
-    def __str__(self):
-        return 'Configuration Error: %s' % self.string
+    pass
 
 #---------------------------------------------------------------------------#
 # Extra Global Functions
@@ -119,6 +113,7 @@ class NetworkReset(Thread):
     remove all the virtual interfaces)
     '''
     def __init__(self):
+        ''' Initializes a new instance of the network reset thread '''
         Thread.__init__(self)
         self.setDaemon(True)
 
@@ -137,37 +132,39 @@ class SimulatorFrame(wx.Frame):
     number = 1
     restart = 0
 
-    def __init__(self, xml):
+    def __init__(self, parent, id, title):
         '''
         Sets up the gui, callback, and widget handles
         '''
-        wx.Frame.__init__(self, parent=None, title="Pymodbus Simulator")
+        wx.Frame.__init__(self, parent, id, title)
+        wx.EVT_CLOSE(self, self.close_clicked)
 
         #---------------------------------------------------------------------------#
-        # Action Handles
+        # Add button row
         #---------------------------------------------------------------------------#
-        self.tree       = glade.XML(xml)
-        self.bstart     = self.tree.get_widget("startBtn")
-        self.bhelp      = self.tree.get_widget("helpBtn")
-        self.bclose     = self.tree.get_widget("quitBtn")
-        self.window     = self.tree.get_widget("window")
-        self.tdevice    = self.tree.get_widget("fileTxt")
-        self.tsubnet    = self.tree.get_widget("addressTxt")
-        self.tnumber    = self.tree.get_widget("deviceTxt")
+        panel = wx.Panel(self, -1)
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(wx.Button(panel, 1, 'Apply'), 1)
+        box.Add(wx.Button(panel, 2, 'Help'),  1)
+        box.Add(wx.Button(panel, 3, 'Close'), 1)
+        panel.SetSizer(box)
 
         #---------------------------------------------------------------------------#
-        # Actions
+        # Add input boxes
         #---------------------------------------------------------------------------#
-        actions = {
-                "on_helpBtn_clicked"    : self.help_clicked,
-                "on_quitBtn_clicked"    : self.close_clicked,
-                "on_startBtn_clicked"   : self.start_clicked,
-                "on_file_changed"       : self.file_changed,
-                "on_window_destroy"     : self.close_clicked
-        }
-        self.tree.signal_autoconnect(actions)
-        if not root_test():
-            self.error_dialog("This program must be run with root permissions!", True)
+        #self.tdevice    = self.tree.get_widget("fileTxt")
+        #self.tsubnet    = self.tree.get_widget("addressTxt")
+        #self.tnumber    = self.tree.get_widget("deviceTxt")
+
+        #---------------------------------------------------------------------------#
+        # Tie callbacks
+        #---------------------------------------------------------------------------#
+        self.Bind(wx.EVT_BUTTON, self.start_clicked, id=1)
+        self.Bind(wx.EVT_BUTTON, self.help_clicked,  id=2)
+        self.Bind(wx.EVT_BUTTON, self.close_clicked, id=3)
+
+        #if not root_test():
+        #    self.error_dialog("This program must be run with root permissions!", True)
 
 #---------------------------------------------------------------------------#
 # Gui helpers
@@ -191,18 +188,12 @@ class SimulatorFrame(wx.Frame):
 
     def error_dialog(self, message, quit=False):
         ''' Quick pop-up for error messages '''
-        dialog = gtk.MessageDialog(
-            parent          = self.window,
-            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-            type            = gtk.MESSAGE_ERROR,
-            buttons         = gtk.BUTTONS_CLOSE,
-            message_format  = message)
-        dialog.set_title('Error')
-        if quit:
-            dialog.connect("response", lambda w, r: gtk.main_quit())
-        else:
-            dialog.connect("response", lambda w, r: w.destroy())
-        dialog.show()
+        log.debug("error event called")
+        dialog = wx.MessageDialog(self, message, 'Error',
+            wx.OK | wx.ICON_ERROR)
+        dialog.ShowModel()
+        if quit: self.Destroy()
+        dialog.Destroy()
 
 #---------------------------------------------------------------------------#
 # Button Actions
@@ -264,12 +255,12 @@ class SimulatorFrame(wx.Frame):
         data.connect("response", lambda w,r: w.hide())
         data.run()
 
-    def close_clicked(self, widget):
+    def close_clicked(self, event):
         ''' Callback for close button '''
-        self.destroy_interfaces()
-        reactor.stop()          # quit twisted
+        log.debug("close event called")
+        reactor.stop()
 
-    def file_changed(self, widget):
+    def file_changed(self, event):
         ''' Callback for the filename change '''
         self.file = widget.get_filename()
 
@@ -277,16 +268,17 @@ class SimulatorApp(wx.App):
     ''' The main wx application handle for our simulator
     '''
 
-    def onInit(self):
+    def OnInit(self):
         ''' Called by wxWindows to initialize our application
 
         :returns: Always True
         '''
-        frame = SimulatorFrame(None, -1, "Pymodbus Simulator")
-        frame.show(True)
-
-        self.SetTopWindow(frame)
+        log.debug("application initialize event called")
         reactor.registerWxApp(self)
+        frame = SimulatorFrame(None, -1, "Pymodbus Simulator")
+        frame.CenterOnScreen()
+        frame.Show(True)
+        self.SetTopWindow(frame)
         return True
 
 #---------------------------------------------------------------------------#
@@ -307,7 +299,7 @@ def main():
     	    logging.basicConfig()
         except Exception, e:
     	    print "Logging is not supported on this system"
-    simulator = SimulatorApp(False)
+    simulator = SimulatorApp(0)
     reactor.run()
 
 #---------------------------------------------------------------------------#

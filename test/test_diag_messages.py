@@ -105,6 +105,15 @@ class SimpleDataStoreTest(unittest.TestCase):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataRequest([0x0000]*2)
         self.assertEqual(message.encode(), '\x00\x00\x00\x00\x00\x00');
+        message = ReturnQueryDataRequest(0x0000)
+        self.assertEqual(message.encode(), '\x00\x00\x00\x00');
+
+    def testReturnQueryDataResponse(self):
+        ''' Testing diagnostic message execution '''
+        message = ReturnQueryDataResponse([0x0000]*2)
+        self.assertEqual(message.encode(), '\x00\x00\x00\x00\x00\x00');
+        message = ReturnQueryDataResponse(0x0000)
+        self.assertEqual(message.encode(), '\x00\x00\x00\x00');
 
     def testtRestartCommunicationsOption(self):
         ''' Testing diagnostic message execution '''

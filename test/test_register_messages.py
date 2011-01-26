@@ -104,6 +104,11 @@ class RegisterMessagesTest(unittest.TestCase):
         for request, response in self.rwrite.iteritems():
             self.assertEqual(request.encode(), response)
 
+    def testSerializingToString(self):
+        ''' Test register write request encoding '''
+        for request in self.rwrite.keys() + self.rread.keys():
+            self.assertTrue(str(request) != None)
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

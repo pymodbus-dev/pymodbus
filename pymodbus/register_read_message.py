@@ -274,7 +274,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        params = (self.raddress, self.rcount, self.waddress, self.wcount)
+        params = (self.raddress, self.rcount, self.waddress, self.wbyte_count)
         return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):

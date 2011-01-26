@@ -74,10 +74,10 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         #if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
         #    return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address):
+        if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        context.setValues(self.function_code, self.address, value)
+        context.setValues(self.function_code, self.address, self.value)
         values = context.getValues(self.function_code, self.address)
         return WriteSingleCoilResponse(self.address, values[0])
 
@@ -154,6 +154,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
             raise ParameterException('No values specified to write')
         elif not hasattr(values, '__iter__'): values = [values]
         self.values  = values
+        self.byte_count = (len(self.values) + 7) / 8
 
     def encode(self):
         ''' Encodes write coils request
@@ -183,7 +184,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         '''
         count = len(self.values)
         if not (1 <= count <= 0x07b0):
-            return self.createExceptionResponse(merror.IllegalValue)
+            return self.doException(merror.IllegalValue)
         if (self.byte_count != (count + 7) / 8):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):

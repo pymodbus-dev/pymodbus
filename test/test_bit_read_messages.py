@@ -11,7 +11,6 @@ import unittest, struct
 from pymodbus.bit_read_message import *
 from pymodbus.bit_read_message import ReadBitsRequestBase
 from pymodbus.bit_read_message import ReadBitsResponseBase
-from pymodbus.bit_write_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
@@ -19,11 +18,15 @@ from pymodbus.pdu import ModbusExceptions
 # Mocks
 #---------------------------------------------------------------------------#
 class Context(object):
-    def validate(self, a,b,c):
+
+    def validate(self, *args, **kwargs):
         return False
 
-    def getValues(self, a, b, count):
+    def getValues(self, code, addr, count=1):
         return [True] * count
+
+    def setValues(self, *args, **kwargs):
+        pass
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -44,10 +47,6 @@ class ModbusBitMessageTests(unittest.TestCase):
     def tearDown(self):
         ''' Cleans up the test environment '''
         pass
-
-    #-----------------------------------------------------------------------#
-    # Read Tests
-    #-----------------------------------------------------------------------#
 
     def testReadBitBaseClassMethods(self):
         ''' Test basic bit message encoding/decoding '''
@@ -115,8 +114,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalAddress,
-                result.exception_code)
+            self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
 
     def testBitReadMessageExecuteSuccess(self):
         ''' Test bit read request encoding '''
@@ -129,29 +127,6 @@ class ModbusBitMessageTests(unittest.TestCase):
         for request in requests:
             result = request.execute(context)
             self.assertEqual(result.bits, [True] * 5)
-
-    #-----------------------------------------------------------------------#
-    # Write Tests
-    #-----------------------------------------------------------------------#
-
-    def testBitWriteBaseRequests(self):
-        ''' Test bit write request encoding '''
-        messages = {
-            WriteSingleCoilRequest(1, 0xabcd)      : '\x00\x01\xff\x00',
-            WriteSingleCoilResponse(1, 0xabcd)     : '\x00\x01\xff\x00',
-            WriteMultipleCoilsRequest(1, [True]*5) : '\x00\x01\x00\x05\x01\x1f',
-            WriteMultipleCoilsResponse(1, 5)       : '\x00\x01\x00\x05',
-        }
-        for request, expected in messages.iteritems():
-            self.assertEqual(request.encode(), expected)
-
-    def testWriteMultipleCoilsRequest(self):
-        ''' Test bit write request encoding '''
-        request = WriteMultipleCoilsRequest(1, [True]*5)
-        request.decode('\x00\x01\x00\x05\x01\x1f')
-        self.assertEqual(request.byte_count, 1)
-        self.assertEqual(request.address, 1)
-        self.assertEqual(request.values, [True]*5)
 
 #---------------------------------------------------------------------------#
 # Main

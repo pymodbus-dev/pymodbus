@@ -137,20 +137,21 @@ class EnteredListenModeEvent(ModbusEvent):
     '''
 
     value = 0x04
+    __encoded = '\x04'
 
     def encode(self):
         ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
         '''
-        return self.value
+        return self.__encoded
 
     def decode(self, event):
         ''' Decodes the event message to its status bits
 
         :param event: The event to decode
         '''
-        if event != self.value:
+        if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
 
 class CommunicationRestartEvent(ModbusEvent):
@@ -171,20 +172,21 @@ class CommunicationRestartEvent(ModbusEvent):
     '''
 
     value = 0x00
+    __encoded = '\x00'
 
     def encode(self):
         ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
         '''
-        return self.value
+        return self.__encoded
 
     def decode(self, event):
         ''' Decodes the event message to its status bits
 
         :param event: The event to decode
         '''
-        if event != self.value:
+        if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
             
 

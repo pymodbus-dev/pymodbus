@@ -2,7 +2,6 @@
 Register Reading Request/Response
 ---------------------------------
 '''
-
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
@@ -77,7 +76,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack('>H', data[i:i+2])[0])
 
-    def getRegValue(self, index):
+    def getRegister(self, index):
         ''' Get the requested register
 
         :param index: The indexed register to retrieve
@@ -205,34 +204,33 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 23
 
-    def __init__(self, raddress=None, rcount=None, waddress=None, wcount=None):
+    def __init__(self, read_address, read_count, write_address, write_registers):
         ''' Initializes a new request message
 
-        :param raddress: The address to start reading from
-        :param rcount: The number of registers to read from address
-        :param waddress: The address to start writing to
-        :param wcount: The number of registers to write from address
+        :param read_address: The address to start reading from
+        :param read_count: The number of registers to read from address
+        :param write_address: The address to start writing to
+        :param write_registers: The registers to write to the specified address
         '''
         ModbusRequest.__init__(self)
-        self.raddress = raddress
-        self.rcount   = rcount
-        self.waddress = waddress
-        self.wbyte_count = 0
-        if wcount != None and wcount > 0:
-            self.wregisters = [0] * wcount
-        else: self.wregisters = []
+        self.read_address  = read_address
+        self.read_count    = read_count
+        self.write_address = write_address
+        self.write_registers = write_registers
+        if not hasattr(write_registers, '__iter__'):
+            self.write_registers = [write_registers]
+        self.write_count = len(self.write_registers)
+        self.write_byte_count = self.write_count * 2
 
     def encode(self):
         ''' Encodes the request packet
 
         :returns: The encoded packet
         '''
-        wcount = len(self.wregisters)
         result = struct.pack('>HHHHB',
-                self.raddress, self.rcount, \
-                self.waddress, wcount, \
-                wcount*2)
-        for register in self.wregisters:
+                self.read_address,  self.read_count, \
+                self.write_address, self.write_count, self.write_byte_count)
+        for register in self.write_registers:
             result += struct.pack('>H', register)
         return result
 
@@ -241,12 +239,13 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.raddress, self.rcount, \
-        self.waddress, wcount, \
-        self.wbyte_count = struct.unpack('>HHHHB', data[:9])
-        self.wregisters = []
-        for i in range(9, self.wbyte_count+9, 2):
-            self.wregisters.append(struct.unpack('>H', data[i:i+2])[0])
+        self.read_address, self.read_count, \
+        self.write_address, self.write_count, \
+        self.write_byte_count = struct.unpack('>HHHHB', data[:9])
+        self.write_registers = []
+        for i in range(9, self.write_byte_count + 9, 2):
+            register = struct.unpack('>H', data[i:i+2])[0]
+            self.write_registers.append(register)
 
     def execute(self, context):
         ''' Run a write single register request against a datastore
@@ -254,27 +253,26 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        wcount = len(self.wregisters)
-        if not (1 <= self.rcount <= 0x07d):
+        if not (1 <= self.read_count <= 0x07d):
             return self.doException(merror.IllegalValue)
-        if not (1 <= wcount <= 0x079):
+        if not (1 <= self.write_count <= 0x079):
             return self.doException(merror.IllegalValue)
-        if (self.wbyte_count != wcount * 2):
+        if (self.write_byte_count != self.write_count * 2):
             return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.waddress, wcount):
+        if not context.validate(self.function_code, self.write_address, self.write_count):
             return self.doException(merror.IllegalAddress)
-        if not context.validate(self.function_code, self.raddress, self.rcount):
+        if not context.validate(self.function_code, self.read_address, self.read_count):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.waddress, self.wregisters)
-        rvalues = context.getValues(self.function_code, self.raddress, self.rcount)
-        return ReadWriteMultipleRegistersResponse(rvalues)
+        context.setValues(self.function_code, self.write_address, self.write_registers)
+        registers = context.getValues(self.function_code, self.read_address, self.read_count)
+        return ReadWriteMultipleRegistersResponse(registers)
 
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        params = (self.raddress, self.rcount, self.waddress, self.wbyte_count)
+        params = (self.read_address, self.read_count, self.write_address, self.write_count)
         return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):

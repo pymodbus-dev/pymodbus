@@ -51,11 +51,11 @@ class WriteSingleRegisterRequest(ModbusRequest):
         '''
         if not (0 <= self.value <= 0xffff):
             return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address):
+        if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
         context.setValues(self.function_code, self.address, [self.value])
-        values = context.getValues(self.function_code, self.address)
+        values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
     def __str__(self):
@@ -129,16 +129,16 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         if not values:
             raise ParameterException('No values specified to write')
         elif not hasattr(values, '__iter__'): values = [values]
-        self.values  = values
+        self.values = values
+        self.count = len(self.values)
+        self.byte_count = self.count * 2
 
     def encode(self):
         ''' Encode a write single register packet packet request
 
         :returns: The encoded packet
         '''
-        count = len(self.values)
-        self.byte_count = count * 2
-        packet = struct.pack('>HHB', self.address, count, self.byte_count)
+        packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
         for value in self.values:
             packet += struct.pack('>H', value)
         return packet
@@ -148,9 +148,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.address, count, self.byte_count = struct.unpack('>HHB', data[:5])
+        self.address, self.count, self.byte_count = struct.unpack('>HHB', data[:5])
         self.values = [] # reset
-        for idx in range(5, (count * 2) + 5, 2):
+        for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack('>H', data[idx:idx+2])[0])
 
     def execute(self, context):
@@ -159,23 +159,22 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        count = len(self.values)
-        if not (1 <= count <= 0x07b):
+        if not (1 <= self.count <= 0x07b):
             return self.doException(merror.IllegalValue)
-        if (self.byte_count != count * 2):
+        if (self.byte_count != self.count * 2):
             return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address, count):
+        if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
 
         context.setValues(self.function_code, self.address, self.values)
-        return WriteMultipleRegistersResponse(self.address, count)
+        return WriteMultipleRegistersResponse(self.address, self.count)
 
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        params = (self.address, len(self.values))
+        params = (self.address, self.count)
         return "WriteMultipleRegisterRequest %d => %d" % params
 
 class WriteMultipleRegistersResponse(ModbusResponse):

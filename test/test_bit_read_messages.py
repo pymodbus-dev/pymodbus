@@ -14,19 +14,7 @@ from pymodbus.bit_read_message import ReadBitsResponseBase
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-#---------------------------------------------------------------------------#
-# Mocks
-#---------------------------------------------------------------------------#
-class Context(object):
-
-    def validate(self, *args, **kwargs):
-        return False
-
-    def getValues(self, code, addr, count=1):
-        return [True] * count
-
-    def setValues(self, *args, **kwargs):
-        pass
+from modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -95,7 +83,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadMessageExecuteValueErrors(self):
         ''' Test bit read request encoding '''
-        context = Context()
+        context = MockContext()
         requests = [
             ReadCoilsRequest(1,0x800),
             ReadDiscreteInputsRequest(1,0x800),
@@ -107,7 +95,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadMessageExecuteAddressErrors(self):
         ''' Test bit read request encoding '''
-        context = Context()
+        context = MockContext()
         requests = [
             ReadCoilsRequest(1,5),
             ReadDiscreteInputsRequest(1,5),
@@ -118,7 +106,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadMessageExecuteSuccess(self):
         ''' Test bit read request encoding '''
-        context = Context()
+        context = MockContext()
         context.validate = lambda a,b,c: True
         requests = [
             ReadCoilsRequest(1,5),

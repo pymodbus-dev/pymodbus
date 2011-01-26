@@ -12,15 +12,7 @@ from pymodbus.file_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-#---------------------------------------------------------------------------#
-# Mocks
-#---------------------------------------------------------------------------#
-class Context(object):
-    def validate(self, a,b,c):
-        return False
-
-    def getValues(self, a, b, count):
-        return [True] * count
+from modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -60,14 +52,14 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testReadFifoQueueRequest(self):
         ''' Test basic bit message encoding/decoding '''
-        context = Context()
+        context = MockContext()
         handle  = ReadFifoQueueRequest(0x1234)
         result  = handle.execute(context)
         self.assertTrue(isinstance(result, ReadFifoQueueResponse))
 
     def testReadFifoQueueRequestError(self):
         ''' Test basic bit message encoding/decoding '''
-        context = Context()
+        context = MockContext()
         handle  = ReadFifoQueueRequest(0x1234)
         handle.values = [0x00]*32
         result = handle.execute(context)

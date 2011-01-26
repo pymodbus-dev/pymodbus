@@ -12,25 +12,7 @@ from pymodbus.bit_write_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-#---------------------------------------------------------------------------#
-# Mocks
-#---------------------------------------------------------------------------#
-class Context(object):
-
-    def validate(self, *args, **kwargs):
-        return False
-
-    def getValues(self, code, addr, count=1):
-        return [True] * count
-
-    def setValues(self, *args, **kwargs):
-        pass
-
-class FakeList(object):
-    def __len__(self):
-        return 0x12345678
-    def __iter__(self):
-        return []
+from modbus_mocks import MockContext, FakeList
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -74,40 +56,38 @@ class ModbusBitMessageTests(unittest.TestCase):
             lambda: WriteMultipleCoilsRequest(1, None))
 
     def testWriteSingleCoilExecute(self):
-        context = Context()
-        context.validate = lambda a,b,c: False
+        context = MockContext(False)
         request = WriteSingleCoilRequest(2, True)
         result  = request.execute(context)
-        self.assertEqual(result.function_code, 0x85)
+        self.assertEqual(result.exception_code, ModbusExceptions.IllegalAddress)
 
-        context.validate = lambda a,b,c: True
-        result  = request.execute(context)
+        context.valid = True
+        result = request.execute(context)
         self.assertEqual(result.encode(), '\x00\x02\xff\x00')
 
     def testWriteMultipleCoilsExecute(self):
-        context = Context()
+        context = MockContext(False)
         # too many values
-        request = WriteMultipleCoilsRequest(2, FakeList())
+        request = WriteMultipleCoilsRequest(2, FakeList(0x123456))
         result  = request.execute(context)
-        self.assertEqual(result.exception_code, 0x03)
+        self.assertEqual(result.exception_code, ModbusExceptions.IllegalValue)
 
         # bad byte count
-        request = WriteMultipleCoilsRequest(2, FakeList())
+        request = WriteMultipleCoilsRequest(2, [0x00]*4)
         request.byte_count = 0x00
         result  = request.execute(context)
-        self.assertEqual(result.exception_code, 0x03)
+        self.assertEqual(result.exception_code, ModbusExceptions.IllegalValue)
 
         # does not validate
-        context.validate = lambda a,b,c: False
+        context.valid = False
         request = WriteMultipleCoilsRequest(2, [0x00]*4)
         result  = request.execute(context)
-        self.assertEqual(result.exception_code, 0x02)
+        self.assertEqual(result.exception_code, ModbusExceptions.IllegalAddress)
 
         # validated request
-        context.validate = lambda a,b,c: True
+        context.valid = True
         result  = request.execute(context)
         self.assertEqual(result.encode(), '\x00\x02\x00\x04')
-
 
     def testWriteMultipleCoilsResponse(self):
         response = WriteMultipleCoilsResponse()

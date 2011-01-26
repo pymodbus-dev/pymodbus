@@ -78,7 +78,7 @@ class WriteSingleCoilRequest(ModbusRequest):
             return self.doException(merror.IllegalAddress)
 
         context.setValues(self.function_code, self.address, self.value)
-        values = context.getValues(self.function_code, self.address)
+        values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
     def __str__(self):

@@ -45,4 +45,4 @@ class ModbusCommonClientTests(unittest.TestCase):
         self.assertTrue(isinstance(self.client.write_registers(1,[0x00]), WriteMultipleRegistersRequest))
         self.assertTrue(isinstance(self.client.read_holding_registers(1,1), ReadHoldingRegistersRequest))
         self.assertTrue(isinstance(self.client.read_input_registers(1,1), ReadInputRegistersRequest))
-        self.assertTrue(isinstance(self.client.readwrite_registers(1,1), ReadWriteMultipleRegistersRequest))
+        self.assertTrue(isinstance(self.client.readwrite_registers(1,1,1,1), ReadWriteMultipleRegistersRequest))

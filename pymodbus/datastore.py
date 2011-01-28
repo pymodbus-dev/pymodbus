@@ -117,14 +117,14 @@ class BaseModbusDataBlock(object):
 
         :returns: A string representation of the datastore
         '''
-        return "DataStore(%d, %d)" % (self.address, self.default_value)
+        return "DataStore(%d, %d)" % (len(self.values), self.default_value)
 
     def __iter__(self):
         ''' Iterater over the data block data
 
         :returns: An iterator of the data block data
         '''
-        if isinstance(dict, self.values):
+        if isinstance(self.values, dict):
             return self.values.iteritems()
         return enumerate(self.values)
 
@@ -170,6 +170,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
+        if not isinstance(values, list):
+            values = [values]
         start = address - self.address
         self.values[start:start+len(values)] = values
 
@@ -187,7 +189,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         if isinstance(values, dict):
             self.values = values
         elif isinstance(values, list):
-            self.values = dict([(i,v) for i,v in enumerate(values)])
+            self.values = dict(enumerate(values))
         else: raise ParameterException("Values for datastore must be a list or dictionary")
         self.default_value = self.values.values()[0].__class__()
         self.address = self.values.iterkeys().next()
@@ -199,8 +201,11 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        handle = range(address, address + count)
-        return set(handle).issubset(set(self.values.iterkeys()))
+        result = False
+        if not address == address + count:
+            handle = set(range(address, address + count))
+            result = handle.issubset(set(self.values.iterkeys()))
+        return result
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -217,8 +222,14 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        for idx,val in enumerate(values):
-            self.values[address + idx] = val
+        if isinstance(values, dict):
+            for idx,val in values.iteritems():
+                self.values[idx] = val
+        else:
+            if not isinstance(values, list):
+                values = [values]
+            for idx,val in enumerate(values):
+                self.values[address + idx] = val
 
 #---------------------------------------------------------------------------#
 # Device Data Control
@@ -258,7 +269,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
         :returns: A string representation of the context
         '''
-        return "[Slave Context]\n", [self.co, self.di, self.ir, self.hr]
+        return "Modbus Slave Context"
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
@@ -394,4 +405,5 @@ class ModbusServerContext(object):
 __all__ = [
     "ModbusSequentialDataBlock", "ModbusSparseDataBlock",
     "ModbusSlaveContext", "ModbusServerContext",
+    "ModbusRemoteSlaveContext",
 ]

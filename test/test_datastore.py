@@ -1,8 +1,10 @@
 import unittest
 from pymodbus.datastore import *
-from pymodbus.exceptions import *
+from pymodbus.datastore import BaseModbusDataBlock
+from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import ParameterException
 
-class SimpleDataStoreTest(unittest.TestCase):
+class ModbusDataStoreTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.datastore module
     '''
@@ -16,54 +18,107 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusDataBlock(self):
         ''' Test a base data block store '''
-        pass
+        block = BaseModbusDataBlock()
+        block.default(10, True)
+
+        self.assertNotEqual(str(block), None)
+        self.assertEqual(block.default_value, True)
+        self.assertEqual(block.values, [True]*10)
+
+        block.default_value = False
+        block.reset()
+        self.assertEqual(block.values, [False]*10)
+
+    def testModbusDataBlockIterate(self):
+        ''' Test a base data block store '''
+        block = BaseModbusDataBlock()
+        block.default(10, False)
+        for idx,value in block:
+            self.assertEqual(value, False)
+
+        block.values = {0 : False, 2 : False, 3 : False }
+        for idx,value in block:
+            self.assertEqual(value, False)
+
+    def testModbusDataBlockOther(self):
+        ''' Test a base data block store '''
+        block = BaseModbusDataBlock()
+        self.assertRaises(NotImplementedException, lambda: block.validate(1,1))
+        self.assertRaises(NotImplementedException, lambda: block.getValues(1,1))
+        self.assertRaises(NotImplementedException, lambda: block.setValues(1,1))
 
     def testModbusSequentialDataBlock(self):
         ''' Test a sequential data block store '''
-        pass
+        block = ModbusSequentialDataBlock(0x00, [False]*10)
+        self.assertFalse(block.validate(-1, 0))
+        self.assertFalse(block.validate(0, 20))
+        self.assertFalse(block.validate(10, 1))
+        self.assertTrue(block.validate(0x00, 10))
+
+        block.setValues(0x00, True)
+        self.assertEqual(block.getValues(0x00, 1), [True])
+
+        block.setValues(0x00, [True]*10)
+        self.assertEqual(block.getValues(0x00, 10), [True]*10)
 
     def testModbusSparseDataBlock(self):
         ''' Test a sparse data block store '''
-        pass
+        values = dict(enumerate([True]*10))
+        block = ModbusSparseDataBlock(values)
+        self.assertFalse(block.validate(-1, 0))
+        self.assertFalse(block.validate(0, 20))
+        self.assertFalse(block.validate(10, 1))
+        self.assertTrue(block.validate(0x00, 10))
 
-    def testServerContext(self):
+        block.setValues(0x00, True)
+        self.assertEqual(block.getValues(0x00, 1), [True])
+
+        block.setValues(0x00, [True]*10)
+        self.assertEqual(block.getValues(0x00, 10), [True]*10)
+
+        block.setValues(0x00, dict(enumerate([False]*10)))
+        self.assertEqual(block.getValues(0x00, 10), [False]*10)
+
+    def testModbusSparseDataBlockOther(self):
+        block = ModbusSparseDataBlock([True]*10)
+        self.assertEqual(block.getValues(0x00, 10), [True]*10)
+        self.assertRaises(ParameterException,
+            lambda: ModbusSparseDataBlock(True))
+
+    def testModbusSlaveContext(self):
+        ''' Test a modbus slave context '''
+        store = {
+            'di' : ModbusSequentialDataBlock(0, [False]*10),
+            'co' : ModbusSequentialDataBlock(0, [False]*10),
+            'ir' : ModbusSequentialDataBlock(0, [False]*10),
+            'hr' : ModbusSequentialDataBlock(0, [False]*10),
+        }
+        context = ModbusSlaveContext(**store)
+        self.assertNotEqual(str(context), None)
+        
+        for fx in [1,2,3,4]:
+            context.setValues(fx, 0, [True]*10)
+            self.assertTrue(context.validate(fx, 0,10))
+            self.assertEqual(context.getValues(fx, 0,10), [True]*10)
+        context.reset()
+
+        for fx in [1,2,3,4]:
+            self.assertTrue(context.validate(fx, 0,10))
+            self.assertEqual(context.getValues(fx, 0,10), [False]*10)
+
+    def testModbusRemoteSlaveContext(self):
+        ''' Test a modbus remote slave context '''
+        context = ModbusRemoteSlaveContext(None)
+        self.assertRaises(NotImplementedException, lambda: context.getValues(1,1,1))
+        self.assertRaises(NotImplementedException, lambda: context.setValues(1,1,1))
+        self.assertNotEqual(str(context), None)
+
+    def testModbusServerContext(self):
         ''' Test a modbus server context '''
-        pass
+        context = ModbusServerContext()
 
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#
 if __name__ == "__main__":
     unittest.main()
-
-    #c = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-
-    ## Test Coils
-    ##-----------------------------------------------------------------------#
-    #values = [True]*100
-    #c.setCoilValues(0, values)
-    #result = c.getCoilValues(0, 100)
-
-    #if result == values: print "Coil Store Passed"
-
-    ## Test Discretes
-    ##-----------------------------------------------------------------------#
-    #values = [False]*100
-    #result = c.getDiscreteInputValues(0, 100)
-
-    #if result == values: print "Discrete Store Passed"
-
-    ## Test Holding Registers
-    ##-----------------------------------------------------------------------#
-    #values = [0xab]*100
-    #c.setHoldingRegisterValues(0, values)
-    #result = c.getHoldingRegisterValues(0, 100)
-
-    #if result == values: print "Holding Register Store Passed"
-
-    ## Test Input Registers
-    ##-----------------------------------------------------------------------#
-    #values = [0x00]*100
-    #result = c.getInputRegisterValues(0, 100)
-
-    #if result == values: print "Input Register Store Passed"

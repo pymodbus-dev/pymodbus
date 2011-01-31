@@ -115,7 +115,11 @@ class ModbusDataStoreTest(unittest.TestCase):
 
     def testModbusServerContext(self):
         ''' Test a modbus server context '''
-        context = ModbusServerContext()
+        def _set(ctx):
+            ctx[0xffff] = None
+        context = ModbusServerContext(single=False)
+        self.assertRaises(ParameterException, lambda: _set(context))
+        self.assertRaises(ParameterException, lambda: context[0xffff])
 
 #---------------------------------------------------------------------------#
 # Main

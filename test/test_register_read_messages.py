@@ -7,7 +7,6 @@ register based request/response messages:
 * Read/Write Input Registers
 * Read Holding Registers
 '''
-from mock import MagicMock
 import unittest
 from pymodbus.register_read_message import *
 from pymodbus.register_read_message import ReadRegistersRequestBase
@@ -15,7 +14,7 @@ from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-from modbus_mocks import MockContext
+from modbus_mocks import MockContext, FakeList
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -79,10 +78,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         This tests that the register request messages
         will break on counts that are out of range
         '''
-        mock = MagicMock()
-        mock.__len__.return_value  = 0x800
-        mock.__iter__.return_value = []
-
+        mock = FakeList(0x800)
         requests = [
             ReadHoldingRegistersRequest(1, 0x800),
             ReadInputRegistersRequest(1,0x800),

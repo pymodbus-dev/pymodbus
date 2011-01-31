@@ -29,15 +29,3 @@ class FakeList(object):
 
     def __iter__(self):
         return []
-
-class MagicMock(object):
-    ''' todo, clone mock magic mock '''
-
-    def __init__(self, **kwargs):
-        self.attributes = kwargs
-
-    def __len__(self):
-        return self.size
-
-    def __iter__(self):
-        return []

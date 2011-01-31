@@ -5,10 +5,38 @@ change the version tuple.
 Since we are using twisted's version class, we can also query
 the svn version as well using the local .entries file.
 '''
-from twisted.python import versions
+class Version(object):
 
-_version = versions.Version('pymodbus', 0, 9, 0)
-_version.__name__ = "Pymodbus" # fix epydoc error
+    def __init__(self, package, major, minor, micro):
+        '''
+
+        :param package: Name of the package that this is a version of.
+        :param major: The major version number.
+        :param minor: The minor version number.
+        :param micro: The micro version number.
+        '''
+        self.package = package
+        self.major = major
+        self.minor = minor
+        self.micro = micro
+
+    def short(self):
+        ''' Return a string in canonical short version format
+        <major>.<minor>.<micro>
+        '''
+        return '%d.%d.%d' % (self.major, self.minor, self.micro)
+
+
+    def __str__(self):
+        ''' Returns a string representation of the object
+
+        :returns: A string representation of this object
+        '''
+        return '[%s, version %s]' % (self.package, self.short())
+
+
+_version = Version('pymodbus', 0, 9, 0)
+_version.__name__ = 'pymodbus' # fix epydoc error
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

@@ -7,7 +7,6 @@ register based request/response messages:
 * Read/Write Input Registers
 * Read Holding Registers
 '''
-from mock import MagicMock
 import unittest
 from pymodbus.register_write_message import *
 from pymodbus.exceptions import ParameterException

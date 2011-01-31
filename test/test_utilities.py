@@ -67,8 +67,8 @@ class SimpleUtilityTest(unittest.TestCase):
 
     def testBitPacking(self):
         ''' Test all string <=> bit packing functions '''
-        self.assertEqual(unpack_bitstring('\01U'), (self.bits,1))
-        self.assertEqual(pack_bitstring(self.bits), 'U')
+        self.assertEqual(unpack_bitstring('\x55'), self.bits)
+        self.assertEqual(pack_bitstring(self.bits), '\x55')
 
     def testLongitudinalRedundancyCheck(self):
         ''' Test the longitudinal redundancy check code '''

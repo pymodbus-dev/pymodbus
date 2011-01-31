@@ -77,14 +77,14 @@ def unpack_bitstring(string):
         string[0]   = bytes to follow
         string[1-N] = bytes to decode
     '''
-    byte_count = ord(string[0])
+    byte_count = len(string)
     bits = []
-    for byte in range(1, byte_count+1):
+    for byte in range(byte_count):
         value = ord(string[byte])
         for bit in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
-    return bits, byte_count
+    return bits
 
 #---------------------------------------------------------------------------#
 # Error Detection Functions

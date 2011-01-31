@@ -23,7 +23,7 @@ class ModbusEventsTest(unittest.TestCase):
 
     def testRemoteReceiveEvent(self):
         event = RemoteReceiveEvent()
-        event.decode('\x00\x70')
+        event.decode('\x70')
         self.assertTrue(event.overrun)
         self.assertTrue(event.listen)
         self.assertTrue(event.broadcast)
@@ -32,13 +32,26 @@ class ModbusEventsTest(unittest.TestCase):
         event = RemoteSendEvent()
         result = event.encode()
         self.assertEqual(result, '\x40')
-        event.decode('\x00\x70')
+        event.decode('\x7f')
         self.assertTrue(event.read)
         self.assertTrue(event.slave_abort)
         self.assertTrue(event.slave_busy)
         self.assertTrue(event.slave_nak)
         self.assertTrue(event.write_timeout)
         self.assertTrue(event.listen)
+
+    def testRemoteSentEventEncode(self):
+        arguments = {
+            'read'          : True,
+            'slave_abort'   : True,
+            'slave_busy'    : True,
+            'slave_nak'     : True,
+            'write_timeout' : True,
+            'listen'        : True,
+        }
+        event = RemoteSendEvent(**arguments)
+        result = event.encode()
+        self.assertEqual(result, '\x7f')
 
     def testEnteredListenModeEvent(self):
         event = EnteredListenModeEvent()

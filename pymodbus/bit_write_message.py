@@ -172,8 +172,8 @@ class WriteMultipleCoilsRequest(ModbusRequest):
 
         :param data: The packet data to decode
         '''
-        self.address, count = struct.unpack('>HH', data[0:4])
-        values, self.byte_count = unpack_bitstring(data[4:])
+        self.address, count, self.byte_count = struct.unpack('>HHB', data[0:5])
+        values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
     def execute(self, context):

@@ -348,7 +348,7 @@ class ModbusRemoteSlaveContext(IModbusSlaveContext):
 
         :returns: A string representation of the context
         '''
-        return "Remote Slave Context(%s)", self.client
+        return "Remote Slave Context(%s)" % self.client
 
 class ModbusServerContext(object):
     ''' This represents a master collection of slave contexts.

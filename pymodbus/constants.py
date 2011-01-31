@@ -97,11 +97,21 @@ class ModbusStatus(Singleton):
     .. attribute:: Off
 
        This indicates that the given modbus entity is off
+
+    .. attribute:: SlaveOn
+
+       This indicates that the given modbus slave is running
+
+    .. attribute:: SlaveOff
+
+       This indicates that the given modbus slave is not running
     '''
-    Waiting = 0xffff
-    Ready   = 0x0000
-    On      = 0xff00
-    Off     = 0x0000
+    Waiting  = 0xffff
+    Ready    = 0x0000
+    On       = 0xff00
+    Off      = 0x0000
+    SlaveOn  = 0xff
+    SlaveOff = 0x00
 
 #---------------------------------------------------------------------------# 
 # Exported Identifiers

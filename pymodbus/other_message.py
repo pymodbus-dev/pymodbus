@@ -71,7 +71,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param status: The status response to report
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.status = status
 
     def encode(self):
@@ -86,7 +86,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.status = struct.unpack('>B', data)
+        self.status = struct.unpack('>B', data)[0]
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -144,7 +144,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :returns: The populated response
         '''
         status = _MCB.Counter.Event
-        return GetCommEventCounterResponseResponse(status)
+        return GetCommEventCounterResponse(status)
 
     def __str__(self):
         ''' Builds a representation of the request
@@ -168,7 +168,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :param count: The current event counter value
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.count = count
         self.status = True # this means we are ready, not waiting
 
@@ -274,7 +274,7 @@ class GetCommEventLogResponse(ModbusResponse):
         :param event_count: The current event count
         :param events: The collection of events to send
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.status = kwargs.get('status', True)
         self.message_count = kwargs.get('message_count', 0)
         self.event_count = kwargs.get('event_count', 0)
@@ -297,15 +297,15 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = struct.unpack('>B', data[0])
-        status = struct.unpack('>H', data[1:2])
-        self.status = (status == ModbusStats.Ready)
-        self.event_count = struct.unpack('>H', data[3:4])
-        self.message_count = struct.unpack('>H', data[5:6])
+        length = struct.unpack('>B', data[0])[0]
+        status = struct.unpack('>H', data[1:3])[0]
+        self.status = (status == ModbusStatus.Ready)
+        self.event_count = struct.unpack('>H', data[3:5])[0]
+        self.message_count = struct.unpack('>H', data[5:7])[0]
 
         self.events = []
-        for e in xrange(6, length):
-            self.events.append(struct.unpack('>B', data[6 + e]))
+        for e in xrange(7, length+1):
+            self.events.append(struct.unpack('>B', data[e])[0])
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -347,8 +347,8 @@ class ReportSlaveIdRequest(ModbusRequest):
 
         :returns: The populated response
         '''
-        status = _MCB.getCounterSummary()
-        return ReportSlaveIdResponse(status)
+        identifier = '\x70\x79\x6d\x6f\x64\x62\x75\x73'
+        return ReportSlaveIdResponse(identifier)
 
     def __str__(self):
         ''' Builds a representation of the request
@@ -370,7 +370,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param identifier: The identifier of the slave
         :param status: The status response to report
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.identifier = identifier
         self.status = status
 
@@ -379,16 +379,25 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        status = 0xFF if self.status else 0x00
-        return struct.pack('>BBB', 0x03, self.identifier, self.status)
+        status = ModbusStatus.SlaveOn if self.status else ModbusStatus.SlaveOff
+        length = len(self.identifier) + 2
+        packet = struct.pack('>B', length)
+        packet += self.identifier # we assume it is already encoded
+        packet += struct.pack('>B', self.status)
+        return packet
 
     def decode(self, data):
         ''' Decodes a the response
 
+        Since the identifier is device dependent, we just return the
+        raw value that a user can decode to whatever it should be.
+
         :param data: The packet data to decode
         '''
-        length, self.identifier, status = struct.unpack('>BBB', data)
-        self.status = status == 0xFF
+        length = struct.unpack('>B', data[0])[0]
+        self.identifier = data[1:length-1]
+        status = struct.unpack('>B', data[-1])[0]
+        self.status = status == ModbusStatus.SlaveOn
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -408,5 +417,7 @@ class ReportSlaveIdResponse(ModbusResponse):
 #---------------------------------------------------------------------------# 
 __all__ = [
     "ReadExceptionStatusRequest", "ReadExceptionStatusResponse",
+    "GetCommEventCounterRequest", "GetCommEventCounterResponse",
+    "GetCommEventLogRequest", "GetCommEventLogResponse",
     "ReportSlaveIdRequest", "ReportSlaveIdResponse",
 ]

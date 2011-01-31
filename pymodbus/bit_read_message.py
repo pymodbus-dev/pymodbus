@@ -80,7 +80,8 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.bits, byte_count = unpack_bitstring(data)
+        self.byte_count = struct.unpack(">B", data[0])[0]
+        self.bits = unpack_bitstring(data[1:])
 
     def setBit(self, address, value=1):
         ''' Helper function to set the specified bit

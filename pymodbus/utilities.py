@@ -50,7 +50,7 @@ def pack_bitstring(bits):
 
     example::
 
-        bits = [False, True, False, True]
+        bits   = [False, True, False, True]
         result = pack_bitstring(bits)
     '''
     ret = ''
@@ -74,8 +74,8 @@ def unpack_bitstring(string):
 
     example::
 
-        string[0]   = bytes to follow
-        string[1-N] = bytes to decode
+        bytes  = 'bytes to decode'
+        result = unpack_bitstring(bytes)
     '''
     byte_count = len(string)
     bits = []

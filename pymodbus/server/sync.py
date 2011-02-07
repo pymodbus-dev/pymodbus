@@ -2,11 +2,6 @@
 Implementation of a Threaded Modbus Server
 ------------------------------------------
 
-Example run::
-
-    context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-    server = ModbusTcpServer(store, context, identity)
-    server.serve_forever()
 '''
 from binascii import b2a_hex
 import SocketServer

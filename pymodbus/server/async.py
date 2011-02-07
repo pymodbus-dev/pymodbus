@@ -2,11 +2,6 @@
 Implementation of a Twisted Modbus Server
 ------------------------------------------
 
-Example run::
-
-    context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-    reactor.listenTCP(502, ModbusServerFactory(context))
-    reactor.run()
 '''
 from binascii import b2a_hex
 from twisted.internet import protocol

@@ -2,7 +2,8 @@
 Pymodbus Library API Documentation
 ====================================
 
-Contents:
+*The following are the API documentation strings taken
+from the sourcecode*
 
 .. toctree::
    :maxdepth: 2
@@ -30,11 +31,3 @@ Contents:
    async-server.rst
    transaction.rst
    utilities.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

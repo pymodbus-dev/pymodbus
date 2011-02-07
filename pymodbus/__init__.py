@@ -2,7 +2,7 @@
 Pymodbus: Modbus Protocol Implementation
 -----------------------------------------
 
-TwistedModbus is built on top of the Pymodbus developed from code by:
+TwistedModbus is built on top of the code developed by:
 
     Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
     Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.

@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------
 General
 ---------------------------------------------------------------------------
+- reorganize code into folder namespaces
 - put protocol code in protocol namespace
 - add crc/lrc check on incoming data
 - make framer read header->read header.length
@@ -28,7 +29,7 @@ Utilities
 - (udp/serial) forwarder
 
 ---------------------------------------------------------------------------
-Server Context
+Slave Context
 ---------------------------------------------------------------------------
 - link to other clients (other machines, other instances)
 
@@ -41,10 +42,9 @@ Client
 ---------------------------------------------------------------------------
 Tools
 ---------------------------------------------------------------------------
-- Get 100%ish code coverage with solid unit testing to ensure reliability
 - add functional tests
 - add tk and wx gui frontdends (with editable data tables)
-- rpm and deb packages
+- rpm and deb packages (documentation)
 
 --------------------------------------------------------------------------- 
 Scratch

@@ -52,8 +52,8 @@ class ModbusBitMessageTests(unittest.TestCase):
         self.assertEqual(request.values, [True]*5)
 
     def testInvalidWriteMultipleCoilsRequest(self):
-        self.assertRaises(ParameterException,
-            lambda: WriteMultipleCoilsRequest(1, None))
+        request = WriteMultipleCoilsRequest(1, None)
+        self.assertEquals(request.values, [])
 
     def testWriteSingleCoilExecute(self):
         context = MockContext(False)

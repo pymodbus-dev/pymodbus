@@ -126,8 +126,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        if not values:
-            raise ParameterException('No values specified to write')
+        if not values: values = []
         elif not hasattr(values, '__iter__'): values = [values]
         self.values = values
         self.count = len(self.values)

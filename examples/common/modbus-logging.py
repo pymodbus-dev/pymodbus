@@ -17,10 +17,10 @@ log.setLevel(logging.DEBUG)
 # This will send the error messages in the specified namespace to a file.
 # The available namespaces in pymodbus are as follows:
 #---------------------------------------------------------------------------# 
-# * pymodbus          - The root namespace
-# * pymodbus.server   - all logging messages involving the modbus server
-# * pymodbus.client   - all logging messages involving the client
-# * pymodbus.protocol - all logging messages inside the protocol layer
+# * pymodbus.*          - The root namespace
+# * pymodbus.server.*   - all logging messages involving the modbus server
+# * pymodbus.client.*   - all logging messages involving the client
+# * pymodbus.protocol.* - all logging messages inside the protocol layer
 #---------------------------------------------------------------------------# 
 logging.basicConfig()
 log = logging.getLogger('pymodbus.server')

@@ -21,7 +21,7 @@ from pymodbus.pdu import ModbusExceptions as merror
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger("pymodbus.server")
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Server

@@ -21,7 +21,7 @@ from pymodbus.register_write_message import *
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.protocol')
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Server Decoder

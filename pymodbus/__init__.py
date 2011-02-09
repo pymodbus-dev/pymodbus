@@ -28,5 +28,5 @@ except ImportError:
             pass
 
 h = NullHandler()
-logging.getLogger("pymodbus").addHandler(h)
+logging.getLogger(__name__).addHandler(h)
 

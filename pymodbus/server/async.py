@@ -23,7 +23,7 @@ from pymodbus.internal.ptwisted import InstallManagementConsole
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger("pymodbus.server")
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Server

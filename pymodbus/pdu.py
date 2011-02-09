@@ -9,7 +9,7 @@ from pymodbus.constants import Defaults
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.protocol')
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Base PDU's

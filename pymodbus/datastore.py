@@ -53,7 +53,7 @@ from pymodbus.interfaces import IModbusSlaveContext
 # Logging
 #---------------------------------------------------------------------------#
 import logging;
-_logger = logging.getLogger("pymodbus.protocol")
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Datablock Storage

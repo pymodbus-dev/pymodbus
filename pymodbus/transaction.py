@@ -14,7 +14,7 @@ from pymodbus.utilities  import checkLRC, computeLRC
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.protocol')
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager

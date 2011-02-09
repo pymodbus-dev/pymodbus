@@ -29,7 +29,7 @@ from pymodbus.client.common import ModbusClientMixin
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.client')
+_logger = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Client Protocols

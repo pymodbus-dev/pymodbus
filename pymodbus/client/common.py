@@ -24,76 +24,110 @@ class ModbusClientMixin(object):
        response = client.read_coils(1, 10)
     '''
 
-    def read_coils(self, address, count=1):
+    def read_coils(self, address, count=1, unit=0x00):
         '''
 
+        :param address: The starting address to read from
+        :param count: The number of coils to read
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = ReadCoilsRequest(address, count)
+        request.unit_id = unit
         return self.execute(request)
 
-    def read_discrete_inputs(self, address, count=1):
+    def read_discrete_inputs(self, address, count=1, unit=0x00):
         '''
 
+        :param address: The starting address to read from
+        :param count: The number of discretes to read
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = ReadDiscreteInputsRequest(address, count)
+        request.unit_id = unit
         return self.execute(request)
 
-    def write_coil(self, address, value):
+    def write_coil(self, address, value, unit=0x00):
         '''
 
+        :param address: The starting address to write to
+        :param value: The value to write to the specified address
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = WriteSingleCoilRequest(address, value)
+        request.unit_id = unit
         return self.execute(request)
 
-    def write_coils(self, address, values):
+    def write_coils(self, address, values, unit=0x00):
         '''
 
+        :param address: The starting address to write to
+        :param values: The values to write to the specified address
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = WriteMultipleCoilsRequest(address, values)
+        request.unit_id = unit
         return self.execute(request)
 
-    def write_register(self, address, value):
+    def write_register(self, address, value, unit=0x00):
         '''
 
+        :param address: The starting address to write to
+        :param value: The value to write to the specified address
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = WriteSingleRegisterRequest(address, value)
+        request.unit_id = unit
         return self.execute(request)
 
-    def write_registers(self, address, values):
+    def write_registers(self, address, values, unit=0x00):
         '''
 
+        :param address: The starting address to write to
+        :param values: The values to write to the specified address
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = WriteMultipleRegistersRequest(address, values)
+        request.unit_id = unit
         return self.execute(request)
 
-    def read_holding_registers(self, address, count=1):
+    def read_holding_registers(self, address, count=1, unit=0x00):
         '''
 
+        :param address: The starting address to read from
+        :param count: The number of registers to read
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = ReadHoldingRegistersRequest(address, count)
+        request.unit_id = unit
         return self.execute(request)
 
-    def read_input_registers(self, address, count=1):
+    def read_input_registers(self, address, count=1, unit=0x00):
         '''
 
+        :param address: The starting address to read from
+        :param count: The number of registers to read
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = ReadInputRegistersRequest(address, count)
+        request.unit_id = unit
         return self.execute(request)
 
-    def readwrite_registers(self, *arguments):
+    def readwrite_registers(self, *args, **kwargs):
         '''
 
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = ReadWriteMultipleRegistersRequest(*arguments)
+        request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
+        request.unit_id = kwargs.get('unit', 0x00)
         return self.execute(request)
 
 

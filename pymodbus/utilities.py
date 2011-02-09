@@ -122,7 +122,8 @@ def computeCRC(data):
     for a in data:
         idx = __crc16_table[(crc ^ ord(a)) & 0xff];
         crc = ((crc >> 8) & 0xff) ^ idx
-    return crc
+    swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
+    return swapped
 
 def checkCRC(data, check):
     ''' Checks if the data matches the passed in CRC

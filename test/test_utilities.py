@@ -77,8 +77,8 @@ class SimpleUtilityTest(unittest.TestCase):
 
     def testCyclicRedundancyCheck(self):
         ''' Test the cyclic redundancy check code '''
-        self.assertTrue(checkCRC(self.data, 0xdbe2))
-        self.assertTrue(checkCRC(self.string, 0x9e88))
+        self.assertTrue(checkCRC(self.data, 0xe2db))
+        self.assertTrue(checkCRC(self.string, 0x889e))
 
 #---------------------------------------------------------------------------#
 # Main

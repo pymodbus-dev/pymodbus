@@ -46,7 +46,7 @@ class ModbusTcpProtocol(protocol.Protocol):
 
         :param reason: The client's reason for disconnecting
         '''
-        _logger.debug("Client Disconnected")
+        _logger.debug("Client Disconnected: %s" % reason)
 
     def dataReceived(self, data):
         ''' Callback when we receive any data

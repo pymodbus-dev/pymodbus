@@ -56,10 +56,12 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
-    def connectionLost(self):
+    def connectionLost(self, reason):
         ''' Called upon a client disconnect
+
+        :param reason: The reason for the disconnect
         '''
-        _logger.debug("Client disconnected from modbus server")
+        _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
 
     def dataReceived(self, data):

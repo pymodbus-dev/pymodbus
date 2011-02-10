@@ -112,9 +112,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         ..todo:: Remove this and use the transaction manager
         '''
-        tid = ModbusBaseClientProtocol.__tid
-        ModbusBaseClientProtocol.__tid = (1 +
-            ModbusBaseClientProtocol.__tid) & 0xffff
+        tid = (ModbusClientProtocol.__tid + 1) & 0xffff
+        ModbusClientProtocol.__tid = tid
         return tid
 
     #----------------------------------------------------------------------#

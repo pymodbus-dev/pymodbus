@@ -82,9 +82,8 @@ class ModbusTransactionManager:
         As the transaction identifier is represented with two
         bytes, the highest TID is 0xffff
         '''
-        tid = ModbusTransactionManager.__tid
-        ModbusTransactionManager.__tid = (1 +
-            ModbusTransactionManager.__tid) & 0xffff
+        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
+        ModbusTransactionManager.__tid = tid
         return tid
 
 class BaseModbusClient(ModbusClientMixin):

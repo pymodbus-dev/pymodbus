@@ -1,4 +1,5 @@
 import unittest
+from pymodbus.constants import Defaults
 from pymodbus.bit_read_message import *
 from pymodbus.bit_write_message import *
 from pymodbus.register_read_message import *
@@ -59,3 +60,14 @@ class ModbusAllMessagesTests(unittest.TestCase):
             response = factory(unit_id)
             self.assertEqual(response.unit_id, unit_id)
 
+    def testForwardingKwargsToPdu(self):
+        ''' Test that the kwargs are forwarded to the pdu correctly '''
+        request = ReadCoilsRequest(1,5, unit=0x12, transaction=0x12, protocol=0x12)
+        self.assertEqual(request.unit_id, 0x12)
+        self.assertEqual(request.transaction_id, 0x12)
+        self.assertEqual(request.protocol_id, 0x12)
+
+        request = ReadCoilsRequest(1,5)
+        self.assertEqual(request.unit_id, Defaults.UnitId)
+        self.assertEqual(request.transaction_id, Defaults.TransactionId)
+        self.assertEqual(request.protocol_id, Defaults.ProtocolId)

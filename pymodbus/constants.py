@@ -38,6 +38,12 @@ class Defaults(Singleton):
        The modbus protocol id.  Currently this is set to 0 in all
        but proprietary implementations.
 
+    .. attribute:: UnitId
+
+       The modbus slave addrss.  Currently this is set to 0x00 which
+       means this request should be broadcast to all the slave devices
+       (really means that all the devices should respons).
+
     .. attribute:: Baudrate
 
        The speed at which the data is transmitted over the serial line.
@@ -70,6 +76,7 @@ class Defaults(Singleton):
     Reconnects    = 0
     TransactionId = 0
     ProtocolId    = 0
+    UnitId        = 0x00
     Baudrate      = 19200
     Parity        = 'N'
     Bytesize      = 8

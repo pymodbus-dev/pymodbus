@@ -40,11 +40,11 @@ class ModbusPDU(object):
         This is used for LRC/CRC in the serial modbus protocols
     '''
 
-    def __init__(self, unit=0x00):
+    def __init__(self, **kwargs):
         ''' Initializes the base data for a modbus request '''
-        self.transaction_id = Defaults.TransactionId
-        self.protocol_id = Defaults.ProtocolId
-        self.unit_id = unit
+        self.transaction_id = kwargs.get('transaction', Defaults.TransactionId)
+        self.protocol_id = kwargs.get('protocol', Defaults.ProtocolId)
+        self.unit_id = kwargs.get('unit', Defaults.UnitId)
         self.check = 0x0000
 
     def encode(self):

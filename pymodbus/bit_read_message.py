@@ -13,13 +13,13 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
-    def __init__(self, address, count):
+    def __init__(self, address, count, **kwargs):
         ''' Initializes the read request data
 
         :param address: The start address to read from
         :param count: The number of bits after 'address' to read
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count   = count
 
@@ -47,12 +47,12 @@ class ReadBitsRequestBase(ModbusRequest):
 class ReadBitsResponseBase(ModbusResponse):
     ''' Base class for Messages responding to bit-reading values '''
 
-    def __init__(self, values):
+    def __init__(self, values, **kwargs):
         ''' Initializes a new instance
 
         :param values: The requested values to be returned
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.bits = values or []
 
     def encode(self):
@@ -112,13 +112,13 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     '''
     function_code = 1
 
-    def __init__(self, address=None, count=None):
+    def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The address to start reading from
         :param count: The number of bits to read
         '''
-        ReadBitsRequestBase.__init__(self, address, count)
+        ReadBitsRequestBase.__init__(self, address, count, **kwargs)
 
     def execute(self, context):
         ''' Run a read coils request against a datastore
@@ -152,12 +152,12 @@ class ReadCoilsResponse(ReadBitsResponseBase):
     '''
     function_code = 1
 
-    def __init__(self, values=None):
+    def __init__(self, values=None, **kwargs):
         ''' Intializes a new instance
 
         :param values: The request values to respond with
         '''
-        ReadBitsResponseBase.__init__(self, values)
+        ReadBitsResponseBase.__init__(self, values, **kwargs)
 
 class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     '''
@@ -169,13 +169,13 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     '''
     function_code = 2
 
-    def __init__(self, address=None, count=None):
+    def __init__(self, address=None, count=None, **kwargs):
         ''' Intializes a new instance
 
         :param address: The address to start reading from
         :param count: The number of bits to read
         '''
-        ReadBitsRequestBase.__init__(self, address, count)
+        ReadBitsRequestBase.__init__(self, address, count, **kwargs)
 
     def execute(self, context):
         ''' Run a read discrete input request against a datastore
@@ -209,12 +209,12 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
     '''
     function_code = 2
 
-    def __init__(self, values=None):
+    def __init__(self, values=None, **kwargs):
         ''' Intializes a new instance
 
         :param values: The request values to respond with
         '''
-        ReadBitsResponseBase.__init__(self, values)
+        ReadBitsResponseBase.__init__(self, values, **kwargs)
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

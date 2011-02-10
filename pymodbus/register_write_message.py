@@ -19,13 +19,13 @@ class WriteSingleRegisterRequest(ModbusRequest):
     '''
     function_code = 6
 
-    def __init__(self, address=None, value=None):
+    def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The address to start writing add
         :param value: The values to write
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.value = value
 
@@ -72,13 +72,13 @@ class WriteSingleRegisterResponse(ModbusResponse):
     '''
     function_code = 6
 
-    def __init__(self, address=None, value=None):
+    def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The address to start writing add
         :param value: The values to write
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.address = address
         self.value = value
 
@@ -118,13 +118,13 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 16
 
-    def __init__(self, address=None, values=None):
+    def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The address to start writing to
         :param values: The values to write
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
         if not values: values = []
         elif not hasattr(values, '__iter__'): values = [values]
@@ -183,13 +183,13 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     '''
     function_code = 16
 
-    def __init__(self, address=None, count=None):
+    def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.address = address
         self.count = count
 

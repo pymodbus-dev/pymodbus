@@ -33,18 +33,18 @@ class ModbusPDU(object):
         This is used to route the request to the correct child. In
         the TCP modbus, it is used for routing (or not used at all.  However, for
         the serial versions, it is used to specify which child to perform the
-        requests against.
+        requests against. The value 0x00 represents the broadcast address (also 0xff).
 
     .. attribute:: check
     
         This is used for LRC/CRC in the serial modbus protocols
     '''
 
-    def __init__(self):
+    def __init__(self, unit=0x00):
         ''' Initializes the base data for a modbus request '''
         self.transaction_id = Defaults.TransactionId
         self.protocol_id = Defaults.ProtocolId
-        self.unit_id = 0x00 # can also be 0xff
+        self.unit_id = unit
         self.check = 0x0000
 
     def encode(self):
@@ -65,9 +65,9 @@ class ModbusPDU(object):
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Proxy to the lower level initializer '''
-        ModbusPDU.__init__(self)
+        ModbusPDU.__init__(self, **kwargs)
 
     def doException(self, exception):
         ''' Builds an error response based on the function
@@ -82,9 +82,9 @@ class ModbusRequest(ModbusPDU):
 class ModbusResponse(ModbusPDU):
     ''' Base class for a modbus response PDU '''
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Proxy to the lower level initializer '''
-        ModbusPDU.__init__(self)
+        ModbusPDU.__init__(self, **kwargs)
 
 #---------------------------------------------------------------------------#
 # Exception PDU's
@@ -107,13 +107,13 @@ class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
     ExceptionOffset = 0x80
 
-    def __init__(self, function_code, exception_code=None):
+    def __init__(self, function_code, exception_code=None, **kwargs):
         ''' Initializes the modbus exception response
 
         :param function_code: The function to build an exception response for
         :param exception_code: The specific modbus exception to return
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
 
@@ -149,12 +149,12 @@ class IllegalFunctionRequest(ModbusRequest):
     '''
     ErrorCode = 1
 
-    def __init__(self, function_code):
+    def __init__(self, function_code, **kwargs):
         ''' Initializes a IllegalFunctionRequest
 
         :param function_code: The function we are erroring on
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.function_code = function_code
 
     def decode(self, data):

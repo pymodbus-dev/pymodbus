@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from binascii import a2b_hex
 from pymodbus.pdu import *

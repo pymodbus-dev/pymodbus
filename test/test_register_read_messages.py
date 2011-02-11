@@ -1,12 +1,4 @@
-'''
-Register Message Test Fixture
---------------------------------
-This fixture tests the functionality of all the 
-register based request/response messages:
-
-* Read/Write Input Registers
-* Read Holding Registers
-'''
+#!/usr/bin/env python
 import unittest
 from pymodbus.register_read_message import *
 from pymodbus.register_read_message import ReadRegistersRequestBase
@@ -20,6 +12,15 @@ from modbus_mocks import MockContext, FakeList
 # Fixture
 #---------------------------------------------------------------------------#
 class ReadRegisterMessagesTest(unittest.TestCase):
+    '''
+    Register Message Test Fixture
+    --------------------------------
+    This fixture tests the functionality of all the 
+    register based request/response messages:
+    
+    * Read/Write Input Registers
+    * Read Holding Registers
+    '''
 
     def setUp(self):
         '''

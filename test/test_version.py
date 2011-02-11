@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from pymodbus.version import Version
 

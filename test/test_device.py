@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from pymodbus.device import *
 from pymodbus.exceptions import *

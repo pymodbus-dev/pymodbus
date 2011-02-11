@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from pymodbus.events import *
 from pymodbus.exceptions import NotImplementedException

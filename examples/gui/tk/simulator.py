@@ -31,7 +31,7 @@ from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 # Logging
 #--------------------------------------------------------------------------#
 import logging
-log = logging.getLogger("pymodbus")
+log = logging.getLogger(__name__)
 
 #---------------------------------------------------------------------------#
 # Application Error

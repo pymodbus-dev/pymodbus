@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Bit Message Test Fixture
 --------------------------------

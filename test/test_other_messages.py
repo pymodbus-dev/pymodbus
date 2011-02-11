@@ -1,8 +1,4 @@
-'''
-I'm not sure how wel this will work as we have the client try and run
-as many request as it can as fast as it can without stopping, and then
-finishing...hmmmm
-'''
+#!/usr/bin/env python
 import unittest
 from pymodbus.other_message import *
 

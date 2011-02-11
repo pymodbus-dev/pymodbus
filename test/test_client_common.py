@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import unittest
 from pymodbus.client.common import ModbusClientMixin
 from pymodbus.bit_read_message import *

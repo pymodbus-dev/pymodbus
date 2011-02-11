@@ -35,9 +35,9 @@ class SimpleDataStoreTest(unittest.TestCase):
         ''' Test the tcp transaction manager TID '''
         self.assertEqual(id(self._manager), id(ModbusTransactionManager()))
         for i in range(10):
-            self.assertEqual(i, self._manager.getNextTID())
+            self.assertEqual(i+1, self._manager.getNextTID())
         self._manager.resetTID()
-        self.assertEqual(0, self._manager.getNextTID())
+        self.assertEqual(1, self._manager.getNextTID())
 
     def testModbusTransactionManagerTransaction(self):
         ''' Test the tcp transaction manager '''
@@ -49,10 +49,10 @@ class SimpleDataStoreTest(unittest.TestCase):
         handle.message = "testing"
 
         self._manager.addTransaction(handle)
-        result = self._manager.getTransaction(0)
+        result = self._manager.getTransaction(handle.transaction_id)
         self.assertEqual(handle.message, result.message)
-        self._manager.delTransaction(0)
-        self.assertEqual(None, self._manager.getTransaction(0))
+        self._manager.delTransaction(handle.transaction_id)
+        self.assertEqual(None, self._manager.getTransaction(handle.transaction_id))
 
     #---------------------------------------------------------------------------# 
     # TCP tests

@@ -53,8 +53,8 @@ class ModbusTransactionManager(Singleton):
         while retries > 0:
             try:
                 self.socket.connect()
-                self.socket.send(self.framer.buildPacket(request))
-                #return tr.readResponse()
+                packet = self.framer.buildPacket(request)
+                self.socket.send(packet)
             except socket.error, msg:
                 self.socket.close()
                 _logging.debug("Transaction failed. (%s) " % msg)
@@ -79,7 +79,7 @@ class ModbusTransactionManager(Singleton):
         '''
         for k,v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
-                return ModbusTransactionManager.__transactions[k]
+                return ModbusTransactionManager.__transactions.pop(k)
         return None
 
     def delTransaction(self, tid):
@@ -99,8 +99,8 @@ class ModbusTransactionManager(Singleton):
 
         :returns: The next unique transaction identifier
         '''
-        tid = ModbusTransactionManager.__tid
-        ModbusTransactionManager.__tid += 1
+        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
+        ModbusTransactionManager.__tid = tid
         return tid
 
     def resetTID(self):

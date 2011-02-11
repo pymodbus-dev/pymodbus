@@ -1,17 +1,3 @@
-"""
-Implementation of a Modbus Client Using Sockets
-------------------------------------------------
-
-Example Run::
-
-    def clientTest():
-        requests = [ ReadCoilsRequest(0,99) ]
-        p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-    
-    if __name__ == "__main__":
-       reactor.callLater(1, clientTest)
-       reactor.run()
-"""
 import socket
 import struct
 import serial

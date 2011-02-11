@@ -132,20 +132,9 @@ class ModbusClientFactory(protocol.ReconnectingClientFactory):
 
     protocol = ModbusClientProtocol
 
-    #def __init__(self, *args, **kwargs):
-    #    ''' Initializes a transaction to a modbus server
-    #    '''
-    #    pass
-
-    #def buildProtocol(self, addr):
-    #       p = protocol.ClientFactory.buildProtocol(self, addr)
-    #       # handle timeout/retry?
-    #       return p
-
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
-    "ModbusMessageProducer",
     "ModbusClientProtocol", "ModbusClientFactory",
 ]

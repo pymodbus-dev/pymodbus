@@ -4,7 +4,7 @@ from pymodbus.datastore import *
 from pymodbus.datastore.store import BaseModbusDataBlock
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
-from pymodbus.datastore.RemoteSlaveContext import RemoteSlaveContext
+from pymodbus.datastore.remote import RemoteSlaveContext
 
 class ModbusDataStoreTest(unittest.TestCase):
     '''
@@ -111,8 +111,6 @@ class ModbusDataStoreTest(unittest.TestCase):
     def testRemoteSlaveContext(self):
         ''' Test a modbus remote slave context '''
         context = RemoteSlaveContext(None)
-        self.assertRaises(NotImplementedException, lambda: context.getValues(1,1,1))
-        self.assertRaises(NotImplementedException, lambda: context.setValues(1,1,1))
         self.assertNotEqual(str(context), None)
 
     def testModbusServerContext(self):

@@ -22,6 +22,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param client: The client to retrieve values with
         '''
         self._client = client
+        self.__build_mapping()
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -32,7 +33,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         '''
         # TODO deal with deferreds
-        return self.__mapping[fx](address, count)
+        return self.__get_callbacks[self.__mapping[fx]](address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -42,7 +43,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param values: The new values to be set
         '''
         # TODO deal with deferreds
-        self.__mapping[fx](address, values)
+        self.__set_callbacks[self.__mapping[fx]](address, values)
 
     def __str__(self):
         ''' Returns a string representation of the context

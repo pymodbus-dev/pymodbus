@@ -2,10 +2,10 @@
 import unittest
 import os
 from subprocess import Popen as execute
-from pymodbus.datastore.redis import RedisSlaveContext
+from pymodbus.datastore.modredis import RedisSlaveContext
 from base_context import ContextRunner
 
-class RedisSlaveContext(ContextRunner, unittest.TestCase):
+class RedisSlaveContextTest(ContextRunner, unittest.TestCase):
     '''
     These are the integration tests for using the redis
     slave context.
@@ -13,10 +13,8 @@ class RedisSlaveContext(ContextRunner, unittest.TestCase):
 
     def setUp(self):
         ''' Initializes the test environment '''
-        self.fnull   = open(os.devnull, 'w')
-        self.server  = execute("redis-server", stdout=self.fnull, stderr=self.fnull)
         self.context = RedisSlaveContext() # the redis client will block, so no wait needed
-        self.initialize()
+        self.initialize("redis-server")
 
     def tearDown(self):
         ''' Cleans up the test environment '''

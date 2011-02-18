@@ -30,7 +30,6 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         self.table = kwargs.get('table', 'pymodbus')
         self.database = kwargs.get('database', 'sqlite:///pymodbus.db')
         self.__db_create(self.table, self.database)
-        self.__build_mapping()
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -55,7 +54,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        return self.__validate(self.__mapping[fx], address, count)
+        return self.__validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -67,7 +66,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("get-values[%d] %d:%d" % (fx, address, count))
-        return self.__get(self.__mapping[fx], address, count)
+        return self.__get(self.decode(fx), address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -78,20 +77,11 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("set-values[%d] %d:%d" % (fx, address,len(values)))
-        self.__set(self.__mapping[fx], address, values)
+        self.__set(self.decode(fx), address, values)
 
     #--------------------------------------------------------------------------#
     # Sqlite Helper Methods
     #--------------------------------------------------------------------------#
-    def __build_mapping(self):
-        '''
-        A quick helper method to build the function
-        code mapper.
-        '''
-        self.__mapping = {2:'d', 4:'i'}
-        self.__mapping.update([(i, 'h') for i in [3, 6, 16, 23]])
-        self.__mapping.update([(i, 'c') for i in [1, 5, 15]])
-
     def __db_create(self, table, database):
         ''' A helper method to initialize the database and handles
 
@@ -99,14 +89,14 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :param database: The database uri to use
         '''
         self._engine = sqlalchemy.create_engine(database, echo=False)
-        self._metadata = sqlalchemy.MetaData(self.engine)
-        self._table = sqlalchemy.Table(table, self.metadata,
+        self._metadata = sqlalchemy.MetaData(self._engine)
+        self._table = sqlalchemy.Table(table, self._metadata,
             sqlalchemy.Column('type', sqltypes.String(1)),
             sqlalchemy.Column('index', sqltypes.Integer),
             sqlalchemy.Column('value', sqltypes.Integer),
             UniqueConstraint('type', 'index', name='key'))
         self._table.create(checkfirst=True)
-        self._connection = self.engine.connect()
+        self._connection = self._engine.connect()
     
     def __get(self, type, offset, count):
         '''

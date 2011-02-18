@@ -33,7 +33,8 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         '''
         # TODO deal with deferreds
-        return self.__get_callbacks[self.__mapping[fx]](address, count)
+        result = self.__get_callbacks[self.decode(fx)](address, count)
+        return result.values
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -43,7 +44,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param values: The new values to be set
         '''
         # TODO deal with deferreds
-        self.__set_callbacks[self.__mapping[fx]](address, values)
+        self.__set_callbacks[self.decode(fx)](address, values)
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -57,10 +58,6 @@ class RemoteSlaveContext(IModbusSlaveContext):
         A quick helper method to build the function
         code mapper.
         '''
-        self.__mapping = {2:'d', 4:'i'}
-        self.__mapping.update([(i, 'h') for i in [3, 6, 16, 23]])
-        self.__mapping.update([(i, 'c') for i in [1, 5, 15]])
-
         self.__get_callbacks = {
             'd' : lambda a,c: self._client.read_discrete_inputs(a, c),
             'c' : lambda a,c: self._client.read_coils(a, c),
@@ -68,9 +65,9 @@ class RemoteSlaveContext(IModbusSlaveContext):
             'i' : lambda a,c: self._client.read_input_registers(a, c),
         }
         self.__set_callbacks = {
-            'd' : lambda a,v: self._client.write_discrete_inputs(a, v),
+            'd' : lambda a,v: self._client.write_coils(a, v),
             'c' : lambda a,v: self._client.write_coils(a, v),
-            'h' : lambda a,v: self._client.read_holding_registers(a, v),
-            'i' : lambda a,v: self._client.read_input_registers(a, v),
+            'h' : lambda a,v: self._client.write_registers(a, v),
+            'i' : lambda a,v: self._client.write_registers(a, v),
         }
 

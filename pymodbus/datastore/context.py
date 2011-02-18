@@ -26,20 +26,11 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'hr' - Holding Register initializer
             'ir' - Input Registers iniatializer
         '''
-        self.di = kwargs.get('di', ModbusSequentialDataBlock(0, 0))
-        self.co = kwargs.get('co', ModbusSequentialDataBlock(0, 0))
-        self.ir = kwargs.get('ir', ModbusSequentialDataBlock(0, 0))
-        self.hr = kwargs.get('hr', ModbusSequentialDataBlock(0, 0))
-        self.__build_mapping()
-
-    def __build_mapping(self):
-        '''
-        A quick helper method to build the function
-        code mapper.
-        '''
-        self.__mapping = {2:self.di, 4:self.ir}
-        self.__mapping.update([(i, self.hr) for i in [3, 6, 16, 23]])
-        self.__mapping.update([(i, self.co) for i in [1, 5, 15]])
+	self.store = {}
+        self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock(0, 0))
+        self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock(0, 0))
+        self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock(0, 0))
+        self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock(0, 0))
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -50,7 +41,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in [self.di, self.co, self.ir, self.hr]:
+        for datastore in self.store.values():
             datastore.reset()
 
     def validate(self, fx, address, count=1):
@@ -63,7 +54,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        return self.__mapping[fx].validate(address, count)
+        return self.store[self.decode(fx)].validate(address, count)
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -75,7 +66,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
-        return self.__mapping[fx].getValues(address, count)
+        return self.store[self.decode(fx)].getValues(address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -86,46 +77,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
-        self.__mapping[fx].setValues(address, values)
-
-class ModbusRemoteSlaveContext(IModbusSlaveContext):
-    ''' TODO
-    This creates a modbus data model that connects to
-    a remote device (depending on the client used)
-    '''
-
-    def __init__(self, client):
-        ''' Initializes the datastores
-
-        :param client: The client to retrieve values with
-        '''
-        self.client = client
-
-    def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
-
-        :param fx: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        '''
-        raise NotImplementedException("Context Reset")
-
-    def setValues(self, fx, address, values):
-        ''' Sets the datastore with the supplied values
-
-        :param fx: The function we are working with
-        :param address: The starting address
-        :param values: The new values to be set
-        '''
-        raise NotImplementedException("Context Reset")
-
-    def __str__(self):
-        ''' Returns a string representation of the context
-
-        :returns: A string representation of the context
-        '''
-        return "Remote Slave Context(%s)" % self.client
+        self.store[self.decode(fx)].setValues(address, values)
 
 class ModbusServerContext(object):
     ''' This represents a master collection of slave contexts.

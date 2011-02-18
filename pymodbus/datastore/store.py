@@ -137,8 +137,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param values: Either a list or a dictionary of values
         '''
         self.address = address
-        if isinstance(values, list):
-            self.values = values
+        if hasattr(values, '__iter__'):
+            self.values = list(values)
         else: self.values = [values]
         self.default_value = self.values[0].__class__()
 
@@ -187,7 +187,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         '''
         if isinstance(values, dict):
             self.values = values
-        elif isinstance(values, list):
+        if hasattr(values, '__iter__'):
             self.values = dict(enumerate(values))
         else: raise ParameterException("Values for datastore must be a list or dictionary")
         self.default_value = self.values.values()[0].__class__()

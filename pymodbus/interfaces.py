@@ -129,6 +129,8 @@ class IModbusFramer(object):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
+
+
 class IModbusSlaveContext(object):
     '''
     Interface for a modbus slave data context
@@ -139,6 +141,18 @@ class IModbusSlaveContext(object):
             getValues(self, fx, address, count=1)
             setValues(self, fx, address, values)
     '''
+    __fx_mapper = {2:'d', 4:'i'}
+    __fx_mapper.update([(i, 'h') for i in [3, 6, 16, 23]])
+    __fx_mapper.update([(i, 'c') for i in [1, 5, 15]])
+
+    def decode(self, fx):
+        ''' Converts the function code to the datastore to use
+
+        :param fx: The function we are working with
+        :returns: one of [d(iscretes),i(inputs),h(oliding),c(oils)]
+        '''
+	return self.__fx_mapper[fx]
+
     def reset(self):
         ''' Resets all the datastores to their default values '''
         raise NotImplementedException("Context Reset")

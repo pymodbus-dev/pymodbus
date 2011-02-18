@@ -13,30 +13,46 @@ class ContextRunner(object):
     '''
     This is the base runner class for all the integration tests
     '''
+    __bit_functions = [2,1] # redundant are removed for now
+    __reg_functions = [4,3] # redundant are removed for now
 
-    def initialize(self, service):
+    def initialize(self, service=None):
         ''' Initializes the test environment '''
+        if service:
+            self.fnull  = open(os.devnull, 'w')
+            self.server = execute(service, stdout=self.fnull, stderr=self.fnull)
+            log.debug("%s service started: %s", service, self.server.pid)
+            time.sleep(0.2)
+        else: self.service = None
         log.debug("%s context started", self.context)
 
     def shutdown(self):
         ''' Cleans up the test environment '''
-        #self.server.kill()
         try:
-            self.contxt.reset()
+            if self.service:
+                self.server.kill()
+                self.fnull.close()
+            self.context.reset()
         except: pass
-        log.debug("special context stopped")
+        log.debug("%s context stopped" % self.context)
 
-    def testSomething(self):
-        pass
+    def testDataContextRegisters(self):
+        ''' Test that the context gets and sets registers '''
+        address = 10
+        values = [0x1234] * 32
+        for fx in self.__reg_functions:
+            self.context.setValues(fx, address, values)
+            result = self.context.getValues(fx, address, len(values))
+            self.assertEquals(len(result), len(values))
+            self.assertEquals(result, values)
 
-    def __validate(self, result, test):
-        ''' Validate the result whether it is a result or a deferred.
-
-        :param result: The result to __validate
-        :param callback: The test to __validate
-        '''
-        if isinstance(result, Deferred):
-            deferred.callback(lambda : self.assertTrue(test(result)))
-            deferred.errback(lambda _: self.assertTrue(False))
-        else: self.assertTrue(test(result))
+    def testDataContextDiscretes(self):
+        ''' Test that the context gets and sets discretes '''
+        address = 10
+        values = [True] * 32
+        for fx in self.__bit_functions:
+            self.context.setValues(fx, address, values)
+            result = self.context.getValues(fx, address, len(values))
+            self.assertEquals(len(result), len(values))
+            self.assertEquals(result, values)
 

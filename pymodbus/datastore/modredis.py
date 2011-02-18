@@ -52,7 +52,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        return self.__val_callbacks[self.__mapping[fx]](offset, count)
+        return self.__val_callbacks[self.decode(fx)](address, count)
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -64,7 +64,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
-        return self.__get_callbacks[self.__mapping[fx]](offset, count)
+        return self.__get_callbacks[self.decode(fx)](address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -75,7 +75,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1 # section 4.4 of specification
         _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
-        self.__get_callbacks[self.__mapping[fx]](offset, values)
+        self.__set_callbacks[self.decode(fx)](address, values)
 
     #--------------------------------------------------------------------------#
     # Redis Helper Methods
@@ -93,11 +93,6 @@ class RedisSlaveContext(IModbusSlaveContext):
         A quick helper method to build the function
         code mapper.
         '''
-        self.__mapping = {2:'d', 4:'i'}
-        self.__mapping.update([(i, 'h') for i in [3, 6, 16, 23]])
-        self.__mapping.update([(i, 'c') for i in [1, 5, 15]])
-
-        # sigh, pattern matching would be nice
         self.__val_callbacks = {
             'd' : lambda o,c: self.__val_bit('d', o, c),
             'c' : lambda o,c: self.__val_bit('c', o, c),

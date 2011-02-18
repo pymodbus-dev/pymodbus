@@ -36,7 +36,7 @@ class RedisSlaveContext(IModbusSlaveContext):
 
         :returns: A string representation of the context
         '''
-        return "Modbus Slave Context"
+        return "Redis Slave Context %s" % self.client
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
@@ -194,10 +194,11 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         '''
         key = self.__get_prefix(key)
-        s = divmod(offset, self.__reg_size)[0]
-        e = divmod(offset+count, self.__reg_size)[0]
+        #s = divmod(offset, self.__reg_size)[0]
+        #e = divmod(offset+count, self.__reg_size)[0]
 
-        request  = ('%s:%s' % (key, v) for v in range(s, e+1))
+        #request  = ('%s:%s' % (key, v) for v in range(s, e+1))
+        request  = ('%s:%s' % (key, v) for v in range(offset, count+1))
         response = self.client.mget(request)
         return response
 
@@ -220,8 +221,8 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         '''
         response = self.__get_reg_values(key, offset, count)
-        response = (r or self.__reg_default for r in response)
-        return result[offset:offset+count]
+        response = [r or self.__reg_default for r in response]
+        return response[offset:offset+count]
 
     def __set_reg(self, key, offset, values):
         '''
@@ -231,13 +232,13 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param values: The values to set
         '''
         count = len(values)
-        s = divmod(offset, self.__reg_size)
-        e = divmod(offset+count, self.__reg_size)
+        #s = divmod(offset, self.__reg_size)
+        #e = divmod(offset+count, self.__reg_size)
 
-        current = self.__get_reg_values(key, offset, count)
+        #current = self.__get_reg_values(key, offset, count)
 
         key = self.__get_prefix(key)
-        request = ('%s:%s' % (key, v) for v in range(s, e+1))
-        request = zip(request, current)
+        request = ('%s:%s' % (key, v) for v in range(offset, count+1))
+        request = dict(zip(request, values))
         self.client.mset(request)
 

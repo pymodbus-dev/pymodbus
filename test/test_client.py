@@ -1,36 +1,25 @@
 #!/usr/bin/env python
-'''
-I'm not sure how wel this will work as we have the client try and run
-as many request as it can as fast as it can without stopping, and then
-finishing...hmmmm
-'''
-from twisted.trial import unittest
+import unittest
 from twisted.test import test_protocols
-from pymodbus.client.async import ModbusClientFactory
-from pymodbus.exceptions import *
-from pymodbus.bit_read_message import ReadCoilsRequest
+from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
+from pymodbus.client.sync import ModbusSerialClient
 
-class SimpleDataStoreTest(unittest.TestCase):
+class SynchronousClientTest(unittest.TestCase):
     '''
-    This is the unittest for the pymodbus.client module
+    This is the unittest for the pymodbus.client.sync module
     '''
 
     def setUp(self):
         pass
-        #self.t = test_protocols.StringIOWithoutClosing()
-        #self.requests = [
-        #        ReadCoilsRequest(1, 16),
-        #        ReadCoilsRequest(17,16),
-        #        ReadCoilsRequest(0,99),
-        #]
-        #self.f = ModbusClientFactory(self.requests)
 
-    def testReadRequest(self):
-        pass
-        #self.p.dataReceived("moshez\r\n")
-        #self.failUnlessEqual(self.t.getvalue(), "Login: moshez\nNo such user\n")
-
-    def testWriteRequest(self):
-        pass
-        #self.p.dataReceived("moshez\r\n")
-        #self.failUnlessEqual(self.t.getvalue(), "Login: moshez\nNo such user\n")
+    def testSyncUdpClientInstantiation(self):
+        client = ModbusUdpClient()
+        self.assertNotEqual(client, None)
+    
+    def testSyncTcpClientInstantiation(self):
+        client = ModbusTcpClient()
+        self.assertNotEqual(client, None)
+    
+    def testSyncSerialClientInstantiation(self):
+        client = ModbusSerialClient
+        self.assertNotEqual(client, None)

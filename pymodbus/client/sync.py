@@ -241,7 +241,7 @@ class ModbusUdpClient(BaseModbusClient):
         self.host = host
         self.port = port
         self.socket = None
-        BaseModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
+        BaseModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
     
     def connect(self):
         ''' Connect to the modbus tcp server

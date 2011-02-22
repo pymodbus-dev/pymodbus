@@ -111,11 +111,6 @@ class ModbusDataStoreTest(unittest.TestCase):
             self.assertTrue(context.validate(fx, 0,10))
             self.assertEqual(context.getValues(fx, 0,10), [False]*10)
 
-    def testRemoteSlaveContext(self):
-        ''' Test a modbus remote slave context '''
-        context = RemoteSlaveContext(None)
-        self.assertNotEqual(str(context), None)
-
     def testModbusServerContext(self):
         ''' Test a modbus server context '''
         def _set(ctx):

@@ -3,7 +3,6 @@ Bit Reading Request/Response messages
 --------------------------------------
 
 """
-
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse

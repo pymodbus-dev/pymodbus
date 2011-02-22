@@ -3,6 +3,8 @@ from pymodbus.interfaces import IModbusSlaveContext
 #---------------------------------------------------------------------------#
 # Mocks
 #---------------------------------------------------------------------------#
+class mock(object): pass
+
 class MockContext(IModbusSlaveContext):
 
     def __init__(self, valid=False, default=True):
@@ -29,3 +31,4 @@ class FakeList(object):
 
     def __iter__(self):
         return []
+

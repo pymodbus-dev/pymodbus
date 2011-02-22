@@ -12,12 +12,12 @@ class DatabaseSlaveContextTest(ContextRunner, unittest.TestCase):
 
     def setUp(self):
         ''' Initializes the test environment '''
+        os.remove('./' + self.__database.split('///')[1])
         self.context = DatabaseSlaveContext(database=self.__database)
         self.initialize()
 
     def tearDown(self):
         ''' Cleans up the test environment '''
-        os.remove(self.__database.split('///')[1])
         self.shutdown()
 
 #---------------------------------------------------------------------------#

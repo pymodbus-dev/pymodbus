@@ -19,9 +19,9 @@ class ContextRunner(object):
     def initialize(self, service=None):
         ''' Initializes the test environment '''
         if service:
-            self.fnull  = open(os.devnull, 'w')
-            self.server = execute(service, stdout=self.fnull, stderr=self.fnull)
-            log.debug("%s service started: %s", service, self.server.pid)
+            self.fnull   = open(os.devnull, 'w')
+            self.service = execute(service, stdout=self.fnull, stderr=self.fnull)
+            log.debug("%s service started: %s", service, self.service.pid)
             time.sleep(0.2)
         else: self.service = None
         log.debug("%s context started", self.context)
@@ -30,7 +30,7 @@ class ContextRunner(object):
         ''' Cleans up the test environment '''
         try:
             if self.service:
-                self.server.kill()
+                self.service.kill()
                 self.fnull.close()
             self.context.reset()
         except: pass

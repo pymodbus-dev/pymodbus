@@ -71,6 +71,9 @@ class ModbusDataStoreTest(unittest.TestCase):
         self.assertFalse(block.validate(0, 20))
         self.assertFalse(block.validate(10, 1))
         self.assertTrue(block.validate(0x00, 10))
+        self.assertTrue(block.validate(0x00, 10))
+        self.assertFalse(block.validate(0, 0))
+        self.assertFalse(block.validate(5, 0))
 
         block.setValues(0x00, True)
         self.assertEqual(block.getValues(0x00, 1), [True])

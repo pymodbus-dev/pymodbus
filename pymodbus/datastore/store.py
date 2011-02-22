@@ -200,11 +200,9 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        result = False
-        if not address == address + count:
-            handle = set(range(address, address + count))
-            result = handle.issubset(set(self.values.iterkeys()))
-        return result
+        if count == 0: return False
+        handle = set(range(address, address + count))
+        return handle.issubset(set(self.values.iterkeys()))
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore

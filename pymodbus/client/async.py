@@ -78,8 +78,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         request.transaction_id = self.__getNextTID()
         #self.handler[request.transaction_id] = request
         packet = self.framer.buildPacket(request)
-        self.transport.write(request)
-        return _buildResponse()
+        self.transport.write(packet)
+        return self._buildResponse()
 
     def _callback(self, reply):
         ''' The callback to call with the response message

@@ -6,6 +6,7 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from utilities import rtuFrameSize
 from pymodbus.exceptions import ParameterException
 
 class WriteSingleRegisterRequest(ModbusRequest):
@@ -18,6 +19,15 @@ class WriteSingleRegisterRequest(ModbusRequest):
     numbered 1 is addressed as 0.
     '''
     function_code = 6
+
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a request to write a single register.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 8) in the request.
+        '''
+        return 8
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -72,6 +82,15 @@ class WriteSingleRegisterResponse(ModbusResponse):
     '''
     function_code = 6
 
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a response containing a single register.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 8) in the response.
+        '''
+        return 8
+
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
@@ -118,6 +137,15 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 16
 
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a request to write multiple registers.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the request.
+        '''
+        return rtuFrameSize(buffer, 6)
+
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 
@@ -147,7 +175,8 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.address, self.count, self.byte_count = struct.unpack('>HHB', data[:5])
+        self.address, self.count, self.byte_count = struct.unpack('>HHB',
+                                                                  data[:5])
         self.values = [] # reset
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack('>H', data[idx:idx+2])[0])
@@ -182,6 +211,14 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     quantity of registers written.
     '''
     function_code = 16
+
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a response containing multiple registers.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 8) in the response.
+        '''
+        return 8
 
     def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance

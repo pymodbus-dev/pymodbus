@@ -159,8 +159,9 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testRTUFramerTransactionReady(self):
         ''' Test a rtu frame transaction '''
         msg = ":\xab\xcd\x12\x34\x12\x34\xaa\xaa\r\n"
-        self.assertFalse(self._rtu.isFrameReady())
-        self.assertFalse(self._rtu.checkFrame())
+        self._rtu.addToFrame(msg)
+        self.assertTrue(self._rtu.checkFrame())
+        self.assertTrue(self._rtu.isFrameReady())
         # test a full transaction
 
     def testRTUFramerTransactionFull(self):

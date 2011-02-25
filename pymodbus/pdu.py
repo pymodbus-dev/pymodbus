@@ -62,6 +62,15 @@ class ModbusPDU(object):
         '''
         raise NotImplementedException()
 
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a PDU.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the PDU.
+        '''
+        raise NotImplementedException()
+
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''
 
@@ -106,6 +115,15 @@ class ModbusExceptions(Singleton):
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
     ExceptionOffset = 0x80
+
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of an exception response.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 5) in the request.
+        '''
+        return 5
 
     def __init__(self, function_code, exception_code=None, **kwargs):
         ''' Initializes the modbus exception response

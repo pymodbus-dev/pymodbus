@@ -42,6 +42,14 @@ class IModbusDecoder(object):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
+
 class IModbusFramer(object):
     '''
     A framer strategy interface. The idea is that we abstract away all the
@@ -128,8 +136,6 @@ class IModbusFramer(object):
         :returns: The built packet
         '''
         raise NotImplementedException("Method not implemented by derived class")
-
-
 
 class IModbusSlaveContext(object):
     '''

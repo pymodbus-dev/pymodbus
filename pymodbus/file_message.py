@@ -29,6 +29,15 @@ class ReadFifoQueueRequest(ModbusRequest):
     '''
     function_code = 0x18
 
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a request to read a FIFO queue.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 6) in the request.
+        '''
+        return 6
+
     def __init__(self, address):
         ''' Initializes a new instance
 
@@ -73,6 +82,17 @@ class ReadFifoQueueResponse(ModbusResponse):
     error code of 03 (Illegal Data Value).
     '''
     function_code = 0x18
+
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a response containing a FIFO queue.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        '''
+        hi_byte = struct.unpack(">B", buffer[2])[0]
+        lo_byte = struct.unpack(">B", buffer[3])[0]
+        return (hi_byte << 16) + lo_byte + 6
 
     def __init__(self, values):
         ''' Initializes a new instance

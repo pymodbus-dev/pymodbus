@@ -5,6 +5,7 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
+import struct
 
 #---------------------------------------------------------------------------#
 # Helpers
@@ -158,10 +159,32 @@ def checkLRC(data, check):
     '''
     return computeLRC(data) == check
 
+def rtuFrameSize(buffer, byte_count_pos):
+    ''' Calculates the size of the frame based on the byte count.
+
+    :param buffer: The buffer containing the frame.
+    :param byte_count_pos: The index of the byte count in the buffer.
+    :returns: The size of the frame.
+
+    The structure of frames with a byte count field is always the
+    same:
+
+    - first, there are some header fields
+    - then the byte count field
+    - then as many data bytes as indicated by the byte count,
+    - finally the CRC (two bytes).
+
+    To calculate the frame size, it is therefore sufficient to extract
+    the contents of the byte count field, add the position of this
+    field, and finally increment the sum by three (one byte for the
+    byte count field, two for the CRC).
+    '''
+    return struct.unpack('>B', buffer[byte_count_pos])[0] + byte_count_pos + 3
+
 #---------------------------------------------------------------------------# 
 # Exported symbols
 #---------------------------------------------------------------------------# 
 __all__ = [
     'pack_bitstring', 'unpack_bitstring', 'default',
-    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
+    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC', 'rtuFrameSize'
 ]

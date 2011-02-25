@@ -292,10 +292,10 @@ class ModbusRtuFramer(IModbusFramer):
         :param decoder: The decoder factory implementation to use
         '''
         self.__buffer = ''
-        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self.__header = {}
         self.__hsize  = 0x01
         self.__end    = '\x0d\x0a'
-        self.__start  = '\x3a'
+        self.__min_frame_size = 4
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -303,10 +303,14 @@ class ModbusRtuFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     def checkFrame(self):
         '''
-        Check and decode the next frame Return true if we were successful
+        Check if the next frame is available. Return True if we were
+        successful.
         '''
-        # i dunno yet
-        return False
+        try:
+            self.populateHeader()
+            return len(self.__buffer) >= self.__header['len']
+        except IndexError:
+            return False
 
     def advanceFrame(self):
         ''' Skip over the current framed message
@@ -314,8 +318,8 @@ class ModbusRtuFramer(IModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        self.__buffer = self.__buffer[-1:]
-        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self.__buffer = self.__buffer[self.__header['len']:]
+        self.__header = {}
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -324,7 +328,27 @@ class ModbusRtuFramer(IModbusFramer):
 
         :returns: True if ready, False otherwise
         '''
-        return len(self.__buffer) > 1
+        return len(self.__buffer) > self.__hsize
+
+    def populateHeader(self):
+        ''' Try to set the headers `uid`, `len` and `crc`.
+        
+        This method examines `self.__buffer` and writes meta
+        information into `self.__header`. It calculates only the
+        values for headers that are not already in the dictionary.
+
+        Beware that this method will raise an IndexError if
+        `self.__buffer` is not yet long enough.
+        '''
+        if 'uid' not in self.__header:
+            self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
+        if 'len' not in self.__header:
+            func_code = struct.unpack('>B', self.__buffer[1])[0]
+            pdu_class = self.decoder.lookupPduClass(func_code)
+            size = pdu_class.calculateRtuFrameSize(self.__buffer)
+            self.__header['len'] = size
+        if 'crc' not in self.__header:
+            self.__header['crc'] = self.__buffer[size-2:size]
 
     def addToFrame(self, message):
         '''

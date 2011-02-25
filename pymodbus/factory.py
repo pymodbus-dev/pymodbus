@@ -57,6 +57,14 @@ class ServerDecoder(IModbusDecoder):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        return self.__lookup.get(function_code, None)
+
     def _helper(self, data):
         '''
         This factory is used to generate the correct request object
@@ -95,6 +103,14 @@ class ClientDecoder(IModbusDecoder):
             ReadWriteMultipleRegistersResponse
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
+
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        return self.__lookup.get(function_code, None)
 
     def decode(self, message):
         ''' Wrapper to decode a response packet

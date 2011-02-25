@@ -21,13 +21,23 @@ _MCB = ModbusControlBlock()
 # Diagnostic Function Codes Base Classes
 # diagnostic 08, 00-18,20
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial
+# TODO Implement subfunction 19 (Return IOP Overrun Count)
+# TODO Implement subfunction 21 (Get/Clear Modbus Plus statistics)
 #---------------------------------------------------------------------------#
 class DiagnosticStatusRequest(ModbusRequest):
     '''
     This is a base class for all of the diagnostic request functions
     '''
     function_code = 0x08
+
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a diagnostic status request.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 8) in the request.
+        '''
+        return 8
 
     def __init__(self):
         '''
@@ -70,6 +80,15 @@ class DiagnosticStatusResponse(ModbusResponse):
     and how to execute a request
     '''
     function_code = 0x08
+
+    @staticmethod
+    def calculateRtuFrameSize(buffer):
+        ''' Calculates the size of a response containing the diagnostic status.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes (always 8) in the response.
+        '''
+        return 8
 
     def __init__(self):
         '''

@@ -51,6 +51,30 @@ class SimplePduTest(unittest.TestCase):
             result = request.doException(error)
             self.assertEqual(str(result), "Exception Response (129, %d)" % error)
 
+    def testCalculateRtuFrameSize(self):
+        ''' Test the calculation of Modbus/RTU frame sizes '''
+        self.assertRaises(NotImplementedException,
+                          ModbusRequest.calculateRtuFrameSize, "")
+        ModbusRequest._rtu_frame_size = 5
+        self.assertEqual(ModbusRequest.calculateRtuFrameSize(""), 5)
+        del ModbusRequest._rtu_frame_size
+
+        ModbusRequest._rtu_byte_count_pos = 2
+        self.assertEqual(ModbusRequest.calculateRtuFrameSize(
+            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 10)
+        del ModbusRequest._rtu_byte_count_pos
+        
+        self.assertRaises(NotImplementedException,
+                          ModbusResponse.calculateRtuFrameSize, "")
+        ModbusResponse._rtu_frame_size = 12
+        self.assertEqual(ModbusResponse.calculateRtuFrameSize(""), 12)
+        del ModbusResponse._rtu_frame_size
+        ModbusResponse._rtu_byte_count_pos = 2
+        self.assertEqual(ModbusResponse.calculateRtuFrameSize(
+            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 10)
+        del ModbusResponse._rtu_byte_count_pos
+        
+        
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

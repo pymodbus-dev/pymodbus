@@ -157,30 +157,67 @@ class SimpleDataStoreTest(unittest.TestCase):
     # RTU tests
     #---------------------------------------------------------------------------# 
     def testRTUFramerTransactionReady(self):
-        ''' Test a rtu frame transaction '''
-        msg = ":\xab\xcd\x12\x34\x12\x34\xaa\xaa\r\n"
-        self._rtu.addToFrame(msg)
-        self.assertTrue(self._rtu.checkFrame())
+        ''' Test if the checks for a complete frame work '''
+        self.assertFalse(self._rtu.isFrameReady())
+
+        msg_parts = ["\x00\x01\x00", "\x00\x00\x01\xfc\x1b"]
+        self._rtu.addToFrame(msg_parts[0])
         self.assertTrue(self._rtu.isFrameReady())
-        # test a full transaction
+        self.assertFalse(self._rtu.checkFrame())
+
+        self._rtu.addToFrame(msg_parts[1])
+        self.assertTrue(self._rtu.isFrameReady())
+        self.assertTrue(self._rtu.checkFrame())
 
     def testRTUFramerTransactionFull(self):
         ''' Test a full rtu frame transaction '''
-        pass
+        msg = "\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        stripped_msg = msg[1:-2]
+        self._rtu.addToFrame(msg)
+        self.assertTrue(self._rtu.checkFrame())
+        result = self._rtu.getFrame()
+        self.assertEqual(stripped_msg, result)
+        self._rtu.advanceFrame()
 
     def testRTUFramerTransactionHalf(self):
         ''' Test a half completed rtu frame transaction '''
-        pass
+        msg_parts = ["\x00\x01\x00", "\x00\x00\x01\xfc\x1b"]
+        stripped_msg = "".join(msg_parts)[1:-2]
+        self._rtu.addToFrame(msg_parts[0])
+        self.assertFalse(self._rtu.checkFrame())
+        self._rtu.addToFrame(msg_parts[1])
+        self.assertTrue(self._rtu.isFrameReady())
+        self.assertTrue(self._rtu.checkFrame())
+        result = self._rtu.getFrame()
+        self.assertEqual(stripped_msg, result)
+        self._rtu.advanceFrame()
 
     def testRTUFramerPopulate(self):
         ''' Test a rtu frame packet build '''
         request = ModbusRequest()
+        msg = "\x00\x01\x00\x00\x00\x01\xfc\x1b"
+        self._rtu.addToFrame(msg)
+        self._rtu.populateHeader()
         self._rtu.populateResult(request)
+
+        header_dict = self._rtu._ModbusRtuFramer__header
+        self.assertEqual(len(msg), header_dict['len'])
+        self.assertEqual(ord(msg[0]), header_dict['uid'])
+        self.assertEqual(msg[-2:], header_dict['crc'])
+
         self.assertEqual(0x00, request.unit_id)
 
     def testRTUFramerPacket(self):
         ''' Test a rtu frame packet build '''
-        pass
+        old_encode = ModbusRequest.encode
+        ModbusRequest.encode = lambda self: ''
+        message = ModbusRequest()
+        message.unit_id        = 0xff
+        message.function_code  = 0x01
+        expected = "\xff\x01\x81\x80" # only header + CRC - no data
+        actual = self._rtu.buildPacket(message)
+        self.assertEqual(expected, actual)
+        ModbusRequest.encode = old_encode
 
     #---------------------------------------------------------------------------# 
     # ASCII tests

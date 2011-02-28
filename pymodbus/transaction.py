@@ -308,8 +308,12 @@ class ModbusRtuFramer(IModbusFramer):
         '''
         try:
             self.populateHeader()
-            return len(self.__buffer) >= self.__header['len']
-        except IndexError:
+            frame_size = self.__header['len']
+            data = self.__buffer[:frame_size - 2]
+            crc = self.__buffer[frame_size - 2:frame_size]
+            crc_val = (ord(crc[0]) << 8) + ord(crc[1])
+            return checkCRC(data, crc_val)
+        except (IndexError, KeyError):
             return False
 
     def advanceFrame(self):

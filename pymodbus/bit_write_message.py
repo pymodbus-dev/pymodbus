@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.exceptions import ParameterException
-from pymodbus.utilities import pack_bitstring, unpack_bitstring, rtuFrameSize
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 #---------------------------------------------------------------------------#
 # Local Constants
@@ -38,15 +38,7 @@ class WriteSingleCoilRequest(ModbusRequest):
     will not affect the coil.
     '''
     function_code = 5
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to write a single coil.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the request.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -103,15 +95,7 @@ class WriteSingleCoilResponse(ModbusResponse):
     state has been written.
     '''
     function_code = 5
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing a single coil.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -159,15 +143,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     corresponding output to be ON. A logical '0' requests it to be OFF."
     '''
     function_code = 15
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to write multiple coils.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the request.
-        '''
-        return rtuFrameSize(buffer, 6)
+    _rtu_byte_count_pos = 6
 
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
@@ -233,14 +209,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     quantity of coils forced.
     '''
     function_code = 15
-
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance

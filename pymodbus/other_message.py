@@ -8,7 +8,6 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
-from utilities import rtuFrameSize
 from pymodbus.exceptions import *
 
 _MCB = ModbusControlBlock()
@@ -24,15 +23,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
     known (no output reference is needed in the function).
     '''
     function_code = 0x07
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read the exception status.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 4) in the request.
-        '''
-        return 4
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -75,14 +66,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
     Exception Status outputs are device specific.
     '''
     function_code = 0x07
-
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing the exception status.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 5) in the response.
-        '''
-        return 5
+    _rtu_frame_size = 5
 
     def __init__(self, status):
         ''' Initializes a new instance
@@ -137,16 +121,7 @@ class GetCommEventCounterRequest(ModbusRequest):
     Clear Counters and Diagnostic Register (code 00 0A).
     '''
     function_code = 0x0b
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read the communication event
-        counter.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 4) in the request.
-        '''
-        return 4
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -189,15 +164,7 @@ class GetCommEventCounterResponse(ModbusResponse):
     all zeros.
     '''
     function_code = 0x0b
-
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing a communication event
-        counter.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, count):
         ''' Initializes a new instance
@@ -255,16 +222,7 @@ class GetCommEventLogRequest(ModbusRequest):
     from the field.
     '''
     function_code = 0x0c
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read the communication event
-        log.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 4) in the request.
-        '''
-        return 4
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -311,15 +269,7 @@ class GetCommEventLogResponse(ModbusResponse):
     defines the total length of the data in these four field
     '''
     function_code = 0x0c
-
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response to read the communication event
-        log.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        return rtuFrameSize(buffer, 3)
+    _rtu_byte_count_pos = 3
 
     def __init__(self, **kwargs):
         ''' Initializes a new instance
@@ -379,15 +329,7 @@ class ReportSlaveIdRequest(ModbusRequest):
     status, and other information specific to a remote device. 
     '''
     function_code = 0x11
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to report the slave ID.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 4) in the request.
-        '''
-        return 4
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -427,15 +369,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     data contents are specific to each type of device.
     '''
     function_code = 0x11
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing a slave ID.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        return rtuFrameSize(buffer, 2)
+    _rtu_byte_count_pos = 2
 
     def __init__(self, identifier, status=True):
         ''' Initializes a new instance

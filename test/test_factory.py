@@ -68,6 +68,18 @@ class SimpleFactoryTest(unittest.TestCase):
         del self.request
         del self.response
 
+    def testResponseLookup(self):
+        ''' Test a working response factory lookup '''
+        for func, _ in self.response:
+            response = self.client.lookupPduClass(func)
+            self.assertNotEqual(response, None)
+
+    def testRequestLookup(self):
+        ''' Test a working request factory lookup '''
+        for func, _ in self.request:
+            request = self.client.lookupPduClass(func)
+            self.assertNotEqual(request, None)
+
     def testResponseWorking(self):
         ''' Test a working response factory decoders '''
         for func, msg in self.response:

@@ -69,14 +69,12 @@ class ModbusPDU(object):
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the PDU.
         '''
-        try:
+        if hasattr(cls, '_rtu_frame_size'):
             return cls._rtu_frame_size
-        except AttributeError:
-            try:
-                return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
-            except AttributeError:
-                raise NotImplementedException(
-                    "Cannot determine RTU frame size for %s" % cls.__name__)
+        elif hasattr(cls, '_rtu_byte_count_pos'):
+            return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
+        else: raise NotImplementedException(
+            "Cannot determine RTU frame size for %s" % cls.__name__)
 
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''

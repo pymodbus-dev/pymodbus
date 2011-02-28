@@ -7,19 +7,12 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.utilities import pack_bitstring, unpack_bitstring, rtuFrameSize
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read multiple bits.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the request.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address, count, **kwargs):
         ''' Initializes the read request data
@@ -55,14 +48,7 @@ class ReadBitsRequestBase(ModbusRequest):
 class ReadBitsResponseBase(ModbusResponse):
     ''' Base class for Messages responding to bit-reading values '''
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing multiple bits.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in this response.
-        '''
-        return rtuFrameSize(buffer, 2)
+    _rtu_byte_count_pos = 2
 
     def __init__(self, values, **kwargs):
         ''' Initializes a new instance

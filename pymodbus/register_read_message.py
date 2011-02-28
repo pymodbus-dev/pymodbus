@@ -6,21 +6,12 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from utilities import rtuFrameSize
 
 class ReadRegistersRequestBase(ModbusRequest):
     '''
     Base class for reading a modbus register
     '''
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the request.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address, count, **kwargs):
         ''' Initializes a new instance
@@ -58,14 +49,7 @@ class ReadRegistersResponseBase(ModbusResponse):
     Base class for responsing to a modbus register read
     '''
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in this response.
-        '''
-        return rtuFrameSize(buffer, 2)
+    _rtu_byte_count_pos = 2
 
     def __init__(self, values, **kwargs):
         ''' Initializes a new instance
@@ -223,14 +207,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 23
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        '''Calculates the size of a request to read and write multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the request.
-        '''
-        return rtuFrameSize(buffer, 10)
+    _rtu_byte_count_pos = 10
 
     def __init__(self, read_address, read_count,
         write_address, write_registers, **kwargs):
@@ -288,12 +265,16 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if (self.write_byte_count != self.write_count * 2):
             return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.write_address, self.write_count):
+        if not context.validate(self.function_code, self.write_address,
+                                self.write_count):
             return self.doException(merror.IllegalAddress)
-        if not context.validate(self.function_code, self.read_address, self.read_count):
+        if not context.validate(self.function_code, self.read_address,
+                                self.read_count):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.write_address, self.write_registers)
-        registers = context.getValues(self.function_code, self.read_address, self.read_count)
+        context.setValues(self.function_code, self.write_address,
+                          self.write_registers)
+        registers = context.getValues(self.function_code, self.read_address,
+                                      self.read_count)
         return ReadWriteMultipleRegistersResponse(registers)
 
     def __str__(self):
@@ -301,7 +282,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        params = (self.read_address, self.read_count, self.write_address, self.write_count)
+        params = (self.read_address, self.read_count, self.write_address,
+                  self.write_count)
         return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):
@@ -311,14 +293,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     follow in the read data field.
     '''
     function_code = 23
-
-    def calculateRtuFrameSize(buffer):
-        '''Calculates the size of a response containing multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in this response.
-        '''
-        return rtuFrameSize(buffer, 2)
+    _rtu_byte_count_pos = 2
         
     def __init__(self, values=None, **kwargs):
         ''' Initializes a new instance

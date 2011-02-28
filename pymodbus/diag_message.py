@@ -29,15 +29,7 @@ class DiagnosticStatusRequest(ModbusRequest):
     This is a base class for all of the diagnostic request functions
     '''
     function_code = 0x08
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a diagnostic status request.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the request.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self):
         '''
@@ -80,15 +72,7 @@ class DiagnosticStatusResponse(ModbusResponse):
     and how to execute a request
     '''
     function_code = 0x08
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing the diagnostic status.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self):
         '''

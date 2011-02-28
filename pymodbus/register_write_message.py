@@ -6,7 +6,6 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from utilities import rtuFrameSize
 from pymodbus.exceptions import ParameterException
 
 class WriteSingleRegisterRequest(ModbusRequest):
@@ -19,15 +18,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     numbered 1 is addressed as 0.
     '''
     function_code = 6
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to write a single register.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the request.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -81,15 +72,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
     register contents have been written.
     '''
     function_code = 6
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing a single register.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -136,15 +119,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     Data is packed as two bytes per register.
     '''
     function_code = 16
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to write multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the request.
-        '''
-        return rtuFrameSize(buffer, 6)
+    _rtu_byte_count_pos = 6
 
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
@@ -211,14 +186,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     quantity of registers written.
     '''
     function_code = 16
-
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a response containing multiple registers.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 8) in the response.
-        '''
-        return 8
+    _rtu_frame_size = 8
 
     def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance

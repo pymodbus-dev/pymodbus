@@ -30,6 +30,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         x = None
         instance = IModbusDecoder()
         self.assertRaises(NotImplementedException, lambda: instance.decode(x))
+        self.assertRaises(NotImplementedException, lambda: instance.lookupPduClass(x))
 
     def testModbusFramerInterface(self):
         ''' Test that the base class isn't implemented '''

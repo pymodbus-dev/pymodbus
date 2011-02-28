@@ -4,7 +4,7 @@ Contains base classes for modbus request/response/error packets
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
-
+from utilities import rtuFrameSize
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
@@ -62,14 +62,21 @@ class ModbusPDU(object):
         '''
         raise NotImplementedException()
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
         ''' Calculates the size of a PDU.
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the PDU.
         '''
-        raise NotImplementedException()
+        try:
+            return cls._rtu_frame_size
+        except AttributeError:
+            try:
+                return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
+            except AttributeError:
+                raise NotImplementedException(
+                    "Cannot determine RTU frame size for %s" % cls.__name__)
 
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''
@@ -115,15 +122,7 @@ class ModbusExceptions(Singleton):
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
     ExceptionOffset = 0x80
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of an exception response.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 5) in the request.
-        '''
-        return 5
+    _rtu_frame_size = 5
 
     def __init__(self, function_code, exception_code=None, **kwargs):
         ''' Initializes the modbus exception response

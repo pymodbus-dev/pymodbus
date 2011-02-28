@@ -28,15 +28,7 @@ class ReadFifoQueueRequest(ModbusRequest):
     The function reads the queue contents, but does not clear them.
     '''
     function_code = 0x18
-
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
-        ''' Calculates the size of a request to read a FIFO queue.
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes (always 6) in the request.
-        '''
-        return 6
+    _rtu_frame_size = 6
 
     def __init__(self, address):
         ''' Initializes a new instance
@@ -83,8 +75,8 @@ class ReadFifoQueueResponse(ModbusResponse):
     '''
     function_code = 0x18
 
-    @staticmethod
-    def calculateRtuFrameSize(buffer):
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
         ''' Calculates the size of a response containing a FIFO queue.
 
         :param buffer: A buffer containing the data that have been received.

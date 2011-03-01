@@ -33,7 +33,8 @@ class BuildApiDocs(Command):
 
     def initialize_options(self):
         ''' options setup '''
-        pass
+        if not os.path.exists('./build'):
+            os.mkdir('./build')
 
     def finalize_options(self):
         ''' options teardown '''
@@ -42,7 +43,7 @@ class BuildApiDocs(Command):
     def run(self):
         ''' command runner '''
         old_cwd = os.getcwd()
-        directories = (d for d in os.listdir('./api') if not d.startswith('.'))
+        directories = (d for d in os.listdir('./doc/api') if not d.startswith('.'))
         for entry in directories:
             os.chdir('./doc/api/%s' % entry)
             os.system('python build.py')

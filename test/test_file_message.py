@@ -80,6 +80,12 @@ class ModbusBitMessageTests(unittest.TestCase):
         handle.decode(message)
         self.assertEqual(handle.values, [1,2,3,4])
 
+    def testRtuFrameSize(self):
+        ''' Test that the read fifo queue response can decode '''
+        message = '\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04'
+        result  = ReadFifoQueueResponse.calculateRtuFrameSize(message)
+        self.assertEqual(result, 14)
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

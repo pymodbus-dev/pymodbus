@@ -5,9 +5,9 @@ from pymodbus.pdu import *
 from pymodbus.transaction import *
 from pymodbus.factory import ServerDecoder
 
-class SimpleDataStoreTest(unittest.TestCase):
+class ModbusTransactionTest(unittest.TestCase):
     '''
-    This is the unittest for the pymod.transaction module
+    This is the unittest for the pymodbus.transaction module
     '''
 
     #---------------------------------------------------------------------------# 
@@ -35,23 +35,31 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusTransactionManagerTID(self):
         ''' Test the tcp transaction manager TID '''
         self.assertEqual(id(self._manager), id(ModbusTransactionManager()))
-        for i in range(10):
-            self.assertEqual(i+1, self._manager.getNextTID())
+        for tid in range(1, self._manager.getNextTID() + 10):
+            self.assertEqual(tid+2, self._manager.getNextTID())
         self._manager.resetTID()
         self.assertEqual(1, self._manager.getNextTID())
 
-    def testModbusTransactionManagerTransaction(self):
+    def testGetTransactionManagerTransaction(self):
         ''' Test the tcp transaction manager '''
-        class Request:
-            pass
+        class Request: pass
+        self._manager.resetTID()
+        handle = Request()
+        handle.transaction_id = self._manager.getNextTID()
+        handle.message = "testing"
+        self._manager.addTransaction(handle)
+        result = self._manager.getTransaction(handle.transaction_id)
+        self.assertEqual(handle.message, result.message)
+
+    def testDeleteTransactionManagerTransaction(self):
+        ''' Test the tcp transaction manager '''
+        class Request: pass
         self._manager.resetTID()
         handle = Request()
         handle.transaction_id = self._manager.getNextTID()
         handle.message = "testing"
 
         self._manager.addTransaction(handle)
-        result = self._manager.getTransaction(handle.transaction_id)
-        self.assertEqual(handle.message, result.message)
         self._manager.delTransaction(handle.transaction_id)
         self.assertEqual(None, self._manager.getTransaction(handle.transaction_id))
 
@@ -237,7 +245,7 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testASCIIFramerTransactionFull(self):
         ''' Test a full ascii frame transaction '''
-        msg  ='sss:01030000000AF2\r\n'
+        msg  ='sss:01030000000A0C\r\n'
         pack = a2b_hex(msg[6:-4])
         self._ascii.addToFrame(msg)
         self.assertTrue(self._ascii.checkFrame())
@@ -248,7 +256,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testASCIIFramerTransactionHalf(self):
         ''' Test a half completed ascii frame transaction '''
         msg1 = "sss:abcd1234"
-        msg2 = "1234aaaa\r\n"
+        msg2 = "1234aae6\r\n"
         pack = a2b_hex(msg1[6:] + msg2[:-4])
         self._ascii.addToFrame(msg1)
         self.assertFalse(self._ascii.checkFrame())
@@ -283,7 +291,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def testBinaryFramerTransactionReady(self):
         ''' Test a binary frame transaction '''
-        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d'
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x55\xd5\x7d'
         self.assertFalse(self._binary.isFrameReady())
         self.assertFalse(self._binary.checkFrame())
         self._binary.addToFrame(msg)
@@ -296,7 +304,7 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testBinaryFramerTransactionFull(self):
         ''' Test a full binary frame transaction '''
-        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xc9\x7d'
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x55\xd5\x7d'
         pack = msg[3:-3]
         self._binary.addToFrame(msg)
         self.assertTrue(self._binary.checkFrame())
@@ -307,7 +315,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testBinaryFramerTransactionHalf(self):
         ''' Test a half completed binary frame transaction '''
         msg1 = '\x7b\x01\x03\x00'
-        msg2 = '\x00\x00\x05\x85\xc9\x7d'
+        msg2 = '\x00\x00\x05\x55\xd5\x7d'
         pack = msg1[3:] + msg2[:-3]
         self._binary.addToFrame(msg1)
         self.assertFalse(self._binary.checkFrame())

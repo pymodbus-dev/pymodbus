@@ -473,9 +473,8 @@ class ModbusAsciiFramer(IModbusFramer):
             self.__header['len'] = end
             self.__header['uid'] = int(self.__buffer[1:3], 16)
             self.__header['lrc'] = int(self.__buffer[end-2:end], 16)
-            #data = self.__buffer[start:end-2]
-            #return checkLRC(data, self.__header['lrc'])
-            return True
+            data = self.__buffer[start:end-2]
+            return checkLRC(data, self.__header['lrc'])
         return False
 
     def advanceFrame(self):
@@ -627,11 +626,9 @@ class ModbusBinaryFramer(IModbusFramer):
         if (end != -1):
             self.__header['len'] = end
             self.__header['uid'] = struct.unpack('>B', self.__buffer[1:2])
-            self.__header['crc'] = self.__buffer[end-2:end]
-            #self.__header['crc'] = struct.unpack('>H', self.__buffer[end-2:end])
-            #data = self.__buffer[start:end-1]
-            #return checkCRC(data, self.__header['crc'])
-            return True
+            self.__header['crc'] = struct.unpack('>H', self.__buffer[end-2:end])[0]
+            data = self.__buffer[start:end-2]
+            return checkCRC(data, self.__header['crc'])
         return False
 
     def advanceFrame(self):

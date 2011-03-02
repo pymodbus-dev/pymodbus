@@ -5,10 +5,13 @@ Pydoc sub-class for generating documentation for entire packages.
 Taken from: http://pyopengl.sourceforge.net/pydoc/OpenGLContext.pydoc.pydoc2.html
 Author: Mike Fletcher
 """
-import pydoc, inspect, os, string
+import logging
+import pydoc, inspect, os, string, shutil
 import sys, imp, os, stat, re, types, inspect
 from repr import Repr
 from string import expandtabs, find, join, lower, split, strip, rfind, rstrip
+
+_log = logging.getLogger(__name__)
 
 def classify_class_attrs(cls):
 	"""Return list of attribute-descriptor tuples.
@@ -179,9 +182,6 @@ class DefaultFormatter(pydoc.HTMLDoc):
 
 		
 		if classes:
-##			print classes
-##			import pdb
-##			pdb.set_trace()
 			classlist = map(lambda (key, value): value, classes)
 			contents = [
 				self.formattree(inspect.getclasstree(classlist, 1), name)]
@@ -337,7 +337,8 @@ class PackageDocumentationGenerator:
 		self.warnings.append (message)
 	def info (self, message):
 		"""Information/status report"""
-		print message
+		_log.debug(message)
+
 	def addBase(self, specifier):
 		"""Set the base of the documentation set, only children of these modules will be documented"""
 		try:
@@ -348,7 +349,6 @@ class PackageDocumentationGenerator:
 	def addInteresting( self, specifier):
 		"""Add a module to the list of interesting modules"""
 		if self.checkScope( specifier):
-##			print "addInteresting", specifier
 			self.pending.append (specifier)
 		else:
 			self.completed[ specifier] = 1
@@ -418,7 +418,7 @@ class PackageDocumentationGenerator:
 				del self.pending[0]
 		finally:
 			for item in self.warnings:
-				print item
+				log.info(item)
 			
 	def clean (self, objectList, object):
 		"""callback from the formatter object asking us to remove
@@ -446,10 +446,14 @@ class PackageDocumentationGenerator:
 if __name__ == "__main__":
     if not os.path.exists("./html"):
         os.mkdir("./html")
+
+    print "Building Pydoc API Documentation"
     PackageDocumentationGenerator(
         baseModules = ['pymodbus', '__builtin__'],
         destinationDirectory = "./html/",
         exclusions = ['math', 'string', 'twisted'],
         recursionStops = [],
     ).process ()
-    os.system("mv html ../../../build/pydoc")
+
+    if os.path.exists('../../../build'):
+        shutil.move("html", "../../../build/pydoc")

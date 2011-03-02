@@ -29,6 +29,7 @@ class BuildApiDocs(Command):
     build.py script underneath trying to build the api
     documentation for the given format.
     '''
+    description  = "build all the projects api documents"
     user_options = []
 
     def initialize_options(self):
@@ -50,6 +51,44 @@ class BuildApiDocs(Command):
             os.chdir(old_cwd)
 
 command_classes['build_apidocs'] = BuildApiDocs
+
+class DeepClean(Command):
+    ''' Helper command to return the directory to a completely
+        clean state.
+    '''
+    description  = "clean everything that we don't want"
+    user_options = []
+
+    def initialize_options(self):
+        ''' options setup '''
+        self.trash = ['build', 'dist', 'pymodbus.egg-info',
+            os.path.join(os.path.join('doc','sphinx'),'build'),
+        ]
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        ''' command runner '''
+        self.__delete_pyc_files()
+        self.__delete_trash_dirs()
+
+    def __delete_trash_dirs(self):
+        ''' remove all directories created in building '''
+        self.__delete_pyc_files()
+        import shutil
+        for directory in self.trash:
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
+
+    def __delete_pyc_files(self):
+        ''' remove all python cache files '''
+        for root,dirs,files in os.walk('.'):
+            for file in files:
+                if file.endswith('.pyc'):
+                    os.remove(os.path.join(root,file))
+
+command_classes['deep_clean'] = DeepClean
 
 #---------------------------------------------------------------------------# 
 # Configuration
@@ -84,7 +123,8 @@ setup(name  = 'pymodbus',
     maintainer_email = 'bashwork@gmail.com',
     url='http://code.google.com/p/pymodbus/',
     license = 'BSD',
-    packages = find_packages(exclude=['ez_setup', 'examples', 'tests', 'doc']),
+    packages = find_packages(exclude=['ez_setup', 'examples', 'test', 'doc']),
+    exclude_package_data = {'' : ['examples', 'test', 'tools', 'doc']},
     platforms = ["Linux","Mac OS X","Win"],
     include_package_data = True,
     zip_safe = True,

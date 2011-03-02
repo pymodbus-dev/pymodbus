@@ -3,7 +3,7 @@
 Doxygen API Builder
 ---------------------
 '''
-import os
+import os, shutil
 
 def is_exe(path):
     ''' Returns if the program is executable
@@ -29,6 +29,8 @@ def which(program):
     return None
 
 if which('doxygen') is not None:
+    print "Building Doxygen API Documentation"
     os.system("doxygen .doxygen")
-    os.system("mv html ../../../build/doxygen")
+    if os.path.exists('../../../build'):
+        shutil.move("html", "../../../build/doxygen")
 else: print "Doxygen not available...not building"

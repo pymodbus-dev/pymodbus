@@ -1,7 +1,7 @@
-:mod:`datastore` --- Datastore for Modbus Server Context
+:mod:`store` --- Datastore for Modbus Server Context
 ============================================================
 
-.. module:: datastore
+.. module:: store
    :synopsis: Datastore for Modbus Server Context
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
@@ -10,7 +10,7 @@
 API Documentation
 -------------------
 
-.. automodule:: pymodbus.datastore
+.. automodule:: pymodbus.datastore.store
 
 .. autoclass:: BaseModbusDataBlock
    :members:
@@ -19,8 +19,5 @@ API Documentation
    :members:
 
 .. autoclass:: ModbusSparseDataBlock
-   :members:
-
-.. autoclass:: ModbusServerContext
    :members:
 

@@ -127,3 +127,4 @@ class ModbusServerContext(object):
         if self.__slaves.has_key(slave):
             return self.__slaves.get(slave)
         else: raise ParameterException("slave does not exist, or is out of range")
+

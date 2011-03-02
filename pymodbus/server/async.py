@@ -78,10 +78,11 @@ class ModbusTcpProtocol(protocol.Protocol):
 
         :param message: The unencoded modbus response
         '''
-        self.factory.control.Counter.BusMessage += 1
-        pdu = self.framer.buildPacket(message)
-        _logger.debug('send: %s' % b2a_hex(pdu))
-        return self.transport.write(pdu)
+        if message.should_respond:
+            self.factory.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.transport.write(pdu)
 
 
 class ModbusServerFactory(ServerFactory):

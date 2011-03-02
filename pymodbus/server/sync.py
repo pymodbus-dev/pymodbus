@@ -85,10 +85,11 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
 
         :param message: The unencoded modbus response
         '''
-        #self.server.control.Counter.BusMessage += 1
-        pdu = self.framer.buildPacket(message)
-        _logger.debug('send: %s' % b2a_hex(pdu))
-        return self.request.send(pdu)
+        if message.should_respond:
+            #self.server.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.request.send(pdu)
 
     def decode(self, message):
         ''' Decodes a request packet

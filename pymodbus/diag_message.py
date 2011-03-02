@@ -334,6 +334,7 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
     This does not send a response
     '''
     sub_function_code = 0x0004
+    should_respond    = False
 
     def __init__(self):
         ''' Initializer to block a return response

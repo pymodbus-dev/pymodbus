@@ -14,7 +14,7 @@ from the sourcecode*
    sync-client.rst
    async-client.rst
    constants.rst
-   datastore.rst
+   datastore/index.rst
    diag-message.rst
    device.rst
    factory.rst

@@ -3,7 +3,6 @@ General
 ---------------------------------------------------------------------------
 - reorganize code into folder namespaces
 - put protocol code in protocol namespace
-- add crc/lrc check on incoming data
 - make framer read header->read header.length
   - maybe just for sync 
 - finish clients (and interface)
@@ -29,15 +28,9 @@ Utilities
 - (udp/serial) forwarder
 
 ---------------------------------------------------------------------------
-Slave Context
----------------------------------------------------------------------------
-- link to other clients (other machines, other instances)
-
----------------------------------------------------------------------------
 Client
 ---------------------------------------------------------------------------
 - Rework transaction flow and response data
-- Finish rtu framers
 
 ---------------------------------------------------------------------------
 Tools

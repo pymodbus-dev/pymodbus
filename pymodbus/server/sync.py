@@ -5,7 +5,8 @@ Implementation of a Threaded Modbus Server
 '''
 from binascii import b2a_hex
 import SocketServer
-import serial, socket
+import serial
+import socket
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -21,6 +22,7 @@ from pymodbus.pdu import ModbusExceptions as merror
 #---------------------------------------------------------------------------#
 import logging
 _logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Server
@@ -102,6 +104,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
+
 class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
@@ -149,6 +152,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         _logger.debug("Modbus server stopped")
         self.socket.close()
         for thread in self.threads: thread.running = False
+
 
 class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     '''
@@ -198,6 +202,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         self.socket.close()
         for thread in self.threads: thread.running = False
 
+
 class ModbusSerialServer(object):
     '''
     A modbus threaded udp socket server
@@ -243,7 +248,7 @@ class ModbusSerialServer(object):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.device, timeout=self.timeout, 
+            self.socket = serial.Serial(port=self.device, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException, msg:
@@ -260,7 +265,8 @@ class ModbusSerialServer(object):
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        handler = ModbusRequestHandler(request, ('127.0.0.1', self.device), self)
+        handler = ModbusRequestHandler(request,
+            ('127.0.0.1', self.device), self)
         return handler
 
     def serve_forever(self):
@@ -279,9 +285,9 @@ class ModbusSerialServer(object):
         _logger.debug("Modbus server stopped")
         self.socket.close()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Creation Factories
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def StartTcpServer(context=None, identity=None):
     ''' A factory to start and run a tcp modbus server
 

@@ -12,6 +12,7 @@ from utilities import rtuFrameSize
 import logging
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Base PDU's
 #---------------------------------------------------------------------------#
@@ -77,6 +78,7 @@ class ModbusPDU(object):
         else: raise NotImplementedException(
             "Cannot determine RTU frame size for %s" % cls.__name__)
 
+
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''
 
@@ -93,6 +95,7 @@ class ModbusRequest(ModbusPDU):
         _logger.error("Exception Response F(%d) E(%d)" %
                 (self.function_code, exception))
         return ExceptionResponse(self.function_code, exception)
+
 
 class ModbusResponse(ModbusPDU):
     ''' Base class for a modbus response PDU
@@ -114,6 +117,7 @@ class ModbusResponse(ModbusPDU):
         ''' Proxy to the lower level initializer '''
         ModbusPDU.__init__(self, **kwargs)
 
+
 #---------------------------------------------------------------------------#
 # Exception PDU's
 #---------------------------------------------------------------------------#
@@ -130,6 +134,7 @@ class ModbusExceptions(Singleton):
     MemoryParityError       = 0x08
     GatewayPathUnavailable  = 0x0A
     GatewayNoResponse       = 0x0B
+
 
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
@@ -165,8 +170,9 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The string representation of an exception response
         '''
-        return "Exception Response (%d, %d)" % (self.function_code,
-                self.exception_code)
+        parameters = (self.function_code, self.exception_code)
+        return "Exception Response (%d, %d)" % parameters
+
 
 class IllegalFunctionRequest(ModbusRequest):
     '''
@@ -201,9 +207,9 @@ class IllegalFunctionRequest(ModbusRequest):
         '''
         return ExceptionResponse(self.function_code, self.ErrorCode)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
     'ExceptionResponse', 'IllegalFunctionRequest',

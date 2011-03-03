@@ -10,6 +10,7 @@ from itertools import izip
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
+
 #---------------------------------------------------------------------------#
 # Network Access Control
 #---------------------------------------------------------------------------#
@@ -63,6 +64,7 @@ class ModbusAccessControl(Singleton):
         :param host: The host to check
         '''
         return host in self.__nmstable
+
 
 #---------------------------------------------------------------------------#
 # Device Information Control
@@ -155,9 +157,9 @@ class ModbusDeviceIdentification(object):
         '''
         return "DeviceIdentity"
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     VendorName          = dict_property(lambda s: s.__data, 0)
     ProductCode         = dict_property(lambda s: s.__data, 1)
     MajorMinorRevision  = dict_property(lambda s: s.__data, 2)
@@ -165,6 +167,7 @@ class ModbusDeviceIdentification(object):
     ProductName         = dict_property(lambda s: s.__data, 4)
     ModelName           = dict_property(lambda s: s.__data, 5)
     UserApplicationName = dict_property(lambda s: s.__data, 6)
+
 
 #---------------------------------------------------------------------------#
 # Counters Handler
@@ -178,60 +181,63 @@ class ModbusCountersHandler(object):
              Quantity of messages that the remote
              device has detected on the communications system since its
              last restart, clear counters operation, or power-up.  Messages
-             with bad CRC are not taken into account. 
+             with bad CRC are not taken into account.
 
-    0x0C  2  Return Bus Communication Error Count 
+    0x0C  2  Return Bus Communication Error Count
 
-             Quantity of CRC errors encountered by the remote device since its last 
-             restart, clear counters operation, or power-up.  In case of an error 
-             detected on the character level, (overrun, parity error), or in case of a 
-             message length < 3 bytes, the receiving device is not able to calculate 
-             the CRC.  In such cases, this counter is also incremented. 
+             Quantity of CRC errors encountered by the remote device since its
+             last restart, clear counters operation, or power-up.  In case of
+             an error detected on the character level, (overrun, parity error),
+             or in case of a message length < 3 bytes, the receiving device is
+             not able to calculate the CRC. In such cases, this counter is
+             also incremented.
 
     0x0D  3  Return Slave Exception Error Count
 
-             Quantity of MODBUS exception error detected by the remote device 
-             since its last restart, clear counters operation, or power-up.  It 
-             comprises also the error detected in broadcast messages even if an 
-             exception message is not returned in this case.  
-             Exception errors are described and listed in "MODBUS Application 
-             Protocol Specification" document. 
+             Quantity of MODBUS exception error detected by the remote device
+             since its last restart, clear counters operation, or power-up.  It
+             comprises also the error detected in broadcast messages even if an
+             exception message is not returned in this case.
+             Exception errors are described and listed in "MODBUS Application
+             Protocol Specification" document.
 
     0xOE  4  Return Slave Message Count
 
-             Quantity of messages addressed to the remote device,  including 
-             broadcast messages, that the remote device has processed since its 
-             last restart, clear counters operation, or power-up. 
+             Quantity of messages addressed to the remote device,  including
+             broadcast messages, that the remote device has processed since its
+             last restart, clear counters operation, or power-up.
 
-    0x0F  5  Return Slave No Response Count 
-             Quantity of messages received by the remote device for which it 
-             returned no response (neither a normal response nor an exception 
-             response), since its last restart, clear counters operation, or power-up.  
-             Then, this counter counts the number of broadcast messages it has 
-             received.
+    0x0F  5  Return Slave No Response Count
+
+             Quantity of messages received by the remote device for which it
+             returned no response (neither a normal response nor an exception
+             response), since its last restart, clear counters operation, or
+             power-up. Then, this counter counts the number of broadcast
+             messages it has received.
 
     0x10  6  Return Slave NAK Count
 
-             Quantity of messages addressed to the remote device for which it 
-             returned a Negative Acknowledge (NAK) exception response, since its 
-             last restart, clear counters operation, or power-up. Exception 
-             responses are described and listed in "MODBUS Application Protocol 
-             Specification" document. 
+             Quantity of messages addressed to the remote device for which it
+             returned a Negative Acknowledge (NAK) exception response, since
+             its last restart, clear counters operation, or power-up. Exception
+             responses are described and listed in "MODBUS Application Protocol
+             Specification" document.
 
     0x11  7  Return Slave Busy Count
 
-             Quantity of messages addressed to the remote device for which it 
-             returned a Slave Device Busy exception response, since its last restart, 
-             clear counters operation, or power-up. Exception responses are 
-             described and listed in "MODBUS Application Protocol Specification" 
-             document
+             Quantity of messages addressed to the remote device for which it
+             returned a Slave Device Busy exception response, since its last
+             restart, clear counters operation, or power-up. Exception
+             responses are described and listed in "MODBUS Application
+             Protocol Specification" document.
 
     0x12  8  Return Bus Character Overrun Count
 
-             Quantity of messages addressed to the remote device that it could not
-             handle due to a character overrun condition, since its last restart, clear
-             counters operation, or power-up. A character overrun is caused by data 
-             characters arriving at the port faster than they can 
+             Quantity of messages addressed to the remote device that it could
+             not handle due to a character overrun condition, since its last
+             restart, clear counters operation, or power-up. A character
+             overrun is caused by data characters arriving at the port faster
+             than they can.
 
     .. note:: I threw the event counter in here for convinience
     '''
@@ -281,9 +287,9 @@ class ModbusCountersHandler(object):
             count <<= 1
         return result
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     BusMessage            = dict_property(lambda s: s.__data, 0)
     BusCommunicationError = dict_property(lambda s: s.__data, 1)
     BusExceptionError     = dict_property(lambda s: s.__data, 2)
@@ -293,6 +299,7 @@ class ModbusCountersHandler(object):
     SlaveBusy             = dict_property(lambda s: s.__data, 6)
     BusCharacterOverrun   = dict_property(lambda s: s.__data, 7)
     Event                 = dict_property(lambda s: s.__data, 8)
+
 
 #---------------------------------------------------------------------------#
 # Main server controll block
@@ -314,9 +321,9 @@ class ModbusControlBlock(Singleton):
     __identity = ModbusDeviceIdentification()
     __events   = []
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Magic
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def __str__(self):
         ''' Build a representation of the control block
 
@@ -331,9 +338,9 @@ class ModbusControlBlock(Singleton):
         '''
         return self.__counters.__iter__()
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Events
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def addEvent(self, event):
         ''' Adds a new event to the event log
 
@@ -356,9 +363,9 @@ class ModbusControlBlock(Singleton):
         '''
         self.__events = []
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Other Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     Identity = property(lambda s: s.__identity)
     Counter  = property(lambda s: s.__counters)
     Events   = property(lambda s: s.__events)
@@ -371,9 +378,9 @@ class ModbusControlBlock(Singleton):
         self.__counters.reset()
         self.__diagnostic = [False] * 16
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Listen Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def _setListenOnly(self, value):
         ''' This toggles the listen only status
 
@@ -383,9 +390,9 @@ class ModbusControlBlock(Singleton):
 
     ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Mode Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def _setMode(self, mode):
         ''' This toggles the current serial mode
 
@@ -396,9 +403,9 @@ class ModbusControlBlock(Singleton):
 
     Mode = property(lambda s: s.__mode, _setMode)
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Delimiter Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def _setDelimiter(self, char):
         ''' This changes the serial delimiter character
 
@@ -411,9 +418,9 @@ class ModbusControlBlock(Singleton):
 
     Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     # Diagnostic Properties
-    #---------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#
     def setDiagnostic(self, mapping):
         ''' This sets the value in the diagnostic register
 
@@ -440,9 +447,9 @@ class ModbusControlBlock(Singleton):
         '''
         return self.__diagnostic
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported Identifiers
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
         "ModbusAccessControl",
         "ModbusDeviceIdentification",

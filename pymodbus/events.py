@@ -10,6 +10,7 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
+
 class ModbusEvent(object):
 
     def encode(self):
@@ -26,21 +27,23 @@ class ModbusEvent(object):
         '''
         raise NotImplementedException()
 
+
 class RemoteReceiveEvent(ModbusEvent):
-    ''' Remote device MODBUS Receive Event 
+    ''' Remote device MODBUS Receive Event
 
     The remote device stores this type of event byte when a query message
     is received. It is stored before the remote device processes the message.
     This event is defined by bit 7 set to logic '1'. The other bits will be
-    set to a logic '1' if the corresponding condition is TRUE. The bit layout is::
+    set to a logic '1' if the corresponding condition is TRUE. The bit layout
+    is::
 
-        Bit Contents 
+        Bit Contents
         ----------------------------------
-        0   Not Used 
-        2   Not Used 
-        3   Not Used 
-        4   Character Overrun 
-        5   Currently in Listen Only Mode 
+        0   Not Used
+        2   Not Used
+        3   Not Used
+        4   Character Overrun
+        5   Currently in Listen Only Mode
         6   Broadcast Receive
         7   1
     '''
@@ -72,8 +75,10 @@ class RemoteReceiveEvent(ModbusEvent):
         self.listen    = bits[5]
         self.broadcast = bits[6]
 
+
 class RemoteSendEvent(ModbusEvent):
-    ''' Remote device MODBUS Send Event 
+    ''' Remote device MODBUS Send Event
+
     The remote device stores this type of event byte when it finishes
     processing a request message. It is stored if the remote device
     returned a normal or exception response, or no response.
@@ -82,15 +87,15 @@ class RemoteSendEvent(ModbusEvent):
     The other bits will be set to a logic '1' if the corresponding
     condition is TRUE. The bit layout is::
 
-        Bit Contents 
+        Bit Contents
         -----------------------------------------------------------
-        0   Read Exception Sent (Exception Codes 1-3) 
-        1   Slave Abort Exception Sent (Exception Code 4) 
-        2   Slave Busy Exception Sent (Exception Codes 5-6) 
-        3   Slave Program NAK Exception Sent (Exception Code 7) 
-        4   Write Timeout Error Occurred 
-        5   Currently in Listen Only Mode 
-        6   1 
+        0   Read Exception Sent (Exception Codes 1-3)
+        1   Slave Abort Exception Sent (Exception Code 4)
+        2   Slave Busy Exception Sent (Exception Codes 5-6)
+        3   Slave Program NAK Exception Sent (Exception Code 7)
+        4   Write Timeout Error Occurred
+        5   Currently in Listen Only Mode
+        6   1
         7   0
     '''
 
@@ -129,11 +134,12 @@ class RemoteSendEvent(ModbusEvent):
         self.write_timeout = bits[4]
         self.listen        = bits[5]
 
+
 class EnteredListenModeEvent(ModbusEvent):
     ''' Remote device Entered Listen Only Mode
 
     The remote device stores this type of event byte when it enters
-    the Listen Only Mode. The event is defined by a content of 04 hex. 
+    the Listen Only Mode. The event is defined by a content of 04 hex.
     '''
 
     value = 0x04
@@ -154,19 +160,20 @@ class EnteredListenModeEvent(ModbusEvent):
         if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
 
+
 class CommunicationRestartEvent(ModbusEvent):
     ''' Remote device Initiated Communication Restart 
 
     The remote device stores this type of event byte when its communications
     port is restarted. The remote device can be restarted by the Diagnostics
     function (code 08), with sub-function Restart Communications Option
-    (code 00 01). 
+    (code 00 01).
 
     That function also places the remote device into a 'Continue on Error'
-    or 'Stop on Error' mode. If the remote device is placed  into 'Continue on Error'
-    mode, the event byte is added to the existing event log. If the  remote device
-    is placed into 'Stop on Error' mode, the byte is added to the log and the
-    rest of the log is cleared to zeros.
+    or 'Stop on Error' mode. If the remote device is placed  into 'Continue on
+    Error' mode, the event byte is added to the existing event log. If the
+    remote device is placed into 'Stop on Error' mode, the byte is added to
+    the log and the rest of the log is cleared to zeros.
 
     The event is defined by a content of zero.
     '''
@@ -188,4 +195,3 @@ class CommunicationRestartEvent(ModbusEvent):
         '''
         if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
-

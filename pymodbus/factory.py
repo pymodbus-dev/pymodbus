@@ -23,10 +23,10 @@ from pymodbus.register_write_message import *
 import logging
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Server Decoder
 #---------------------------------------------------------------------------#
-
 class ServerDecoder(IModbusDecoder):
     ''' Request Message Factory (Server)
 
@@ -82,10 +82,10 @@ class ServerDecoder(IModbusDecoder):
         request.decode(data[1:])
         return request
 
-#---------------------------------------------------------------------------# 
-# Client Decoder
-#---------------------------------------------------------------------------# 
 
+#---------------------------------------------------------------------------#
+# Client Decoder
+#---------------------------------------------------------------------------#
 class ClientDecoder(IModbusDecoder):
     ''' Response Message Factory (Client)
 
@@ -144,7 +144,7 @@ class ClientDecoder(IModbusDecoder):
         response.decode(data[1:])
         return response
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = ['ServerDecoder', 'ClientDecoder']

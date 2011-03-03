@@ -7,6 +7,7 @@ values for the servers and clients.
 '''
 from pymodbus.interfaces import Singleton
 
+
 class Defaults(Singleton):
     ''' A collection of modbus default values
 
@@ -81,6 +82,7 @@ class Defaults(Singleton):
     Parity        = 'N'
     Bytesize      = 8
     Stopbits      = 1
+
 
 class ModbusStatus(Singleton):
     '''

@@ -8,7 +8,6 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
-from pymodbus.exceptions import *
 
 _MCB = ModbusControlBlock()
 
@@ -390,7 +389,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         length = len(self.identifier) + 2
         packet = struct.pack('>B', length)
         packet += self.identifier # we assume it is already encoded
-        packet += struct.pack('>B', self.status)
+        packet += struct.pack('>B', status)
         return packet
 
     def decode(self, data):

@@ -63,7 +63,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         '''
         # TODO deal with deferreds
         _logger.debug("set values[%d] %d:%d" % (fx, address, len(values)))
-        result = self.__set_callbacks[self.decode(fx)](address, values)
+        self.__set_callbacks[self.decode(fx)](address, values)
 
     def __str__(self):
         ''' Returns a string representation of the context

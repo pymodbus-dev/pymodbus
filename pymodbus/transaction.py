@@ -48,7 +48,7 @@ class ModbusTransactionManager(Singleton):
         '''
         retries = Defaults.Retries
         request.transaction_id = self.__getNextTID()
-        _logging.debug("Running transaction %d" % request.transaction_id)
+        _logger.debug("Running transaction %d" % request.transaction_id)
 
         while retries > 0:
             try:
@@ -57,7 +57,7 @@ class ModbusTransactionManager(Singleton):
                 self.socket.send(packet)
             except socket.error, msg:
                 self.socket.close()
-                _logging.debug("Transaction failed. (%s) " % msg)
+                _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
 
     def addTransaction(self, request):

@@ -9,6 +9,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
+
 class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
@@ -44,6 +45,7 @@ class ReadBitsRequestBase(ModbusRequest):
         :returns: A string representation of the instance
         '''
         return "ReadBitRequest(%d,%d)" % (self.address, self.count)
+
 
 class ReadBitsResponseBase(ModbusResponse):
     ''' Base class for Messages responding to bit-reading values '''
@@ -105,6 +107,7 @@ class ReadBitsResponseBase(ModbusResponse):
         '''
         return "ReadBitResponse(%d)" % len(self.bits)
 
+
 class ReadCoilsRequest(ReadBitsRequestBase):
     '''
     This function code is used to read from 1 to 2000(0x7d0) contiguous status
@@ -140,6 +143,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         values = context.getValues(self.function_code, self.address, self.count)
         return ReadCoilsResponse(values)
 
+
 class ReadCoilsResponse(ReadBitsResponseBase):
     '''
     The coils in the response message are packed as one coil per bit of
@@ -161,6 +165,7 @@ class ReadCoilsResponse(ReadBitsResponseBase):
         :param values: The request values to respond with
         '''
         ReadBitsResponseBase.__init__(self, values, **kwargs)
+
 
 class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     '''
@@ -197,6 +202,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         values = context.getValues(self.function_code, self.address, self.count)
         return ReadDiscreteInputsResponse(values)
 
+
 class ReadDiscreteInputsResponse(ReadBitsResponseBase):
     '''
     The discrete inputs in the response message are packed as one input per
@@ -219,9 +225,9 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
         '''
         ReadBitsResponseBase.__init__(self, values, **kwargs)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReadCoilsRequest", "ReadCoilsResponse",
     "ReadDiscreteInputsRequest", "ReadDiscreteInputsResponse",

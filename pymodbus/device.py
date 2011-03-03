@@ -76,15 +76,15 @@ class ModbusDeviceIdentification(object):
     application protocol.
     '''
     __data = {
-        0x00: '', # VendorName
-        0x01: '', # ProductCode
-        0x02: '', # MajorMinorRevision
-        0x03: '', # VendorUrl
-        0x04: '', # ProductName
-        0x05: '', # ModelName
-        0x06: '', # UserApplicationName
-        0x07: '', # reserved
-        0x08: '', # reserved
+        0x00: '',  # VendorName
+        0x01: '',  # ProductCode
+        0x02: '',  # MajorMinorRevision
+        0x03: '',  # VendorUrl
+        0x04: '',  # ProductName
+        0x05: '',  # ModelName
+        0x06: '',  # UserApplicationName
+        0x07: '',  # reserved
+        0x08: '',  # reserved
         # 0x80 -> 0xFF are private
     }
 
@@ -261,9 +261,9 @@ class ModbusCountersHandler(object):
 
         :param input: The value to copy values from
         '''
-        for k,v in input.iteritems():
+        for k, v in input.iteritems():
             v += self.__getattribute__(k)
-            self.__setattr__(k,v)
+            self.__setattr__(k, v)
 
     def reset(self):
         ''' This clears all of the system counters
@@ -340,7 +340,7 @@ class ModbusControlBlock(Singleton):
         :param event: A new event to add to the log
         '''
         self.__events.insert(0, event)
-        self.__events = self.__events[0:64] # chomp to 64 entries
+        self.__events = self.__events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
     def getEvents(self):

@@ -37,7 +37,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.values = [] # dunno where this should come from
+        self.values = []  # dunno where this should come from
 
     def encode(self):
         ''' Encodes the request packet
@@ -114,7 +114,7 @@ class ReadFifoQueueResponse(ModbusResponse):
         length, count = struct.unpack('>HH', data[0:4])
         for index in xrange(0, count - 4):
             idx = 4 + index * 2
-            self.values.append(struct.unpack('>H', data[idx:idx+2])[0])
+            self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
 
 #---------------------------------------------------------------------------# 
 # Exported symbols

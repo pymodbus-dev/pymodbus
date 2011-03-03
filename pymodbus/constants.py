@@ -57,7 +57,7 @@ class Defaults(Singleton):
          - (E)ven - 1 0 1 0 | P(0)
          - (O)dd  - 1 0 1 0 | P(1)
          - (N)one - 1 0 1 0 | no parity
-         
+
        This defaults to (N)one.
 
     .. attribute:: Bytesize
@@ -120,7 +120,7 @@ class ModbusStatus(Singleton):
     SlaveOn  = 0xff
     SlaveOff = 0x00
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported Identifiers
-#---------------------------------------------------------------------------# 
-__all__ = [ "Defaults", "ModbusStatus" ]
+#---------------------------------------------------------------------------#
+__all__ = ["Defaults", "ModbusStatus"]

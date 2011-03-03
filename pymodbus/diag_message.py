@@ -10,7 +10,6 @@ import struct
 from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
-from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.utilities import pack_bitstring
@@ -595,7 +594,7 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
     '''
     Clears the overrun error counter and reset the error flag
-    
+
     An error flag should be cleared, but nothing else in the
     specification mentions is, so it is ignored.
     '''

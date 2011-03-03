@@ -15,7 +15,6 @@ Example Run::
        reactor.callLater(1, clientTest)
        reactor.run()
 """
-import struct
 from collections import deque
 
 from twisted.internet import reactor, defer, protocol

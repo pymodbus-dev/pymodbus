@@ -28,4 +28,3 @@ except ImportError:
 
 h = NullHandler()
 logging.getLogger(__name__).addHandler(h)
-

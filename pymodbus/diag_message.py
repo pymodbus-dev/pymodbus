@@ -16,6 +16,7 @@ from pymodbus.utilities import pack_bitstring
 
 _MCB = ModbusControlBlock()
 
+
 #---------------------------------------------------------------------------#
 # Diagnostic Function Codes Base Classes
 # diagnostic 08, 00-18,20
@@ -62,6 +63,7 @@ class DiagnosticStatusRequest(ModbusRequest):
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
 
+
 class DiagnosticStatusResponse(ModbusResponse):
     '''
     This is a base class for all of the diagnostic response functions
@@ -105,6 +107,7 @@ class DiagnosticStatusResponse(ModbusResponse):
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
 
+
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     '''
     A large majority of the diagnostic functions are simple
@@ -132,6 +135,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         ''' Base function to raise if not implemented '''
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 
+
 class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     '''
     A large majority of the diagnostic functions are simple
@@ -147,6 +151,7 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
         '''
         DiagnosticStatusResponse.__init__(self)
         self.message = data
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 00
@@ -176,6 +181,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         '''
         return ReturnQueryDataResponse(self.message)
 
+
 class ReturnQueryDataResponse(DiagnosticStatusResponse):
     '''
     The data passed in the request data field is to be returned (looped back)
@@ -193,6 +199,7 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
         if isinstance(message, list):
             self.message = message
         else: self.message = [message]
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 01
@@ -226,6 +233,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         #if _MCB.ListenOnly:
         return RestartCommunicationsOptionResponse(self.message)
 
+
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
     '''
     The remote device serial line port must be initialized and restarted, and
@@ -247,6 +255,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
             self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
 
+
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 02
 #---------------------------------------------------------------------------#
@@ -266,12 +275,14 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
         register = pack_bitstring(_MCB.getDiagnosticRegister())
         return ReturnDiagnosticRegisterResponse(register)
 
+
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
     '''
     The contents of the remote device's 16-bit diagnostic register are
     returned in the response
     '''
     sub_function_code = 0x0002
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 03
@@ -294,6 +305,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
         _MCB.Delimiter = char
         return ChangeAsciiInputDelimiterResponse(self.message)
 
+
 class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
     '''
     The character 'CHAR' passed in the request data field becomes the end of
@@ -302,6 +314,7 @@ class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
     required at the end of ASCII messages.
     '''
     sub_function_code = 0x0003
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 04
@@ -323,6 +336,7 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
         _MCB.ListenOnly = True
         return ForceListenOnlyModeResponse()
 
+
 class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
     '''
     Forces the addressed remote device to its Listen Only Mode for MODBUS
@@ -340,6 +354,7 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
         '''
         DiagnosticStatusResponse.__init__(self)
         self.message = []
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 10
@@ -359,12 +374,14 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
         _MCB.reset()
         return ClearCountersResponse(self.message)
 
+
 class ClearCountersResponse(DiagnosticStatusSimpleResponse):
     '''
     The goal is to clear ll counters and the diagnostic register.
     Also, counters are cleared upon power-up
     '''
     sub_function_code = 0x000A
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 11
@@ -385,6 +402,7 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.BusMessage
         return ReturnBusMessageCountResponse(count)
 
+
 class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages that the
@@ -392,6 +410,7 @@ class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
     restart, clear counters operation, or power-up
     '''
     sub_function_code = 0x000B
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 12
@@ -412,6 +431,7 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.BusCommunicationError
         return ReturnBusCommunicationErrorCountResponse(count)
 
+
 class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of CRC errors encountered
@@ -419,6 +439,7 @@ class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
     power-up
     '''
     sub_function_code = 0x000C
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 13
@@ -439,6 +460,7 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.BusExceptionError
         return ReturnBusExceptionErrorCountResponse(count)
 
+
 class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of modbus exception
@@ -446,6 +468,7 @@ class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
     clear counters operation, or power-up
     '''
     sub_function_code = 0x000D
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 14
@@ -466,6 +489,7 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.SlaveMessage
         return ReturnSlaveMessageCountResponse(count)
 
+
 class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages addressed to the
@@ -473,6 +497,7 @@ class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
     its last restart, clear counters operation, or power-up
     '''
     sub_function_code = 0x000E
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 15
@@ -493,6 +518,7 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.SlaveNoResponse
         return ReturnSlaveNoReponseCountResponse(count)
 
+
 class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages addressed to the
@@ -500,6 +526,7 @@ class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
     its last restart, clear counters operation, or power-up
     '''
     sub_function_code = 0x000F
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 16
@@ -521,6 +548,7 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.SlaveNAK
         return ReturnSlaveNAKCountResponse(count)
 
+
 class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages addressed to the
@@ -529,6 +557,7 @@ class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
     Exception responses are described and listed in section 7.
     '''
     sub_function_code = 0x0010
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 17
@@ -549,6 +578,7 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.SlaveBusy
         return ReturnSlaveBusyCountResponse(count)
 
+
 class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages addressed to the
@@ -556,6 +586,7 @@ class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
     since its last restart, clear counters operation, or power-up.
     '''
     sub_function_code = 0x0011
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 18
@@ -578,6 +609,7 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
         count = _MCB.Counter.BusCharacterOverrun
         return ReturnSlaveBusCharacterOverrunCountResponse(count)
 
+
 class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''
     The response data field returns the quantity of messages addressed to the
@@ -587,6 +619,7 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
     can be stored, or by the loss of a character due to a hardware malfunction.
     '''
     sub_function_code = 0x0012
+
 
 #---------------------------------------------------------------------------#
 # Diagnostic Sub Code 20
@@ -607,6 +640,7 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
         '''
         _MCB.Counter.BusCharacterOverrun = 0x0000
         return ClearOverrunCountResponse(self.message)
+
 
 class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''

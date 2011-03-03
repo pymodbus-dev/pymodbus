@@ -19,6 +19,7 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 _turn_coil_on  = struct.pack(">H", ModbusStatus.On)
 _turn_coil_off = struct.pack(">H", ModbusStatus.Off)
 
+
 class WriteSingleCoilRequest(ModbusRequest):
     '''
     This function code is used to write a single output to either ON or OFF
@@ -88,6 +89,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         return "WriteCoilRequest(%d, %s) => " % (self.address, self.value)
 
+
 class WriteSingleCoilResponse(ModbusResponse):
     '''
     The normal response is an echo of the request, returned after the coil
@@ -129,6 +131,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :returns: A string representation of the instance
         '''
         return "WriteCoilResponse(%d) => %d" % (self.address, self.value)
+
 
 class WriteMultipleCoilsRequest(ModbusRequest):
     '''
@@ -202,6 +205,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         params = (self.address, len(self.values))
         return "WriteNCoilRequest (%d) => %d " % params
 
+
 class WriteMultipleCoilsResponse(ModbusResponse):
     '''
     The normal response returns the function code, starting address, and
@@ -241,9 +245,9 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         '''
         return "WriteNCoilResponse(%d, %d)" % (self.address, self.count)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "WriteSingleCoilRequest", "WriteSingleCoilResponse",
     "WriteMultipleCoilsRequest", "WriteMultipleCoilsResponse",

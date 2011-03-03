@@ -51,8 +51,9 @@ from pymodbus.exceptions import NotImplementedException, ParameterException
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging;
+import logging
 _logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Datablock Storage
@@ -127,6 +128,7 @@ class BaseModbusDataBlock(object):
             return self.values.iteritems()
         return enumerate(self.values)
 
+
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
     ''' Creates a sequential modbus datastore '''
 
@@ -161,7 +163,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :returns: The requested values from a:a+c
         '''
         start = address - self.address
-        return self.values[start:start+count]
+        return self.values[start:start + count]
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
@@ -172,7 +174,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         if not isinstance(values, list):
             values = [values]
         start = address - self.address
-        self.values[start:start+len(values)] = values
+        self.values[start:start + len(values)] = values
+
 
 class ModbusSparseDataBlock(BaseModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
@@ -189,7 +192,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             self.values = values
         if hasattr(values, '__iter__'):
             self.values = dict(enumerate(values))
-        else: raise ParameterException("Values for datastore must be a list or dictionary")
+        else: raise ParameterException(
+            "Values for datastore must be a list or dictionary")
         self.default_value = self.values.values()[0].__class__()
         self.address = self.values.iterkeys().next()
 
@@ -220,11 +224,10 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param values: The new values to be set
         '''
         if isinstance(values, dict):
-            for idx,val in values.iteritems():
+            for idx, val in values.iteritems():
                 self.values[idx] = val
         else:
             if not isinstance(values, list):
                 values = [values]
-            for idx,val in enumerate(values):
+            for idx, val in enumerate(values):
                 self.values[address + idx] = val
-

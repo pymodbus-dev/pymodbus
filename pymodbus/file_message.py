@@ -4,11 +4,11 @@ File Record Read/Write Messages
 
 Currently none of these messages are implemented
 '''
-
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+
 
 #---------------------------------------------------------------------------#
 # TODO finish these requests
@@ -16,7 +16,6 @@ from pymodbus.pdu import ModbusExceptions as merror
 # Read File Record 20
 # Write File Record 21
 # mask write register 22
-
 class ReadFifoQueueRequest(ModbusRequest):
     '''
     This function code allows to read the contents of a First-In-First-Out
@@ -62,6 +61,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
         return ReadFifoQueueResponse(self.values)
+
 
 class ReadFifoQueueResponse(ModbusResponse):
     '''
@@ -116,9 +116,9 @@ class ReadFifoQueueResponse(ModbusResponse):
             idx = 4 + index * 2
             self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReadFifoQueueRequest", "ReadFifoQueueResponse",
 ]

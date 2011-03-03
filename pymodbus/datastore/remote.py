@@ -4,8 +4,9 @@ from pymodbus.interfaces import IModbusSlaveContext
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging;
+import logging
 _logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Context
@@ -77,16 +78,16 @@ class RemoteSlaveContext(IModbusSlaveContext):
         code mapper.
         '''
         self.__get_callbacks = {
-            'd' : lambda a,c: self._client.read_discrete_inputs(a, c),
-            'c' : lambda a,c: self._client.read_coils(a, c),
-            'h' : lambda a,c: self._client.read_holding_registers(a, c),
-            'i' : lambda a,c: self._client.read_input_registers(a, c),
+            'd': lambda a, c: self._client.read_discrete_inputs(a, c),
+            'c': lambda a, c: self._client.read_coils(a, c),
+            'h': lambda a, c: self._client.read_holding_registers(a, c),
+            'i': lambda a, c: self._client.read_input_registers(a, c),
         }
         self.__set_callbacks = {
-            'd' : lambda a,v: self._client.write_coils(a, v),
-            'c' : lambda a,v: self._client.write_coils(a, v),
-            'h' : lambda a,v: self._client.write_registers(a, v),
-            'i' : lambda a,v: self._client.write_registers(a, v),
+            'd': lambda a, v: self._client.write_coils(a, v),
+            'c': lambda a, v: self._client.write_coils(a, v),
+            'h': lambda a, v: self._client.write_registers(a, v),
+            'i': lambda a, v: self._client.write_registers(a, v),
         }
 
     def __extract_result(self, fx, result):
@@ -97,4 +98,3 @@ class RemoteSlaveContext(IModbusSlaveContext):
             if fx in ['d', 'c']: return result.bits
             if fx in ['h', 'i']: return result.registers
         else: return result
-

@@ -22,6 +22,7 @@ class Singleton(object):
             cls._inst = object.__new__(cls, *args, **kwargs)
         return cls._inst
 
+
 #---------------------------------------------------------------------------#
 # Project Specific
 #---------------------------------------------------------------------------#
@@ -40,7 +41,8 @@ class IModbusDecoder(object):
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def lookupPduClass(self, function_code):
         ''' Use `function_code` to determine the class of the PDU.
@@ -48,7 +50,9 @@ class IModbusDecoder(object):
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
 
 class IModbusFramer(object):
     '''
@@ -62,7 +66,8 @@ class IModbusFramer(object):
 
         :returns: True if we successful, False otherwise
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def advanceFrame(self):
         ''' Skip over the current framed message
@@ -70,7 +75,8 @@ class IModbusFramer(object):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def addToFrame(self, message):
         ''' Add the next message to the frame buffer
@@ -80,7 +86,8 @@ class IModbusFramer(object):
 
         :param message: The most recent packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -90,14 +97,16 @@ class IModbusFramer(object):
 
         :returns: True if ready, False otherwise
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def getFrame(self):
         ''' Get the next frame from the buffer
 
         :returns: The frame data or ''
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def populateResult(self, result):
         ''' Populates the modbus result with current frame header
@@ -107,7 +116,8 @@ class IModbusFramer(object):
 
         :param result: The response packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def processIncomingPacket(self, data, callback):
         ''' The new packet processing pattern
@@ -124,7 +134,8 @@ class IModbusFramer(object):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -135,7 +146,9 @@ class IModbusFramer(object):
         :param message: The request/response to send
         :returns: The built packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
 
 class IModbusSlaveContext(object):
     '''
@@ -152,15 +165,16 @@ class IModbusSlaveContext(object):
     __fx_mapper.update([(i, 'c') for i in [1, 5, 15]])
 
     def decode(self, fx):
-        ''' Converts the function code to the datastore to 
+        ''' Converts the function code to the datastore to
 
         :param fx: The function we are working with
-        :returns: one of [d(iscretes),i(inputs),h(oliding),c(oils)]
+        :returns: one of [d(iscretes),i(inputs),h(oliding),c(oils)
         '''
-    return self.__fx_mapper[fx]
+        return self.__fx_mapper[fx]
 
     def reset(self):
-        ''' Resets all the datastores to their default values '''
+        ''' Resets all the datastores to their default values
+        '''
         raise NotImplementedException("Context Reset")
 
     def validate(self, fx, address, count=1):
@@ -192,9 +206,9 @@ class IModbusSlaveContext(object):
         '''
         raise NotImplementedException("set context values")
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     'Singleton',
     'IModbusDecoder', 'IModbusFramer', 'IModbusSlaveContext',

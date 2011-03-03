@@ -15,7 +15,6 @@ from pymodbus.version import _version
 __version__ = _version.short()
 __author__  = 'Galen Collins'
 
-
 #---------------------------------------------------------------------------#
 # Block unhandled logging
 #---------------------------------------------------------------------------#

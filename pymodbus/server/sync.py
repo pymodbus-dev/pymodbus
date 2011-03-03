@@ -13,7 +13,6 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
-from pymodbus.interfaces import IModbusFramer
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusExceptions as merror
 

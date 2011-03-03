@@ -77,7 +77,7 @@ class RemoteSendEvent(ModbusEvent):
     The remote device stores this type of event byte when it finishes
     processing a request message. It is stored if the remote device
     returned a normal or exception response, or no response.
-        
+
     This event is defined by bit 7 set to a logic '0', with bit 6 set to a '1'.
     The other bits will be set to a logic '1' if the corresponding
     condition is TRUE. The bit layout is::
@@ -167,7 +167,7 @@ class CommunicationRestartEvent(ModbusEvent):
     mode, the event byte is added to the existing event log. If the  remote device
     is placed into 'Stop on Error' mode, the byte is added to the log and the
     rest of the log is cleared to zeros.
-   
+
     The event is defined by a content of zero.
     '''
 
@@ -188,5 +188,4 @@ class CommunicationRestartEvent(ModbusEvent):
         '''
         if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
-            
 

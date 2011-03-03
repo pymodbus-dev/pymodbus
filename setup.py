@@ -15,89 +15,15 @@ except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
 
-from distutils.core import Command
-import sys, os
-
-#---------------------------------------------------------------------------# 
-# Extra Commands
-#---------------------------------------------------------------------------# 
-command_classes = {}
-
-class BuildApiDocs(Command):
-    ''' Helper command to build the available api documents
-    This scans all the subdirectories under api and runs the
-    build.py script underneath trying to build the api
-    documentation for the given format.
-    '''
-    description  = "build all the projects api documents"
-    user_options = []
-
-    def initialize_options(self):
-        ''' options setup '''
-        if not os.path.exists('./build'):
-            os.mkdir('./build')
-
-    def finalize_options(self):
-        ''' options teardown '''
-        pass
-
-    def run(self):
-        ''' command runner '''
-        old_cwd = os.getcwd()
-        directories = (d for d in os.listdir('./doc/api') if not d.startswith('.'))
-        for entry in directories:
-            os.chdir('./doc/api/%s' % entry)
-            os.system('python build.py')
-            os.chdir(old_cwd)
-
-command_classes['build_apidocs'] = BuildApiDocs
-
-class DeepClean(Command):
-    ''' Helper command to return the directory to a completely
-        clean state.
-    '''
-    description  = "clean everything that we don't want"
-    user_options = []
-
-    def initialize_options(self):
-        ''' options setup '''
-        self.trash = ['build', 'dist', 'pymodbus.egg-info',
-            os.path.join(os.path.join('doc','sphinx'),'build'),
-        ]
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        ''' command runner '''
-        self.__delete_pyc_files()
-        self.__delete_trash_dirs()
-
-    def __delete_trash_dirs(self):
-        ''' remove all directories created in building '''
-        self.__delete_pyc_files()
-        import shutil
-        for directory in self.trash:
-            if os.path.exists(directory):
-                shutil.rmtree(directory)
-
-    def __delete_pyc_files(self):
-        ''' remove all python cache files '''
-        for root,dirs,files in os.walk('.'):
-            for file in files:
-                if file.endswith('.pyc'):
-                    os.remove(os.path.join(root,file))
-
-command_classes['deep_clean'] = DeepClean
-
 #---------------------------------------------------------------------------# 
 # Configuration
 #---------------------------------------------------------------------------# 
+from setup_commands import command_classes
 from pymodbus import __version__, __author__
 
 setup(name  = 'pymodbus',
     version = __version__,
-    description = "A fully featured modbus protocol stack in python",
+    description = 'A fully featured modbus protocol stack in python',
     long_description='''
     Pymodbus aims to be a fully implemented modbus protocol stack implemented
     using twisted.  Its orignal goal was to allow simulation of thousands of
@@ -116,7 +42,7 @@ setup(name  = 'pymodbus',
         'Topic :: System :: Networking',
         'Topic :: Utilities'
     ],
-    keywords = 'modbus, twisted',
+    keywords = 'modbus, twisted, scada',
     author = __author__,
     author_email = 'bashwork@gmail.com',
     maintainer = __author__,
@@ -125,7 +51,7 @@ setup(name  = 'pymodbus',
     license = 'BSD',
     packages = find_packages(exclude=['ez_setup', 'examples', 'test', 'doc']),
     exclude_package_data = {'' : ['examples', 'test', 'tools', 'doc']},
-    platforms = ["Linux","Mac OS X","Win"],
+    platforms = ['Linux', 'Mac OS X', 'Win'],
     include_package_data = True,
     zip_safe = True,
     install_requires = [
@@ -133,6 +59,9 @@ setup(name  = 'pymodbus',
         'nose >= 0.9.3',
         'pyserial >= 2.4'
     ],
+    extras_require = {
+        'quality' : [ 'epydoc >= 3.4.1', 'coverage >= 3.3.1', 'pyflakes >= 0.4.0' ],
+    },
     test_suite = 'nose.collector',
     cmdclass = command_classes,
 )

@@ -137,7 +137,7 @@ class ClientDecoder(IModbusDecoder):
         _logger.debug("Factory Response[%d]" % function_code)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
-            code = function_code & 0x7f # strip error portion
+            code = function_code & 0x7f  # strip error portion
             response = ExceptionResponse(code, ecode.IllegalFunction)
         if not response:
             raise ModbusException("Unknown response %d" % function_code)

@@ -6,7 +6,6 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.exceptions import ParameterException
 
 class WriteSingleRegisterRequest(ModbusRequest):
     '''

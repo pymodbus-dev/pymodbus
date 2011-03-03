@@ -26,14 +26,12 @@ class Version(object):
         '''
         return '%d.%d.%d' % (self.major, self.minor, self.micro)
 
-
     def __str__(self):
         ''' Returns a string representation of the object
 
         :returns: A string representation of this object
         '''
         return '[%s, version %s]' % (self.package, self.short())
-
 
 _version = Version('pymodbus', 0, 9, 0)
 _version.__name__ = 'pymodbus' # fix epydoc error

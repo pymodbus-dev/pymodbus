@@ -1,4 +1,4 @@
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
 
 #---------------------------------------------------------------------------#

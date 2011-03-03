@@ -9,7 +9,6 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 #---------------------------------------------------------------------------#

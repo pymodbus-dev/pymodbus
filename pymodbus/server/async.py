@@ -14,8 +14,6 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
-from pymodbus.interfaces import IModbusFramer
-from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
 

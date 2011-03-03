@@ -1,5 +1,4 @@
 import redis
-from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 

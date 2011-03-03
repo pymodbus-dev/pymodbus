@@ -1,6 +1,0 @@
-recursive-include pymodbus *.py
-recursive-include test *.py
-recursive-include examples *.py
-graft doc
-prune .svn
-prune build

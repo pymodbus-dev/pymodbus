@@ -1,4 +1,4 @@
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import ParameterException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 

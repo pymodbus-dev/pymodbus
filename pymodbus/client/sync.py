@@ -1,5 +1,4 @@
 import socket
-import struct
 import serial
 
 from pymodbus.constants import Defaults
@@ -252,8 +251,8 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             #self.socket.bind(('localhost', Defaults.Port))
-        except socket.error, msg:
-            _logger.error('Unable to create udp socket')
+        except socket.error, ex:
+            _logger.error('Unable to create udp socket %s' % ex)
             self.close()
         return self.socket != None
     

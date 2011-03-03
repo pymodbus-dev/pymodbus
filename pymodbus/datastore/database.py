@@ -4,7 +4,7 @@ from sqlalchemy.sql import and_
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql.expression import bindparam
 
-from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
 
 #---------------------------------------------------------------------------#

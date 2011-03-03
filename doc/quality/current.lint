@@ -7,13 +7,8 @@ pymodbus/factory.py:15: 'from pymodbus.file_message import *' used; unable to de
 pymodbus/factory.py:16: 'from pymodbus.other_message import *' used; unable to detect undefined names
 pymodbus/factory.py:17: 'from pymodbus.register_read_message import *' used; unable to detect undefined names
 pymodbus/factory.py:18: 'from pymodbus.register_write_message import *' used; unable to detect undefined names
-pymodbus/transaction.py:58: undefined name 'socket'
-pymodbus/other_message.py:11: 'from pymodbus.exceptions import *' used; unable to detect undefined names
-pymodbus/other_message.py:389: local variable 'status' is assigned to but never used
-pymodbus/server/async.py:229: local variable 'handle' is assigned to but never used
+pymodbus/server/async.py:230: local variable 'handle' is assigned to but never used
 pymodbus/server/sync.py:16: 'from pymodbus.transaction import *' used; unable to detect undefined names
-pymodbus/datastore/remote.py:66: local variable 'result' is assigned to but never used
-pymodbus/client/async.py:20: 'reactor' imported but unused
 pymodbus/client/common.py:3: 'from pymodbus.bit_read_message import *' used; unable to detect undefined names
 pymodbus/client/common.py:4: 'from pymodbus.bit_write_message import *' used; unable to detect undefined names
 pymodbus/client/common.py:5: 'from pymodbus.register_read_message import *' used; unable to detect undefined names
@@ -21,5 +16,4 @@ pymodbus/client/common.py:6: 'from pymodbus.register_write_message import *' use
 pymodbus/client/common.py:7: 'from pymodbus.diag_message import *' used; unable to detect undefined names
 pymodbus/client/common.py:8: 'from pymodbus.file_message import *' used; unable to detect undefined names
 pymodbus/client/common.py:9: 'from pymodbus.other_message import *' used; unable to detect undefined names
-pymodbus/client/sync.py:6: 'from pymodbus.exceptions import *' used; unable to detect undefined names
-pymodbus/client/sync.py:7: 'from pymodbus.transaction import *' used; unable to detect undefined names
+pymodbus/client/sync.py:8: 'from pymodbus.transaction import *' used; unable to detect undefined names

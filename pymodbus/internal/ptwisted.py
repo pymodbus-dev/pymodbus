@@ -12,6 +12,9 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+#---------------------------------------------------------------------------#
+# Twisted Helper Methods
+#---------------------------------------------------------------------------#
 def InstallManagementConsole(namespace, users={'admin': 'admin'}, port=503):
     ''' Helper method to start an ssh management console
         for the modbus server.

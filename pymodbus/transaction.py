@@ -46,6 +46,7 @@ class ModbusTransactionManager(Singleton):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
+        import socket
         retries = Defaults.Retries
         request.transaction_id = self.__getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)

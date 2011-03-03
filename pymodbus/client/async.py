@@ -16,9 +16,7 @@ Example Run::
        reactor.run()
 """
 from collections import deque
-
-from twisted.internet import reactor, defer, protocol
-
+from twisted.internet import defer, protocol
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer

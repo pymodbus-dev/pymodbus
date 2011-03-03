@@ -27,7 +27,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         host = kwargs.get('host', 'localhost')
         port = kwargs.get('port', 6379)
         self.prefix = kwargs.get('prefix', 'pymodbus')
-        self.client = redis.Redis(host=host, port=port)
+        self.client = kwargs.get('client', redis.Redis(host=host, port=port))
         self.__build_mapping()
 
     def __str__(self):

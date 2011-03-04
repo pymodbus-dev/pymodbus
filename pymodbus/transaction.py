@@ -349,6 +349,12 @@ class ModbusRtuFramer(IModbusFramer):
         if 'len' not in self.__header:
             func_code = struct.unpack('>B', self.__buffer[1])[0]
             pdu_class = self.decoder.lookupPduClass(func_code)
+            if pdu_class is None:
+                _logger.warn("Unknown function code %s - discarding frame!" %
+                             func_code)
+                self.__header['len'] = len(self.__buffer)
+                self.advanceFrame()
+                return
             size = pdu_class.calculateRtuFrameSize(self.__buffer)
             self.__header['len'] = size
         if 'crc' not in self.__header:

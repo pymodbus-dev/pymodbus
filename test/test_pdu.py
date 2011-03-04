@@ -24,7 +24,7 @@ class SimplePduTest(unittest.TestCase):
         del self.illegal
         del self.exception
 
-    def testNotImpelmented(self):
+    def testNotImplemented(self):
         ''' Test a base classes for not implemented funtions '''
         for r in self.badRequests:
             self.assertRaises(NotImplementedException, r.encode)

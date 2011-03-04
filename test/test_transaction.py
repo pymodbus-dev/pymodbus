@@ -207,6 +207,14 @@ class SimpleDataStoreTest(unittest.TestCase):
 
         self.assertEqual(0x00, request.unit_id)
 
+    def testRTUFramerUnknownFunctionCode(self):
+        request = ModbusRequest()
+        msg = "\x00\xff\x00\x00\x00\x01\xfc\x1b"
+        self._rtu.addToFrame(msg)
+        self._rtu.populateHeader()
+        self.assertEqual(self._rtu._ModbusRtuFramer__buffer, "")
+        self.assertEqual(self._rtu._ModbusRtuFramer__header, {})
+
     def testRTUFramerPacket(self):
         ''' Test a rtu frame packet build '''
         old_encode = ModbusRequest.encode

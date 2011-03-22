@@ -78,7 +78,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        context.setValues(self.function_code, self.address, self.value)
+        context.setValues(self.function_code, self.address, [self.value])
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 

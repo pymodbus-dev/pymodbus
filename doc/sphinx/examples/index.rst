@@ -20,6 +20,7 @@ Example Library Code
    modbus-simulator
    synchronous-client
    synchronous-server
+   performance
 
 Example Frontend Code
 --------------------------------------------------

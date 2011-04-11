@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Pymodbus Asynchrnonous Client Examples
+Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus

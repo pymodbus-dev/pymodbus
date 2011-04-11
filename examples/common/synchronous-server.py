@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-
 #---------------------------------------------------------------------------# 
-# the various server implementations
+# import the various server implementations
 #---------------------------------------------------------------------------# 
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.server.sync import StartUdpServer

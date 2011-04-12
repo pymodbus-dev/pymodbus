@@ -7,6 +7,7 @@ the pymodbus library.
 '''
 from pymodbus.exceptions import NotImplementedException
 
+
 #---------------------------------------------------------------------------#
 # Generic
 #---------------------------------------------------------------------------#
@@ -57,8 +58,9 @@ class IModbusDecoder(object):
 class IModbusFramer(object):
     '''
     A framer strategy interface. The idea is that we abstract away all the
-    detail about how to detect if a current message frame exists, decoding it,
-    sending it, etc so that we can plug in a new Framer object (tcp, rtu, ascii)
+    detail about how to detect if a current message frame exists, decoding
+    it, sending it, etc so that we can plug in a new Framer object (tcp,
+    rtu, ascii).
     '''
 
     def checkFrame(self):

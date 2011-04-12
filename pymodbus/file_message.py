@@ -21,10 +21,12 @@ class ReadFifoQueueRequest(ModbusRequest):
     This function code allows to read the contents of a First-In-First-Out
     (FIFO) queue of register in a remote device. The function returns a
     count of the registers in the queue, followed by the queued data.
-    Up to 32 registers can be read: the count, plus up to 31 queued data registers. 
+    Up to 32 registers can be read: the count, plus up to 31 queued data
+    registers.
 
-    The queue count register is returned first, followed by the queued data registers. 
-    The function reads the queue contents, but does not clear them.
+    The queue count register is returned first, followed by the queued data
+    registers.  The function reads the queue contents, but does not clear
+    them.
     '''
     function_code = 0x18
     _rtu_frame_size = 6
@@ -68,7 +70,7 @@ class ReadFifoQueueResponse(ModbusResponse):
     In a normal response, the byte count shows the quantity of bytes to
     follow, including the queue count bytes and value register bytes
     (but not including the error check field).  The queue count is the
-    quantity of data registers in the queue (not including the count register). 
+    quantity of data registers in the queue (not including the count register).
 
     If the queue count exceeds 31, an exception response is returned with an
     error code of 03 (Illegal Data Value).

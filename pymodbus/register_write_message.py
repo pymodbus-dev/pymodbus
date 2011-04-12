@@ -7,6 +7,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 
+
 class WriteSingleRegisterRequest(ModbusRequest):
     '''
     This function code is used to write a single holding register in a
@@ -65,6 +66,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         '''
         return "WriteRegisterRequest %d => %d" % (self.address, self.value)
 
+
 class WriteSingleRegisterResponse(ModbusResponse):
     '''
     The normal response is an echo of the request, returned after the
@@ -105,10 +107,10 @@ class WriteSingleRegisterResponse(ModbusResponse):
         params = (self.address, self.value)
         return "WriteRegisterResponse %d => %d" % params
 
+
 #---------------------------------------------------------------------------#
 # Write Multiple Registers
 #---------------------------------------------------------------------------#
-
 class WriteMultipleRegistersRequest(ModbusRequest):
     '''
     This function code is used to write a block of contiguous registers (1
@@ -149,11 +151,10 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.address, self.count, self.byte_count = struct.unpack('>HHB',
-                                                                  data[:5])
-        self.values = [] # reset
+        self.address, self.count, self.byte_count = struct.unpack('>HHB', data[:5])
+        self.values = []  # reset
         for idx in range(5, (self.count * 2) + 5, 2):
-            self.values.append(struct.unpack('>H', data[idx:idx+2])[0])
+            self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
 
     def execute(self, context):
         ''' Run a write single register request against a datastore
@@ -178,6 +179,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         '''
         params = (self.address, self.count)
         return "WriteMultipleRegisterRequest %d => %d" % params
+
 
 class WriteMultipleRegistersResponse(ModbusResponse):
     '''
@@ -219,9 +221,9 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         params = (self.address, self.count)
         return "WriteMultipleRegisterResponse (%d,%d)" % params
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "WriteSingleRegisterRequest", "WriteSingleRegisterResponse",
     "WriteMultipleRegistersRequest", "WriteMultipleRegistersResponse",

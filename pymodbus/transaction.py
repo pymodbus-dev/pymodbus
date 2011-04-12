@@ -16,6 +16,7 @@ from pymodbus.utilities  import checkLRC, computeLRC
 import logging
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager
 #---------------------------------------------------------------------------#
@@ -31,7 +32,7 @@ class ModbusTransactionManager(Singleton):
              count++
           else break
         while (count < 3)
-    
+
     This module helps to abstract this away from the framer and protocol.
     '''
 
@@ -63,7 +64,7 @@ class ModbusTransactionManager(Singleton):
 
     def addTransaction(self, request):
         ''' Adds a transaction to the handler
-           
+
         This holds the requets in case it needs to be resent.
         After being sent, the request is removed.
 
@@ -78,7 +79,7 @@ class ModbusTransactionManager(Singleton):
 
         :param tid: The transaction to retrieve
         '''
-        for k,v in enumerate(ModbusTransactionManager.__transactions):
+        for k, v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
                 return ModbusTransactionManager.__transactions.pop(k)
         return None
@@ -88,13 +89,13 @@ class ModbusTransactionManager(Singleton):
 
         :param tid: The transaction to remove
         '''
-        for k,v in enumerate(ModbusTransactionManager.__transactions):
+        for k, v in enumerate(ModbusTransactionManager.__transactions):
             if v.transaction_id == tid:
                 del ModbusTransactionManager.__transactions[k]
 
     def getNextTID(self):
         ''' Retrieve the next unique transaction identifier
-        
+
         This handles incrementing the identifier after
         retrieval
 
@@ -108,6 +109,7 @@ class ModbusTransactionManager(Singleton):
         ''' Resets the transaction identifier '''
         ModbusTransactionManager.__tid = Defaults.TransactionId
 
+
 #---------------------------------------------------------------------------#
 # Modbus TCP Message
 #---------------------------------------------------------------------------#
@@ -116,16 +118,16 @@ class ModbusSocketFramer(IModbusFramer):
 
     Before each modbus TCP message is an MBAP header which is used as a
     message frame.  It allows us to easily separate messages as follows::
-    
+
         [         MBAP Header         ] [ Function Code] [ Data ]
         [ tid ][ pid ][ length ][ uid ]
           2b     2b     2b        1b           1b           Nb
-        
+
         while len(message) > 0:
             tid, pid, length`, uid = struct.unpack(">HHHB", message)
             request = message[0:7 + length - 1`]
             message = [7 + length - 1:]
-        
+
         * length = uid + function code + data
         * The -1 is to account for the uid byte
     '''
@@ -233,7 +235,7 @@ class ModbusSocketFramer(IModbusFramer):
                     raise ModbusIOException("Unable to decode request")
                 self.populateResult(result)
                 self.advanceFrame()
-                callback(result) # defer or push to a thread?
+                callback(result)  # defer or push to a thread?
             else: break
 
     def buildPacket(self, message):
@@ -250,6 +252,7 @@ class ModbusSocketFramer(IModbusFramer):
             message.function_code) + data
         return packet
 
+
 #---------------------------------------------------------------------------#
 # Modbus RTU Message
 #---------------------------------------------------------------------------#
@@ -259,13 +262,13 @@ class ModbusRtuFramer(IModbusFramer):
 
         [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
           3.5 chars     1b         1b               Nb      2b      3.5 chars
-        
+
     Wait refers to the amount of time required to transmist at least x many
     characters.  In this case it is 3.5 characters.  Also, if we recieve a
     wait of 1.5 characters at any point, we must trigger an error message.
     Also, it appears as though this message is little endian. The logic is
     simplified as the following::
-        
+
         block-on-read:
             read until 3.5 delay
             check for errors
@@ -273,7 +276,7 @@ class ModbusRtuFramer(IModbusFramer):
 
     The following table is a listing of the baud wait times for the specified
     baud rates::
-        
+
         ------------------------------------------------------------------
          Baud  1.5c (18 bits)   3.5c (38 bits)
         ------------------------------------------------------------------
@@ -337,7 +340,7 @@ class ModbusRtuFramer(IModbusFramer):
 
     def populateHeader(self):
         ''' Try to set the headers `uid`, `len` and `crc`.
-        
+
         This method examines `self.__buffer` and writes meta
         information into `self.__header`. It calculates only the
         values for headers that are not already in the dictionary.
@@ -353,7 +356,7 @@ class ModbusRtuFramer(IModbusFramer):
             size = pdu_class.calculateRtuFrameSize(self.__buffer)
             self.__header['len'] = size
         if 'crc' not in self.__header:
-            self.__header['crc'] = self.__buffer[size-2:size]
+            self.__header['crc'] = self.__buffer[size - 2:size]
 
     def addToFrame(self, message):
         '''
@@ -376,7 +379,7 @@ class ModbusRtuFramer(IModbusFramer):
 
     def populateResult(self, result):
         ''' Populates the modbus result header
-   
+
         The serial packets do not have any header information
         that is copied.
 
@@ -410,7 +413,7 @@ class ModbusRtuFramer(IModbusFramer):
                     raise ModbusIOException("Unable to decode response")
                 self.populateResult(result)
                 self.advanceFrame()
-                callback(result) # defer or push to a thread?
+                callback(result)  # defer or push to a thread?
             else: break
 
     def buildPacket(self, message):
@@ -425,21 +428,22 @@ class ModbusRtuFramer(IModbusFramer):
         packet += struct.pack(">H", computeCRC(packet))
         return packet
 
+
 #---------------------------------------------------------------------------#
 # Modbus ASCII Message
 #---------------------------------------------------------------------------#
 class ModbusAsciiFramer(IModbusFramer):
     '''
     Modbus ASCII Frame Controller::
-        
+
         [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
           1c        2c         2c         Nc     2c      2c
-        
+
         * data can be 0 - 2x252 chars
         * end is '\\r\\n' (Carriage return line feed), however the line feed
           character can be changed via a special command
         * start is ':'
-   
+
     This framer is used for serial transmission.  Unlike the RTU protocol,
     the data in this framer is transferred in plain text ascii.
     '''
@@ -466,15 +470,15 @@ class ModbusAsciiFramer(IModbusFramer):
         '''
         start = self.__buffer.find(self.__start)
         if start == -1: return False
-        if start > 0 : # go ahead and skip old bad data
+        if start > 0 :  # go ahead and skip old bad data
             self.__buffer = self.__buffer[start:]
 
         end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
             self.__header['uid'] = int(self.__buffer[1:3], 16)
-            self.__header['lrc'] = int(self.__buffer[end-2:end], 16)
-            data = self.__buffer[start:end-2]
+            self.__header['lrc'] = int(self.__buffer[end - 2:end], 16)
+            data = self.__buffer[start:end - 2]
             return checkLRC(data, self.__header['lrc'])
         return False
 
@@ -517,7 +521,7 @@ class ModbusAsciiFramer(IModbusFramer):
 
     def populateResult(self, result):
         ''' Populates the modbus result header
-   
+
         The serial packets do not have any header information
         that is copied.
 
@@ -551,7 +555,7 @@ class ModbusAsciiFramer(IModbusFramer):
                     raise ModbusIOException("Unable to decode response")
                 self.populateResult(result)
                 self.advanceFrame()
-                callback(result) # defer this
+                callback(result)  # defer this
             else: break
 
     def buildPacket(self, message):
@@ -569,6 +573,7 @@ class ModbusAsciiFramer(IModbusFramer):
         packet = '%02x%02x%s' % params
         packet = '%c%s%02x%s' % (self.__start, packet, checksum, self.__end)
         return packet.upper()
+
 
 #---------------------------------------------------------------------------#
 # Modbus Binary Message
@@ -606,8 +611,8 @@ class ModbusBinaryFramer(IModbusFramer):
         self.__buffer = ''
         self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
         self.__hsize  = 0x02
-        self.__start  = '\x7b' # {
-        self.__end    = '\x7d' # }
+        self.__start  = '\x7b'  # {
+        self.__end    = '\x7d'  # }
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -620,15 +625,15 @@ class ModbusBinaryFramer(IModbusFramer):
         '''
         start = self.__buffer.find(self.__start)
         if start == -1: return False
-        if start > 0 : # go ahead and skip old bad data
+        if start > 0 :  # go ahead and skip old bad data
             self.__buffer = self.__buffer[start:]
 
         end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
             self.__header['uid'] = struct.unpack('>B', self.__buffer[1:2])
-            self.__header['crc'] = struct.unpack('>H', self.__buffer[end-2:end])[0]
-            data = self.__buffer[start:end-2]
+            self.__header['crc'] = struct.unpack('>H', self.__buffer[end - 2:end])[0]
+            data = self.__buffer[start:end - 2]
             return checkCRC(data, self.__header['crc'])
         return False
 
@@ -671,7 +676,7 @@ class ModbusBinaryFramer(IModbusFramer):
 
     def populateResult(self, result):
         ''' Populates the modbus result header
-   
+
         The serial packets do not have any header information
         that is copied.
 
@@ -705,7 +710,7 @@ class ModbusBinaryFramer(IModbusFramer):
                     raise ModbusIOException("Unable to decode response")
                 self.populateResult(result)
                 self.advanceFrame()
-                callback(result) # defer or push to a thread?
+                callback(result)  # defer or push to a thread?
             else: break
 
     def buildPacket(self, message):
@@ -731,12 +736,12 @@ class ModbusBinaryFramer(IModbusFramer):
         :returns: the escaped packet
         '''
         def _filter(a):
-            return a*2 if a in ['}', '{'] else a, data
+            return a * 2 if a in ['}', '{'] else a, data
         return ''.join(map(_filter, data))
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusTransactionManager",
     "ModbusSocketFramer", "ModbusRtuFramer",

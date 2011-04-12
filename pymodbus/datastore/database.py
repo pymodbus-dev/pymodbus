@@ -13,6 +13,7 @@ from pymodbus.interfaces import IModbusSlaveContext
 import logging;
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Context
 #---------------------------------------------------------------------------#
@@ -42,7 +43,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         ''' Resets all the datastores to their default values '''
         self._metadata.drop_all()
         self.__db_create(self.table, self.database)
-        raise NotImplementedException() # TODO drop table?
+        raise NotImplementedException()  # TODO drop table?
 
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -52,7 +53,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.__validate(self.decode(fx), address, count)
 
@@ -64,7 +65,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("get-values[%d] %d:%d" % (fx, address, count))
         return self.__get(self.decode(fx), address, count)
 
@@ -75,8 +76,8 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        address = address + 1 # section 4.4 of specification
-        _logger.debug("set-values[%d] %d:%d" % (fx, address,len(values)))
+        address = address + 1  # section 4.4 of specification
+        _logger.debug("set-values[%d] %d:%d" % (fx, address, len(values)))
         self.__set(self.decode(fx), address, values)
 
     #--------------------------------------------------------------------------#
@@ -97,7 +98,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
             UniqueConstraint('type', 'index', name='key'))
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
-    
+
     def __get(self, type, offset, count):
         '''
 
@@ -107,7 +108,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :returns: The resulting values
         '''
         query  = self._table.select(and_(
-            self._table.c.type == type, 
+            self._table.c.type == type,
             self._table.c.index >= offset,
             self._table.c.index <= offset + count))
         query = query.order_by(self._table.c.index.asc())
@@ -124,9 +125,9 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         result = []
         for index, value in enumerate(values):
             result.append({
-                p+'type'  : type,
-                p+'index' : offset + index,
-                  'value' : value
+                p + 'type'  : type,
+                p + 'index' : offset + index,
+                    'value' : value
             })
         return result
 
@@ -141,7 +142,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         query   = self._table.insert()
         result  = self._connection.execute(query, context)
         return result.rowcount == len(values)
-    
+
     def __update(self, type, offset, values):
         '''
 
@@ -159,16 +160,14 @@ class DatabaseSlaveContext(IModbusSlaveContext):
 
     def __validate(self, key, offset, count):
         '''
-
         :param key: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
         :returns: The result of the validation
         '''
         query  = self._table.select(and_(
-            self._table.c.type == type, 
+            self._table.c.type == type,
             self._table.c.index >= offset,
             self._table.c.index <= offset + count))
         result = self._connection.execute(query)
         return result.rowcount == count
-

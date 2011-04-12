@@ -648,9 +648,9 @@ class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''
     sub_function_code = 0x0014
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReturnQueryDataRequest", "ReturnQueryDataResponse",
     "RestartCommunicationsOptionRequest", "RestartCommunicationsOptionResponse",

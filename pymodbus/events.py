@@ -162,7 +162,7 @@ class EnteredListenModeEvent(ModbusEvent):
 
 
 class CommunicationRestartEvent(ModbusEvent):
-    ''' Remote device Initiated Communication Restart 
+    ''' Remote device Initiated Communication Restart
 
     The remote device stores this type of event byte when its communications
     port is restarted. The remote device can be restarted by the Diagnostics

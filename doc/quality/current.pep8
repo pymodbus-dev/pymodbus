@@ -57,8 +57,6 @@ pymodbus/diag_message.py:594:80: E501 line too long (80 characters)
 pymodbus/diag_message.py:597:80: E501 line too long (80 characters)
 pymodbus/diag_message.py:613:80: E501 line too long (82 characters)
 pymodbus/diag_message.py:616:80: E501 line too long (80 characters)
-pymodbus/diag_message.py:651:78: W291 trailing whitespace
-pymodbus/diag_message.py:653:78: W291 trailing whitespace
 pymodbus/diag_message.py:656:80: E501 line too long (80 characters)
 pymodbus/diag_message.py:662:80: E501 line too long (90 characters)
 pymodbus/diag_message.py:663:80: E501 line too long (82 characters)
@@ -79,53 +77,10 @@ pymodbus/events.py:131:26: E221 multiple spaces before operator
 pymodbus/events.py:132:26: E221 multiple spaces before operator
 pymodbus/events.py:133:26: E221 multiple spaces before operator
 pymodbus/events.py:135:26: E221 multiple spaces before operator
-pymodbus/events.py:165:54: W291 trailing whitespace
-pymodbus/file_message.py:24:80: E501 line too long (83 characters)
-pymodbus/file_message.py:24:84: W291 trailing whitespace
-pymodbus/file_message.py:26:80: E501 line too long (86 characters)
-pymodbus/file_message.py:26:87: W291 trailing whitespace
-pymodbus/file_message.py:71:80: W291 trailing whitespace
-pymodbus/interfaces.py:13:1: E302 expected 2 blank lines, found 1
-pymodbus/interfaces.py:61:80: E501 line too long (80 characters)
-pymodbus/other_message.py:18:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:60:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:107:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:110:49: W291 trailing whitespace
-pymodbus/other_message.py:112:80: E501 line too long (81 characters)
-pymodbus/other_message.py:113:80: E501 line too long (82 characters)
-pymodbus/other_message.py:113:83: W291 trailing whitespace
-pymodbus/other_message.py:117:37: W291 trailing whitespace
-pymodbus/other_message.py:119:80: E501 line too long (82 characters)
-pymodbus/other_message.py:158:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:163:73: W291 trailing whitespace
-pymodbus/other_message.py:176:27: E261 at least two spaces before inline comment
-pymodbus/other_message.py:205:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:207:80: E501 line too long (80 characters)
-pymodbus/other_message.py:208:55: W291 trailing whitespace
-pymodbus/other_message.py:211:60: W291 trailing whitespace
-pymodbus/other_message.py:214:80: E501 line too long (80 characters)
-pymodbus/other_message.py:216:72: W291 trailing whitespace
-pymodbus/other_message.py:250:28: E203 whitespace before ':'
-pymodbus/other_message.py:264:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:268:68: W291 trailing whitespace
-pymodbus/other_message.py:294:15: E221 multiple spaces before operator
-pymodbus/other_message.py:312:34: E225 missing whitespace around operator
-pymodbus/other_message.py:320:80: E501 line too long (91 characters)
-pymodbus/other_message.py:326:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:329:63: W291 trailing whitespace
-pymodbus/other_message.py:366:1: E302 expected 2 blank lines, found 1
-pymodbus/other_message.py:392:34: E261 at least two spaces before inline comment
-pymodbus/other_message.py:405:40: E225 missing whitespace around operator
-pymodbus/other_message.py:422:78: W291 trailing whitespace
-pymodbus/other_message.py:424:78: W291 trailing whitespace
-pymodbus/pdu.py:34:1: W293 blank line contains whitespace
-pymodbus/pdu.py:36:80: E501 line too long (81 characters)
-pymodbus/pdu.py:38:80: E501 line too long (86 characters)
-pymodbus/pdu.py:41:1: W293 blank line contains whitespace
-pymodbus/pdu.py:78:13: E701 multiple statements on one line (colon)
-pymodbus/pdu.py:104:1: W293 blank line contains whitespace
-pymodbus/pdu.py:109:1: W293 blank line contains whitespace
-pymodbus/pdu.py:128:27: E221 multiple spaces before operator
+pymodbus/other_message.py:256:28: E203 whitespace before ':'
+pymodbus/other_message.py:301:15: E221 multiple spaces before operator
+pymodbus/other_message.py:327:80: E501 line too long (91 characters)
+pymodbus/pdu.py:79:13: E701 multiple statements on one line (colon)
 pymodbus/pdu.py:129:27: E221 multiple spaces before operator
 pymodbus/pdu.py:130:27: E221 multiple spaces before operator
 pymodbus/pdu.py:131:27: E221 multiple spaces before operator
@@ -134,257 +89,106 @@ pymodbus/pdu.py:133:27: E221 multiple spaces before operator
 pymodbus/pdu.py:134:27: E221 multiple spaces before operator
 pymodbus/pdu.py:135:27: E221 multiple spaces before operator
 pymodbus/pdu.py:136:27: E221 multiple spaces before operator
-pymodbus/register_read_message.py:10:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:47:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:80:63: E225 missing whitespace around operator
-pymodbus/register_read_message.py:126:80: E501 line too long (80 characters)
-pymodbus/register_read_message.py:129:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:146:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:174:80: E501 line too long (80 characters)
-pymodbus/register_read_message.py:177:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:194:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:222:26: E221 multiple spaces before operator
-pymodbus/register_read_message.py:223:26: E221 multiple spaces before operator
-pymodbus/register_read_message.py:253:52: E225 missing whitespace around operator
-pymodbus/register_read_message.py:289:1: E302 expected 2 blank lines, found 1
-pymodbus/register_read_message.py:297:1: W293 blank line contains whitespace
-pymodbus/register_read_message.py:311:41: E225 missing whitespace around operator
-pymodbus/register_read_message.py:323:63: E225 missing whitespace around operator
-pymodbus/register_read_message.py:332:78: W291 trailing whitespace
-pymodbus/register_read_message.py:334:78: W291 trailing whitespace
-pymodbus/register_write_message.py:10:1: E302 expected 2 blank lines, found 1
-pymodbus/register_write_message.py:68:1: E302 expected 2 blank lines, found 1
-pymodbus/register_write_message.py:112:1: E302 expected 2 blank lines, found 1
-pymodbus/register_write_message.py:131:22: E701 multiple statements on one line (colon)
-pymodbus/register_write_message.py:132:45: E701 multiple statements on one line (colon)
-pymodbus/register_write_message.py:154:25: E261 at least two spaces before inline comment
-pymodbus/register_write_message.py:156:64: E225 missing whitespace around operator
-pymodbus/register_write_message.py:182:1: E302 expected 2 blank lines, found 1
-pymodbus/register_write_message.py:222:78: W291 trailing whitespace
-pymodbus/register_write_message.py:224:78: W291 trailing whitespace
-pymodbus/transaction.py:22:1: E302 expected 2 blank lines, found 1
-pymodbus/transaction.py:34:1: W293 blank line contains whitespace
-pymodbus/transaction.py:65:1: W293 blank line contains whitespace
-pymodbus/transaction.py:80:14: E231 missing whitespace after ','
-pymodbus/transaction.py:90:14: E231 missing whitespace after ','
-pymodbus/transaction.py:96:1: W293 blank line contains whitespace
-pymodbus/transaction.py:113:1: E302 expected 2 blank lines, found 1
-pymodbus/transaction.py:118:1: W293 blank line contains whitespace
-pymodbus/transaction.py:122:1: W293 blank line contains whitespace
-pymodbus/transaction.py:127:1: W293 blank line contains whitespace
-pymodbus/transaction.py:138:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:139:21: E221 multiple spaces before operator
-pymodbus/transaction.py:140:21: E221 multiple spaces before operator
-pymodbus/transaction.py:171:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:235:33: E261 at least two spaces before inline comment
-pymodbus/transaction.py:236:17: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:255:1: E302 expected 2 blank lines, found 1
-pymodbus/transaction.py:261:1: W293 blank line contains whitespace
-pymodbus/transaction.py:267:1: W293 blank line contains whitespace
-pymodbus/transaction.py:275:1: W293 blank line contains whitespace
-pymodbus/transaction.py:296:21: E221 multiple spaces before operator
-pymodbus/transaction.py:297:21: E221 multiple spaces before operator
-pymodbus/transaction.py:299:21: E221 multiple spaces before operator
-pymodbus/transaction.py:339:1: W293 blank line contains whitespace
-pymodbus/transaction.py:355:54: E225 missing whitespace around operator
-pymodbus/transaction.py:371:14: E221 multiple spaces before operator
-pymodbus/transaction.py:372:14: E221 multiple spaces before operator
-pymodbus/transaction.py:378:1: W293 blank line contains whitespace
-pymodbus/transaction.py:412:33: E261 at least two spaces before inline comment
-pymodbus/transaction.py:413:17: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:430:1: E302 expected 2 blank lines, found 1
-pymodbus/transaction.py:433:1: W293 blank line contains whitespace
-pymodbus/transaction.py:436:1: W293 blank line contains whitespace
-pymodbus/transaction.py:441:1: W293 blank line contains whitespace
-pymodbus/transaction.py:452:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:453:21: E221 multiple spaces before operator
-pymodbus/transaction.py:454:21: E221 multiple spaces before operator
-pymodbus/transaction.py:455:21: E221 multiple spaces before operator
-pymodbus/transaction.py:456:21: E221 multiple spaces before operator
-pymodbus/transaction.py:467:23: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:468:21: E203 whitespace before ':'
-pymodbus/transaction.py:468:23: E261 at least two spaces before inline comment
-pymodbus/transaction.py:475:57: E225 missing whitespace around operator
-pymodbus/transaction.py:476:43: E225 missing whitespace around operator
-pymodbus/transaction.py:487:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:512:14: E221 multiple spaces before operator
-pymodbus/transaction.py:513:14: E221 multiple spaces before operator
-pymodbus/transaction.py:519:1: W293 blank line contains whitespace
-pymodbus/transaction.py:553:33: E261 at least two spaces before inline comment
-pymodbus/transaction.py:554:17: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:563:16: E221 multiple spaces before operator
-pymodbus/transaction.py:564:16: E221 multiple spaces before operator
-pymodbus/transaction.py:575:1: E302 expected 2 blank lines, found 1
-pymodbus/transaction.py:606:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:607:21: E221 multiple spaces before operator
-pymodbus/transaction.py:608:21: E221 multiple spaces before operator
-pymodbus/transaction.py:608:31: E261 at least two spaces before inline comment
-pymodbus/transaction.py:609:21: E221 multiple spaces before operator
-pymodbus/transaction.py:609:31: E261 at least two spaces before inline comment
-pymodbus/transaction.py:610:21: E221 multiple spaces before operator
-pymodbus/transaction.py:621:23: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:622:21: E203 whitespace before ':'
-pymodbus/transaction.py:622:23: E261 at least two spaces before inline comment
-pymodbus/transaction.py:629:80: E501 line too long (83 characters)
-pymodbus/transaction.py:629:73: E225 missing whitespace around operator
-pymodbus/transaction.py:630:43: E225 missing whitespace around operator
-pymodbus/transaction.py:641:31: E231 missing whitespace after ':'
-pymodbus/transaction.py:666:14: E221 multiple spaces before operator
-pymodbus/transaction.py:667:14: E221 multiple spaces before operator
-pymodbus/transaction.py:673:1: W293 blank line contains whitespace
-pymodbus/transaction.py:707:33: E261 at least two spaces before inline comment
-pymodbus/transaction.py:708:17: E701 multiple statements on one line (colon)
-pymodbus/transaction.py:733:21: E225 missing whitespace around operator
-pymodbus/transaction.py:736:78: W291 trailing whitespace
-pymodbus/transaction.py:738:78: W291 trailing whitespace
-pymodbus/utilities.py:13:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:23:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:34:26: E231 missing whitespace after ','
-pymodbus/utilities.py:37:80: E501 line too long (87 characters)
-pymodbus/utilities.py:37:26: E231 missing whitespace after ','
-pymodbus/utilities.py:40:26: E231 missing whitespace after ','
-pymodbus/utilities.py:47:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:60:15: E701 multiple statements on one line (colon)
-pymodbus/utilities.py:65:13: E701 multiple statements on one line (colon)
-pymodbus/utilities.py:67:21: E225 missing whitespace around operator
-pymodbus/utilities.py:71:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:93:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:104:17: E701 multiple statements on one line (colon)
-pymodbus/utilities.py:111:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:124:51: E702 multiple statements on one line (semicolon)
-pymodbus/utilities.py:129:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:138:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:153:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:162:1: E302 expected 2 blank lines, found 1
-pymodbus/utilities.py:184:78: W291 trailing whitespace
-pymodbus/utilities.py:186:78: W291 trailing whitespace
-pymodbus/version.py:8:1: E302 expected 2 blank lines, found 0
-pymodbus/version.py:37:31: E261 at least two spaces before inline comment
-pymodbus/version.py:39:78: W291 trailing whitespace
-pymodbus/version.py:41:78: W291 trailing whitespace
-pymodbus/client/async.py:13:1: W293 blank line contains whitespace
-pymodbus/client/async.py:36:1: E302 expected 2 blank lines, found 1
-pymodbus/client/async.py:49:33: E261 at least two spaces before inline comment
-pymodbus/client/async.py:129:1: E302 expected 2 blank lines, found 1
-pymodbus/client/async.py:134:78: W291 trailing whitespace
-pymodbus/client/async.py:136:78: W291 trailing whitespace
-pymodbus/client/common.py:11:1: E302 expected 2 blank lines, found 1
-pymodbus/client/common.py:133:1: W391 blank line at end of file
-pymodbus/client/sync.py:19:1: E302 expected 2 blank lines, found 1
-pymodbus/client/sync.py:50:80: E501 line too long (83 characters)
-pymodbus/client/sync.py:51:22: E702 multiple statements on one line (semicolon)
-pymodbus/client/sync.py:74:1: E302 expected 2 blank lines, found 1
-pymodbus/client/sync.py:98:80: E501 line too long (80 characters)
-pymodbus/client/sync.py:99:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:103:80: E501 line too long (80 characters)
-pymodbus/client/sync.py:111:80: E501 line too long (80 characters)
-pymodbus/client/sync.py:119:80: E501 line too long (80 characters)
-pymodbus/client/sync.py:142:80: E501 line too long (81 characters)
-pymodbus/client/sync.py:155:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:163:1: E302 expected 2 blank lines, found 1
-pymodbus/client/sync.py:177:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:180:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:183:23: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:194:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:222:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:230:1: E302 expected 2 blank lines, found 1
-pymodbus/client/sync.py:244:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:250:23: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:258:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:284:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:292:1: E302 expected 2 blank lines, found 1
-pymodbus/client/sync.py:307:21: E221 multiple spaces before operator
-pymodbus/client/sync.py:308:21: E221 multiple spaces before operator
-pymodbus/client/sync.py:311:21: E221 multiple spaces before operator
+pymodbus/pdu.py:137:27: E221 multiple spaces before operator
+pymodbus/register_read_message.py:128:80: E501 line too long (80 characters)
+pymodbus/register_read_message.py:178:80: E501 line too long (80 characters)
+pymodbus/register_read_message.py:228:26: E221 multiple spaces before operator
+pymodbus/register_read_message.py:229:26: E221 multiple spaces before operator
+pymodbus/register_write_message.py:133:22: E701 multiple statements on one line (colon)
+pymodbus/register_write_message.py:134:45: E701 multiple statements on one line (colon)
+pymodbus/register_write_message.py:154:80: E501 line too long (83 characters)
+pymodbus/transaction.py:141:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:142:21: E221 multiple spaces before operator
+pymodbus/transaction.py:143:21: E221 multiple spaces before operator
+pymodbus/transaction.py:174:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:239:17: E701 multiple statements on one line (colon)
+pymodbus/transaction.py:300:21: E221 multiple spaces before operator
+pymodbus/transaction.py:301:21: E221 multiple spaces before operator
+pymodbus/transaction.py:303:21: E221 multiple spaces before operator
+pymodbus/transaction.py:375:14: E221 multiple spaces before operator
+pymodbus/transaction.py:376:14: E221 multiple spaces before operator
+pymodbus/transaction.py:417:17: E701 multiple statements on one line (colon)
+pymodbus/transaction.py:457:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:458:21: E221 multiple spaces before operator
+pymodbus/transaction.py:459:21: E221 multiple spaces before operator
+pymodbus/transaction.py:460:21: E221 multiple spaces before operator
+pymodbus/transaction.py:461:21: E221 multiple spaces before operator
+pymodbus/transaction.py:472:23: E701 multiple statements on one line (colon)
+pymodbus/transaction.py:473:21: E203 whitespace before ':'
+pymodbus/transaction.py:492:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:517:14: E221 multiple spaces before operator
+pymodbus/transaction.py:518:14: E221 multiple spaces before operator
+pymodbus/transaction.py:559:17: E701 multiple statements on one line (colon)
+pymodbus/transaction.py:568:16: E221 multiple spaces before operator
+pymodbus/transaction.py:569:16: E221 multiple spaces before operator
+pymodbus/transaction.py:612:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:613:21: E221 multiple spaces before operator
+pymodbus/transaction.py:614:21: E221 multiple spaces before operator
+pymodbus/transaction.py:615:21: E221 multiple spaces before operator
+pymodbus/transaction.py:616:21: E221 multiple spaces before operator
+pymodbus/transaction.py:627:23: E701 multiple statements on one line (colon)
+pymodbus/transaction.py:628:21: E203 whitespace before ':'
+pymodbus/transaction.py:635:80: E501 line too long (85 characters)
+pymodbus/transaction.py:647:31: E231 missing whitespace after ':'
+pymodbus/transaction.py:672:14: E221 multiple spaces before operator
+pymodbus/transaction.py:673:14: E221 multiple spaces before operator
+pymodbus/transaction.py:714:17: E701 multiple statements on one line (colon)
+pymodbus/utilities.py:64:15: E701 multiple statements on one line (colon)
+pymodbus/utilities.py:69:13: E701 multiple statements on one line (colon)
+pymodbus/utilities.py:110:17: E701 multiple statements on one line (colon)
+pymodbus/utilities.py:131:51: E702 multiple statements on one line (semicolon)
+pymodbus/client/sync.py:52:80: E501 line too long (83 characters)
+pymodbus/client/sync.py:53:22: E702 multiple statements on one line (semicolon)
+pymodbus/client/sync.py:101:80: E501 line too long (80 characters)
+pymodbus/client/sync.py:106:80: E501 line too long (80 characters)
+pymodbus/client/sync.py:114:80: E501 line too long (80 characters)
+pymodbus/client/sync.py:122:80: E501 line too long (80 characters)
+pymodbus/client/sync.py:145:80: E501 line too long (81 characters)
+pymodbus/client/sync.py:187:23: E701 multiple statements on one line (colon)
+pymodbus/client/sync.py:255:23: E701 multiple statements on one line (colon)
+pymodbus/client/sync.py:313:21: E221 multiple spaces before operator
 pymodbus/client/sync.py:314:21: E221 multiple spaces before operator
-pymodbus/client/sync.py:316:21: E221 multiple spaces before operator
-pymodbus/client/sync.py:326:31: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:327:29: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:328:32: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:330:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:336:23: E701 multiple statements on one line (colon)
-pymodbus/client/sync.py:338:78: W291 trailing whitespace
-pymodbus/client/sync.py:345:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:373:1: W293 blank line contains whitespace
-pymodbus/client/sync.py:378:78: W291 trailing whitespace
-pymodbus/client/sync.py:380:78: W291 trailing whitespace
-pymodbus/datastore/__init__.py:6:78: W291 trailing whitespace
-pymodbus/datastore/__init__.py:8:78: W291 trailing whitespace
+pymodbus/client/sync.py:317:21: E221 multiple spaces before operator
+pymodbus/client/sync.py:320:21: E221 multiple spaces before operator
+pymodbus/client/sync.py:322:21: E221 multiple spaces before operator
+pymodbus/client/sync.py:332:31: E701 multiple statements on one line (colon)
+pymodbus/client/sync.py:333:29: E701 multiple statements on one line (colon)
+pymodbus/client/sync.py:334:32: E701 multiple statements on one line (colon)
+pymodbus/client/sync.py:342:23: E701 multiple statements on one line (colon)
 pymodbus/datastore/context.py:8:15: E702 multiple statements on one line (semicolon)
-pymodbus/datastore/context.py:14:1: E302 expected 2 blank lines, found 1
-pymodbus/datastore/context.py:29:1: W191 indentation contains tabs
-pymodbus/datastore/context.py:29:1: E101 indentation contains mixed spaces and tabs
-pymodbus/datastore/context.py:55:30: E261 at least two spaces before inline comment
-pymodbus/datastore/context.py:67:30: E261 at least two spaces before inline comment
-pymodbus/datastore/context.py:78:30: E261 at least two spaces before inline comment
-pymodbus/datastore/context.py:79:59: E231 missing whitespace after ','
-pymodbus/datastore/context.py:82:1: E302 expected 2 blank lines, found 1
-pymodbus/datastore/context.py:96:21: E221 multiple spaces before operator
-pymodbus/datastore/context.py:115:23: E701 multiple statements on one line (colon)
-pymodbus/datastore/context.py:118:13: E701 multiple statements on one line (colon)
-pymodbus/datastore/context.py:126:23: E701 multiple statements on one line (colon)
-pymodbus/datastore/context.py:127:25: W601 .has_key() is deprecated, use 'in'
-pymodbus/datastore/context.py:129:80: E501 line too long (82 characters)
-pymodbus/datastore/context.py:129:13: E701 multiple statements on one line (colon)
-pymodbus/datastore/context.py:130:1: W391 blank line at end of file
+pymodbus/datastore/context.py:98:21: E221 multiple spaces before operator
+pymodbus/datastore/context.py:117:23: E701 multiple statements on one line (colon)
+pymodbus/datastore/context.py:120:13: E701 multiple statements on one line (colon)
+pymodbus/datastore/context.py:128:23: E701 multiple statements on one line (colon)
+pymodbus/datastore/context.py:131:80: E501 line too long (82 characters)
+pymodbus/datastore/context.py:131:13: E701 multiple statements on one line (colon)
 pymodbus/datastore/database.py:13:15: E702 multiple statements on one line (semicolon)
-pymodbus/datastore/database.py:19:1: E302 expected 2 blank lines, found 1
-pymodbus/datastore/database.py:45:40: E261 at least two spaces before inline comment
-pymodbus/datastore/database.py:55:30: E261 at least two spaces before inline comment
-pymodbus/datastore/database.py:67:30: E261 at least two spaces before inline comment
-pymodbus/datastore/database.py:78:30: E261 at least two spaces before inline comment
-pymodbus/datastore/database.py:79:60: E231 missing whitespace after ','
-pymodbus/datastore/database.py:82:80: E501 line too long (80 characters)
-pymodbus/datastore/database.py:84:80: E501 line too long (80 characters)
-pymodbus/datastore/database.py:100:1: W293 blank line contains whitespace
-pymodbus/datastore/database.py:110:40: W291 trailing whitespace
-pymodbus/datastore/database.py:109:14: E221 multiple spaces before operator
-pymodbus/datastore/database.py:127:26: E203 whitespace before ':'
-pymodbus/datastore/database.py:127:18: E225 missing whitespace around operator
-pymodbus/datastore/database.py:141:15: E221 multiple spaces before operator
+pymodbus/datastore/database.py:83:80: E501 line too long (80 characters)
+pymodbus/datastore/database.py:85:80: E501 line too long (80 characters)
+pymodbus/datastore/database.py:110:14: E221 multiple spaces before operator
+pymodbus/datastore/database.py:128:28: E203 whitespace before ':'
 pymodbus/datastore/database.py:142:15: E221 multiple spaces before operator
-pymodbus/datastore/database.py:144:1: W293 blank line contains whitespace
-pymodbus/datastore/database.py:153:15: E221 multiple spaces before operator
+pymodbus/datastore/database.py:143:15: E221 multiple spaces before operator
 pymodbus/datastore/database.py:154:15: E221 multiple spaces before operator
-pymodbus/datastore/database.py:157:15: E221 multiple spaces before operator
-pymodbus/datastore/database.py:169:40: W291 trailing whitespace
+pymodbus/datastore/database.py:155:15: E221 multiple spaces before operator
+pymodbus/datastore/database.py:158:15: E221 multiple spaces before operator
 pymodbus/datastore/database.py:168:14: E221 multiple spaces before operator
-pymodbus/datastore/database.py:174:1: W391 blank line at end of file
 pymodbus/datastore/modredis.py:8:15: E702 multiple statements on one line (semicolon)
-pymodbus/datastore/modredis.py:14:1: E302 expected 2 blank lines, found 1
-pymodbus/datastore/modredis.py:52:30: E261 at least two spaces before inline comment
-pymodbus/datastore/modredis.py:64:30: E261 at least two spaces before inline comment
-pymodbus/datastore/modredis.py:75:30: E261 at least two spaces before inline comment
-pymodbus/datastore/modredis.py:76:59: E231 missing whitespace after ','
-pymodbus/datastore/modredis.py:79:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:81:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:96:16: E203 whitespace before ':'
-pymodbus/datastore/modredis.py:96:27: E231 missing whitespace after ','
-pymodbus/datastore/modredis.py:102:16: E203 whitespace before ':'
-pymodbus/datastore/modredis.py:102:27: E231 missing whitespace after ','
-pymodbus/datastore/modredis.py:108:16: E203 whitespace before ':'
-pymodbus/datastore/modredis.py:108:27: E231 missing whitespace after ','
-pymodbus/datastore/modredis.py:114:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:116:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:117:17: E221 multiple spaces before operator
-pymodbus/datastore/modredis.py:129:26: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:131:59: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:131:16: E221 multiple spaces before operator
-pymodbus/datastore/modredis.py:157:36: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:168:26: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:174:61: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:175:80: E501 line too long (90 characters)
-pymodbus/datastore/modredis.py:175:31: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:175:15: E221 multiple spaces before operator
-pymodbus/datastore/modredis.py:178:58: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:182:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:184:80: E501 line too long (80 characters)
-pymodbus/datastore/modredis.py:185:17: E221 multiple spaces before operator
-pymodbus/datastore/modredis.py:200:68: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:200:16: E221 multiple spaces before operator
-pymodbus/datastore/modredis.py:224:38: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:240:67: E225 missing whitespace around operator
-pymodbus/datastore/modredis.py:243:1: W391 blank line at end of file
+pymodbus/datastore/modredis.py:80:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:82:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:97:16: E203 whitespace before ':'
+pymodbus/datastore/modredis.py:103:16: E203 whitespace before ':'
+pymodbus/datastore/modredis.py:109:16: E203 whitespace before ':'
+pymodbus/datastore/modredis.py:115:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:117:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:118:17: E221 multiple spaces before operator
+pymodbus/datastore/modredis.py:132:16: E221 multiple spaces before operator
+pymodbus/datastore/modredis.py:176:80: E501 line too long (92 characters)
+pymodbus/datastore/modredis.py:176:15: E221 multiple spaces before operator
+pymodbus/datastore/modredis.py:183:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:185:80: E501 line too long (80 characters)
+pymodbus/datastore/modredis.py:186:17: E221 multiple spaces before operator
+pymodbus/datastore/modredis.py:201:16: E221 multiple spaces before operator
 pymodbus/datastore/remote.py:98:32: E701 multiple statements on one line (colon)
 pymodbus/datastore/remote.py:99:32: E701 multiple statements on one line (colon)
 pymodbus/datastore/remote.py:100:13: E701 multiple statements on one line (colon)
@@ -392,7 +196,7 @@ pymodbus/datastore/store.py:144:13: E701 multiple statements on one line (colon)
 pymodbus/datastore/store.py:154:15: E221 multiple spaces before operator
 pymodbus/datastore/store.py:195:13: E701 multiple statements on one line (colon)
 pymodbus/datastore/store.py:207:22: E701 multiple statements on one line (colon)
-pymodbus/internal/ptwisted.py:50:15: E701 multiple statements on one line (colon)
+pymodbus/internal/ptwisted.py:53:15: E701 multiple statements on one line (colon)
 pymodbus/server/sync.py:60:34: E701 multiple statements on one line (colon)
 pymodbus/server/sync.py:64:19: E701 multiple statements on one line (colon)
 pymodbus/server/sync.py:130:20: E221 multiple spaces before operator
@@ -406,23 +210,9 @@ pymodbus/server/sync.py:240:21: E221 multiple spaces before operator
 pymodbus/server/sync.py:241:21: E221 multiple spaces before operator
 pymodbus/server/sync.py:249:23: E701 multiple statements on one line (colon)
 pymodbus/server/sync.py:280:19: E701 multiple statements on one line (colon)
-pymodbus/server/sync.py:291:1: E302 expected 2 blank lines, found 1
-pymodbus/server/sync.py:301:1: E302 expected 2 blank lines, found 1
-pymodbus/server/sync.py:311:1: E302 expected 2 blank lines, found 1
-pymodbus/server/sync.py:321:78: W291 trailing whitespace
-pymodbus/server/sync.py:323:78: W291 trailing whitespace
-1       E101 indentation contains mixed spaces and tabs
 7       E203 whitespace before ':'
 119     E221 multiple spaces before operator
-25      E225 missing whitespace around operator
-17      E231 missing whitespace after ','
-23      E261 at least two spaces before inline comment
-51      E302 expected 2 blank lines, found 1
-42      E501 line too long (80 characters)
+6       E231 missing whitespace after ':'
+32      E501 line too long (80 characters)
 42      E701 multiple statements on one line (colon)
 5       E702 multiple statements on one line (semicolon)
-1       W191 indentation contains tabs
-38      W291 trailing whitespace
-36      W293 blank line contains whitespace
-4       W391 blank line at end of file
-1       W601 .has_key() is deprecated, use 'in'

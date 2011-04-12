@@ -7,6 +7,7 @@ data computing checksums, and decode checksums.
 '''
 import struct
 
+
 #---------------------------------------------------------------------------#
 # Helpers
 #---------------------------------------------------------------------------#
@@ -20,6 +21,7 @@ def default(value):
     '''
     return type(value)()
 
+
 def dict_property(store, index):
     ''' Helper to create class properties from a dictionary.
     Basically this allows you to remove a lot of possible
@@ -31,15 +33,17 @@ def dict_property(store, index):
     '''
     if hasattr(store, '__call__'):
         get = lambda self: store(self)[index]
-        set = lambda self,value: store(self).__setitem__(index, value)
+        set = lambda self, value: store(self).__setitem__(index, value)
     elif isinstance(store, str):
         get = lambda self: self.__getattribute__(store)[index]
-        set = lambda self,value: self.__getattribute__(store).__setitem__(index, value)
+        set = lambda self, value: self.__getattribute__(store).__setitem__(
+              index, value)
     else:
         get = lambda self: store[index]
-        set = lambda self,value: store.__setitem__(index, value)
+        set = lambda self, value: store.__setitem__(index, value)
 
     return property(get, set)
+
 
 #---------------------------------------------------------------------------#
 # Bit packing functions
@@ -64,9 +68,10 @@ def pack_bitstring(bits):
             i = packed = 0
         else: packed >>= 1
     if i > 0 and i < 8:
-        packed >>= 7-i
+        packed >>= (7 - i)
         ret += chr(packed)
     return ret
+
 
 def unpack_bitstring(string):
     ''' Creates bit array out of a string
@@ -86,6 +91,7 @@ def unpack_bitstring(string):
             bits.append((value & 1) == 1)
             value >>= 1
     return bits
+
 
 #---------------------------------------------------------------------------#
 # Error Detection Functions
@@ -108,6 +114,7 @@ def __generate_crc16_table():
 
 __crc16_table = __generate_crc16_table()
 
+
 def computeCRC(data):
     ''' Computes a crc16 on the passed in string. For modbus,
     this is only used on the binary serial protocols (in this
@@ -126,6 +133,7 @@ def computeCRC(data):
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped
 
+
 def checkCRC(data, check):
     ''' Checks if the data matches the passed in CRC
 
@@ -134,6 +142,7 @@ def checkCRC(data, check):
     :returns: True if matched, False otherwise
     '''
     return computeCRC(data) == check
+
 
 def computeLRC(data):
     ''' Used to compute the longitudinal redundancy check
@@ -150,6 +159,7 @@ def computeLRC(data):
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff
 
+
 def checkLRC(data, check):
     ''' Checks if the passed in data matches the LRC
 
@@ -158,6 +168,7 @@ def checkLRC(data, check):
     :returns: True if matched, False otherwise
     '''
     return computeLRC(data) == check
+
 
 def rtuFrameSize(buffer, byte_count_pos):
     ''' Calculates the size of the frame based on the byte count.
@@ -181,9 +192,9 @@ def rtuFrameSize(buffer, byte_count_pos):
     '''
     return struct.unpack('>B', buffer[byte_count_pos])[0] + byte_count_pos + 3
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     'pack_bitstring', 'unpack_bitstring', 'default',
     'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC', 'rtuFrameSize'

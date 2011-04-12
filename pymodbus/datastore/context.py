@@ -8,6 +8,7 @@ from pymodbus.datastore.store import ModbusSequentialDataBlock
 import logging;
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Slave Contexts
 #---------------------------------------------------------------------------#
@@ -26,7 +27,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'hr' - Holding Register initializer
             'ir' - Input Registers iniatializer
         '''
-	self.store = {}
+        self.store = {}
         self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock(0, 0))
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock(0, 0))
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock(0, 0))
@@ -52,7 +53,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].validate(address, count)
 
@@ -64,7 +65,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].getValues(address, count)
 
@@ -75,9 +76,10 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        address = address + 1 # section 4.4 of specification
-        _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
+        address = address + 1  # section 4.4 of specification
+        _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
+
 
 class ModbusServerContext(object):
     ''' This represents a master collection of slave contexts.
@@ -124,7 +126,6 @@ class ModbusServerContext(object):
         :returns: The requested slave context
         '''
         if self.single: slave = 0x00
-        if self.__slaves.has_key(slave):
+        if slave in self.__slaves:
             return self.__slaves.get(slave)
         else: raise ParameterException("slave does not exist, or is out of range")
-

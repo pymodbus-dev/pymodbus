@@ -7,6 +7,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 
+
 class ReadRegistersRequestBase(ModbusRequest):
     '''
     Base class for reading a modbus register
@@ -44,6 +45,7 @@ class ReadRegistersRequestBase(ModbusRequest):
         '''
         return "ReadRegisterRequest (%d,%d)" % (self.address, self.count)
 
+
 class ReadRegistersResponseBase(ModbusResponse):
     '''
     Base class for responsing to a modbus register read
@@ -77,7 +79,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         byte_count = ord(data[0])
         self.registers = []
         for i in range(1, byte_count + 1, 2):
-            self.registers.append(struct.unpack('>H', data[i:i+2])[0])
+            self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 
     def getRegister(self, index):
         ''' Get the requested register
@@ -126,6 +128,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         values = context.getValues(self.function_code, self.address, self.count)
         return ReadHoldingRegistersResponse(values)
 
+
 class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
     '''
     This function code is used to read the contents of a contiguous block
@@ -142,6 +145,7 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
         :param values: The resulting register values
         '''
         ReadRegistersResponseBase.__init__(self, values, **kwargs)
+
 
 class ReadInputRegistersRequest(ReadRegistersRequestBase):
     '''
@@ -174,6 +178,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         values = context.getValues(self.function_code, self.address, self.count)
         return ReadInputRegistersResponse(values)
 
+
 class ReadInputRegistersResponse(ReadRegistersResponseBase):
     '''
     This function code is used to read from 1 to approx. 125 contiguous
@@ -190,6 +195,7 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
         :param values: The resulting register values
         '''
         ReadRegistersResponseBase.__init__(self, values, **kwargs)
+
 
 class ReadWriteMultipleRegistersRequest(ModbusRequest):
     '''
@@ -250,7 +256,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         self.write_byte_count = struct.unpack('>HHHHB', data[:9])
         self.write_registers = []
         for i in range(9, self.write_byte_count + 9, 2):
-            register = struct.unpack('>H', data[i:i+2])[0]
+            register = struct.unpack('>H', data[i:i + 2])[0]
             self.write_registers.append(register)
 
     def execute(self, context):
@@ -286,6 +292,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
                   self.write_count)
         return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
+
 class ReadWriteMultipleRegistersResponse(ModbusResponse):
     '''
     The normal response contains the data from the group of registers that
@@ -294,7 +301,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     '''
     function_code = 23
     _rtu_byte_count_pos = 2
-        
+
     def __init__(self, values=None, **kwargs):
         ''' Initializes a new instance
 
@@ -308,7 +315,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        result = chr(len(self.registers)*2)
+        result = chr(len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack('>H', register)
         return result
@@ -320,7 +327,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         bytes = ord(data[0])
         for i in range(1, bytes, 2):
-            self.registers.append(struct.unpack('>H', data[i:i+2])[0])
+            self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 
     def __str__(self):
         ''' Returns a string representation of the instance
@@ -329,9 +336,9 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         return "ReadWriteNRegisterResponse (%d)" % len(self.registers)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReadHoldingRegistersRequest", "ReadHoldingRegistersResponse",
     "ReadInputRegistersRequest", "ReadInputRegistersResponse",

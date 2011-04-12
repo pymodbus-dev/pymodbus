@@ -285,6 +285,7 @@ class ModbusSerialServer(object):
         _logger.debug("Modbus server stopped")
         self.socket.close()
 
+
 #---------------------------------------------------------------------------#
 # Creation Factories
 #---------------------------------------------------------------------------#
@@ -298,6 +299,7 @@ def StartTcpServer(context=None, identity=None):
     server = ModbusTcpServer(context, framer, identity)
     server.serve_forever()
 
+
 def StartUdpServer(context=None, identity=None):
     ''' A factory to start and run a udp modbus server
 
@@ -307,6 +309,7 @@ def StartUdpServer(context=None, identity=None):
     framer = ModbusSocketFramer
     server = ModbusUdpServer(context, framer, identity)
     server.serve_forever()
+
 
 def StartSerialServer(context=None, identity=None, **kwargs):
     ''' A factory to start and run a udp modbus server
@@ -318,9 +321,9 @@ def StartSerialServer(context=None, identity=None, **kwargs):
     server = ModbusSerialServer(context, framer, identity, **kwargs)
     server.serve_forever()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "StartTcpServer", "StartUdpServer", "StartSerialServer"
 ]

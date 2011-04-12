@@ -8,6 +8,7 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 import logging;
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Context
 #---------------------------------------------------------------------------#
@@ -49,7 +50,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.__val_callbacks[self.decode(fx)](address, count)
 
@@ -61,7 +62,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        address = address + 1 # section 4.4 of specification
+        address = address + 1  # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.__get_callbacks[self.decode(fx)](address, count)
 
@@ -72,8 +73,8 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        address = address + 1 # section 4.4 of specification
-        _logger.debug("setValues[%d] %d:%d" % (fx, address,len(values)))
+        address = address + 1  # section 4.4 of specification
+        _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.__set_callbacks[self.decode(fx)](address, values)
 
     #--------------------------------------------------------------------------#
@@ -93,22 +94,22 @@ class RedisSlaveContext(IModbusSlaveContext):
         code mapper.
         '''
         self.__val_callbacks = {
-            'd' : lambda o,c: self.__val_bit('d', o, c),
-            'c' : lambda o,c: self.__val_bit('c', o, c),
-            'h' : lambda o,c: self.__val_reg('h', o, c),
-            'i' : lambda o,c: self.__val_reg('i', o, c),
+            'd' : lambda o, c: self.__val_bit('d', o, c),
+            'c' : lambda o, c: self.__val_bit('c', o, c),
+            'h' : lambda o, c: self.__val_reg('h', o, c),
+            'i' : lambda o, c: self.__val_reg('i', o, c),
         }
         self.__get_callbacks = {
-            'd' : lambda o,c: self.__get_bit('d', o, c),
-            'c' : lambda o,c: self.__get_bit('c', o, c),
-            'h' : lambda o,c: self.__get_reg('h', o, c),
-            'i' : lambda o,c: self.__get_reg('i', o, c),
+            'd' : lambda o, c: self.__get_bit('d', o, c),
+            'c' : lambda o, c: self.__get_bit('c', o, c),
+            'h' : lambda o, c: self.__get_reg('h', o, c),
+            'i' : lambda o, c: self.__get_reg('i', o, c),
         }
         self.__set_callbacks = {
-            'd' : lambda o,v: self.__set_bit('d', o, v),
-            'c' : lambda o,v: self.__set_bit('c', o, v),
-            'h' : lambda o,v: self.__set_reg('h', o, v),
-            'i' : lambda o,v: self.__set_reg('i', o, v),
+            'd' : lambda o, v: self.__set_bit('d', o, v),
+            'c' : lambda o, v: self.__set_bit('c', o, v),
+            'h' : lambda o, v: self.__set_reg('h', o, v),
+            'i' : lambda o, v: self.__set_reg('i', o, v),
         }
 
     #--------------------------------------------------------------------------#
@@ -126,9 +127,9 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         key = self.__get_prefix(key)
         s = divmod(offset, self.__bit_size)[0]
-        e = divmod(offset+count, self.__bit_size)[0]
+        e = divmod(offset + count, self.__bit_size)[0]
 
-        request  = ('%s:%s' % (key, v) for v in range(s, e+1))
+        request  = ('%s:%s' % (key, v) for v in range(s, e + 1))
         response = self.client.mget(request)
         return response
 
@@ -154,7 +155,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         response = (r or self.__bit_default for r in response)
         result = ''.join(response)
         result = unpack_bitstring(result)
-        return result[offset:offset+count]
+        return result[offset:offset + count]
 
     def __set_bit(self, key, offset, values):
         '''
@@ -165,17 +166,17 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         count = len(values)
         s = divmod(offset, self.__bit_size)[0]
-        e = divmod(offset+count, self.__bit_size)[0]
+        e = divmod(offset + count, self.__bit_size)[0]
         value = pack_bitstring(values)
 
         current = self.__get_bit_values(key, offset, count)
         current = (r or self.__bit_default for r in current)
         current = ''.join(current)
-        current = current[0:offset] + value + current[offset+count:]
-        final   = (current[s:s+self.__bit_size] for s in range(0, count, self.__bit_size))
+        current = current[0:offset] + value + current[offset + count:]
+        final   = (current[s:s + self.__bit_size] for s in range(0, count, self.__bit_size))
 
         key = self.__get_prefix(key)
-        request = ('%s:%s' % (key, v) for v in range(s, e+1))
+        request = ('%s:%s' % (key, v) for v in range(s, e + 1))
         request = dict(zip(request, final))
         self.client.mset(request)
 
@@ -196,8 +197,8 @@ class RedisSlaveContext(IModbusSlaveContext):
         #s = divmod(offset, self.__reg_size)[0]
         #e = divmod(offset+count, self.__reg_size)[0]
 
-        #request  = ('%s:%s' % (key, v) for v in range(s, e+1))
-        request  = ('%s:%s' % (key, v) for v in range(offset, count+1))
+        #request  = ('%s:%s' % (key, v) for v in range(s, e + 1))
+        request  = ('%s:%s' % (key, v) for v in range(offset, count + 1))
         response = self.client.mget(request)
         return response
 
@@ -221,7 +222,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         '''
         response = self.__get_reg_values(key, offset, count)
         response = [r or self.__reg_default for r in response]
-        return response[offset:offset+count]
+        return response[offset:offset + count]
 
     def __set_reg(self, key, offset, values):
         '''
@@ -237,7 +238,6 @@ class RedisSlaveContext(IModbusSlaveContext):
         #current = self.__get_reg_values(key, offset, count)
 
         key = self.__get_prefix(key)
-        request = ('%s:%s' % (key, v) for v in range(offset, count+1))
+        request = ('%s:%s' % (key, v) for v in range(offset, count + 1))
         request = dict(zip(request, values))
         self.client.mset(request)
-

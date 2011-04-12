@@ -8,6 +8,7 @@ from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
 
+
 class ModbusClientMixin(object):
     '''
     This is a modbus client mixin that provides additional factory
@@ -129,5 +130,3 @@ class ModbusClientMixin(object):
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
         request.unit_id = kwargs.get('unit', 0x00)
         return self.execute(request)
-
-

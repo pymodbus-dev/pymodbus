@@ -10,7 +10,7 @@ Example Run::
     def clientTest():
         requests = [ ReadCoilsRequest(0,99) ]
         p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-    
+
     if __name__ == "__main__":
        reactor.callLater(1, clientTest)
        reactor.run()
@@ -28,6 +28,7 @@ from pymodbus.client.common import ModbusClientMixin
 import logging
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # Client Protocols
 #---------------------------------------------------------------------------#
@@ -44,7 +45,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        self._requests = deque() # link queue to tid
+        self._requests = deque()  # link queue to tid
         self._connected = False
 
     def connectionMade(self):
@@ -121,6 +122,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     #               deferLater(clock, self.delay, send, message)
     #               self.retry -= 1
 
+
 #---------------------------------------------------------------------------#
 # Client Factories
 #---------------------------------------------------------------------------#
@@ -129,9 +131,9 @@ class ModbusClientFactory(protocol.ReconnectingClientFactory):
 
     protocol = ModbusClientProtocol
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusClientProtocol", "ModbusClientFactory",
 ]

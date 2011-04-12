@@ -22,24 +22,25 @@ class ModbusPDU(object):
 
     .. attribute:: transaction_id
 
-        This value is used to uniquely identify a request
-        response pair.  It can be implemented as a simple counter
+       This value is used to uniquely identify a request
+       response pair.  It can be implemented as a simple counter
 
     .. attribute:: protocol_id
 
-        This is a constant set at 0 to indicate Modbus.  It is
-        put here for ease of expansion.
+       This is a constant set at 0 to indicate Modbus.  It is
+       put here for ease of expansion.
 
     .. attribute:: unit_id
-    
-        This is used to route the request to the correct child. In
-        the TCP modbus, it is used for routing (or not used at all.  However, for
-        the serial versions, it is used to specify which child to perform the
-        requests against. The value 0x00 represents the broadcast address (also 0xff).
+
+       This is used to route the request to the correct child. In
+       the TCP modbus, it is used for routing (or not used at all. However,
+       for the serial versions, it is used to specify which child to perform
+       the requests against. The value 0x00 represents the broadcast address
+       (also 0xff).
 
     .. attribute:: check
-    
-        This is used for LRC/CRC in the serial modbus protocols
+
+       This is used for LRC/CRC in the serial modbus protocols
     '''
 
     def __init__(self, **kwargs):
@@ -101,12 +102,12 @@ class ModbusResponse(ModbusPDU):
     ''' Base class for a modbus response PDU
 
     .. attribute:: should_respond
-    
+
        A flag that indicates if this response returns a result back
        to the client issuing the request
 
     .. attribute:: _rtu_frame_size
-    
+
        Indicates the size of the modbus rtu response used for
        calculating how much to read.
     '''

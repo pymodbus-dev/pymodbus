@@ -33,7 +33,7 @@ class ModbusAccessControl(Singleton):
 
         :returns: An iterator of the network access table
         '''
-        return self.__nmstable.__iter__()
+        return iter(self.__nmstable)
 
     def add(self, host):
         ''' Add allowed host(s) from the NMS table
@@ -116,7 +116,7 @@ class ModbusDeviceIdentification(object):
 
         :returns: An iterator of the device information
         '''
-        return self.__data.items()
+        return iter(self.__data.items())
 
     def summary(self):
         ''' Return a summary of the main items
@@ -258,7 +258,7 @@ class ModbusCountersHandler(object):
 
         :returns: An iterator of the device counters
         '''
-        return zip(self.__names, self.__data.values())
+        return iter(zip(self.__names, self.__data.values()))
 
     def update(self, input):
         ''' Update the values of this identity
@@ -335,7 +335,7 @@ class ModbusControlBlock(Singleton):
 
         :returns: An iterator of the device counters
         '''
-        return self.__counters.__iter__()
+        return iter(self.__counters)
 
     #-------------------------------------------------------------------------#
     # Events

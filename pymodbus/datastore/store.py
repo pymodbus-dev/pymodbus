@@ -125,8 +125,8 @@ class BaseModbusDataBlock(object):
         :returns: An iterator of the data block data
         '''
         if isinstance(self.values, dict):
-            return self.values.items()
-        return enumerate(self.values)
+            return iter(self.values.items())
+        return iter(enumerate(self.values))
 
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
@@ -195,7 +195,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         else: raise ParameterException(
             "Values for datastore must be a list or dictionary")
         self.default_value = list(self.values.values())[0].__class__()
-        self.address = self.values.keys().next()
+        self.address = next(iter(self.values.keys()))
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range

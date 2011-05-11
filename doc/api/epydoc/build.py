@@ -32,7 +32,7 @@ try:
 
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/epydoc")
-except Exception, ex:
+except Exception as ex:
     import traceback,sys
     traceback.print_exc(file=sys.stdout)
     print "Epydoc not avaliable...not building"

@@ -15,7 +15,7 @@ from pymodbus.bit_read_message import ReadBitsResponseBase
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-from modbus_mocks import MockContext
+from .modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -79,7 +79,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadBitsRequestBase(12, 14)        : '\x00\x0c\x00\x0e',
             ReadBitsResponseBase([1,0,1,1,0])  : '\x01\x0d',
         }
-        for request, expected in messages.iteritems():
+        for request, expected in messages.items():
             self.assertEqual(request.encode(), expected)
 
     def testBitReadMessageExecuteValueErrors(self):

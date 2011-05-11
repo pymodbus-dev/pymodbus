@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest, os
 from pymodbus.datastore.database import DatabaseSlaveContext
-from base_context import ContextRunner
+from .base_context import ContextRunner
 
 class DatabaseSlaveContextTest(ContextRunner, unittest.TestCase):
     '''

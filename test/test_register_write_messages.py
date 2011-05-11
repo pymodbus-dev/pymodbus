@@ -4,7 +4,7 @@ from pymodbus.register_write_message import *
 from pymodbus.exceptions import ParameterException
 from pymodbus.pdu import ModbusExceptions
 
-from modbus_mocks import MockContext
+from .modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture

@@ -87,11 +87,11 @@ class Simulator(object):
 
     def _simulator(self):
         ''' Starts the snmp simulator '''
-        ports = [502]+range(20000,25000)
+        ports = [502]+list(range(20000,25000))
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print 'listening on port', port
+                print('listening on port %d' % port)
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -235,7 +235,7 @@ class SimulatorFrame(wx.Frame):
             try:
                 handle = Simulator(config=self.file)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
@@ -297,8 +297,8 @@ def main():
         try:
             log.setLevel(logging.DEBUG)
     	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+        except Exception as e:
+    	    print("Logging is not supported on this system")
     simulator = SimulatorApp(0)
     reactor.run()
 

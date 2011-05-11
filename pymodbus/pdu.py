@@ -4,7 +4,7 @@ Contains base classes for modbus request/response/error packets
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
-from utilities import rtuFrameSize
+from pymodbus.utilities import rtuFrameSize
 
 #---------------------------------------------------------------------------#
 # Logging

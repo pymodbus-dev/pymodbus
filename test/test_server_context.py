@@ -73,9 +73,9 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
     def testMultipleContextSet(self):
         ''' Test a setting multiple slave contexts '''
         slaves = dict((id, ModbusSlaveContext()) for id in range(10))
-        for id, slave in slaves.iteritems():
+        for id, slave in slaves.items():
             self.context[id] = slave
-        for id, slave in slaves.iteritems():
+        for id, slave in slaves.items():
             actual = self.context[id]
             self.assertEqual(slave, actual)
 

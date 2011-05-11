@@ -36,6 +36,13 @@ class ModbusAccessControl(Singleton):
         '''
         return self.__nmstable.__iter__()
 
+    def __contains__(self, host):
+        ''' Check if a host is allowed to access resources
+
+        :param host: The host to check
+        '''
+        return host in self.__nmstable
+
     def add(self, host):
         ''' Add allowed host(s) from the NMS table
 

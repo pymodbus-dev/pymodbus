@@ -191,6 +191,8 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.access.add(list)
         for host in self.access:
             self.assertTrue(host in list)
+        for host in list:
+            self.assertTrue(host in self.access)
 
     def testClearingControlEvents(self):
         ''' Test adding and clearing modbus events '''

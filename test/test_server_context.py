@@ -64,6 +64,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
         ''' Test iterating over multiple context '''
         for id, slave in self.context:
             self.assertEqual(slave, self.slaves[id])
+            self.assertTrue(id in self.context)
 
     def testMultipleContextDefault(self):
         ''' Test that the multiple context default values work '''

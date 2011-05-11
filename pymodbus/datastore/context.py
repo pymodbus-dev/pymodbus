@@ -108,6 +108,14 @@ class ModbusServerContext(object):
         '''
         return self.__slaves.iteritems()
 
+    def __contains__(self, slave):
+        ''' Check if the given slave is in this list
+
+        :param slave: slave The slave to check for existance
+        :returns: True if the slave exists, False otherwise
+        '''
+        return slave in self.__slaves
+
     def __setitem__(self, slave, context):
         ''' Wrapper used to access the slave context
 

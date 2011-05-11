@@ -45,7 +45,7 @@ def main():
     global verbose, recurse, dryrun
     try:
         opts, args = getopt.getopt(sys.argv[1:], "drv")
-    except getopt.error, msg:
+    except getopt.error as msg:
         errprint(msg)
         return
     for o, a in opts:
@@ -78,7 +78,7 @@ def check(file):
         print "checking", file, "...",
     try:
         f = open(file)
-    except IOError, msg:
+    except IOError as msg:
         errprint("%s: I/O Error: %s" % (file, str(msg)))
         return
 

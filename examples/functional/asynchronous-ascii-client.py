@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.client.async import ModbusSerialClient as ModbusClient
-from base_runner import Runner
+from .base_runner import Runner
 
 class AsynchronousAsciiClient(Runner, unittest.TestCase):
     '''

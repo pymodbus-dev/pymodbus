@@ -107,15 +107,15 @@ def main():
         try:
             server_log.setLevel(logging.DEBUG)
             protocol_log.setLevel(logging.DEBUG)
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+        except Exception as e:
+    	    print("Logging is not supported on this system")
 
     # parse configuration file and run
     try:
         conf = Configuration(opt.file)
         StartTcpServer(context=conf.parse())
-    except ConfigurationException, err:
-        print err
+    except ConfigurationException as err:
+        print(err)
         parser.print_help()
 
 #---------------------------------------------------------------------------#
@@ -124,5 +124,5 @@ def main():
 if __name__ == "__main__":
     if root_test():
         main()
-    else: print "This script must be run as root!"
+    else: print("This script must be run as root!")
 

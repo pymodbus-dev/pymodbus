@@ -13,8 +13,8 @@ from threading import Thread
 #---------------------------------------------------------------------------#
 # For Gui
 #---------------------------------------------------------------------------#
-from Tkinter import *
-from tkFileDialog import askopenfilename as OpenFilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename as OpenFilename
 from twisted.internet import tksupport
 root = Tk()
 tksupport.install(root)
@@ -89,7 +89,7 @@ class Simulator(object):
 
     def _simulator(self):
         ''' Starts the snmp simulator '''
-        ports = [502]+range(20000,25000)
+        ports = [502]+list(range(20000,25000))
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
@@ -264,7 +264,7 @@ class SimulatorFrame(Frame):
             try:
                 handle = Simulator(config=filename)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
@@ -324,8 +324,8 @@ def main():
         try:
             log.setLevel(logging.DEBUG)
     	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+        except Exception as e:
+    	    print("Logging is not supported on this system")
     simulator = SimulatorApp(root)
     root.title("Modbus Simulator")
     reactor.run()

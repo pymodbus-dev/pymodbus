@@ -3,7 +3,7 @@ import unittest
 import os
 from subprocess import Popen as execute
 from pymodbus.datastore.modredis import RedisSlaveContext
-from base_context import ContextRunner
+from .base_context import ContextRunner
 
 class RedisSlaveContextTest(ContextRunner, unittest.TestCase):
     '''

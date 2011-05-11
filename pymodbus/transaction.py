@@ -57,7 +57,7 @@ class ModbusTransactionManager(Singleton):
                 self.socket.connect()
                 packet = self.framer.buildPacket(request)
                 self.socket.send(packet)
-            except socket.error, msg:
+            except socket.error as msg:
                 self.socket.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1

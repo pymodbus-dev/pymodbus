@@ -77,7 +77,7 @@ class Simulator(object):
 
     def _simulator(self):
         ''' Starts the snmp simulator '''
-        ports = [502]+range(20000,25000)
+        ports = [502]+list(range(20000,25000))
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))

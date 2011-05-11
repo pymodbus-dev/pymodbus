@@ -6,7 +6,6 @@ It is also used to convert datastores to and from a register list
 dump.  This allows users to build their own data from scratch or
 modifiy an exisiting dump.
 '''
-from __future__ import with_statement
 import pickle
 from sys import exit
 from optparse import OptionParser
@@ -67,7 +66,7 @@ def build_conversion(option, opt, value, parser):
         raise ConfigurationException("File Not Found %s" % value)
 
     with open(value + ".dump", "w") as output:
-        for dk,dv in data.iteritems():
+        for dk,dv in data.items():
             output.write("[ %s ]\n\n" % dk)
 
             # handle sequential
@@ -78,7 +77,7 @@ def build_conversion(option, opt, value, parser):
             # handle sparse
             elif isinstance(data[k].values, dict):
                 output.write("\n".join(["[%d] = %d" % (vk,vv)
-                        for vk,vv in dv.values.iteritems()]))
+                        for vk,vv in dv.values.items()]))
             else: raise ConfigurationException("Datastore is corrupted %s" % value)
             output.write("\n\n")
     exit() # So we don't start a dummy build
@@ -141,10 +140,10 @@ def main():
 
         with open(opt.file, "w") as output:
             pickle.dump(result, output)
-        print "Created datastore: %s\n" % opt.file
+        print("Created datastore: %s\n" % opt.file)
 
-    except ConfigurationException, ex:
-        print ex
+    except ConfigurationException as ex:
+        print(ex)
         parser.print_help()
 
 #---------------------------------------------------------------------------#

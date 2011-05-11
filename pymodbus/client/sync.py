@@ -1,31 +1,19 @@
-"""
-Implementation of a Modbus Client Using Sockets
-------------------------------------------------
-
-Example Run::
-
-    def clientTest():
-        requests = [ ReadCoilsRequest(0,99) ]
-        p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
-    
-    if __name__ == "__main__":
-       reactor.callLater(1, clientTest)
-       reactor.run()
-"""
 import socket
-import struct
 import serial
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import *
+from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import *
+from pymodbus.client.common import ModbusClientMixin
 
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.client')
+_logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Client Producer/Consumer
@@ -81,12 +69,12 @@ class ModbusTransactionManager:
         As the transaction identifier is represented with two
         bytes, the highest TID is 0xffff
         '''
-        tid = ModbusTransactionManager.__tid
-        ModbusTransactionManager.__tid = (1 +
-            ModbusTransactionManager.__tid) & 0xffff
+        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
+        ModbusTransactionManager.__tid = tid
         return tid
 
-class BaseModbusClient(object):
+
+class BaseModbusClient(ModbusClientMixin):
     '''
     Inteface for a modbus synchronous client. Defined here are all the
     methods for performing the related request methods.  Derived classes
@@ -111,7 +99,7 @@ class BaseModbusClient(object):
         :returns: True if connection succeeded, False otherwise
         '''
         raise NotImplementedException("Method not implemented by derived class")
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -167,10 +155,11 @@ class BaseModbusClient(object):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "Null Transport"
+
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Client Transport Implementation
@@ -179,20 +168,20 @@ class ModbusTcpClient(BaseModbusClient):
     ''' Implementation of a modbus tcp client
     '''
 
-    def __init__(self, host, port=Defaults.Port):
+    def __init__(self, host='127.0.0.1', port=Defaults.Port):
         ''' Initialize a client instance
 
-        :param host: The host to connect to
+        :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
         '''
         self.host = host
         self.port = port
         self.socket = None
         BaseModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
-    
+
     def connect(self):
         ''' Connect to the modbus tcp server
-        
+
         :returns: True if connection succeeded, False otherwise
         '''
         if self.socket: return True
@@ -206,7 +195,7 @@ class ModbusTcpClient(BaseModbusClient):
                 (self.host, self.port, msg))
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -234,10 +223,11 @@ class ModbusTcpClient(BaseModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s:%s" % (self.host, self.port)
+
 
 #---------------------------------------------------------------------------#
 # Modbus UDP Client Transport Implementation
@@ -246,17 +236,17 @@ class ModbusUdpClient(BaseModbusClient):
     ''' Implementation of a modbus udp client
     '''
 
-    def __init__(self, host, port=Defaults.Port):
+    def __init__(self, host='127.0.0.1', port=Defaults.Port):
         ''' Initialize a client instance
 
-        :param host: The host to connect to
+        :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
         '''
         self.host = host
         self.port = port
         self.socket = None
-        BaseModbusClient.__init__(self, ModbuSocketFramer(ClientDecoder()))
-    
+        BaseModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
+
     def connect(self):
         ''' Connect to the modbus tcp server
 
@@ -266,11 +256,11 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             #self.socket.bind(('localhost', Defaults.Port))
-        except socket.error as msg:
-            _logger.error('Unable to create udp socket')
+        except socket.error as ex:
+            _logger.error('Unable to create udp socket %s' % ex)
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -296,10 +286,11 @@ class ModbusUdpClient(BaseModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s:%s" % (self.host, self.port)
+
 
 #---------------------------------------------------------------------------#
 # Modbus Serial Client Transport Implementation
@@ -342,7 +333,7 @@ class ModbusSerialClient(BaseModbusClient):
         elif method == 'rtu':    return ModbusRtuFramer(ClientDecoder())
         elif method == 'binary': return ModbusBinaryFramer(ClientDecoder())
         raise ParameterException("Invalid framer method requested")
-    
+
     def connect(self):
         ''' Connect to the modbus tcp server
 
@@ -350,14 +341,14 @@ class ModbusSerialClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.port, timeout=self.timeout, 
+            self.socket = serial.Serial(port=self.port, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
         return self.socket != None
-    
+
     def close(self):
         ''' Closes the underlying socket connection
         '''
@@ -385,14 +376,14 @@ class ModbusSerialClient(BaseModbusClient):
 
     def __str__(self):
         ''' Builds a string representation of the connection
-        
+
         :returns: The string representation
         '''
         return "%s baud[%s]" % (self.method, self.baudrate)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusTcpClient", "ModbusUdpClient", "ModbusSerialClient"
 ]

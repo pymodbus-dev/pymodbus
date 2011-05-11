@@ -1,0 +1,35 @@
+Name                              Stmts   Exec  Cover   Missing
+---------------------------------------------------------------
+pymodbus                             12     12   100%   
+pymodbus.bit_read_message            68     68   100%   
+pymodbus.bit_write_message           94     94   100%   
+pymodbus.client                       1      1   100%   
+pymodbus.client.common               44     44   100%   
+pymodbus.client.sync                154     61    39%   38-57, 64, 71-73, 99, 104, 112, 120, 130-132, 142-144, 148, 152, 159, 184-194, 199-201, 209-211, 219, 226, 251-258, 263, 271-273, 281, 288, 308-317, 326-330, 337-345, 350-352, 360-362, 370, 377
+pymodbus.constants                   21     21   100%   
+pymodbus.datastore                    5      5   100%   
+pymodbus.datastore.context           47     47   100%   
+pymodbus.datastore.remote            31     31   100%   
+pymodbus.datastore.store             63     63   100%   
+pymodbus.device                     128    128   100%   
+pymodbus.diag_message               186    186   100%   
+pymodbus.events                      60     60   100%   
+pymodbus.exceptions                  22     22   100%   
+pymodbus.factory                     56     56   100%   
+pymodbus.file_message                41     41   100%   
+pymodbus.interfaces                  43     43   100%   
+pymodbus.internal                     1      1   100%   
+pymodbus.other_message              143    143   100%   
+pymodbus.pdu                         65     65   100%   
+pymodbus.register_read_message      124    124   100%   
+pymodbus.register_write_message      88     88   100%   
+pymodbus.server                       0      0   100%   
+pymodbus.transaction                257    202    78%   49-61, 226-236, 404-413, 545-554, 623, 699-708, 733
+pymodbus.utilities                   67     67   100%   
+pymodbus.version                     13     13   100%   
+---------------------------------------------------------------
+TOTAL                              1834   1686    91%   
+----------------------------------------------------------------------
+Ran 154 tests in 0.292s
+
+OK

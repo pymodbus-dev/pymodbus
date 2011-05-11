@@ -8,9 +8,9 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
-from pymodbus.exceptions import *
 
 _MCB = ModbusControlBlock()
+
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
@@ -23,6 +23,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
     known (no output reference is needed in the function).
     '''
     function_code = 0x07
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -56,6 +57,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         '''
         return "ReadExceptionStatusRequest(%d)" % (self.function_code)
 
+
 class ReadExceptionStatusResponse(ModbusResponse):
     '''
     The normal response contains the status of the eight Exception Status
@@ -65,13 +67,14 @@ class ReadExceptionStatusResponse(ModbusResponse):
     Exception Status outputs are device specific.
     '''
     function_code = 0x07
+    _rtu_frame_size = 5
 
     def __init__(self, status):
         ''' Initializes a new instance
 
         :param status: The status response to report
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.status = status
 
     def encode(self):
@@ -86,7 +89,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.status = struct.unpack('>B', data)
+        self.status = struct.unpack('>B', data)[0]
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -96,30 +99,32 @@ class ReadExceptionStatusResponse(ModbusResponse):
         arguments = (self.function_code, self.status)
         return "ReadExceptionStatusResponse(%d, %s)" % arguments
 
-
 # Encapsulate interface transport 43, 14
 # CANopen general reference 43, 13
+
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class GetCommEventCounterRequest(ModbusRequest):
     '''
-    This function code is used to get a status word and an event count from the
-    remote device's communication event counter. 
+    This function code is used to get a status word and an event count from
+    the remote device's communication event counter.
 
-    By fetching the current count before and after a series of messages, a client
-    can determine whether the messages were handled normally by the remote device. 
+    By fetching the current count before and after a series of messages, a
+    client can determine whether the messages were handled normally by the
+    remote device.
 
-    The device's event counter is incremented once  for each successful message
-    completion. It is not incremented for exception responses, poll commands,
-    or fetch event counter commands. 
+    The device's event counter is incremented once  for each successful
+    message completion. It is not incremented for exception responses,
+    poll commands, or fetch event counter commands.
 
-    The event counter can be reset by means of the Diagnostics function (code 08),
-    with a subfunction of Restart Communications Option (code 00 01) or
-    Clear Counters and Diagnostic Register (code 00 0A).
+    The event counter can be reset by means of the Diagnostics function
+    (code 08), with a subfunction of Restart Communications Option
+    (code 00 01) or Clear Counters and Diagnostic Register (code 00 0A).
     '''
     function_code = 0x0b
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -144,7 +149,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :returns: The populated response
         '''
         status = _MCB.Counter.Event
-        return GetCommEventCounterResponseResponse(status)
+        return GetCommEventCounterResponse(status)
 
     def __str__(self):
         ''' Builds a representation of the request
@@ -153,24 +158,26 @@ class GetCommEventCounterRequest(ModbusRequest):
         '''
         return "GetCommEventCounterRequest(%d)" % (self.function_code)
 
+
 class GetCommEventCounterResponse(ModbusResponse):
     '''
     The normal response contains a two-byte status word, and a two-byte
     event count. The status word will be all ones (FF FF hex) if a
-    previously-issued program command is still being processed by the remote
-    device (a busy condition exists). Otherwise, the status word will be 
-    all zeros.
+    previously-issued program command is still being processed by the
+    remote device (a busy condition exists). Otherwise, the status word
+    will be all zeros.
     '''
     function_code = 0x0b
+    _rtu_frame_size = 8
 
     def __init__(self, count):
         ''' Initializes a new instance
 
         :param count: The current event counter value
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.count = count
-        self.status = True # this means we are ready, not waiting
+        self.status = True  # this means we are ready, not waiting
 
     def encode(self):
         ''' Encodes the response
@@ -196,29 +203,32 @@ class GetCommEventCounterResponse(ModbusResponse):
         arguments = (self.function_code, self.count, self.status)
         return "GetCommEventCounterResponse(%d, %d, %d)" % arguments
 
+
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class GetCommEventLogRequest(ModbusRequest):
     '''
-    This function code is used to get a status word, event count, message count,
-    and a field of event bytes from the remote device. 
+    This function code is used to get a status word, event count, message
+    count, and a field of event bytes from the remote device.
 
-    The status word and event counts are identical  to that returned by the
-    Get Communications Event Counter function (11, 0B hex). 
+    The status word and event counts are identical  to that returned by
+    the Get Communications Event Counter function (11, 0B hex).
 
     The message counter contains the quantity of  messages processed by the
-    remote device since its last restart, clear counters operation, or power-up.
-    This count is identical to that returned by the Diagnostic function
-    (code 08), sub-function Return Bus Message Count (code 11, 0B hex). 
+    remote device since its last restart, clear counters operation, or
+    power-up.  This count is identical to that returned by the Diagnostic
+    function (code 08), sub-function Return Bus Message Count (code 11,
+    0B hex).
 
-    The event bytes field contains 0-64 bytes, with each byte corresponding to
-    the status of one MODBUS send or receive operation for the remote device.
-    The remote device enters the events into the field in chronological order.
-    Byte 0 is the most recent event. Each new byte flushes the oldest byte
-    from the field.
+    The event bytes field contains 0-64 bytes, with each byte corresponding
+    to the status of one MODBUS send or receive operation for the remote
+    device.  The remote device enters the events into the field in
+    chronological order.  Byte 0 is the most recent event. Each new byte
+    flushes the oldest byte from the field.
     '''
     function_code = 0x0c
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -257,14 +267,16 @@ class GetCommEventLogRequest(ModbusRequest):
         '''
         return "GetCommEventLogRequest(%d)" % self.function_code
 
+
 class GetCommEventLogResponse(ModbusResponse):
     '''
     The normal response contains a two-byte status word field,
     a two-byte event count field, a two-byte message count field,
-    and a field containing 0-64 bytes of events. A byte count field 
-    defines the total length of the data in these four field
+    and a field containing 0-64 bytes of events. A byte count
+    field defines the total length of the data in these four field
     '''
     function_code = 0x0c
+    _rtu_byte_count_pos = 3
 
     def __init__(self, **kwargs):
         ''' Initializes a new instance
@@ -274,7 +286,7 @@ class GetCommEventLogResponse(ModbusResponse):
         :param event_count: The current event count
         :param events: The collection of events to send
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.status = kwargs.get('status', True)
         self.message_count = kwargs.get('message_count', 0)
         self.event_count = kwargs.get('event_count', 0)
@@ -297,15 +309,15 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = struct.unpack('>B', data[0])
-        status = struct.unpack('>H', data[1:2])
-        self.status = (status == ModbusStats.Ready)
-        self.event_count = struct.unpack('>H', data[3:4])
-        self.message_count = struct.unpack('>H', data[5:6])
+        length = struct.unpack('>B', data[0])[0]
+        status = struct.unpack('>H', data[1:3])[0]
+        self.status = (status == ModbusStatus.Ready)
+        self.event_count = struct.unpack('>H', data[3:5])[0]
+        self.message_count = struct.unpack('>H', data[5:7])[0]
 
         self.events = []
-        for e in range(6, length):
-            self.events.append(struct.unpack('>B', data[6 + e]))
+        for e in range(7, length + 1):
+            self.events.append(struct.unpack('>B', data[e])[0])
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -315,15 +327,17 @@ class GetCommEventLogResponse(ModbusResponse):
         arguments = (self.function_code, self.status, self.message_count, self.event_count)
         return "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments
 
+
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class ReportSlaveIdRequest(ModbusRequest):
     '''
-    This function code is used to read the description of the type, the current
-    status, and other information specific to a remote device. 
+    This function code is used to read the description of the type, the
+    current status, and other information specific to a remote device.
     '''
     function_code = 0x11
+    _rtu_frame_size = 4
 
     def __init__(self):
         ''' Initializes a new instance
@@ -347,8 +361,8 @@ class ReportSlaveIdRequest(ModbusRequest):
 
         :returns: The populated response
         '''
-        status = _MCB.getCounterSummary()
-        return ReportSlaveIdResponse(status)
+        identifier = '\x70\x79\x6d\x6f\x64\x62\x75\x73'
+        return ReportSlaveIdResponse(identifier)
 
     def __str__(self):
         ''' Builds a representation of the request
@@ -357,12 +371,14 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         return "ResportSlaveIdRequest(%d)" % self.function_code
 
+
 class ReportSlaveIdResponse(ModbusResponse):
     '''
-    The format of a normal response is shown in the following example. The
-    data contents are specific to each type of device.
+    The format of a normal response is shown in the following example.
+    The data contents are specific to each type of device.
     '''
     function_code = 0x11
+    _rtu_byte_count_pos = 2
 
     def __init__(self, identifier, status=True):
         ''' Initializes a new instance
@@ -370,7 +386,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param identifier: The identifier of the slave
         :param status: The status response to report
         '''
-        ModbusRequest.__init__(self)
+        ModbusResponse.__init__(self)
         self.identifier = identifier
         self.status = status
 
@@ -379,16 +395,25 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        status = 0xFF if self.status else 0x00
-        return struct.pack('>BBB', 0x03, self.identifier, self.status)
+        status = ModbusStatus.SlaveOn if self.status else ModbusStatus.SlaveOff
+        length = len(self.identifier) + 2
+        packet = struct.pack('>B', length)
+        packet += self.identifier  # we assume it is already encoded
+        packet += struct.pack('>B', status)
+        return packet
 
     def decode(self, data):
         ''' Decodes a the response
 
+        Since the identifier is device dependent, we just return the
+        raw value that a user can decode to whatever it should be.
+
         :param data: The packet data to decode
         '''
-        length, self.identifier, status = struct.unpack('>BBB', data)
-        self.status = status == 0xFF
+        length = struct.unpack('>B', data[0])[0]
+        self.identifier = data[1:length - 1]
+        status = struct.unpack('>B', data[-1])[0]
+        self.status = status == ModbusStatus.SlaveOn
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -403,10 +428,12 @@ class ReportSlaveIdResponse(ModbusResponse):
 #---------------------------------------------------------------------------#
 # report device identification 43, 14
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ReadExceptionStatusRequest", "ReadExceptionStatusResponse",
+    "GetCommEventCounterRequest", "GetCommEventCounterResponse",
+    "GetCommEventLogRequest", "GetCommEventLogResponse",
     "ReportSlaveIdRequest", "ReportSlaveIdResponse",
 ]

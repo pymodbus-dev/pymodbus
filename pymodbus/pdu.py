@@ -4,12 +4,14 @@ Contains base classes for modbus request/response/error packets
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
+from pymodbus.utilities import rtuFrameSize
 
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.protocol')
+_logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Base PDU's
@@ -20,31 +22,32 @@ class ModbusPDU(object):
 
     .. attribute:: transaction_id
 
-        This value is used to uniquely identify a request
-        response pair.  It can be implemented as a simple counter
+       This value is used to uniquely identify a request
+       response pair.  It can be implemented as a simple counter
 
     .. attribute:: protocol_id
 
-        This is a constant set at 0 to indicate Modbus.  It is
-        put here for ease of expansion.
+       This is a constant set at 0 to indicate Modbus.  It is
+       put here for ease of expansion.
 
     .. attribute:: unit_id
-    
-        This is used to route the request to the correct child. In
-        the TCP modbus, it is used for routing (or not used at all.  However, for
-        the serial versions, it is used to specify which child to perform the
-        requests against.
+
+       This is used to route the request to the correct child. In
+       the TCP modbus, it is used for routing (or not used at all. However,
+       for the serial versions, it is used to specify which child to perform
+       the requests against. The value 0x00 represents the broadcast address
+       (also 0xff).
 
     .. attribute:: check
-    
-        This is used for LRC/CRC in the serial modbus protocols
+
+       This is used for LRC/CRC in the serial modbus protocols
     '''
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializes the base data for a modbus request '''
-        self.transaction_id = Defaults.TransactionId
-        self.protocol_id = Defaults.ProtocolId
-        self.unit_id = 0x00 # can also be 0xff
+        self.transaction_id = kwargs.get('transaction', Defaults.TransactionId)
+        self.protocol_id = kwargs.get('protocol', Defaults.ProtocolId)
+        self.unit_id = kwargs.get('unit', Defaults.UnitId)
         self.check = 0x0000
 
     def encode(self):
@@ -52,7 +55,6 @@ class ModbusPDU(object):
 
         :raises: A not implemented exception
         '''
-        _logger.error("Method not implemented")
         raise NotImplementedException()
 
     def decode(self, data):
@@ -61,15 +63,29 @@ class ModbusPDU(object):
         :param data: is a string object
         :raises: A not implemented exception
         '''
-        _logger.error("Method not implemented")
         raise NotImplementedException()
+
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        ''' Calculates the size of a PDU.
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the PDU.
+        '''
+        if hasattr(cls, '_rtu_frame_size'):
+            return cls._rtu_frame_size
+        elif hasattr(cls, '_rtu_byte_count_pos'):
+            return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
+        else: raise NotImplementedException(
+            "Cannot determine RTU frame size for %s" % cls.__name__)
+
 
 class ModbusRequest(ModbusPDU):
     ''' Base class for a modbus request PDU '''
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Proxy to the lower level initializer '''
-        ModbusPDU.__init__(self)
+        ModbusPDU.__init__(self, **kwargs)
 
     def doException(self, exception):
         ''' Builds an error response based on the function
@@ -81,12 +97,27 @@ class ModbusRequest(ModbusPDU):
                 (self.function_code, exception))
         return ExceptionResponse(self.function_code, exception)
 
-class ModbusResponse(ModbusPDU):
-    ''' Base class for a modbus response PDU '''
 
-    def __init__(self):
+class ModbusResponse(ModbusPDU):
+    ''' Base class for a modbus response PDU
+
+    .. attribute:: should_respond
+
+       A flag that indicates if this response returns a result back
+       to the client issuing the request
+
+    .. attribute:: _rtu_frame_size
+
+       Indicates the size of the modbus rtu response used for
+       calculating how much to read.
+    '''
+
+    should_respond = True
+
+    def __init__(self, **kwargs):
         ''' Proxy to the lower level initializer '''
-        ModbusPDU.__init__(self)
+        ModbusPDU.__init__(self, **kwargs)
+
 
 #---------------------------------------------------------------------------#
 # Exception PDU's
@@ -105,17 +136,19 @@ class ModbusExceptions(Singleton):
     GatewayPathUnavailable  = 0x0A
     GatewayNoResponse       = 0x0B
 
+
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
     ExceptionOffset = 0x80
+    _rtu_frame_size = 5
 
-    def __init__(self, function_code, exception_code=None):
+    def __init__(self, function_code, exception_code=None, **kwargs):
         ''' Initializes the modbus exception response
 
         :param function_code: The function to build an exception response for
         :param exception_code: The specific modbus exception to return
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
 
@@ -138,8 +171,9 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The string representation of an exception response
         '''
-        return "Exception Response (%d, %d)" % (self.function_code,
-                self.exception_code)
+        parameters = (self.function_code, self.exception_code)
+        return "Exception Response (%d, %d)" % parameters
+
 
 class IllegalFunctionRequest(ModbusRequest):
     '''
@@ -151,12 +185,12 @@ class IllegalFunctionRequest(ModbusRequest):
     '''
     ErrorCode = 1
 
-    def __init__(self, function_code):
+    def __init__(self, function_code, **kwargs):
         ''' Initializes a IllegalFunctionRequest
 
         :param function_code: The function we are erroring on
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.function_code = function_code
 
     def decode(self, data):
@@ -174,9 +208,9 @@ class IllegalFunctionRequest(ModbusRequest):
         '''
         return ExceptionResponse(self.function_code, self.ErrorCode)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
     'ExceptionResponse', 'IllegalFunctionRequest',

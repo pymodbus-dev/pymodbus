@@ -1,9 +1,10 @@
-"""
+'''
 Pymodbus Exceptions
 --------------------
 
 Custom exceptions to be used in the Modbus code.
-"""
+'''
+
 
 class ModbusException(Exception):
     ''' Base modbus exception '''
@@ -17,6 +18,7 @@ class ModbusException(Exception):
     def __str__(self):
         return 'Modbus Error: %s' % self.string
 
+
 class ModbusIOException(ModbusException):
     ''' Error resulting from data i/o '''
 
@@ -26,6 +28,7 @@ class ModbusIOException(ModbusException):
         '''
         message = "[Input/Output] %s" % string
         ModbusException.__init__(self, message)
+
 
 class ParameterException(ModbusException):
     ''' Error resulting from invalid paramater '''
@@ -37,6 +40,7 @@ class ParameterException(ModbusException):
         message = "[Invalid Paramter] %s" % string
         ModbusException.__init__(self, message)
 
+
 class NotImplementedException(ModbusException):
     ''' Error resulting from not implemented function '''
 
@@ -46,6 +50,7 @@ class NotImplementedException(ModbusException):
         '''
         message = "[Not Implemented] %s" % string
         ModbusException.__init__(self, message)
+
 
 class ConnectionException(ModbusException):
     ''' Error resulting from a bad connection '''
@@ -57,9 +62,9 @@ class ConnectionException(ModbusException):
         message = "[Connection] %s" % string
         ModbusException.__init__(self, message)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "ModbusException", "ModbusIOException",
     "ParameterException", "NotImplementedException",

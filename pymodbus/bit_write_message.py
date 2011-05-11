@@ -9,8 +9,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.exceptions import ParameterException
-from pymodbus.utilities import *
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 #---------------------------------------------------------------------------#
 # Local Constants
@@ -19,6 +18,7 @@ from pymodbus.utilities import *
 #---------------------------------------------------------------------------#
 _turn_coil_on  = struct.pack(">H", ModbusStatus.On)
 _turn_coil_off = struct.pack(">H", ModbusStatus.Off)
+
 
 class WriteSingleCoilRequest(ModbusRequest):
     '''
@@ -38,16 +38,17 @@ class WriteSingleCoilRequest(ModbusRequest):
     will not affect the coil.
     '''
     function_code = 5
+    _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None):
+    def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The variable address to write
         :param value: The value to write at address
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        self.value = ModbusStatus.On if value else ModbusStatus.Off
+        self.value = True if value else False
 
     def encode(self):
         ''' Encodes write coil request
@@ -63,7 +64,8 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :param data: The packet data to decode
         '''
-        self.address, self.value = struct.unpack('>HH', data)
+        self.address, value = struct.unpack('>HH', data)
+        self.value = True if value == ModbusStatus.On else False
 
     def execute(self, context):
         ''' Run a write coil request against a datastore
@@ -71,14 +73,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response or exception message
         '''
-        if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
-            return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.address):
+        #if self.value not in [ModbusStatus.Off, ModbusStatus.On]:
+        #    return self.doException(merror.IllegalValue)
+        if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
 
-        value = [self.value == ModbusStatus.On]
-        context.setValues(self.function_code, self.address, value)
-        values = context.getValues(self.function_code, self.address)
+        context.setValues(self.function_code, self.address, [self.value])
+        values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
     def __str__(self):
@@ -86,7 +87,8 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :return: A string representation of the instance
         '''
-        return "WriteCoilRequest(%d) => " % self.address, self.value
+        return "WriteCoilRequest(%d, %s) => " % (self.address, self.value)
+
 
 class WriteSingleCoilResponse(ModbusResponse):
     '''
@@ -94,14 +96,15 @@ class WriteSingleCoilResponse(ModbusResponse):
     state has been written.
     '''
     function_code = 5
+    _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None):
+    def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The variable address written to
         :param value: The value written at address
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.address = address
         self.value = value
 
@@ -129,6 +132,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         '''
         return "WriteCoilResponse(%d) => %d" % (self.address, self.value)
 
+
 class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     "This function code is used to force each coil in a sequence of coils to
@@ -141,18 +145,20 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     corresponding output to be ON. A logical '0' requests it to be OFF."
     '''
     function_code = 15
+    _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None):
+    def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The starting request address
         :param values: The values to write
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        if not values:
-            raise ParameterException('No values specified to write')
+        if not values: values = []
+        elif not hasattr(values, '__iter__'): values = [values]
         self.values  = values
+        self.byte_count = (len(self.values) + 7) / 8
 
     def encode(self):
         ''' Encodes write coils request
@@ -161,17 +167,17 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         '''
         count   = len(self.values)
         self.byte_count = (count + 7) / 8
-        result  = struct.pack('>HHB', self.address, count, self.byte_count)
-        result += packBitsToString(self.values)
-        return result
+        packet  = struct.pack('>HHB', self.address, count, self.byte_count)
+        packet += pack_bitstring(self.values)
+        return packet
 
     def decode(self, data):
         ''' Decodes a write coils request
 
         :param data: The packet data to decode
         '''
-        self.address, count = struct.unpack('>HH', data[0:4])
-        values, self.byte_count = unpackBitsFromString(data[4:])
+        self.address, count, self.byte_count = struct.unpack('>HHB', data[0:5])
+        values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
     def execute(self, context):
@@ -182,11 +188,12 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         '''
         count = len(self.values)
         if not (1 <= count <= 0x07b0):
-            return self.createExceptionResponse(merror.IllegalValue)
+            return self.doException(merror.IllegalValue)
         if (self.byte_count != (count + 7) / 8):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
+
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleCoilsResponse(self.address, count)
 
@@ -198,20 +205,22 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         params = (self.address, len(self.values))
         return "WriteNCoilRequest (%d) => %d " % params
 
+
 class WriteMultipleCoilsResponse(ModbusResponse):
     '''
     The normal response returns the function code, starting address, and
     quantity of coils forced.
     '''
     function_code = 15
+    _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None):
+    def __init__(self, address=None, count=None, **kwargs):
         ''' Initializes a new instance
 
         :param address: The starting variable address written to
         :param count: The number of values written
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.address = address
         self.count = count
 
@@ -236,9 +245,9 @@ class WriteMultipleCoilsResponse(ModbusResponse):
         '''
         return "WriteNCoilResponse(%d, %d)" % (self.address, self.count)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "WriteSingleCoilRequest", "WriteSingleCoilResponse",
     "WriteMultipleCoilsRequest", "WriteMultipleCoilsResponse",

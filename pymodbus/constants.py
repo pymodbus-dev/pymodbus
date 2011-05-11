@@ -7,6 +7,7 @@ values for the servers and clients.
 '''
 from pymodbus.interfaces import Singleton
 
+
 class Defaults(Singleton):
     ''' A collection of modbus default values
 
@@ -38,6 +39,12 @@ class Defaults(Singleton):
        The modbus protocol id.  Currently this is set to 0 in all
        but proprietary implementations.
 
+    .. attribute:: UnitId
+
+       The modbus slave addrss.  Currently this is set to 0x00 which
+       means this request should be broadcast to all the slave devices
+       (really means that all the devices should respons).
+
     .. attribute:: Baudrate
 
        The speed at which the data is transmitted over the serial line.
@@ -51,7 +58,7 @@ class Defaults(Singleton):
          - (E)ven - 1 0 1 0 | P(0)
          - (O)dd  - 1 0 1 0 | P(1)
          - (N)one - 1 0 1 0 | no parity
-         
+
        This defaults to (N)one.
 
     .. attribute:: Bytesize
@@ -70,10 +77,12 @@ class Defaults(Singleton):
     Reconnects    = 0
     TransactionId = 0
     ProtocolId    = 0
+    UnitId        = 0x00
     Baudrate      = 19200
     Parity        = 'N'
     Bytesize      = 8
     Stopbits      = 1
+
 
 class ModbusStatus(Singleton):
     '''
@@ -97,13 +106,23 @@ class ModbusStatus(Singleton):
     .. attribute:: Off
 
        This indicates that the given modbus entity is off
-    '''
-    Waiting = 0xffff
-    Ready   = 0x0000
-    On      = 0xff00
-    Off     = 0x0000
 
-#---------------------------------------------------------------------------# 
+    .. attribute:: SlaveOn
+
+       This indicates that the given modbus slave is running
+
+    .. attribute:: SlaveOff
+
+       This indicates that the given modbus slave is not running
+    '''
+    Waiting  = 0xffff
+    Ready    = 0x0000
+    On       = 0xff00
+    Off      = 0x0000
+    SlaveOn  = 0xff
+    SlaveOff = 0x00
+
+#---------------------------------------------------------------------------#
 # Exported Identifiers
-#---------------------------------------------------------------------------# 
-__all__ = [ "Defaults", "ModbusStatus" ]
+#---------------------------------------------------------------------------#
+__all__ = ["Defaults", "ModbusStatus"]

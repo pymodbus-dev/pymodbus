@@ -15,12 +15,11 @@ API Documentation
 .. autoclass:: Singleton
    :members:
 
-.. autoclass:: Borg
-   :members:
-
 .. autoclass:: IModbusDecoder
    :members:
 
 .. autoclass:: IModbusFramer
    :members:
 
+.. autoclass:: IModbusSlaveContext
+   :members:

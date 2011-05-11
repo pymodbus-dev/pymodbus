@@ -21,12 +21,12 @@ from pymodbus.register_write_message import *
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger('pymodbus.protocol')
+_logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Server Decoder
 #---------------------------------------------------------------------------#
-
 class ServerDecoder(IModbusDecoder):
     ''' Request Message Factory (Server)
 
@@ -57,6 +57,14 @@ class ServerDecoder(IModbusDecoder):
             _logger.warn("Unable to decode request %s" % er)
         return None
 
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        return self.__lookup.get(function_code, None)
+
     def _helper(self, data):
         '''
         This factory is used to generate the correct request object
@@ -74,10 +82,10 @@ class ServerDecoder(IModbusDecoder):
         request.decode(data[1:])
         return request
 
-#---------------------------------------------------------------------------# 
-# Client Decoder
-#---------------------------------------------------------------------------# 
 
+#---------------------------------------------------------------------------#
+# Client Decoder
+#---------------------------------------------------------------------------#
 class ClientDecoder(IModbusDecoder):
     ''' Response Message Factory (Client)
 
@@ -95,6 +103,14 @@ class ClientDecoder(IModbusDecoder):
             ReadWriteMultipleRegistersResponse
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
+
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        return self.__lookup.get(function_code, None)
 
     def decode(self, message):
         ''' Wrapper to decode a response packet
@@ -121,14 +137,14 @@ class ClientDecoder(IModbusDecoder):
         _logger.debug("Factory Response[%d]" % function_code)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
-            code = function_code & 0x7f # strip error portion
+            code = function_code & 0x7f  # strip error portion
             response = ExceptionResponse(code, ecode.IllegalFunction)
         if not response:
             raise ModbusException("Unknown response %d" % function_code)
         response.decode(data[1:])
         return response
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = ['ServerDecoder', 'ClientDecoder']

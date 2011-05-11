@@ -2,15 +2,11 @@
 Implementation of a Threaded Modbus Server
 ------------------------------------------
 
-Example run::
-
-    context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-    server = ModbusTcpServer(store, context, identity)
-    server.serve_forever()
 '''
 from binascii import b2a_hex
 import socketserver
-import serial, socket
+import serial
+import socket
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -18,15 +14,15 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
-from pymodbus.interfaces import IModbusFramer
-from pymodbus.exceptions import *
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusExceptions as merror
 
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger("pymodbus.server")
+_logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Server
@@ -90,10 +86,11 @@ class ModbusRequestHandler(socketserver.BaseRequestHandler):
 
         :param message: The unencoded modbus response
         '''
-        #self.server.control.Counter.BusMessage += 1
-        pdu = self.framer.buildPacket(message)
-        _logger.debug('send: %s' % b2a_hex(pdu))
-        return self.request.send(pdu)
+        if message.should_respond:
+            #self.server.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.request.send(pdu)
 
     def decode(self, message):
         ''' Decodes a request packet
@@ -106,6 +103,7 @@ class ModbusRequestHandler(socketserver.BaseRequestHandler):
         except ModbusException as er:
             _logger.warn("Unable to decode request %s" % er)
         return None
+
 
 class ModbusTcpServer(socketserver.ThreadingTCPServer):
     '''
@@ -155,6 +153,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.socket.close()
         for thread in self.threads: thread.running = False
 
+
 class ModbusUdpServer(socketserver.ThreadingUDPServer):
     '''
     A modbus threaded udp socket server
@@ -203,6 +202,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.socket.close()
         for thread in self.threads: thread.running = False
 
+
 class ModbusSerialServer(object):
     '''
     A modbus threaded udp socket server
@@ -248,7 +248,7 @@ class ModbusSerialServer(object):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.device, timeout=self.timeout, 
+            self.socket = serial.Serial(port=self.device, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException as msg:
@@ -265,7 +265,8 @@ class ModbusSerialServer(object):
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        handler = ModbusRequestHandler(request, ('127.0.0.1', self.device), self)
+        handler = ModbusRequestHandler(request,
+            ('127.0.0.1', self.device), self)
         return handler
 
     def serve_forever(self):
@@ -284,9 +285,10 @@ class ModbusSerialServer(object):
         _logger.debug("Modbus server stopped")
         self.socket.close()
 
-#---------------------------------------------------------------------------# 
+
+#---------------------------------------------------------------------------#
 # Creation Factories
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def StartTcpServer(context=None, identity=None):
     ''' A factory to start and run a tcp modbus server
 
@@ -296,6 +298,7 @@ def StartTcpServer(context=None, identity=None):
     framer = ModbusSocketFramer
     server = ModbusTcpServer(context, framer, identity)
     server.serve_forever()
+
 
 def StartUdpServer(context=None, identity=None):
     ''' A factory to start and run a udp modbus server
@@ -307,6 +310,7 @@ def StartUdpServer(context=None, identity=None):
     server = ModbusUdpServer(context, framer, identity)
     server.serve_forever()
 
+
 def StartSerialServer(context=None, identity=None, **kwargs):
     ''' A factory to start and run a udp modbus server
 
@@ -317,9 +321,9 @@ def StartSerialServer(context=None, identity=None, **kwargs):
     server = ModbusSerialServer(context, framer, identity, **kwargs)
     server.serve_forever()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "StartTcpServer", "StartUdpServer", "StartSerialServer"
 ]

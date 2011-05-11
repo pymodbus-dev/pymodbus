@@ -12,9 +12,13 @@ API Documentation
 
 .. automodule:: pymodbus.utilities
 
-.. autofunction:: packBitsToString
+.. autofunction:: default
 
-.. autofunction:: unpackBitsFromString
+.. autofunction:: dict_property
+
+.. autofunction:: pack_bitstring
+
+.. autofunction:: unpack_bitstring
 
 .. autofunction:: __generate_crc16_table
 
@@ -25,3 +29,5 @@ API Documentation
 .. autofunction:: computeLRC
 
 .. autofunction:: checkLRC
+
+.. autofunction:: rtuFrameSize

@@ -2,11 +2,6 @@
 Implementation of a Twisted Modbus Server
 ------------------------------------------
 
-Example run::
-
-    context = ModbusServerContext(d=[0,100], c=[0,100], h=[0,100], i=[0,100])
-    reactor.listenTCP(502, ModbusServerFactory(context))
-    reactor.run()
 '''
 from binascii import b2a_hex
 from twisted.internet import protocol
@@ -19,8 +14,6 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
-from pymodbus.interfaces import IModbusFramer
-from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
 
@@ -28,7 +21,8 @@ from pymodbus.internal.ptwisted import InstallManagementConsole
 # Logging
 #---------------------------------------------------------------------------#
 import logging
-_logger = logging.getLogger("pymodbus.server")
+_logger = logging.getLogger(__name__)
+
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Server
@@ -38,10 +32,10 @@ class ModbusTcpProtocol(protocol.Protocol):
 
     def connectionMade(self):
         ''' Callback for when a client connects
-       
+
         Note, since the protocol factory cannot be accessed from the
         protocol __init__, the client connection made is essentially our
-        __init__ method.     
+        __init__ method.
         '''
         _logger.debug("Client Connected [%s]" % self.transport.getHost())
         self.framer = self.factory.framer(decoder=self.factory.decoder)
@@ -51,7 +45,7 @@ class ModbusTcpProtocol(protocol.Protocol):
 
         :param reason: The client's reason for disconnecting
         '''
-        _logger.debug("Client Disconnected")
+        _logger.debug("Client Disconnected: %s" % reason)
 
     def dataReceived(self, data):
         ''' Callback when we receive any data
@@ -83,10 +77,11 @@ class ModbusTcpProtocol(protocol.Protocol):
 
         :param message: The unencoded modbus response
         '''
-        self.factory.control.Counter.BusMessage += 1
-        pdu = self.framer.buildPacket(message)
-        _logger.debug('send: %s' % b2a_hex(pdu))
-        return self.transport.write(pdu)
+        if message.should_respond:
+            self.factory.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.transport.write(pdu)
 
 
 class ModbusServerFactory(ServerFactory):
@@ -118,6 +113,7 @@ class ModbusServerFactory(ServerFactory):
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
+
 
 #---------------------------------------------------------------------------#
 # Modbus UDP Server
@@ -183,9 +179,10 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         _logger.debug('send: %s' % b2a_hex(pdu))
         return self.transport.write(pdu, addr)
 
-#---------------------------------------------------------------------------# 
+
+#---------------------------------------------------------------------------#
 # Starting Factories
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def StartTcpServer(context, identity=None):
     ''' Helper method to start the Modbus Async TCP server
 
@@ -197,9 +194,10 @@ def StartTcpServer(context, identity=None):
     _logger.info("Starting Modbus TCP Server on %s" % Defaults.Port)
     framer = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity)
-    InstallManagementConsole({ 'factory' : factory })
+    InstallManagementConsole({'factory': factory})
     reactor.listenTCP(Defaults.Port, factory)
     reactor.run()
+
 
 def StartUdpServer(context, identity=None):
     ''' Helper method to start the Modbus Async Udp server
@@ -215,7 +213,9 @@ def StartUdpServer(context, identity=None):
     reactor.listenUDP(Defaults.Port, server)
     reactor.run()
 
-def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs):
+
+def StartSerialServer(context, identity=None,
+    framer=ModbusAsciiFramer, **kwargs):
     ''' Helper method to start the Modbus Async Serial server
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -230,9 +230,9 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs
     handle = SerialPort(protocol, kwargs['device'], reactor, Defaults.Baudrate)
     reactor.run()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
     "StartTcpServer", "StartUdpServer", "StartSerialServer",
 ]

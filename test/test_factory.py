@@ -1,6 +1,10 @@
+#!/usr/bin/env python
 import unittest
 from pymodbus.factory import ServerDecoder, ClientDecoder
-from pymodbus.exceptions import *
+from pymodbus.exceptions import ModbusException
+
+def _raise_exception(_):
+    raise ModbusException('something')
 
 class SimpleFactoryTest(unittest.TestCase):
     '''
@@ -64,6 +68,18 @@ class SimpleFactoryTest(unittest.TestCase):
         del self.request
         del self.response
 
+    def testResponseLookup(self):
+        ''' Test a working response factory lookup '''
+        for func, _ in self.response:
+            response = self.client.lookupPduClass(func)
+            self.assertNotEqual(response, None)
+
+    def testRequestLookup(self):
+        ''' Test a working request factory lookup '''
+        for func, _ in self.request:
+            request = self.client.lookupPduClass(func)
+            self.assertNotEqual(request, None)
+
     def testResponseWorking(self):
         ''' Test a working response factory decoders '''
         for func, msg in self.response:
@@ -88,15 +104,15 @@ class SimpleFactoryTest(unittest.TestCase):
 
     def testClientFactoryFails(self):
         ''' Tests that a client factory will fail to decode a bad message '''
-        pass
-        # actual = self.client.decode(None)
-        # self.assertEquals(actual, None)
+        self.client._helper = _raise_exception
+        actual = self.client.decode(None)
+        self.assertEquals(actual, None)
 
     def testServerFactoryFails(self):
         ''' Tests that a server factory will fail to decode a bad message '''
-        pass
-        # actual = self.server.decode(None)
-        # self.assertEquals(actual, None)
+        self.server._helper = _raise_exception
+        actual = self.server.decode(None)
+        self.assertEquals(actual, None)
 
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that

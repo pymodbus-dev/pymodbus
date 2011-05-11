@@ -12,9 +12,6 @@ API Documentation
 
 .. automodule:: pymodbus.client.async
 
-.. autoclass:: ModbusMessageProducer
-   :members:
-
 .. autoclass:: ModbusClientProtocol
    :members:
 

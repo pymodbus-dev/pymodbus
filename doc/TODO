@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------
 General
 ---------------------------------------------------------------------------
+- reorganize code into folder namespaces
 - put protocol code in protocol namespace
-- add crc/lrc check on incoming data
 - make framer read header->read header.length
   - maybe just for sync 
 - finish clients (and interface)
@@ -28,21 +28,16 @@ Utilities
 - (udp/serial) forwarder
 
 ---------------------------------------------------------------------------
-Server Context
----------------------------------------------------------------------------
-- link to other clients (other machines, other instances)
-
----------------------------------------------------------------------------
 Client
 ---------------------------------------------------------------------------
 - Rework transaction flow and response data
-- Finish rtu framers
 
 ---------------------------------------------------------------------------
 Tools
 ---------------------------------------------------------------------------
-- Get 100%ish code coverage with solid unit testing to ensure reliability
 - add functional tests
+- add tk and wx gui frontdends (with editable data tables)
+- rpm and deb packages (documentation)
 
 --------------------------------------------------------------------------- 
 Scratch

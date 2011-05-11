@@ -15,7 +15,7 @@ API Documentation
 .. autoclass:: ModbusTransactionManager
    :members:
 
-.. autoclass:: IModbusClient
+.. autoclass:: BaseModbusClient
    :members:
 
 .. autoclass:: ModbusTcpClient

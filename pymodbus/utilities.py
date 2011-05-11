@@ -5,6 +5,8 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
+import struct
+
 
 #---------------------------------------------------------------------------#
 # Helpers
@@ -17,11 +19,8 @@ def default(value):
     :param value: The value to get the default of
     :returns: The default value
     '''
-    if isinstance(value, dict):
-        return type(list(value.values())[0])()
-    elif isinstance(value, list):
-        return type(value[0])()
     return type(value)()
+
 
 def dict_property(store, index):
     ''' Helper to create class properties from a dictionary.
@@ -34,28 +33,30 @@ def dict_property(store, index):
     '''
     if hasattr(store, '__call__'):
         get = lambda self: store(self)[index]
-        set = lambda self,value: store(self).__setitem__(index, value)
+        set = lambda self, value: store(self).__setitem__(index, value)
     elif isinstance(store, str):
         get = lambda self: self.__getattribute__(store)[index]
-        set = lambda self,value: self.__getattribute__(store).__setitem__(index, value)
+        set = lambda self, value: self.__getattribute__(store).__setitem__(
+              index, value)
     else:
         get = lambda self: store[index]
-        set = lambda self,value: store.__setitem__(index, value)
+        set = lambda self, value: store.__setitem__(index, value)
 
     return property(get, set)
+
 
 #---------------------------------------------------------------------------#
 # Bit packing functions
 #---------------------------------------------------------------------------#
-def packBitsToString(bits):
+def pack_bitstring(bits):
     ''' Creates a string out of an array of bits
 
     :param bits: A bit array
 
     example::
 
-        bits = [False, True, False, True]
-        result = packBitsToString(bits)
+        bits   = [False, True, False, True]
+        result = pack_bitstring(bits)
     '''
     ret = ''
     i = packed = 0
@@ -67,28 +68,30 @@ def packBitsToString(bits):
             i = packed = 0
         else: packed >>= 1
     if i > 0 and i < 8:
-        packed >>= 7-i
+        packed >>= (7 - i)
         ret += chr(packed)
     return ret
 
-def unpackBitsFromString(string):
+
+def unpack_bitstring(string):
     ''' Creates bit array out of a string
 
     :param string: The modbus data packet to decode
 
     example::
 
-        string[0]   = bytes to follow
-        string[1-N] = bytes to decode
+        bytes  = 'bytes to decode'
+        result = unpack_bitstring(bytes)
     '''
-    byte_count = ord(string[0])
+    byte_count = len(string)
     bits = []
-    for byte in range(1, byte_count+1):
+    for byte in range(byte_count):
         value = ord(string[byte])
         for bit in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
-    return bits, byte_count
+    return bits
+
 
 #---------------------------------------------------------------------------#
 # Error Detection Functions
@@ -111,6 +114,7 @@ def __generate_crc16_table():
 
 __crc16_table = __generate_crc16_table()
 
+
 def computeCRC(data):
     ''' Computes a crc16 on the passed in string. For modbus,
     this is only used on the binary serial protocols (in this
@@ -126,7 +130,9 @@ def computeCRC(data):
     for a in data:
         idx = __crc16_table[(crc ^ ord(a)) & 0xff];
         crc = ((crc >> 8) & 0xff) ^ idx
-    return crc
+    swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
+    return swapped
+
 
 def checkCRC(data, check):
     ''' Checks if the data matches the passed in CRC
@@ -136,6 +142,7 @@ def checkCRC(data, check):
     :returns: True if matched, False otherwise
     '''
     return computeCRC(data) == check
+
 
 def computeLRC(data):
     ''' Used to compute the longitudinal redundancy check
@@ -152,6 +159,7 @@ def computeLRC(data):
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff
 
+
 def checkLRC(data, check):
     ''' Checks if the passed in data matches the LRC
 
@@ -161,10 +169,33 @@ def checkLRC(data, check):
     '''
     return computeLRC(data) == check
 
-#---------------------------------------------------------------------------# 
+
+def rtuFrameSize(buffer, byte_count_pos):
+    ''' Calculates the size of the frame based on the byte count.
+
+    :param buffer: The buffer containing the frame.
+    :param byte_count_pos: The index of the byte count in the buffer.
+    :returns: The size of the frame.
+
+    The structure of frames with a byte count field is always the
+    same:
+
+    - first, there are some header fields
+    - then the byte count field
+    - then as many data bytes as indicated by the byte count,
+    - finally the CRC (two bytes).
+
+    To calculate the frame size, it is therefore sufficient to extract
+    the contents of the byte count field, add the position of this
+    field, and finally increment the sum by three (one byte for the
+    byte count field, two for the CRC).
+    '''
+    return struct.unpack('>B', buffer[byte_count_pos])[0] + byte_count_pos + 3
+
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
-    'packBitsToString', 'unpackBitsFromString', 'default',
-    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC'
+    'pack_bitstring', 'unpack_bitstring', 'default',
+    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC', 'rtuFrameSize'
 ]

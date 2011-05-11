@@ -1,11 +1,9 @@
 Requirements
 -------------
 
-Python 2.3 or later.
-
-Zope Interfaces 3.0.1 (http://zope.org/Products/ZopeInterface) - if
-you have ZopeX3 (at least version 3.0.0c1) installed that should
-work too.
+* Python 2.3 or later.
+* Python Twisted
+* Pyserial
 
 On Windows pywin32 is recommended (this is built in to ActivePython,
 so no need to reinstall if you use it instead of standard Python):
@@ -14,13 +12,20 @@ so no need to reinstall if you use it instead of standard Python):
 
 The Windows IOCP reactor requires pywin32 build 205 or later.
 
+
 Installation
 -------------
+
+To install the package from pypi, use either easy_install or pip::
+
+    pip install  -U pymodbus
+    easy_install -U pymodbus
 
 As with other Python packages, the standard way of installing from source
 is (as root or administrator)::
 
     python setup.py install
+
 
 Running Tests
 --------------
@@ -31,6 +36,7 @@ use either of the following::
 
     python setup.py test
     nosetests
+
 
 Building Documentation
 ----------------------
@@ -50,4 +56,16 @@ The API documents can be generated using one of four programs:
 To bulid these, simply run the following command and the available
 packages will sipmly be built::
 
-    python setup build_api
+    python setup.py build_apidocs
+
+
+Quality Tests
+----------------------
+
+There are a number of quality tests that can be run against the code base
+aside from unit tests::
+
+    python setup.py scan_2to3  # run a python3 compatability test
+    python setup.py pep8       # run a pop8 standards test
+    python setup.py lint       # run a lint test
+

@@ -7,6 +7,7 @@ the pymodbus library.
 '''
 from pymodbus.exceptions import NotImplementedException
 
+
 #---------------------------------------------------------------------------#
 # Generic
 #---------------------------------------------------------------------------#
@@ -22,18 +23,6 @@ class Singleton(object):
             cls._inst = object.__new__(cls, *args, **kwargs)
         return cls._inst
 
-class Borg(object):
-    '''
-    Borg base class
-    http://code.activestate.com/recipes/66531/
-    '''
-    __shared_state = {}
-
-    def __init__(self):
-        ''' Initialize the new instance
-        Make sure this __init__ is called in the child class
-        '''
-        self.__dict__ = self.__shared_state
 
 #---------------------------------------------------------------------------#
 # Project Specific
@@ -53,13 +42,25 @@ class IModbusDecoder(object):
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
+    def lookupPduClass(self, function_code):
+        ''' Use `function_code` to determine the class of the PDU.
+
+        :param function_code: The function code specified in a frame.
+        :returns: The class of the PDU that has a matching `function_code`.
+        '''
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
 
 class IModbusFramer(object):
     '''
     A framer strategy interface. The idea is that we abstract away all the
-    detail about how to detect if a current message frame exists, decoding it,
-    sending it, etc so that we can plug in a new Framer object (tcp, rtu, ascii)
+    detail about how to detect if a current message frame exists, decoding
+    it, sending it, etc so that we can plug in a new Framer object (tcp,
+    rtu, ascii).
     '''
 
     def checkFrame(self):
@@ -67,7 +68,8 @@ class IModbusFramer(object):
 
         :returns: True if we successful, False otherwise
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def advanceFrame(self):
         ''' Skip over the current framed message
@@ -75,7 +77,8 @@ class IModbusFramer(object):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def addToFrame(self, message):
         ''' Add the next message to the frame buffer
@@ -85,7 +88,8 @@ class IModbusFramer(object):
 
         :param message: The most recent packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -95,14 +99,16 @@ class IModbusFramer(object):
 
         :returns: True if ready, False otherwise
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def getFrame(self):
         ''' Get the next frame from the buffer
 
         :returns: The frame data or ''
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def populateResult(self, result):
         ''' Populates the modbus result with current frame header
@@ -112,7 +118,8 @@ class IModbusFramer(object):
 
         :param result: The response packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def processIncomingPacket(self, data, callback):
         ''' The new packet processing pattern
@@ -129,7 +136,8 @@ class IModbusFramer(object):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -140,7 +148,9 @@ class IModbusFramer(object):
         :param message: The request/response to send
         :returns: The built packet
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
 
 class IModbusSlaveContext(object):
     '''
@@ -152,8 +162,21 @@ class IModbusSlaveContext(object):
             getValues(self, fx, address, count=1)
             setValues(self, fx, address, values)
     '''
+    __fx_mapper = {2: 'd', 4: 'i'}
+    __fx_mapper.update([(i, 'h') for i in [3, 6, 16, 23]])
+    __fx_mapper.update([(i, 'c') for i in [1, 5, 15]])
+
+    def decode(self, fx):
+        ''' Converts the function code to the datastore to
+
+        :param fx: The function we are working with
+        :returns: one of [d(iscretes),i(inputs),h(oliding),c(oils)
+        '''
+        return self.__fx_mapper[fx]
+
     def reset(self):
-        ''' Resets all the datastores to their default values '''
+        ''' Resets all the datastores to their default values
+        '''
         raise NotImplementedException("Context Reset")
 
     def validate(self, fx, address, count=1):
@@ -185,10 +208,10 @@ class IModbusSlaveContext(object):
         '''
         raise NotImplementedException("set context values")
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Exported symbols
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 __all__ = [
-    'Singleton', 'Borg',
-    'IModbusDecoder', 'IModbusFramer',
+    'Singleton',
+    'IModbusDecoder', 'IModbusFramer', 'IModbusSlaveContext',
 ]

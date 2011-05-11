@@ -11,8 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   Enabling Logging <logging>
-   PyModbus Client Example <client>
+   examples/index.rst
    library/index.rst
 
 Indices and tables

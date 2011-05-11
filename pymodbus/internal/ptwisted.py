@@ -5,7 +5,17 @@ from twisted.cred import portal, checkers
 from twisted.conch import manhole, manhole_ssh
 from twisted.conch.insults import insults
 
-def InstallManagementConsole(namespace, users={'admin':'admin'}, port=503):
+#---------------------------------------------------------------------------#
+# Logging
+#---------------------------------------------------------------------------#
+import logging
+_logger = logging.getLogger(__name__)
+
+
+#---------------------------------------------------------------------------#
+# Twisted Helper Methods
+#---------------------------------------------------------------------------#
+def InstallManagementConsole(namespace, users={'admin': 'admin'}, port=503):
     ''' Helper method to start an ssh management console
         for the modbus server.
 
@@ -26,6 +36,7 @@ def InstallManagementConsole(namespace, users={'admin':'admin'}, port=503):
     factory = manhole_ssh.ConchFactory(p)
     reactor.listenTCP(port, factory)
 
+
 def InstallSpecializedReactor():
     '''
     This attempts to install a reactor specialized for the given
@@ -42,4 +53,3 @@ def InstallSpecializedReactor():
         except: pass
     _logger.debug("No specialized reactor was installed")
     return False
-

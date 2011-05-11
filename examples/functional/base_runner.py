@@ -1,7 +1,11 @@
 import os
 import time
 from subprocess import Popen as execute
-from twisted.internet.defer import Deferred
+try:
+    from twisted.internet.defer import Deferred
+except:
+    class Deferred(object):
+        pass
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -73,4 +77,3 @@ class Runner(object):
             deferred.callback(lambda : self.assertTrue(test(result)))
             deferred.errback(lambda _: self.assertTrue(False))
         else: self.assertTrue(test(result))
-

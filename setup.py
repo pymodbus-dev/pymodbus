@@ -55,9 +55,9 @@ setup(name  = 'pymodbus',
     include_package_data = True,
     zip_safe = True,
     install_requires = [
-        'twisted >= 2.5.0',
+#        'twisted >= 2.5.0',
         'nose >= 0.9.3',
-        'pyserial >= 2.4'
+        'pyserial >= 2.5'
     ],
     extras_require = {
         'quality' : [ 'epydoc >= 3.4.1', 'coverage >= 3.3.1', 'pyflakes >= 0.4.0' ],

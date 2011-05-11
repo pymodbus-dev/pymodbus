@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Bit Message Test Fixture
 --------------------------------
@@ -9,13 +8,23 @@ bit based request/response messages:
 * Read Coils
 '''
 import unittest, struct
+from pymodbus.utilities import packBitsToString
 from pymodbus.bit_read_message import *
 from pymodbus.bit_read_message import ReadBitsRequestBase
 from pymodbus.bit_read_message import ReadBitsResponseBase
+from pymodbus.bit_write_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-from modbus_mocks import MockContext
+#---------------------------------------------------------------------------#
+# Mocks
+#---------------------------------------------------------------------------#
+class Context:
+    def validate(self, a,b,c):
+        return False
+
+    def getValues(self, a, b, count):
+        return [True] * count
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -36,6 +45,10 @@ class ModbusBitMessageTests(unittest.TestCase):
     def tearDown(self):
         ''' Cleans up the test environment '''
         pass
+
+    #-----------------------------------------------------------------------#
+    # Read Tests
+    #-----------------------------------------------------------------------#
 
     def testReadBitBaseClassMethods(self):
         ''' Test basic bit message encoding/decoding '''
@@ -79,12 +92,12 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadBitsRequestBase(12, 14)        : '\x00\x0c\x00\x0e',
             ReadBitsResponseBase([1,0,1,1,0])  : '\x01\x0d',
         }
-        for request, expected in messages.iteritems():
+        for request, expected in messages.items():
             self.assertEqual(request.encode(), expected)
 
     def testBitReadMessageExecuteValueErrors(self):
         ''' Test bit read request encoding '''
-        context = MockContext()
+        context = Context()
         requests = [
             ReadCoilsRequest(1,0x800),
             ReadDiscreteInputsRequest(1,0x800),
@@ -96,18 +109,19 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitReadMessageExecuteAddressErrors(self):
         ''' Test bit read request encoding '''
-        context = MockContext()
+        context = Context()
         requests = [
             ReadCoilsRequest(1,5),
             ReadDiscreteInputsRequest(1,5),
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
+            self.assertEqual(ModbusExceptions.IllegalAddress,
+                result.exception_code)
 
     def testBitReadMessageExecuteSuccess(self):
         ''' Test bit read request encoding '''
-        context = MockContext()
+        context = Context()
         context.validate = lambda a,b,c: True
         requests = [
             ReadCoilsRequest(1,5),
@@ -116,6 +130,29 @@ class ModbusBitMessageTests(unittest.TestCase):
         for request in requests:
             result = request.execute(context)
             self.assertEqual(result.bits, [True] * 5)
+
+    #-----------------------------------------------------------------------#
+    # Write Tests
+    #-----------------------------------------------------------------------#
+
+    def testBitWriteBaseRequests(self):
+        ''' Test bit write request encoding '''
+        messages = {
+            WriteSingleCoilRequest(1, 0xabcd)      : '\x00\x01\xff\x00',
+            WriteSingleCoilResponse(1, 0xabcd)     : '\x00\x01\xff\x00',
+            WriteMultipleCoilsRequest(1, [True]*5) : '\x00\x01\x00\x05\x01\x1f',
+            WriteMultipleCoilsResponse(1, 5)       : '\x00\x01\x00\x05',
+        }
+        for request, expected in messages.items():
+            self.assertEqual(request.encode(), expected)
+
+    def testWriteMultipleCoilsRequest(self):
+        ''' Test bit write request encoding '''
+        request = WriteMultipleCoilsRequest(1, [True]*5)
+        request.decode('\x00\x01\x00\x05\x01\x1f')
+        self.assertEqual(request.byte_count, 1)
+        self.assertEqual(request.address, 1)
+        self.assertEqual(request.values, [True]*5)
 
 #---------------------------------------------------------------------------#
 # Main

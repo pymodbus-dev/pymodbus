@@ -19,7 +19,7 @@ class ModbusServerSingleContextTest(unittest.TestCase):
 
     def testSingleContextGets(self):
         ''' Test getting on a single context '''
-        for id in range(0, 0xff):
+        for id in xrange(0, 0xff):
             self.assertEqual(self.slave, self.context[id])
 
     def testSingleContextIter(self):
@@ -48,7 +48,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def setUp(self):
         ''' Sets up the test environment '''
-        self.slaves  = dict((id, ModbusSlaveContext()) for id in range(10))
+        self.slaves  = dict((id, ModbusSlaveContext()) for id in xrange(10))
         self.context = ModbusServerContext(slaves=self.slaves, single=False)
 
     def tearDown(self):
@@ -57,7 +57,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def testMultipleContextGets(self):
         ''' Test getting on multiple context '''
-        for id in range(0, 10):
+        for id in xrange(0, 10):
             self.assertEqual(self.slaves[id], self.context[id])
 
     def testMultipleContextIter(self):
@@ -72,10 +72,10 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def testMultipleContextSet(self):
         ''' Test a setting multiple slave contexts '''
-        slaves = dict((id, ModbusSlaveContext()) for id in range(10))
-        for id, slave in slaves.items():
+        slaves = dict((id, ModbusSlaveContext()) for id in xrange(10))
+        for id, slave in slaves.iteritems():
             self.context[id] = slave
-        for id, slave in slaves.items():
+        for id, slave in slaves.iteritems():
             actual = self.context[id]
             self.assertEqual(slave, actual)
 

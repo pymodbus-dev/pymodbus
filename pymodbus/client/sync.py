@@ -51,7 +51,7 @@ class ModbusTransactionManager:
                 result = self.client._recv(1024)
                 self.client.framer.processIncomingPacket(result, self.__set_result)
                 break;
-            except socket.error as msg:
+            except socket.error, msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
@@ -190,7 +190,7 @@ class ModbusTcpClient(BaseModbusClient):
             self.socket.settimeout(Defaults.Timeout)
             self.socket.connect((self.host, self.port))
             self.transaction = ModbusTransactionManager(self)
-        except socket.error as msg:
+        except socket.error, msg:
             _logger.error('Connection to (%s, %s) failed: %s' % \
                 (self.host, self.port, msg))
             self.close()
@@ -256,7 +256,7 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             #self.socket.bind(('localhost', Defaults.Port))
-        except socket.error as ex:
+        except socket.error, ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()
         return self.socket != None
@@ -344,7 +344,7 @@ class ModbusSerialClient(BaseModbusClient):
             self.socket = serial.Serial(port=self.port, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
-        except serial.SerialException as msg:
+        except serial.SerialException, msg:
             _logger.error(msg)
             self.close()
         return self.socket != None

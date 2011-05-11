@@ -53,7 +53,7 @@ class ServerDecoder(IModbusDecoder):
         '''
         try:
             return self._helper(message)
-        except ModbusException as er:
+        except ModbusException, er:
             _logger.warn("Unable to decode request %s" % er)
         return None
 
@@ -120,7 +120,7 @@ class ClientDecoder(IModbusDecoder):
         '''
         try:
             return self._helper(message)
-        except ModbusException as er:
+        except ModbusException, er:
             _logger.error("Unable to decode response %s" % er)
         return None
 

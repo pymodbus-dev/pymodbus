@@ -31,5 +31,5 @@ while count < iterations:
 # check our results
 #---------------------------------------------------------------------------# 
 stop = time()
-print("%d requests/second" % ((1.0 * count) / (stop - start)))
+print "%d requests/second" % ((1.0 * count) / (stop - start))
 

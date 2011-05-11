@@ -112,7 +112,7 @@ def register_routes(application, register):
     from bottle import route
 
     methods = dir(application)
-    methods = (n for n in methods if not n.startswith('_'))
+    methods = filter(lambda n: not n.startswith('_'), methods)
     for method in methods:
         pieces = method.split('_')
         verb, path = pieces[0], pieces[1:]

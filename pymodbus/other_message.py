@@ -316,7 +316,7 @@ class GetCommEventLogResponse(ModbusResponse):
         self.message_count = struct.unpack('>H', data[5:7])[0]
 
         self.events = []
-        for e in range(7, length + 1):
+        for e in xrange(7, length + 1):
             self.events.append(struct.unpack('>B', data[e])[0])
 
     def __str__(self):

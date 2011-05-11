@@ -106,7 +106,7 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        return self.__slaves.items()
+        return self.__slaves.iteritems()
 
     def __setitem__(self, slave, context):
         ''' Wrapper used to access the slave context

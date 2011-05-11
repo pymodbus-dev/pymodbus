@@ -6,7 +6,7 @@ from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 
-from .modbus_mocks import MockContext, FakeList
+from modbus_mocks import MockContext, FakeList
 
 #---------------------------------------------------------------------------#
 # Fixture

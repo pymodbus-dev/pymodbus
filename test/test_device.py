@@ -66,7 +66,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusDeviceIdentificationSummary(self):
         ''' Test device identification summary creation '''
         summary  = sorted(self.ident.summary().values())
-        expected = sorted(list(self.info.values())[:-3]) # remove private
+        expected = sorted(self.info.values()[:-3]) # remove private
         self.assertEqual(summary, expected)
 
     def testModbusDeviceIdentificationSet(self):

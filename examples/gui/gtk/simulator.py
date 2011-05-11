@@ -91,11 +91,11 @@ class Simulator(object):
 
     def _simulator(self):
         ''' Starts the snmp simulator '''
-        ports = [502]+(range(20000,25000))
+        ports = [502]+range(20000,25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print('listening on port %d' % port)
+                print 'listening on port', port
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -265,7 +265,7 @@ class SimulatorApp(object):
             try:
                 handle = Simulator(config=self.file)
                 handle.run()
-            except ConfigurationException as ex:
+            except ConfigurationException, ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
@@ -310,8 +310,8 @@ def main():
         try:
             log.setLevel(logging.DEBUG)
     	    logging.basicConfig()
-        except Exception as e:
-    	    print("Logging is not supported on this system")
+        except Exception, e:
+    	    print "Logging is not supported on this system"
     simulator = SimulatorApp('./simulator.glade')
     reactor.run()
 

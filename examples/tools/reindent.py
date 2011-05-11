@@ -45,7 +45,7 @@ def main():
     global verbose, recurse, dryrun
     try:
         opts, args = getopt.getopt(sys.argv[1:], "drv")
-    except getopt.error as msg:
+    except getopt.error, msg:
         errprint(msg)
         return
     for o, a in opts:
@@ -78,7 +78,7 @@ def check(file):
         print "checking", file, "...",
     try:
         f = open(file)
-    except IOError as msg:
+    except IOError, msg:
         errprint("%s: I/O Error: %s" % (file, str(msg)))
         return
 
@@ -156,7 +156,7 @@ class Reindenter:
                     want = have2want.get(have, -1)
                     if want < 0:
                         # Then it probably belongs to the next real stmt.
-                        for j in range(i+1, len(stats)-1):
+                        for j in xrange(i+1, len(stats)-1):
                             jline, jlevel = stats[j]
                             if jlevel >= 0:
                                 if have == getlspace(lines[jline]):
@@ -166,7 +166,7 @@ class Reindenter:
                                            # comment like this one,
                         # in which case we should shift it like its base
                         # line got shifted.
-                        for j in range(i-1, -1, -1):
+                        for j in xrange(i-1, -1, -1):
                             jline, jlevel = stats[j]
                             if jlevel >= 0:
                                 want = have + getlspace(after[jline-1]) - \

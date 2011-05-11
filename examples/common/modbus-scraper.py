@@ -109,7 +109,7 @@ def main():
         try:
             client_log.setLevel(logging.DEBUG)
     	    logging.basicConfig()
-        except Exception as e:
+        except Exception, e:
     	    print "Logging is not supported on this system"
 
     # Begin scraping
@@ -118,7 +118,7 @@ def main():
         s = ClientScraper(opt.host, opt.port, opt.range)
         reactor.callWhenRunning(s.start)
         reactor.run()
-    except ClientException as err:
+    except ClientException, err:
         print err
         parser.print_help()
 

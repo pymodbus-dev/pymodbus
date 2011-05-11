@@ -23,10 +23,10 @@ class SimpleExceptionsTest(unittest.TestCase):
 
     def testExceptions(self):
         ''' Test all module exceptions '''
-        for exception in self.exceptions:
+        for ex in self.exceptions:
             try:
-                raise exception
-            except ModbusException as ex:
+                raise ex
+            except ModbusException, ex:
                 self.assertTrue("Modbus Error:" in str(ex))
                 pass
             else: self.fail("Excepted a ModbusExceptions")

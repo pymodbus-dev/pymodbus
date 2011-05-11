@@ -4,7 +4,7 @@ Implementation of a Threaded Modbus Server
 
 '''
 from binascii import b2a_hex
-import socketserver
+import SocketServer
 import serial
 import socket
 
@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Server
 #---------------------------------------------------------------------------#
-class ModbusRequestHandler(socketserver.BaseRequestHandler):
+class ModbusRequestHandler(SocketServer.BaseRequestHandler):
     ''' Implements the modbus server protocol
 
     This uses the socketserver.BaseRequestHandler to implement
@@ -58,7 +58,7 @@ class ModbusRequestHandler(socketserver.BaseRequestHandler):
                 # if not self.server.control.ListenOnly:
                 self.framer.processIncomingPacket(data, self.execute)
             except socket.timeout: pass
-            except socket.error as msg:
+            except socket.error, msg:
                 _logger.error("Socket error occurred %s" % msg)
                 self.running = False
             except: self.running = False
@@ -74,7 +74,7 @@ class ModbusRequestHandler(socketserver.BaseRequestHandler):
         try:
             context = self.server.context[request.unit_id]
             response = request.execute(context)
-        except Exception as ex:
+        except Exception, ex:
             _logger.debug("Datastore unable to fulfill request %s" % ex)
             response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
@@ -100,12 +100,12 @@ class ModbusRequestHandler(socketserver.BaseRequestHandler):
         '''
         try:
             return decodeModbusRequestPDU(message)
-        except ModbusException as er:
+        except ModbusException, er:
             _logger.warn("Unable to decode request %s" % er)
         return None
 
 
-class ModbusTcpServer(socketserver.ThreadingTCPServer):
+class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
 
@@ -134,7 +134,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        socketserver.ThreadingTCPServer.__init__(self,
+        SocketServer.ThreadingTCPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
 
     def process_request(self, request, client):
@@ -144,7 +144,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         :param client: The address of the client
         '''
         _logger.debug("Started thread to serve client at " + str(client))
-        socketserver.ThreadingTCPServer.process_request(self, request, client)
+        SocketServer.ThreadingTCPServer.process_request(self, request, client)
 
     def server_close(self):
         ''' Callback for stopping the running server
@@ -154,7 +154,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         for thread in self.threads: thread.running = False
 
 
-class ModbusUdpServer(socketserver.ThreadingUDPServer):
+class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     '''
     A modbus threaded udp socket server
 
@@ -183,7 +183,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        socketserver.ThreadingUDPServer.__init__(self,
+        SocketServer.ThreadingUDPServer.__init__(self,
             ("", Defaults.Port), ModbusRequestHandler)
 
     def process_request(self, request, client):
@@ -193,7 +193,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         :param client: The address of the client
         '''
         _logger.debug("Started thread to serve client at " + str(client))
-        socketserver.ThreadingUDPServer.process_request(self, request, client)
+        SocketServer.ThreadingUDPServer.process_request(self, request, client)
 
     def server_close(self):
         ''' Callback for stopping the running server
@@ -251,7 +251,7 @@ class ModbusSerialServer(object):
             self.socket = serial.Serial(port=self.device, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
-        except serial.SerialException as msg:
+        except serial.SerialException, msg:
             _logger.error(msg)
             self.close()
         return self.socket != None

@@ -472,13 +472,14 @@ class ModbusAsciiFramer(IModbusFramer):
         if start == -1: return False
         if start > 0 :  # go ahead and skip old bad data
             self.__buffer = self.__buffer[start:]
+            start = 0
 
         end = self.__buffer.find(self.__end)
         if (end != -1):
             self.__header['len'] = end
             self.__header['uid'] = int(self.__buffer[1:3], 16)
             self.__header['lrc'] = int(self.__buffer[end - 2:end], 16)
-            data = self.__buffer[start:end - 2]
+            data = a2b_hex(self.__buffer[start + 1:end - 2])
             return checkLRC(data, self.__header['lrc'])
         return False
 

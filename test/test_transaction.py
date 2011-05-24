@@ -232,7 +232,7 @@ class ModbusTransactionTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def testASCIIFramerTransactionReady(self):
         ''' Test a ascii frame transaction '''
-        msg = ":abcd12341234aae6\r\n"
+        msg = ':F7031389000A60\r\n'
         self.assertFalse(self._ascii.isFrameReady())
         self.assertFalse(self._ascii.checkFrame())
         self._ascii.addToFrame(msg)
@@ -245,7 +245,7 @@ class ModbusTransactionTest(unittest.TestCase):
 
     def testASCIIFramerTransactionFull(self):
         ''' Test a full ascii frame transaction '''
-        msg  ='sss:01030000000A0C\r\n'
+        msg = 'sss:F7031389000A60\r\n'
         pack = a2b_hex(msg[6:-4])
         self._ascii.addToFrame(msg)
         self.assertTrue(self._ascii.checkFrame())
@@ -255,8 +255,8 @@ class ModbusTransactionTest(unittest.TestCase):
 
     def testASCIIFramerTransactionHalf(self):
         ''' Test a half completed ascii frame transaction '''
-        msg1 = "sss:abcd1234"
-        msg2 = "1234aae6\r\n"
+        msg1 = 'sss:F7031389'
+        msg2 = '000A60\r\n'
         pack = a2b_hex(msg1[6:] + msg2[:-4])
         self._ascii.addToFrame(msg1)
         self.assertFalse(self._ascii.checkFrame())

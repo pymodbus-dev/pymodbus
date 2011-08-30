@@ -125,6 +125,10 @@ class ModbusClientMixin(object):
         '''
 
         :param unit: The slave unit this request is targeting
+        :param read_address: The address to start reading from
+        :param read_count: The number of registers to read from address
+        :param write_address: The address to start writing to
+        :param write_registers: The registers to write to the specified address
         :returns: A deferred response handle
         '''
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)

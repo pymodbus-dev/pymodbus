@@ -41,7 +41,13 @@ client = ModbusClient('127.0.0.1')
 # example requests
 #---------------------------------------------------------------------------# 
 # simply call the methods that you would like to use. An example session
-# is displayed below along with some assert checks.
+# is displayed below along with some assert checks. Note that some modbus
+# implementations differentiate holding/input discrete/coils and as such
+# you will not be able to write to these, therefore the starting values
+# are not known to these tests. Furthermore, some use the same memory
+# blocks for the two sets, so a change to one is a change to the other.
+# Keep both of these cases in mind when testing as the following will
+# _only_ pass with the supplied async modbus server (script supplied).
 #---------------------------------------------------------------------------# 
 rq = client.write_coil(1, True)
 rr = client.read_coils(1,1)
@@ -56,7 +62,7 @@ assert(rr.bits == [True]*8)         # test the expected value
 rq = client.write_coils(1, [False]*8)
 rr = client.read_discrete_inputs(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
-assert(rr.bits == [False]*8)        # test the expected value
+assert(rr.bits == [True]*8)         # test the expected value
 
 rq = client.write_register(1, 10)
 rr = client.read_holding_registers(1,1)
@@ -66,12 +72,19 @@ assert(rr.registers[0] == 10)       # test the expected value
 rq = client.write_registers(1, [10]*8)
 rr = client.read_input_registers(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
-assert(rr.registers == [10]*8)      # test the expected value
+assert(rr.registers == [17]*8)      # test the expected value
 
-rq = client.readwrite_registers(1, [20]*8)
+arguments = {
+    'read_address':    1,
+    'read_count':      8,
+    'write_address':   1,
+    'write_registers': [20]*8,
+}
+rq = client.readwrite_registers(**arguments)
 rr = client.read_input_registers(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
-assert(rr.registers == [20]*8)      # test the expected value
+assert(rq.registers == [20]*8)      # test the expected value
+assert(rr.registers == [17]*8)      # test the expected value
 
 #---------------------------------------------------------------------------# 
 # close the client

@@ -1,8 +1,8 @@
-:mod:`constants` --- Modbus Default Values
+:mod:`payload` --- Modbus Payload Utilities
 ============================================================
 
-.. module:: constants
-   :synopsis: Modbus Default Values
+.. module:: payload
+   :synopsis: Modbus Payload Utilities
 
 .. moduleauthor:: Galen Collins <bashwork@gmail.com>
 .. sectionauthor:: Galen Collins <bashwork@gmail.com>
@@ -10,13 +10,10 @@
 API Documentation
 -------------------
 
-.. automodule:: pymodbus.constants
+.. automodule:: pymodbus.payload
 
-.. autoclass:: Defaults
+.. autoclass:: PayloadBuilder
    :members:
 
-.. autoclass:: ModbusStatus
-   :members:
-
-.. autoclass:: Endian
+.. autoclass:: PayloadDecoder
    :members:

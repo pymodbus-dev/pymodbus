@@ -215,8 +215,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
     _rtu_byte_count_pos = 10
 
-    def __init__(self, read_address, read_count,
-        write_address, write_registers, **kwargs):
+    def __init__(self, **kwargs):
         ''' Initializes a new request message
 
         :param read_address: The address to start reading from
@@ -225,12 +224,12 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param write_registers: The registers to write to the specified address
         '''
         ModbusRequest.__init__(self, **kwargs)
-        self.read_address  = read_address
-        self.read_count    = read_count
-        self.write_address = write_address
-        self.write_registers = write_registers
-        if not hasattr(write_registers, '__iter__'):
-            self.write_registers = [write_registers]
+        self.read_address    = kwargs.get('read_address', 0x00)
+        self.read_count      = kwargs.get('read_count', 0)
+        self.write_address   = kwargs.get('write_address', 0x00)
+        self.write_registers = kwargs.get('write_registers', None)
+        if not hasattr(self.write_registers, '__iter__'):
+            self.write_registers = [self.write_registers]
         self.write_count = len(self.write_registers)
         self.write_byte_count = self.write_count * 2
 
@@ -251,10 +250,10 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.read_address, self.read_count, \
+        self.read_address,  self.read_count,  \
         self.write_address, self.write_count, \
         self.write_byte_count = struct.unpack('>HHHHB', data[:9])
-        self.write_registers = []
+        self.write_registers  = []
         for i in range(9, self.write_byte_count + 9, 2):
             register = struct.unpack('>H', data[i:i + 2])[0]
             self.write_registers.append(register)

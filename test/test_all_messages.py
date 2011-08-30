@@ -20,6 +20,10 @@ class ModbusAllMessagesTests(unittest.TestCase):
         Initializes the test environment and builds request/result
         encoding pairs
         '''
+        arguments = {
+            'read_address': 1, 'read_count': 1,
+            'write_address': 1, 'write_registers': 1
+        }
         self.requests = [
             lambda unit: ReadCoilsRequest(1, 5, unit=unit),
             lambda unit: ReadDiscreteInputsRequest(1, 5, unit=unit),
@@ -27,7 +31,7 @@ class ModbusAllMessagesTests(unittest.TestCase):
             lambda unit: WriteMultipleCoilsRequest(1, [1], unit=unit),
             lambda unit: ReadHoldingRegistersRequest(1, 5, unit=unit),
             lambda unit: ReadInputRegistersRequest(1, 5, unit=unit),
-            lambda unit: ReadWriteMultipleRegistersRequest(1, 5, 1, [1], unit=unit),
+            lambda unit: ReadWriteMultipleRegistersRequest(unit=unit, **arguments),
             lambda unit: WriteSingleRegisterRequest(1, 1, unit=unit),
             lambda unit: WriteMultipleRegistersRequest(1, [1], unit=unit),
         ]

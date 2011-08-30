@@ -38,6 +38,10 @@ class ModbusCommonClientTests(unittest.TestCase):
     #-----------------------------------------------------------------------#
     def testModbusClientMixinMethods(self):
         ''' This tests that the mixing returns the correct request object '''
+        arguments = {
+            'read_address': 1, 'read_count': 1,
+            'write_address': 1, 'write_registers': 1
+        }
         self.assertTrue(isinstance(self.client.read_coils(1,1), ReadCoilsRequest))
         self.assertTrue(isinstance(self.client.read_discrete_inputs(1,1), ReadDiscreteInputsRequest))
         self.assertTrue(isinstance(self.client.write_coil(1,True), WriteSingleCoilRequest))
@@ -46,4 +50,4 @@ class ModbusCommonClientTests(unittest.TestCase):
         self.assertTrue(isinstance(self.client.write_registers(1,[0x00]), WriteMultipleRegistersRequest))
         self.assertTrue(isinstance(self.client.read_holding_registers(1,1), ReadHoldingRegistersRequest))
         self.assertTrue(isinstance(self.client.read_input_registers(1,1), ReadInputRegistersRequest))
-        self.assertTrue(isinstance(self.client.readwrite_registers(1,1,1,1), ReadWriteMultipleRegistersRequest))
+        self.assertTrue(isinstance(self.client.readwrite_registers(**arguments), ReadWriteMultipleRegistersRequest))

@@ -27,13 +27,17 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         Initializes the test environment and builds request/result
         encoding pairs
         '''
+        arguments = {
+            'read_address':  1, 'read_count': 5,
+            'write_address': 1, 'write_registers': [0x00]*5,
+        }
         self.value  = 0xabcd
         self.values = [0xa, 0xb, 0xc]
         self.request_read  = {
             ReadRegistersRequestBase(1, 5)                  :'\x00\x01\x00\x05',
             ReadHoldingRegistersRequest(1, 5)               :'\x00\x01\x00\x05',
             ReadInputRegistersRequest(1,5)                  :'\x00\x01\x00\x05',
-            ReadWriteMultipleRegistersRequest(1,5,1,[0x00]*5) :'\x00\x01\x00\x05\x00\x01\x00'
+            ReadWriteMultipleRegistersRequest(**arguments)  :'\x00\x01\x00\x05\x00\x01\x00'
                                                              '\x05\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
         }
         self.response_read  = {
@@ -83,8 +87,10 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         requests = [
             ReadHoldingRegistersRequest(1, 0x800),
             ReadInputRegistersRequest(1,0x800),
-            ReadWriteMultipleRegistersRequest(1,0x800,1,5),
-            ReadWriteMultipleRegistersRequest(1,5,1,mock),
+            ReadWriteMultipleRegistersRequest(read_address=1,
+                read_count=0x800, write_address=1, write_registers=5),
+            ReadWriteMultipleRegistersRequest(read_address=1,
+                read_count=5, write_address=1, write_registers=mock),
         ]
         for request in requests:
             result = request.execute(None)
@@ -124,14 +130,16 @@ class ReadRegisterMessagesTest(unittest.TestCase):
 
     def testReadWriteMultipleRegistersRequest(self):
         context = MockContext(True)
-        request = ReadWriteMultipleRegistersRequest(1, 10, 1, [0x00])
+        request = ReadWriteMultipleRegistersRequest(read_address=1,
+            read_count=10, write_address=1, write_registers=[0x00])
         response = request.execute(context)
         self.assertEqual(request.function_code, response.function_code)
 
     def testReadWriteMultipleRegistersValidate(self):
         context = MockContext()
         context.validate = lambda f,a,c: a == 1
-        request = ReadWriteMultipleRegistersRequest(1, 10, 2, [0x00])
+        request = ReadWriteMultipleRegistersRequest(read_address=1,
+            read_count=10, write_address=2, write_registers=[0x00])
         response = request.execute(context)
         self.assertEqual(response.exception_code, ModbusExceptions.IllegalAddress)
 

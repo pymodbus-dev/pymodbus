@@ -122,7 +122,24 @@ class ModbusStatus(Singleton):
     SlaveOn  = 0xff
     SlaveOff = 0x00
 
+
+class Endian(Singleton):
+    ''' An enumeration representing the various byte endianess.
+
+    .. attribute:: Big
+
+       This indicates that the bytes are in little endian format
+
+    .. attribute:: Little
+
+       This indicates that the bytes are in big endian format
+
+    '''
+    Big    = 0x00
+    Little = 0x01
+
+
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#
-__all__ = ["Defaults", "ModbusStatus"]
+__all__ = ["Defaults", "ModbusStatus", "Endian"]

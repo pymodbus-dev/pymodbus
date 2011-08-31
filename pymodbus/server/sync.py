@@ -54,6 +54,7 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         while self.running:
             try:
                 data = self.request.recv(1024)
+                if not data: self.running = False
                 _logger.debug(" ".join([hex(ord(x)) for x in data]))
                 # if not self.server.control.ListenOnly:
                 self.framer.processIncomingPacket(data, self.execute)

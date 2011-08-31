@@ -7,7 +7,6 @@ or linked to the appropriate data
 '''
 import struct
 
-from pymodbus.interfaces import Singleton
 from pymodbus.constants import ModbusStatus, ModbusPlusOperation
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse

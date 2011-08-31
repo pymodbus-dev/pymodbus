@@ -108,9 +108,21 @@ API Documentation
 .. autoclass:: ReturnSlaveBusCharacterOverrunCountResponse
    :members:
 
+.. autoclass:: ReturnIopOverrunCountRequest
+   :members:
+
+.. autoclass:: ReturnIopOverrunCountResponse
+   :members:
+
 .. autoclass:: ClearOverrunCountRequest
    :members:
 
 .. autoclass:: ClearOverrunCountResponse
+   :members:
+
+.. autoclass:: GetClearModbusPlusRequest
+   :members:
+
+.. autoclass:: GetClearModbusPlusResponse
    :members:
 

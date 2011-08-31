@@ -59,7 +59,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param values: The values to write to
         '''
         ModbusResponse.__init__(self, **kwargs)
-        self.registers = values if values != None else []
+        self.registers = values or []
 
     def encode(self):
         ''' Encodes the response packet
@@ -307,7 +307,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         :param values: The register values to write
         '''
         ModbusResponse.__init__(self, **kwargs)
-        self.registers = values if values != None else []
+        self.registers = values or []
 
     def encode(self):
         ''' Encodes the response packet

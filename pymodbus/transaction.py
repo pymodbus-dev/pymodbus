@@ -375,7 +375,8 @@ class ModbusRtuFramer(IModbusFramer):
         start  = self.__hsize
         end    = self.__header['len'] - 2
         buffer = self.__buffer[start:end]
-        return buffer if end > 0 else ''
+        if end > 0: return buffer
+        return ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -518,7 +519,8 @@ class ModbusAsciiFramer(IModbusFramer):
         start  = self.__hsize + 1
         end    = self.__header['len'] - 2
         buffer = self.__buffer[start:end]
-        return a2b_hex(buffer) if end > 0 else ''
+        if end > 0: return a2b_hex(buffer)
+        return ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -673,7 +675,8 @@ class ModbusBinaryFramer(IModbusFramer):
         start  = self.__hsize + 1
         end    = self.__header['len'] - 2
         buffer = self.__buffer[start:end]
-        return buffer if end > 0 else ''
+        if end > 0: return buffer
+        return ''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -737,7 +740,8 @@ class ModbusBinaryFramer(IModbusFramer):
         :returns: the escaped packet
         '''
         def _filter(a):
-            return a * 2 if a in ['}', '{'] else a, data
+            if a in ['}', '{']: return a * 2
+            else: return a, data
         return ''.join(map(_filter, data))
 
 #---------------------------------------------------------------------------#

@@ -184,7 +184,8 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        ready = ModbusStatus.Ready if self.status else ModbusStatus.Waiting
+        if self.status: ready = ModbusStatus.Ready 
+        else: ready = ModbusStatus.Waiting
         return struct.pack('>HH', ready, self.count)
 
     def decode(self, data):
@@ -297,7 +298,8 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        ready = ModbusStatus.Ready if self.status else ModbusStatus.Waiting
+        if self.status: ready = ModbusStatus.Ready 
+        else: ready = ModbusStatus.Waiting
         packet  = struct.pack('>B', 6 + len(self.events))
         packet += struct.pack('>H', ready)
         packet += struct.pack('>HH', self.event_count, self.message_count)
@@ -395,7 +397,8 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        status = ModbusStatus.SlaveOn if self.status else ModbusStatus.SlaveOff
+        if self.status: status = ModbusStatus.SlaveOn
+        else: status = ModbusStatus.SlaveOff
         length = len(self.identifier) + 2
         packet = struct.pack('>B', length)
         packet += self.identifier  # we assume it is already encoded

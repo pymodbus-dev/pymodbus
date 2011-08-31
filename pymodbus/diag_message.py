@@ -7,7 +7,8 @@ or linked to the appropriate data
 '''
 import struct
 
-from pymodbus.constants import ModbusStatus
+from pymodbus.interfaces import Singleton
+from pymodbus.constants import ModbusStatus, ModbusPlusOperation
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
@@ -21,8 +22,7 @@ _MCB = ModbusControlBlock()
 # Diagnostic Function Codes Base Classes
 # diagnostic 08, 00-18,20
 #---------------------------------------------------------------------------#
-# TODO Implement subfunction 19 (Return IOP Overrun Count)
-# TODO Implement subfunction 21 (Get/Clear Modbus Plus statistics)
+# TODO Make sure all the data is decoded from the response
 #---------------------------------------------------------------------------#
 class DiagnosticStatusRequest(ModbusRequest):
     '''
@@ -622,6 +622,36 @@ class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse
 
 
 #---------------------------------------------------------------------------#
+# Diagnostic Sub Code 19
+#---------------------------------------------------------------------------#
+class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
+    '''
+    An IOP overrun is caused by data characters arriving at the port
+    faster than they can be stored, or by the loss of a character due
+    to a hardware malfunction.  This function is specific to the 884.
+    '''
+    sub_function_code = 0x0013
+
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
+        '''
+        count = _MCB.Counter.BusCharacterOverrun
+        return ReturnIopOverrunCountResponse(count)
+
+
+class ReturnIopOverrunCountResponse(DiagnosticStatusSimpleResponse):
+    '''
+    The response data field returns the quantity of messages
+    addressed to the slave that it could not handle due to an 884
+    IOP overrun condition, since its last restart, clear counters
+    operation, or power-up.
+    '''
+    sub_function_code = 0x0013
+
+
+#---------------------------------------------------------------------------#
 # Diagnostic Sub Code 20
 #---------------------------------------------------------------------------#
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
@@ -648,6 +678,45 @@ class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
     '''
     sub_function_code = 0x0014
 
+
+#---------------------------------------------------------------------------#
+# Diagnostic Sub Code 21
+#---------------------------------------------------------------------------#
+class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
+    '''
+    In addition to the Function code (08) and Subfunction code
+    (00 15 hex) in the query, a two-byte Operation field is used
+    to specify either a 'Get Statistics' or a 'Clear Statistics'
+    operation.  The two operations are exclusive - the 'Get'
+    operation cannot clear the statistics, and the 'Clear'
+    operation does not return statistics prior to clearing
+    them. Statistics are also cleared on power-up of the slave
+    device.
+    '''
+    sub_function_code = 0x0015
+
+    def execute(self, *args):
+        ''' Execute the diagnostic request on the given device
+
+        :returns: The initialized response message
+        '''
+        message = None # the clear operation does not return info
+        if self.message == ModbusPlusOperation.ClearStatistics:
+            _MCB.Plus.reset()
+        else: message = _MCB.Plus.summary()
+        return GetClearModbusPlusResponse(message)
+
+
+class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
+    '''
+    Returns a series of 54 16-bit words (108 bytes) in the data field
+    of the response (this function differs from the usual two-byte
+    length of the data field). The data contains the statistics for
+    the Modbus Plus peer processor in the slave device.
+    '''
+    sub_function_code = 0x0015
+
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#
@@ -666,5 +735,7 @@ __all__ = [
     "ReturnSlaveNAKCountRequest", "ReturnSlaveNAKCountResponse",
     "ReturnSlaveBusyCountRequest", "ReturnSlaveBusyCountResponse",
     "ReturnSlaveBusCharacterOverrunCountRequest", "ReturnSlaveBusCharacterOverrunCountResponse",
+    "ReturnIopOverrunCountRequest", "ReturnIopOverrunCountResponse",
     "ClearOverrunCountRequest", "ClearOverrunCountResponse",
+    "GetClearModbusPlusRequest", "GetClearModbusPlusResponse",
 ]

@@ -74,6 +74,44 @@ class ModbusAccessControl(Singleton):
 
 
 #---------------------------------------------------------------------------#
+# Modbus Plus Statistics
+#---------------------------------------------------------------------------#
+class ModbusPlusStatistics(object):
+    '''
+    This is used to maintain the current modbus plus statistics count. As of
+    right now this is simply a stub to complete the modbus implementation.
+    For more information, see the modbus implementation guide page 87.
+    '''
+
+    def __init__(self):
+        '''
+        Initialize the modbus plus statistics with the default
+        information.
+        '''
+        self.reset()
+
+    def reset(self):
+        ''' This clears all of the modbus plus statistics
+        '''
+        self.statistics = [0x0000] * 56 # temporary
+        #self.token_station_bit_map      = [0x0000] * 4
+        #self.active_station_bit_map     = [0x0000] * 4
+        #self.global_data_bit_map        = [0x0000] * 4
+        #self.receive_buffer_use_bit_map = [0x0000] * 4
+        #self.data_master_output_path    = [0x0000] * 4
+        #self.data_slave_input_path      = [0x0000] * 4
+        #self.program_master_outptu_path = [0x0000] * 4
+        #self.program_slave_input_path   = [0x0000] * 4
+
+    def summary(self):
+        ''' Returns a summary of the modbus plus statistics
+
+        :returns: 54 16-bit words representing the status
+        '''
+        return self.statistics
+
+
+#---------------------------------------------------------------------------#
 # Device Information Control
 #---------------------------------------------------------------------------#
 class ModbusDeviceIdentification(object):
@@ -326,6 +364,7 @@ class ModbusControlBlock(Singleton):
     __delimiter = '\r'
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
+    __plus     = ModbusPlusStatistics()
     __events   = []
 
     #-------------------------------------------------------------------------#
@@ -376,6 +415,7 @@ class ModbusControlBlock(Singleton):
     Identity = property(lambda s: s.__identity)
     Counter  = property(lambda s: s.__counters)
     Events   = property(lambda s: s.__events)
+    Plus     = property(lambda s: s.__plus)
 
     def reset(self):
         ''' This clears all of the system counters and the
@@ -459,6 +499,7 @@ class ModbusControlBlock(Singleton):
 #---------------------------------------------------------------------------#
 __all__ = [
         "ModbusAccessControl",
+        "ModbusPlusStatistics",
         "ModbusDeviceIdentification",
         "ModbusControlBlock"
 ]

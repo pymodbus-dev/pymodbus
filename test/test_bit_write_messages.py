@@ -57,7 +57,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         self.assertEquals(request.values, [])
 
     def testWriteSingleCoilExecute(self):
-        context = MockContext(False)
+        context = MockContext(False, default=True)
         request = WriteSingleCoilRequest(2, True)
         result  = request.execute(context)
         self.assertEqual(result.exception_code, ModbusExceptions.IllegalAddress)
@@ -65,6 +65,11 @@ class ModbusBitMessageTests(unittest.TestCase):
         context.valid = True
         result = request.execute(context)
         self.assertEqual(result.encode(), '\x00\x02\xff\x00')
+
+        context = MockContext(True, default=False)
+        request = WriteSingleCoilRequest(2, False)
+        result = request.execute(context)
+        self.assertEqual(result.encode(), '\x00\x02\x00\x00')
 
     def testWriteMultipleCoilsExecute(self):
         context = MockContext(False)

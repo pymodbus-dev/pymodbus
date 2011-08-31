@@ -139,7 +139,24 @@ class Endian(Singleton):
     Little = 0x01
 
 
+class ModbusPlusOperation(Singleton):
+    ''' Represents the type of modbus plus request
+
+    .. attribute:: GetStatistics
+
+       Operation requesting that the current modbus plus statistics
+       be returned in the response.
+
+    .. attribute:: ClearStatistics
+
+       Operation requesting that the current modbus plus statistics
+       be cleared and not returned in the response.
+    '''
+    GetStatistics   = 0x0003
+    ClearStatistics = 0x0004
+
+
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#
-__all__ = ["Defaults", "ModbusStatus", "Endian"]
+__all__ = ["Defaults", "ModbusStatus", "Endian", "ModbusPlusOperation"]

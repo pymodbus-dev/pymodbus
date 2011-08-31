@@ -702,7 +702,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         message = None # the clear operation does not return info
         if self.message == ModbusPlusOperation.ClearStatistics:
             _MCB.Plus.reset()
-        else: message = _MCB.Plus.summary()
+        else: message = _MCB.Plus.encode()
         return GetClearModbusPlusResponse(message)
 
 

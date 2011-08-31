@@ -216,12 +216,12 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusPlusStatistics(self):
         ''' Test device identification reading '''
-        default = [0x0000] * 56
+        default = [0x0000] * 55
         statistics = ModbusPlusStatistics()
-        self.assertEqual(default, statistics.summary())
+        self.assertEqual(default, statistics.encode())
         statistics.reset()
-        self.assertEqual(default, statistics.summary())
-        self.assertEqual(default, self.control.Plus.summary())
+        self.assertEqual(default, statistics.encode())
+        self.assertEqual(default, self.control.Plus.encode())
 
 #---------------------------------------------------------------------------#
 # Main

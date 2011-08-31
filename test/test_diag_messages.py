@@ -32,7 +32,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnSlaveBusCharacterOverrunCountRequest,    '\x00\x12\x00\x00', '\x00\x12\x00\x00'),
             (ReturnIopOverrunCountRequest,                  '\x00\x13\x00\x00', '\x00\x13\x00\x00'),
             (ClearOverrunCountRequest,                      '\x00\x14\x00\x00', '\x00\x14\x00\x00'),
-            (GetClearModbusPlusRequest,                     '\x00\x15\x00\x00', '\x00\x15' + '\x00\x00' * 56),
+            (GetClearModbusPlusRequest,                     '\x00\x15\x00\x00', '\x00\x15' + '\x00\x00' * 55),
         ]
 
         self.responses = [
@@ -55,7 +55,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnSlaveBusCharacterOverrunCountResponse,  '\x00\x12\x00\x00'),
             (ReturnIopOverrunCountResponse,                '\x00\x13\x00\x00'),
             (ClearOverrunCountResponse,                    '\x00\x14\x00\x00'),
-            (GetClearModbusPlusResponse,                   '\x00\x15' + '\x00\x00' * 56),
+            (GetClearModbusPlusResponse,                   '\x00\x15' + '\x00\x00' * 55),
         ]
 
     def tearDown(self):

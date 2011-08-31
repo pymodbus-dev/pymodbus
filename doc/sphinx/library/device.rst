@@ -15,6 +15,9 @@ API Documentation
 .. autoclass:: ModbusAccessControl
    :members:
 
+.. autoclass:: ModbusPlusStatistics
+   :members:
+
 .. autoclass:: ModbusDeviceIdentification
    :members:
 

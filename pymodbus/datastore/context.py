@@ -19,7 +19,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
     '''
 
     def __init__(self, *args, **kwargs):
-        ''' Initializes the datastores
+        ''' Initializes the datastores, defaults to fully populated
+        sequential data blocks if none are passed in.
+
         :param kwargs: Each element is a ModbusDataBlock
 
             'di' - Discrete Inputs initializer
@@ -28,10 +30,10 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'ir' - Input Registers iniatializer
         '''
         self.store = {}
-        self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock(0, 0))
-        self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock(0, 0))
-        self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock(0, 0))
-        self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock(0, 0))
+        self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock.create())
+        self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
+        self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
+        self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
 
     def __str__(self):
         ''' Returns a string representation of the context

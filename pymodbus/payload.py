@@ -6,7 +6,6 @@ A collection of utilities for building and decoding
 modbus messages payloads.
 '''
 from struct import pack, unpack
-from pymodbus.interfaces import Singleton
 from pymodbus.constants import Endian
 
 

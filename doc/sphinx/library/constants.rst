@@ -20,3 +20,6 @@ API Documentation
 
 .. autoclass:: Endian
    :members:
+
+.. autoclass:: ModbusPlusOperation
+   :members:

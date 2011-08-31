@@ -63,6 +63,11 @@ class ModbusDataStoreTest(unittest.TestCase):
         block.setValues(0x00, [True]*10)
         self.assertEqual(block.getValues(0x00, 10), [True]*10)
 
+    def testModbusSequentialDataBlockFactory(self):
+        ''' Test the sequential data block store factory '''
+        block = ModbusSequentialDataBlock.create()
+        self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
+
     def testModbusSparseDataBlock(self):
         ''' Test a sparse data block store '''
         values = dict(enumerate([True]*10))
@@ -83,6 +88,11 @@ class ModbusDataStoreTest(unittest.TestCase):
 
         block.setValues(0x00, dict(enumerate([False]*10)))
         self.assertEqual(block.getValues(0x00, 10), [False]*10)
+
+    def testModbusSparseDataBlockFactory(self):
+        ''' Test the sparse data block store factory '''
+        block = ModbusSparseDataBlock.create()
+        self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
 
     def testModbusSparseDataBlockOther(self):
         block = ModbusSparseDataBlock([True]*10)

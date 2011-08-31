@@ -214,6 +214,15 @@ class SimpleDataStoreTest(unittest.TestCase):
         packet = self.control.getEvents()
         self.assertEqual(packet, '\x40')
 
+    def testModbusPlusStatistics(self):
+        ''' Test device identification reading '''
+        default = [0x0000] * 56
+        statistics = ModbusPlusStatistics()
+        self.assertEqual(default, statistics.summary())
+        statistics.reset()
+        self.assertEqual(default, statistics.summary())
+        self.assertEqual(default, self.control.Plus.summary())
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

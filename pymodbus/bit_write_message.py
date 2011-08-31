@@ -48,7 +48,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        self.value = True if value else False
+        self.value = bool(value)
 
     def encode(self):
         ''' Encodes write coil request
@@ -56,7 +56,8 @@ class WriteSingleCoilRequest(ModbusRequest):
         :returns: The byte encoded message
         '''
         result  = struct.pack('>H', self.address)
-        result += _turn_coil_on if self.value else _turn_coil_off
+        if self.value: result += _turn_coil_on
+        else: result += _turn_coil_off
         return result
 
     def decode(self, data):
@@ -65,7 +66,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param data: The packet data to decode
         '''
         self.address, value = struct.unpack('>HH', data)
-        self.value = True if value == ModbusStatus.On else False
+        self.value = (value == ModbusStatus.On)
 
     def execute(self, context):
         ''' Run a write coil request against a datastore
@@ -114,7 +115,8 @@ class WriteSingleCoilResponse(ModbusResponse):
         :return: The byte encoded message
         '''
         result  = struct.pack('>H', self.address)
-        result += _turn_coil_on if self.value else _turn_coil_off
+        if self.value: result += _turn_coil_on
+        else: result += _turn_coil_off
         return result
 
     def decode(self, data):

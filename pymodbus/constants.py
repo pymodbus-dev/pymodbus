@@ -134,9 +134,11 @@ class Endian(Singleton):
 
        This indicates that the bytes are in big endian format
 
+    .. note:: I am simply borrowing the format strings from the
+       python struct module for my convenience.
     '''
-    Big    = 0x00
-    Little = 0x01
+    Big    = '>'
+    Little = '<'
 
 
 class ModbusPlusOperation(Singleton):

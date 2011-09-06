@@ -35,8 +35,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.big_endian_payload = \
                        '\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00' \
                        '\x00\x00\x04\xff\xff\xfe\xff\xff\xff\xfd\xff\xff' \
-                       '\xff\xff\xff\xff\xff\xfc\x00\x00\xa0\x3f\x00\x00' \
-                       '\x00\x00\x00\x00\x19\x40\x74\x65\x73\x74'
+                       '\xff\xff\xff\xff\xff\xfc\x3f\xa0\x00\x00\x40\x19' \
+                       '\x00\x00\x00\x00\x00\x00\x74\x65\x73\x74'
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -62,6 +62,22 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_string('test')
         self.assertEqual(self.little_endian_payload, builder.tostring())
 
+    def testBigEndianPayloadBuilder(self):
+        ''' Test basic bit message encoding/decoding '''
+        builder = PayloadBuilder(endian=Endian.Big)
+        builder.add_8bit_uint(1)
+        builder.add_16bit_uint(2)
+        builder.add_32bit_uint(3)
+        builder.add_64bit_uint(4)
+        builder.add_8bit_int(-1)
+        builder.add_16bit_int(-2)
+        builder.add_32bit_int(-3)
+        builder.add_64bit_int(-4)
+        builder.add_32bit_float(1.25)
+        builder.add_64bit_float(6.25)
+        builder.add_string('test')
+        self.assertEqual(self.big_endian_payload, builder.tostring())
+
     def testPayloadBuilderReset(self):
         ''' Test basic bit message encoding/decoding '''
         builder = PayloadBuilder()
@@ -79,7 +95,22 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testLittleEndianPayloadDecoder(self):
         ''' Test basic bit message encoding/decoding '''
-        decoder = PayloadDecoder(self.little_endian_payload)
+        decoder = PayloadDecoder(self.little_endian_payload, endian=Endian.Little)
+        self.assertEqual(1,      decoder.decode_8bit_uint())
+        self.assertEqual(2,      decoder.decode_16bit_uint())
+        self.assertEqual(3,      decoder.decode_32bit_uint())
+        self.assertEqual(4,      decoder.decode_64bit_uint())
+        self.assertEqual(-1,     decoder.decode_8bit_int())
+        self.assertEqual(-2,     decoder.decode_16bit_int())
+        self.assertEqual(-3,     decoder.decode_32bit_int())
+        self.assertEqual(-4,     decoder.decode_64bit_int())
+        self.assertEqual(1.25,   decoder.decode_32bit_float())
+        self.assertEqual(6.25,   decoder.decode_64bit_float())
+        self.assertEqual('test', decoder.decode_string(4))
+
+    def testBigEndianPayloadDecoder(self):
+        ''' Test basic bit message encoding/decoding '''
+        decoder = PayloadDecoder(self.big_endian_payload, endian=Endian.Big)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
         self.assertEqual(3,      decoder.decode_32bit_uint())

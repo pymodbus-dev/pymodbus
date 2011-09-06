@@ -69,7 +69,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
     function_code = 0x07
     _rtu_frame_size = 5
 
-    def __init__(self, status):
+    def __init__(self, status=0x00):
         ''' Initializes a new instance
 
         :param status: The status response to report
@@ -170,7 +170,7 @@ class GetCommEventCounterResponse(ModbusResponse):
     function_code = 0x0b
     _rtu_frame_size = 8
 
-    def __init__(self, count):
+    def __init__(self, count=0x0000):
         ''' Initializes a new instance
 
         :param count: The current event counter value
@@ -382,7 +382,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier, status=True):
+    def __init__(self, identifier=0x00, status=True):
         ''' Initializes a new instance
 
         :param identifier: The identifier of the slave
@@ -414,7 +414,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         length = struct.unpack('>B', data[0])[0]
-        self.identifier = data[1:length - 1]
+        self.identifier = data[1:length + 1]
         status = struct.unpack('>B', data[-1])[0]
         self.status = status == ModbusStatus.SlaveOn
 

@@ -143,7 +143,7 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     2 bytes of data.
     '''
 
-    def __init__(self, data):
+    def __init__(self, data=0x0000):
         ''' General initializer for a simple diagnostic response
 
         :param data: The resulting data to return to the client

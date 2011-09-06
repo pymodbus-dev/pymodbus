@@ -11,11 +11,301 @@ from pymodbus.pdu import ModbusExceptions as merror
 
 
 #---------------------------------------------------------------------------#
-# TODO finish these requests
+# File Record Types
 #---------------------------------------------------------------------------#
-# Read File Record 20
-# Write File Record 21
-# mask write register 22
+class FileRecordRequest(object):
+    ''' Represents a file record read request
+    '''
+
+    def __init__(self, **kwargs):
+        ''' Initializes a new instance
+        '''
+        self.reference_type = kwargs.get('reference_type', 0x06)
+        self.file_number    = kwargs.get('file_number', 0x00)
+        self.record_number  = kwargs.get('record_number', 0x00)
+        self.record_length  = kwargs.get('record_length', 0x00)
+
+
+class FileRecordResponse(object):
+    ''' Represents a file record read response
+    '''
+
+    def __init__(self, **kwargs):
+        ''' Initializes a new instance
+        '''
+        self.reference_type = kwargs.get('reference_type', 0x06)
+        self.record_data    = kwargs.get('record_number', 0x00)
+        self.record_length  = kwargs.get('record_length', 0x00)
+
+
+#---------------------------------------------------------------------------#
+# File Requests/Responses
+#---------------------------------------------------------------------------#
+class ReadFileRecordRequest(ModbusRequest):
+    '''
+    This function code is used to perform a file record read. All request
+    data lengths are provided in terms of number of bytes and all record
+    lengths are provided in terms of registers.
+
+    A file is an organization of records. Each file contains 10000 records,
+    addressed 0000 to 9999 decimal or 0x0000 to 0x270f. For example, record
+    12 is addressed as 12. The function can read multiple groups of
+    references. The groups can be separating (non-contiguous), but the
+    references within each group must be sequential. Each group is defined
+    in a seperate 'sub-request' field that contains seven bytes::
+
+        The reference type: 1 byte (must be 0x06)
+        The file number: 2 bytes
+        The starting record number within the file: 2 bytes
+        The length of the record to be read: 2 bytes
+    
+    The quantity of registers to be read, combined with all other fields
+    in the expected response, must not exceed the allowable length of the
+    MODBUS PDU: 235 bytes.
+    '''
+    function_code = 0x14
+
+    def __init__(self, records=None):
+        ''' Initializes a new instance
+
+        :param records: The file record requests to be read
+        '''
+        ModbusRequest.__init__(self)
+        self.records  = records or []
+
+    def encode(self):
+        ''' Encodes the request packet
+
+        :returns: The byte encoded packet
+        '''
+        packet = struct.pack('B', len(self.records) * 7)
+        for record in self.records:
+            packet += struct.pack('>BHHH', 0x06, record.file_number,
+                record.record_number, record.record_length)
+        return packet
+
+    def decode(self, data):
+        ''' Decodes the incoming request
+
+        :param data: The data to decode into the address
+        '''
+        self.records = []
+        byte_count = struct.unpack('B', data[0])[0]
+        for count in xrange(1, byte_count, 7):
+            decoded = struct.unpack('>BHHH', data[count:count+7])
+            record  = FileRecordRequest(file_number=decoded[1],
+                record_number=decoded[2], record_length=decoded[3])
+            if decoded[0] == 0x06: self.records.append(record)
+
+    def execute(self, context):
+        ''' Run a read exeception status request against the store
+
+        :param context: The datastore to request from
+        :returns: The populated response
+        '''
+        # do some new context operation here
+        files = []
+        return ReadFileRecordResponse(files)
+
+
+class ReadFileRecordResponse(ModbusResponse):
+    '''
+    The normal response is a series of 'sub-responses,' one for each
+    'sub-request.' The byte count field is the total combined count of
+    bytes in all 'sub-responses.' In addition, each 'sub-response'
+    contains a field that shows its own byte count.
+    '''
+    function_code = 0x14
+
+    def __init__(self, records=None):
+        ''' Initializes a new instance
+
+        :param records: The requested file records
+        '''
+        ModbusResponse.__init__(self)
+        self.records = records or []
+
+    def encode(self):
+        ''' Encodes the response
+
+        :returns: The byte encoded message
+        '''
+        total  = sum(record.record_length for record in self.records)
+        packet = struct.pack('B', total)
+        for record in self.records:
+            packet += struct.pack('>BB', 0x06, record.record_length)
+            packet += record.record_data
+        return packet
+
+    def decode(self, data):
+        ''' Decodes a the response
+
+        :param data: The packet data to decode
+        '''
+        count, self.records = 1, []
+        byte_count = struct.unpack('B', data[0])[0]
+        while count < byte_count:
+            record_length, reference_type = struct.unpack('>BB', data[count:count+2])
+            count += record_length
+            record = FileRecordResponse(record_length=record_length,
+                record_data=data[count - record_length:count])
+            if reference_type == 0x06: self.records.append(record)
+
+
+class WriteFileRecordRequest(ModbusRequest):
+    '''
+    '''
+    function_code = 0x15
+
+    def __init__(self, records=None):
+        ''' Initializes a new instance
+
+        :param records: The file record requests to be read
+        '''
+        ModbusRequest.__init__(self)
+        self.records  = records or []
+
+    def encode(self):
+        ''' Encodes the request packet
+
+        :returns: The byte encoded packet
+        '''
+        packet = struct.pack('B', len(self.records) * 7)
+        for record in self.records:
+            packet += struct.pack('>BHHH', 0x06, record.file_number,
+                record.record_number, record.record_length)
+        return packet
+
+    def decode(self, data):
+        ''' Decodes the incoming request
+
+        :param data: The data to decode into the address
+        '''
+        self.records = []
+        byte_count = struct.unpack('B', data[0])[0]
+        # todo, decode records
+
+    def execute(self, context):
+        ''' Run the write file record request against the context
+
+        :param context: The datastore to request from
+        :returns: The populated response
+        '''
+        # do some new context operation here
+        files = []
+        return WriteFileRecordResponse(files)
+
+
+class WriteFileRecordResponse(ModbusResponse):
+    '''
+    '''
+    function_code = 0x15
+    _rtu_frame_size = 10
+
+    def __init__(self, address=0x0000):
+        ''' Initializes a new instance
+
+        :param address: The mask pointer address (0x0000 to 0xffff)
+        '''
+        ModbusResponse.__init__(self)
+        pass
+
+    def encode(self):
+        ''' Encodes the response
+
+        :returns: The byte encoded message
+        '''
+        pass
+
+    def decode(self, data):
+        ''' Decodes a the response
+
+        :param data: The packet data to decode
+        '''
+        pass
+
+
+class MaskWriteRegisterRequest(ModbusRequest):
+    '''
+    This function code is used to modify the contents of a specified holding
+    register using a combination of an AND mask, an OR mask, and the
+    register's current contents. The function can be used to set or clear
+    individual bits in the register.
+    '''
+    function_code = 0x16
+    _rtu_frame_size = 10
+
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000):
+        ''' Initializes a new instance
+
+        :param address: The mask pointer address (0x0000 to 0xffff)
+        :param and_mask: The and bitmask to apply to the register address
+        :param or_mask: The or bitmask to apply to the register address
+        '''
+        ModbusRequest.__init__(self)
+        self.address  = address
+        self.and_mask = and_mask
+        self.or_mask  = or_mask
+
+    def encode(self):
+        ''' Encodes the request packet
+
+        :returns: The byte encoded packet
+        '''
+        return struct.pack('>HHH', self.address, self.and_mask, self.or_mask)
+
+    def decode(self, data):
+        ''' Decodes the incoming request
+
+        :param data: The data to decode into the address
+        '''
+        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH', data)
+
+    def execute(self, context):
+        ''' Run a mask write register request against the store
+
+        :param context: The datastore to request from
+        :returns: The populated response
+        '''
+        # do some new context operation here
+        return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
+
+
+class MaskWriteRegisterResponse(ModbusResponse):
+    '''
+    The normal response is an echo of the request. The response is returned
+    after the register has been written.
+    '''
+    function_code = 0x16
+    _rtu_frame_size = 10
+
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000):
+        ''' Initializes a new instance
+
+        :param address: The mask pointer address (0x0000 to 0xffff)
+        :param and_mask: The and bitmask applied to the register address
+        :param or_mask: The or bitmask applied to the register address
+        '''
+        ModbusResponse.__init__(self)
+        self.address  = address
+        self.and_mask = and_mask
+        self.or_mask  = or_mask
+
+    def encode(self):
+        ''' Encodes the response
+
+        :returns: The byte encoded message
+        '''
+        return struct.pack('>HHH', self.address, self.and_mask, self.or_mask)
+
+    def decode(self, data):
+        ''' Decodes a the response
+
+        :param data: The packet data to decode
+        '''
+        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH', data)
+
+
 class ReadFifoQueueRequest(ModbusRequest):
     '''
     This function code allows to read the contents of a First-In-First-Out
@@ -31,14 +321,14 @@ class ReadFifoQueueRequest(ModbusRequest):
     function_code = 0x18
     _rtu_frame_size = 6
 
-    def __init__(self, address):
+    def __init__(self, address=0x0000):
         ''' Initializes a new instance
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         '''
         ModbusRequest.__init__(self)
         self.address = address
-        self.values = []  # dunno where this should come from
+        self.values = []  # this should be added to the context
 
     def encode(self):
         ''' Encodes the request packet
@@ -88,13 +378,13 @@ class ReadFifoQueueResponse(ModbusResponse):
         lo_byte = struct.unpack(">B", buffer[3])[0]
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values):
+    def __init__(self, values=None):
         ''' Initializes a new instance
 
         :param values: The list of values of the fifo to return
         '''
         ModbusResponse.__init__(self)
-        self.values = values
+        self.values = values or []
 
     def encode(self):
         ''' Encodes the response
@@ -122,5 +412,8 @@ class ReadFifoQueueResponse(ModbusResponse):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
+    "ReadFileRecordRequest", "ReadFileRecordResponse",
+    "WriteFileRecordRequest", "WriteFileRecordResponse",
+    "MaskWriteRegisterRequest", "MaskWriteRegisterResponse",
     "ReadFifoQueueRequest", "ReadFifoQueueResponse",
 ]

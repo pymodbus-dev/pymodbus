@@ -89,7 +89,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.encode(), '\x0apymodbus\xff')
         response.decode('\x03\x12\x00')
         self.assertEqual(response.status, False)
-        self.assertEqual(response.identifier, '\x12')
+        self.assertEqual(response.identifier, '\x12\x00')
 
 #---------------------------------------------------------------------------#
 # Main

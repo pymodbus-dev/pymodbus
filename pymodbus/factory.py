@@ -41,7 +41,35 @@ class ServerDecoder(IModbusDecoder):
             WriteMultipleRegistersRequest,
             WriteSingleRegisterRequest,
             WriteSingleCoilRequest,
-            ReadWriteMultipleRegistersRequest
+            ReadWriteMultipleRegistersRequest,
+
+            ReturnQueryDataRequest,
+            RestartCommunicationsOptionRequest,
+            ReturnDiagnosticRegisterRequest,
+            ChangeAsciiInputDelimiterRequest,
+            ForceListenOnlyModeRequest,
+            ClearCountersRequest,
+            ReturnBusMessageCountRequest,
+            ReturnBusCommunicationErrorCountRequest,
+            ReturnBusExceptionErrorCountRequest,
+            ReturnSlaveMessageCountRequest,
+            ReturnSlaveNoResponseCountRequest,
+            ReturnSlaveNAKCountRequest,
+            ReturnSlaveBusyCountRequest,
+            ReturnSlaveBusCharacterOverrunCountRequest,
+            ReturnIopOverrunCountRequest,
+            ClearOverrunCountRequest,
+            GetClearModbusPlusRequest,
+
+            ReadExceptionStatusRequest,
+            GetCommEventCounterRequest,
+            GetCommEventLogRequest,
+            ReportSlaveIdRequest,
+
+            ReadFileRecordRequest,
+            WriteFileRecordRequest,
+            MaskWriteRegisterRequest,
+            ReadFifoQueueRequest,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
 
@@ -100,7 +128,35 @@ class ClientDecoder(IModbusDecoder):
             WriteMultipleRegistersResponse,
             WriteSingleRegisterResponse,
             WriteSingleCoilResponse,
-            ReadWriteMultipleRegistersResponse
+            ReadWriteMultipleRegistersResponse,
+
+            ReturnQueryDataResponse,
+            RestartCommunicationsOptionResponse,
+            ReturnDiagnosticRegisterResponse,
+            ChangeAsciiInputDelimiterResponse,
+            ForceListenOnlyModeResponse,
+            ClearCountersResponse,
+            ReturnBusMessageCountResponse,
+            ReturnBusCommunicationErrorCountResponse,
+            ReturnBusExceptionErrorCountResponse,
+            ReturnSlaveMessageCountResponse,
+            ReturnSlaveNoReponseCountResponse,
+            ReturnSlaveNAKCountResponse,
+            ReturnSlaveBusyCountResponse,
+            ReturnSlaveBusCharacterOverrunCountResponse,
+            ReturnIopOverrunCountResponse,
+            ClearOverrunCountResponse,
+            GetClearModbusPlusResponse,
+
+            ReadExceptionStatusResponse,
+            GetCommEventCounterResponse,
+            GetCommEventLogResponse,
+            ReportSlaveIdResponse,
+
+            ReadFileRecordResponse,
+            WriteFileRecordResponse,
+            MaskWriteRegisterResponse,
+            ReadFifoQueueResponse,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
 

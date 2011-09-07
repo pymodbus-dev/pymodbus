@@ -56,6 +56,9 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.status, True)
         self.assertEqual(response.count, 0x12)
 
+        response.status = False
+        self.assertEqual(response.encode(), '\xFF\xFF\x00\x12')
+
     def testGetCommEventLog(self):
         request = GetCommEventLogRequest()
         request.decode('\x12')
@@ -69,6 +72,9 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.message_count, 0x12)
         self.assertEqual(response.event_count, 0x12)
         self.assertEqual(response.events, [])
+
+        response.status = False
+        self.assertEqual(response.encode(), '\x06\xff\xff\x00\x12\x00\x12')
 
     def testGetCommEventLogWithEvents(self):
         response = GetCommEventLogResponse(events=[0x12,0x34,0x56])
@@ -90,6 +96,9 @@ class ModbusOtherMessageTest(unittest.TestCase):
         response.decode('\x03\x12\x00')
         self.assertEqual(response.status, False)
         self.assertEqual(response.identifier, '\x12\x00')
+
+        response.status = False
+        self.assertEqual(response.encode(), '\x04\x12\x00\x00')
 
 #---------------------------------------------------------------------------#
 # Main

@@ -32,24 +32,32 @@ log.setLevel(logging.DEBUG)
 # The datastores only respond to the addresses that they are initialized to.
 # Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
 # request to 0x100 will respond with an invalid address exception. This is
-# because many devices exhibit this kind of behavior (but not all):
+# because many devices exhibit this kind of behavior (but not all)::
 #
 #     block = ModbusSequentialDataBlock(0x00, [0]*0xff)
 #
 # Continuting, you can choose to use a sequential or a sparse DataBlock in
 # your data context.  The difference is that the sequential has no gaps in
 # the data while the sparse can. Once again, there are devices that exhibit
-# both forms of behavior:
+# both forms of behavior::
 #
 #     block = ModbusSparseDataBlock({0x00: 0, 0x05: 1})
 #     block = ModbusSequentialDataBlock(0x00, [0]*5)
 #
 # Alternately, you can use the factory methods to initialize the DataBlocks
 # or simply do not pass them to have them initialized to 0x00 on the full
-# address range:
+# address range::
 #
 #     store = ModbusSlaveContext(di = ModbusSequentialDataBlock.create())
 #     store = ModbusSlaveContext()
+#
+# Finally, you are allowed to use the same DataBlock reference for every
+# table or you you may use a seperate DataBlock for each table. This depends
+# if you would like functions to be able to access and modify the same data
+# or not::
+#
+#     block = ModbusSequentialDataBlock(0x00, [0]*0xff)
+#     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
 #---------------------------------------------------------------------------# 
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),

@@ -130,7 +130,9 @@ class ReadFileRecordRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        # do some new context operation here
+        # TODO do some new context operation here
+        # if file number, record number, or address + length
+        # is too big, return an error.
         files = []
         return ReadFileRecordResponse(files)
 
@@ -251,7 +253,9 @@ class WriteFileRecordRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        # do some new context operation here
+        # TODO do some new context operation here
+        # if file number, record number, or address + length
+        # is too big, return an error.
         return WriteFileRecordResponse(self.records)
 
 
@@ -351,7 +355,15 @@ class MaskWriteRegisterRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        # do some new context operation here
+        if not (0x0000 <= self.and_mask <= 0xffff):
+            return self.doException(merror.IllegalValue)
+        if not (0x0000 <= self.or_mask <= 0xffff):
+            return self.doException(merror.IllegalValue)
+        if not context.validate(self.function_code, self.address, 1):
+            return self.doException(merror.IllegalAddress)
+        values = context.getValues(self.function_code, self.address, 1)
+        values = ((values & self.and_mask) | self.or_mask)
+        context.setValues(self.function_code, self.address, [values])
         return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
 
 
@@ -434,8 +446,11 @@ class ReadFifoQueueRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
+        if not (0x0000 <= self.address <= 0xffff):
+            return self.doException(merror.IllegalValue)
         if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
+        # TODO pull the values from some context
         return ReadFifoQueueResponse(self.values)
 
 

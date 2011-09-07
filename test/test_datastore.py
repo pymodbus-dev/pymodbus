@@ -67,6 +67,8 @@ class ModbusDataStoreTest(unittest.TestCase):
         ''' Test the sequential data block store factory '''
         block = ModbusSequentialDataBlock.create()
         self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
+        block = ModbusSequentialDataBlock(0x00, 0x01)
+        self.assertEqual(block.values, [0x01])
 
     def testModbusSparseDataBlock(self):
         ''' Test a sparse data block store '''

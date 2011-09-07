@@ -223,6 +223,21 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(default, statistics.encode())
         self.assertEqual(default, self.control.Plus.encode())
 
+
+
+    def testModbusPlusStatisticsHelpers(self):
+        ''' Test modbus plus statistics helper methods '''
+        statistics = ModbusPlusStatistics()
+        summary = [
+             [0],[0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0],[0],
+             [0,0,0,0,0,0,0,0],[0],[0],[0],[0],[0,0],[0],[0],[0],[0],
+             [0],[0],[0],[0,0],[0],[0],[0],[0],[0,0,0,0,0,0,0,0],[0],
+             [0,0,0,0,0,0,0,0],[0,0],[0],[0,0,0,0,0,0,0,0],
+             [0,0,0,0,0,0,0,0],[0],[0],[0,0],[0],[0],[0],[0],[0,0],
+             [0],[0],[0],[0],[0],[0,0],[0],[0,0,0,0,0,0,0,0]]
+        self.assertEqual(summary, statistics.summary())
+        self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

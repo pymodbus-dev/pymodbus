@@ -29,9 +29,11 @@ class SimpleFactoryTest(unittest.TestCase):
                 (0x0f, '\x0f\x00\x01\x00\x08\x01\x00\xff'),           # write multiple coils
                 (0x10, '\x10\x00\x01\x00\x02\x04\0xff\xff'),          # write multiple registers
                 (0x11, '\x11'),                                       # report slave id
-                #(0x14, '\x14'),                                      # read file record
-                #(0x15, '\x15'),                                      # write file record
-                (0x16, '\x16\x00\x01\x00\xff\xff\x00'),              # mask write register
+                (0x14, '\x14\x0e\x06\x00\x04\x00\x01\x00\x02' \
+                       '\x06\x00\x03\x00\x09\x00\x02'),               # read file record
+                (0x15, '\x15\x0d\x06\x00\x04\x00\x07\x00\x03' \
+                       '\x06\xaf\x04\xbe\x10\x0d'),                   # write file record
+                (0x16, '\x16\x00\x01\x00\xff\xff\x00'),               # mask write register
                 (0x17, '\x17\x00\x01\x00\x01\x00\x01\x00\x01\x02\x12\x34'),# read/write multiple registers
                 (0x18, '\x18\x00\x01'),                               # read fifo queue
                 #(0x2b, '\x2b\x0e\x01\x00'),                          # read device identification
@@ -51,9 +53,11 @@ class SimpleFactoryTest(unittest.TestCase):
                 (0x0f, '\x0f\x00\x01\x00\x08'),                       # write multiple coils
                 (0x10, '\x10\x00\x01\x00\x02'),                       # write multiple registers
                 (0x11, '\x11\x03\x05\x01\x54'),                       # report slave id (device specific)
-                #(0x14, '\x14'),                                      # read file record
-                #(0x15, '\x15'),                                      # write file record
-                (0x16, '\x16\x00\x01\x00\xff\xff\x00'),              # mask write register
+                (0x14, '\x14\x0c\x05\x06\x0d\xfe\x00\x20\x05' \
+                       '\x06\x33\xcd\x00\x40'),                       # read file record
+                (0x15, '\x15\x0d\x06\x00\x04\x00\x07\x00\x03' \
+                       '\x06\xaf\x04\xbe\x10\x0d'),                   # write file record
+                (0x16, '\x16\x00\x01\x00\xff\xff\x00'),               # mask write register
                 (0x17, '\x17\x02\x12\x34'),                           # read/write multiple registers
                 (0x18, '\x18\x00\x01\x00\x01\x00\x00'),               # read fifo queue
                 #(0x2b, '\x2b\x0e\x01\x01\0x00\0x00\x01\x00\x01\x77'),# read device identification

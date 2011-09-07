@@ -13,29 +13,46 @@ from pymodbus.pdu import ModbusExceptions as merror
 #---------------------------------------------------------------------------#
 # File Record Types
 #---------------------------------------------------------------------------#
-class FileRecordRequest(object):
-    ''' Represents a file record read request
+class FileRecord(object):
+    ''' Represents a file record and its relevant data.
     '''
 
     def __init__(self, **kwargs):
         ''' Initializes a new instance
+
+        :params reference_type: Defaults to 0x06 (must be)
+        :params file_number: Indicates which file number we are reading
+        :params record_number: Indicates which record in the file
+        :params record_data: The actual data of the record
+        :params record_length: The length in registers of the record
+        :params response_length: The length in bytes of the record
         '''
-        self.reference_type = kwargs.get('reference_type', 0x06)
-        self.file_number    = kwargs.get('file_number', 0x00)
-        self.record_number  = kwargs.get('record_number', 0x00)
-        self.record_length  = kwargs.get('record_length', 0x00)
+        self.reference_type  = kwargs.get('reference_type', 0x06)
+        self.file_number     = kwargs.get('file_number', 0x00)
+        self.record_number   = kwargs.get('record_number', 0x00)
+        self.record_data     = kwargs.get('record_data', '')
+        self.record_length   = kwargs.get('record_length',   len(self.record_data) / 2)
+        self.response_length = kwargs.get('response_length', len(self.record_data) + 1)
 
-
-class FileRecordResponse(object):
-    ''' Represents a file record read response
-    '''
-
-    def __init__(self, **kwargs):
-        ''' Initializes a new instance
+    def __eq__(self, relf):
+        ''' Compares the left object to the right
         '''
-        self.reference_type = kwargs.get('reference_type', 0x06)
-        self.record_data    = kwargs.get('record_number', 0x00)
-        self.record_length  = kwargs.get('record_length', 0x00)
+        return self.reference_type == relf.reference_type \
+           and self.file_number    == relf.file_number    \
+           and self.record_number  == relf.record_number  \
+           and self.record_length  == relf.record_length  \
+           and self.record_data    == relf.record_data
+
+    def __ne__(self, relf):
+        ''' Compares the left object to the right
+        '''
+        return not self.__eq__(relf)
+
+    def __repr__(self):
+        ''' Gives a representation of the file record
+        '''
+        params = (self.file_number, self.record_number, self.record_length)
+        return 'FileRecord(file=%d, record=%d, length=%d)' % params
 
 
 #---------------------------------------------------------------------------#
@@ -73,6 +90,16 @@ class ReadFileRecordRequest(ModbusRequest):
         ModbusRequest.__init__(self)
         self.records  = records or []
 
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        ''' Calculates the size of the message
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        '''
+        byte_count = struct.unpack('B', buffer[0])[0]
+        return byte_count
+
     def encode(self):
         ''' Encodes the request packet
 
@@ -93,7 +120,7 @@ class ReadFileRecordRequest(ModbusRequest):
         byte_count = struct.unpack('B', data[0])[0]
         for count in xrange(1, byte_count, 7):
             decoded = struct.unpack('>BHHH', data[count:count+7])
-            record  = FileRecordRequest(file_number=decoded[1],
+            record  = FileRecord(file_number=decoded[1],
                 record_number=decoded[2], record_length=decoded[3])
             if decoded[0] == 0x06: self.records.append(record)
 
@@ -125,12 +152,22 @@ class ReadFileRecordResponse(ModbusResponse):
         ModbusResponse.__init__(self)
         self.records = records or []
 
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        ''' Calculates the size of the message
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        '''
+        byte_count = struct.unpack('B', buffer[0])[0]
+        return byte_count
+
     def encode(self):
         ''' Encodes the response
 
         :returns: The byte encoded message
         '''
-        total  = sum(record.record_length for record in self.records)
+        total  = sum(record.response_length + 1 for record in self.records)
         packet = struct.pack('B', total)
         for record in self.records:
             packet += struct.pack('>BB', 0x06, record.record_length)
@@ -145,15 +182,19 @@ class ReadFileRecordResponse(ModbusResponse):
         count, self.records = 1, []
         byte_count = struct.unpack('B', data[0])[0]
         while count < byte_count:
-            record_length, reference_type = struct.unpack('>BB', data[count:count+2])
-            count += record_length
-            record = FileRecordResponse(record_length=record_length,
-                record_data=data[count - record_length:count])
+            response_length, reference_type = struct.unpack('>BB', data[count:count+2])
+            count += response_length + 1 # the count is not included
+            record = FileRecord(response_length=response_length,
+                record_data=data[count - response_length + 1:count])
             if reference_type == 0x06: self.records.append(record)
 
 
 class WriteFileRecordRequest(ModbusRequest):
     '''
+    This function code is used to perform a file record write. All
+    request data lengths are provided in terms of number of bytes
+    and all record lengths are provided in terms of the number of 16
+    bit words.
     '''
     function_code = 0x15
 
@@ -165,15 +206,27 @@ class WriteFileRecordRequest(ModbusRequest):
         ModbusRequest.__init__(self)
         self.records  = records or []
 
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        ''' Calculates the size of the message
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        '''
+        total_length = struct.unpack('B', buffer[0])[0]
+        return total_length
+
     def encode(self):
         ''' Encodes the request packet
 
         :returns: The byte encoded packet
         '''
-        packet = struct.pack('B', len(self.records) * 7)
+        total_length = sum((record.record_length * 2) + 7 for record in self.records)
+        packet = struct.pack('B', total_length)
         for record in self.records:
             packet += struct.pack('>BHHH', 0x06, record.file_number,
                 record.record_number, record.record_length)
+            packet += record.record_data
         return packet
 
     def decode(self, data):
@@ -181,9 +234,16 @@ class WriteFileRecordRequest(ModbusRequest):
 
         :param data: The data to decode into the address
         '''
-        self.records = []
+        count, self.records = 1, []
         byte_count = struct.unpack('B', data[0])[0]
-        # todo, decode records
+        while count < byte_count:
+            decoded = struct.unpack('>BHHH', data[count:count+7])
+            response_length = decoded[3] * 2
+            count  += response_length + 7
+            record  = FileRecord(record_length=decoded[3],
+                file_number=decoded[1], record_number=decoded[2],
+                record_data=data[count - response_length:count])
+            if decoded[0] == 0x06: self.records.append(record)
 
     def execute(self, context):
         ''' Run the write file record request against the context
@@ -192,37 +252,61 @@ class WriteFileRecordRequest(ModbusRequest):
         :returns: The populated response
         '''
         # do some new context operation here
-        files = []
-        return WriteFileRecordResponse(files)
+        return WriteFileRecordResponse(self.records)
 
 
 class WriteFileRecordResponse(ModbusResponse):
     '''
+    The normal response is an echo of the request.
     '''
     function_code = 0x15
-    _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000):
+    def __init__(self, records=None):
         ''' Initializes a new instance
 
-        :param address: The mask pointer address (0x0000 to 0xffff)
+        :param records: The file record requests to be read
         '''
         ModbusResponse.__init__(self)
-        pass
+        self.records  = records or []
+
+    @classmethod
+    def calculateRtuFrameSize(cls, buffer):
+        ''' Calculates the size of the message
+
+        :param buffer: A buffer containing the data that have been received.
+        :returns: The number of bytes in the response.
+        '''
+        total_length = struct.unpack('B', buffer[0])[0]
+        return total_length
 
     def encode(self):
         ''' Encodes the response
 
         :returns: The byte encoded message
         '''
-        pass
+        total_length = sum((record.record_length * 2) + 7 for record in self.records)
+        packet = struct.pack('B', total_length)
+        for record in self.records:
+            packet += struct.pack('>BHHH', 0x06, record.file_number,
+                record.record_number, record.record_length)
+            packet += record.record_data
+        return packet
 
     def decode(self, data):
-        ''' Decodes a the response
+        ''' Decodes the incoming request
 
-        :param data: The packet data to decode
+        :param data: The data to decode into the address
         '''
-        pass
+        count, self.records = 1, []
+        byte_count = struct.unpack('B', data[0])[0]
+        while count < byte_count:
+            decoded = struct.unpack('>BHHH', data[count:count+7])
+            response_length = decoded[3] * 2
+            count  += response_length + 7
+            record  = FileRecord(record_length=decoded[3],
+                file_number=decoded[1], record_number=decoded[2],
+                record_data=data[count - response_length:count])
+            if decoded[0] == 0x06: self.records.append(record)
 
 
 class MaskWriteRegisterRequest(ModbusRequest):
@@ -369,7 +453,7 @@ class ReadFifoQueueResponse(ModbusResponse):
 
     @classmethod
     def calculateRtuFrameSize(cls, buffer):
-        ''' Calculates the size of a response containing a FIFO queue.
+        ''' Calculates the size of the message
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
@@ -412,6 +496,7 @@ class ReadFifoQueueResponse(ModbusResponse):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
+    "FileRecord",
     "ReadFileRecordRequest", "ReadFileRecordResponse",
     "WriteFileRecordRequest", "WriteFileRecordResponse",
     "MaskWriteRegisterRequest", "MaskWriteRegisterResponse",

@@ -151,7 +151,8 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         '''
-        self.address, self.count, self.byte_count = struct.unpack('>HHB', data[:5])
+        self.address, self.count, \
+        self.byte_count = struct.unpack('>HHB', data[:5])
         self.values = []  # reset
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])

@@ -242,6 +242,69 @@ class ModbusBitMessageTests(unittest.TestCase):
         size    = handle.calculateRtuFrameSize(request)
         self.assertEqual(size, 0x0d)
 
+    #-----------------------------------------------------------------------#
+    # Mask Write Register Request
+    #-----------------------------------------------------------------------#
+
+    def testMaskWriteRegisterRequestEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
+        result  = handle.encode()
+        self.assertEqual(result, '\x00\x00\x01\x01\x10\x10')
+
+    def testMaskWriteRegisterRequestDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        request = '\x00\x04\x00\xf2\x00\x25'
+        handle  = MaskWriteRegisterRequest()
+        handle.decode(request)
+        self.assertEqual(handle.address, 0x0004)
+        self.assertEqual(handle.and_mask, 0x00f2)
+        self.assertEqual(handle.or_mask, 0x0025)
+
+    def testMaskWriteRegisterRequestExecute(self):
+        ''' Test write register request valid execution '''
+        context = MockContext(valid=True, default=0x0000)
+        handle  = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
+        result  = handle.execute(context)
+        self.assertTrue(isinstance(result, MaskWriteRegisterResponse))
+
+    def testMaskWriteRegisterRequestInvalidExecute(self):
+        ''' Test write register request execute with invalid data '''
+        context = MockContext(valid=False, default=0x0000)
+        handle  = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
+        result  = handle.execute(context)
+        self.assertEqual(ModbusExceptions.IllegalValue,
+                result.exception_code)
+
+        handle  = MaskWriteRegisterRequest(0x0000, 0x0101, -1)
+        result  = handle.execute(context)
+        self.assertEqual(ModbusExceptions.IllegalValue,
+                result.exception_code)
+
+        handle  = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
+        result  = handle.execute(context)
+        self.assertEqual(ModbusExceptions.IllegalAddress,
+                result.exception_code)
+
+    #-----------------------------------------------------------------------#
+    # Mask Write Register Response
+    #-----------------------------------------------------------------------#
+
+    def testMaskWriteRegisterResponseEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
+        result  = handle.encode()
+        self.assertEqual(result, '\x00\x00\x01\x01\x10\x10')
+
+    def testMaskWriteRegisterResponseDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        request = '\x00\x04\x00\xf2\x00\x25'
+        handle  = MaskWriteRegisterResponse()
+        handle.decode(request)
+        self.assertEqual(handle.address, 0x0004)
+        self.assertEqual(handle.and_mask, 0x00f2)
+        self.assertEqual(handle.or_mask, 0x0025)
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

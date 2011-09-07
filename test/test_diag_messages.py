@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.exceptions import *
+from pymodbus.constants import ModbusPlusOperation
 from pymodbus.diag_message import *
 from pymodbus.diag_message import DiagnosticStatusRequest
 from pymodbus.diag_message import DiagnosticStatusResponse
@@ -115,7 +116,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         message = ReturnQueryDataResponse(0x0000)
         self.assertEqual(message.encode(), '\x00\x00\x00\x00');
 
-    def testtRestartCommunicationsOption(self):
+    def testRestartCommunicationsOption(self):
         ''' Testing diagnostic message execution '''
         request = RestartCommunicationsOptionRequest(True);
         self.assertEqual(request.encode(), '\x00\x01\xff\x00')
@@ -126,6 +127,16 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(response.encode(), '\x00\x01\xff\x00')
         response = RestartCommunicationsOptionResponse(False);
         self.assertEqual(response.encode(), '\x00\x01\x00\x00')
+
+    def testGetClearModbusPlusRequestExecute(self):
+        ''' Testing diagnostic message execution '''
+        request = GetClearModbusPlusRequest(ModbusPlusOperation.ClearStatistics);
+        response = request.execute()
+        self.assertEqual(response.message, None)
+
+        request = GetClearModbusPlusRequest(ModbusPlusOperation.GetStatistics);
+        response = request.execute()
+        self.assertEqual(response.message, [0x00] * 55)
 
 #---------------------------------------------------------------------------#
 # Main

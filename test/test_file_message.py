@@ -58,6 +58,16 @@ class ModbusBitMessageTests(unittest.TestCase):
         result  = handle.execute(context)
         self.assertTrue(isinstance(result, ReadFifoQueueResponse))
 
+        handle.address = -1
+        result  = handle.execute(context)
+        self.assertEqual(ModbusExceptions.IllegalValue,
+                result.exception_code)
+
+        handle.values = [0x00]*33
+        result  = handle.execute(context)
+        self.assertEqual(ModbusExceptions.IllegalValue,
+                result.exception_code)
+
     def testReadFifoQueueRequestError(self):
         ''' Test basic bit message encoding/decoding '''
         context = MockContext()
@@ -103,10 +113,15 @@ class ModbusBitMessageTests(unittest.TestCase):
         record2 = FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x0a\x0e\x04')
         record3 = FileRecord(file_number=0x02, record_number=0x03, record_data='\x00\x01\x02\x04')
         record4 = FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x01\x02\x04')
+        self.assertTrue(record1 == record4)
+        self.assertTrue(record1 != record2)
         self.assertNotEqual(record1, record2)
         self.assertNotEqual(record1, record3)
         self.assertNotEqual(record2, record3)
         self.assertEqual(record1, record4)
+        self.assertEqual(str(record1), "FileRecord(file=1, record=2, length=2)")
+        self.assertEqual(str(record2), "FileRecord(file=1, record=2, length=2)")
+        self.assertEqual(str(record3), "FileRecord(file=2, record=3, length=2)")
 
     #-----------------------------------------------------------------------#
     # Read File Record Request
@@ -163,7 +178,7 @@ class ModbusBitMessageTests(unittest.TestCase):
     def testReadFileRecordResponseRtuFrameSize(self):
         ''' Test basic bit message encoding/decoding '''
         request = '\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40'
-        handle  = ReadFileRecordRequest()
+        handle  = ReadFileRecordResponse()
         size    = handle.calculateRtuFrameSize(request)
         self.assertEqual(size, 0x0c)
 
@@ -223,7 +238,7 @@ class ModbusBitMessageTests(unittest.TestCase):
     def testWriteFileRecordResponseRtuFrameSize(self):
         ''' Test write file record response rtu frame size calculation '''
         request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
-        handle  = WriteFileRecordRequest()
+        handle  = WriteFileRecordResponse()
         size    = handle.calculateRtuFrameSize(request)
         self.assertEqual(size, 0x0d)
 

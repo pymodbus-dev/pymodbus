@@ -1,35 +1,36 @@
 Name                              Stmts   Exec  Cover   Missing
 ---------------------------------------------------------------
-pymodbus                             12     12   100%   
+pymodbus                             15     13    86%   36-37
 pymodbus.bit_read_message            68     68   100%   
-pymodbus.bit_write_message           94     94   100%   
+pymodbus.bit_write_message           95     95   100%   
 pymodbus.client                       1      1   100%   
 pymodbus.client.common               44     44   100%   
-pymodbus.client.sync                154     61    39%   38-57, 64, 71-73, 99, 104, 112, 120, 130-132, 142-144, 148, 152, 159, 184-194, 199-201, 209-211, 219, 226, 251-258, 263, 271-273, 281, 288, 308-317, 326-330, 337-345, 350-352, 360-362, 370, 377
-pymodbus.constants                   21     21   100%   
+pymodbus.client.sync                154     89    57%   54-57, 101, 106, 114, 122, 134, 144-146, 150, 154, 161, 193-196, 202-204, 214, 229, 255-262, 267, 275-277, 285, 292, 313-322, 331-335, 342-350, 355-357, 365-367, 375, 382
+pymodbus.constants                   27     27   100%   
 pymodbus.datastore                    5      5   100%   
-pymodbus.datastore.context           47     47   100%   
+pymodbus.datastore.context           49     49   100%   
 pymodbus.datastore.remote            31     31   100%   
-pymodbus.datastore.store             63     63   100%   
-pymodbus.device                     128    128   100%   
-pymodbus.diag_message               186    186   100%   
+pymodbus.datastore.store             67     67   100%   
+pymodbus.device                     148    148   100%   
+pymodbus.diag_message               202    202   100%   
 pymodbus.events                      60     60   100%   
 pymodbus.exceptions                  22     22   100%   
 pymodbus.factory                     56     56   100%   
-pymodbus.file_message                41     41   100%   
+pymodbus.file_message               178    178   100%   
 pymodbus.interfaces                  43     43   100%   
 pymodbus.internal                     1      1   100%   
-pymodbus.other_message              143    143   100%   
-pymodbus.pdu                         65     65   100%   
+pymodbus.other_message              145    145   100%   
+pymodbus.payload                     97     97   100%   
+pymodbus.pdu                         66     66   100%   
 pymodbus.register_read_message      124    124   100%   
-pymodbus.register_write_message      88     88   100%   
+pymodbus.register_write_message      87     87   100%   
 pymodbus.server                       0      0   100%   
-pymodbus.transaction                257    202    78%   49-61, 226-236, 404-413, 545-554, 623, 699-708, 733
+pymodbus.transaction                263    217    82%   50-63, 235, 239, 379, 409-418, 553-561, 709-716, 718, 743-744
 pymodbus.utilities                   67     67   100%   
 pymodbus.version                     13     13   100%   
 ---------------------------------------------------------------
-TOTAL                              1834   1686    91%   
+TOTAL                              2128   2015    94%   
 ----------------------------------------------------------------------
-Ran 154 tests in 0.292s
+Ran 181 tests in 0.391s
 
 OK

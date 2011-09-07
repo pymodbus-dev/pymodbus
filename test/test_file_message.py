@@ -86,6 +86,147 @@ class ModbusBitMessageTests(unittest.TestCase):
         result  = ReadFifoQueueResponse.calculateRtuFrameSize(message)
         self.assertEqual(result, 14)
 
+    #-----------------------------------------------------------------------#
+    # File Record
+    #-----------------------------------------------------------------------#
+
+    def testFileRecordLength(self):
+        ''' Test file record length generation '''
+        record = FileRecord(file_number=0x01, record_number=0x02,
+            record_data='\x00\x01\x02\x04')
+        self.assertEqual(record.record_length, 0x02)
+        self.assertEqual(record.response_length, 0x05)
+
+    def testFileRecordComapre(self):
+        ''' Test file record comparison operations '''
+        record1 = FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x01\x02\x04')
+        record2 = FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x0a\x0e\x04')
+        record3 = FileRecord(file_number=0x02, record_number=0x03, record_data='\x00\x01\x02\x04')
+        record4 = FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x01\x02\x04')
+        self.assertNotEqual(record1, record2)
+        self.assertNotEqual(record1, record3)
+        self.assertNotEqual(record2, record3)
+        self.assertEqual(record1, record4)
+
+    #-----------------------------------------------------------------------#
+    # Read File Record Request
+    #-----------------------------------------------------------------------#
+
+    def testReadFileRecordRequestEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        records = [FileRecord(file_number=0x01, record_number=0x02)]
+        handle  = ReadFileRecordRequest(records)
+        result  = handle.encode()
+        self.assertEqual(result, '\x07\x06\x00\x01\x00\x02\x00\x00')
+
+    def testReadFileRecordRequestDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        record  = FileRecord(file_number=0x04, record_number=0x01, record_length=0x02)
+        request = '\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02'
+        handle  = ReadFileRecordRequest()
+        handle.decode(request)
+        self.assertEqual(handle.records[0], record)
+
+    def testReadFileRecordRequestRtuFrameSize(self):
+        ''' Test basic bit message encoding/decoding '''
+        request = '\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02'
+        handle  = ReadFileRecordRequest()
+        size    = handle.calculateRtuFrameSize(request)
+        self.assertEqual(size, 0x0e)
+
+    def testReadFileRecordRequestExecute(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = ReadFileRecordRequest()
+        result  = handle.execute(None)
+        self.assertTrue(isinstance(result, ReadFileRecordResponse))
+
+    #-----------------------------------------------------------------------#
+    # Read File Record Response
+    #-----------------------------------------------------------------------#
+
+    def testReadFileRecordResponseEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        records = [FileRecord(record_data='\x00\x01\x02\x03')]
+        handle  = ReadFileRecordResponse(records)
+        result  = handle.encode()
+        self.assertEqual(result, '\x06\x06\x02\x00\x01\x02\x03')
+
+    def testReadFileRecordResponseDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        record  = FileRecord(file_number=0x00, record_number=0x00,
+            record_data='\x0d\xfe\x00\x20')
+        request = '\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40'
+        handle  = ReadFileRecordResponse()
+        handle.decode(request)
+        self.assertEqual(handle.records[0], record)
+
+    def testReadFileRecordResponseRtuFrameSize(self):
+        ''' Test basic bit message encoding/decoding '''
+        request = '\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40'
+        handle  = ReadFileRecordRequest()
+        size    = handle.calculateRtuFrameSize(request)
+        self.assertEqual(size, 0x0c)
+
+    #-----------------------------------------------------------------------#
+    # Write File Record Request
+    #-----------------------------------------------------------------------#
+
+    def testWriteFileRecordRequestEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        records = [FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x01\x02\x03')]
+        handle  = WriteFileRecordRequest(records)
+        result  = handle.encode()
+        self.assertEqual(result, '\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03')
+
+    def testWriteFileRecordRequestDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        record  = FileRecord(file_number=0x04, record_number=0x07,
+            record_data='\x06\xaf\x04\xbe\x10\x0d')
+        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        handle  = WriteFileRecordRequest()
+        handle.decode(request)
+        self.assertEqual(handle.records[0], record)
+
+    def testWriteFileRecordRequestRtuFrameSize(self):
+        ''' Test write file record request rtu frame size calculation '''
+        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        handle  = WriteFileRecordRequest()
+        size    = handle.calculateRtuFrameSize(request)
+        self.assertEqual(size, 0x0d)
+
+    def testWriteFileRecordRequestExecute(self):
+        ''' Test basic bit message encoding/decoding '''
+        handle  = WriteFileRecordRequest()
+        result  = handle.execute(None)
+        self.assertTrue(isinstance(result, WriteFileRecordResponse))
+
+    #-----------------------------------------------------------------------#
+    # Write File Record Response
+    #-----------------------------------------------------------------------#
+
+    def testWriteFileRecordResponseEncode(self):
+        ''' Test basic bit message encoding/decoding '''
+        records = [FileRecord(file_number=0x01, record_number=0x02, record_data='\x00\x01\x02\x03')]
+        handle  = WriteFileRecordResponse(records)
+        result  = handle.encode()
+        self.assertEqual(result, '\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03')
+
+    def testWriteFileRecordResponseDecode(self):
+        ''' Test basic bit message encoding/decoding '''
+        record  = FileRecord(file_number=0x04, record_number=0x07,
+            record_data='\x06\xaf\x04\xbe\x10\x0d')
+        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        handle  = WriteFileRecordResponse()
+        handle.decode(request)
+        self.assertEqual(handle.records[0], record)
+
+    def testWriteFileRecordResponseRtuFrameSize(self):
+        ''' Test write file record response rtu frame size calculation '''
+        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        handle  = WriteFileRecordRequest()
+        size    = handle.calculateRtuFrameSize(request)
+        self.assertEqual(size, 0x0d)
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

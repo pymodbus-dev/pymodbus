@@ -12,6 +12,21 @@ API Documentation
 
 .. automodule:: pymodbus.file_message
 
+.. autoclass:: FileRecord
+   :members:
+
+.. autoclass:: ReadFileRecordRequest
+   :members:
+
+.. autoclass:: ReadFileRecordResponse
+   :members:
+
+.. autoclass:: WriteFileRecordRequest
+   :members:
+
+.. autoclass:: WriteFileRecordResponse
+   :members:
+
 .. autoclass:: ReadFifoQueueRequest
    :members:
 

@@ -2,6 +2,7 @@
 Collection of transaction based abstractions
 '''
 import struct
+import socket
 from binascii import b2a_hex, a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
@@ -39,28 +40,41 @@ class ModbusTransactionManager(Singleton):
     __tid = Defaults.TransactionId
     __transactions = []
 
-    def __init__(self):
-        ''' Initializes an instance of the ModbusTransactionManager '''
-        pass
+    def __init__(self, client=None):
+        ''' Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        '''
+        self.client = client
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        import socket
+        def _set_result(message):
+            ''' a helper method so I can reuse the async framers'''
+            self.response = message
+
+        self.response = None
         retries = Defaults.Retries
-        request.transaction_id = self.__getNextTID()
+        request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
 
         while retries > 0:
             try:
-                self.socket.connect()
-                packet = self.framer.buildPacket(request)
-                self.socket.send(packet)
+                self.client.connect()
+                self.client._send(self.client.framer.buildPacket(request))
+                # I need to fix this to read the header and the result size,
+                # as this may not read the full result set, but right now
+                # it should be fine...
+                result = self.client._recv(1024)
+                self.client.framer.processIncomingPacket(result, _set_result)
+                break;
             except socket.error, msg:
-                self.socket.close()
+                self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
+        return self.response
 
     def addTransaction(self, request):
         ''' Adds a transaction to the handler

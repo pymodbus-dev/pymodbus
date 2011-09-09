@@ -2,24 +2,41 @@
 Implementation of a Modbus Client Using Twisted
 --------------------------------------------------
 
-Example Run::
+Example run::
 
+    from twisted.internet import reactor, protocol
+    from pymodbus.client.async import ModbusClientProtocol
+
+    def printResult(result):
+        print "Result: %d" % result.bits[0]
+
+    def process(client):
+        result = client.write_coil(1, True)
+        result.addCallback(printResult)
+        reactor.callLater(1, reactor.stop)
+
+    defer = protocol.ClientCreator(reactor, ModbusClientProtocol
+            ).connectTCP("localhost", 502)
+    defer.addCallback(process)
+
+Another example::
+
+    from twisted.internet import reactor
     from pymodbus.client.async import ModbusClientFactory
-    from pymodbus.bit_read_message import ReadCoilsRequest
 
-    def clientTest():
-        requests = [ ReadCoilsRequest(0,99) ]
-        p = reactor.connectTCP("localhost", 502, ModbusClientFactory(requests))
+    def process():
+        factory = reactor.connectTCP("localhost", 502, ModbusClientFactory())
+        reactor.stop()
 
     if __name__ == "__main__":
-       reactor.callLater(1, clientTest)
+       reactor.callLater(1, process)
        reactor.run()
 """
 from collections import deque
 from twisted.internet import defer, protocol
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTransactionManager
 from pymodbus.client.common import ModbusClientMixin
 
 #---------------------------------------------------------------------------#
@@ -28,16 +45,20 @@ from pymodbus.client.common import ModbusClientMixin
 import logging
 _logger = logging.getLogger(__name__)
 
+#---------------------------------------------------------------------------#
+# A manager for the transaction identifiers
+#---------------------------------------------------------------------------#
+_manager = ModbusTransactionManager()
+
 
 #---------------------------------------------------------------------------#
-# Client Protocols
+# Connected Client Protocols
 #---------------------------------------------------------------------------#
 class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     '''
     This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     '''
-    __tid = 0
 
     def __init__(self, framer=None):
         ''' Initializes the framer module
@@ -67,26 +88,21 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        self.framer.processIncomingPacket(data, self._callback)
+        def _callback(reply): # todo errback/callback
+            if self._requests:
+                self._requests.popleft().callback(reply)
+
+        self.framer.processIncomingPacket(data, _callback)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        request.transaction_id = self.__getNextTID()
+        request.transaction_id = _manager.getNextTID()
         #self.handler[request.transaction_id] = request
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
         return self._buildResponse()
-
-    def _callback(self, reply):
-        ''' The callback to call with the response message
-
-        :param reply: The decoded response message
-        '''
-        # todo errback/callback
-        if self._requests:
-            self._requests.popleft().callback(reply)
 
     def _buildResponse(self):
         ''' Helper method to return a deferred response
@@ -101,19 +117,6 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         self._requests.append(d)
         return d
 
-    def __getNextTID(self):
-        ''' Used to retrieve the next transaction id
-        :return: The next unique transaction id
-
-        As the transaction identifier is represented with two
-        bytes, the highest TID is 0xffff
-
-        ..todo:: Remove this and use the transaction manager
-        '''
-        tid = (ModbusClientProtocol.__tid + 1) & 0xffff
-        ModbusClientProtocol.__tid = tid
-        return tid
-
     #----------------------------------------------------------------------#
     # Extra Functions
     #----------------------------------------------------------------------#
@@ -121,6 +124,56 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     #       if self.retry > 0:
     #               deferLater(clock, self.delay, send, message)
     #               self.retry -= 1
+
+#---------------------------------------------------------------------------#
+# Not Connected Client Protocol
+#---------------------------------------------------------------------------#
+class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
+    '''
+    This represents the base modbus client protocol.  All the application
+    layer code is deferred to a higher level wrapper.
+    '''
+    __tid = 0
+
+    def __init__(self, framer=None):
+        ''' Initializes the framer module
+
+        :param framer: The framer to use for the protocol
+        '''
+        self.framer = framer or ModbusSocketFramer(ClientDecoder())
+        self._requests = deque()  # link queue to tid
+
+    def datagramReceived(self, data, (host, port)):
+        ''' Get response, check for valid message, decode result
+
+        :param data: The data returned from the server
+        '''
+        def _callback(reply): # todo errback/callback
+            if self._requests:
+                self._requests.popleft().callback(reply)
+
+        _logger.debug("Datagram from: %s:%d" % (host, port))
+        self.framer.processIncomingPacket(data, _callback)
+
+    def execute(self, request):
+        ''' Starts the producer to send the next request to
+        consumer.write(Frame(request))
+        '''
+        request.transaction_id = _manager.getNextTID()
+        #self.handler[request.transaction_id] = request
+        packet = self.framer.buildPacket(request)
+        self.transport.write(packet)
+        return self._buildResponse()
+
+    def _buildResponse(self):
+        ''' Helper method to return a deferred response
+        for the current request.
+
+        :returns: A defer linked to the latest request
+        '''
+        d = defer.Deferred()
+        self._requests.append(d)
+        return d
 
 
 #---------------------------------------------------------------------------#
@@ -135,5 +188,6 @@ class ModbusClientFactory(protocol.ReconnectingClientFactory):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
-    "ModbusClientProtocol", "ModbusClientFactory",
+    "ModbusClientProtocol", "ModbusUdpClientProtocol",
+    "ModbusClientFactory",
 ]

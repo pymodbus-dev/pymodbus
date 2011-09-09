@@ -14,7 +14,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
-from pymodbus.exceptions import ModbusException
+from pymodbus.exceptions import ModbusException, NotImplementedException
 from pymodbus.pdu import ModbusExceptions as merror
 
 #---------------------------------------------------------------------------#
@@ -25,9 +25,9 @@ _logger = logging.getLogger(__name__)
 
 
 #---------------------------------------------------------------------------#
-# Server
+# Protocol Handlers
 #---------------------------------------------------------------------------#
-class ModbusRequestHandler(SocketServer.BaseRequestHandler):
+class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
     ''' Implements the modbus server protocol
 
     This uses the socketserver.BaseRequestHandler to implement
@@ -48,6 +48,56 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
         _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
         self.server.threads.remove(self)
 
+    def execute(self, request):
+        ''' The callback to call with the resulting message
+
+        :param request: The decoded request message
+        '''
+        try:
+            context = self.server.context[request.unit_id]
+            response = request.execute(context)
+        except Exception, ex:
+            _logger.debug("Datastore unable to fulfill request %s" % ex)
+            response = request.doException(merror.SlaveFailure)
+        response.transaction_id = request.transaction_id
+        response.unit_id = request.unit_id
+        self.send(response)
+
+    def decode(self, message):
+        ''' Decodes a request packet
+
+        :param message: The raw modbus request packet
+        :returns: The decoded modbus message or None if error
+        '''
+        try:
+            return decodeModbusRequestPDU(message)
+        except ModbusException, er:
+            _logger.warn("Unable to decode request %s" % er)
+        return None
+
+    #---------------------------------------------------------------------------#
+    # Base class implementations
+    #---------------------------------------------------------------------------#
+    def handle(self):
+        ''' Callback when we receive any data
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
+
+    def send(self, message):
+        ''' Send a request (string) to the network
+
+        :param message: The unencoded modbus response
+        '''
+        raise NotImplementedException("Method not implemented by derived class")
+
+
+class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
+    ''' Implements the modbus server protocol
+
+    This uses the socketserver.BaseRequestHandler to implement
+    the client handler for a connected protocol (TCP).
+    '''
+
     def handle(self):
         ''' Callback when we receive any data
         '''
@@ -64,24 +114,6 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
                 self.running = False
             except: self.running = False
 
-#---------------------------------------------------------------------------#
-# Extra Helper Functions
-#---------------------------------------------------------------------------#
-    def execute(self, request):
-        ''' The callback to call with the resulting message
-
-        :param request: The decoded request message
-        '''
-        try:
-            context = self.server.context[request.unit_id]
-            response = request.execute(context)
-        except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request %s" % ex)
-            response = request.doException(merror.SlaveFailure)
-        response.transaction_id = request.transaction_id
-        response.unit_id = request.unit_id
-        self.send(response)
-
     def send(self, message):
         ''' Send a request (string) to the network
 
@@ -93,19 +125,46 @@ class ModbusRequestHandler(SocketServer.BaseRequestHandler):
             _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.send(pdu)
 
-    def decode(self, message):
-        ''' Decodes a request packet
 
-        :param message: The raw modbus request packet
-        :returns: The decoded modbus message or None if error
+class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
+    ''' Implements the modbus server protocol
+
+    This uses the socketserver.BaseRequestHandler to implement
+    the client handler for a disconnected protocol (UDP). The
+    only difference is that we have to specify who to send the
+    resulting packet data to.
+    '''
+
+    def handle(self):
+        ''' Callback when we receive any data
         '''
-        try:
-            return decodeModbusRequestPDU(message)
-        except ModbusException, er:
-            _logger.warn("Unable to decode request %s" % er)
-        return None
+        while self.running:
+            try:
+                data, self.request = self.request
+                if not data: self.running = False
+                _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                # if not self.server.control.ListenOnly:
+                self.framer.processIncomingPacket(data, self.execute)
+            except socket.timeout: pass
+            except socket.error, msg:
+                _logger.error("Socket error occurred %s" % msg)
+                self.running = False
+            except: self.running = False
 
+    def send(self, message):
+        ''' Send a request (string) to the network
 
+        :param message: The unencoded modbus response
+        '''
+        if message.should_respond:
+            #self.server.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.request.sendto(pdu, self.client_address)
+
+#---------------------------------------------------------------------------#
+# Server Implementations
+#---------------------------------------------------------------------------#
 class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     '''
     A modbus threaded tcp socket server
@@ -136,7 +195,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingTCPServer.__init__(self,
-            ("", Defaults.Port), ModbusRequestHandler)
+            ("", Defaults.Port), ModbusConnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -185,7 +244,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingUDPServer.__init__(self,
-            ("", Defaults.Port), ModbusRequestHandler)
+            ("", Defaults.Port), ModbusDisconnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -193,6 +252,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         :param request: The request to handle
         :param client: The address of the client
         '''
+        packet, socket = request # TODO I might have to rewrite
         _logger.debug("Started thread to serve client at " + str(client))
         SocketServer.ThreadingUDPServer.process_request(self, request, client)
 
@@ -266,7 +326,7 @@ class ModbusSerialServer(object):
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        handler = ModbusRequestHandler(request,
+        handler = ModbusConnectedRequestHandler(request,
             ('127.0.0.1', self.device), self)
         return handler
 

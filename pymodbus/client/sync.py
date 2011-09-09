@@ -5,7 +5,9 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import *
+from pymodbus.transaction import ModbusTransactionManager
+from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
+from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.client.common import ModbusClientMixin
 
 #---------------------------------------------------------------------------#
@@ -16,64 +18,8 @@ _logger = logging.getLogger(__name__)
 
 
 #---------------------------------------------------------------------------#
-# Client Producer/Consumer
+# The Synchronous Clients
 #---------------------------------------------------------------------------#
-class ModbusTransactionManager:
-    '''
-    This is a simply pull producer that feeds requests to the modbus client
-    '''
-
-    __tid = Defaults.TransactionId
-
-    def __init__(self, client):
-        ''' Sets up the producer to begin sending requests
-
-        :param client: The client socket wrapper
-        '''
-        self.client = client
-
-    def execute(self, request):
-        ''' Starts the producer to send the next request to
-        consumer.write(Frame(request))
-        '''
-        self.response = None
-        retries = Defaults.Retries
-        request.transaction_id = self.__getNextTID()
-        _logger.debug("Running transaction %d" % request.transaction_id)
-
-        while retries > 0:
-            try:
-                self.client.connect()
-                self.client._send(self.client.framer.buildPacket(request))
-                # I need to fix this to read the header and the result size,
-                # as this may not read the full result set, but right now
-                # it should be fine...
-                result = self.client._recv(1024)
-                self.client.framer.processIncomingPacket(result, self.__set_result)
-                break;
-            except socket.error, msg:
-                self.client.close()
-                _logger.debug("Transaction failed. (%s) " % msg)
-                retries -= 1
-        return self.response
-
-    def __set_result(self, message):
-        ''' Quick helper that lets me reuse the async framer
-
-        :param message: The decoded message
-        '''
-        self.response = message
-
-    def __getNextTID(self):
-        ''' Used internally to handle the transaction identifiers.
-        As the transaction identifier is represented with two
-        bytes, the highest TID is 0xffff
-        '''
-        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
-        ModbusTransactionManager.__tid = tid
-        return tid
-
-
 class BaseModbusClient(ModbusClientMixin):
     '''
     Inteface for a modbus synchronous client. Defined here are all the
@@ -103,7 +49,7 @@ class BaseModbusClient(ModbusClientMixin):
     def close(self):
         ''' Closes the underlying socket connection
         '''
-        raise NotImplementedException("Method not implemented by derived class")
+        pass
 
     def _send(self, request):
         ''' Sends data on the underlying socket
@@ -255,7 +201,7 @@ class ModbusUdpClient(BaseModbusClient):
         if self.socket: return True
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            #self.socket.bind(('localhost', Defaults.Port))
+            #self.socket.bind((self.host, self.port))
         except socket.error, ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()

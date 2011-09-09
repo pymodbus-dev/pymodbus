@@ -1,0 +1,44 @@
+#!/bin/bash
+#------------------------------------------------------------ #
+# setup
+#------------------------------------------------------------ #
+export JAVA_HOME="/usr"
+export ROOT="org.pymodbus"
+export ARGUMENTS="-Dnet.wimpi.modbus.debug=true"
+export CLASSPATH="-cp ../jar/jamod-pymodbus.jar"
+export JAVA="java ${ARGUMENTS} ${CLASSPATH}"
+
+#------------------------------------------------------------ #
+# script runner
+#------------------------------------------------------------ #
+case "$1" in 
+
+  #---------------------------------------------------------- #
+  # run the tcp slave implementation
+  #---------------------------------------------------------- #
+  tcp) ${JAVA} ${ROOT}.ModbusTcpSlave
+  ;;
+
+  #---------------------------------------------------------- #
+  # run the udp slave implementation
+  #---------------------------------------------------------- #
+  udp) ${JAVA} ${ROOT}.ModbusUdpSlave
+  ;;
+
+  #---------------------------------------------------------- #
+  # run the serial slave implementation
+  #---------------------------------------------------------- #
+  serial) ${JAVA} ${ROOT}.ModbusSerialSlave /dev/tty0
+  ;;
+
+  #---------------------------------------------------------- #
+  # script help
+  #---------------------------------------------------------- #
+  *)
+      echo "Usage: serial|udp|tcp"
+      exit 1
+  ;;
+
+esac
+
+exit 0

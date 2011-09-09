@@ -17,6 +17,12 @@
   </path>
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- initialization step -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <target name="init" description="initializes the build" >
+  </target>
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <!-- compiles all the samples -->
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <target name="compile" depends="init" description="compiles all the samples" >
@@ -30,9 +36,7 @@
   <target name="jar" depends="compile" description="generate the distribution" >
     <mkdir dir="${jar.dir}/"/>
     <jar jarfile="${jar.dir}/${ant.project.name}.jar" basedir="${build.dir}">
-      <manifest>
-      
-      </manifest>
+    <zipfileset src="${lib.dir}/jamod-1.2.jar" />
     </jar>
   </target>
 

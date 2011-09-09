@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-//package net.wimpi.modbus.cmd;
+package org.pymodbus;
 
 import java.net.InetAddress;
 

@@ -4,33 +4,37 @@ pymodbus                             15     13    86%   36-37
 pymodbus.bit_read_message            68     68   100%   
 pymodbus.bit_write_message           95     95   100%   
 pymodbus.client                       1      1   100%   
+pymodbus.client.async                59     28    47%   75-76, 83-84, 91-95, 101-105, 113-118, 143-144, 151-156, 162-166, 174-176
 pymodbus.client.common               44     44   100%   
-pymodbus.client.sync                154     61    39%   39-58, 65, 72-74, 101, 106, 114, 122, 132-134, 144-146, 150, 154, 161, 187-197, 202-204, 212-214, 222, 229, 255-262, 267, 275-277, 285, 292, 313-322, 331-335, 342-350, 355-357, 365-367, 375, 382
+pymodbus.client.sync                129    114    88%   135-138, 140-143, 205, 207-208, 289, 293-296
 pymodbus.constants                   27     27   100%   
 pymodbus.datastore                    5      5   100%   
 pymodbus.datastore.context           49     49   100%   
 pymodbus.datastore.remote            31     31   100%   
 pymodbus.datastore.store             67     67   100%   
 pymodbus.device                     148    148   100%   
-pymodbus.diag_message               202    201    99%   704
+pymodbus.diag_message               202    202   100%   
 pymodbus.events                      60     60   100%   
 pymodbus.exceptions                  22     22   100%   
 pymodbus.factory                     56     56   100%   
-pymodbus.file_message               189    177    93%   343, 358-367, 395
+pymodbus.file_message               189    189   100%   
 pymodbus.interfaces                  43     43   100%   
 pymodbus.internal                     1      1   100%   
+pymodbus.internal.ptwisted           26      7    26%   26-37, 47-55
 pymodbus.other_message              145    145   100%   
 pymodbus.payload                    107    107   100%   
 pymodbus.pdu                         66     66   100%   
 pymodbus.register_read_message      124    124   100%   
 pymodbus.register_write_message      87     87   100%   
 pymodbus.server                       0      0   100%   
-pymodbus.transaction                263    205    77%   50-63, 229-239, 379, 409-418, 553-562, 632, 709-718, 743-744
+pymodbus.server.async               104     32    30%   40-41, 48, 55-57, 64-73, 80-84, 108-115, 135-142, 149-153, 160-169, 177-180, 192-199, 208-214, 224-231
+pymodbus.server.sync                165     45    27%   40-43, 48-49, 56-64, 72-76, 84, 91, 104-115, 122-126, 141-152, 159-163, 188-197, 206-207, 212-214, 237-246, 255-257, 262-264, 287-303, 310-318, 326-331, 339-341, 346-347, 359-361, 370-372, 381-383
+pymodbus.transaction                269    238    88%   54-64, 66-72, 76-77, 243-245, 423-424, 431-432, 567-570, 574, 723-725, 732, 757
 pymodbus.utilities                   67     67   100%   
 pymodbus.version                     13     13   100%   
 ---------------------------------------------------------------
-TOTAL                              2149   1983    92%   
+TOTAL                              2484   2194    88%   
 ----------------------------------------------------------------------
-Ran 183 tests in 0.446s
+Ran 197 tests in 0.527s
 
 OK

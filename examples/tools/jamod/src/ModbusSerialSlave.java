@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-//package net.wimpi.modbus.cmd;
+package org.pymodbus;
 
 import net.wimpi.modbus.Modbus;
 import net.wimpi.modbus.ModbusCoupler;
@@ -24,14 +24,14 @@ import net.wimpi.modbus.util.SerialParameters;
 
 
 /**
- * Class implementing a simple Modbus slave.
+ * Class implementing a simple Modbus Serial slave.
  * A simple process image is available to test
  * functionality and behaviour of the implementation.
  *
- * @author Dieter Wimberger
+ * @author Galen Collins
  * @version @version@ (@date@)
  */
-public class SerialSlave {
+public class ModbusSerialSlave {
 
   public static void main(String[] args) {
 
@@ -39,7 +39,7 @@ public class SerialSlave {
     SimpleProcessImage spi = new SimpleProcessImage();
     String portname = args[0];
 
-    if (Modbus.debug) System.out.println("jModbus ModbusSerial Slave");
+    if (Modbus.debug) System.out.println("jModbus Modbus Serial Slave");
     
     try {
 

@@ -58,7 +58,13 @@ class Runner(object):
         self.__validate(rr, lambda r: r.registers == [10]*8)
         
     def testReadWriteRegistersTogether(self):
-        rq = self.client.readwrite_registers(1, 8, 1, [20]*8)
+        arguments = {
+            'read_address':    1,
+            'read_count':      8,
+            'write_address':   1,
+            'write_registers': [20]*8,
+        }
+        rq = self.client.readwrite_registers(**arguments)
         rr = self.client.read_input_registers(1,8)
         self.__validate(rq, lambda r: r.function_code < 0x80)
         self.__validate(rr, lambda r: r.registers == [20]*8)

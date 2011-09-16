@@ -21,6 +21,7 @@ from pymodbus.bit_write_message import *
 from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
+from pymodbus.mei_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
 
@@ -77,6 +78,8 @@ class ServerDecoder(IModbusDecoder):
             WriteFileRecordRequest,
             MaskWriteRegisterRequest,
             ReadFifoQueueRequest,
+
+            ReadDeviceInformationRequest,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
 
@@ -164,6 +167,8 @@ class ClientDecoder(IModbusDecoder):
             WriteFileRecordResponse,
             MaskWriteRegisterResponse,
             ReadFifoQueueResponse,
+
+            ReadDeviceInformationResponse,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
 

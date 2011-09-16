@@ -36,7 +36,7 @@ class SimpleFactoryTest(unittest.TestCase):
                 (0x16, '\x16\x00\x01\x00\xff\xff\x00'),               # mask write register
                 (0x17, '\x17\x00\x01\x00\x01\x00\x01\x00\x01\x02\x12\x34'),# read/write multiple registers
                 (0x18, '\x18\x00\x01'),                               # read fifo queue
-                #(0x2b, '\x2b\x0e\x01\x00'),                          # read device identification
+                (0x2b, '\x2b\x0e\x01\x00'),                           # read device identification
         )
 
         self.response = (
@@ -60,7 +60,7 @@ class SimpleFactoryTest(unittest.TestCase):
                 (0x16, '\x16\x00\x01\x00\xff\xff\x00'),               # mask write register
                 (0x17, '\x17\x02\x12\x34'),                           # read/write multiple registers
                 (0x18, '\x18\x00\x01\x00\x01\x00\x00'),               # read fifo queue
-                #(0x2b, '\x2b\x0e\x01\x01\0x00\0x00\x01\x00\x01\x77'),# read device identification
+                (0x2b, '\x2b\x0e\x01\x01\x00\x00\x01\x00\x01\x77'),   # read device identification
         )
 
         self.bad = (

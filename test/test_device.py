@@ -3,11 +3,19 @@ import unittest
 from pymodbus.device import *
 from pymodbus.exceptions import *
 from pymodbus.events import *
+from pymodbus.constants import DeviceInformation
 
+#---------------------------------------------------------------------------#
+# Fixture
+#---------------------------------------------------------------------------#
 class SimpleDataStoreTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.device module
     '''
+
+    #-----------------------------------------------------------------------#
+    # Setup/TearDown
+    #-----------------------------------------------------------------------#
 
     def setUp(self):
         self.info = {
@@ -43,6 +51,26 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(self.control.Identity.ProductName, 'pymodbus')
         self.assertEqual(self.control.Identity.ModelName, 'bashwork')
         self.assertEqual(self.control.Identity.UserApplicationName, 'unittest')
+
+    def testDeviceInformationFactory(self):
+        ''' Test device identification reading '''
+        self.control.Identity.update(self.ident)
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Specific, 0x00)
+        self.assertEqual(result[0x00], 'Bashwork')
+
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x00)
+        self.assertEqual(result[0x00], 'Bashwork')
+        self.assertEqual(result[0x01], 'PTM')
+        self.assertEqual(result[0x02], '1.0')
+
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x00)
+        self.assertEqual(result[0x00], 'Bashwork')
+        self.assertEqual(result[0x01], 'PTM')
+        self.assertEqual(result[0x02], '1.0')
+        self.assertEqual(result[0x03], 'http://internets.com')
+        self.assertEqual(result[0x04], 'pymodbus')
+        self.assertEqual(result[0x05], 'bashwork')
+        self.assertEqual(result[0x06], 'unittest')
 
     def testBasicCommands(self):
         ''' Test device identification reading '''

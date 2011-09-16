@@ -7,6 +7,7 @@ maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
 from itertools import izip
+from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
@@ -277,6 +278,51 @@ class ModbusDeviceIdentification(object):
     ModelName           = dict_property(lambda s: s.__data, 5)
     UserApplicationName = dict_property(lambda s: s.__data, 6)
 
+
+class DeviceInformationFactory(Singleton):
+    ''' This is a helper factory that really just hides
+    some of the complexity of processing the device information
+    requests (function code 0x2b 0x0e).
+    '''
+
+    __lookup = {
+        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, range(0x00, 0x03)), 
+        DeviceInformation.Regular:  lambda c,r,i: c.__gets(r, range(0x00, 0x08)),
+        DeviceInformation.Extended: lambda c,r,i: c.__gets(r, range(0x80, i)),
+        DeviceInformation.Specific: lambda c,r,i: c.__get(r, i),
+    }
+
+    @classmethod
+    def get(cls, control, read_code=DeviceInformation.Basic, object_id=0x00):
+        ''' Get the requested device data from the system
+
+        :param control: The control block to pull data from
+        :param read_code: The read code to process
+        :param object_id: The specific object_id to read
+        :returns: The requested data (id, length, value)
+        '''
+        identity = control.Identity
+        return cls.__lookup[read_code](cls, identity, object_id)
+
+    @classmethod
+    def __get(cls, identity, object_id):
+        ''' Read a single object_id from the device information
+
+        :param identity: The identity block to pull data from
+        :param object_id: The specific object id to read
+        :returns: The requested data (id, length, value)
+        '''
+        return { object_id:identity[object_id] }
+
+    @classmethod
+    def __gets(cls, identity, object_ids):
+        ''' Read multiple object_ids from the device information
+
+        :param identity: The identity block to pull data from
+        :param object_ids: The specific object ids to read
+        :returns: The requested data (id, length, value)
+        '''
+        return dict((id, identity[id]) for id in object_ids)
 
 #---------------------------------------------------------------------------#
 # Counters Handler
@@ -565,5 +611,6 @@ __all__ = [
         "ModbusAccessControl",
         "ModbusPlusStatistics",
         "ModbusDeviceIdentification",
+        "DeviceInformationFactory",
         "ModbusControlBlock"
 ]

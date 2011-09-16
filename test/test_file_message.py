@@ -2,6 +2,7 @@
 '''
 Bit Message Test Fixture
 --------------------------------
+
 This fixture tests the functionality of all the 
 bit based request/response messages:
 

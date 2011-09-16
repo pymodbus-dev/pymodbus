@@ -158,7 +158,57 @@ class ModbusPlusOperation(Singleton):
     ClearStatistics = 0x0004
 
 
+class DeviceInformation(Singleton):
+    ''' Represents what type of device information to read
+
+    .. attribute:: Basic
+
+       This is the basic (required) device information to be returned.
+       This includes VendorName, ProductCode, and MajorMinorRevision
+       code.
+
+    .. attribute:: Regular
+
+       In addition to basic data objects, the device provides additional
+       and optinoal identification and description data objects. All of
+       the objects of this category are defined in the standard but their
+       implementation is optional.
+
+    .. attribute:: Extended
+
+       In addition to regular data objects, the device provides additional
+       and optional identification and description private data about the
+       physical device itself. All of these data are device dependent.
+
+    .. attribute:: Specific
+
+       Request to return a single data object.
+    '''
+    Basic    = 0x01
+    Regular  = 0x02
+    Extended = 0x03
+    Specific = 0x04
+
+
+class MoreData(Singleton):
+    ''' Represents the more follows condition
+
+    .. attribute:: Nothing
+
+       This indiates that no more objects are going to be returned.
+
+    .. attribute:: KeepReading
+
+       This indicates that there are more objects to be returned.
+    '''
+    Nothing     = 0x00
+    KeepReading = 0xFF
+
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#
-__all__ = ["Defaults", "ModbusStatus", "Endian", "ModbusPlusOperation"]
+__all__ = [
+    "Defaults", "ModbusStatus", "Endian",
+    "ModbusPlusOperation",
+    "DeviceInformation", "MoreData",
+]

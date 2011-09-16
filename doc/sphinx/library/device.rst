@@ -21,5 +21,8 @@ API Documentation
 .. autoclass:: ModbusDeviceIdentification
    :members:
 
+.. autoclass:: DeviceInformationFactory
+   :members:
+
 .. autoclass:: ModbusControlBlock
    :members:

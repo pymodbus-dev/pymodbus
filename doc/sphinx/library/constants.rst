@@ -23,3 +23,9 @@ API Documentation
 
 .. autoclass:: ModbusPlusOperation
    :members:
+
+.. autoclass:: DeviceInformation
+   :members:
+
+.. autoclass:: MoreFollows
+   :members:

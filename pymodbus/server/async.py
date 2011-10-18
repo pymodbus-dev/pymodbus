@@ -37,7 +37,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         protocol __init__, the client connection made is essentially our
         __init__ method.
         '''
-        _logger.debug("Client Connected [%s]" % self.transport.getHost())
+        #_logger.debug("Client Connected [%s]" % self.transport.getHost())
         self.framer = self.factory.framer(decoder=self.factory.decoder)
 
     def connectionLost(self, reason):
@@ -224,10 +224,11 @@ def StartSerialServer(context, identity=None,
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
 
-    _logger.info("Starting Modbus Serial Server on %s" % kwargs['device'])
+    port = kwargs.get('port', '/dev/ttyS0')
+    _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity)
     protocol = factory.buildProtocol(None)
-    handle = SerialPort(protocol, kwargs['device'], reactor, Defaults.Baudrate)
+    handle = SerialPort(protocol, port, reactor, Defaults.Baudrate)
     reactor.run()
 
 #---------------------------------------------------------------------------#

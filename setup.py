@@ -61,6 +61,7 @@ setup(name  = 'pymodbus',
     ],
     extras_require = {
         'quality' : [ 'epydoc >= 3.4.1', 'coverage >= 3.3.1', 'pyflakes >= 0.4.0' ],
+        'twisted' : [ 'pyasn1 >= 0.0.13', 'pycrypto >= 2.3' ],
     },
     test_suite = 'nose.collector',
     cmdclass = command_classes,

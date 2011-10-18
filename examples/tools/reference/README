@@ -23,3 +23,11 @@ is the license that the binaries are released under.
    The enclosed binaries will only work on linux 2.6,
    however the site does provide binaries for a number of
    alternate systems as well.
+
+Code
+------------------------------------------------------------
+
+I believe that this is the code for the two supplied utilities:
+
+* http://www.modbusdriver.com/doc/libmbusslave/examples.html
+* http://dankohn.info/projects/Fieldpoint_module/fieldtalk/samples/diagslave/diagslave.cpp

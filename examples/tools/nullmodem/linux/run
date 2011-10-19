@@ -1,0 +1,19 @@
+#!/bin/bash
+# ------------------------------------------------------------ 
+# Install the module if we haven't already
+# ------------------------------------------------------------ 
+if [[ ! "`lsmod | grep tty0tty`" ]]; then
+    pushd .
+    cd module
+    make > /dev/null
+    insmod tty0tty.ko > /dev/null
+    popd
+fi
+
+# ------------------------------------------------------------ 
+# Start the pts program
+# ------------------------------------------------------------ 
+if [[ "`ls pts/tty0tty`" == "" ]]; then
+    make -C pts > /dev/null
+fi
+./pts/tty0tty

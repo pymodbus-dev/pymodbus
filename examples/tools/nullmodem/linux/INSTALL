@@ -1,0 +1,19 @@
+Installation:
+
+pts:
+   make         -To compile 
+   ./tty0tty    -To run 	
+
+
+module:
+   make        	      -To compile 
+   insmod tty0tty.ko  -To load module (using root or sudo)	
+
+
+this version is not installable
+
+
+Requirements:
+
+  for module build is necessary kernel-headers or kernel source
+  ( in debian use apt-get install linux-image-2.6.26-2-amd64 for example)

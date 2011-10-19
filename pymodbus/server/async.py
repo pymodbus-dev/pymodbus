@@ -33,11 +33,11 @@ class ModbusTcpProtocol(protocol.Protocol):
     def connectionMade(self):
         ''' Callback for when a client connects
 
-        Note, since the protocol factory cannot be accessed from the
-        protocol __init__, the client connection made is essentially our
-        __init__ method.
+        ..note:: since the protocol factory cannot be accessed from the
+                 protocol __init__, the client connection made is essentially
+                 our __init__ method.
         '''
-        #_logger.debug("Client Connected [%s]" % self.transport.getHost())
+        _logger.debug("Client Connected [%s]" % self.transport.getHost())
         self.framer = self.factory.framer(decoder=self.factory.decoder)
 
     def connectionLost(self, reason):
@@ -65,7 +65,7 @@ class ModbusTcpProtocol(protocol.Protocol):
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request %s" % ex)
+            _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
@@ -161,7 +161,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
             context = self.store[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request %s" % ex)
+            _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
@@ -228,6 +228,7 @@ def StartSerialServer(context, identity=None,
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity)
     protocol = factory.buildProtocol(None)
+    SerialPort.getHost = lambda self: port # hack for logging
     handle = SerialPort(protocol, port, reactor, Defaults.Baudrate)
     reactor.run()
 

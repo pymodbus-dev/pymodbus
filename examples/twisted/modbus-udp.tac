@@ -24,5 +24,7 @@ def BuildService():
     return application
 
 application = service.Application("Modbus UDP Server")
+logfile = DailyLogFile("pymodbus.log", "/tmp")
+application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 service = BuildService()
 service.setServiceParent(application)

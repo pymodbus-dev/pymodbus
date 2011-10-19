@@ -69,6 +69,6 @@ context = ModbusServerContext(slaves=store, single=True)
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-StartTcpServer(context)
+#StartTcpServer(context)
 #StartUdpServer(context)
-#StartSerialServer(context, port='/dev/ttyS1')
+StartSerialServer(context, port='/dev/pts/13')

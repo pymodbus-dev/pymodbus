@@ -57,7 +57,7 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
             context = self.server.context[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request %s" % ex)
+            _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id

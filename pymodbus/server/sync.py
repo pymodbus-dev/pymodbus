@@ -90,6 +90,38 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
+class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
+    ''' Implements the modbus server protocol
+
+    This uses the socketserver.BaseRequestHandler to implement
+    the client handler for a single client(serial clients)
+    '''
+
+    def handle(self):
+        ''' Callback when we receive any data
+        '''
+        while self.running:
+            try:
+                data = self.request.recv(1024)
+                if data:
+                    _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                    self.framer.processIncomingPacket(data, self.execute)
+            except socket.timeout: pass
+            except socket.error, msg:
+                _logger.error("Socket error occurred %s" % msg)
+            except: pass
+
+    def send(self, message):
+        ''' Send a request (string) to the network
+
+        :param message: The unencoded modbus response
+        '''
+        if message.should_respond:
+            #self.server.control.Counter.BusMessage += 1
+            pdu = self.framer.buildPacket(message)
+            _logger.debug('send: %s' % b2a_hex(pdu))
+            return self.request.send(pdu)
+
 
 class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     ''' Implements the modbus server protocol
@@ -293,7 +325,7 @@ class ModbusSerialServer(object):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.device   = kwargs.get('device', 0)
+        self.device   = kwargs.get('port', 0)
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         self.parity   = kwargs.get('parity',   Defaults.Parity)
@@ -326,8 +358,8 @@ class ModbusSerialServer(object):
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        handler = ModbusConnectedRequestHandler(request,
-            ('127.0.0.1', self.device), self)
+        handler = ModbusSingleRequestHandler(request,
+            (self.device, self.device), self)
         return handler
 
     def serve_forever(self):

@@ -12,7 +12,16 @@ API Documentation
 
 .. automodule:: pymodbus.server.sync
 
-.. autoclass:: ModbusRequestHandler
+.. autoclass:: ModbusBaseRequestHandler
+   :members:
+
+.. autoclass:: ModbusSingleRequestHandler
+   :members:
+
+.. autoclass:: ModbusConnectedRequestHandler
+   :members:
+
+.. autoclass:: ModbusDisconnectedRequestHandler
    :members:
 
 .. autoclass:: ModbusTcpServer

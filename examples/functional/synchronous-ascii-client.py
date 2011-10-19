@@ -12,7 +12,10 @@ class SynchronousAsciiClient(Runner, unittest.TestCase):
     def setUp(self):
         ''' Initializes the test environment '''
         super(Runner, self).setUp()
-        self.client = ModbusClient(method='ascii')
+        #    "../tools/nullmodem/linux/run",
+        self.initialize(["../tools/reference/diagslave", "-m", "ascii", "/dev/pts/14"])
+        self.client = ModbusClient(method='ascii', timeout=0.2, port='/dev/pts/13')
+        self.client.connect()
 
     def tearDown(self):
         ''' Cleans up the test environment '''

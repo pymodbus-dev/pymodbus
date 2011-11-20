@@ -255,6 +255,12 @@ class ModbusSerialClient(BaseModbusClient):
           - binary
 
         :param method: The method to use for connection
+        :param port: The serial port to attach to
+        :param stopbits: The number of stop bits to use
+        :param bytesize: The bytesize of the serial messages
+        :param parity: Which kind of parity to use
+        :param baudrate: The baud rate to use for the serial device
+        :param timeout: The timeout to use for the serial device
         '''
         self.method   = method
         self.socket   = None

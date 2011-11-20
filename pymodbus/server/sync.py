@@ -314,6 +314,12 @@ class ModbusSerialServer(object):
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
+        :param port: The serial port to attach to
+        :param stopbits: The number of stop bits to use
+        :param bytesize: The bytesize of the serial messages
+        :param parity: Which kind of parity to use
+        :param baudrate: The baud rate to use for the serial device
+        :param timeout: The timeout to use for the serial device
 
         '''
         self.threads = []
@@ -409,6 +415,12 @@ def StartSerialServer(context=None, identity=None, **kwargs):
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
+    :param port: The serial port to attach to
+    :param stopbits: The number of stop bits to use
+    :param bytesize: The bytesize of the serial messages
+    :param parity: Which kind of parity to use
+    :param baudrate: The baud rate to use for the serial device
+    :param timeout: The timeout to use for the serial device
     '''
     framer = ModbusAsciiFramer
     server = ModbusSerialServer(context, framer, identity, **kwargs)

@@ -220,16 +220,20 @@ def StartSerialServer(context, identity=None,
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param framer: The framer to use (default ModbusAsciiFramer)
+    :param port: The serial port to attach to
+    :param baudrate: The baud rate to use for the serial device
     '''
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
 
     port = kwargs.get('port', '/dev/ttyS0')
+    baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity)
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging
-    handle = SerialPort(protocol, port, reactor, Defaults.Baudrate)
+    handle = SerialPort(protocol, port, reactor, baudrate)
     reactor.run()
 
 #---------------------------------------------------------------------------#

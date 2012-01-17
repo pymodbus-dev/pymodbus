@@ -1,0 +1,14 @@
+distribute==0.6.24
+pyserial==2.5
+# -------------------------------------------------------------------
+# if you want to run the tests and code coverage, uncomment these
+# these out
+# -------------------------------------------------------------------
+#coverage==3.4
+#nose==1.0.0
+# -------------------------------------------------------------------
+# if you are just using the synchronous version, you can comment
+# these out
+# -------------------------------------------------------------------
+Twisted==11.0.0
+zope.interface==3.8.0

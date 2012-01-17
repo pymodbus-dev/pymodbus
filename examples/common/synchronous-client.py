@@ -34,8 +34,12 @@ log.setLevel(logging.DEBUG)
 # make sure to start an implementation to hit against. For this
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
+#
+# It should be noted that you can supply an ipv4 or an ipv6 host address for
+# both the UDP and TCP clients.
 #---------------------------------------------------------------------------# 
 client = ModbusClient('127.0.0.1')
+client.connect()
 
 #---------------------------------------------------------------------------# 
 # example requests

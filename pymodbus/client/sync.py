@@ -75,6 +75,8 @@ class BaseModbusClient(ModbusClientMixin):
         :param request: The request to process
         :returns: The result of the request execution
         '''
+        if not self.connect():
+            raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
         if self.transaction:
             return self.transaction.execute(request)
         raise ConnectionException("Client Not Connected")
@@ -119,6 +121,8 @@ class ModbusTcpClient(BaseModbusClient):
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
+
+        .. note:: The host argument will accept ipv4 and ipv6 hosts
         '''
         self.host = host
         self.port = port
@@ -191,6 +195,20 @@ class ModbusUdpClient(BaseModbusClient):
         self.socket = None
         BaseModbusClient.__init__(self, ModbusSocketFramer(ClientDecoder()))
 
+    @classmethod
+    def _get_address_family(cls, address):
+        ''' A helper method to get the correct address family
+        for a given address.
+
+        :param address: The address to get the af for
+        :returns: AF_INET for ipv4 and AF_INET6 for ipv6
+        '''
+        try:
+            addr = socket.inet_pton(socket.AF_INET6, address)
+        except socket.error: # not a valid ipv6 address
+            return socket.AF_INET
+        return socket.AF_INET6
+
     def connect(self):
         ''' Connect to the modbus tcp server
 
@@ -198,8 +216,8 @@ class ModbusUdpClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            #self.socket.bind((self.host, self.port))
+            family = ModbusUdpClient._get_address_family(self.host)
+            self.socket = socket.socket(family, socket.SOCK_DGRAM)
         except socket.error, ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()

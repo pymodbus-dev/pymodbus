@@ -132,9 +132,7 @@ class ModbusTcpClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(Defaults.Timeout)
-            self.socket.connect((self.host, self.port))
+            self.socket = socket.create_connection((self.host, self.port), Defaults.Timeout)
             self.transaction = ModbusTransactionManager(self)
         except socket.error, msg:
             _logger.error('Connection to (%s, %s) failed: %s' % \

@@ -56,7 +56,7 @@ setup(name  = 'pymodbus',
     zip_safe = True,
     install_requires = [
         'twisted >= 2.5.0',
-        'nose >= 0.9.3',
+        'nose >= 1.0.0',
         'pyserial >= 2.4'
     ],
     extras_require = {

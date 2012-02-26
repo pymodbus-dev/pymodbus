@@ -146,14 +146,24 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder = PayloadDecoder.fromRegisters(payload, endian=Endian.Little)
         encoded = '\x01\x00\x02\x00\x03\x00\x04\x00'
         self.assertEqual(encoded, decoder.decode_string(8))
+
+        decoder = PayloadDecoder.fromRegisters(payload, endian=Endian.Big)
+        encoded = '\x00\x01\x00\x02\x00\x03\x00\x04'
+        self.assertEqual(encoded, decoder.decode_string(8))
+
         self.assertRaises(ParameterException, lambda: PayloadDecoder.fromRegisters('abcd'))
 
     def testPayloadDecoderCoilFactory(self):
         ''' Test the payload decoder reset functionality '''
-        payload = [1,0,0,0,1,0,0,0]
+        payload = [1,0,0,0, 1,0,0,0, 0,0,0,1, 0,0,0,1]
         decoder = PayloadDecoder.fromCoils(payload, endian=Endian.Little)
-        encoded = '\x11'
-        self.assertEqual(encoded, decoder.decode_string(1))
+        encoded = '\x11\x88'
+        self.assertEqual(encoded, decoder.decode_string(2))
+
+        decoder = PayloadDecoder.fromCoils(payload, endian=Endian.Big)
+        encoded = '\x11\x88'
+        self.assertEqual(encoded, decoder.decode_string(2))
+
         self.assertRaises(ParameterException, lambda: PayloadDecoder.fromCoils('abcd'))
 
 

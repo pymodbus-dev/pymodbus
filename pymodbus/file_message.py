@@ -81,6 +81,7 @@ class ReadFileRecordRequest(ModbusRequest):
     MODBUS PDU: 235 bytes.
     '''
     function_code = 0x14
+    _rtu_byte_count_pos = 2
 
     def __init__(self, records=None):
         ''' Initializes a new instance
@@ -89,16 +90,6 @@ class ReadFileRecordRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.records  = records or []
-
-    @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        ''' Calculates the size of the message
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        byte_count = struct.unpack('B', buffer[0])[0]
-        return byte_count
 
     def encode(self):
         ''' Encodes the request packet
@@ -145,6 +136,7 @@ class ReadFileRecordResponse(ModbusResponse):
     contains a field that shows its own byte count.
     '''
     function_code = 0x14
+    _rtu_byte_count_pos = 2
 
     def __init__(self, records=None):
         ''' Initializes a new instance
@@ -153,16 +145,6 @@ class ReadFileRecordResponse(ModbusResponse):
         '''
         ModbusResponse.__init__(self)
         self.records = records or []
-
-    @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        ''' Calculates the size of the message
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        byte_count = struct.unpack('B', buffer[0])[0]
-        return byte_count
 
     def encode(self):
         ''' Encodes the response
@@ -199,6 +181,7 @@ class WriteFileRecordRequest(ModbusRequest):
     bit words.
     '''
     function_code = 0x15
+    _rtu_byte_count_pos = 2
 
     def __init__(self, records=None):
         ''' Initializes a new instance
@@ -207,16 +190,6 @@ class WriteFileRecordRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self)
         self.records  = records or []
-
-    @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        ''' Calculates the size of the message
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        total_length = struct.unpack('B', buffer[0])[0]
-        return total_length
 
     def encode(self):
         ''' Encodes the request packet
@@ -264,6 +237,7 @@ class WriteFileRecordResponse(ModbusResponse):
     The normal response is an echo of the request.
     '''
     function_code = 0x15
+    _rtu_byte_count_pos = 2
 
     def __init__(self, records=None):
         ''' Initializes a new instance
@@ -272,16 +246,6 @@ class WriteFileRecordResponse(ModbusResponse):
         '''
         ModbusResponse.__init__(self)
         self.records  = records or []
-
-    @classmethod
-    def calculateRtuFrameSize(cls, buffer):
-        ''' Calculates the size of the message
-
-        :param buffer: A buffer containing the data that have been received.
-        :returns: The number of bytes in the response.
-        '''
-        total_length = struct.unpack('B', buffer[0])[0]
-        return total_length
 
     def encode(self):
         ''' Encodes the response

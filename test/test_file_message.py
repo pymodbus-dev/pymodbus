@@ -145,10 +145,10 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testReadFileRecordRequestRtuFrameSize(self):
         ''' Test basic bit message encoding/decoding '''
-        request = '\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02'
+        request = '\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02'
         handle  = ReadFileRecordRequest()
         size    = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0e)
+        self.assertEqual(size, 0x0e + 5)
 
     def testReadFileRecordRequestExecute(self):
         ''' Test basic bit message encoding/decoding '''
@@ -178,10 +178,10 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testReadFileRecordResponseRtuFrameSize(self):
         ''' Test basic bit message encoding/decoding '''
-        request = '\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40'
+        request = '\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40'
         handle  = ReadFileRecordResponse()
         size    = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0c)
+        self.assertEqual(size, 0x0c + 5)
 
     #-----------------------------------------------------------------------#
     # Write File Record Request
@@ -205,10 +205,10 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testWriteFileRecordRequestRtuFrameSize(self):
         ''' Test write file record request rtu frame size calculation '''
-        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        request = '\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
         handle  = WriteFileRecordRequest()
         size    = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0d)
+        self.assertEqual(size, 0x0d + 5)
 
     def testWriteFileRecordRequestExecute(self):
         ''' Test basic bit message encoding/decoding '''
@@ -238,10 +238,10 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testWriteFileRecordResponseRtuFrameSize(self):
         ''' Test write file record response rtu frame size calculation '''
-        request = '\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
+        request = '\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d'
         handle  = WriteFileRecordResponse()
         size    = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0d)
+        self.assertEqual(size, 0x0d + 5)
 
     #-----------------------------------------------------------------------#
     # Mask Write Register Request

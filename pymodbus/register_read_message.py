@@ -212,7 +212,6 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     number of bytes to follow in the write data field."
     '''
     function_code = 23
-
     _rtu_byte_count_pos = 10
 
     def __init__(self, **kwargs):

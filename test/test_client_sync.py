@@ -58,12 +58,13 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, lambda: client._send(None))
         self.assertRaises(NotImplementedException, lambda: client._recv(None))
         self.assertRaises(NotImplementedException, lambda: client.__enter__())
-        self.assertRaises(ConnectionException, lambda: client.execute())
+        self.assertRaises(NotImplementedException, lambda: client.execute())
         self.assertEquals("Null Transport", str(client))
         client.close()
         client.__exit__(0,0,0)
 
         # a successful execute
+        client.connect = lambda: True
         client.transaction = mockTransaction()
         self.assertTrue(client.execute())
 

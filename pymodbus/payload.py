@@ -196,8 +196,9 @@ class PayloadDecoder(object):
         :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         '''
+        fstring = endian + 'H'
         if isinstance(registers, list):
-            payload = ''.join(pack("H", x) for x in registers)
+            payload = ''.join(pack(fstring, x) for x in registers)
             return PayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 

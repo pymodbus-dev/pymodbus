@@ -126,6 +126,11 @@ class ModbusStatus(Singleton):
 class Endian(Singleton):
     ''' An enumeration representing the various byte endianess.
 
+    .. attribute:: Auto
+
+       This indicates that the byte order is chosen by the
+       current native environment.
+
     .. attribute:: Big
 
        This indicates that the bytes are in little endian format
@@ -137,6 +142,7 @@ class Endian(Singleton):
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.
     '''
+    Auto   = '@'
     Big    = '>'
     Little = '<'
 

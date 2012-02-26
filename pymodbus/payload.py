@@ -7,6 +7,9 @@ modbus messages payloads.
 '''
 from struct import pack, unpack
 from pymodbus.constants import Endian
+from pymodbus.utilities import pack_bitstring
+from pymodbus.utilities import unpack_bitstring
+from pymodbus.exceptions import ParameterException
 
 
 class PayloadBuilder(object):
@@ -47,9 +50,28 @@ class PayloadBuilder(object):
     def tolist(self):
         ''' Return the payload buffer as a list
 
+        This list is two bytes per element and can
+        thus be treated as a list of registers.
+
         :returns: The payload buffer as a list
         '''
-        return self._payload
+        string = self.tostring()
+        length = len(string)
+        string = string + ('\x00' * (length % 2))
+        return [string[i:i+2] for i in xrange(0, length, 2)]
+
+    def add_bits(self, values):
+        ''' Adds a collection of bits to be encoded
+
+        If these are less than a multiple of eight,
+        they will be left padded with 0 bits to make
+        it so.
+
+        :param value: The value to add to the buffer
+        '''
+# TODO endianess issue here
+        value = pack_bitstring(values)
+        self._payload.append(value)
 
     def add_8bit_uint(self, value):
         ''' Adds a 8 bit unsigned int to the buffer
@@ -163,6 +185,39 @@ class PayloadDecoder(object):
         self._pointer = 0x00
         self._endian  = endian
 
+    @staticmethod
+    def fromRegisters(registers, endian=Endian.Little):
+        ''' Initialize a payload decoder with the result of
+        reading a collection of registers from a modbus device.
+
+        The registers are treated as a list of 2 byte values.
+
+        :param registers: The register results to initialize with
+        :param endian: The endianess of the payload
+        :returns: An initialized PayloadDecoder
+        '''
+        if isinstance(registers, list):
+            payload = ''.join(pack("H", x) for x in registers)
+            return PayloadDecoder(payload, endian)
+        raise ParameterException('Invalid collection of registers supplied')
+
+    @staticmethod
+    def fromCoils(coils, endian=Endian.Little):
+        ''' Initialize a payload decoder with the result of
+        reading a collection of coils from a modbus device.
+
+        The coils are treated as a list of bit(boolean) values.
+
+        :param coils: The coil results to initialize with
+        :param endian: The endianess of the payload
+        :returns: An initialized PayloadDecoder
+        '''
+        if isinstance(coils, list):
+# TODO endianess issue here
+            payload = pack_bitstring(coils)
+            return PayloadDecoder(payload, endian)
+        raise ParameterException('Invalid collection of coils supplied')
+
     def reset(self):
         ''' Reset the decoder pointer back to the start
         '''
@@ -175,6 +230,17 @@ class PayloadDecoder(object):
         fstring = self._endian + 'B'
         handle = self._payload[self._pointer - 1:self._pointer]
         return unpack('B', handle)[0]
+
+    def decode_bits(self):
+        ''' Decodes a byte worth of bits from the buffer
+
+        :param bytes: The number of bytes to decode
+        '''
+# TODO endianess issue here
+        self._pointer += 1
+        fstring = self._endian + 'B'
+        handle = self._payload[self._pointer - 1:self._pointer]
+        return unpack_bitstring(handle)
 
     def decode_16bit_uint(self):
         ''' Decodes a 16 bit unsigned int from the buffer

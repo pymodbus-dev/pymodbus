@@ -61,7 +61,7 @@ class SimplePduTest(unittest.TestCase):
 
         ModbusRequest._rtu_byte_count_pos = 2
         self.assertEqual(ModbusRequest.calculateRtuFrameSize(
-            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 10)
+            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 0x05 + 5)
         del ModbusRequest._rtu_byte_count_pos
         
         self.assertRaises(NotImplementedException,
@@ -71,7 +71,7 @@ class SimplePduTest(unittest.TestCase):
         del ModbusResponse._rtu_frame_size
         ModbusResponse._rtu_byte_count_pos = 2
         self.assertEqual(ModbusResponse.calculateRtuFrameSize(
-            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 10)
+            "\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 0x05 + 5)
         del ModbusResponse._rtu_byte_count_pos
         
         

@@ -234,8 +234,6 @@ class PayloadDecoder(object):
 
     def decode_bits(self):
         ''' Decodes a byte worth of bits from the buffer
-
-        :param bytes: The number of bytes to decode
         '''
 # TODO endianess issue here
         self._pointer += 1

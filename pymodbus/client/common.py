@@ -1,4 +1,10 @@
 '''
+Modbus Client Common
+----------------------------------
+
+This is a common client mixin that can be used by
+both the synchronous and asynchronous clients to
+simplify the interface.
 '''
 from pymodbus.bit_read_message import *
 from pymodbus.bit_write_message import *

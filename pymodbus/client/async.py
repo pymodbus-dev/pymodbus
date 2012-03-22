@@ -38,6 +38,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusTransactionManager
 from pymodbus.client.common import ModbusClientMixin
+from twisted.python.failure import Failure
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -82,6 +83,9 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
+        while self._requests:
+            self._requests.popleft().errback(Failure(
+                ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
         ''' Get response, check for valid message, decode result
@@ -111,7 +115,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         :returns: A defer linked to the latest request
         '''
         if not self._connected:
-            return defer.fail(ConnectionException('Client is not connected'))
+            return defer.fail(Failure(
+                ConnectionException('Client is not connected')))
 
         d = defer.Deferred()
         self._requests.append(d)

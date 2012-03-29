@@ -340,7 +340,7 @@ class ModbusTransactionTest(unittest.TestCase):
         message = ModbusRequest()
         message.unit_id        = 0xff
         message.function_code  = 0x01
-        expected = '\xff\x01\x81\x80'
+        expected = '\x7b\xff\x01\x81\x80\x7d'
         actual = self._binary.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode

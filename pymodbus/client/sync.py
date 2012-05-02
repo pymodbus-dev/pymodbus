@@ -157,6 +157,8 @@ class ModbusTcpClient(BaseModbusClient):
         :param request: The encoded request to send
         :return: The number of bytes written
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         if request:
             return self.socket.send(request)
         return 0
@@ -167,6 +169,8 @@ class ModbusTcpClient(BaseModbusClient):
         :param size: The number of bytes to read
         :return: The bytes read
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         return self.socket.recv(size)
 
     def __str__(self):
@@ -234,6 +238,8 @@ class ModbusUdpClient(BaseModbusClient):
         :param request: The encoded request to send
         :return: The number of bytes written
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         if request:
             return self.socket.sendto(request, (self.host, self.port))
         return 0
@@ -244,6 +250,8 @@ class ModbusUdpClient(BaseModbusClient):
         :param size: The number of bytes to read
         :return: The bytes read
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         return self.socket.recvfrom(size)[0]
 
     def __str__(self):

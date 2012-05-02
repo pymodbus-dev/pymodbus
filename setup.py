@@ -9,18 +9,25 @@ to install the package from the source archive.
 For information about setuptools
 http://peak.telecommunity.com/DevCenter/setuptools#new-and-changed-setup-keywords
 '''
+#---------------------------------------------------------------------------# 
+# initialization
+#---------------------------------------------------------------------------# 
 try: # if not installed, install and proceed
     from setuptools import setup, find_packages
 except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
+    from setuptools import setup, find_packages
 
-#---------------------------------------------------------------------------# 
-# Configuration
-#---------------------------------------------------------------------------# 
-from setup_commands import command_classes
+try:
+    from setup_commands import command_classes
+except ImportError:
+    command_classes = {}
 from pymodbus import __version__, __author__
 
+#---------------------------------------------------------------------------# 
+# configuration
+#---------------------------------------------------------------------------# 
 setup(name  = 'pymodbus',
     version = __version__,
     description = 'A fully featured modbus protocol stack in python',
@@ -49,8 +56,9 @@ setup(name  = 'pymodbus',
     maintainer_email = 'bashwork@gmail.com',
     url='http://code.google.com/p/pymodbus/',
     license = 'BSD',
-    packages = find_packages(exclude=['ez_setup', 'examples', 'test', 'doc']),
+    packages = find_packages(exclude=['examples', 'test']),
     exclude_package_data = {'' : ['examples', 'test', 'tools', 'doc']},
+    py_modules = ['ez_setup'],
     platforms = ['Linux', 'Mac OS X', 'Win'],
     include_package_data = True,
     zip_safe = True,

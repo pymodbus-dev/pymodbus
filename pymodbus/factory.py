@@ -178,7 +178,7 @@ class ClientDecoder(IModbusDecoder):
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         '''
-        return self.__lookup.get(function_code, None)
+        return self.__lookup.get(function_code, ExceptionResponse)
 
     def decode(self, message):
         ''' Wrapper to decode a response packet

@@ -63,6 +63,18 @@ class SimpleFactoryTest(unittest.TestCase):
                 (0x2b, '\x2b\x0e\x01\x01\x00\x00\x01\x00\x01\x77'),   # read device identification
         )
 
+        self.exception = (
+                (0x81, '\x81\x01\xd0\x50'),                           # illegal function exception
+                (0x82, '\x82\x02\x90\xa1'),                           # illegal data address exception
+                (0x83, '\x83\x03\x50\xf1'),                           # illegal data value exception
+                (0x84, '\x84\x04\x13\x03'),                           # skave device failure exception
+                (0x85, '\x85\x05\xd3\x53'),                           # acknowledge exception
+                (0x86, '\x86\x06\x93\xa2'),                           # slave device busy exception
+                (0x87, '\x87\x08\x53\xf2'),                           # memory parity exception
+                (0x88, '\x88\x0a\x16\x06'),                           # gateway path unavailable exception
+                (0x89, '\x89\x0b\xd6\x56'),                           # gateway target failed exception
+        )
+
         self.bad = (
                 (0x80, '\x80\x00\x00\x00'),                           # Unknown Function
                 (0x81, '\x81\x00\x00\x00'),                           # error message
@@ -73,6 +85,16 @@ class SimpleFactoryTest(unittest.TestCase):
         del self.bad
         del self.request
         del self.response
+
+    def testExceptionLookup(self):
+        ''' Test that we can look up exception messages '''
+        for func, _ in self.exception:
+            response = self.client.lookupPduClass(func)
+            self.assertNotEqual(response, None)
+
+        for func, _ in self.exception:
+            response = self.server.lookupPduClass(func)
+            self.assertNotEqual(response, None)
 
     def testResponseLookup(self):
         ''' Test a working response factory lookup '''

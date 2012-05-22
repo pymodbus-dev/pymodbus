@@ -227,6 +227,13 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 
+    def testRTUDecodeException(self):
+        ''' Test that the RTU framer can decode errors '''
+        message = "\x00\x90\x02\x9c\x01"
+        actual = self._rtu.addToFrame(message)
+        result = self._rtu.checkFrame()
+        self.assertTrue(result)
+
     #---------------------------------------------------------------------------# 
     # ASCII tests
     #---------------------------------------------------------------------------# 

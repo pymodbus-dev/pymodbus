@@ -720,6 +720,7 @@ class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
+    "DiagnosticStatusRequest", "DiagnosticStatusResponse", 
     "ReturnQueryDataRequest", "ReturnQueryDataResponse",
     "RestartCommunicationsOptionRequest", "RestartCommunicationsOptionResponse",
     "ReturnDiagnosticRegisterRequest", "ReturnDiagnosticRegisterResponse",

@@ -26,9 +26,9 @@ class ModbusFixesTest(unittest.TestCase):
     def testNullLoggerAttached(self):
         ''' Test that the null logger is attached'''
         import logging
-        if len(logging._handlers) == 0:
-          import pymodbus
-          self.assertEqual(logging._handlers, 1)
+        logger = logging.getLogger('pymodbus')
+        if len(logger.handlers) == 0:
+          self.assertEqual(len(logger.handlers), 1)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 '''
-Pymodbus TCP Message Parser
+Modbus Message Parser
 --------------------------------------------------------------------------
 
-The following is an example of how to parse modbus tcp messages
-using the supplied framers.
+The following is an example of how to parse modbus messages
+using the supplied framers for a number of protocols:
+
+* tcp
+* ascii
+* rtu
+* binary
 '''
 #---------------------------------------------------------------------------# 
 # import needed libraries
@@ -44,11 +49,16 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
+        print "="*80
+        print "Decoding Message %s" % message.encode('hex')
+        print "="*80
         decoders = [
             self.framer(ServerDecoder()),
             self.framer(ClientDecoder()),
         ]
         for decoder in decoders:
+            print "%s" % decoder.decoder.__class__.__name__
+            print "-"*80
             decoder.addToFrame(message)
             if decoder.checkFrame():
                 decoder.advanceFrame()
@@ -67,9 +77,6 @@ class Decoder(object):
 
         :param message: The message to print
         '''
-        print "-"*80
-        print "Decoded Message"
-        print "-"*80
         print "%-15s = %s" % ('name', message.__class__.__name__)
         for k,v in message.__dict__.items():
             if isinstance(v, collections.Iterable):
@@ -85,21 +92,65 @@ class Decoder(object):
 # and decode our message
 #---------------------------------------------------------------------------# 
 def get_options():
+    ''' A helper method to parse the command line options
+
+    :returns: The options manager
+    '''
     parser = OptionParser()
+
     parser.add_option("-p", "--parser",
         help="The type of parser to use (tcp, rtu, binary, ascii)",
         dest="parser", default="tcp")
+
     parser.add_option("-D", "--debug",
         help="Enable debug tracing",
         action="store_true", dest="debug", default=False)
+
     parser.add_option("-m", "--message",
         help="The message to parse",
-        dest="message", default="")
+        dest="message", default=None)
+
+    parser.add_option("-a", "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true", dest="ascii", default=True)
+
+    parser.add_option("-b", "--binary",
+        help="The indicates that the message is binary",
+        action="store_false", dest="ascii")
+
+    parser.add_option("-f", "--file",
+        help="The file containing messages to parse",
+        dest="file", default=None)
+
     (opt, arg) = parser.parse_args()
+
+    if not opt.message and len(arg) > 0:
+        opt.message = arg[0]
 
     return opt
 
+def get_messages(option):
+    ''' A helper method to generate the messages to parse
+
+    :param options: The option manager
+    :returns: The message iterator to parse
+    '''
+    if option.message:
+        if not option.ascii:
+            option.message = option.message.decode('hex')
+        yield option.message
+    elif option.file:
+        with open(option.file, "r") as handle:
+            for line in handle:
+                if line.startswith('#'): continue
+                line = line.strip()
+                if not option.ascii:
+                    line = line.decode('hex')
+                yield line
+
 def main():
+    ''' The main runner function
+    '''
     option = get_options()
 
     if option.debug:
@@ -114,11 +165,11 @@ def main():
         'rtc':    ModbusRtuFramer,
         'binary': ModbusBinaryFramer,
         'ascii':  ModbusAsciiFramer,
-    }[option.parser]
+    }.get(option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer)
-    #decoder.decode(option.message)
-    decoder.decode("\x00\x01\x12\x34\x00\x06\xff\x02\x01\x02\x00\x04")
+    for message in get_messages(option):
+        decoder.decode(message)
 
 if __name__ == "__main__":
     main()

@@ -19,6 +19,7 @@ Example Library Code
    modbus-payload
    modbus-scraper
    modbus-simulator
+   message-parser
    synchronous-client
    synchronous-server
    performance

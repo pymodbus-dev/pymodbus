@@ -51,6 +51,21 @@ class ServerDecoder(IModbusDecoder):
             WriteSingleCoilRequest,
             ReadWriteMultipleRegistersRequest,
 
+            DiagnosticStatusRequest,
+
+            ReadExceptionStatusRequest,
+            GetCommEventCounterRequest,
+            GetCommEventLogRequest,
+            ReportSlaveIdRequest,
+
+            ReadFileRecordRequest,
+            WriteFileRecordRequest,
+            MaskWriteRegisterRequest,
+            ReadFifoQueueRequest,
+
+            ReadDeviceInformationRequest,
+    ]
+    __sub_function_table = [
             ReturnQueryDataRequest,
             RestartCommunicationsOptionRequest,
             ReturnDiagnosticRegisterRequest,
@@ -68,20 +83,9 @@ class ServerDecoder(IModbusDecoder):
             ReturnIopOverrunCountRequest,
             ClearOverrunCountRequest,
             GetClearModbusPlusRequest,
-
-            ReadExceptionStatusRequest,
-            GetCommEventCounterRequest,
-            GetCommEventLogRequest,
-            ReportSlaveIdRequest,
-
-            ReadFileRecordRequest,
-            WriteFileRecordRequest,
-            MaskWriteRegisterRequest,
-            ReadFifoQueueRequest,
-
-            ReadDeviceInformationRequest,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
+    __sub_lookup = dict([(f.sub_function_code, f) for f in __sub_function_table])
 
     def decode(self, message):
         ''' Wrapper to decode a request packet
@@ -118,6 +122,11 @@ class ServerDecoder(IModbusDecoder):
         if not request:
             request = IllegalFunctionRequest(function_code)
         request.decode(data[1:])
+
+        if hasattr(request, 'sub_function_code'):
+            subtype = self.__sub_lookup.get(request.sub_function_code, None)
+            if subtype: request.__class__ = subtype
+
         return request
 
 
@@ -140,6 +149,21 @@ class ClientDecoder(IModbusDecoder):
             WriteSingleCoilResponse,
             ReadWriteMultipleRegistersResponse,
 
+            DiagnosticStatusResponse, 
+
+            ReadExceptionStatusResponse,
+            GetCommEventCounterResponse,
+            GetCommEventLogResponse,
+            ReportSlaveIdResponse,
+
+            ReadFileRecordResponse,
+            WriteFileRecordResponse,
+            MaskWriteRegisterResponse,
+            ReadFifoQueueResponse,
+
+            ReadDeviceInformationResponse,
+    ]
+    __sub_function_table = [
             ReturnQueryDataResponse,
             RestartCommunicationsOptionResponse,
             ReturnDiagnosticRegisterResponse,
@@ -157,20 +181,9 @@ class ClientDecoder(IModbusDecoder):
             ReturnIopOverrunCountResponse,
             ClearOverrunCountResponse,
             GetClearModbusPlusResponse,
-
-            ReadExceptionStatusResponse,
-            GetCommEventCounterResponse,
-            GetCommEventLogResponse,
-            ReportSlaveIdResponse,
-
-            ReadFileRecordResponse,
-            WriteFileRecordResponse,
-            MaskWriteRegisterResponse,
-            ReadFifoQueueResponse,
-
-            ReadDeviceInformationResponse,
     ]
     __lookup = dict([(f.function_code, f) for f in __function_table])
+    __sub_lookup = dict([(f.sub_function_code, f) for f in __sub_function_table])
 
     def lookupPduClass(self, function_code):
         ''' Use `function_code` to determine the class of the PDU.
@@ -210,6 +223,11 @@ class ClientDecoder(IModbusDecoder):
         if not response:
             raise ModbusException("Unknown response %d" % function_code)
         response.decode(data[1:])
+
+        if hasattr(response, 'sub_function_code'):
+            subtype = self.__sub_lookup.get(response.sub_function_code, None)
+            if subtype: response.__class__ = subtype
+
         return response
 
 #---------------------------------------------------------------------------#

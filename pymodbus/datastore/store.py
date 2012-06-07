@@ -199,7 +199,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         '''
         if isinstance(values, dict):
             self.values = values
-        if hasattr(values, '__iter__'):
+        elif hasattr(values, '__iter__'):
             self.values = dict(enumerate(values))
         else: raise ParameterException(
             "Values for datastore must be a list or dictionary")

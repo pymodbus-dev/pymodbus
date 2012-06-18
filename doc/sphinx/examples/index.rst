@@ -21,6 +21,7 @@ Example Library Code
    modbus-simulator
    message-parser
    synchronous-client
+   synchronous-client-ext
    synchronous-server
    performance
 
@@ -34,3 +35,4 @@ Example Frontend Code
    tk-frontend
    wx-frontend
    web-frontend
+

@@ -83,9 +83,18 @@ class ServerDecoder(IModbusDecoder):
             ReturnIopOverrunCountRequest,
             ClearOverrunCountRequest,
             GetClearModbusPlusRequest,
+
+            ReadDeviceInformationRequest,
     ]
-    __lookup = dict([(f.function_code, f) for f in __function_table])
-    __sub_lookup = dict([(f.sub_function_code, f) for f in __sub_function_table])
+
+    def __init__(self):
+        ''' Initializes the client lookup tables
+        '''
+        functions = set(f.function_code for f in self.__function_table)
+        self.__lookup = dict([(f.function_code, f) for f in self.__function_table])
+        self.__sub_lookup = dict((f, {}) for f in functions)
+        for f in self.__sub_function_table:
+            self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def decode(self, message):
         ''' Wrapper to decode a request packet
@@ -124,7 +133,8 @@ class ServerDecoder(IModbusDecoder):
         request.decode(data[1:])
 
         if hasattr(request, 'sub_function_code'):
-            subtype = self.__sub_lookup.get(request.sub_function_code, None)
+            lookup = self.__sub_lookup.get(request.function_code, {})
+            subtype = lookup.get(request.sub_function_code, None)
             if subtype: request.__class__ = subtype
 
         return request
@@ -181,9 +191,18 @@ class ClientDecoder(IModbusDecoder):
             ReturnIopOverrunCountResponse,
             ClearOverrunCountResponse,
             GetClearModbusPlusResponse,
+
+            ReadDeviceInformationResponse,
     ]
-    __lookup = dict([(f.function_code, f) for f in __function_table])
-    __sub_lookup = dict([(f.sub_function_code, f) for f in __sub_function_table])
+
+    def __init__(self):
+        ''' Initializes the client lookup tables
+        '''
+        functions = set(f.function_code for f in self.__function_table)
+        self.__lookup = dict([(f.function_code, f) for f in self.__function_table])
+        self.__sub_lookup = dict((f, {}) for f in functions)
+        for f in self.__sub_function_table:
+            self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def lookupPduClass(self, function_code):
         ''' Use `function_code` to determine the class of the PDU.
@@ -225,7 +244,8 @@ class ClientDecoder(IModbusDecoder):
         response.decode(data[1:])
 
         if hasattr(response, 'sub_function_code'):
-            subtype = self.__sub_lookup.get(response.sub_function_code, None)
+            lookup = self.__sub_lookup.get(response.function_code, {})
+            subtype = lookup.get(response.sub_function_code, None)
             if subtype: response.__class__ = subtype
 
         return response

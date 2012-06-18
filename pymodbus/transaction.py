@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager
 #---------------------------------------------------------------------------#
-class ModbusTransactionManager(Singleton):
+class ModbusTransactionManager(object):
     ''' Impelements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::
@@ -38,7 +38,7 @@ class ModbusTransactionManager(Singleton):
     '''
 
     __tid = Defaults.TransactionId
-    __transactions = []
+    __transactions = {}
 
     def __init__(self, client=None):
         ''' Initializes an instance of the ModbusTransactionManager
@@ -51,11 +51,6 @@ class ModbusTransactionManager(Singleton):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        def _set_result(message):
-            ''' a helper method so I can reuse the async framers'''
-            self.response = message
-
-        self.response = None
         retries = Defaults.Retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
@@ -68,13 +63,13 @@ class ModbusTransactionManager(Singleton):
                 # as this may not read the full result set, but right now
                 # it should be fine...
                 result = self.client._recv(1024)
-                self.client.framer.processIncomingPacket(result, _set_result)
+                self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
             except socket.error, msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
-        return self.response
+        return self.getTransaction(request.transaction_id)
 
     def addTransaction(self, request):
         ''' Adds a transaction to the handler
@@ -84,7 +79,8 @@ class ModbusTransactionManager(Singleton):
 
         :param request: The request to hold on to
         '''
-        ModbusTransactionManager.__transactions.append(request)
+        tid = request.transaction_id
+        ModbusTransactionManager.__transactions[tid] = request
 
     def getTransaction(self, tid):
         ''' Returns a transaction matching the referenced tid
@@ -93,19 +89,14 @@ class ModbusTransactionManager(Singleton):
 
         :param tid: The transaction to retrieve
         '''
-        for k, v in enumerate(ModbusTransactionManager.__transactions):
-            if v.transaction_id == tid:
-                return ModbusTransactionManager.__transactions.pop(k)
-        return None
+        return ModbusTransactionManager.__transactions.pop(tid, None)
 
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
 
         :param tid: The transaction to remove
         '''
-        for k, v in enumerate(ModbusTransactionManager.__transactions):
-            if v.transaction_id == tid:
-                del ModbusTransactionManager.__transactions[k]
+        ModbusTransactionManager.__transactions.pop(tid, None)
 
     def getNextTID(self):
         ''' Retrieve the next unique transaction identifier

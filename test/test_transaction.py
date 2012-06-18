@@ -34,7 +34,6 @@ class ModbusTransactionTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def testModbusTransactionManagerTID(self):
         ''' Test the tcp transaction manager TID '''
-        self.assertEqual(id(self._manager), id(ModbusTransactionManager()))
         for tid in range(1, self._manager.getNextTID() + 10):
             self.assertEqual(tid+2, self._manager.getNextTID())
         self._manager.resetTID()

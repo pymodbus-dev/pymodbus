@@ -51,6 +51,9 @@ in this case means how many Virtual IP addresses are allowed).
 For more information please browse the project documentation:
 http://readthedocs.org/docs/pymodbus/en/latest/index.html
 
+If you have questions about pymodbus, please send them to the
+mailing list http://groups.google.com/group/pymodbus 
+
 ------------------------------------------------------------
 Example Code
 ------------------------------------------------------------
@@ -93,6 +96,12 @@ Otherwise you can pull the trunk source and install from there::
 
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
+
+If you would like to install pymodbus without the twisted dependency,
+simply edit the setup.py file before running easy_install and comment
+out all mentions of twisted.  It should be noted that without twisted,
+one will only be able to run the synchronized version as the
+asynchronous versions uses twisted for its event loop.
 
 ------------------------------------------------------------
 Current Work In Progress

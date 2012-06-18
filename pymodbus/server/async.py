@@ -217,6 +217,7 @@ def StartUdpServer(context, identity=None):
 def StartSerialServer(context, identity=None,
     framer=ModbusAsciiFramer, **kwargs):
     ''' Helper method to start the Modbus Async Serial server
+
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param framer: The framer to use (default ModbusAsciiFramer)

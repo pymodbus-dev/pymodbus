@@ -32,7 +32,6 @@ Another example::
        reactor.callLater(1, process)
        reactor.run()
 """
-from collections import deque
 from twisted.internet import defer, protocol
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
@@ -67,7 +66,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        self._requests = deque()  # link queue to tid
+        self._requests = {}
         self._connected = False
 
     def connectionMade(self):
@@ -83,8 +82,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
-        while self._requests:
-            self._requests.popleft().errback(Failure(
+        for key in self._requests:
+            self._requests.pop(key).errback(Failure(
                 ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
@@ -92,26 +91,35 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        def _callback(reply): # todo errback/callback
-            if self._requests:
-                self._requests.popleft().callback(reply)
-
-        self.framer.processIncomingPacket(data, _callback)
+        self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
         request.transaction_id = _manager.getNextTID()
-        #self.handler[request.transaction_id] = request
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
-        return self._buildResponse()
+        return self._buildResponse(request.transaction_id)
 
-    def _buildResponse(self):
+    def _handleResponse(self, reply):
+        ''' Handle the processed response and link to correct deferred
+
+        :param reply: The reply to process
+        '''
+        if self._requests and reply:
+            tid = reply.transaction_id
+            handler = self.requests.pop(tid, None)
+            if handler:
+                handler.callback(reply)
+            else: _logger.debug("Unrequested message: " + str(reply))
+        # TODO errback handled somewhere
+
+    def _buildResponse(self, tid):
         ''' Helper method to return a deferred response
         for the current request.
 
+        :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
         '''
         if not self._connected:
@@ -119,7 +127,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
                 ConnectionException('Client is not connected')))
 
         d = defer.Deferred()
-        self._requests.append(d)
+        self._requests[tid] = d # TODO add request here as well
         return d
 
     #----------------------------------------------------------------------#
@@ -153,31 +161,40 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        def _callback(reply): # todo errback/callback
-            if self._requests:
-                self._requests.popleft().callback(reply)
-
         _logger.debug("Datagram from: %s:%d" % (host, port))
-        self.framer.processIncomingPacket(data, _callback)
+        self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
         request.transaction_id = _manager.getNextTID()
-        #self.handler[request.transaction_id] = request
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
-        return self._buildResponse()
+        return self._buildResponse(request.transaction_id)
 
-    def _buildResponse(self):
+    def _handleResponse(self, reply):
+        ''' Handle the processed response and link to correct deferred
+
+        :param reply: The reply to process
+        '''
+        if self._requests and reply:
+            tid = reply.transaction_id
+            handler = self.requests.pop(tid, None)
+            if handler:
+                handler.callback(reply)
+            else: _logger.debug("Unrequested message: " + str(reply))
+        # TODO errback handled somewhere
+
+    def _buildResponse(self, tid):
         ''' Helper method to return a deferred response
         for the current request.
 
+        :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
         '''
         d = defer.Deferred()
-        self._requests.append(d)
+        self._requests[tid] = d # TODO add request here as well
         return d
 
 

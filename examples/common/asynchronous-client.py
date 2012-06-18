@@ -88,6 +88,22 @@ def beginAsynchronousTest(client):
     reactor.callLater(2, reactor.stop)
 
 #---------------------------------------------------------------------------# 
+# extra requests
+#---------------------------------------------------------------------------# 
+# If you are performing a request that is not available in the client
+# mixin, you have to perform the request like this instead::
+#
+# from pymodbus.diag_message import ClearCountersRequest
+# from pymodbus.diag_message import ClearCountersResponse
+#
+# request  = ClearCountersRequest()
+# response = client.execute(request)
+# if isinstance(response, ClearCountersResponse):
+#     ... do something with the response
+#
+#---------------------------------------------------------------------------# 
+
+#---------------------------------------------------------------------------# 
 # choose the client you want
 #---------------------------------------------------------------------------# 
 # make sure to start an implementation to hit against. For this

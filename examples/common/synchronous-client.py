@@ -91,6 +91,22 @@ assert(rq.registers == [20]*8)      # test the expected value
 assert(rr.registers == [17]*8)      # test the expected value
 
 #---------------------------------------------------------------------------# 
+# extra requests
+#---------------------------------------------------------------------------# 
+# If you are performing a request that is not available in the client
+# mixin, you have to perform the request like this instead::
+#
+# from pymodbus.diag_message import ClearCountersRequest
+# from pymodbus.diag_message import ClearCountersResponse
+#
+# request  = ClearCountersRequest()
+# response = client.execute(request)
+# if isinstance(response, ClearCountersResponse):
+#     ... do something with the response
+#
+#---------------------------------------------------------------------------# 
+
+#---------------------------------------------------------------------------# 
 # close the client
 #---------------------------------------------------------------------------# 
 client.close()

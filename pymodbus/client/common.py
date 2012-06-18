@@ -13,6 +13,7 @@ from pymodbus.register_write_message import *
 from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
+from pymodbus.constants import Defaults
 
 
 class ModbusClientMixin(object):
@@ -31,7 +32,7 @@ class ModbusClientMixin(object):
        response = client.read_coils(1, 10)
     '''
 
-    def read_coils(self, address, count=1, unit=0x00):
+    def read_coils(self, address, count=1, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to read from
@@ -43,7 +44,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def read_discrete_inputs(self, address, count=1, unit=0x00):
+    def read_discrete_inputs(self, address, count=1, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to read from
@@ -55,7 +56,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def write_coil(self, address, value, unit=0x00):
+    def write_coil(self, address, value, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to write to
@@ -67,7 +68,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def write_coils(self, address, values, unit=0x00):
+    def write_coils(self, address, values, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to write to
@@ -79,7 +80,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def write_register(self, address, value, unit=0x00):
+    def write_register(self, address, value, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to write to
@@ -91,7 +92,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def write_registers(self, address, values, unit=0x00):
+    def write_registers(self, address, values, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to write to
@@ -103,7 +104,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def read_holding_registers(self, address, count=1, unit=0x00):
+    def read_holding_registers(self, address, count=1, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to read from
@@ -115,7 +116,7 @@ class ModbusClientMixin(object):
         request.unit_id = unit
         return self.execute(request)
 
-    def read_input_registers(self, address, count=1, unit=0x00):
+    def read_input_registers(self, address, count=1, unit=Defaults.UnitId):
         '''
 
         :param address: The starting address to read from
@@ -138,5 +139,5 @@ class ModbusClientMixin(object):
         :returns: A deferred response handle
         '''
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
-        request.unit_id = kwargs.get('unit', 0x00)
+        request.unit_id = kwargs.get('unit', Defaults.UnitId)
         return self.execute(request)

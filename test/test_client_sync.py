@@ -68,13 +68,16 @@ class SynchronousClientTest(unittest.TestCase):
         client.transaction = mockTransaction()
         self.assertTrue(client.execute())
 
-        # a successful connect
+        # a successful connect, no transaction
         client.connect = lambda: True
+        client.transaction = None
         self.assertEqual(client.__enter__(), client)
+        self.assertRaises(ConnectionException, lambda: client.execute())
 
         # a unsuccessful connect
         client.connect = lambda: False
         self.assertRaises(ConnectionException, lambda: client.__enter__())
+        self.assertRaises(ConnectionException, lambda: client.execute())
 
     #-----------------------------------------------------------------------#
     # Test UDP Client

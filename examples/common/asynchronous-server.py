@@ -57,6 +57,19 @@ log.setLevel(logging.DEBUG)
 #
 #     block = ModbusSequentialDataBlock(0x00, [0]*0xff)
 #     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
+#
+# The server then makes use of a server context that allows the server to
+# respond with different slave contexts for different unit ids. By default
+# it will return the same context for every unit id supplied (broadcast
+# mode). However, this can be overloaded by setting the single flag to False
+# and then supplying a dictionary of unit id to context mapping::
+#
+#     slaves  = {
+#         0x01: ModbusSlaveContext(...),
+#         0x02: ModbusSlaveContext(...),
+#         0x03: ModbusSlaveContext(...),
+#     }
+#     context = ModbusServerContext(slaves=slaves, single=False)
 #---------------------------------------------------------------------------# 
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),

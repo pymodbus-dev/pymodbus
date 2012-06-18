@@ -1,6 +1,7 @@
 from pymodbus.exceptions import ParameterException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
+from pymodbus.constants import Defaults
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -100,7 +101,7 @@ class ModbusServerContext(object):
         self.single   = single
         self.__slaves = slaves or {}
         if self.single:
-            self.__slaves = {0x00: self.__slaves}
+            self.__slaves = {Defaults.UnitId: self.__slaves}
 
     def __iter__(self):
         ''' Iterater over the current collection of slave
@@ -124,7 +125,7 @@ class ModbusServerContext(object):
         :param slave: slave The context to set
         :param context: The new context to set for this slave
         '''
-        if self.single: slave = 0x00
+        if self.single: slave = Defaults.UnitId
         if 0xf7 >= slave >= 0x00:
             self.__slaves[slave] = context
         else: raise ParameterException('slave index out of range')
@@ -135,7 +136,7 @@ class ModbusServerContext(object):
         :param slave: The slave context to get
         :returns: The requested slave context
         '''
-        if self.single: slave = 0x00
+        if self.single: slave = Defaults.UnitId
         if slave in self.__slaves:
             return self.__slaves.get(slave)
         else: raise ParameterException("slave does not exist, or is out of range")

@@ -6,14 +6,6 @@ class ModbusFixesTest(unittest.TestCase):
     This is the unittest for the pymodbus._version code
     '''
 
-    def setUp(self):
-        ''' Initializes the test environment '''
-        pass
-
-    def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
-
     def testTrueFalseDefined(self):
         ''' Test that True and False are defined on all versions'''
         try:
@@ -27,8 +19,7 @@ class ModbusFixesTest(unittest.TestCase):
         ''' Test that the null logger is attached'''
         import logging
         logger = logging.getLogger('pymodbus')
-        if len(logger.handlers) == 0:
-          self.assertEqual(len(logger.handlers), 1)
+        self.assertEqual(len(logger.handlers), 1)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -338,6 +338,8 @@ class ModbusSerialClient(BaseModbusClient):
         :param request: The encoded request to send
         :return: The number of bytes written
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         if request:
             return self.socket.write(request)
         return 0
@@ -348,6 +350,8 @@ class ModbusSerialClient(BaseModbusClient):
         :param size: The number of bytes to read
         :return: The bytes read
         '''
+        if not self.socket:
+            raise ConnectionException(self.__str__())
         return self.socket.read(size)
 
     def __str__(self):

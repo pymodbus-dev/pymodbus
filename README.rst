@@ -51,9 +51,6 @@ in this case means how many Virtual IP addresses are allowed).
 For more information please browse the project documentation:
 http://readthedocs.org/docs/pymodbus/en/latest/index.html
 
-If you have questions about pymodbus, please send them to the
-mailing list http://groups.google.com/group/pymodbus 
-
 ------------------------------------------------------------
 Example Code
 ------------------------------------------------------------

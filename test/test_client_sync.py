@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import unittest
+import socket
+import serial
+from mock import patch
 from twisted.test import test_protocols
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
@@ -20,7 +23,7 @@ class mockSocket(object):
     def read(self, size): return '\x00'*size
     def send(self, msg): return len(msg)
     def write(self, msg): return len(msg)
-    def recvfrom(self, size): return '\x00'*size
+    def recvfrom(self, size): return ['\x00'*size]
     def sendto(self, msg, *args): return len(msg)
 
 #---------------------------------------------------------------------------#
@@ -107,6 +110,42 @@ class SynchronousClientTest(unittest.TestCase):
 
         self.assertEqual("127.0.0.1:502", str(client))
 
+    def testUdpClientAddressFamily(self):
+        ''' Test the Udp client get address family method'''
+        client = ModbusUdpClient()
+        self.assertEqual(socket.AF_INET, client._get_address_family('127.0.0.1'))
+        self.assertEqual(socket.AF_INET6, client._get_address_family('::1'))
+
+    def testUdpClientConnect(self):
+        ''' Test the Udp client connection method'''
+        with patch.object(socket, 'socket') as mock_method:
+            mock_method.return_value = object()
+            client = ModbusUdpClient()
+            self.assertTrue(client.connect())
+
+        with patch.object(socket, 'socket') as mock_method:
+            mock_method.side_effect = socket.error()
+            client = ModbusUdpClient()
+            self.assertFalse(client.connect())
+
+    def testUdpClientSend(self):
+        ''' Test the udp client send method'''
+        client = ModbusUdpClient()
+        self.assertRaises(ConnectionException, lambda: client._send(None))
+
+        client.socket = mockSocket()
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(4, client._send('1234'))
+
+    def testUdpClientRecv(self):
+        ''' Test the udp client receive method'''
+        client = ModbusUdpClient()
+        self.assertRaises(ConnectionException, lambda: client._recv(1024))
+
+        client.socket = mockSocket()
+        self.assertEqual('', client._recv(0))
+        self.assertEqual('\x00'*4, client._recv(4))
+
     #-----------------------------------------------------------------------#
     # Test TCP Client
     #-----------------------------------------------------------------------#
@@ -134,6 +173,36 @@ class SynchronousClientTest(unittest.TestCase):
         client.close()
 
         self.assertEqual("127.0.0.1:502", str(client))
+
+    def testTcpClientConnect(self):
+        ''' Test the tcp client connection method'''
+        with patch.object(socket, 'create_connection') as mock_method:
+            mock_method.return_value = object()
+            client = ModbusTcpClient()
+            self.assertTrue(client.connect())
+
+        with patch.object(socket, 'create_connection') as mock_method:
+            mock_method.side_effect = socket.error()
+            client = ModbusTcpClient()
+            self.assertFalse(client.connect())
+
+    def testTcpClientSend(self):
+        ''' Test the tcp client send method'''
+        client = ModbusTcpClient()
+        self.assertRaises(ConnectionException, lambda: client._send(None))
+
+        client.socket = mockSocket()
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(4, client._send('1234'))
+
+    def testTcpClientRecv(self):
+        ''' Test the tcp client receive method'''
+        client = ModbusTcpClient()
+        self.assertRaises(ConnectionException, lambda: client._recv(1024))
+
+        client.socket = mockSocket()
+        self.assertEqual('', client._recv(0))
+        self.assertEqual('\x00'*4, client._recv(4))
     
     #-----------------------------------------------------------------------#
     # Test Serial Client
@@ -166,6 +235,36 @@ class SynchronousClientTest(unittest.TestCase):
         client.close()
 
         self.assertEqual('ascii baud[19200]', str(client))
+
+    def testSerialClientConnect(self):
+        ''' Test the serial client connection method'''
+        with patch.object(serial, 'Serial') as mock_method:
+            mock_method.return_value = object()
+            client = ModbusSerialClient()
+            self.assertTrue(client.connect())
+
+        with patch.object(serial, 'Serial') as mock_method:
+            mock_method.side_effect = serial.SerialException()
+            client = ModbusSerialClient()
+            self.assertFalse(client.connect())
+
+    def testSerialClientSend(self):
+        ''' Test the serial client send method'''
+        client = ModbusSerialClient()
+        self.assertRaises(ConnectionException, lambda: client._send(None))
+
+        client.socket = mockSocket()
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(4, client._send('1234'))
+
+    def testSerialClientRecv(self):
+        ''' Test the serial client receive method'''
+        client = ModbusSerialClient()
+        self.assertRaises(ConnectionException, lambda: client._recv(1024))
+
+        client.socket = mockSocket()
+        self.assertEqual('', client._recv(0))
+        self.assertEqual('\x00'*4, client._recv(4))
 
 #---------------------------------------------------------------------------#
 # Main

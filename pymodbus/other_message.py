@@ -184,7 +184,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        if self.status: ready = ModbusStatus.Ready 
+        if self.status: ready = ModbusStatus.Ready
         else: ready = ModbusStatus.Waiting
         return struct.pack('>HH', ready, self.count)
 
@@ -298,7 +298,7 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        if self.status: ready = ModbusStatus.Ready 
+        if self.status: ready = ModbusStatus.Ready
         else: ready = ModbusStatus.Waiting
         packet  = struct.pack('>B', 6 + len(self.events))
         packet += struct.pack('>H', ready)

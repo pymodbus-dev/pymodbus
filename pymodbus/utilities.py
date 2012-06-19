@@ -37,7 +37,7 @@ def dict_property(store, index):
     elif isinstance(store, str):
         get = lambda self: self.__getattribute__(store)[index]
         set = lambda self, value: self.__getattribute__(store).__setitem__(
-              index, value)
+            index, value)
     else:
         get = lambda self: store[index]
         set = lambda self, value: store.__setitem__(index, value)

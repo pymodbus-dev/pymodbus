@@ -159,7 +159,7 @@ class ClientDecoder(IModbusDecoder):
             WriteSingleCoilResponse,
             ReadWriteMultipleRegistersResponse,
 
-            DiagnosticStatusResponse, 
+            DiagnosticStatusResponse,
 
             ReadExceptionStatusResponse,
             GetCommEventCounterResponse,

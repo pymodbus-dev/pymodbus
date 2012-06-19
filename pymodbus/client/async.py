@@ -138,6 +138,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     #               deferLater(clock, self.delay, send, message)
     #               self.retry -= 1
 
+
 #---------------------------------------------------------------------------#
 # Not Connected Client Protocol
 #---------------------------------------------------------------------------#

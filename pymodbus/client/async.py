@@ -109,7 +109,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         if self._requests and reply:
             tid = reply.transaction_id
-            handler = self.requests.pop(tid, None)
+            handler = self._requests.pop(tid, None)
             if handler:
                 handler.callback(reply)
             else: _logger.debug("Unrequested message: " + str(reply))

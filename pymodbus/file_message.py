@@ -75,7 +75,7 @@ class ReadFileRecordRequest(ModbusRequest):
         The file number: 2 bytes
         The starting record number within the file: 2 bytes
         The length of the record to be read: 2 bytes
-    
+
     The quantity of registers to be read, combined with all other fields
     in the expected response, must not exceed the allowable length of the
     MODBUS PDU: 235 bytes.

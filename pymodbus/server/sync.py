@@ -90,6 +90,7 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
         '''
         raise NotImplementedException("Method not implemented by derived class")
 
+
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
     ''' Implements the modbus server protocol
 
@@ -193,6 +194,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             pdu = self.framer.buildPacket(message)
             _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.sendto(pdu, self.client_address)
+
 
 #---------------------------------------------------------------------------#
 # Server Implementations

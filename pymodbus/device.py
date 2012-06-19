@@ -134,7 +134,7 @@ class ModbusPlusStatistics(object):
         'receive_buffer_use_bit_map'     : [0x00] * 8, # 35-37
         'data_master_output_path'        : [0x00] * 8, # 38-41
         'data_slave_input_path'          : [0x00] * 8, # 42-45
-        'program_master_outptu_path'     : [0x00] * 8, # 46-49 
+        'program_master_outptu_path'     : [0x00] * 8, # 46-49
         'program_slave_input_path'       : [0x00] * 8, # 50-53
     }
 
@@ -286,7 +286,7 @@ class DeviceInformationFactory(Singleton):
     '''
 
     __lookup = {
-        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, range(0x00, 0x03)), 
+        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, range(0x00, 0x03)),
         DeviceInformation.Regular:  lambda c,r,i: c.__gets(r, range(0x00, 0x08)),
         DeviceInformation.Extended: lambda c,r,i: c.__gets(r, range(0x80, i)),
         DeviceInformation.Specific: lambda c,r,i: c.__get(r, i),
@@ -323,6 +323,7 @@ class DeviceInformationFactory(Singleton):
         :returns: The requested data (id, length, value)
         '''
         return dict((id, identity[id]) for id in object_ids)
+
 
 #---------------------------------------------------------------------------#
 # Counters Handler

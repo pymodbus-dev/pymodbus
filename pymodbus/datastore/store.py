@@ -151,7 +151,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
 
         :returns: An initialized datastore
         '''
-        return ModbusSequentialDataBlock(0x00, [0x00]*65536)
+        return ModbusSequentialDataBlock(0x00, [0x00] * 65536)
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range

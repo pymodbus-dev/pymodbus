@@ -82,7 +82,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
-        for key in self._requests:
+        for key in self._requests.keys():
             self._requests.pop(key).errback(Failure(
                 ConnectionException('Connection lost during request')))
 
@@ -107,13 +107,12 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param reply: The reply to process
         '''
-        if self._requests and reply:
+        if reply is not None:
             tid = reply.transaction_id
             handler = self._requests.pop(tid, None)
             if handler:
                 handler.callback(reply)
             else: _logger.debug("Unrequested message: " + str(reply))
-        # TODO errback handled somewhere
 
     def _buildResponse(self, tid):
         ''' Helper method to return a deferred response
@@ -147,7 +146,6 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
     This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     '''
-    __tid = 0
 
     def __init__(self, framer=None):
         ''' Initializes the framer module
@@ -155,7 +153,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        self._requests = deque()  # link queue to tid
+        self._requests = {}
 
     def datagramReceived(self, data, (host, port)):
         ''' Get response, check for valid message, decode result
@@ -179,13 +177,12 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
 
         :param reply: The reply to process
         '''
-        if self._requests and reply:
+        if reply is not None:
             tid = reply.transaction_id
-            handler = self.requests.pop(tid, None)
+            handler = self._requests.pop(tid, None)
             if handler:
                 handler.callback(reply)
             else: _logger.debug("Unrequested message: " + str(reply))
-        # TODO errback handled somewhere
 
     def _buildResponse(self, tid):
         ''' Helper method to return a deferred response

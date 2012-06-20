@@ -6,7 +6,6 @@ It is also used to convert datastores to and from a register list
 dump.  This allows users to build their own data from scratch or
 modifiy an exisiting dump.
 '''
-from __future__ import with_statement
 import pickle
 from sys import exit
 from optparse import OptionParser
@@ -116,19 +115,19 @@ def main():
     ''' The main function for this script '''
     parser = OptionParser()
     parser.add_option("-o", "--output",
-                    help="The output file to write to",
-                    dest="file", default="example.store")
+        help="The output file to write to",
+        dest="file", default="example.store")
     parser.add_option("-t", "--type",
-                    help="The type of block to create (sequential,sparse)",
-                    dest="type", default="sparse")
+        help="The type of block to create (sequential,sparse)",
+        dest="type", default="sparse")
     parser.add_option("-c", "--convert",
-                    help="Convert a file datastore to a register dump",
-                    type="string",
-                    action="callback", callback=build_conversion)
+        help="Convert a file datastore to a register dump",
+        type="string",
+        action="callback", callback=build_conversion)
     parser.add_option("-r", "--restore",
-                    help="Convert a register dump to a file datastore",
-                    type="string",
-                    action="callback", callback=build_translation)
+        help="Convert a register dump to a file datastore",
+        type="string",
+        action="callback", callback=build_translation)
     try:
         (opt, arg) = parser.parse_args() # so we can catch the csv callback
 

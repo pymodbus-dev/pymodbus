@@ -8,7 +8,7 @@ ENVIRONMENT="example"
 PACKAGE="pymodbus"
 
 # ------------------------------------------------------------------ #
-# Preflight Tests
+# preflight tests
 # ------------------------------------------------------------------ #
 if [[ "`which pip`" != "" ]]; then
     INSTALL="pip install -qU"
@@ -31,7 +31,7 @@ if [[ "`which virtualenv`" == "" ]]; then
 fi
 
 # ------------------------------------------------------------------ #
-# Setup
+# setup test
 # ------------------------------------------------------------------ #
 echo -n "Setting up test..."
 virtualenv -q --no-site-packages --distribute ${ENVIRONMENT}
@@ -39,7 +39,7 @@ source ${ENVIRONMENT}/bin/activate
 echo -e "\E[32mPassed\E[0m"
 
 # ------------------------------------------------------------------ #
-# Main Test
+# install test
 # ------------------------------------------------------------------ #
 echo -n "Testing package installation..."
 ${INSTALL} ${PACKAGE}
@@ -50,7 +50,18 @@ else
 fi
 
 # ------------------------------------------------------------------ #
-# Cleanup
+# library test
+# ------------------------------------------------------------------ #
+echo -n "Testing python version..."
+python -c "import pymodbus;print pymodbus.version.version"
+if [[ "$?" == "0" ]]; then
+    echo -e "\E[32mPassed\E[0m"
+else
+    echo -e "\E[31mPassed\E[0m"
+fi
+
+# ------------------------------------------------------------------ #
+# cleanup test
 # ------------------------------------------------------------------ #
 echo -n "Tearing down test..."
 deactivate

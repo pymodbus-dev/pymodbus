@@ -1,6 +1,6 @@
 Name                              Stmts   Miss  Cover   Missing
 ---------------------------------------------------------------
-pymodbus                             15      6    60%   24-27, 36-37
+pymodbus                             15      2    87%   36-37
 pymodbus.bit_read_message            68      0   100%   
 pymodbus.bit_write_message           95      0   100%   
 pymodbus.client                       0      0   100%   
@@ -20,7 +20,7 @@ pymodbus.factory                     77      0   100%
 pymodbus.file_message               181      0   100%   
 pymodbus.interfaces                  43      0   100%   
 pymodbus.internal                     0      0   100%   
-pymodbus.internal.ptwisted           26     19    27%   26-37, 47-55
+pymodbus.internal.ptwisted           16     10    38%   26-37
 pymodbus.mei_message                 68      0   100%   
 pymodbus.other_message              145      0   100%   
 pymodbus.payload                    134      0   100%   
@@ -29,13 +29,13 @@ pymodbus.register_read_message      124      0   100%
 pymodbus.register_write_message      87      0   100%   
 pymodbus.server                       0      0   100%   
 pymodbus.server.async               107     75    30%   40-41, 48, 55-57, 64-73, 80-84, 108-115, 135-142, 149-153, 160-169, 177-180, 192-199, 208-214, 227-238
-pymodbus.server.sync                182    134    26%   40-43, 48-49, 56-64, 72-76, 84, 91, 104-113, 120-124, 137-148, 155-159, 174-185, 192-196, 222-231, 240-241, 246-248, 271-280, 289-291, 296-298, 327-343, 350-358, 366-371, 379-381, 386-387, 399-401, 410-412, 427-429
+pymodbus.server.sync                184      0   100%   
 pymodbus.transaction                263     51    81%   54-72, 240, 244, 384, 414-423, 558-567, 637, 714-723, 749-750
 pymodbus.utilities                   67      0   100%   
 pymodbus.version                     13      0   100%   
 ---------------------------------------------------------------
-TOTAL                              2654    285    89%   
+TOTAL                              2646    138    95%   
 ----------------------------------------------------------------------
-Ran 232 tests in 0.507s
+Ran 249 tests in 1.448s
 
 OK

@@ -2,7 +2,7 @@
 import unittest
 import socket
 import serial
-from mock import patch
+from mock import patch, Mock
 from twisted.test import test_protocols
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
@@ -14,9 +14,6 @@ from pymodbus.transaction import ModbusBinaryFramer
 #---------------------------------------------------------------------------#
 # Mock Classes
 #---------------------------------------------------------------------------#
-class mockTransaction(object):
-    def execute(self, request): return True
-
 class mockSocket(object):
     def close(self): return True
     def recv(self, size): return '\x00'*size
@@ -68,7 +65,7 @@ class SynchronousClientTest(unittest.TestCase):
 
         # a successful execute
         client.connect = lambda: True
-        client.transaction = mockTransaction()
+        client.transaction = Mock(**{'execute.return_value': True})
         self.assertTrue(client.execute())
 
         # a successful connect, no transaction

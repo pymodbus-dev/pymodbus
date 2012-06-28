@@ -63,18 +63,6 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
         response.unit_id = request.unit_id
         self.send(response)
 
-    def decode(self, message):
-        ''' Decodes a request packet
-
-        :param message: The raw modbus request packet
-        :returns: The decoded modbus message or None if error
-        '''
-        try:
-            return decodeModbusRequestPDU(message)
-        except ModbusException, er:
-            _logger.warn("Unable to decode request %s" % er)
-        return None
-
     #---------------------------------------------------------------------------#
     # Base class implementations
     #---------------------------------------------------------------------------#
@@ -105,12 +93,12 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
             try:
                 data = self.request.recv(1024)
                 if data:
-                    _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                    if _logger.isEnabledFor(logging.DEBUG):
+                        _logger.debug(" ".join([hex(ord(x)) for x in data]))
                     self.framer.processIncomingPacket(data, self.execute)
-            except socket.timeout: pass
-            except socket.error, msg:
+            except Exception, msg:
+                # since we only have a single socket, we cannot exit
                 _logger.error("Socket error occurred %s" % msg)
-            except: pass
 
     def send(self, message):
         ''' Send a request (string) to the network
@@ -120,7 +108,8 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
         if message.should_respond:
             #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.send(pdu)
 
 
@@ -138,7 +127,8 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
             try:
                 data = self.request.recv(1024)
                 if not data: self.running = False
-                _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug(" ".join([hex(ord(x)) for x in data]))
                 # if not self.server.control.ListenOnly:
                 self.framer.processIncomingPacket(data, self.execute)
             except socket.timeout: pass
@@ -155,7 +145,8 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         if message.should_respond:
             #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.send(pdu)
 
 
@@ -175,7 +166,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             try:
                 data, self.request = self.request
                 if not data: self.running = False
-                _logger.debug(" ".join([hex(ord(x)) for x in data]))
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug(" ".join([hex(ord(x)) for x in data]))
                 # if not self.server.control.ListenOnly:
                 self.framer.processIncomingPacket(data, self.execute)
             except socket.timeout: pass
@@ -192,7 +184,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         if message.should_respond:
             #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.sendto(pdu, self.client_address)
 
 
@@ -245,7 +238,8 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         '''
         _logger.debug("Modbus server stopped")
         self.socket.close()
-        for thread in self.threads: thread.running = False
+        for thread in self.threads:
+            thread.running = False
 
 
 class ModbusUdpServer(SocketServer.ThreadingUDPServer):
@@ -295,7 +289,8 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         '''
         _logger.debug("Modbus server stopped")
         self.socket.close()
-        for thread in self.threads: thread.running = False
+        for thread in self.threads:
+            thread.running = False
 
 
 class ModbusSerialServer(object):
@@ -341,6 +336,7 @@ class ModbusSerialServer(object):
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
         self.socket   = None
         self._connect()
+        self.is_running = True
 
     def _connect(self):
         ''' Connect to the serial server
@@ -354,7 +350,6 @@ class ModbusSerialServer(object):
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException, msg:
             _logger.error(msg)
-            self.close()
         return self.socket != None
 
     def _build_handler(self):
@@ -378,12 +373,14 @@ class ModbusSerialServer(object):
         '''
         _logger.debug("Started thread to serve client")
         handler = self._build_handler()
-        while True: handler.handle()
+        while self.is_running:
+            handler.handle()
 
     def server_close(self):
         ''' Callback for stopping the running server
         '''
         _logger.debug("Modbus server stopped")
+        self.is_running = False
         self.socket.close()
 
 

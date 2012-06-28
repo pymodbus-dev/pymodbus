@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import unittest
-from pymodbus.internal.ptwisted import InstallSpecializedReactor
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -14,19 +13,9 @@ class TwistedInternalCodeTest(unittest.TestCase):
     # Setup/TearDown
     #-----------------------------------------------------------------------#
 
-    def setUp(self):
-        ''' Initializes the test environment '''
+    def testInstallConch(self):
+        ''' Test that we can install the conch backend '''
         pass
-
-    def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
-
-    def testInstallSpecializedReactor(self):
-        ''' Test that True and False are defined on all versions'''
-        #result = InstallSpecializedReactor()
-        result = True
-        self.assertTrue(result)
 
 #---------------------------------------------------------------------------#
 # Main

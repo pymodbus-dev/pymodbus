@@ -36,20 +36,3 @@ def InstallManagementConsole(namespace, users={'admin': 'admin'}, port=503):
     factory = manhole_ssh.ConchFactory(p)
     reactor.listenTCP(port, factory)
 
-
-def InstallSpecializedReactor():
-    '''
-    This attempts to install a reactor specialized for the given
-    operating system.
-
-    :returns: True if a specialized reactor was installed, False otherwise
-    '''
-    from twisted.internet import epollreactor, kqreactor, iocpreactor
-    for reactor in [epollreactor, kqreactor, iocpreactor]:
-        try:
-            reactor.install()
-            _logger.debug("Installed %s" % reactor.__name__)
-            return True
-        except: pass
-    _logger.debug("No specialized reactor was installed")
-    return False

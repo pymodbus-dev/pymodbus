@@ -266,7 +266,7 @@ class ModbusUdpClient(BaseModbusClient):
 # Modbus Serial Client Transport Implementation
 #---------------------------------------------------------------------------#
 class ModbusSerialClient(BaseModbusClient):
-    ''' Implementation of a modbus udp client
+    ''' Implementation of a modbus serial client
     '''
 
     def __init__(self, method='ascii', **kwargs):
@@ -284,7 +284,7 @@ class ModbusSerialClient(BaseModbusClient):
         :param bytesize: The bytesize of the serial messages
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
-        :param timeout: The timeout to use for the serial device
+        :param timeout: The timeout between serial requests (default 3s)
         '''
         self.method   = method
         self.socket   = None

@@ -27,5 +27,5 @@ API Documentation
 .. autoclass:: DeviceInformation
    :members:
 
-.. autoclass:: MoreFollows
+.. autoclass:: MoreData
    :members:

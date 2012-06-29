@@ -20,6 +20,7 @@ Example Library Code
    modbus-scraper
    modbus-simulator
    message-parser
+   serial-forwarder
    synchronous-client
    synchronous-client-ext
    synchronous-server

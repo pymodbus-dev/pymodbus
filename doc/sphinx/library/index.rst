@@ -21,6 +21,7 @@ from the sourcecode*
    interfaces.rst
    exceptions.rst
    other-message.rst
+   mei-message.rst
    file-message.rst
    events.rst
    payload.rst

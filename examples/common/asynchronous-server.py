@@ -16,6 +16,7 @@ from pymodbus.server.async import StartSerialServer
 
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 #---------------------------------------------------------------------------# 
 # configure the service logging
@@ -83,4 +84,5 @@ context = ModbusServerContext(slaves=store, single=True)
 #---------------------------------------------------------------------------# 
 StartTcpServer(context)
 #StartUdpServer(context)
-#StartSerialServer(context, port='/dev/pts/13')
+#StartSerialServer(context, port='/dev/pts/3', framer=ModbusRtuFramer)
+#StartSerialServer(context, port='/dev/pts/3', framer=ModbusAsciiFramer)

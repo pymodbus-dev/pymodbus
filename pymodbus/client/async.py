@@ -66,7 +66,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        self._requests = {}
+        serial = not isinstance(framer, ModbusSocketFramer)
+        self.transaction = ModbusTransactionManager(self, serial)
         self._connected = False
 
     def connectionMade(self):
@@ -82,8 +83,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
-        for key in self._requests.keys():
-            self._requests.pop(key).errback(Failure(
+        for tid in self.transaction:
+            self.transaction.getTransaction(tid).errback(Failure(
                 ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
@@ -109,7 +110,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         if reply is not None:
             tid = reply.transaction_id
-            handler = self._requests.pop(tid, None)
+            handler = self.transaction.getTransaction(tid)
             if handler:
                 handler.callback(reply)
             else: _logger.debug("Unrequested message: " + str(reply))
@@ -126,7 +127,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
                 ConnectionException('Client is not connected')))
 
         d = defer.Deferred()
-        self._requests[tid] = d # TODO add request here as well
+        self.transaction.addTransaction(d, tid)
         return d
 
     #----------------------------------------------------------------------#
@@ -153,7 +154,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        self._requests = {}
+        serial = not isinstance(framer, ModbusSocketFramer)
+        self.transaction = ModbusTransactionManager(self, serial)
 
     def datagramReceived(self, data, (host, port)):
         ''' Get response, check for valid message, decode result
@@ -167,7 +169,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        request.transaction_id = _manager.getNextTID()
+        request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
@@ -179,7 +181,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         '''
         if reply is not None:
             tid = reply.transaction_id
-            handler = self._requests.pop(tid, None)
+            handler = self.transaction.getTransaction(tid)
             if handler:
                 handler.callback(reply)
             else: _logger.debug("Unrequested message: " + str(reply))
@@ -192,7 +194,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :returns: A defer linked to the latest request
         '''
         d = defer.Deferred()
-        self._requests[tid] = d # TODO add request here as well
+        self.transaction.addTransaction(d, tid)
         return d
 
 

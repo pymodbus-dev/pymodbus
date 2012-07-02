@@ -15,7 +15,7 @@ Reference Server and Client
 ------------------------------------------------------------
 
 The two reference implementations were provided by the modbus
-drive team (http://www.modbusdriver.com/modpoll.html). Attached
+driver team (http://www.modbusdriver.com/modpoll.html). Attached
 is the license that the binaries are released under.
 
 .. note::

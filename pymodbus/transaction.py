@@ -40,12 +40,21 @@ class ModbusTransactionManager(object):
     __tid = Defaults.TransactionId
     __transactions = {}
 
-    def __init__(self, client=None):
+    def __init__(self, client=None, fifo=False):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
+        :param fifo: Should this just return results in FIFO order
         '''
         self.client = client
+        self.fifo = fifo
+
+    def __iter__(self):
+        ''' Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        '''
+        return iter(self.__transactions.keys())
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -71,15 +80,18 @@ class ModbusTransactionManager(object):
                 retries -= 1
         return self.getTransaction(request.transaction_id)
 
-    def addTransaction(self, request):
+    def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
 
         This holds the requets in case it needs to be resent.
         After being sent, the request is removed.
 
         :param request: The request to hold on to
+        :param tid: The transaction id to attach this request with
         '''
-        tid = request.transaction_id
+        if tid == None:
+            tid = request.transaction_id
+        _logger.debug("Adding transaction %d" % tid)
         ModbusTransactionManager.__transactions[tid] = request
 
     def getTransaction(self, tid):
@@ -89,6 +101,10 @@ class ModbusTransactionManager(object):
 
         :param tid: The transaction to retrieve
         '''
+        if self.fifo:
+            if len(ModbusTransactionManager.__transactions):
+                return ModbusTransactionManager.__transactions.popitem()[1]
+            else: return None
         return ModbusTransactionManager.__transactions.pop(tid, None)
 
     def delTransaction(self, tid):
@@ -96,6 +112,9 @@ class ModbusTransactionManager(object):
 
         :param tid: The transaction to remove
         '''
+        if self.fifo:
+            if len(ModbusTransactionManager.__transactions):
+                ModbusTransactionManager.__transactions.popitem()
         ModbusTransactionManager.__transactions.pop(tid, None)
 
     def getNextTID(self):

@@ -33,8 +33,9 @@ class BaseModbusClient(ModbusClientMixin):
 
         :param framer: The modbus framer implementation to use
         '''
+        serial = not isinstance(framer, ModbusSocketFramer)
         self.framer = framer
-        self.transaction = ModbusTransactionManager(self)
+        self.transaction = ModbusTransactionManager(self, serial)
 
     #-----------------------------------------------------------------------#
     # Client interface
@@ -77,9 +78,7 @@ class BaseModbusClient(ModbusClientMixin):
         '''
         if not self.connect():
             raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
-        if self.transaction:
-            return self.transaction.execute(request)
-        raise ConnectionException("Client Not Connected")
+        return self.transaction.execute(request)
 
     #-----------------------------------------------------------------------#
     # The magic methods

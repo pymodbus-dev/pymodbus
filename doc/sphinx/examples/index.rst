@@ -14,6 +14,7 @@ Example Library Code
    
    asynchronous-client
    asynchronous-server
+   asynchronous-processor
    custom-message
    modbus-logging
    modbus-payload

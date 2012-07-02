@@ -52,7 +52,8 @@ class ModbusTcpProtocol(protocol.Protocol):
 
         :param data: The data sent by the client
         '''
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(" ".join([hex(ord(x)) for x in data]))
         if not self.factory.control.ListenOnly:
             self.framer.processIncomingPacket(data, self._execute)
 
@@ -80,7 +81,8 @@ class ModbusTcpProtocol(protocol.Protocol):
         if message.should_respond:
             self.factory.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug('send: %s' % b2a_hex(pdu))
             return self.transport.write(pdu)
 
 
@@ -147,7 +149,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         :param data: The data sent by the client
         '''
         _logger.debug("Client Connected [%s:%s]" % addr)
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(" ".join([hex(ord(x)) for x in data]))
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
             self.framer.processIncomingPacket(data, continuation)
@@ -176,7 +179,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         '''
         self.control.Counter.BusMessage += 1
         pdu = self.framer.buildPacket(message)
-        _logger.debug('send: %s' % b2a_hex(pdu))
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug('send: %s' % b2a_hex(pdu))
         return self.transport.write(pdu, addr)
 
 

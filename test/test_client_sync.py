@@ -32,20 +32,6 @@ class SynchronousClientTest(unittest.TestCase):
     '''
 
     #-----------------------------------------------------------------------#
-    # Setup/TearDown
-    #-----------------------------------------------------------------------#
-
-    def setUp(self):
-        '''
-        Initializes the test environment
-        '''
-        pass
-
-    def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
-
-    #-----------------------------------------------------------------------#
     # Test Base Client
     #-----------------------------------------------------------------------#
 
@@ -66,13 +52,8 @@ class SynchronousClientTest(unittest.TestCase):
         # a successful execute
         client.connect = lambda: True
         client.transaction = Mock(**{'execute.return_value': True})
+        self.assertEqual(client, client.__enter__())
         self.assertTrue(client.execute())
-
-        # a successful connect, no transaction
-        client.connect = lambda: True
-        client.transaction = None
-        self.assertEqual(client.__enter__(), client)
-        self.assertRaises(ConnectionException, lambda: client.execute())
 
         # a unsuccessful connect
         client.connect = lambda: False

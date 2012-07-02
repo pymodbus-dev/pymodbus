@@ -17,33 +17,19 @@ class AsynchronousClientTest(unittest.TestCase):
     '''
 
     #-----------------------------------------------------------------------#
-    # Setup/TearDown
-    #-----------------------------------------------------------------------#
-
-    def setUp(self):
-        '''
-        Initializes the test environment
-        '''
-        pass
-
-    def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
-
-    #-----------------------------------------------------------------------#
     # Test Client Protocol
     #-----------------------------------------------------------------------#
 
     def testClientProtocolInit(self):
         ''' Test the client protocol initialize '''
         protocol = ModbusClientProtocol()
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
         self.assertFalse(protocol._connected)
         self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
 
         framer = object()
         protocol = ModbusClientProtocol(framer=framer)
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
         self.assertFalse(protocol._connected)
         self.assertTrue(framer is protocol.framer)
 
@@ -90,7 +76,8 @@ class AsynchronousClientTest(unittest.TestCase):
 
         request = ReadCoilsRequest(1, 1)
         d = protocol.execute(request)
-        self.assertEqual(d, protocol._requests[request.transaction_id])
+        tid = request.transaction_id
+        self.assertEqual(d, protocol.transaction.getTransaction(tid))
 
     def testClientProtocolHandleResponse(self):
         ''' Test the client protocol handles responses '''
@@ -113,17 +100,17 @@ class AsynchronousClientTest(unittest.TestCase):
     def testClientProtocolBuildResponse(self):
         ''' Test the udp client protocol builds responses '''
         protocol = ModbusClientProtocol()
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
 
         def handle_failure(failure):
             self.assertTrue(isinstance(failure.value, ConnectionException))
         d = protocol._buildResponse(0x00)
         d.addErrback(handle_failure)
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
 
         protocol._connected = True
         d = protocol._buildResponse(0x00)
-        self.assertEqual(1, len(protocol._requests))
+        self.assertEqual(1, len(list(protocol.transaction)))
 
     #-----------------------------------------------------------------------#
     # Test Udp Client Protocol
@@ -132,12 +119,11 @@ class AsynchronousClientTest(unittest.TestCase):
     def testUdpClientProtocolInit(self):
         ''' Test the udp client protocol initialize '''
         protocol = ModbusUdpClientProtocol()
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
         self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
 
         framer = object()
         protocol = ModbusClientProtocol(framer=framer)
-        self.assertEqual(0, len(protocol._requests))
         self.assertTrue(framer is protocol.framer)
 
     def testUdpClientProtocolDataReceived(self):
@@ -162,7 +148,8 @@ class AsynchronousClientTest(unittest.TestCase):
 
         request = ReadCoilsRequest(1, 1)
         d = protocol.execute(request)
-        self.assertEqual(d, protocol._requests[request.transaction_id])
+        tid = request.transaction_id
+        self.assertEqual(d, protocol.transaction.getTransaction(tid))
 
     def testUdpClientProtocolHandleResponse(self):
         ''' Test the udp client protocol handles responses '''
@@ -184,10 +171,10 @@ class AsynchronousClientTest(unittest.TestCase):
     def testUdpClientProtocolBuildResponse(self):
         ''' Test the udp client protocol builds responses '''
         protocol = ModbusUdpClientProtocol()
-        self.assertEqual(0, len(protocol._requests))
+        self.assertEqual(0, len(list(protocol.transaction)))
 
         d = protocol._buildResponse(0x00)
-        self.assertEqual(1, len(protocol._requests))
+        self.assertEqual(1, len(list(protocol.transaction)))
 
     #-----------------------------------------------------------------------#
     # Test Client Factories

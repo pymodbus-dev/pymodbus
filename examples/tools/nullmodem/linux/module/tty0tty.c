@@ -103,7 +103,7 @@ static int tty0tty_open(struct tty_struct *tty, struct file *file)
 		if (!tty0tty)
 			return -ENOMEM;
 
-		init_MUTEX(&tty0tty->sem);
+		sema_init(&tty0tty->sem, 1);
 		tty0tty->open_count = 0;
 
 		tty0tty_table[index] = tty0tty;

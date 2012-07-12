@@ -79,7 +79,12 @@ class Decoder(object):
         '''
         print "%-15s = %s" % ('name', message.__class__.__name__)
         for k,v in message.__dict__.items():
-            if isinstance(v, collections.Iterable):
+            if isinstance(v, dict):
+                print "%-15s =" % k
+                for kk,vv in v.items():
+                    print "  %-12s => %s" % (kk, vv)
+
+            elif isinstance(v, collections.Iterable):
                 print "%-15s =" % k
                 value = str([int(x) for x  in v])
                 for line in textwrap.wrap(value, 60):
@@ -162,7 +167,7 @@ def main():
 
     framer = lookup = {
         'tcp':    ModbusSocketFramer,
-        'rtc':    ModbusRtuFramer,
+        'rtu':    ModbusRtuFramer,
         'binary': ModbusBinaryFramer,
         'ascii':  ModbusAsciiFramer,
     }.get(option.parser, ModbusSocketFramer)

@@ -19,6 +19,13 @@ _MCB = ModbusControlBlock()
 #---------------------------------------------------------------------------#
 class ReadDeviceInformationRequest(ModbusRequest):
     '''
+    This function code allows reading the identification and additional
+    information relative to the physical and functional description of a
+    remote device, only.
+
+    The Read Device Identification interface is modeled as an address space
+    composed of a set of addressable data elements. The data elements are
+    called objects and an object Id identifies them.  
     '''
     function_code = 0x2b
     sub_function_code = 0x0e
@@ -88,12 +95,14 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
         '''
-        size = 6 # skip the header information
+        size  = 8 # skip the header information
+        count = struct.unpack('>B', buffer[7])[0]
 
-        while size < len(buffer):
+        while count > 0:
             _, object_length = struct.unpack('>BB', buffer[size:size+2])
             size += object_length + 2
-        return size
+            count -= 1
+        return size + 2
 
     def __init__(self, read_code=None, information=None):
         ''' Initializes a new instance

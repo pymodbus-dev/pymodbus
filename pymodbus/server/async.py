@@ -187,15 +187,16 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 #---------------------------------------------------------------------------#
 # Starting Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context, identity=None,
-                   server_address=("", Defaults.Port)):
+def StartTcpServer(context, identity=None, server_address=None):
     ''' Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
+    :param server_address: An optional (interface,port) to bind to.
     '''
     from twisted.internet import reactor
-
+    if not server_address:
+        server_address = ("", Defaults.Port)
     _logger.info("Starting Modbus TCP Server on %s:%s" % server_address)
     framer = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity)
@@ -204,15 +205,16 @@ def StartTcpServer(context, identity=None,
     reactor.run()
 
 
-def StartUdpServer(context, identity=None,
-                   server_address=("", Defaults.Port)):
+def StartUdpServer(context, identity=None, server_address=None):
     ''' Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
+    :param server_address: An optional (interface,port) to bind to.
     '''
     from twisted.internet import reactor
-
+    if not server_address:
+        server_address = ("", Defaults.Port)
     _logger.info("Starting Modbus UDP Server on %s:%s" % server_address)
     framer = ModbusSocketFramer
     server = ModbusUdpProtocol(context, framer, identity)

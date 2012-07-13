@@ -201,8 +201,8 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None, 
-                 server_address=("", Defaults.Port)):
+    def __init__(self, context, framer=None, identity=None,
+                 server_address=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -223,7 +223,8 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingTCPServer.__init__(self,
-            server_address, ModbusConnectedRequestHandler)
+            server_address or ("", Defaults.Port),
+            ModbusConnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -252,8 +253,8 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None,
-                 server_address=("", Defaults.Port)):
+    def __init__(self, context, framer=None, identity=None, 
+                 server_address=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -273,8 +274,9 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        SocketServer.ThreadingUDPServer.__init__(self,
-            server_address, ModbusDisconnectedRequestHandler)
+        SocketServer.ThreadingUDPServer.__init__(
+            self, server_address or ("", Defaults.Port),
+            ModbusDisconnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -389,8 +391,7 @@ class ModbusSerialServer(object):
 #---------------------------------------------------------------------------#
 # Creation Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context=None, identity=None,
-                   server_address=("", Defaults.Port)):
+def StartTcpServer(context=None, identity=None, server_address=None):
     ''' A factory to start and run a tcp modbus server
 
     :param context: The ModbusServerContext datastore
@@ -402,8 +403,7 @@ def StartTcpServer(context=None, identity=None,
     server.serve_forever()
 
 
-def StartUdpServer(context=None, identity=None,
-                   server_address=("", Defaults.Port)):
+def StartUdpServer(context=None, identity=None, server_address=None):
     ''' A factory to start and run a udp modbus server
 
     :param context: The ModbusServerContext datastore

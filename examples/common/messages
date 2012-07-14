@@ -1,5 +1,18 @@
 # ------------------------------------------------------------
+# What follows is a collection of encoded messages that can
+# be used to test the message-parser.  Simply uncomment the
+# messages you want decoded and run the message parser with
+# the given arguments. It should be noted that the messages
+# below are in ascii format.
+#
+# ------------------------------------------------------------
 # Modbus TCP Messages
+# ------------------------------------------------------------
+# [         MBAP Header         ] [ Function Code] [ Data ]
+# [ tid ][ pid ][ length ][ uid ]
+#   2b     2b     2b        1b           1b           Nb
+#
+# ./message-parser -b -p tcp -f messages
 # ------------------------------------------------------------
 #000112340006ff0101020004
 #000112340006ff0201020004
@@ -13,4 +26,36 @@
 # ------------------------------------------------------------
 # Modbus RTU Messages
 # ------------------------------------------------------------
-042B0E01810001010006666F6F626172D73B
+# [Address ][ Function Code] [ Data ][ CRC ]
+#  1b         1b               Nb      2b   
+#
+# ./message-parser -b -p rtu -f messages
+# ------------------------------------------------------------
+#042B0E01810001010006666F6F626172D73B
+#00060001000399DA
+#00050000FFFFCDAB
+#00040000FFFFF06B
+#000404010203044A4B
+#00030000FFFF45AB
+#000304010203044BFC
+#00020000FFFF786B
+#000204010203044A2D
+#
+# ------------------------------------------------------------
+# Modbus ASCII Messages
+# ------------------------------------------------------------
+# [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
+#   1c        2c         2c         Nc     2c      2c
+#
+# ./message-parser -b -p ascii -f messages
+# ------------------------------------------------------------
+#
+# ------------------------------------------------------------
+# Modbus Binary Messages
+# ------------------------------------------------------------
+# [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
+#   1b        1b         1b         Nb     2b     1b
+#
+# ./message-parser -b -p binary -f messages
+# ------------------------------------------------------------
+#

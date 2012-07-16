@@ -37,20 +37,23 @@ modbus_log = logging.getLogger("pymodbus")
 #---------------------------------------------------------------------------# 
 class Decoder(object):
 
-    def __init__(self, framer):
+    def __init__(self, framer, encode=False):
         ''' Initialize a new instance of the decoder
 
         :param framer: The framer to use
+        :param encode: If the message needs to be encoded
         '''
         self.framer = framer
+        self.encode = encode
 
     def decode(self, message):
         ''' Attempt to decode the supplied message
 
         :param message: The messge to decode
         '''
+        value = message if self.encode else message.encode('hex')
         print "="*80
-        print "Decoding Message %s" % message.encode('hex')
+        print "Decoding Message %s" % value
         print "="*80
         decoders = [
             self.framer(ServerDecoder()),
@@ -148,8 +151,8 @@ def get_messages(option):
         with open(option.file, "r") as handle:
             for line in handle:
                 if line.startswith('#'): continue
-                line = line.strip()
                 if not option.ascii:
+                    line = line.strip()
                     line = line.decode('hex')
                 yield line
 
@@ -172,7 +175,7 @@ def main():
         'ascii':  ModbusAsciiFramer,
     }.get(option.parser, ModbusSocketFramer)
 
-    decoder = Decoder(framer)
+    decoder = Decoder(framer, option.ascii)
     for message in get_messages(option):
         decoder.decode(message)
 

@@ -297,7 +297,7 @@ class ModbusTransactionTest(unittest.TestCase):
     #---------------------------------------------------------------------------# 
     def testBinaryFramerTransactionReady(self):
         ''' Test a binary frame transaction '''
-        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x55\xd5\x7d'
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d'
         self.assertFalse(self._binary.isFrameReady())
         self.assertFalse(self._binary.checkFrame())
         self._binary.addToFrame(msg)
@@ -310,7 +310,7 @@ class ModbusTransactionTest(unittest.TestCase):
 
     def testBinaryFramerTransactionFull(self):
         ''' Test a full binary frame transaction '''
-        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x55\xd5\x7d'
+        msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d'
         pack = msg[3:-3]
         self._binary.addToFrame(msg)
         self.assertTrue(self._binary.checkFrame())
@@ -321,7 +321,7 @@ class ModbusTransactionTest(unittest.TestCase):
     def testBinaryFramerTransactionHalf(self):
         ''' Test a half completed binary frame transaction '''
         msg1 = '\x7b\x01\x03\x00'
-        msg2 = '\x00\x00\x05\x55\xd5\x7d'
+        msg2 = '\x00\x00\x05\x85\xC9\x7d'
         pack = msg1[3:] + msg2[:-3]
         self._binary.addToFrame(msg1)
         self.assertFalse(self._binary.checkFrame())

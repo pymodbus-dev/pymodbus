@@ -47,8 +47,9 @@
 # [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
 #   1c        2c         2c         Nc     2c      2c
 #
-# ./message-parser -b -p ascii -f messages
+# ./message-parser -a -p ascii -f messages
 # ------------------------------------------------------------
+#:000100340012B9
 #
 # ------------------------------------------------------------
 # Modbus Binary Messages
@@ -59,3 +60,4 @@
 # ./message-parser -b -p binary -f messages
 # ------------------------------------------------------------
 #
+7b010800150000f1cf7d

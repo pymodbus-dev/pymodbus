@@ -25,10 +25,10 @@ class ReadExceptionStatusRequest(ModbusRequest):
     function_code = 0x07
     _rtu_frame_size = 4
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializes a new instance
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
 
     def encode(self):
         ''' Encodes the message
@@ -69,12 +69,12 @@ class ReadExceptionStatusResponse(ModbusResponse):
     function_code = 0x07
     _rtu_frame_size = 5
 
-    def __init__(self, status=0x00):
+    def __init__(self, status=0x00, **kwargs):
         ''' Initializes a new instance
 
         :param status: The status response to report
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.status = status
 
     def encode(self):
@@ -126,10 +126,10 @@ class GetCommEventCounterRequest(ModbusRequest):
     function_code = 0x0b
     _rtu_frame_size = 4
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializes a new instance
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
 
     def encode(self):
         ''' Encodes the message
@@ -170,12 +170,12 @@ class GetCommEventCounterResponse(ModbusResponse):
     function_code = 0x0b
     _rtu_frame_size = 8
 
-    def __init__(self, count=0x0000):
+    def __init__(self, count=0x0000, **kwargs):
         ''' Initializes a new instance
 
         :param count: The current event counter value
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.count = count
         self.status = True  # this means we are ready, not waiting
 
@@ -231,10 +231,10 @@ class GetCommEventLogRequest(ModbusRequest):
     function_code = 0x0c
     _rtu_frame_size = 4
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializes a new instance
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
 
     def encode(self):
         ''' Encodes the message
@@ -287,7 +287,7 @@ class GetCommEventLogResponse(ModbusResponse):
         :param event_count: The current event count
         :param events: The collection of events to send
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.status = kwargs.get('status', True)
         self.message_count = kwargs.get('message_count', 0)
         self.event_count = kwargs.get('event_count', 0)
@@ -341,10 +341,10 @@ class ReportSlaveIdRequest(ModbusRequest):
     function_code = 0x11
     _rtu_frame_size = 4
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializes a new instance
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
 
     def encode(self):
         ''' Encodes the message
@@ -382,13 +382,13 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier=0x00, status=True):
+    def __init__(self, identifier='\x00', status=True, **kwargs):
         ''' Initializes a new instance
 
         :param identifier: The identifier of the slave
         :param status: The status response to report
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.identifier = identifier
         self.status = status
 

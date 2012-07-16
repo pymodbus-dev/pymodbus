@@ -30,12 +30,12 @@ class DiagnosticStatusRequest(ModbusRequest):
     function_code = 0x08
     _rtu_frame_size = 8
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         '''
         Base initializer for a diagnostic request
         '''
+        ModbusRequest.__init__(self, **kwargs)
         self.message = None
-        ModbusRequest.__init__(self)
 
     def encode(self):
         '''
@@ -74,12 +74,12 @@ class DiagnosticStatusResponse(ModbusResponse):
     function_code = 0x08
     _rtu_frame_size = 8
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         '''
         Base initializer for a diagnostic response
         '''
+        ModbusResponse.__init__(self, **kwargs)
         self.message = None
-        ModbusResponse.__init__(self)
 
     def encode(self):
         '''
@@ -118,7 +118,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     the execute method
     '''
 
-    def __init__(self, data=0x0000):
+    def __init__(self, data=0x0000, **kwargs):
         '''
         General initializer for a simple diagnostic request
 
@@ -127,7 +127,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
 
         :param data: The data to send along with the request
         '''
-        DiagnosticStatusRequest.__init__(self)
+        DiagnosticStatusRequest.__init__(self, **kwargs)
         self.message = data
 
     def execute(self, *args):
@@ -143,12 +143,12 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
     2 bytes of data.
     '''
 
-    def __init__(self, data=0x0000):
+    def __init__(self, data=0x0000, **kwargs):
         ''' General initializer for a simple diagnostic response
 
         :param data: The resulting data to return to the client
         '''
-        DiagnosticStatusResponse.__init__(self)
+        DiagnosticStatusResponse.__init__(self, **kwargs)
         self.message = data
 
 
@@ -163,12 +163,12 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
     '''
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000):
+    def __init__(self, message=0x0000, **kwargs):
         ''' Initializes a new instance of the request
 
         :param message: The message to send to loopback
         '''
-        DiagnosticStatusRequest.__init__(self)
+        DiagnosticStatusRequest.__init__(self, **kwargs)
         if isinstance(message, list):
             self.message = message
         else: self.message = [message]
@@ -189,12 +189,12 @@ class ReturnQueryDataResponse(DiagnosticStatusResponse):
     '''
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000):
+    def __init__(self, message=0x0000, **kwargs):
         ''' Initializes a new instance of the response
 
         :param message: The message to loopback
         '''
-        DiagnosticStatusResponse.__init__(self)
+        DiagnosticStatusResponse.__init__(self, **kwargs)
         if isinstance(message, list):
             self.message = message
         else: self.message = [message]
@@ -214,12 +214,12 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
     '''
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False):
+    def __init__(self, toggle=False, **kwargs):
         ''' Initializes a new request
 
         :param toggle: Set to True to toggle, False otherwise
         '''
-        DiagnosticStatusRequest.__init__(self)
+        DiagnosticStatusRequest.__init__(self, **kwargs)
         if toggle:
             self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
@@ -244,12 +244,12 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
     '''
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False):
+    def __init__(self, toggle=False, **kwargs):
         ''' Initializes a new response
 
         :param toggle: Set to True if we toggled, False otherwise
         '''
-        DiagnosticStatusResponse.__init__(self)
+        DiagnosticStatusResponse.__init__(self, **kwargs)
         if toggle:
             self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
@@ -348,10 +348,10 @@ class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
     sub_function_code = 0x0004
     should_respond    = False
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         ''' Initializer to block a return response
         '''
-        DiagnosticStatusResponse.__init__(self)
+        DiagnosticStatusResponse.__init__(self, **kwargs)
         self.message = []
 
 

@@ -83,12 +83,12 @@ class ReadFileRecordRequest(ModbusRequest):
     function_code = 0x14
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None):
+    def __init__(self, records=None, **kwargs):
         ''' Initializes a new instance
 
         :param records: The file record requests to be read
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.records  = records or []
 
     def encode(self):
@@ -138,12 +138,12 @@ class ReadFileRecordResponse(ModbusResponse):
     function_code = 0x14
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None):
+    def __init__(self, records=None, **kwargs):
         ''' Initializes a new instance
 
         :param records: The requested file records
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.records = records or []
 
     def encode(self):
@@ -183,12 +183,12 @@ class WriteFileRecordRequest(ModbusRequest):
     function_code = 0x15
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None):
+    def __init__(self, records=None, **kwargs):
         ''' Initializes a new instance
 
         :param records: The file record requests to be read
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.records  = records or []
 
     def encode(self):
@@ -239,12 +239,12 @@ class WriteFileRecordResponse(ModbusResponse):
     function_code = 0x15
     _rtu_byte_count_pos = 2
 
-    def __init__(self, records=None):
+    def __init__(self, records=None, **kwargs):
         ''' Initializes a new instance
 
         :param records: The file record requests to be read
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.records  = records or []
 
     def encode(self):
@@ -287,14 +287,14 @@ class MaskWriteRegisterRequest(ModbusRequest):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000):
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000, **kwargs):
         ''' Initializes a new instance
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address  = address
         self.and_mask = and_mask
         self.or_mask  = or_mask
@@ -339,14 +339,14 @@ class MaskWriteRegisterResponse(ModbusResponse):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000):
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000, **kwargs):
         ''' Initializes a new instance
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask applied to the register address
         :param or_mask: The or bitmask applied to the register address
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.address  = address
         self.and_mask = and_mask
         self.or_mask  = or_mask
@@ -381,12 +381,12 @@ class ReadFifoQueueRequest(ModbusRequest):
     function_code = 0x18
     _rtu_frame_size = 6
 
-    def __init__(self, address=0x0000):
+    def __init__(self, address=0x0000, **kwargs):
         ''' Initializes a new instance
 
         :param address: The fifo pointer address (0x0000 to 0xffff)
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.values = []  # this should be added to the context
 
@@ -441,12 +441,12 @@ class ReadFifoQueueResponse(ModbusResponse):
         lo_byte = struct.unpack(">B", buffer[3])[0]
         return (hi_byte << 16) + lo_byte + 6
 
-    def __init__(self, values=None):
+    def __init__(self, values=None, **kwargs):
         ''' Initializes a new instance
 
         :param values: The list of values of the fifo to return
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.values = values or []
 
     def encode(self):

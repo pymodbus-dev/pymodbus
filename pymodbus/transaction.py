@@ -660,7 +660,7 @@ class ModbusBinaryFramer(IModbusFramer):
             self.__header['len'] = end
             self.__header['uid'] = struct.unpack('>B', self.__buffer[1:2])
             self.__header['crc'] = struct.unpack('>H', self.__buffer[end - 2:end])[0]
-            data = self.__buffer[start:end - 2]
+            data = self.__buffer[start + 1:end - 2]
             return checkCRC(data, self.__header['crc'])
         return False
 

@@ -21,21 +21,6 @@ class ModbusMeiMessageTest(unittest.TestCase):
     '''
 
     #-----------------------------------------------------------------------#
-    # Setup/TearDown
-    #-----------------------------------------------------------------------#
-
-    def setUp(self):
-        '''
-        Initializes the test environment and builds request/result
-        encoding pairs
-        '''
-        pass
-
-    def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
-
-    #-----------------------------------------------------------------------#
     # Read Device Information
     #-----------------------------------------------------------------------#
 
@@ -97,7 +82,7 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual("ReadDeviceInformationResponse(1)", str(handle))
 
     def testReadDeviceInformationResponseDecode(self):
-        ''' Test that the read fifo queue response can decode '''
+        ''' Test that the read device information response can decode '''
         message  = '\x0e\x01\x01\x00\x00\x03'
         message += '\x00\x07Company\x01\x07Product\x02\x07v2.1.12' 
         handle  = ReadDeviceInformationResponse(read_code=0x00, information=[])
@@ -109,11 +94,10 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual(handle.information[0x02], 'v2.1.12')
 
     def testRtuFrameSize(self):
-        ''' Test that the read fifo queue response can decode '''
-        message  = '\x0e\x01\x01\x00\x00\x03'
-        message += '\x00\x07Company\x01\x07Product\x02\x07v2.1.12' 
+        ''' Test that the read device information response can decode '''
+        message = '\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B'
         result  = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
-        self.assertEqual(result, 33)
+        self.assertEqual(result, 18)
 
 
 #---------------------------------------------------------------------------#

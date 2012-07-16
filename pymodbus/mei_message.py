@@ -31,13 +31,13 @@ class ReadDeviceInformationRequest(ModbusRequest):
     sub_function_code = 0x0e
     _rtu_frame_size = 3
 
-    def __init__(self, read_code=None, object_id=0x00):
+    def __init__(self, read_code=None, object_id=0x00, **kwargs):
         ''' Initializes a new instance
 
         :param read_code: The device information read code
         :param object_id: The object to read from
         '''
-        ModbusRequest.__init__(self)
+        ModbusRequest.__init__(self, **kwargs)
         self.read_code = read_code or DeviceInformation.Basic
         self.object_id = object_id
 
@@ -104,13 +104,13 @@ class ReadDeviceInformationResponse(ModbusResponse):
             count -= 1
         return size + 2
 
-    def __init__(self, read_code=None, information=None):
+    def __init__(self, read_code=None, information=None, **kwargs):
         ''' Initializes a new instance
 
         :param read_code: The device information read code
         :param information: The requested information request
         '''
-        ModbusResponse.__init__(self)
+        ModbusResponse.__init__(self, **kwargs)
         self.read_code = read_code or DeviceInformation.Basic
         self.information = information or {}
         self.number_of_objects = len(self.information)

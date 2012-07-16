@@ -1,0 +1,215 @@
+# ------------------------------------------------------------
+# What follows is a collection of encoded messages that can
+# be used to test the message-parser.  Simply uncomment the
+# messages you want decoded and run the message parser with
+# the given arguments. What follows is the listing of messages
+# that are encoded in each format:
+#
+# - ReadHoldingRegistersResponse
+# - ReadDiscreteInputsResponse
+# - ReadInputRegistersResponse
+# - ReadCoilsResponse
+# - WriteMultipleCoilsResponse
+# - WriteMultipleRegistersResponse
+# - WriteSingleRegisterResponse
+# - WriteSingleCoilResponse
+# - ReadWriteMultipleRegistersResponse
+# - ReadExceptionStatusResponse
+# - GetCommEventCounterResponse
+# - GetCommEventLogResponse
+# - ReportSlaveIdResponse
+# - ReadFileRecordResponse
+# - WriteFileRecordResponse
+# - MaskWriteRegisterResponse
+# - ReadFifoQueueResponse
+# - ReadDeviceInformationResponse
+# - ReturnQueryDataResponse
+# - RestartCommunicationsOptionResponse
+# - ReturnDiagnosticRegisterResponse
+# - ChangeAsciiInputDelimiterResponse
+# - ForceListenOnlyModeResponse
+# - ClearCountersResponse
+# - ReturnBusMessageCountResponse
+# - ReturnBusCommunicationErrorCountResponse
+# - ReturnBusExceptionErrorCountResponse
+# - ReturnSlaveMessageCountResponse
+# - ReturnSlaveNoReponseCountResponse
+# - ReturnSlaveNAKCountResponse
+# - ReturnSlaveBusyCountResponse
+# - ReturnSlaveBusCharacterOverrunCountResponse
+# - ReturnIopOverrunCountResponse
+# - ClearOverrunCountResponse
+# - GetClearModbusPlusResponse
+# ------------------------------------------------------------
+# Modbus TCP Messages
+# ------------------------------------------------------------
+# [         MBAP Header         ] [ Function Code] [ Data ]
+# [ tid ][ pid ][ length ][ uid ]
+#   2b     2b     2b        1b           1b           Nb
+#
+# ./message-parser -b -p tcp -f messages
+# ------------------------------------------------------------
+#00010000001301031000010001000100010001000100010001
+#000100000004010201ff
+#00010000001301041000010001000100010001000100010001
+#000100000004010101ff
+#000100000006010f00120008
+#000100000006011000120008
+#000100000006010600120001
+#00010000000601050012ff00
+#00010000001301171000010001000100010001000100010001
+#000100000003010700
+#000100000006010b00000008
+#000100000009010c06000000000000
+#00010000000501110300ff
+#000100000003011400
+#000100000003011500
+#00010000000801160012ffff0000
+#00010000001601180012001000010001000100010001000100010001
+#000100000008012b0e0183000000
+#000100000006010800000000
+#000100000006010800010000
+#000100000006010800020000
+#000100000006010800030000
+#00010000000401080004
+#0001000000060108000a0000
+#0001000000060108000b0000
+#0001000000060108000c0000
+#0001000000060108000d0000
+#0001000000060108000e0000
+#0001000000060108000f0000
+#000100000006010800100000
+#000100000006010800110000
+#000100000006010800120000
+#000100000006010800130000
+#000100000006010800140000
+#000100000006010800150000
+# ------------------------------------------------------------
+# Modbus RTU Messages
+# ------------------------------------------------------------
+# [Address ][ Function Code] [ Data ][ CRC ]
+#  1b         1b               Nb      2b   
+#
+# ./message-parser -b -p rtu -f messages
+# ------------------------------------------------------------
+#0103100001000100010001000100010001000193b4
+#010201ffe1c8
+#0104100001000100010001000100010001000122c1
+#010101ff11c8
+#010f00120008f408
+#01100012000861ca
+#010600120001e80f
+#01050012ff002c3f
+#01171000010001000100010001000100010001d640
+#0107002230
+#010b00000008a5cd
+#010c060000000000006135
+#01110300ffacbc
+#0114002f00
+#0115002e90
+#01160012ffff00004e21
+#01180012001000010001000100010001000100010001d74d
+#012b0e01830000000faf
+#010800000000e00b
+#010800010000b1cb
+#01080002000041cb
+#010800030000100b
+#0108000481d9
+#0108000a0000c009
+#0108000b000091c9
+#0108000c00002008
+#0108000d000071c8
+#0108000e000081c8
+#0108000f0000d008
+#010800100000e1ce
+#010800110000b00e
+#010800120000400e
+#01080013000011ce
+#010800140000a00f
+#010800150000f1cf
+# ------------------------------------------------------------
+# Modbus ASCII Messages
+# ------------------------------------------------------------
+# [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
+#   1c        2c         2c         Nc     2c      2c
+#
+# ./message-parser -a -p ascii -f messages
+# ------------------------------------------------------------
+#:01031000010001000100010001000100010001E4
+#:010201FFFD
+#:01041000010001000100010001000100010001E3
+#:010101FFFE
+#:010F00120008D6
+#:011000120008D5
+#:010600120001E6
+#:01050012FF00E9
+#:01171000010001000100010001000100010001D0
+#:010700F8
+#:010B00000008EC
+#:010C06000000000000ED
+#:01110300FFEC
+#:011400EB
+#:011500EA
+#:01160012FFFF0000D9
+#:01180012001000010001000100010001000100010001BD
+#:012B0E018300000042
+#:010800000000F7
+#:010800010000F6
+#:010800020000F5
+#:010800030000F4
+#:01080004F3
+#:0108000A0000ED
+#:0108000B0000EC
+#:0108000C0000EB
+#:0108000D0000EA
+#:0108000E0000E9
+#:0108000F0000E8
+#:010800100000E7
+#:010800110000E6
+#:010800120000E5
+#:010800130000E4
+#:010800140000E3
+#:010800150000E2
+# ------------------------------------------------------------
+# Modbus Binary Messages
+# ------------------------------------------------------------
+# [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
+#   1b        1b         1b         Nb     2b     1b
+#
+# ./message-parser -b -p binary -f messages
+# ------------------------------------------------------------
+#7b0103100001000100010001000100010001000193b47d
+#7b010201ffe1c87d
+#7b0104100001000100010001000100010001000122c17d
+#7b010101ff11c87d
+#7b010f00120008f4087d
+#7b01100012000861ca7d
+#7b010600120001e80f7d
+#7b01050012ff002c3f7d
+#7b01171000010001000100010001000100010001d6407d
+#7b01070022307d
+#7b010b00000008a5cd7d
+#7b010c0600000000000061357d
+#7b01110300ffacbc7d
+#7b0114002f007d
+#7b0115002e907d
+#7b01160012ffff00004e217d
+#7b01180012001000010001000100010001000100010001d74d7d
+#7b012b0e01830000000faf7d
+#7b010800000000e00b7d
+#7b010800010000b1cb7d
+#7b01080002000041cb7d
+#7b010800030000100b7d
+#7b0108000481d97d
+#7b0108000a0000c0097d
+#7b0108000b000091c97d
+#7b0108000c000020087d
+#7b0108000d000071c87d
+#7b0108000e000081c87d
+#7b0108000f0000d0087d
+#7b010800100000e1ce7d
+#7b010800110000b00e7d
+#7b010800120000400e7d
+#7b01080013000011ce7d
+#7b010800140000a00f7d
+#7b010800150000f1cf7d

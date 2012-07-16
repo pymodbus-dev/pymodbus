@@ -16,6 +16,7 @@ Example Library Code
    asynchronous-server
    asynchronous-processor
    custom-message
+   generate-messages
    modbus-logging
    modbus-payload
    modbus-scraper

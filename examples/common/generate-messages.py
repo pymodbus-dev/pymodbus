@@ -162,7 +162,7 @@ def generate_messages(framer, options):
     :param framer: The framer to encode the messages with
     :param options: The message options to use
     '''
-    messages = _request_messages if options.messages == 'rx' else _response_messages
+    messages = _request_messages if options.messages == 'tx' else _response_messages
     for message in messages:
         message = message(**_arguments)
         print "%-44s = " % message.__class__.__name__,

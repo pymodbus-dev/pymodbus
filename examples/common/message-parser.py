@@ -62,11 +62,13 @@ class Decoder(object):
         for decoder in decoders:
             print "%s" % decoder.decoder.__class__.__name__
             print "-"*80
-            decoder.addToFrame(message)
-            if decoder.checkFrame():
-                decoder.advanceFrame()
-                decoder.processIncomingPacket(message, self.report)
-            else: self.check_errors(decoder, message)
+            try:
+                decoder.addToFrame(message)
+                if decoder.checkFrame():
+                    decoder.advanceFrame()
+                    decoder.processIncomingPacket(message, self.report)
+                else: self.check_errors(decoder, message)
+            except Exception, ex: self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
         ''' Attempt to find message errors

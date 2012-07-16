@@ -49,5 +49,7 @@ Program Source
 Example Messages
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/common/messages
+See the documentation for the message generator
+for a collection of messages that can be parsed
+by this utility.
 

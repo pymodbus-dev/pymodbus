@@ -14,6 +14,7 @@ from pymodbus.server.async import StartTcpServer
 from pymodbus.server.async import StartUdpServer
 from pymodbus.server.async import StartSerialServer
 
+from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
@@ -80,9 +81,22 @@ store = ModbusSlaveContext(
 context = ModbusServerContext(slaves=store, single=True)
 
 #---------------------------------------------------------------------------# 
+# initialize the server information
+#---------------------------------------------------------------------------# 
+# If you don't set this or any fields, they are defaulted to empty strings.
+#---------------------------------------------------------------------------# 
+identity = ModbusDeviceIdentification()
+identity.VendorName  = 'Pymodbus'
+identity.ProductCode = 'PM'
+identity.VendorUrl   = 'http://github.com/bashwork/pymobdbus/'
+identity.ProductName = 'Pymodbus Server'
+identity.ModelName   = 'Pymodbus Server'
+identity.MajorMinorRevision = '1.0'
+
+#---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-StartTcpServer(context)
-#StartUdpServer(context)
-#StartSerialServer(context, port='/dev/pts/3', framer=ModbusRtuFramer)
-#StartSerialServer(context, port='/dev/pts/3', framer=ModbusAsciiFramer)
+StartTcpServer(context, identity=identity, address=("localhost", 5020))
+#StartUdpServer(context, identity=identity, address=("localhost", 502))
+#StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusRtuFramer)
+#StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusAsciiFramer)

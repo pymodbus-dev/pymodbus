@@ -187,38 +187,40 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 #---------------------------------------------------------------------------#
 # Starting Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context, identity=None, server_address=None):
+def StartTcpServer(context, identity=None, address=None):
     ''' Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
-    :param server_address: An optional (interface,port) to bind to.
+    :param address: An optional (interface, port) to bind to.
     '''
     from twisted.internet import reactor
-    if not server_address:
-        server_address = ("", Defaults.Port)
-    _logger.info("Starting Modbus TCP Server on %s:%s" % server_address)
-    framer = ModbusSocketFramer
+
+    address = address or ("", Defaults.Port)
+    framer  = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity)
     InstallManagementConsole({'factory': factory})
-    reactor.listenTCP(server_address[1], factory, interface=server_address[0])
+
+    _logger.info("Starting Modbus TCP Server on %s:%s" % address)
+    reactor.listenTCP(address[1], factory, interface=address[0])
     reactor.run()
 
 
-def StartUdpServer(context, identity=None, server_address=None):
+def StartUdpServer(context, identity=None, address=None):
     ''' Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
-    :param server_address: An optional (interface,port) to bind to.
+    :param address: An optional (interface, port) to bind to.
     '''
     from twisted.internet import reactor
-    if not server_address:
-        server_address = ("", Defaults.Port)
-    _logger.info("Starting Modbus UDP Server on %s:%s" % server_address)
-    framer = ModbusSocketFramer
-    server = ModbusUdpProtocol(context, framer, identity)
-    reactor.listenUDP(server_address[1], server, interface=server_address[0])
+
+    address = address or ("", Defaults.Port)
+    framer  = ModbusSocketFramer
+    server  = ModbusUdpProtocol(context, framer, identity)
+
+    _logger.info("Starting Modbus UDP Server on %s:%s" % address)
+    reactor.listenUDP(address[1], server, interface=address[0])
     reactor.run()
 
 

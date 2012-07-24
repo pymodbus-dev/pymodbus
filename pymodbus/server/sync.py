@@ -201,7 +201,8 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None):
+    def __init__(self, context, framer=None, identity=None,
+                 server_address=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -210,7 +211,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-
+        :param server_address: An optional (interface,port) to bind to.
         '''
         self.threads = []
         self.decoder = ServerDecoder()
@@ -222,7 +223,8 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingTCPServer.__init__(self,
-            ("", Defaults.Port), ModbusConnectedRequestHandler)
+            server_address or ("", Defaults.Port),
+            ModbusConnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -251,7 +253,8 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None):
+    def __init__(self, context, framer=None, identity=None, 
+                 server_address=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -260,7 +263,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-
+        :param server_address: An optional (interface,port) to bind to.
         '''
         self.threads = []
         self.decoder = ServerDecoder()
@@ -271,8 +274,9 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        SocketServer.ThreadingUDPServer.__init__(self,
-            ("", Defaults.Port), ModbusDisconnectedRequestHandler)
+        SocketServer.ThreadingUDPServer.__init__(
+            self, server_address or ("", Defaults.Port),
+            ModbusDisconnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -387,25 +391,27 @@ class ModbusSerialServer(object):
 #---------------------------------------------------------------------------#
 # Creation Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context=None, identity=None):
+def StartTcpServer(context=None, identity=None, server_address=None):
     ''' A factory to start and run a tcp modbus server
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
+    :param server_address: An optional (interface,port) to bind to.
     '''
     framer = ModbusSocketFramer
-    server = ModbusTcpServer(context, framer, identity)
+    server = ModbusTcpServer(context, framer, identity, server_address)
     server.serve_forever()
 
 
-def StartUdpServer(context=None, identity=None):
+def StartUdpServer(context=None, identity=None, server_address=None):
     ''' A factory to start and run a udp modbus server
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
+    :param server_address: An optional (interface,port) to bind to.
     '''
     framer = ModbusSocketFramer
-    server = ModbusUdpServer(context, framer, identity)
+    server = ModbusUdpServer(context, framer, identity, server_address)
     server.serve_forever()
 
 

@@ -41,6 +41,14 @@ class ModbusPDU(object):
     .. attribute:: check
 
        This is used for LRC/CRC in the serial modbus protocols
+
+    .. attribute:: skip_encode
+
+       This is used when the message payload has already been encoded.
+       Generally this will occur when the PayloadBuilder is being used
+       to create a complicated message. By setting this to True, the
+       request will pass the currently encoded message through instead
+       of encoding it again.
     '''
 
     def __init__(self, **kwargs):
@@ -48,6 +56,7 @@ class ModbusPDU(object):
         self.transaction_id = kwargs.get('transaction', Defaults.TransactionId)
         self.protocol_id = kwargs.get('protocol', Defaults.ProtocolId)
         self.unit_id = kwargs.get('unit', Defaults.UnitId)
+        self.skip_encode = kwargs.get('skip_encode', False)
         self.check = 0x0000
 
     def encode(self):
@@ -136,6 +145,17 @@ class ModbusExceptions(Singleton):
     GatewayPathUnavailable  = 0x0A
     GatewayNoResponse       = 0x0B
 
+    @classmethod
+    def decode(cls, code):
+        ''' Given an error code, translate it to a
+        string error name. 
+        
+        :param code: The code number to translate
+        '''
+        values = dict((v, k) for k, v in cls.__dict__.items()
+            if not k.startswith('__') and not callable(v))
+        return values.get(code, None)
+
 
 class ExceptionResponse(ModbusResponse):
     ''' Base class for a modbus exception PDU '''
@@ -149,6 +169,7 @@ class ExceptionResponse(ModbusResponse):
         :param exception_code: The specific modbus exception to return
         '''
         ModbusResponse.__init__(self, **kwargs)
+        self.original_code = function_code
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
 
@@ -171,8 +192,9 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The string representation of an exception response
         '''
-        parameters = (self.function_code, self.exception_code)
-        return "Exception Response (%d, %d)" % parameters
+        message = ModbusExceptions.decode(self.exception_code)
+        parameters = (self.function_code, self.original_code, message)
+        return "Exception Response(%d, %d, %s)" % parameters
 
 
 class IllegalFunctionRequest(ModbusRequest):

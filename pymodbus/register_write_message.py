@@ -35,6 +35,8 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :returns: The encoded packet
         '''
+        if self.skip_encode:
+            return self.value
         return struct.pack('>HH', self.address, self.value)
 
     def decode(self, data):
@@ -130,9 +132,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        if not values: values = []
-        elif not hasattr(values, '__iter__'): values = [values]
-        self.values = values
+        self.values = values or []
+        if not hasattr(values, '__iter__'):
+            values = [values]
         self.count = len(self.values)
         self.byte_count = self.count * 2
 
@@ -142,8 +144,12 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :returns: The encoded packet
         '''
         packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
+        if self.skip_encode:
+            return packet + ''.join(self.values)
+        
         for value in self.values:
             packet += struct.pack('>H', value)
+
         return packet
 
     def decode(self, data):

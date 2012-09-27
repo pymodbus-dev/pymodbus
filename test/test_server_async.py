@@ -84,7 +84,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testSerialServerStartup(self):
         ''' Test that the modbus serial async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None)
+            StartSerialServer(context=None, port='/dev/pts/0')
             self.assertEqual(mock_reactor.run.call_count, 1)
 
 #---------------------------------------------------------------------------#

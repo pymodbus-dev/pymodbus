@@ -23,3 +23,6 @@ API Documentation
 
 .. autoclass:: IModbusSlaveContext
    :members:
+
+.. autoclass:: IPayloadBuilder
+   :members:

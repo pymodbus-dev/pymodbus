@@ -11,7 +11,7 @@ utilities.
 import unittest
 from pymodbus.exceptions import ParameterException
 from pymodbus.constants import Endian
-from pymodbus.payload import PayloadBuilder, PayloadDecoder
+from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -51,7 +51,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testLittleEndianPayloadBuilder(self):
         ''' Test basic bit message encoding/decoding '''
-        builder = PayloadBuilder(endian=Endian.Little)
+        builder = BinaryPayloadBuilder(endian=Endian.Little)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
         builder.add_32bit_uint(3)
@@ -64,11 +64,11 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_float(6.25)
         builder.add_string('test')
         builder.add_bits(self.bitstring)
-        self.assertEqual(self.little_endian_payload, builder.tostring())
+        self.assertEqual(self.little_endian_payload, str(builder))
 
     def testBigEndianPayloadBuilder(self):
         ''' Test basic bit message encoding/decoding '''
-        builder = PayloadBuilder(endian=Endian.Big)
+        builder = BinaryPayloadBuilder(endian=Endian.Big)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
         builder.add_32bit_uint(3)
@@ -81,20 +81,20 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_float(6.25)
         builder.add_string('test')
         builder.add_bits(self.bitstring)
-        self.assertEqual(self.big_endian_payload, builder.tostring())
+        self.assertEqual(self.big_endian_payload, str(builder))
 
     def testPayloadBuilderReset(self):
         ''' Test basic bit message encoding/decoding '''
-        builder = PayloadBuilder()
+        builder = BinaryPayloadBuilder()
         builder.add_8bit_uint(0x12)
         builder.add_8bit_uint(0x34)
         builder.add_8bit_uint(0x56)
         builder.add_8bit_uint(0x78)
-        self.assertEqual('\x12\x34\x56\x78', builder.tostring())
-        self.assertEqual(['\x12\x34', '\x56\x78'], builder.tolist())
+        self.assertEqual('\x12\x34\x56\x78', str(builder))
+        self.assertEqual(['\x12\x34', '\x56\x78'], builder.build())
         builder.reset()
-        self.assertEqual('', builder.tostring())
-        self.assertEqual([], builder.tolist())
+        self.assertEqual('', str(builder))
+        self.assertEqual([], builder.build())
 
     #-----------------------------------------------------------------------#
     # Payload Decoder Tests
@@ -102,7 +102,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testLittleEndianPayloadDecoder(self):
         ''' Test basic bit message encoding/decoding '''
-        decoder = PayloadDecoder(self.little_endian_payload, endian=Endian.Little)
+        decoder = BinaryPayloadDecoder(self.little_endian_payload, endian=Endian.Little)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
         self.assertEqual(3,      decoder.decode_32bit_uint())
@@ -118,7 +118,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testBigEndianPayloadDecoder(self):
         ''' Test basic bit message encoding/decoding '''
-        decoder = PayloadDecoder(self.big_endian_payload, endian=Endian.Big)
+        decoder = BinaryPayloadDecoder(self.big_endian_payload, endian=Endian.Big)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
         self.assertEqual(3,      decoder.decode_32bit_uint())
@@ -134,7 +134,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testPayloadDecoderReset(self):
         ''' Test the payload decoder reset functionality '''
-        decoder = PayloadDecoder('\x12\x34')
+        decoder = BinaryPayloadDecoder('\x12\x34')
         self.assertEqual(0x12, decoder.decode_8bit_uint())
         self.assertEqual(0x34, decoder.decode_8bit_uint())
         decoder.reset()   
@@ -143,28 +143,30 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
     def testPayloadDecoderRegisterFactory(self):
         ''' Test the payload decoder reset functionality '''
         payload = [1,2,3,4]
-        decoder = PayloadDecoder.fromRegisters(payload, endian=Endian.Little)
-        encoded = '\x01\x00\x02\x00\x03\x00\x04\x00'
-        self.assertEqual(encoded, decoder.decode_string(8))
-
-        decoder = PayloadDecoder.fromRegisters(payload, endian=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Little)
         encoded = '\x00\x01\x00\x02\x00\x03\x00\x04'
         self.assertEqual(encoded, decoder.decode_string(8))
 
-        self.assertRaises(ParameterException, lambda: PayloadDecoder.fromRegisters('abcd'))
+        decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Big)
+        encoded = '\x00\x01\x00\x02\x00\x03\x00\x04'
+        self.assertEqual(encoded, decoder.decode_string(8))
+
+        self.assertRaises(ParameterException,
+            lambda: BinaryPayloadDecoder.fromRegisters('abcd'))
 
     def testPayloadDecoderCoilFactory(self):
         ''' Test the payload decoder reset functionality '''
         payload = [1,0,0,0, 1,0,0,0, 0,0,0,1, 0,0,0,1]
-        decoder = PayloadDecoder.fromCoils(payload, endian=Endian.Little)
+        decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Little)
         encoded = '\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 
-        decoder = PayloadDecoder.fromCoils(payload, endian=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Big)
         encoded = '\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 
-        self.assertRaises(ParameterException, lambda: PayloadDecoder.fromCoils('abcd'))
+        self.assertRaises(ParameterException,
+            lambda: BinaryPayloadDecoder.fromCoils('abcd'))
 
 
 #---------------------------------------------------------------------------#

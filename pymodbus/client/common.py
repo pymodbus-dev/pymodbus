@@ -13,7 +13,6 @@ from pymodbus.register_write_message import *
 from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
-from pymodbus.constants import Defaults
 
 
 class ModbusClientMixin(object):
@@ -32,7 +31,7 @@ class ModbusClientMixin(object):
        response = client.read_coils(1, 10)
     '''
 
-    def read_coils(self, address, count=1, unit=Defaults.UnitId):
+    def read_coils(self, address, count=1, **kwargs):
         '''
 
         :param address: The starting address to read from
@@ -40,11 +39,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = ReadCoilsRequest(address, count)
-        request.unit_id = unit
+        request = ReadCoilsRequest(address, count, **kwargs)
         return self.execute(request)
 
-    def read_discrete_inputs(self, address, count=1, unit=Defaults.UnitId):
+    def read_discrete_inputs(self, address, count=1, **kwargs):
         '''
 
         :param address: The starting address to read from
@@ -52,11 +50,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = ReadDiscreteInputsRequest(address, count)
-        request.unit_id = unit
+        request = ReadDiscreteInputsRequest(address, count, **kwargs)
         return self.execute(request)
 
-    def write_coil(self, address, value, unit=Defaults.UnitId):
+    def write_coil(self, address, value, **kwargs):
         '''
 
         :param address: The starting address to write to
@@ -64,11 +61,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = WriteSingleCoilRequest(address, value)
-        request.unit_id = unit
+        request = WriteSingleCoilRequest(address, value, **kwargs)
         return self.execute(request)
 
-    def write_coils(self, address, values, unit=Defaults.UnitId):
+    def write_coils(self, address, values, **kwargs):
         '''
 
         :param address: The starting address to write to
@@ -76,11 +72,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = WriteMultipleCoilsRequest(address, values)
-        request.unit_id = unit
+        request = WriteMultipleCoilsRequest(address, values, **kwargs)
         return self.execute(request)
 
-    def write_register(self, address, value, unit=Defaults.UnitId):
+    def write_register(self, address, value, **kwargs):
         '''
 
         :param address: The starting address to write to
@@ -88,11 +83,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = WriteSingleRegisterRequest(address, value)
-        request.unit_id = unit
+        request = WriteSingleRegisterRequest(address, value, **kwargs)
         return self.execute(request)
 
-    def write_registers(self, address, values, unit=Defaults.UnitId):
+    def write_registers(self, address, values, **kwargs):
         '''
 
         :param address: The starting address to write to
@@ -100,11 +94,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = WriteMultipleRegistersRequest(address, values)
-        request.unit_id = unit
+        request = WriteMultipleRegistersRequest(address, values, **kwargs)
         return self.execute(request)
 
-    def read_holding_registers(self, address, count=1, unit=Defaults.UnitId):
+    def read_holding_registers(self, address, count=1, **kwargs):
         '''
 
         :param address: The starting address to read from
@@ -112,11 +105,10 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = ReadHoldingRegistersRequest(address, count)
-        request.unit_id = unit
+        request = ReadHoldingRegistersRequest(address, count, **kwargs)
         return self.execute(request)
 
-    def read_input_registers(self, address, count=1, unit=Defaults.UnitId):
+    def read_input_registers(self, address, count=1, **kwargs):
         '''
 
         :param address: The starting address to read from
@@ -124,20 +116,23 @@ class ModbusClientMixin(object):
         :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
-        request = ReadInputRegistersRequest(address, count)
-        request.unit_id = unit
+        request = ReadInputRegistersRequest(address, count, **kwargs)
         return self.execute(request)
 
     def readwrite_registers(self, *args, **kwargs):
         '''
 
-        :param unit: The slave unit this request is targeting
         :param read_address: The address to start reading from
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
         :param write_registers: The registers to write to the specified address
+        :param unit: The slave unit this request is targeting
         :returns: A deferred response handle
         '''
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
-        request.unit_id = kwargs.get('unit', Defaults.UnitId)
         return self.execute(request)
+
+#---------------------------------------------------------------------------#
+# Exported symbols
+#---------------------------------------------------------------------------#
+__all__ = [ 'ModbusClientMixin' ]

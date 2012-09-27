@@ -12,8 +12,8 @@ API Documentation
 
 .. automodule:: pymodbus.payload
 
-.. autoclass:: PayloadBuilder
+.. autoclass:: BinaryPayloadBuilder
    :members:
 
-.. autoclass:: PayloadDecoder
+.. autoclass:: BinaryPayloadDecoder
    :members:

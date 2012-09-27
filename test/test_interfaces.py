@@ -54,6 +54,12 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, lambda: instance.getValues(x,x,x))
         self.assertRaises(NotImplementedException, lambda: instance.setValues(x,x,x))
 
+    def testModbusPayloadBuilderInterface(self):
+        ''' Test that the base class isn't implemented '''
+        x = None
+        instance = IPayloadBuilder()
+        self.assertRaises(NotImplementedException, lambda: instance.build())
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

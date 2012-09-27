@@ -46,10 +46,10 @@ class SimplePduTest(unittest.TestCase):
         ''' Test all error methods '''
         request = ModbusRequest()
         request.function_code = 1
-        for error in [getattr(ModbusExceptions, i)
-            for i in dir(ModbusExceptions) if '__' not in i]:
-            result = request.doException(error)
-            self.assertEqual(str(result), "Exception Response (129, %d)" % error)
+        errors = dict((ModbusExceptions.decode(c), c) for c in range(1,20))
+        for error, code in errors.items():
+            result = request.doException(code)
+            self.assertEqual(str(result), "Exception Response(129, 1, %s)" % error)
 
     def testCalculateRtuFrameSize(self):
         ''' Test the calculation of Modbus/RTU frame sizes '''

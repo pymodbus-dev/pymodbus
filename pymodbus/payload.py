@@ -6,13 +6,14 @@ A collection of utilities for building and decoding
 modbus messages payloads.
 '''
 from struct import pack, unpack
+from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.constants import Endian
 from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.exceptions import ParameterException
 
 
-class PayloadBuilder(object):
+class BinaryPayloadBuilder(IPayloadBuilder):
     '''
     A utility that helps build payload messages to be
     written with the various modbus messages. It really is just
@@ -20,10 +21,10 @@ class PayloadBuilder(object):
     time looking up the format strings. What follows is a simple
     example::
 
-        builder = PayloadBuilder(endian=Endian.Little)
+        builder = BinaryPayloadBuilder(endian=Endian.Little)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
-        payload = builder.tostring()
+        payload = builder.build()
     '''
 
     def __init__(self, payload=None, endian=Endian.Little):
@@ -35,19 +36,19 @@ class PayloadBuilder(object):
         self._payload = payload or []
         self._endian  = endian
 
-    def reset(self):
-        ''' Reset the payload buffer
-        '''
-        self._payload = []
-
-    def tostring(self):
+    def __str__(self):
         ''' Return the payload buffer as a string
 
         :returns: The payload buffer as a string
         '''
         return ''.join(self._payload)
 
-    def tolist(self):
+    def reset(self):
+        ''' Reset the payload buffer
+        '''
+        self._payload = []
+
+    def build(self):
         ''' Return the payload buffer as a list
 
         This list is two bytes per element and can
@@ -55,7 +56,7 @@ class PayloadBuilder(object):
 
         :returns: The payload buffer as a list
         '''
-        string = self.tostring()
+        string = str(self)
         length = len(string)
         string = string + ('\x00' * (length % 2))
         return [string[i:i+2] for i in xrange(0, length, 2)]
@@ -163,7 +164,7 @@ class PayloadBuilder(object):
             self._payload.append(pack(fstring, c))
 
 
-class PayloadDecoder(object):
+class BinaryPayloadDecoder(object):
     '''
     A utility that helps decode payload messages from a modbus
     reponse message.  It really is just a simple wrapper around
@@ -191,15 +192,16 @@ class PayloadDecoder(object):
         reading a collection of registers from a modbus device.
 
         The registers are treated as a list of 2 byte values.
+        We have to do this because of how the data has already
+        been decoded by the rest of the library.
 
         :param registers: The register results to initialize with
         :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         '''
-        fstring = endian + 'H'
-        if isinstance(registers, list):
-            payload = ''.join(pack(fstring, x) for x in registers)
-            return PayloadDecoder(payload, endian)
+        if isinstance(registers, list): # repack into flat binary
+            payload = ''.join(pack('>H', x) for x in registers)
+            return BinaryPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 
     @staticmethod
@@ -214,9 +216,8 @@ class PayloadDecoder(object):
         :returns: An initialized PayloadDecoder
         '''
         if isinstance(coils, list):
-# TODO endianess issue here
             payload = pack_bitstring(coils)
-            return PayloadDecoder(payload, endian)
+            return BinaryPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of coils supplied')
 
     def reset(self):
@@ -324,4 +325,4 @@ class PayloadDecoder(object):
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#
-__all__ = ["PayloadBuilder", "PayloadDecoder"]
+__all__ = ["BinaryPayloadBuilder", "BinaryPayloadDecoder"]

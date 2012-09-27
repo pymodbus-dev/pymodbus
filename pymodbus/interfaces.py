@@ -208,10 +208,30 @@ class IModbusSlaveContext(object):
         '''
         raise NotImplementedException("set context values")
 
+
+class IPayloadBuilder(object):
+    '''
+    This is an interface to a class that can build a payload
+    for a modbus register write command. It should abstract
+    the codec for encoding data to the required format
+    (bcd, binary, char, etc).
+    '''
+
+    def build(self):
+        ''' Return the payload buffer as a list
+
+        This list is two bytes per element and can
+        thus be treated as a list of registers.
+
+        :returns: The payload buffer as a list
+        '''
+        raise NotImplementedException("set context values")
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
     'Singleton',
     'IModbusDecoder', 'IModbusFramer', 'IModbusSlaveContext',
+    'IPayloadBuilder',
 ]

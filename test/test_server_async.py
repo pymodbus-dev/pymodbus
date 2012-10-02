@@ -70,7 +70,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testTcpServerStartup(self):
         ''' Test that the modbus tcp async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartTcpServer(context=None)
+            StartTcpServer(context=None, console=True)
             self.assertEqual(mock_reactor.listenTCP.call_count, 2)
             self.assertEqual(mock_reactor.run.call_count, 1)
 

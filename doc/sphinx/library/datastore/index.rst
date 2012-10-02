@@ -11,5 +11,3 @@ from the sourcecode*
    store.rst
    context.rst
    remote.rst
-   database.rst
-   modredis.rst

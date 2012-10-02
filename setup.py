@@ -63,14 +63,13 @@ setup(name  = 'pymodbus',
     include_package_data = True,
     zip_safe = True,
     install_requires = [
-        'twisted >= 2.5.0',
-        'nose >= 1.0.0',
-        'mock >= 0.8.0',
-        'pyserial >= 2.4'
+        'twisted >= 12.2.0',
+        'pyserial >= 2.6'
     ],
     extras_require = {
-        'quality' : [ 'epydoc >= 3.4.1', 'coverage >= 3.3.1', 'pyflakes >= 0.4.0' ],
-        'twisted' : [ 'pyasn1 >= 0.0.13', 'pycrypto >= 2.3' ],
+        'quality'   : [ 'coverage >= 3.5.3', 'nose >= 1.2.1', 'mock >= 1.0.0', 'pep8 >= 1.3.3' ],
+        'documents' : [ 'sphinx >= 1.1.3' ],
+        'twisted'   : [ 'pyasn1 >= 0.1.4', 'pycrypto >= 2.6' ],
     },
     test_suite = 'nose.collector',
     cmdclass = command_classes,

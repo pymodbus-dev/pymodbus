@@ -28,6 +28,15 @@ Example Library Code
    synchronous-server
    performance
 
+Custom Datastore Code
+--------------------------------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   redis-datastore
+   database-datastore
+
 Example Frontend Code
 --------------------------------------------------
 

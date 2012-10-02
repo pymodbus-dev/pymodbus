@@ -187,19 +187,20 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 #---------------------------------------------------------------------------#
 # Starting Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context, identity=None, address=None):
+def StartTcpServer(context, identity=None, address=None, console=False):
     ''' Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
+    :param console: A flag indicating if you want the debug console
     '''
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity)
-    InstallManagementConsole({'factory': factory})
+    if console: InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
@@ -233,15 +234,19 @@ def StartSerialServer(context, identity=None,
     :param framer: The framer to use (default ModbusAsciiFramer)
     :param port: The serial port to attach to
     :param baudrate: The baud rate to use for the serial device
+    :param console: A flag indicating if you want the debug console
     '''
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
 
     port = kwargs.get('port', '/dev/ttyS0')
     baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+    console = kwargs.get('console', False)
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity)
+    if console: InstallManagementConsole({'factory': factory})
+
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging
     handle = SerialPort(protocol, port, reactor, baudrate)

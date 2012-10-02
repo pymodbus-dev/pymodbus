@@ -16,9 +16,9 @@ the guard construct that is available in python 2.5 and up::
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 
-#from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 #from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+#from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -38,7 +38,7 @@ log.setLevel(logging.DEBUG)
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
 #---------------------------------------------------------------------------# 
-client = ModbusClient('localhost')
+client = ModbusClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
 #client = ModbusClient(method='rtu', port='/dev/pts/2', timeout=1)
 client.connect()

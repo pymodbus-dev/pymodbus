@@ -418,7 +418,7 @@ class PackageDocumentationGenerator:
 				del self.pending[0]
 		finally:
 			for item in self.warnings:
-				log.info(item)
+				_log.info(item)
 			
 	def clean (self, objectList, object):
 		"""callback from the formatter object asking us to remove

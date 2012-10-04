@@ -236,13 +236,13 @@ class ModbusDeviceIdentification(object):
         '''
         return dict(zip(self.__names, self.__data.itervalues()))
 
-    def update(self, input):
+    def update(self, value):
         ''' Update the values of this identity
         using another identify as the value
 
-        :param input: The value to copy values from
+        :param value: The value to copy values from
         '''
-        self.__data.update(input)
+        self.__data.update(value)
 
     def __setitem__(self, key, value):
         ''' Wrapper used to access the device information
@@ -322,7 +322,7 @@ class DeviceInformationFactory(Singleton):
         :param object_ids: The specific object ids to read
         :returns: The requested data (id, length, value)
         '''
-        return dict((id, identity[id]) for id in object_ids)
+        return dict((oid, identity[oid]) for oid in object_ids)
 
 
 #---------------------------------------------------------------------------#
@@ -417,13 +417,13 @@ class ModbusCountersHandler(object):
         '''
         return izip(self.__names, self.__data.itervalues())
 
-    def update(self, input):
+    def update(self, values):
         ''' Update the values of this identity
         using another identify as the value
 
-        :param input: The value to copy values from
+        :param values: The value to copy values from
         '''
-        for k, v in input.iteritems():
+        for k, v in values.iteritems():
             v += self.__getattribute__(k)
             self.__setattr__(k, v)
 
@@ -544,7 +544,7 @@ class ModbusControlBlock(Singleton):
 
         :param value: The value to set the listen status to
         '''
-        self.__listen_only = value is not None
+        self.__listen_only = bool(value)
 
     ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 

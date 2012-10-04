@@ -231,7 +231,7 @@ class BinaryPayloadDecoder(object):
         self._pointer += 1
         fstring = self._endian + 'B'
         handle = self._payload[self._pointer - 1:self._pointer]
-        return unpack('B', handle)[0]
+        return unpack(fstring, handle)[0]
 
     def decode_bits(self):
         ''' Decodes a byte worth of bits from the buffer

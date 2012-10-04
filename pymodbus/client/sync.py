@@ -92,7 +92,7 @@ class BaseModbusClient(ModbusClientMixin):
             raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, klass, value, traceback):
         ''' Implement the client with exit block '''
         self.close()
 
@@ -207,7 +207,7 @@ class ModbusUdpClient(BaseModbusClient):
         :returns: AF_INET for ipv4 and AF_INET6 for ipv6
         '''
         try:
-            addr = socket.inet_pton(socket.AF_INET6, address)
+            _ = socket.inet_pton(socket.AF_INET6, address)
         except socket.error: # not a valid ipv6 address
             return socket.AF_INET
         return socket.AF_INET6

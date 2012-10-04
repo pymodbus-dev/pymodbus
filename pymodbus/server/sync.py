@@ -14,7 +14,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
-from pymodbus.exceptions import ModbusException, NotImplementedException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import ModbusExceptions as merror
 
 #---------------------------------------------------------------------------#

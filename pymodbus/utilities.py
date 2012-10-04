@@ -32,17 +32,17 @@ def dict_property(store, index):
     :returns: An initialized property set
     '''
     if hasattr(store, '__call__'):
-        get = lambda self: store(self)[index]
-        set = lambda self, value: store(self).__setitem__(index, value)
+        getter = lambda self: store(self)[index]
+        setter = lambda self, value: store(self).__setitem__(index, value)
     elif isinstance(store, str):
-        get = lambda self: self.__getattribute__(store)[index]
-        set = lambda self, value: self.__getattribute__(store).__setitem__(
+        getter = lambda self: self.__getattribute__(store)[index]
+        setter = lambda self, value: self.__getattribute__(store).__setitem__(
             index, value)
     else:
-        get = lambda self: store[index]
-        set = lambda self, value: store.__setitem__(index, value)
+        getter = lambda self: store[index]
+        setter = lambda self, value: store.__setitem__(index, value)
 
-    return property(get, set)
+    return property(getter, setter)
 
 
 #---------------------------------------------------------------------------#
@@ -87,7 +87,7 @@ def unpack_bitstring(string):
     bits = []
     for byte in range(byte_count):
         value = ord(string[byte])
-        for bit in range(8):
+        for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
     return bits
@@ -104,7 +104,7 @@ def __generate_crc16_table():
     result = []
     for byte in range(256):
         crc = 0x0000
-        for bit in range(8):
+        for _ in range(8):
             if (byte ^ crc) & 0x0001:
                 crc = (crc >> 1) ^ 0xa001
             else: crc >>= 1
@@ -154,7 +154,6 @@ def computeLRC(data):
     :returns: The calculated LRC
 
     '''
-    lrc = 0
     lrc = sum(ord(a) for a in data) & 0xff
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff

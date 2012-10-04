@@ -249,7 +249,7 @@ def StartSerialServer(context, identity=None,
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging
-    handle = SerialPort(protocol, port, reactor, baudrate)
+    SerialPort(protocol, port, reactor, baudrate)
     reactor.run()
 
 #---------------------------------------------------------------------------#

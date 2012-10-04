@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.device import *
-from pymodbus.exceptions import *
-from pymodbus.events import *
+from pymodbus.events import ModbusEvent, RemoteReceiveEvent
 from pymodbus.constants import DeviceInformation
 
 #---------------------------------------------------------------------------#
@@ -165,6 +164,8 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusControlBlockListen(self):
         ''' Tests the MCB listen flag methods '''
+        
+        self.control.ListenOnly = False        
         self.assertEqual(self.control.ListenOnly, False)
         self.control.ListenOnly = not self.control.ListenOnly
         self.assertEqual(self.control.ListenOnly, True)

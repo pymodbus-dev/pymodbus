@@ -7,7 +7,7 @@ from binascii import b2a_hex, a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.constants  import Defaults
-from pymodbus.interfaces import Singleton, IModbusFramer
+from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
 from pymodbus.utilities  import checkLRC, computeLRC
 

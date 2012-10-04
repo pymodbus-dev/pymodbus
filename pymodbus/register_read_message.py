@@ -323,8 +323,8 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :param data: The response to decode
         '''
-        bytes = ord(data[0])
-        for i in range(1, bytes, 2):
+        bytecount = ord(data[0])
+        for i in range(1, bytecount, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 
     def __str__(self):

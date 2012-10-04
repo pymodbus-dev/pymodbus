@@ -466,7 +466,7 @@ class ReadFifoQueueResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         self.values = []
-        length, count = struct.unpack('>HH', data[0:4])
+        _, count = struct.unpack('>HH', data[0:4])
         for index in xrange(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])

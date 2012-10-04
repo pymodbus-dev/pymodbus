@@ -8,7 +8,7 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 '''
-import unittest, struct
+import unittest
 from pymodbus.bit_write_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions

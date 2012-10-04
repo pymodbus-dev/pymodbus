@@ -120,7 +120,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusControlBlockCounters(self):
         ''' Tests the MCB counters methods '''
         self.assertEqual(0x0, self.control.Counter.BusMessage)
-        for i in range(10):
+        for _ in range(10):
             self.control.Counter.BusMessage += 1
             self.control.Counter.SlaveMessage += 1
         self.assertEqual(10, self.control.Counter.BusMessage)
@@ -142,19 +142,19 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusControlBlockIterator(self):
         ''' Tests the MCB counters iterator '''
         self.control.Counter.reset()
-        for name,count in self.control:
+        for _,count in self.control:
             self.assertEqual(0, count)
 
     def testModbusCountersHandlerIterator(self):
         ''' Tests the MCB counters iterator '''
         self.control.Counter.reset()
-        for name,count in self.control.Counter:
+        for _,count in self.control.Counter:
             self.assertEqual(0, count)
 
     def testModbusControlBlockCounterSummary(self):
         ''' Tests retrieving the current counter summary '''
         self.assertEqual(0x00, self.control.Counter.summary())
-        for i in range(10):
+        for _ in range(10):
             self.control.Counter.BusMessage += 1
             self.control.Counter.SlaveMessage += 1
             self.control.Counter.SlaveNAK += 1
@@ -171,6 +171,7 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusControlBlockDelimiter(self):
         ''' Tests the MCB delimiter setting methods '''
+        self.control.Delimiter = '\r'
         self.assertEqual(self.control.Delimiter, '\r')
         self.control.Delimiter = '='
         self.assertEqual(self.control.Delimiter, '=')
@@ -207,19 +208,19 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testAddRemoveMultipleClients(self):
         ''' Test adding and removing a host '''
-        list = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]
-        self.access.add(list)
-        for host in list:
+        clients = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        self.access.add(clients)
+        for host in clients:
             self.assertTrue(self.access.check(host))
-        self.access.remove(list)
+        self.access.remove(clients)
 
     def testNetworkAccessListIterator(self):
         ''' Test adding and removing a host '''
-        list = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]
-        self.access.add(list)
+        clients = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        self.access.add(clients)
         for host in self.access:
-            self.assertTrue(host in list)
-        for host in list:
+            self.assertTrue(host in clients)
+        for host in clients:
             self.assertTrue(host in self.access)
 
     def testClearingControlEvents(self):

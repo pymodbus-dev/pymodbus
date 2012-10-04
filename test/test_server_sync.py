@@ -12,8 +12,7 @@ from pymodbus.server.sync import ModbusConnectedRequestHandler
 from pymodbus.server.sync import ModbusDisconnectedRequestHandler
 from pymodbus.server.sync import ModbusTcpServer, ModbusUdpServer, ModbusSerialServer
 from pymodbus.server.sync import StartTcpServer, StartUdpServer, StartSerialServer
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
 #---------------------------------------------------------------------------#
@@ -50,7 +49,7 @@ class SynchronousServerTest(unittest.TestCase):
         request = ReadCoilsRequest(1, 1)
         address = ('server', 12345)
         server  = MockServer()
-
+        
         with patch.object(ModbusBaseRequestHandler, 'handle') as mock_handle:
             with patch.object(ModbusBaseRequestHandler, 'send') as mock_send:
                 mock_handle.return_value = True
@@ -97,19 +96,19 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback(a, b):
+        def _callback1(a, b):
             handler.running = False # stop infinite loop
-        handler.framer.processIncomingPacket.side_effect = _callback
+        handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
         handler.handle()
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
         # exceptions are simply ignored
-        def _callback(a, b):
+        def _callback2(a, b):
             if handler.framer.processIncomingPacket.call_count == 2:
                 raise Exception("example exception")
             else: handler.running = False # stop infinite loop
-        handler.framer.processIncomingPacket.side_effect = _callback
+        handler.framer.processIncomingPacket.side_effect = _callback2
         handler.running = True
         handler.handle()
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 3)

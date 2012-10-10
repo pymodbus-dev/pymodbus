@@ -70,7 +70,6 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         '''
-# TODO endianess issue here
         value = pack_bitstring(values)
         self._payload.append(value)
 
@@ -171,7 +170,7 @@ class BinaryPayloadDecoder(object):
     the struct module, however it saves time looking up the format
     strings. What follows is a simple example::
 
-        decoder = PayloadDecoder(self.little_endian_payload)
+        decoder = BinaryPayloadDecoder(payload)
         first   = decoder.decode_8bit_uint()
         second  = decoder.decode_16bit_uint()
     '''
@@ -236,7 +235,6 @@ class BinaryPayloadDecoder(object):
     def decode_bits(self):
         ''' Decodes a byte worth of bits from the buffer
         '''
-# TODO endianess issue here
         self._pointer += 1
         fstring = self._endian + 'B'
         handle = self._payload[self._pointer - 1:self._pointer]

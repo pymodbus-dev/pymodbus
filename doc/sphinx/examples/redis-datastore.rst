@@ -2,5 +2,5 @@
 Redis Datastore Example
 ==================================================
 
-.. literalinclude:: ../../../examples/datastore/modredis.py
+.. literalinclude:: ../../../examples/contrib/redis-datastore.py
 

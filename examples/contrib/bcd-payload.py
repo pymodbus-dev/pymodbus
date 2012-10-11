@@ -6,11 +6,53 @@ This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a 
 simple binary coded decimal builder and decoder.
 '''
+from struct import pack, unpack
 from pymodbus.constants import Endian
 from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.exceptions import ParameterException
+
+def convert_to_bcd(decimal):
+    ''' Converts a decimal value to a bcd value
+
+    :param value: The decimal value to to pack into bcd
+    :returns: The number in bcd form
+    '''
+    place, bcd = 0, 0
+    while decimal > 0:
+        nibble = decimal % 10
+        bcd += nibble << place
+        decimal /= 10
+        place += 4
+    return bcd
+
+
+def convert_from_bcd(bcd):
+    ''' Converts a bcd value to a decimal value
+
+    :param value: The value to unpack from bcd
+    :returns: The number in decimal form
+    '''
+    place, decimal = 1, 0
+    while bcd > 0:
+        nibble = bcd & 0xf
+        decimal += nibble * place
+        bcd >>= 4
+        place *= 10
+    return decimal
+
+def count_bcd_digits(bcd):
+    ''' Count the number of digits in a bcd value
+
+    :param bcd: The bcd number to count the digits of
+    :returns: The number of digits in the bcd string
+    '''
+    count = 0
+    while bcd > 0:
+        count += 1
+        bcd >>= 4
+    return count
 
 
 class BcdPayloadBuilder(IPayloadBuilder):
@@ -20,17 +62,19 @@ class BcdPayloadBuilder(IPayloadBuilder):
     example::
 
         builder = BcdPayloadBuilder()
-        builder.add_8bit_uint(1)
-        builder.add_16bit_uint(2)
+        builder.add_number(1)
+        builder.add_number(int(2.234 * 1000))
         payload = builder.build()
     '''
 
-    def __init__(self, payload=None):
+    def __init__(self, payload=None, endian=Endian.Little):
         ''' Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
+        :param endian: The endianess of the payload
         '''
         self._payload = payload or []
+        self._endian  = endian
 
     def __str__(self):
         ''' Return the payload buffer as a string
@@ -52,7 +96,10 @@ class BcdPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a list
         '''
-        return str(self)
+        string = str(self)
+        length = len(string)
+        string = string + ('\x00' * (length % 2))
+        return [string[i:i+2] for i in xrange(0, length, 2)]
 
     def add_bits(self, values):
         ''' Adds a collection of bits to be encoded
@@ -64,18 +111,22 @@ class BcdPayloadBuilder(IPayloadBuilder):
         :param value: The value to add to the buffer
         '''
         value = pack_bitstring(values)
-        self._payload.append(str(value))
+        self._payload.append(value)
 
     def add_number(self, value, size=None):
-        ''' Adds any numeric type to the buffer
+        ''' Adds any 8bit numeric type to the buffer
 
         :param value: The value to add to the buffer
         '''
-        value = str(value)
-        if size != None:
-            length = len(value) - size
-            value  = (('0' * length) + value)[0:size]
-        self._payload.append(value)
+        encoded = []
+        value = convert_to_bcd(value)
+        size = size or count_bcd_digits(value)
+        while size > 0:
+            nibble = value & 0xf
+            encoded.append(pack('B', nibble))
+            value >>= 4
+            size -= 1
+        self._payload.extend(encoded)
 
     def add_string(self, value):
         ''' Adds a string to the buffer
@@ -92,8 +143,8 @@ class BcdPayloadDecoder(object):
     a simple example::
 
         decoder = BcdPayloadDecoder(payload)
-        first   = decoder.decode_8bit_uint()
-        second  = decoder.decode_16bit_uint()
+        first   = decoder.decode_int(2)
+        second  = decoder.decode_int(5) / 100
     '''
 
     def __init__(self, payload):
@@ -148,14 +199,7 @@ class BcdPayloadDecoder(object):
         '''
         self._pointer += size
         handle = self._payload[self._pointer - size:self._pointer]
-        return int(handle)
-
-    def decode_float(self, size=1):
-        ''' Decodes a floating point number from the buffer
-        '''
-        self._pointer += size
-        handle = self._payload[self._pointer - size:self._pointer]
-        return float(handle)
+        return convert_from_bcd(handle)
 
     def decode_bits(self):
         ''' Decodes a byte worth of bits from the buffer
@@ -171,6 +215,7 @@ class BcdPayloadDecoder(object):
         '''
         self._pointer += size
         return self._payload[self._pointer - size:self._pointer]
+
 
 #---------------------------------------------------------------------------#
 # Exported Identifiers

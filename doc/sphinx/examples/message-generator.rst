@@ -10,17 +10,17 @@ formats in the pymodbus package.
 Program Source
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/common/generate-messages.py
+.. literalinclude:: ../../../examples/contrib/message-generator.py
 
 --------------------------------------------------
 Example Request Messages
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/common/tx-messages
+.. literalinclude:: ../../../examples/contrib/tx-messages
 
 --------------------------------------------------
 Example Response Messages
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/common/rx-messages
+.. literalinclude:: ../../../examples/contrib/rx-messages
 

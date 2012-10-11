@@ -43,7 +43,7 @@ message if possible. Here is an example output::
 Program Source
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/common/message-parser.py
+.. literalinclude:: ../../../examples/contrib/message-parser.py
 
 --------------------------------------------------
 Example Messages

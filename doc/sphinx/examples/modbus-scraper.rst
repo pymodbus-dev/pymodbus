@@ -2,5 +2,5 @@
 Modbus Scraper Example
 ==================================================
 
-.. literalinclude:: ../../../examples/common/modbus-scraper.py
+.. literalinclude:: ../../../examples/contrib/modbus-scraper.py
 

@@ -2,5 +2,5 @@
 Database Datastore Example
 ==================================================
 
-.. literalinclude:: ../../../examples/datastore/database.py
+.. literalinclude:: ../../../examples/contrib/database-datastore.py
 

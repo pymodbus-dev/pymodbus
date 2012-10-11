@@ -28,7 +28,7 @@ Example Library Code
    synchronous-server
    performance
 
-Custom Datastore Code
+Custom Pymodbus Code
 --------------------------------------------------
 
 .. toctree::
@@ -36,6 +36,7 @@ Custom Datastore Code
 
    redis-datastore
    database-datastore
+   bcd-payload
 
 Example Frontend Code
 --------------------------------------------------

@@ -31,3 +31,15 @@ Binary Coded Decimal Payload
 This module allows one to write binary coded decimal data to
 the modbus server using the payload encoder/decoder
 interfaces.
+
+------------------------------------------------------------
+Message Generator and Parser
+------------------------------------------------------------
+
+These are two utilities that can be used to create a number
+of modbus messages for any of the available protocols as well
+as to decode the messages and print descriptive text about
+them.
+
+Also included are a number of request and response messages
+in tx-messages and rx-messages.

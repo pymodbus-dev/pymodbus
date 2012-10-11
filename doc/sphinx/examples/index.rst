@@ -11,18 +11,12 @@ Example Library Code
 .. toctree::
    :maxdepth: 2
 
-   
    asynchronous-client
    asynchronous-server
    asynchronous-processor
    custom-message
-   generate-messages
    modbus-logging
    modbus-payload
-   modbus-scraper
-   modbus-simulator
-   message-parser
-   serial-forwarder
    synchronous-client
    synchronous-client-ext
    synchronous-server
@@ -37,6 +31,11 @@ Custom Pymodbus Code
    redis-datastore
    database-datastore
    bcd-payload
+   message-generator
+   message-parser
+   serial-forwarder
+   modbus-scraper
+   modbus-simulator
 
 Example Frontend Code
 --------------------------------------------------

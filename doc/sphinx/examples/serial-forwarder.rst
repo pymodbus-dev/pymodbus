@@ -2,5 +2,5 @@
 Synchronous Serial Forwarder
 ==================================================
 
-.. literalinclude:: ../../../examples/common/synchronous-serial-forwarder.py
+.. literalinclude:: ../../../examples/contrib/serial-forwarder.py
 

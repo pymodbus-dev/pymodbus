@@ -46,5 +46,5 @@ Example Frontend Code
    gtk-frontend
    tk-frontend
    wx-frontend
-   web-frontend
+   bottle-frontend
 

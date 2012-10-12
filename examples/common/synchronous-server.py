@@ -88,7 +88,7 @@ context = ModbusServerContext(slaves=store, single=True)
 identity = ModbusDeviceIdentification()
 identity.VendorName  = 'Pymodbus'
 identity.ProductCode = 'PM'
-identity.VendorUrl   = 'http://github.com/bashwork/pymobdbus/'
+identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
 identity.ProductName = 'Pymodbus Server'
 identity.ModelName   = 'Pymodbus Server'
 identity.MajorMinorRevision = '1.0'

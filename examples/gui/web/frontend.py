@@ -5,10 +5,17 @@ Pymodbus Web Frontend
 This is a simple web frontend using bottle as the web framework.
 This can be hosted using any wsgi adapter.
 '''
+import json, inspect
 from bottle import route, request, Bottle
 from bottle import jinja2_template as template
-from pymodbus.device import ModbusAccessControl
-from pymodbus.device import ModbusControlBlock
+
+#---------------------------------------------------------------------------# 
+# configure the client logging
+#---------------------------------------------------------------------------# 
+import logging
+logging.basicConfig()
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 #---------------------------------------------------------------------------# 
 # REST API
@@ -17,8 +24,8 @@ class Response(object):
     '''
     A collection of common responses for the frontend api
     '''
-    successful = { 'status' : 200 }
-    failure    = { 'status' : 500 }
+    success = { 'status' : 200 }
+    failure = { 'status' : 500 }
 
 class ModbusApiWebApp(object):
     '''
@@ -57,10 +64,15 @@ class ModbusApiWebApp(object):
         return {
             'events' : self._server.control.Events
         }
+
+    def get_device_plus(self):
+        return {
+            'plus' : dict(self._server.control.Plus)
+        }
     
     def delete_device_events(self):
         self._server.control.clearEvents()
-        return Response.successful
+        return Response.success
     
     def get_device_host(self):
         return {
@@ -71,54 +83,111 @@ class ModbusApiWebApp(object):
         value = request.forms.get('host')
         if value:
             self._server.access.add(value)
-        return Response.successful
+        return Response.success
     
     def delete_device_host(self):
         value = request.forms.get('host')
         if value:
             self._server.access.remove(value)
-        return Response.successful
+        return Response.success
     
     def post_device_delimiter(self):
         value = request.forms.get('delimiter')
         if value:
             self._server.control.Delimiter = value
-        return Response.successful
+        return Response.success
     
     def post_device_mode(self):
         value = request.forms.get('mode')
         if value:
             self._server.control.Mode = value
-        return Response.successful
+        return Response.success
     
     def post_device_reset(self):
         self._server.control.reset()
-        return Response.successful
+        return Response.success
 
     #---------------------------------------------------------------------#
-    # Datastore API
+    # Datastore Get API
     #---------------------------------------------------------------------#
+    def __get_data(self, store, address, count, slave='00'):
+        try:
+            address, count = int(address), int(count)
+            context = self._server.store[int(store)]
+            values  = context.getValues(store, address, count)
+            values  = dict(zip(range(address, address + count), values))
+            result  = { 'data' : values }
+            result.update(Response.success)
+            return result
+        except Exception, ex: log.error(ex)
+        return Response.failure
+
+    def get_coils(self, address='0', count='1'):
+        return self.__get_data(1, address, count)
+
+    def get_discretes(self, address='0', count='1'):
+        return self.__get_data(2, address, count)
+
+    def get_holding(self, address='0', count='1'):
+        return self.__get_data(3, address, count)
+
+    def get_inputs(self, address='0', count='1'):
+        return self.__get_data(4, address, count)
+
+    #---------------------------------------------------------------------#
+    # Datastore Update API
+    #---------------------------------------------------------------------#
+    def __set_data(self, store, address, values, slave='00'):
+        try:
+            address = int(address)
+            values  = json.loads(values)
+            print values
+            context = self._server.store[int(store)]
+            context.setValues(store, address, values)
+            return Response.success
+        except Exception, ex: log.error(ex)
+        return Response.failure
+
+    def post_coils(self, address='0'):
+        values = request.forms.get('data')
+        return self.__set_data(1, address, values)
+
+    def post_discretes(self, address='0'):
+        values = request.forms.get('data')
+        return self.__set_data(2, address, values)
+
+    def post_holding(self, address='0'):
+        values = request.forms.get('data')
+        return self.__set_data(3, address, values)
+
+    def post_inputs(self, address='0'):
+        values = request.forms.get('data')
+        return self.__set_data(4, address, values)
 
 #---------------------------------------------------------------------------# 
 # Configurations
 #---------------------------------------------------------------------------# 
 def register_routes(application, register):
     ''' A helper method to register the routes of an application
-    based on convention.
+    based on convention. This is easier to manage than having to
+    decorate each method with a static route name.
 
     :param application: The application instance to register
     :param register: The bottle instance to register the application with
     '''
-    from bottle import route
-
-    methods = dir(application)
-    methods = filter(lambda n: not n.startswith('_'), methods)
-    for method in methods:
+    log.info("installing application routes:")
+    methods = inspect.getmembers(application)
+    methods = filter(lambda n: not n[0].startswith('_'), methods)
+    for method, func in dict(methods).items():
         pieces = method.split('_')
         verb, path = pieces[0], pieces[1:]
+        args = inspect.getargspec(func).args[1:]
+        args = ['<%s>' % arg for arg in args]
+        args = '/'.join(args)
+        args = '' if len(args) == 0 else '/' + args
         path.insert(0, application._namespace)
-        path = '/'.join(path)
-        func = getattr(application, method)
+        path = '/'.join(path) + args 
+        log.info("%6s: %s" % (verb, path))
         register.route(path, method=verb, name=method)(func)
 
 def build_application(server):
@@ -127,6 +196,7 @@ def build_application(server):
     :param server: The modbus server to pull instance data from
     :returns: An initialied bottle application
     '''
+    log.info("building web application")
     api = ModbusApiWebApp(server)
     register = Bottle()
     register_routes(api, register)
@@ -135,17 +205,18 @@ def build_application(server):
 #---------------------------------------------------------------------------# 
 # Start Methods
 #---------------------------------------------------------------------------# 
-def RunModbusFrontend(server, port=503):
+def RunModbusFrontend(server, port=8080):
     ''' Helper method to host bottle in twisted
 
     :param server: The modbus server to pull instance data from
     :param port: The port to host the service on
     '''
     from bottle import TwistedServer, run
+
     application = build_application(server)
     run(app=application, server=TwistedServer, port=port)
 
-def RunDebugModbusFrontend(server, port=503):
+def RunDebugModbusFrontend(server, port=8080):
     ''' Helper method to start the bottle server
 
     :param server: The modbus server to pull instance data from
@@ -157,6 +228,47 @@ def RunDebugModbusFrontend(server, port=503):
     run(app=application, port=port)
 
 if __name__ == '__main__':
+    # ------------------------------------------------------------
+    # an example server configuration
+    # ------------------------------------------------------------
     from pymodbus.server.async import ModbusServerFactory
+    from pymodbus.constants import Defaults
+    from pymodbus.device import ModbusDeviceIdentification
+    from pymodbus.datastore import ModbusSequentialDataBlock
+    from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+    from twisted.internet import reactor
 
-    RunDebugModbusFrontend(ModbusServerFactory)
+    # ------------------------------------------------------------
+    # initialize the identity
+    # ------------------------------------------------------------
+
+    identity = ModbusDeviceIdentification()
+    identity.VendorName  = 'Pymodbus'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
+    identity.ProductName = 'Pymodbus Server'
+    identity.ModelName   = 'Pymodbus Server'
+    identity.MajorMinorRevision = '1.0'
+
+    # ------------------------------------------------------------
+    # initialize the datastore
+    # ------------------------------------------------------------
+    store = ModbusSlaveContext(
+        di = ModbusSequentialDataBlock(0, [17]*100),
+        co = ModbusSequentialDataBlock(0, [17]*100),
+        hr = ModbusSequentialDataBlock(0, [17]*100),
+        ir = ModbusSequentialDataBlock(0, [17]*100))
+    context = ModbusServerContext(slaves=store, single=True)
+
+    # ------------------------------------------------------------
+    # initialize the factory 
+    # ------------------------------------------------------------
+    address = ("", Defaults.Port)
+    factory = ModbusServerFactory(context, None, identity)
+
+    # ------------------------------------------------------------
+    # start the servers
+    # ------------------------------------------------------------
+    log.info("Starting Modbus TCP Server on %s:%s" % address)
+    reactor.listenTCP(address[1], factory, interface=address[0])
+    RunDebugModbusFrontend(factory)

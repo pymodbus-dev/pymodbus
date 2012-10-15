@@ -1,0 +1,58 @@
+<html> 
+<head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <title>{% block title %}pymodbus | server{% endblock %}</title> 
+ 
+    <link rel="stylesheet" type="text/css" href="/media/css/bootstrap.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="/media/css/application.css" /> 
+</head> 
+
+<body id='container'> 
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- content -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <div class='row'>
+    <div id='py-identity' class='span4'>
+    </div>
+
+    <div id='py-counters' class='span4'>
+    </div>
+
+    <div id='py-device' class='span4'>
+    </div>
+</div>
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- templates -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <script type="text/template" id="py-table-template">
+    <table class='table table-condensed table-bordered'>
+      <thead>
+        <tr>
+          <th>key</th>
+          <th>value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% _.each(_.keys(settings), function(setting) { %>
+        <tr>
+          <th><%= setting %></th>
+          <th><%= settings[setting] %></th>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </script>
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- javascript -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <script type="text/javascript" src="/media/js/jquery.min.js"></script> 
+  <script type="text/javascript" src="/media/js/underscore.min.js"></script> 
+  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script> 
+  <script type="text/javascript" src="/media/js/backbone.min.js"></script> 
+  <script type="text/javascript" src="/media/js/application.js"></script> 
+
+</body> 
+
+</html>

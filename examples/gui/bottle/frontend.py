@@ -7,6 +7,7 @@ This can be hosted using any wsgi adapter.
 '''
 import json, inspect
 from bottle import route, request, Bottle
+from bottle import static_file
 from bottle import jinja2_template as template
 
 #---------------------------------------------------------------------------# 
@@ -49,7 +50,7 @@ class ModbusApiWebApp(object):
         return {
             'mode'        : self._server.control.Mode,
             'delimiter'   : self._server.control.Delimiter,
-            'listen-only' : self._server.control.ListenOnly,
+            'readonly'    : self._server.control.ListenOnly,
             'identity'    : self._server.control.Identity.summary(),
             'counters'    : dict(self._server.control.Counter),
             'diagnostic'  : self._server.control.getDiagnosticRegister(),
@@ -58,6 +59,11 @@ class ModbusApiWebApp(object):
     def get_device_identity(self):
         return {
             'identity' : dict(self._server.control.Identity)
+        }
+
+    def get_device_counters(self):
+        return {
+            'counters' : dict(self._server.control.Counter)
         }
     
     def get_device_events(self):
@@ -163,6 +169,17 @@ class ModbusApiWebApp(object):
     def post_inputs(self, address='0'):
         values = request.forms.get('data')
         return self.__set_data(4, address, values)
+
+    #---------------------------------------------------------------------#
+    # webpage routes
+    #---------------------------------------------------------------------#
+    @route('/')
+    def _send_index_file(self):
+        return template('index.html')
+
+    @route('/media/<filename:path>')
+    def _send_static_file(self, filename):
+        return static_file(filename, root='./media')
 
 #---------------------------------------------------------------------------# 
 # Configurations

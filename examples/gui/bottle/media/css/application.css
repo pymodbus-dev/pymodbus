@@ -5,3 +5,8 @@ body {
 table th {
   background: #eee;
 }
+
+table td.data-mark {
+  font-weight: bold;
+  background: #f6f6f6;
+}

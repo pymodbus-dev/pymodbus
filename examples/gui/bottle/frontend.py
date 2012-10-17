@@ -170,21 +170,29 @@ class ModbusApiWebApp(object):
         values = request.forms.get('data')
         return self.__set_data(4, address, values)
 
-    #---------------------------------------------------------------------#
-    # webpage routes
-    #---------------------------------------------------------------------#
-    @route('/')
-    def _send_index_file(self):
-        return template('index.html')
+#---------------------------------------------------------------------#
+# webpage routes
+#---------------------------------------------------------------------#
+def register_web_routes(application, register):
+    ''' A helper method to register the default web routes of
+    a single page application.
 
-    @route('/media/<filename:path>')
-    def _send_static_file(self, filename):
+    :param application: The application instance to register
+    :param register: The bottle instance to register the application with
+    '''
+    def get_index_file():
+        return template('index.html')
+    
+    def get_static_file(filename):
         return static_file(filename, root='./media')
+
+    register.route('/', method='GET', name='get_index_file')(get_index_file)
+    register.route('/media/<filename:path>', method='GET', name='get_static_file')(get_static_file)
 
 #---------------------------------------------------------------------------# 
 # Configurations
 #---------------------------------------------------------------------------# 
-def register_routes(application, register):
+def register_api_routes(application, register):
     ''' A helper method to register the routes of an application
     based on convention. This is easier to manage than having to
     decorate each method with a static route name.
@@ -216,7 +224,8 @@ def build_application(server):
     log.info("building web application")
     api = ModbusApiWebApp(server)
     register = Bottle()
-    register_routes(api, register)
+    register_api_routes(api, register)
+    register_web_routes(api, register)
     return register
 
 #---------------------------------------------------------------------------# 

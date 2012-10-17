@@ -134,7 +134,7 @@ class ModbusApiWebApp(object):
     def get_discretes(self, address='0', count='1'):
         return self.__get_data(2, address, count)
 
-    def get_holding(self, address='0', count='1'):
+    def get_holdings(self, address='0', count='1'):
         return self.__get_data(3, address, count)
 
     def get_inputs(self, address='0', count='1'):

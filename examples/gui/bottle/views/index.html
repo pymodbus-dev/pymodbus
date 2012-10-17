@@ -38,9 +38,28 @@
   <!-- content -->
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <div class='container'> 
-    <div class='hero-unit'>
-      <h1>Pymodbus Manager</h1>
+
+    <!-- datastore container -->
+    <div class='tabbable tabs-left'>
+      <ul class='nav nav-tabs'>
+        <li class="active"><a href="#pane-coils" data-toggle="tab">Coils</a></li>
+        <li><a href="#pane-discretes" data-toggle="tab">Discretes</a></li>
+        <li><a href="#pane-holdings" data-toggle="tab">Holding Registers</a></li>
+        <li><a href="#pane-inputs" data-toggle="tab">Input Registers</a></li>
+      </ul>
+      <div class='tab-content'>
+        <div class="tab-pane active" id="pane-coils">
+        </div>
+        <div class="tab-pane" id="pane-discretes">
+        </div>
+        <div class="tab-pane" id="pane-holdings">
+        </div>
+        <div class="tab-pane" id="pane-inputs">
+        </div>
+      </div>
     </div>
+
+    <!-- settings container -->
     <div id="py-container">
       <div class='row'>
         <div id='py-identity' class='span4'>
@@ -56,6 +75,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -80,12 +100,31 @@
     </table>
   </script>
 
+  <script type="text/template" id="py-datastore-template">
+    <table class='table table-condensed table-bordered table-hover'>
+      <thead>
+        <tr>
+          <th>address</th>
+          <% _.each(_.range(10), function(id) { %>
+            <th><%= id %></th>
+          <% }); %>
+        </tr>
+      </thead>
+      <tbody><tr>
+        <% _.each(data, function(val, key) { %>
+        <%= (key % 10 == 0) ? '</tr><tr><td class="data-mark">' + key + '</td>' : '' %>
+          <td><%= val %></td>
+        <% }); %>
+      </tbody>
+    </table>
+  </script>
+
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <!-- javascript -->
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <script type="text/javascript" src="/media/js/jquery.min.js"></script> 
   <script type="text/javascript" src="/media/js/underscore.min.js"></script> 
-  <!--<script type="text/javascript" src="/media/js/bootstrap.min.js"></script> -->
+  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="/media/js/backbone.min.js"></script> 
   <script type="text/javascript" src="/media/js/application.js"></script> 
 

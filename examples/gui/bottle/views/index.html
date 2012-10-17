@@ -1,26 +1,62 @@
+<!DOCTYPE html>
 <html> 
 <head> 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
     <title>{% block title %}pymodbus | server{% endblock %}</title> 
  
     <link rel="stylesheet" type="text/css" href="/media/css/bootstrap.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="/media/css/bootstrap-responsive.min.css" /> 
     <link rel="stylesheet" type="text/css" href="/media/css/application.css" /> 
 </head> 
 
-<body id='container'> 
+<body> 
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- toolbar -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="#">pymodbus</a>
+        <div class="nav-collapse collapse">
+          <ul class="nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#help">Help</a></li>
+            <li><a href="#about">About</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <!-- content -->
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-  <div class='row'>
-    <div id='py-identity' class='span4'>
+  <div class='container'> 
+    <div class='hero-unit'>
+      <h1>Pymodbus Manager</h1>
     </div>
-
-    <div id='py-counters' class='span4'>
+    <div id="py-container">
+      <div class='row'>
+        <div id='py-identity' class='span4'>
+          <h2>Device Identity</h2>
+        </div>
+  
+        <div id='py-counters' class='span4'>
+          <h2>Device Counters</h2>
+        </div>
+  
+        <div id='py-device' class='span4'>
+          <h2>Device Settings</h2>
+        </div>
+      </div>
     </div>
-
-    <div id='py-device' class='span4'>
-    </div>
-</div>
+  </div>
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <!-- templates -->
@@ -29,15 +65,15 @@
     <table class='table table-condensed table-bordered'>
       <thead>
         <tr>
-          <th>key</th>
-          <th>value</th>
+          <th>Setting</th>
+          <th>Value</th>
         </tr>
       </thead>
       <tbody>
         <% _.each(_.keys(settings), function(setting) { %>
         <tr>
-          <th><%= setting %></th>
-          <th><%= settings[setting] %></th>
+          <td><%= setting %></td>
+          <td><%= settings[setting] %></td>
         </tr>
         <% }); %>
       </tbody>
@@ -49,7 +85,7 @@
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <script type="text/javascript" src="/media/js/jquery.min.js"></script> 
   <script type="text/javascript" src="/media/js/underscore.min.js"></script> 
-  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script> 
+  <!--<script type="text/javascript" src="/media/js/bootstrap.min.js"></script> -->
   <script type="text/javascript" src="/media/js/backbone.min.js"></script> 
   <script type="text/javascript" src="/media/js/application.js"></script> 
 

@@ -2,32 +2,35 @@
 // models
 //------------------------------------------------------------
 var Counters = Backbone.Model.extend({
-  url: '/api/v1/device/counters',
-  sync: function(m, m, o) {},
+  url: function() {
+    return '/api/v1/device/counters';
+  },
   parse: function(data) {
     return data.counters;
   }
 });
 
 var Identity = Backbone.Model.extend({
-  url: '/api/v1/device/identity',
-  sync: function(m, m, o) {},
+  url: function() {
+    return '/api/v1/device/identity';
+  },
   parse: function(data) {
     return data.identity;
   }
 });
 
 var Device = Backbone.Model.extend({
-  url: '/api/v1/device',
+  url: function() {
+    return '/api/v1/device';
+  },
   defaults : {
-    'delimiter' :'\r',
+    'delimiter' :'\\r',
     'mode': 'ASCII',
     'readonly': false,
   },
-  sync: function(m, m, o) {},
   parse: function(data) {
     return {
-      'delimiter': data.delimiter,
+      'delimiter': data.delimiter.replace('\r', '\\r'),
       'mode': data.mode,
       'readonly': data.readonly
     }
@@ -37,38 +40,41 @@ var Device = Backbone.Model.extend({
 //------------------------------------------------------------
 // views
 //------------------------------------------------------------
-var CounterView = Backbone.View.extend({
-  id: 'py-counters',
+var CountersView = Backbone.View.extend({
   template: _.template($('#py-table-template').html()),
-  initialize() {
+  initialize: function() {
     this.model.bind('change', this.render, this);
+    this.model.fetch();
   },
   render: function() {
-    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.html(this.template({'settings' : this.model.toJSON() }))
+        .prepend("<h2>Device Counters</h2>");
     return this;
   }
 });
 
 var IdentityView = Backbone.View.extend({
-  id: 'py-identity',
   template: _.template($('#py-table-template').html()),
-  initialize() {
+  initialize: function() {
     this.model.bind('change', this.render, this);
+    this.model.fetch();
   },
   render: function() {
-    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.html(this.template({'settings' : this.model.toJSON() }))
+        .prepend("<h2>Device Identity</h2>");
     return this;
   }
 });
 
 var DeviceView = Backbone.View.extend({
-  id: 'py-device',
   template: _.template($('#py-table-template').html()),
-  initialize() {
+  initialize: function() {
     this.model.bind('change', this.render, this);
+    this.model.fetch();
   },
   render: function() {
-    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.html(this.template({'settings' : this.model.toJSON() }))
+        .prepend("<h2>Device Settings</h2>");
     return this;
   }
 });
@@ -77,7 +83,7 @@ var DeviceView = Backbone.View.extend({
 // application
 //------------------------------------------------------------
 var Application = Backbone.View.extend({
-  el: '#container',
+  el: '#py-container',
   initialize: function() {
     this.device   = new DeviceView({ model: new Device() });
     this.counters = new CountersView({ model: new Counters() });

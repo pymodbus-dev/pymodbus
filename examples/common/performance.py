@@ -24,7 +24,7 @@ iterations = 10000
 # perform the test
 #---------------------------------------------------------------------------# 
 while count < iterations:
-    result = client.read_holding_registers(10, 1, 0).getRegister(0)
+    result = client.read_holding_registers(10, 1).getRegister(0)
     count += 1
 
 #---------------------------------------------------------------------------# 

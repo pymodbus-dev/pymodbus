@@ -45,6 +45,7 @@ from twisted.python.failure import Failure
 import logging
 _logger = logging.getLogger(__name__)
 
+
 #---------------------------------------------------------------------------#
 # A manager for the transaction identifiers
 #---------------------------------------------------------------------------#

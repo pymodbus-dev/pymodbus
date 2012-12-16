@@ -35,6 +35,12 @@ log.setLevel(logging.DEBUG)
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
 #
+# If you use the UDP or TCP clients, you can override the framer being used
+# to use a custom implementation (say RTU over TCP). By default they use the
+# socket framer::
+#
+#    client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
+#
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
 #---------------------------------------------------------------------------# 
@@ -55,7 +61,6 @@ client.connect()
 # Keep both of these cases in mind when testing as the following will
 # _only_ pass with the supplied async modbus server (script supplied).
 #---------------------------------------------------------------------------# 
-#import pdb;pdb.set_trace()
 rq = client.write_coil(1, True)
 rr = client.read_coils(1,1)
 assert(rq.function_code < 0x80)     # test that we are not an error

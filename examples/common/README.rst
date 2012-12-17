@@ -1,13 +1,12 @@
-============================================================
+======================
 Modbus Implementations
-============================================================
+======================
 
 There are a few reference implementations that you can use
-to test modbus serial::
+to test modbus serial.
 
-------------------------------------------------------------
 pymodbus
-------------------------------------------------------------
+--------
 
 You can use pymodbus as a testing server by simply modifying
 one of the run scripts supplied here. There is an
@@ -27,9 +26,9 @@ Currently, each version has implementations of the following:
 - modbus ascii serial
 - modbus ascii rtu
 
-------------------------------------------------------------
+
 Modbus Driver
-------------------------------------------------------------
+-------------
 
 Included are reference implementations of a modbus client
 and server using the modbus driver library (as well as
@@ -40,9 +39,9 @@ application::
     tools/reference/diagslave -h # (server)
     tools/reference/modpoll -h # (client)
 
-------------------------------------------------------------
+
 jamod
-------------------------------------------------------------
+-----
 
 Jamod is a complete modbus implementation for the java jvm.
 Included are a few simple reference servers using the
@@ -53,9 +52,9 @@ between your python code and this library:
 
 * http://jamod.sourceforge.net/
 
-------------------------------------------------------------
+
 nmodbus
-------------------------------------------------------------
+-------
 
 Although there is not any code included in this package,
 nmodbus is a complete implementation of the modbus protocol
@@ -64,17 +63,16 @@ be tuned for your testing needs:
 
 * http://code.google.com/p/nmodbus/
 
-============================================================
+
 Serial Loopback Testing
-============================================================
+=======================
 
 In order to test the serial implementations, one needs to
 create a loopback connection (virtual serial port). This can
 be done in a number of ways.
 
-------------------------------------------------------------
 Linux
-------------------------------------------------------------
+-----
 
 For linux, there are three ways that are included with this
 distribution.
@@ -92,17 +90,17 @@ the tools/nullmodem/linux directory::
 
     sudo ./run
 
-------------------------------------------------------------
+
 Windows
-------------------------------------------------------------
+-------
 
 For Windows, simply use the com2com application that is in
 the directory tools/nullmodem/windows. Instructions are
 included in the Readme.txt.
 
-------------------------------------------------------------
+
 Generic
-------------------------------------------------------------
+-------
 
 For most unix based systems, there is a simple virtual serial
 forwarding application in the tools/nullmodem/ directory::

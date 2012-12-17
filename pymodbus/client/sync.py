@@ -96,10 +96,6 @@ class BaseModbusClient(ModbusClientMixin):
         ''' Implement the client with exit block '''
         self.close()
 
-    def __del__(self):
-        ''' Class destructor '''
-        self.close()
-
     def __str__(self):
         ''' Builds a string representation of the connection
 

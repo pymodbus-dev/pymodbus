@@ -3,7 +3,7 @@ Modbus Implementations
 ============================================================
 
 There are a few reference implementations that you can use
-to test modbus serial::
+to test modbus serial
 
 ------------------------------------------------------------
 pymodbus

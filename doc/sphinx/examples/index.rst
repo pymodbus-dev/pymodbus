@@ -31,6 +31,7 @@ Custom Pymodbus Code
    redis-datastore
    database-datastore
    bcd-payload
+   modicon-payload
    message-generator
    message-parser
    serial-forwarder

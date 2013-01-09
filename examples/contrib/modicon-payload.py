@@ -1,10 +1,10 @@
 '''
-Modbus BCD Payload Builder
+Modbus Modicon Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a 
-simple binary coded decimal builder and decoder.
+simple modicon encoded builder and decoder.
 '''
 from struct import pack, unpack
 from pymodbus.constants import Endian
@@ -13,57 +13,16 @@ from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.exceptions import ParameterException
 
-def convert_to_bcd(decimal):
-    ''' Converts a decimal value to a bcd value
 
-    :param value: The decimal value to to pack into bcd
-    :returns: The number in bcd form
+class ModiconPayloadBuilder(IPayloadBuilder):
     '''
-    place, bcd = 0, 0
-    while decimal > 0:
-        nibble = decimal % 10
-        bcd += nibble << place
-        decimal /= 10
-        place += 4
-    return bcd
-
-
-def convert_from_bcd(bcd):
-    ''' Converts a bcd value to a decimal value
-
-    :param value: The value to unpack from bcd
-    :returns: The number in decimal form
-    '''
-    place, decimal = 1, 0
-    while bcd > 0:
-        nibble = bcd & 0xf
-        decimal += nibble * place
-        bcd >>= 4
-        place *= 10
-    return decimal
-
-def count_bcd_digits(bcd):
-    ''' Count the number of digits in a bcd value
-
-    :param bcd: The bcd number to count the digits of
-    :returns: The number of digits in the bcd string
-    '''
-    count = 0
-    while bcd > 0:
-        count += 1
-        bcd >>= 4
-    return count
-
-
-class BcdPayloadBuilder(IPayloadBuilder):
-    '''
-    A utility that helps build binary coded decimal payload
+    A utility that helps build modicon encoded payload
     messages to be written with the various modbus messages.
     example::
 
-        builder = BcdPayloadBuilder()
-        builder.add_number(1)
-        builder.add_number(int(2.234 * 1000))
+        builder = ModiconPayloadBuilder()
+        builder.add_8bit_uint(1)
+        builder.add_16bit_uint(2)
         payload = builder.build()
     '''
 
@@ -113,38 +72,87 @@ class BcdPayloadBuilder(IPayloadBuilder):
         value = pack_bitstring(values)
         self._payload.append(value)
 
-    def add_number(self, value, size=None):
-        ''' Adds any 8bit numeric type to the buffer
+    def add_8bit_uint(self, value):
+        ''' Adds a 8 bit unsigned int to the buffer
 
         :param value: The value to add to the buffer
         '''
-        encoded = []
-        value = convert_to_bcd(value)
-        size = size or count_bcd_digits(value)
-        while size > 0:
-            nibble = value & 0xf
-            encoded.append(pack('B', nibble))
-            value >>= 4
-            size -= 1
-        self._payload.extend(encoded)
+        fstring = self._endian + 'B'
+        self._payload.append(pack(fstring, value))
+
+    def add_16bit_uint(self, value):
+        ''' Adds a 16 bit unsigned int to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'H'
+        self._payload.append(pack(fstring, value))
+
+    def add_32bit_uint(self, value):
+        ''' Adds a 32 bit unsigned int to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'I'
+        handle = pack(fstring, value)
+        handle = handle[2:] + handle[:2]
+        self._payload.append(handle)
+
+    def add_8bit_int(self, value):
+        ''' Adds a 8 bit signed int to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'b'
+        self._payload.append(pack(fstring, value))
+
+    def add_16bit_int(self, value):
+        ''' Adds a 16 bit signed int to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'h'
+        self._payload.append(pack(fstring, value))
+
+    def add_32bit_int(self, value):
+        ''' Adds a 32 bit signed int to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'i'
+        handle = pack(fstring, value)
+        handle = handle[2:] + handle[:2]
+        self._payload.append(handle)
+
+    def add_32bit_float(self, value):
+        ''' Adds a 32 bit float to the buffer
+
+        :param value: The value to add to the buffer
+        '''
+        fstring = self._endian + 'f'
+        handle = pack(fstring, value)
+        handle = handle[2:] + handle[:2]
+        self._payload.append(handle)
 
     def add_string(self, value):
         ''' Adds a string to the buffer
 
         :param value: The value to add to the buffer
         '''
-        self._payload.append(value)
+        fstring = self._endian + 's'
+        for c in value:
+            self._payload.append(pack(fstring, c))
 
 
-class BcdPayloadDecoder(object):
+class ModiconPayloadDecoder(object):
     '''
-    A utility that helps decode binary coded decimal payload
+    A utility that helps decode modicon encoded payload
     messages from a modbus reponse message. What follows is
     a simple example::
 
-        decoder = BcdPayloadDecoder(payload)
-        first   = decoder.decode_int(2)
-        second  = decoder.decode_int(5) / 100
+        decoder = ModiconPayloadDecoder(payload)
+        first   = decoder.decode_8bit_uint()
+        second  = decoder.decode_16bit_uint()
     '''
 
     def __init__(self, payload):
@@ -170,7 +178,7 @@ class BcdPayloadDecoder(object):
         '''
         if isinstance(registers, list): # repack into flat binary
             payload = ''.join(pack('>H', x) for x in registers)
-            return BinaryPayloadDecoder(payload, endian)
+            return ModiconPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 
     @staticmethod
@@ -186,7 +194,7 @@ class BcdPayloadDecoder(object):
         '''
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
-            return BinaryPayloadDecoder(payload, endian)
+            return ModiconPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of coils supplied')
 
     def reset(self):
@@ -194,17 +202,64 @@ class BcdPayloadDecoder(object):
         '''
         self._pointer = 0x00
 
-    def decode_number(self, size=1):
-        ''' Decodes a number from the buffer
+    def decode_8bit_uint(self):
+        ''' Decodes a 8 bit unsigned int from the buffer
         '''
-        self._pointer += size
-        handle = self._payload[self._pointer - size:self._pointer]
-        size, value = size - 1, 0
-        while size >= 0:
-            nibble = handle[size]
-            value += unpack('B', nibble)[0] << (size * 4)
-            size -= 1
-        return convert_from_bcd(value)
+        self._pointer += 1
+        fstring = self._endian + 'B'
+        handle = self._payload[self._pointer - 1:self._pointer]
+        return unpack(fstring, handle)[0]
+
+    def decode_16bit_uint(self):
+        ''' Decodes a 16 bit unsigned int from the buffer
+        '''
+        self._pointer += 2
+        fstring = self._endian + 'H'
+        handle = self._payload[self._pointer - 2:self._pointer]
+        return unpack(fstring, handle)[0]
+
+    def decode_32bit_uint(self):
+        ''' Decodes a 32 bit unsigned int from the buffer
+        '''
+        self._pointer += 4
+        fstring = self._endian + 'I'
+        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = handle[2:] + handle[:2]
+        return unpack(fstring, handle)[0]
+
+    def decode_8bit_int(self):
+        ''' Decodes a 8 bit signed int from the buffer
+        '''
+        self._pointer += 1
+        fstring = self._endian + 'b'
+        handle = self._payload[self._pointer - 1:self._pointer]
+        return unpack(fstring, handle)[0]
+
+    def decode_16bit_int(self):
+        ''' Decodes a 16 bit signed int from the buffer
+        '''
+        self._pointer += 2
+        fstring = self._endian + 'h'
+        handle = self._payload[self._pointer - 2:self._pointer]
+        return unpack(fstring, handle)[0]
+
+    def decode_32bit_int(self):
+        ''' Decodes a 32 bit signed int from the buffer
+        '''
+        self._pointer += 4
+        fstring = self._endian + 'i'
+        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = handle[2:] + handle[:2]
+        return unpack(fstring, handle)[0]
+
+    def decode_32bit_float(self, size=1):
+        ''' Decodes a float from the buffer
+        '''
+        self._pointer += 4
+        fstring = self._endian + 'f'
+        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = handle[2:] + handle[:2]
+        return unpack(fstring, handle)[0]
 
     def decode_bits(self):
         ''' Decodes a byte worth of bits from the buffer
@@ -226,25 +281,3 @@ class BcdPayloadDecoder(object):
 # Exported Identifiers
 #---------------------------------------------------------------------------#
 __all__ = ["BcdPayloadBuilder", "BcdPayloadDecoder"]
-
-#---------------------------------------------------------------------------#
-# Unit Tests
-#---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    assert(0x1234 == convert_to_bcd(1234))
-    assert(1234 == convert_from_bcd(0x1234))
-    assert(4 == count_bcd_digits(0x1234))
-
-    encoder = BcdPayloadBuilder()
-    encoder.add_number(123)
-    encoder.add_number(int(123.23 * 100))
-    encoder.add_bits([1, 0, 1, 0, 1, 0, 1, 0])
-    encoder.add_string('1234')
-    payload = str(encoder)
-    assert('\x03\x02\x01\x03\x02\x03\x02\x01U1234' == payload)
-    
-    decoder = BcdPayloadDecoder(payload)
-    assert(123 == decoder.decode_number(3))
-    assert(123.23 == decoder.decode_number(5) / 100.0)
-    assert([1,0,1,0,1,0,1,0] == decoder.decode_bits())
-    assert('1234' == decoder.decode_string(4))

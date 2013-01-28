@@ -182,7 +182,7 @@ class ModbusSocketFramer(IModbusFramer):
             if self.__header['len'] < 2:
                 self.advanceFrame()
             # we have at least a complete message, continue
-            elif len(self.__buffer) >= self.__header['len']:
+            elif len(self.__buffer) - self.__hsize + 1 >= self.__header['len']:
                 return True
         # we don't have enough of a message yet, wait
         return False

@@ -185,8 +185,8 @@ class BinaryPayloadDecoder(object):
         self._pointer = 0x00
         self._endian  = endian
 
-    @staticmethod
-    def fromRegisters(registers, endian=Endian.Little):
+    @classmethod
+    def fromRegisters(klass, registers, endian=Endian.Little):
         ''' Initialize a payload decoder with the result of
         reading a collection of registers from a modbus device.
 
@@ -200,11 +200,11 @@ class BinaryPayloadDecoder(object):
         '''
         if isinstance(registers, list): # repack into flat binary
             payload = ''.join(pack('>H', x) for x in registers)
-            return BinaryPayloadDecoder(payload, endian)
+            return klass(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 
-    @staticmethod
-    def fromCoils(coils, endian=Endian.Little):
+    @classmethod
+    def fromCoils(klass, coils, endian=Endian.Little):
         ''' Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 
@@ -216,7 +216,7 @@ class BinaryPayloadDecoder(object):
         '''
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
-            return BinaryPayloadDecoder(payload, endian)
+            return klass(payload, endian)
         raise ParameterException('Invalid collection of coils supplied')
 
     def reset(self):

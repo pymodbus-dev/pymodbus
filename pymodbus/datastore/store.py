@@ -144,14 +144,14 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         else: self.values = [values]
         self.default_value = self.values[0].__class__()
 
-    @staticmethod
-    def create():
+    @classmethod
+    def create(klass):
         ''' Factory method to create a datastore with the
         full address space initialized to 0x00
 
         :returns: An initialized datastore
         '''
-        return ModbusSequentialDataBlock(0x00, [0x00] * 65536)
+        return klass(0x00, [0x00] * 65536)
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
@@ -206,14 +206,14 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         self.default_value = self.values.values()[0].__class__()
         self.address = self.values.iterkeys().next()
 
-    @staticmethod
-    def create():
+    @classmethod
+    def create(klass):
         ''' Factory method to create a datastore with the
         full address space initialized to 0x00
 
         :returns: An initialized datastore
         '''
-        return ModbusSparseDataBlock([0x00]*65536)
+        return klass([0x00]*65536)
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range

@@ -4,8 +4,17 @@ from pymodbus.payload import BinaryPayloadDecoder
 from twisted.internet.defer import Deferred
 
 
+#---------------------------------------------------------------------------#
+# Logging
+#---------------------------------------------------------------------------#
+import logging
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
+logging.basicConfig()
+
+
 #---------------------------------------------------------------------------# 
-# Sunspec Constants
+# Sunspec Common Constants
 #---------------------------------------------------------------------------# 
 class SunspecDefaultValue(object):
     ''' A collection of constants to indicate if
@@ -22,7 +31,7 @@ class SunspecDefaultValue(object):
     Signed64        = 0x8000000000000000
     Unsigned64      = 0xffffffffffffffff
     Accumulator64   = 0x0000000000000000
-    String          = 0x0000
+    String          = '\x00'
 
 
 class SunspecStatus(object):
@@ -45,44 +54,73 @@ class SunspecModel(object):
     ''' Assigned device indentifiers that are pre-assigned
     by the sunspec protocol.
     '''
+    #---------------------------------------------
     # 0xx Common Models
-    CommonBlock                 = 1
-    AggregatorBlock             = 2
+    #---------------------------------------------
+    CommonBlock                              = 1
+    AggregatorBlock                          = 2
 
+    #---------------------------------------------
     # 1xx Inverter Models
-    SinglePhaseIntegerInverter  = 101
-    SplitPhaseIntegerInverter   = 102
-    ThreePhaseIntegerInverter   = 103
-    SinglePhaseFloatsInverter   = 103
-    SplitPhaseFloatsInverter    = 102
-    ThreePhaseFloatsInverter    = 103
+    #---------------------------------------------
+    SinglePhaseIntegerInverter               = 101
+    SplitPhaseIntegerInverter                = 102
+    ThreePhaseIntegerInverter                = 103
+    SinglePhaseFloatsInverter                = 103
+    SplitPhaseFloatsInverter                 = 102
+    ThreePhaseFloatsInverter                 = 103
 
+    #---------------------------------------------
     # 2xx Meter Models
-    SinglePhaseMeter            = 201
-    SplitPhaseMeter             = 201
-    WyeConnectMeter             = 201
-    DeltaConnectMeter           = 201
+    #---------------------------------------------
+    SinglePhaseMeter                         = 201
+    SplitPhaseMeter                          = 201
+    WyeConnectMeter                          = 201
+    DeltaConnectMeter                        = 201
 
+    #---------------------------------------------
     # 3xx Environmental Models
-    BaseMeteorological          = 301
-    Irradiance                  = 302
-    BackOfModuleTemperature     = 303
-    Inclinometer                = 304
-    Location                    = 305
-    ReferencePoint              = 306
-    BaseMeteorological          = 307
-    MiniMeteorological          = 308
+    #---------------------------------------------
+    BaseMeteorological                       = 301
+    Irradiance                               = 302
+    BackOfModuleTemperature                  = 303
+    Inclinometer                             = 304
+    Location                                 = 305
+    ReferencePoint                           = 306
+    BaseMeteorological                       = 307
+    MiniMeteorological                       = 308
 
-    # 4xx String Combiner Models
-    BasicStringCombiner         = 401
-    AdvancedStringCombiner      = 402
+    #---------------------------------------------
+    # 4xx String Combiner Models             
+    #---------------------------------------------
+    BasicStringCombiner                      = 401
+    AdvancedStringCombiner                   = 402
 
+    #---------------------------------------------
     # 5xx Panel Models
-    PanelFloat                  = 501
-    PanelInteger                = 502
+    #---------------------------------------------
+    PanelFloat                               = 501
+    PanelInteger                             = 502
 
+    #---------------------------------------------
+    # 641xx Outback Blocks
+    #---------------------------------------------
+    OutbackDeviceIdentifier                  = 64110
+    OutbackChargeController                  = 64111
+    OutbackFMSeriesChargeController          = 64112
+    OutbackFXInverterRealTime                = 64113
+    OutbackFXInverterConfiguration           = 64114
+    OutbackSplitPhaseRadianInverter          = 64115
+    OutbackRadianInverterConfiguration       = 64116
+    OutbackSinglePhaseRadianInverterRealTime = 64117
+    OutbackFLEXNetDCRealTime                 = 64118
+    OutbackFLEXNetDCConfiguration            = 64119
+    OutbackSystemControl                     = 64120
+
+    #---------------------------------------------
     # 64xxx Vender Extension Block
-    EndOfSunSpecMap             = 65535
+    #---------------------------------------------
+    EndOfSunSpecMap                          = 65535
 
     @classmethod
     def lookup(klass, code):
@@ -101,32 +139,9 @@ class SunspecOffsets(object):
     ''' Well known offsets that are used throughout
     the sunspec protocol
     '''
-    CommonBlock = 40000
-    AlternateCommonBlock = 50000
-
-
-class SunspecDecoder(BinaryPayloadDecoder):
-    ''' A decoder that deals correctly with the sunspec
-    binary format.
-    '''
-
-    def __init__(self, payload, endian):
-        ''' Initialize a new instance of the SunspecDecoder
-
-        .. note:: This is always set to big endian byte order
-        as specified in the protocol.
-        '''
-        endian = Endian.Big
-        BinaryPayloadDecoder.__init__(self, payload, endian)
-
-    def decode_string(self, size=1):
-        ''' Decodes a string from the buffer
-
-        :param size: The size of the string to decode
-        '''
-        self._pointer += size
-        string = self._payload[self._pointer - size:self._pointer]
-        return string.split('\x00')[0]
+    CommonBlock             = 40000
+    CommonBlockLength       = 69
+    AlternateCommonBlock    = 50000
 
 
 #---------------------------------------------------------------------------# 
@@ -148,7 +163,7 @@ def defer_or_apply(func):
     return closure
 
 
-def create_sunspec_client(host):
+def create_sunspec_sync_client(host):
     ''' A quick helper method to create a sunspec
     client.
 
@@ -165,6 +180,30 @@ def create_sunspec_client(host):
 #---------------------------------------------------------------------------# 
 # Sunspec Client
 #---------------------------------------------------------------------------# 
+class SunspecDecoder(BinaryPayloadDecoder):
+    ''' A decoder that deals correctly with the sunspec
+    binary format.
+    '''
+
+    def __init__(self, payload, endian):
+        ''' Initialize a new instance of the SunspecDecoder
+
+        .. note:: This is always set to big endian byte order
+        as specified in the protocol.
+        '''
+        endian = Endian.Big
+        BinaryPayloadDecoder.__init__(self, payload, endian)
+
+    def decode_string(self, size=1):
+        ''' Decodes a string from the buffer
+
+        :param size: The size of the string to decode
+        '''
+        self._pointer += size
+        string = self._payload[self._pointer - size:self._pointer]
+        return string.split(SunspecDefaultValue.String)[0]
+
+
 class SunspecClient(object):
 
     def __init__(self, client):
@@ -193,7 +232,8 @@ class SunspecClient(object):
 
         :returns: A dictionary of the common block information
         '''
-        decoder  = self.get_device_block(self.offset, 69)
+        length  = SunspecOffsets.CommonBlockLength
+        decoder = self.get_device_block(self.offset, length)
         return {
             'SunSpec_ID':       decoder.decode_32bit_uint(),
             'SunSpec_DID':      decoder.decode_16bit_uint(),
@@ -218,18 +258,56 @@ class SunspecClient(object):
         :param size: The size of the offset to read
         :returns: An initialized decoder for that result
         '''
+        _logger.debug("reading device block[{}..{}]".format(offset, offset + size))
         response = self.client.read_holding_registers(offset, size + 2)
         return SunspecDecoder.fromRegisters(response.registers)
+
+    def get_all_device_blocks(self):
+        ''' Retrieve all the available blocks in the supplied
+        sunspec device.
+
+        .. note:: Since we do not know how to decode the available
+        blocks, this returns a list of dictionaries of the form:
+
+            decoder: the-binary-decoder,
+            model:   the-model-identifier (name)
+
+        :returns: A list of the available blocks
+        '''
+        blocks = []
+        offset = self.offset + 2
+        model  = SunspecModel.CommonBlock
+        while model != SunspecModel.EndOfSunSpecMap:
+            decoder = self.get_device_block(offset, 2)
+            model   = decoder.decode_16bit_uint()
+            length  = decoder.decode_16bit_uint()
+            blocks.append({
+                'model' : model,
+                'name'  : SunspecModel.lookup(model),
+                'length': length,
+                'offset': offset + length + 2
+            })
+            offset += length + 2
+        return blocks
+
 
 #------------------------------------------------------------
 # A quick test runner
 #------------------------------------------------------------
 if __name__ == "__main__":
-    client = create_sunspec_client("YOUR.HOST.GOES.HERE")
+    client = create_sunspec_sync_client("YOUR.HOST.GOES.HERE")
+
+    # print out all the device common block
     common = client.get_common_block()
     for key, value in common.items():
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
         print "{:<20}: {}".format(key, value)
+
+    # print out all the available device blocks
+    blocks = client.get_all_device_blocks()
+    for block in blocks:
+        print block
+
     client.client.close()
 

@@ -8,17 +8,21 @@ Currently supported formats are:
 
 * csv
 * json
+* xml
 
-Here is an example of generating the decoder::
+Here is an example of generating and using a mapping decoder
+(note that this is still in the works and will be greatly
+simplified in the final api; it is just an example of the
+requested functionality)::
 
     from modbus_mapper import csv_mapping_parser
-    from modbus_mapper import mapping_parser
+    from modbus_mapper import mapping_decoder
     from pymodbus.client.sync import ModbusTcpClient
     from pymodbus.payload import BinaryModbusDecoder
 
     template = ['address', 'size', 'function', 'name', 'description']
     raw_mapping = csv_mapping_parser('input.csv', template)
-    mapping = mapping_parser(raw_mapping)
+    mapping = mapping_decoder(raw_mapping)
     
     index, size = 1, 100
     client = ModbusTcpClient('localhost')
@@ -27,6 +31,20 @@ Here is an example of generating the decoder::
     while index < size:
         print "[{}]\t{}".format(i, mapping[i]['type'](decoder))
         index += mapping[i]['size']
+
+Also, using the same input mapping parsers, we can generate
+populated slave contexts that can be run behing a modbus server::
+
+    from modbus_mapper import csv_mapping_parser
+    from modbus_mapper import modbus_context_decoder
+    from pymodbus.client.ssync import StartTcpServer
+    from pymodbus.datastore.context import ModbusServerContext
+
+    template = ['address', 'value', 'function', 'name', 'description']
+    raw_mapping = csv_mapping_parser('input.csv', template)
+    slave_context = modbus_context_decoder(raw_mapping)
+    context = ModbusServerContext(slaves=slave_context, single=True)
+    StartTcpServer(context)
 '''
 import csv
 import json
@@ -34,14 +52,20 @@ from collections import defaultdict
 from StringIO import StringIO
 from tokenize import generate_tokens
 from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.datastore.store import ModbusSparseDataBlock
+from pymodbus.datastore.context import ModbusSlaveContext
 
 
 #---------------------------------------------------------------------------# 
-# raw mapping-block parsers
+# raw mapping input parsers
+#---------------------------------------------------------------------------# 
+# These generate the raw mapping_blocks from some form of input
+# which can then be passed to the decoder in question to supply
+# the requested output result.
 #---------------------------------------------------------------------------# 
 def csv_mapping_parser(path, template):
     ''' Given a csv file of the the mapping data for
-    a sunspec block, return a mapping layout that can
+    a modbus device, return a mapping layout that can
     be used to decode an new block.
 
     .. note:: For the template, a few values are required
@@ -70,7 +94,7 @@ def csv_mapping_parser(path, template):
 
 def json_mapping_parser(path, template):
     ''' Given a json file of the the mapping data for
-    a sunspec block, return a mapping layout that can
+    a modbus device, return a mapping layout that can
     be used to decode an new block.
 
     .. note:: For the template, a few values are required
@@ -101,8 +125,54 @@ def json_mapping_parser(path, template):
     return mapping_blocks
 
 
+def xml_mapping_parser(path):
+    ''' Given an xml file of the the mapping data for
+    a modbus device, return a mapping layout that can
+    be used to decode an new block.
+
+    .. note:: The input of the xml file is defined as
+    follows::
+
+    :param path: The path to the xml input file
+    :returns: The decoded csv dictionary
+    '''
+    pass
+
+
 #---------------------------------------------------------------------------# 
-# generic modbus mapping decoder
+# modbus context decoders
+#---------------------------------------------------------------------------# 
+# These are used to decode a raw mapping_block into a slave context with
+# populated function data blocks.
+#---------------------------------------------------------------------------# 
+def modbus_context_decoder(mapping_blocks):
+    ''' Given a mapping block input, generate a backing
+    slave context with initialized data blocks.
+
+    .. note:: This expects the following for each block:
+    address, value, and function where function is one of
+    di (discretes), co (coils), hr (holding registers), or
+    ir (input registers).
+
+    :param mapping_blocks: The mapping blocks
+    :returns: The initialized modbus slave context
+    '''
+    blocks = defaultdict(dict)
+    for block in mapping_blocks.values():
+        for mapping in block.values():
+            value    = int(mapping['value'])
+            address  = int(mapping['address'])
+            function = mapping['function']
+            blocks[function][address] = value
+    return ModbusSlaveContext(**blocks)
+
+
+#---------------------------------------------------------------------------# 
+# modbus mapping decoder
+#---------------------------------------------------------------------------# 
+# These are used to decode a raw mapping_block into a request decoder.
+# So this allows one to simply grab a number of registers, and then
+# pass them to this decoder which will do the rest.
 #---------------------------------------------------------------------------# 
 class ModbusTypeDecoder(object):
     ''' This is a utility to determine the correct
@@ -210,7 +280,7 @@ class ModbusTypeDecoder(object):
         return parser(tokens)
 
 
-def mapping_parser(mapping_blocks, decoder=None):
+def mapping_decoder(mapping_blocks, decoder=None):
     ''' Given the raw mapping blocks, convert
     them into modbus value decoder map.
 

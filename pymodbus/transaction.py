@@ -62,17 +62,29 @@ class ModbusTransactionManager(object):
         '''
         retries = Defaults.Retries
         request.transaction_id = self.getNextTID()
-        _logger.debug("Running transaction %d" % request.transaction_id)
+        _logger.debug("Running transaction %d" % request.transaction_id)        
 
         while retries > 0:
             try:
                 self.client.connect()
-                self.client._send(self.client.framer.buildPacket(request))
-                # I need to fix this to read the header and the result size,
-                # as this may not read the full result set, but right now
-                # it should be fine...
-                result = self.client._recv(1024)
-                self.client.framer.processIncomingPacket(result, self.addTransaction)
+                packet  = self.client.framer.buildPacket(request)
+                self.client._send(packet)
+#                 I need to fix this to read the header and the result size,
+#                 as this may not read the full result set, but right now
+#                 it should be fine...
+                callback = lambda result: self.addTransaction(request = result, tid = request.transaction_id)
+                
+                result = self.client._recv(1)
+                while result:                
+                    #print result.encode('hex')                        
+                    self.client.framer.processIncomingPacket(result, callback)                    
+                    if self.hasTransaction(request.transaction_id):
+                        break
+                    result = self.client._recv(1)
+#                result = self.client._recv(1024)
+#                if result:
+#                    print result.encode('hex')
+#                self.client.framer.processIncomingPacket(result, self.addTransaction)                                         
                 break;
             except socket.error, msg:
                 self.client.close()
@@ -100,12 +112,18 @@ class ModbusTransactionManager(object):
         If the transaction does not exist, None is returned
 
         :param tid: The transaction to retrieve
-        '''
+        '''        
         if self.fifo:
             if len(ModbusTransactionManager.__transactions):
                 return ModbusTransactionManager.__transactions.popitem()[1]
             else: return None
         return ModbusTransactionManager.__transactions.pop(tid, None)
+    
+    def hasTransaction(self,tid):
+        if self.fifo:
+            return len(ModbusTransactionManager.__transactions) > 0
+        else:
+            return tid in ModbusTransactionManager.__transactions.keys()
 
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
@@ -389,7 +407,7 @@ class ModbusRtuFramer(IModbusFramer):
 
         :param message: The most recent packet
         '''
-        self.__buffer += message
+        self.__buffer += message        
 
     def getFrame(self):
         ''' Get the next frame from the buffer

@@ -30,7 +30,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 #---------------------------------------------------------------------------# 
-# Create your custom data block with callbacks
+# create your custom data block with callbacks
 #---------------------------------------------------------------------------# 
 class CallbackDataBlock(ModbusSparseDataBlock):
     ''' A datablock that stores the new value in memory
@@ -58,7 +58,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         self.queue.put((self.devices.get(address, None), value))
 
 #---------------------------------------------------------------------------# 
-# Define your callback process
+# define your callback process
 #---------------------------------------------------------------------------# 
 def rescale_value(value):
     ''' Rescale the input value from the range

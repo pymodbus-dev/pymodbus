@@ -1,5 +1,5 @@
 ==================================================
-Synchronous Server Example
+Callback Server Example
 ==================================================
 
 .. literalinclude:: ../../../examples/common/synchronous-server.py

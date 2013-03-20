@@ -2,5 +2,5 @@
 Callback Server Example
 ==================================================
 
-.. literalinclude:: ../../../examples/common/synchronous-server.py
+.. literalinclude:: ../../../examples/common/callback-server.py
 

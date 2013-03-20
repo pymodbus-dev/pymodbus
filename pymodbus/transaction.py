@@ -1,6 +1,7 @@
 '''
 Collection of transaction based abstractions
 '''
+import sys
 import struct
 import socket
 from binascii import b2a_hex, a2b_hex
@@ -353,6 +354,17 @@ class ModbusRtuFramer(IModbusFramer):
         self.__buffer = self.__buffer[self.__header['len']:]
         self.__header = {}
 
+    def resetFrame(self):
+        ''' Reset the entire message frame.
+        This allows us to skip ovver errors that may be in the stream.
+        It is hard to know if we are simply out of sync or if there is
+        an error in the stream as we have no way to check the start or
+        end of the message (python just doesn't have the resolution to
+        check for millisecond delays).
+        '''
+        self.__buffer = ''
+        self.__header = {}
+
     def isFrameReady(self):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
@@ -372,15 +384,12 @@ class ModbusRtuFramer(IModbusFramer):
         Beware that this method will raise an IndexError if
         `self.__buffer` is not yet long enough.
         '''
-        if 'uid' not in self.__header:
-            self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
-        if 'len' not in self.__header:
-            func_code = struct.unpack('>B', self.__buffer[1])[0]
-            pdu_class = self.decoder.lookupPduClass(func_code)
-            size = pdu_class.calculateRtuFrameSize(self.__buffer)
-            self.__header['len'] = size
-        if 'crc' not in self.__header:
-            self.__header['crc'] = self.__buffer[size - 2:size]
+        self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
+        func_code = struct.unpack('>B', self.__buffer[1])[0]
+        pdu_class = self.decoder.lookupPduClass(func_code)
+        size = pdu_class.calculateRtuFrameSize(self.__buffer)
+        self.__header['len'] = size
+        self.__header['crc'] = self.__buffer[size - 2:size]
 
     def addToFrame(self, message):
         '''
@@ -439,7 +448,7 @@ class ModbusRtuFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer or push to a thread?
-            else: break
+            else: self.resetFrame() # clear possible errors
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

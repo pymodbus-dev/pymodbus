@@ -23,6 +23,7 @@ Example Library Code
    performance
    updating-server
    callback-server
+   changing-framers
 
 Custom Pymodbus Code
 --------------------------------------------------

@@ -15,12 +15,14 @@ class ModbusTransactionTest(unittest.TestCase):
     #---------------------------------------------------------------------------#
     def setUp(self):
         ''' Sets up the test environment '''
+        self.client   = None
         self.decoder  = ServerDecoder()
-        self._manager = ModbusTransactionManager()
         self._tcp     = ModbusSocketFramer(decoder=self.decoder)
         self._rtu     = ModbusRtuFramer(decoder=self.decoder)
         self._ascii   = ModbusAsciiFramer(decoder=self.decoder)
         self._binary  = ModbusBinaryFramer(decoder=self.decoder)
+        self._manager = DictTransactionManager(self.client)
+        self._queue_manager = FifoTransactionManager(self.client)
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -29,20 +31,20 @@ class ModbusTransactionTest(unittest.TestCase):
         del self._rtu
         del self._ascii
 
-    #---------------------------------------------------------------------------#
-    # Other Class tests
-    #---------------------------------------------------------------------------#
-    def testModbusTransactionManagerTID(self):
-        ''' Test the tcp transaction manager TID '''
+    #---------------------------------------------------------------------------# 
+    # Dictionary based transaction manager
+    #---------------------------------------------------------------------------# 
+    def testDictTransactionManagerTID(self):
+        ''' Test the dict transaction manager TID '''
         for tid in range(1, self._manager.getNextTID() + 10):
-            self.assertEqual(tid+2, self._manager.getNextTID())
-        self._manager.resetTID()
+            self.assertEqual(tid+1, self._manager.getNextTID())
+        self._manager.reset()
         self.assertEqual(1, self._manager.getNextTID())
 
-    def testGetTransactionManagerTransaction(self):
-        ''' Test the tcp transaction manager '''
+    def testGetDictTransactionManagerTransaction(self):
+        ''' Test the dict transaction manager '''
         class Request: pass
-        self._manager.resetTID()
+        self._manager.reset()
         handle = Request()
         handle.transaction_id = self._manager.getNextTID()
         handle.message = "testing"
@@ -50,10 +52,10 @@ class ModbusTransactionTest(unittest.TestCase):
         result = self._manager.getTransaction(handle.transaction_id)
         self.assertEqual(handle.message, result.message)
 
-    def testDeleteTransactionManagerTransaction(self):
-        ''' Test the tcp transaction manager '''
+    def testDeleteDictTransactionManagerTransaction(self):
+        ''' Test the dict transaction manager '''
         class Request: pass
-        self._manager.resetTID()
+        self._manager.reset()
         handle = Request()
         handle.transaction_id = self._manager.getNextTID()
         handle.message = "testing"
@@ -62,7 +64,40 @@ class ModbusTransactionTest(unittest.TestCase):
         self._manager.delTransaction(handle.transaction_id)
         self.assertEqual(None, self._manager.getTransaction(handle.transaction_id))
 
-    #---------------------------------------------------------------------------#
+    #---------------------------------------------------------------------------# 
+    # Queue based transaction manager
+    #---------------------------------------------------------------------------# 
+    def testFifoTransactionManagerTID(self):
+        ''' Test the fifo transaction manager TID '''
+        for tid in range(1, self._queue_manager.getNextTID() + 10):
+            self.assertEqual(tid+1, self._queue_manager.getNextTID())
+        self._queue_manager.reset()
+        self.assertEqual(1, self._queue_manager.getNextTID())
+
+    def testGetFifoTransactionManagerTransaction(self):
+        ''' Test the fifo transaction manager '''
+        class Request: pass
+        self._queue_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._queue_manager.getNextTID()
+        handle.message = "testing"
+        self._queue_manager.addTransaction(handle)
+        result = self._queue_manager.getTransaction(handle.transaction_id)
+        self.assertEqual(handle.message, result.message)
+
+    def testDeleteFifoTransactionManagerTransaction(self):
+        ''' Test the fifo transaction manager '''
+        class Request: pass
+        self._queue_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._queue_manager.getNextTID()
+        handle.message = "testing"
+
+        self._queue_manager.addTransaction(handle)
+        self._queue_manager.delTransaction(handle.transaction_id)
+        self.assertEqual(None, self._queue_manager.getTransaction(handle.transaction_id))
+
+    #---------------------------------------------------------------------------# 
     # TCP tests
     #---------------------------------------------------------------------------#
     def testTCPFramerTransactionReady(self):

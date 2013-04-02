@@ -38,24 +38,13 @@ class ModbusTransactionManager(object):
     This module helps to abstract this away from the framer and protocol.
     '''
 
-    __tid = Defaults.TransactionId
-    __transactions = {}
-
-    def __init__(self, client=None, fifo=False):
+    def __init__(self, client):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
-        :param fifo: Should this just return results in FIFO order
         '''
+        self.tid = Defaults.TransactionId
         self.client = client
-        self.fifo = fifo
-
-    def __iter__(self):
-        ''' Iterater over the current managed transactions
-
-        :returns: An iterator of the managed transactions
-        '''
-        return iter(self.__transactions.keys())
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -88,12 +77,9 @@ class ModbusTransactionManager(object):
         After being sent, the request is removed.
 
         :param request: The request to hold on to
-        :param tid: The transaction id to attach this request with
+        :param tid: The overloaded transaction id to use
         '''
-        if tid == None:
-            tid = request.transaction_id
-        _logger.debug("Adding transaction %d" % tid)
-        ModbusTransactionManager.__transactions[tid] = request
+        raise NotImplementedException("addTransaction")
 
     def getTransaction(self, tid):
         ''' Returns a transaction matching the referenced tid
@@ -102,21 +88,14 @@ class ModbusTransactionManager(object):
 
         :param tid: The transaction to retrieve
         '''
-        if self.fifo:
-            if len(ModbusTransactionManager.__transactions):
-                return ModbusTransactionManager.__transactions.popitem()[1]
-            else: return None
-        return ModbusTransactionManager.__transactions.pop(tid, None)
+        raise NotImplementedException("getTransaction")
 
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
 
         :param tid: The transaction to remove
         '''
-        if self.fifo:
-            if len(ModbusTransactionManager.__transactions):
-                ModbusTransactionManager.__transactions.popitem()
-        ModbusTransactionManager.__transactions.pop(tid, None)
+        raise NotImplementedException("delTransaction")
 
     def getNextTID(self):
         ''' Retrieve the next unique transaction identifier
@@ -126,13 +105,117 @@ class ModbusTransactionManager(object):
 
         :returns: The next unique transaction identifier
         '''
-        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
-        ModbusTransactionManager.__tid = tid
-        return tid
+        self.tid = (self.tid + 1) & 0xffff
+        return self.tid
 
-    def resetTID(self):
+    def reset(self):
         ''' Resets the transaction identifier '''
-        ModbusTransactionManager.__tid = Defaults.TransactionId
+        self.tid = Defaults.TransactionId
+        self.transactions = type(self.transactions)()
+
+
+class DictTransactionManager(ModbusTransactionManager):
+    ''' Impelements a transaction for a manager where the
+    results are keyed based on the supplied transaction id.
+    '''
+
+    def __init__(self, client):
+        ''' Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        '''
+        self.transactions = {}
+        super(DictTransactionManager, self).__init__(client)
+
+    def __iter__(self):
+        ''' Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        '''
+        return iter(self.transactions.keys())
+
+    def addTransaction(self, request, tid=None):
+        ''' Adds a transaction to the handler
+
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        :param tid: The overloaded transaction id to use
+        '''
+        tid = tid if tid != None else request.transaction_id
+        _logger.debug("adding transaction %d" % tid)
+        self.transactions[tid] = request
+
+    def getTransaction(self, tid):
+        ''' Returns a transaction matching the referenced tid
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+        '''
+        _logger.debug("getting transaction %d" % tid)
+        return self.transactions.pop(tid, None)
+
+    def delTransaction(self, tid):
+        ''' Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
+        '''
+        _logger.debug("deleting transaction %d" % tid)
+        self.transactions.pop(tid, None)
+
+
+class FifoTransactionManager(ModbusTransactionManager):
+    ''' Impelements a transaction for a manager where the
+    results are returned in a FIFO manner.
+    '''
+
+    def __init__(self, client):
+        ''' Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        '''
+        super(FifoTransactionManager, self).__init__(client)
+        self.transactions = []
+
+    def __iter__(self):
+        ''' Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        '''
+        return iter(self.transactions)
+
+    def addTransaction(self, request, tid=None):
+        ''' Adds a transaction to the handler
+
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        :param tid: The overloaded transaction id to use
+        '''
+        tid = tid if tid != None else request.transaction_id
+        _logger.debug("adding transaction %d" % tid)
+        self.transactions.append(request)
+
+    def getTransaction(self, tid):
+        ''' Returns a transaction matching the referenced tid
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+        '''
+        _logger.debug("getting transaction %s" % str(tid))
+        return self.transactions.pop(0) if self.transactions else None
+
+    def delTransaction(self, tid):
+        ''' Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
+        '''
+        _logger.debug("deleting transaction %d" % tid)
+        if self.transactions: self.transactions.pop(0)
 
 
 #---------------------------------------------------------------------------#
@@ -782,7 +865,8 @@ class ModbusBinaryFramer(IModbusFramer):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
-    "ModbusTransactionManager",
+    "FifoTransactionManager",
+    "DictTransactionManager",
     "ModbusSocketFramer", "ModbusRtuFramer",
     "ModbusAsciiFramer", "ModbusBinaryFramer",
 ]

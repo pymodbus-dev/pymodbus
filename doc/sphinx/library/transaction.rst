@@ -12,6 +12,12 @@ API Documentation
 
 .. automodule:: pymodbus.transaction
 
+.. autoclass:: DictTransactionManager
+   :members:
+
+.. autoclass:: FifoTransactionManager
+   :members:
+
 .. autoclass:: ModbusSocketFramer
    :members:
 

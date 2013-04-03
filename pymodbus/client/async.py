@@ -64,7 +64,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         self._connected = False
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        if isinstance(framer, ModbusSocketFramer):
+        if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self)
         else: self.transaction = FifoTransactionManager(self)
 
@@ -152,7 +152,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        if isinstance(framer, ModbusSocketFramer):
+        if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self)
         else: self.transaction = FifoTransactionManager(self)
 

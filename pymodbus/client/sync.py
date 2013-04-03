@@ -35,7 +35,7 @@ class BaseModbusClient(ModbusClientMixin):
         :param framer: The modbus framer implementation to use
         '''
         self.framer = framer
-        if isinstance(framer, ModbusSocketFramer):
+        if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self)
         else: self.transaction = FifoTransactionManager(self)
 

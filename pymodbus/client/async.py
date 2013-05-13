@@ -156,12 +156,13 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
             self.transaction = DictTransactionManager(self)
         else: self.transaction = FifoTransactionManager(self)
 
-    def datagramReceived(self, data, (host, port)):
+    def datagramReceived(self, data, params):
         ''' Get response, check for valid message, decode result
 
         :param data: The data returned from the server
+        :param params: The host parameters sending the datagram
         '''
-        _logger.debug("Datagram from: %s:%d" % (host, port))
+        _logger.debug("Datagram from: %s:%d" % params)
         self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):

@@ -215,10 +215,10 @@ class ModbusDeviceIdentification(object):
         Initialize the datastore with the elements you need.
         (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
 
-        :param info: A dictionary of {int:string} of values
+        :param information: A dictionary of {int:string} of values
         '''
         if isinstance(info, dict):
-            for key in info.keys():
+            for key in info:
                 if (0x06 >= key >= 0x00) or (0x80 > key > 0x08):
                     self.__data[key] = info[key]
 
@@ -438,7 +438,7 @@ class ModbusCountersHandler(object):
         :returns: A byte with each bit representing each counter
         '''
         count, result = 0x01, 0x00
-        for i in self.__data.values():
+        for i in self.__data.itervalues():
             if i != 0x00: result |= count
             count <<= 1
         return result

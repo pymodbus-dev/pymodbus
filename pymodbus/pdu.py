@@ -4,7 +4,7 @@ Contains base classes for modbus request/response/error packets
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
-from utilities import rtuFrameSize
+from pymodbus.utilities import rtuFrameSize
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -152,7 +152,7 @@ class ModbusExceptions(Singleton):
         
         :param code: The code number to translate
         '''
-        values = dict((v, k) for k, v in cls.__dict__.items()
+        values = dict((v, k) for k, v in cls.__dict__.iteritems()
             if not k.startswith('__') and not callable(v))
         return values.get(code, None)
 

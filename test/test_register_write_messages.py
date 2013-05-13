@@ -39,7 +39,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         del self.write
 
     def testRegisterWriteRequestsEncode(self):
-        for request, response in self.write.items():
+        for request, response in self.write.iteritems():
             self.assertEqual(request.encode(), response)
 
     def testRegisterWriteRequestsDecode(self):
@@ -55,7 +55,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         self.assertEquals(request.values, [])
 
     def testSerializingToString(self):
-        for request in self.write.keys():
+        for request in self.write.iterkeys():
             self.assertTrue(str(request) != None)
 
     def testWriteSingleRegisterRequest(self):

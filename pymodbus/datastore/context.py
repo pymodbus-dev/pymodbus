@@ -45,7 +45,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in self.store.values():
+        for datastore in self.store.itervalues():
             datastore.reset()
 
     def validate(self, fx, address, count=1):

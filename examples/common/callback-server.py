@@ -44,7 +44,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         self.devices = devices
         self.queue = queue
 
-        values = {k:0 for k in devices.keys()}
+        values = {k:0 for k in devices.iterkeys()}
         values[0xbeef] = len(values) # the number of devices
         super(CallbackDataBlock, self).__init__(values)
 

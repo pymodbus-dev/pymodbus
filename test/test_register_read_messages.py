@@ -58,11 +58,11 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             self.assertEqual(response.getRegister(index), index)
 
     def testRegisterReadRequests(self):
-        for request, response in self.request_read.items():
+        for request, response in self.request_read.iteritems():
             self.assertEqual(request.encode(), response)
 
     def testRegisterReadResponses(self):
-        for request, response in self.response_read.items():
+        for request, response in self.response_read.iteritems():
             self.assertEqual(request.encode(), response)
 
     def testRegisterReadResponseDecode(self):
@@ -72,7 +72,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             [0x0a,0x0b,0x0c],
             [0x0a,0x0b,0x0c, 0x0a,0x0b,0x0c],
         ]
-        values = sorted(self.response_read.items())
+        values = sorted(self.response_read.iteritems())
         for packet, register in zip(values, registers):
             request, response = packet
             request.decode(response)
@@ -162,9 +162,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         self.assertEqual(request.write_registers, [0x00]*5)
 
     def testSerializingToString(self):
-        for request in self.request_read.keys():
+        for request in self.request_read.iterkeys():
             self.assertTrue(str(request) != None)
-        for request in self.response_read.keys():
+        for request in self.response_read.iterkeys():
             self.assertTrue(str(request) != None)
 
 #---------------------------------------------------------------------------#

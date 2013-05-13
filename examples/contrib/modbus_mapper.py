@@ -116,10 +116,10 @@ def json_mapping_parser(path, template):
     '''
     mapping_blocks = {}
     with open(path, 'r') as handle:
-        for tid, rows in json.load(handle).items():
+        for tid, rows in json.load(handle).iteritems():
             mappings = {}
-            for key, values in rows.items():
-                mapping = {template.get(k, k) : v for k, v in values.items()}
+            for key, values in rows.iteritems():
+                mapping = {template.get(k, k) : v for k, v in values.iteritems()}
                 mappings[int(key)] = mapping
             mapping_blocks[tid] = mappings
     return mapping_blocks
@@ -158,8 +158,8 @@ def modbus_context_decoder(mapping_blocks):
     :returns: The initialized modbus slave context
     '''
     blocks = defaultdict(dict)
-    for block in mapping_blocks.values():
-        for mapping in block.values():
+    for block in mapping_blocks.itervalues():
+        for mapping in block.itervalues():
             value    = int(mapping['value'])
             address  = int(mapping['address'])
             function = mapping['function']
@@ -288,8 +288,8 @@ def mapping_decoder(mapping_blocks, decoder=None):
     :param decoder: The type decoder to use
     '''
     decoder = decoder or ModbusTypeDecoder()
-    for block in mapping_blocks.values():
-        for mapping in block.values():
+    for block in mapping_blocks.itervalues():
+        for mapping in block.itervalues():
             mapping['address'] = int(mapping['address'])
             mapping['size']    = int(mapping['size'])
             mapping['type']    = decoder.parse(mapping['type'])

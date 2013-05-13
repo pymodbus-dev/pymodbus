@@ -64,7 +64,7 @@ class ModbusXML:
             try:
                 self.next = attrib['index']
             except KeyError: raise ConversionException("Invalid XML: index")
-        elif tag in self.lookup.keys():
+        elif tag in self.lookup:
             self.h = self.result[self.lookup[tag]]
 
     def end(self, tag):
@@ -79,7 +79,7 @@ class ModbusXML:
         Callback for node data
         @param data The data for the current node
         '''
-        if data in self.convert.keys():
+        if data in self.convert:
             result = self.convert[data]
         else: result = data
         self.h[self.next] = data

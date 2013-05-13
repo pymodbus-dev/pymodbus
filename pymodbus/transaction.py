@@ -132,7 +132,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :returns: An iterator of the managed transactions
         '''
-        return iter(self.transactions.keys())
+        return self.transactions.iterkeys()
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler

@@ -204,7 +204,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             self.values = dict(enumerate(values))
         else: raise ParameterException(
             "Values for datastore must be a list or dictionary")
-        self.default_value = self.values.values()[0].__class__()
+        self.default_value = self.values.itervalues().next().__class__()
         self.address = self.values.iterkeys().next()
 
     @classmethod

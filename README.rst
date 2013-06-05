@@ -59,7 +59,7 @@ For those of you that just want to get started fast, here you go::
 
     from pymodbus.client.sync import ModbusTcpClient
     
-    client = ModbusClient('127.0.0.1')
+    client = ModbusTcpClient('127.0.0.1')
     client.write_coil(1, True)
     result = client.read_coils(1,1)
     print result.bits[0]

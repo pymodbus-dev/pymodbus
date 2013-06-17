@@ -406,8 +406,8 @@ class ModbusRtuFramer(IModbusFramer):
         self.__buffer = ''
         self.__header = {}
         self.__hsize  = 0x01
-        self.__end    = '\x0d\x0a'
-        self.__min_frame_size = 4
+        # Minimal READ request size
+        self.__min_frame_size = 8
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -455,7 +455,15 @@ class ModbusRtuFramer(IModbusFramer):
 
         :returns: True if ready, False otherwise
         '''
-        return len(self.__buffer) > self.__hsize
+        if len(self.__buffer) < self.__min_frame_size:
+            return False
+        # Once we have enough data, use the PDU context to calculate the
+        # expected request size.
+        func_code = struct.unpack('>B', self.__buffer[1])[0]
+        pdu_class = self.decoder.lookupPduClass(func_code)
+        size = pdu_class.calculateRtuFrameSize(self.__buffer)
+        # Wait the matching buffer size.
+        return len(self.__buffer) >= size
 
     def populateHeader(self):
         ''' Try to set the headers `uid`, `len` and `crc`.

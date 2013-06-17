@@ -218,8 +218,7 @@ class ModbusTransactionTest(unittest.TestCase):
 
         msg_parts = ["\x00\x01\x00", "\x00\x00\x01\xfc\x1b"]
         self._rtu.addToFrame(msg_parts[0])
-        self.assertTrue(self._rtu.isFrameReady())
-        self.assertFalse(self._rtu.checkFrame())
+        self.assertFalse(self._rtu.isFrameReady())
 
         self._rtu.addToFrame(msg_parts[1])
         self.assertTrue(self._rtu.isFrameReady())

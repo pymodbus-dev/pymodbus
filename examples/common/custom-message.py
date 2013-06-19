@@ -13,6 +13,7 @@ the guard construct that is available in python 2.5 and up::
         result = client.read_coils(1,10)
         print result
 '''
+import struct
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 
@@ -41,7 +42,7 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 1
 
     def __init__(self, address):
-        ModbusResponse.__init__(self)
+        ModbusRequest.__init__(self)
         self.address = address
         self.count = 16
 
@@ -81,6 +82,6 @@ class Read16CoilsRequest(ReadCoilsRequest):
 #---------------------------------------------------------------------------# 
 with ModbusClient('127.0.0.1') as client:
     request = CustomModbusRequest(0)
-    result = client.execute(request)
+    result  = client.execute(request)
     print result
 

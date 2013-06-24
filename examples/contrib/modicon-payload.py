@@ -58,7 +58,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         string = str(self)
         length = len(string)
         string = string + ('\x00' * (length % 2))
-        return [string[i:i+2] for i in xrange(0, length, 2)]
+        return [string[i:i+2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         ''' Adds a collection of bits to be encoded

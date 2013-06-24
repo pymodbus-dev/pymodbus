@@ -58,7 +58,7 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol = ModbusClientProtocol()
         protocol.connectionMade()
         out = []
-        data = '\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
 
         # setup existing request
         d = protocol._buildResponse(0x00)
@@ -130,7 +130,7 @@ class AsynchronousClientTest(unittest.TestCase):
         ''' Test the udp client protocol data received '''
         protocol = ModbusUdpClientProtocol()
         out = []
-        data = '\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
         server = ('127.0.0.1', 12345)
 
         # setup existing request

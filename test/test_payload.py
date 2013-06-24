@@ -28,16 +28,16 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         encoding pairs
         '''
         self.little_endian_payload = \
-                       '\x01\x02\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00' \
-                       '\x00\x00\x00\xff\xfe\xff\xfd\xff\xff\xff\xfc\xff' \
-                       '\xff\xff\xff\xff\xff\xff\x00\x00\xa0\x3f\x00\x00' \
-                       '\x00\x00\x00\x00\x19\x40\x74\x65\x73\x74\x11'
+                       b'\x01\x02\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00' \
+                       b'\x00\x00\x00\xff\xfe\xff\xfd\xff\xff\xff\xfc\xff' \
+                       b'\xff\xff\xff\xff\xff\xff\x00\x00\xa0\x3f\x00\x00' \
+                       b'\x00\x00\x00\x00\x19\x40\x74\x65\x73\x74\x11'
 
         self.big_endian_payload = \
-                       '\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00' \
-                       '\x00\x00\x04\xff\xff\xfe\xff\xff\xff\xfd\xff\xff' \
-                       '\xff\xff\xff\xff\xff\xfc\x3f\xa0\x00\x00\x40\x19' \
-                       '\x00\x00\x00\x00\x00\x00\x74\x65\x73\x74\x11'
+                       b'\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00' \
+                       b'\x00\x00\x04\xff\xff\xfe\xff\xff\xff\xfd\xff\xff' \
+                       b'\xff\xff\xff\xff\xff\xfc\x3f\xa0\x00\x00\x40\x19' \
+                       b'\x00\x00\x00\x00\x00\x00\x74\x65\x73\x74\x11'
 
         self.bitstring = [True, False, False, False, True, False, False, False]
 
@@ -62,9 +62,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_int(-4)
         builder.add_32bit_float(1.25)
         builder.add_64bit_float(6.25)
-        builder.add_string('test')
+        builder.add_string(b'test')
         builder.add_bits(self.bitstring)
-        self.assertEqual(self.little_endian_payload, str(builder))
+        self.assertEqual(self.little_endian_payload, builder.to_string())
 
     def testBigEndianPayloadBuilder(self):
         ''' Test basic bit message encoding/decoding '''
@@ -79,9 +79,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_int(-4)
         builder.add_32bit_float(1.25)
         builder.add_64bit_float(6.25)
-        builder.add_string('test')
+        builder.add_string(b'test')
         builder.add_bits(self.bitstring)
-        self.assertEqual(self.big_endian_payload, str(builder))
+        self.assertEqual(self.big_endian_payload, builder.to_string())
 
     def testPayloadBuilderReset(self):
         ''' Test basic bit message encoding/decoding '''
@@ -90,10 +90,10 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_8bit_uint(0x34)
         builder.add_8bit_uint(0x56)
         builder.add_8bit_uint(0x78)
-        self.assertEqual('\x12\x34\x56\x78', str(builder))
-        self.assertEqual(['\x12\x34', '\x56\x78'], builder.build())
+        self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
+        self.assertEqual([b'\x12\x34', b'\x56\x78'], builder.build())
         builder.reset()
-        self.assertEqual('', str(builder))
+        self.assertEqual(b'', builder.to_string())
         self.assertEqual([], builder.build())
 
     #-----------------------------------------------------------------------#
@@ -113,7 +113,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(-4,     decoder.decode_64bit_int())
         self.assertEqual(1.25,   decoder.decode_32bit_float())
         self.assertEqual(6.25,   decoder.decode_64bit_float())
-        self.assertEqual('test', decoder.decode_string(4))
+        self.assertEqual(b'test', decoder.decode_string(4))
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
     def testBigEndianPayloadDecoder(self):
@@ -129,12 +129,12 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(-4,     decoder.decode_64bit_int())
         self.assertEqual(1.25,   decoder.decode_32bit_float())
         self.assertEqual(6.25,   decoder.decode_64bit_float())
-        self.assertEqual('test', decoder.decode_string(4))
+        self.assertEqual(b'test', decoder.decode_string(4))
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
     def testPayloadDecoderReset(self):
         ''' Test the payload decoder reset functionality '''
-        decoder = BinaryPayloadDecoder('\x12\x34')
+        decoder = BinaryPayloadDecoder(b'\x12\x34')
         self.assertEqual(0x12, decoder.decode_8bit_uint())
         self.assertEqual(0x34, decoder.decode_8bit_uint())
         decoder.reset()   
@@ -144,11 +144,11 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         ''' Test the payload decoder reset functionality '''
         payload = [1,2,3,4]
         decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Little)
-        encoded = '\x00\x01\x00\x02\x00\x03\x00\x04'
+        encoded = b'\x00\x01\x00\x02\x00\x03\x00\x04'
         self.assertEqual(encoded, decoder.decode_string(8))
 
         decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Big)
-        encoded = '\x00\x01\x00\x02\x00\x03\x00\x04'
+        encoded = b'\x00\x01\x00\x02\x00\x03\x00\x04'
         self.assertEqual(encoded, decoder.decode_string(8))
 
         self.assertRaises(ParameterException,
@@ -158,11 +158,11 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         ''' Test the payload decoder reset functionality '''
         payload = [1,0,0,0, 1,0,0,0, 0,0,0,1, 0,0,0,1]
         decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Little)
-        encoded = '\x11\x88'
+        encoded = b'\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 
         decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Big)
-        encoded = '\x11\x88'
+        encoded = b'\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 
         self.assertRaises(ParameterException,

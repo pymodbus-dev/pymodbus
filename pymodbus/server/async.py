@@ -16,6 +16,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
+from pymodbus.compat import byte2int
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -53,7 +54,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         :param data: The data sent by the client
         '''
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(" ".join([hex(ord(x)) for x in data]))
+            _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         if not self.factory.control.ListenOnly:
             self.framer.processIncomingPacket(data, self._execute)
 
@@ -65,7 +66,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
@@ -150,7 +151,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         '''
         _logger.debug("Client Connected [%s:%s]" % addr)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(" ".join([hex(ord(x)) for x in data]))
+            _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
             self.framer.processIncomingPacket(data, continuation)
@@ -163,7 +164,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)

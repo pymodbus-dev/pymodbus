@@ -83,5 +83,5 @@ class Read16CoilsRequest(ReadCoilsRequest):
 with ModbusClient('127.0.0.1') as client:
     request = CustomModbusRequest(0)
     result  = client.execute(request)
-    print result
+    print(result)
 

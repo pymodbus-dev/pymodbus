@@ -1,6 +1,7 @@
 from pymodbus.constants import Endian
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.compat import iteritems
 from twisted.internet.defer import Deferred
 
 
@@ -130,7 +131,7 @@ class SunspecModel(object):
         :param code: The device code to lookup
         :returns: The device model name, or None if none available
         '''
-        values = dict((v, k) for k, v in klass.__dict__.iteritems()
+        values = dict((v, k) for k, v in iteritems(klass.__dict__)
             if not callable(v))
         return values.get(code, None)
 
@@ -299,15 +300,15 @@ if __name__ == "__main__":
 
     # print out all the device common block
     common = client.get_common_block()
-    for key, value in common.iteritems():
+    for key, value in iteritems(common):
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
-        print "{:<20}: {}".format(key, value)
+        print("{:<20}: {}".format(key, value))
 
     # print out all the available device blocks
     blocks = client.get_all_device_blocks()
     for block in blocks:
-        print block
+        print(block)
 
     client.client.close()
 

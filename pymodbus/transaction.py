@@ -11,6 +11,7 @@ from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
 from pymodbus.utilities  import checkLRC, computeLRC
+from pymodbus.compat import iterkeys, imap, byte2int
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -64,7 +65,7 @@ class ModbusTransactionManager(object):
                 result = self.client._recv(1024)
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
-            except socket.error, msg:
+            except socket.error as msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
@@ -132,7 +133,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :returns: An iterator of the managed transactions
         '''
-        return self.transactions.iterkeys()
+        return iterkeys(self.transactions)
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
@@ -245,7 +246,7 @@ class ModbusSocketFramer(IModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
         self.__hsize  = 0x07
         self.decoder  = decoder
@@ -334,7 +335,7 @@ class ModbusSocketFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
+        _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -403,10 +404,10 @@ class ModbusRtuFramer(IModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {}
         self.__hsize  = 0x01
-        self.__end    = '\x0d\x0a'
+        self.__end    = b'\x0d\x0a'
         self.__min_frame_size = 4
         self.decoder  = decoder
 
@@ -423,7 +424,7 @@ class ModbusRtuFramer(IModbusFramer):
             frame_size = self.__header['len']
             data = self.__buffer[:frame_size - 2]
             crc = self.__buffer[frame_size - 2:frame_size]
-            crc_val = (ord(crc[0]) << 8) + ord(crc[1])
+            crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
             return checkCRC(data, crc_val)
         except (IndexError, KeyError):
             return False
@@ -445,7 +446,7 @@ class ModbusRtuFramer(IModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {}
 
     def isFrameReady(self):
@@ -467,8 +468,8 @@ class ModbusRtuFramer(IModbusFramer):
         Beware that this method will raise an IndexError if
         `self.__buffer` is not yet long enough.
         '''
-        self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
-        func_code = struct.unpack('>B', self.__buffer[1])[0]
+        self.__header['uid'] = byte2int(self.__buffer[0])
+        func_code = byte2int(self.__buffer[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         size = pdu_class.calculateRtuFrameSize(self.__buffer)
         self.__header['len'] = size
@@ -570,11 +571,11 @@ class ModbusAsciiFramer(IModbusFramer):
 
         :param decoder: The decoder implementation to use
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {'lrc':'0000', 'len':0, 'uid':0x00}
         self.__hsize  = 0x02
-        self.__start  = ':'
-        self.__end    = "\r\n"
+        self.__start  = b':'
+        self.__end    = b"\r\n"
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -634,9 +635,9 @@ class ModbusAsciiFramer(IModbusFramer):
         '''
         start  = self.__hsize + 1
         end    = self.__header['len'] - 2
-        buffer = self.__buffer[start:end]
-        if end > 0: return a2b_hex(buffer)
-        return ''
+        data   = self.__buffer[start:end]
+        if end > 0: return a2b_hex(data)
+        return b''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -685,12 +686,12 @@ class ModbusAsciiFramer(IModbusFramer):
         :return: The encoded packet
         '''
         encoded  = message.encode()
-        buffer   = struct.pack('>BB', message.unit_id, message.function_code)
-        checksum = computeLRC(encoded + buffer)
+        data     = struct.pack('>BB', message.unit_id, message.function_code)
+        checksum = computeLRC(encoded + data)
 
         params = (message.unit_id, message.function_code, b2a_hex(encoded))
         packet = '%02x%02x%s' % params
-        packet = '%c%s%02x%s' % (self.__start, packet, checksum, self.__end)
+        packet = '%c%s%02x%s' % (self.__start[0], packet, checksum, self.__end)
         return packet.upper()
 
 
@@ -727,11 +728,11 @@ class ModbusBinaryFramer(IModbusFramer):
 
         :param decoder: The decoder implementation to use
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
         self.__hsize  = 0x02
-        self.__start  = '\x7b'  # {
-        self.__end    = '\x7d'  # }
+        self.__start  = b'\x7b'  # {
+        self.__end    = b'\x7d'  # }
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -792,7 +793,7 @@ class ModbusBinaryFramer(IModbusFramer):
         end    = self.__header['len'] - 2
         buffer = self.__buffer[start:end]
         if end > 0: return buffer
-        return ''
+        return b''
 
     def populateResult(self, result):
         ''' Populates the modbus result header
@@ -844,7 +845,7 @@ class ModbusBinaryFramer(IModbusFramer):
             message.unit_id,
             message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
-        packet = '%s%s%s' % (self.__start, packet, self.__end)
+        packet  = self.__start + packet + self.__end
         return packet
 
     def _preflight(self, data):
@@ -857,9 +858,9 @@ class ModbusBinaryFramer(IModbusFramer):
         :returns: the escaped packet
         '''
         def _filter(a):
-            if a in ['}', '{']: return a * 2
+            if a in [b'}', b'{']: return a * 2
             else: return a
-        return ''.join(map(_filter, data))
+        return b''.join(imap(_filter, data))
 
 #---------------------------------------------------------------------------#
 # Exported symbols

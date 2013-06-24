@@ -70,9 +70,9 @@ decoded = {
     'bits': decoder.decode_bits(),
 }
 
-print "-" * 60
-print "Decoded Data"
-print "-" * 60
+print("-" * 60)
+print("Decoded Data")
+print("-" * 60)
 for name, value in decoded.iteritems():
     print ("%s\t" % name), value
 

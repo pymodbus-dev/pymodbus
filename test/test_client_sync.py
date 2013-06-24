@@ -3,7 +3,6 @@ import unittest
 import socket
 import serial
 from mock import patch, Mock
-from twisted.test import test_protocols
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
 from pymodbus.exceptions import ConnectionException, NotImplementedException

@@ -135,7 +135,7 @@ class ModbusTcpClient(BaseModbusClient):
         if self.socket: return True
         try:
             self.socket = socket.create_connection((self.host, self.port), Defaults.Timeout)
-        except socket.error, msg:
+        except socket.error as msg:
             _logger.error('Connection to (%s, %s) failed: %s' % \
                 (self.host, self.port, msg))
             self.close()
@@ -220,7 +220,7 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             family = ModbusUdpClient._get_address_family(self.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
-        except socket.error, ex:
+        except socket.error as ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()
         return self.socket != None
@@ -319,7 +319,7 @@ class ModbusSerialClient(BaseModbusClient):
             self.socket = serial.Serial(port=self.port, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
-        except serial.SerialException, msg:
+        except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
         return self.socket != None

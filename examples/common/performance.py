@@ -75,4 +75,4 @@ start = time()
 any(p.start() for p in procs)   # start the workers
 any(p.join()  for p in procs)   # wait for the workers to finish
 stop  = time()
-print "%d requests/second" % ((1.0 * cycles) / (stop - start))
+print("%d requests/second" % ((1.0 * cycles) / (stop - start)))

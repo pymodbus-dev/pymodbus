@@ -10,39 +10,41 @@ class ModbusTransactionTest(unittest.TestCase):
     This is the unittest for the pymodbus.transaction module
     '''
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # Test Construction
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def setUp(self):
         ''' Sets up the test environment '''
+        self.client   = None
         self.decoder  = ServerDecoder()
-        self._manager = ModbusTransactionManager()
         self._tcp     = ModbusSocketFramer(decoder=self.decoder)
         self._rtu     = ModbusRtuFramer(decoder=self.decoder)
         self._ascii   = ModbusAsciiFramer(decoder=self.decoder)
         self._binary  = ModbusBinaryFramer(decoder=self.decoder)
+        self._manager = DictTransactionManager(self.client)
+        self._queue_manager = FifoTransactionManager(self.client)
 
     def tearDown(self):
         ''' Cleans up the test environment '''
-        del self._manager    
-        del self._tcp        
-        del self._rtu        
-        del self._ascii      
+        del self._manager
+        del self._tcp
+        del self._rtu
+        del self._ascii
 
     #---------------------------------------------------------------------------# 
-    # Other Class tests
+    # Dictionary based transaction manager
     #---------------------------------------------------------------------------# 
-    def testModbusTransactionManagerTID(self):
-        ''' Test the tcp transaction manager TID '''
+    def testDictTransactionManagerTID(self):
+        ''' Test the dict transaction manager TID '''
         for tid in range(1, self._manager.getNextTID() + 10):
-            self.assertEqual(tid+2, self._manager.getNextTID())
-        self._manager.resetTID()
+            self.assertEqual(tid+1, self._manager.getNextTID())
+        self._manager.reset()
         self.assertEqual(1, self._manager.getNextTID())
 
-    def testGetTransactionManagerTransaction(self):
-        ''' Test the tcp transaction manager '''
+    def testGetDictTransactionManagerTransaction(self):
+        ''' Test the dict transaction manager '''
         class Request: pass
-        self._manager.resetTID()
+        self._manager.reset()
         handle = Request()
         handle.transaction_id = self._manager.getNextTID()
         handle.message = "testing"
@@ -50,10 +52,10 @@ class ModbusTransactionTest(unittest.TestCase):
         result = self._manager.getTransaction(handle.transaction_id)
         self.assertEqual(handle.message, result.message)
 
-    def testDeleteTransactionManagerTransaction(self):
-        ''' Test the tcp transaction manager '''
+    def testDeleteDictTransactionManagerTransaction(self):
+        ''' Test the dict transaction manager '''
         class Request: pass
-        self._manager.resetTID()
+        self._manager.reset()
         handle = Request()
         handle.transaction_id = self._manager.getNextTID()
         handle.message = "testing"
@@ -63,8 +65,41 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(None, self._manager.getTransaction(handle.transaction_id))
 
     #---------------------------------------------------------------------------# 
-    # TCP tests
+    # Queue based transaction manager
     #---------------------------------------------------------------------------# 
+    def testFifoTransactionManagerTID(self):
+        ''' Test the fifo transaction manager TID '''
+        for tid in range(1, self._queue_manager.getNextTID() + 10):
+            self.assertEqual(tid+1, self._queue_manager.getNextTID())
+        self._queue_manager.reset()
+        self.assertEqual(1, self._queue_manager.getNextTID())
+
+    def testGetFifoTransactionManagerTransaction(self):
+        ''' Test the fifo transaction manager '''
+        class Request: pass
+        self._queue_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._queue_manager.getNextTID()
+        handle.message = "testing"
+        self._queue_manager.addTransaction(handle)
+        result = self._queue_manager.getTransaction(handle.transaction_id)
+        self.assertEqual(handle.message, result.message)
+
+    def testDeleteFifoTransactionManagerTransaction(self):
+        ''' Test the fifo transaction manager '''
+        class Request: pass
+        self._queue_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._queue_manager.getNextTID()
+        handle.message = "testing"
+
+        self._queue_manager.addTransaction(handle)
+        self._queue_manager.delTransaction(handle.transaction_id)
+        self.assertEqual(None, self._queue_manager.getTransaction(handle.transaction_id))
+
+    #---------------------------------------------------------------------------# 
+    # TCP tests
+    #---------------------------------------------------------------------------#
     def testTCPFramerTransactionReady(self):
         ''' Test a tcp frame transaction '''
         msg = "\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
@@ -115,10 +150,24 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(msg2, result)
         self._tcp.advanceFrame()
 
+    def testTCPFramerTransactionHalf3(self):
+        ''' Test a half completed tcp frame transaction '''
+        msg1 = "\x00\x01\x12\x34\x00\x04\xff\x02\x12"
+        msg2 = "\x34"
+        self._tcp.addToFrame(msg1)
+        self.assertFalse(self._tcp.checkFrame())
+        result = self._tcp.getFrame()
+        self.assertEqual(msg1[7:], result)
+        self._tcp.addToFrame(msg2)
+        self.assertTrue(self._tcp.checkFrame())
+        result = self._tcp.getFrame()
+        self.assertEqual(msg1[7:] + msg2, result)
+        self._tcp.advanceFrame()
+
     def testTCPFramerTransactionShort(self):
         ''' Test that we can get back on track after an invalid message '''
         msg1 = "\x99\x99\x99\x99\x00\x01\x00\x01"
-        msg2 = "\x00\x01\x12\x34\x00\x05\xff\x02\x12\x34"
+        msg2 = "\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         self._tcp.addToFrame(msg1)
         self.assertFalse(self._tcp.checkFrame())
         result = self._tcp.getFrame()
@@ -160,9 +209,9 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # RTU tests
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def testRTUFramerTransactionReady(self):
         ''' Test if the checks for a complete frame work '''
         self.assertFalse(self._rtu.isFrameReady())
@@ -233,9 +282,9 @@ class ModbusTransactionTest(unittest.TestCase):
         result = self._rtu.checkFrame()
         self.assertTrue(result)
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # ASCII tests
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def testASCIIFramerTransactionReady(self):
         ''' Test a ascii frame transaction '''
         msg = ':F7031389000A60\r\n'
@@ -292,9 +341,9 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # Binary tests
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def testBinaryFramerTransactionReady(self):
         ''' Test a binary frame transaction '''
         msg  = '\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d'

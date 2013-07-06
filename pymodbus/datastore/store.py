@@ -81,6 +81,7 @@ class BaseModbusDataBlock(object):
         '''
         self.default_value = value
         self.values = [self.default_value] * count
+        self.address = 0x00
 
     def reset(self):
         ''' Resets the datastore to the initialized default value '''
@@ -126,7 +127,7 @@ class BaseModbusDataBlock(object):
         '''
         if isinstance(self.values, dict):
             return self.values.iteritems()
-        return enumerate(self.values)
+        return enumerate(self.values, self.address)
 
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
@@ -203,7 +204,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             self.values = dict(enumerate(values))
         else: raise ParameterException(
             "Values for datastore must be a list or dictionary")
-        self.default_value = self.values.values()[0].__class__()
+        self.default_value = self.values.itervalues().next().__class__()
         self.address = self.values.iterkeys().next()
 
     @classmethod
@@ -213,7 +214,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
 
         :returns: An initialized datastore
         '''
-        return klass([0x00]*65536)
+        return klass([0x00] * 65536)
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range

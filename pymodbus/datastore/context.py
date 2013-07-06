@@ -45,7 +45,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in self.store.values():
+        for datastore in self.store.itervalues():
             datastore.reset()
 
     def validate(self, fx, address, count=1):
@@ -120,9 +120,9 @@ class ModbusServerContext(object):
         return slave in self.__slaves
 
     def __setitem__(self, slave, context):
-        ''' Wrapper used to access the slave context
+        ''' Used to set a new slave context
 
-        :param slave: slave The context to set
+        :param slave: The slave context to set
         :param context: The new context to set for this slave
         '''
         if self.single: slave = Defaults.UnitId
@@ -130,8 +130,17 @@ class ModbusServerContext(object):
             self.__slaves[slave] = context
         else: raise ParameterException('slave index out of range')
 
-    def __getitem__(self, slave):
+    def __delitem__(self, slave):
         ''' Wrapper used to access the slave context
+
+        :param slave: The slave context to remove
+        '''
+        if not self.single and (0xf7 >= slave >= 0x00):
+            del self.__slaves[slave]
+        else: raise ParameterException('slave index out of range')
+
+    def __getitem__(self, slave):
+        ''' Used to get access to a slave context
 
         :param slave: The slave context to get
         :returns: The requested slave context

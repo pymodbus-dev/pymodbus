@@ -73,7 +73,7 @@ decoded = {
 print "-" * 60
 print "Decoded Data"
 print "-" * 60
-for name, value in decoded.items():
+for name, value in decoded.iteritems():
     print ("%s\t" % name), value
 
 #---------------------------------------------------------------------------# 

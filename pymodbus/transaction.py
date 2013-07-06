@@ -1,6 +1,7 @@
 '''
 Collection of transaction based abstractions
 '''
+import sys
 import struct
 import socket
 from binascii import b2a_hex, a2b_hex
@@ -37,24 +38,13 @@ class ModbusTransactionManager(object):
     This module helps to abstract this away from the framer and protocol.
     '''
 
-    __tid = Defaults.TransactionId
-    __transactions = {}
-
-    def __init__(self, client=None, fifo=False):
+    def __init__(self, client):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
-        :param fifo: Should this just return results in FIFO order
         '''
+        self.tid = Defaults.TransactionId
         self.client = client
-        self.fifo = fifo
-
-    def __iter__(self):
-        ''' Iterater over the current managed transactions
-
-        :returns: An iterator of the managed transactions
-        '''
-        return iter(self.__transactions.keys())
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -99,12 +89,9 @@ class ModbusTransactionManager(object):
         After being sent, the request is removed.
 
         :param request: The request to hold on to
-        :param tid: The transaction id to attach this request with
+        :param tid: The overloaded transaction id to use
         '''
-        if tid == None:
-            tid = request.transaction_id
-        _logger.debug("Adding transaction %d" % tid)
-        ModbusTransactionManager.__transactions[tid] = request
+        raise NotImplementedException("addTransaction")
 
     def getTransaction(self, tid):
         ''' Returns a transaction matching the referenced tid
@@ -130,10 +117,7 @@ class ModbusTransactionManager(object):
 
         :param tid: The transaction to remove
         '''
-        if self.fifo:
-            if len(ModbusTransactionManager.__transactions):
-                ModbusTransactionManager.__transactions.popitem()
-        ModbusTransactionManager.__transactions.pop(tid, None)
+        raise NotImplementedException("delTransaction")
 
     def getNextTID(self):
         ''' Retrieve the next unique transaction identifier
@@ -143,13 +127,117 @@ class ModbusTransactionManager(object):
 
         :returns: The next unique transaction identifier
         '''
-        tid = (ModbusTransactionManager.__tid + 1) & 0xffff
-        ModbusTransactionManager.__tid = tid
-        return tid
+        self.tid = (self.tid + 1) & 0xffff
+        return self.tid
 
-    def resetTID(self):
+    def reset(self):
         ''' Resets the transaction identifier '''
-        ModbusTransactionManager.__tid = Defaults.TransactionId
+        self.tid = Defaults.TransactionId
+        self.transactions = type(self.transactions)()
+
+
+class DictTransactionManager(ModbusTransactionManager):
+    ''' Impelements a transaction for a manager where the
+    results are keyed based on the supplied transaction id.
+    '''
+
+    def __init__(self, client):
+        ''' Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        '''
+        self.transactions = {}
+        super(DictTransactionManager, self).__init__(client)
+
+    def __iter__(self):
+        ''' Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        '''
+        return self.transactions.iterkeys()
+
+    def addTransaction(self, request, tid=None):
+        ''' Adds a transaction to the handler
+
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        :param tid: The overloaded transaction id to use
+        '''
+        tid = tid if tid != None else request.transaction_id
+        _logger.debug("adding transaction %d" % tid)
+        self.transactions[tid] = request
+
+    def getTransaction(self, tid):
+        ''' Returns a transaction matching the referenced tid
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+        '''
+        _logger.debug("getting transaction %d" % tid)
+        return self.transactions.pop(tid, None)
+
+    def delTransaction(self, tid):
+        ''' Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
+        '''
+        _logger.debug("deleting transaction %d" % tid)
+        self.transactions.pop(tid, None)
+
+
+class FifoTransactionManager(ModbusTransactionManager):
+    ''' Impelements a transaction for a manager where the
+    results are returned in a FIFO manner.
+    '''
+
+    def __init__(self, client):
+        ''' Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        '''
+        super(FifoTransactionManager, self).__init__(client)
+        self.transactions = []
+
+    def __iter__(self):
+        ''' Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        '''
+        return iter(self.transactions)
+
+    def addTransaction(self, request, tid=None):
+        ''' Adds a transaction to the handler
+
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        :param tid: The overloaded transaction id to use
+        '''
+        tid = tid if tid != None else request.transaction_id
+        _logger.debug("adding transaction %d" % tid)
+        self.transactions.append(request)
+
+    def getTransaction(self, tid):
+        ''' Returns a transaction matching the referenced tid
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+        '''
+        _logger.debug("getting transaction %s" % str(tid))
+        return self.transactions.pop(0) if self.transactions else None
+
+    def delTransaction(self, tid):
+        ''' Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
+        '''
+        _logger.debug("deleting transaction %d" % tid)
+        if self.transactions: self.transactions.pop(0)
 
 
 #---------------------------------------------------------------------------#
@@ -200,7 +288,7 @@ class ModbusSocketFramer(IModbusFramer):
             if self.__header['len'] < 2:
                 self.advanceFrame()
             # we have at least a complete message, continue
-            elif len(self.__buffer) >= self.__header['len']:
+            elif len(self.__buffer) - self.__hsize + 1 >= self.__header['len']:
                 return True
         # we don't have enough of a message yet, wait
         return False
@@ -371,6 +459,17 @@ class ModbusRtuFramer(IModbusFramer):
         self.__buffer = self.__buffer[self.__header['len']:]
         self.__header = {}
 
+    def resetFrame(self):
+        ''' Reset the entire message frame.
+        This allows us to skip ovver errors that may be in the stream.
+        It is hard to know if we are simply out of sync or if there is
+        an error in the stream as we have no way to check the start or
+        end of the message (python just doesn't have the resolution to
+        check for millisecond delays).
+        '''
+        self.__buffer = ''
+        self.__header = {}
+
     def isFrameReady(self):
         ''' Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
@@ -390,15 +489,12 @@ class ModbusRtuFramer(IModbusFramer):
         Beware that this method will raise an IndexError if
         `self.__buffer` is not yet long enough.
         '''
-        if 'uid' not in self.__header:
-            self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
-        if 'len' not in self.__header:
-            func_code = struct.unpack('>B', self.__buffer[1])[0]
-            pdu_class = self.decoder.lookupPduClass(func_code)
-            size = pdu_class.calculateRtuFrameSize(self.__buffer)
-            self.__header['len'] = size
-        if 'crc' not in self.__header:
-            self.__header['crc'] = self.__buffer[size - 2:size]
+        self.__header['uid'] = struct.unpack('>B', self.__buffer[0])[0]
+        func_code = struct.unpack('>B', self.__buffer[1])[0]
+        pdu_class = self.decoder.lookupPduClass(func_code)
+        size = pdu_class.calculateRtuFrameSize(self.__buffer)
+        self.__header['len'] = size
+        self.__header['crc'] = self.__buffer[size - 2:size]
 
     def addToFrame(self, message):
         '''
@@ -457,7 +553,7 @@ class ModbusRtuFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer or push to a thread?
-            else: break
+            else: self.resetFrame() # clear possible errors
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -791,7 +887,8 @@ class ModbusBinaryFramer(IModbusFramer):
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
-    "ModbusTransactionManager",
+    "FifoTransactionManager",
+    "DictTransactionManager",
     "ModbusSocketFramer", "ModbusRtuFramer",
     "ModbusAsciiFramer", "ModbusBinaryFramer",
 ]

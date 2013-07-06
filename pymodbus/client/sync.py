@@ -5,7 +5,8 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusTransactionManager
+from pymodbus.transaction import FifoTransactionManager
+from pymodbus.transaction import DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.client.common import ModbusClientMixin
@@ -33,9 +34,10 @@ class BaseModbusClient(ModbusClientMixin):
 
         :param framer: The modbus framer implementation to use
         '''
-        serial = not isinstance(framer, ModbusSocketFramer)
         self.framer = framer
-        self.transaction = ModbusTransactionManager(self, serial)
+        if isinstance(self.framer, ModbusSocketFramer):
+            self.transaction = DictTransactionManager(self)
+        else: self.transaction = FifoTransactionManager(self)
 
     #-----------------------------------------------------------------------#
     # Client interface
@@ -133,7 +135,6 @@ class ModbusTcpClient(BaseModbusClient):
         if self.socket: return True
         try:
             self.socket = socket.create_connection((self.host, self.port), Defaults.Timeout)
-            self.transaction = ModbusTransactionManager(self)
         except socket.error, msg:
             _logger.error('Connection to (%s, %s) failed: %s' % \
                 (self.host, self.port, msg))

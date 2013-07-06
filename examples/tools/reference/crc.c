@@ -55,10 +55,29 @@ unsigned short int crc(const char* data)
    return current;
 }
 
-int main(int arc, char **argv)
+unsigned short int stdin_crc()
 {
-    char *data = (char *)argv[1];
-    printf("%s [0x%x]\n", data, crc(data));
+    int c;
+    unsigned char temp;
+    unsigned short int current = 0xFFFF;
+
+   while ((c = fgetc(stdin)) != EOF)
+   {
+      temp = c ^ current;
+      current >>= 8;
+      current  ^= crc_16_table[temp];
+   }
+   return current;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc == 1) {
+      printf("stdin [0x%x]\n", stdin_crc());
+    } else {
+      char *data = (char *)argv[1];
+      printf("%s [0x%x]\n", data, crc(data));
+    }
 
     return 0;
 }

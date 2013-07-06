@@ -17,10 +17,26 @@ unsigned char lrc(const char* data)
     return (unsigned char)(-count);
 }
 
-int main(int arc, char **argv)
+unsigned char stdin_lrc()
 {
-    char *data = (char *)argv[1];
-    printf("%s [0x%x]\n", data, lrc(data));
+    char count = 0;
+    int c;
+
+    while ((c = fgetc(stdin)) != EOF) {
+        count += c;
+    }
+
+    return (unsigned char)(-count);
+}
+
+int main(int argc, char **argv)
+{
+    if (argc == 1) {
+      printf("stdin [0x%x]\n", stdin_lrc());
+    } else {
+      char *data = (char *)argv[1];
+      printf("%s [0x%x]\n", data, lrc(data));
+    }
 
     return 0;
 }

@@ -22,6 +22,12 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         for id in xrange(0, 0xff):
             self.assertEqual(self.slave, self.context[id])
 
+    def testSingleContextDeletes(self):
+        ''' Test removing on multiple context '''
+        def _test():
+            del self.context[0x00]
+        self.assertRaises(ParameterException, _test)
+
     def testSingleContextIter(self):
         ''' Test iterating over a single context '''
         expected = (0, self.slave)
@@ -59,6 +65,11 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
         ''' Test getting on multiple context '''
         for id in xrange(0, 10):
             self.assertEqual(self.slaves[id], self.context[id])
+
+    def testMultipleContextDeletes(self):
+        ''' Test removing on multiple context '''
+        del self.context[0x00]
+        self.assertRaises(ParameterException, lambda: self.context[0x00])
 
     def testMultipleContextIter(self):
         ''' Test iterating over multiple context '''

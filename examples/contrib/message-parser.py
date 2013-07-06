@@ -83,7 +83,7 @@ class Decoder(object):
         :param message: The message to print
         '''
         print "%-15s = %s" % ('name', message.__class__.__name__)
-        for k,v in message.__dict__.items():
+        for k,v in message.__dict__.iteritems():
             if isinstance(v, dict):
                 print "%-15s =" % k
                 for kk,vv in v.items():

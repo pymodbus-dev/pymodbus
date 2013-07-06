@@ -35,7 +35,9 @@ Another example::
 from twisted.internet import defer, protocol
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusTransactionManager
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import FifoTransactionManager
+from pymodbus.transaction import DictTransactionManager
 from pymodbus.client.common import ModbusClientMixin
 from twisted.python.failure import Failure
 
@@ -44,12 +46,6 @@ from twisted.python.failure import Failure
 #---------------------------------------------------------------------------#
 import logging
 _logger = logging.getLogger(__name__)
-
-
-#---------------------------------------------------------------------------#
-# A manager for the transaction identifiers
-#---------------------------------------------------------------------------#
-_manager = ModbusTransactionManager()
 
 
 #---------------------------------------------------------------------------#
@@ -66,10 +62,11 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param framer: The framer to use for the protocol
         '''
-        self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        serial = not isinstance(framer, ModbusSocketFramer)
-        self.transaction = ModbusTransactionManager(self, serial)
         self._connected = False
+        self.framer = framer or ModbusSocketFramer(ClientDecoder())
+        if isinstance(self.framer, ModbusSocketFramer):
+            self.transaction = DictTransactionManager(self)
+        else: self.transaction = FifoTransactionManager(self)
 
     def connectionMade(self):
         ''' Called upon a successful client connection.
@@ -99,7 +96,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        request.transaction_id = _manager.getNextTID()
+        request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
@@ -155,15 +152,17 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
-        serial = not isinstance(framer, ModbusSocketFramer)
-        self.transaction = ModbusTransactionManager(self, serial)
+        if isinstance(self.framer, ModbusSocketFramer):
+            self.transaction = DictTransactionManager(self)
+        else: self.transaction = FifoTransactionManager(self)
 
-    def datagramReceived(self, data, (host, port)):
+    def datagramReceived(self, data, params):
         ''' Get response, check for valid message, decode result
 
         :param data: The data returned from the server
+        :param params: The host parameters sending the datagram
         '''
-        _logger.debug("Datagram from: %s:%d" % (host, port))
+        _logger.debug("Datagram from: %s:%d" % params)
         self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):

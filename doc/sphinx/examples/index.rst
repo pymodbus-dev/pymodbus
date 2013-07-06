@@ -21,6 +21,9 @@ Example Library Code
    synchronous-client-ext
    synchronous-server
    performance
+   updating-server
+   callback-server
+   changing-framers
 
 Custom Pymodbus Code
 --------------------------------------------------

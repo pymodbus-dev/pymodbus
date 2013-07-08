@@ -52,6 +52,7 @@ class ModbusTransactionManager(object):
         '''
         retries = Defaults.Retries
         request.transaction_id = self.getNextTID()
+        retry_empty = Defaults.RetryOnEmpty
         _logger.debug("Running transaction %d" % request.transaction_id)        
 
         while retries > 0:
@@ -67,7 +68,6 @@ class ModbusTransactionManager(object):
                 
 #                Could use the framer header size here 
                 result = self.client._recv(1)
-
                 while result:
                     self.client.framer.processIncomingPacket(result, callback)                    
                     if self.hasTransaction(request.transaction_id):
@@ -562,7 +562,8 @@ class ModbusRtuFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer or push to a thread?
-            else: self.resetFrame() # clear possible errors
+            else: break
+                #self.resetFrame() # clear possible errors
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

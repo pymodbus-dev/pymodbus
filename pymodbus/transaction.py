@@ -52,18 +52,33 @@ class ModbusTransactionManager(object):
         '''
         retries = Defaults.Retries
         request.transaction_id = self.getNextTID()
-        _logger.debug("Running transaction %d" % request.transaction_id)
+        retry_empty = Defaults.RetryOnEmpty
+        _logger.debug("Running transaction %d" % request.transaction_id)        
 
         while retries > 0:
             try:
                 self.client.connect()
-                self.client._send(self.client.framer.buildPacket(request))
-                # I need to fix this to read the header and the result size,
-                # as this may not read the full result set, but right now
-                # it should be fine...
-                result = self.client._recv(1024)
-                self.client.framer.processIncomingPacket(result, self.addTransaction)
-                break;
+                packet  = self.client.framer.buildPacket(request)
+                self.client._send(packet)
+#                 I need to fix this to read the header and the result size,
+#                 as this may not read the full result set, but right now
+#                 it should be fine...
+
+                callback = lambda result: self.addTransaction(request = result, tid = request.transaction_id)
+                
+#                Could use the framer header size here 
+                result = self.client._recv(1)
+                while result:
+                    self.client.framer.processIncomingPacket(result, callback)                    
+                    if self.hasTransaction(request.transaction_id):
+                        break
+                    result = self.client._recv(1)
+
+                if retry_empty and not self.hasTransaction(request.transaction_id):
+                    retries -= 1
+                else:
+                    break;
+
             except socket.error, msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
@@ -87,8 +102,15 @@ class ModbusTransactionManager(object):
         If the transaction does not exist, None is returned
 
         :param tid: The transaction to retrieve
-        '''
+        '''        
         raise NotImplementedException("getTransaction")
+
+    def hasTransaction(self,tid):
+        ''' Check if there is a transaction for current tid
+
+        :param tid: The transaction to check
+        '''
+        raise NotImplementedException("hasTransaction")
 
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
@@ -112,7 +134,6 @@ class ModbusTransactionManager(object):
         ''' Resets the transaction identifier '''
         self.tid = Defaults.TransactionId
         self.transactions = type(self.transactions)()
-
 
 class DictTransactionManager(ModbusTransactionManager):
     ''' Impelements a transaction for a manager where the
@@ -156,6 +177,12 @@ class DictTransactionManager(ModbusTransactionManager):
         '''
         _logger.debug("getting transaction %d" % tid)
         return self.transactions.pop(tid, None)
+    def hasTransaction(self,tid):
+        ''' Check if there is a transaction for current tid
+
+        :param tid: The transaction to check
+        '''
+        return tid in self.transactions.keys()
 
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
@@ -164,7 +191,6 @@ class DictTransactionManager(ModbusTransactionManager):
         '''
         _logger.debug("deleting transaction %d" % tid)
         self.transactions.pop(tid, None)
-
 
 class FifoTransactionManager(ModbusTransactionManager):
     ''' Impelements a transaction for a manager where the
@@ -209,6 +235,13 @@ class FifoTransactionManager(ModbusTransactionManager):
         _logger.debug("getting transaction %s" % str(tid))
         return self.transactions.pop(0) if self.transactions else None
 
+    def hasTransaction(self,tid):
+        ''' Check if there is a transaction for current tid
+
+        :param tid: The transaction to check
+        '''
+        return bool(self.transactions)
+
     def delTransaction(self, tid):
         ''' Removes a transaction matching the referenced tid
 
@@ -216,7 +249,6 @@ class FifoTransactionManager(ModbusTransactionManager):
         '''
         _logger.debug("deleting transaction %d" % tid)
         if self.transactions: self.transactions.pop(0)
-
 
 #---------------------------------------------------------------------------#
 # Modbus TCP Message
@@ -360,7 +392,6 @@ class ModbusSocketFramer(IModbusFramer):
             message.function_code) + data
         return packet
 
-
 #---------------------------------------------------------------------------#
 # Modbus RTU Message
 #---------------------------------------------------------------------------#
@@ -481,7 +512,7 @@ class ModbusRtuFramer(IModbusFramer):
 
         :param message: The most recent packet
         '''
-        self.__buffer += message
+        self.__buffer += message        
 
     def getFrame(self):
         ''' Get the next frame from the buffer
@@ -531,7 +562,8 @@ class ModbusRtuFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer or push to a thread?
-            else: self.resetFrame() # clear possible errors
+            else: break
+                #self.resetFrame() # clear possible errors
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -544,7 +576,6 @@ class ModbusRtuFramer(IModbusFramer):
             message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
         return packet
-
 
 #---------------------------------------------------------------------------#
 # Modbus ASCII Message
@@ -692,7 +723,6 @@ class ModbusAsciiFramer(IModbusFramer):
         packet = '%02x%02x%s' % params
         packet = '%c%s%02x%s' % (self.__start, packet, checksum, self.__end)
         return packet.upper()
-
 
 #---------------------------------------------------------------------------#
 # Modbus Binary Message

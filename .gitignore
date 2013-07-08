@@ -4,3 +4,4 @@ build/
 dist/
 pymodbus.egg-info/
 .coverage
+*__pycache__

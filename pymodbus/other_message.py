@@ -8,7 +8,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
-from pymodbus.compat import byte2int
+from pymodbus.compat import byte2int, int2byte
 
 _MCB = ModbusControlBlock()
 
@@ -383,7 +383,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier='\x00', status=True, **kwargs):
+    def __init__(self, identifier=b'\x00', status=True, **kwargs):
         ''' Initializes a new instance
 
         :param identifier: The identifier of the slave
@@ -400,10 +400,10 @@ class ReportSlaveIdResponse(ModbusResponse):
         '''
         if self.status: status = ModbusStatus.SlaveOn
         else: status = ModbusStatus.SlaveOff
-        length = len(self.identifier) + 2
-        packet = struct.pack('>B', length)
+        length  = len(self.identifier) + 2
+        packet  = int2byte(length)
         packet += self.identifier  # we assume it is already encoded
-        packet += struct.pack('>B', status)
+        packet += int2byte(status)
         return packet
 
     def decode(self, data):

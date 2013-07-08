@@ -63,7 +63,7 @@ setup(name  = 'pymodbus',
     include_package_data = True,
     zip_safe = True,
     install_requires = [
-        'twisted >= 12.2.0',
+        'twisted >= 13.1.0',
         'pyserial >= 2.6'
     ],
     extras_require = {

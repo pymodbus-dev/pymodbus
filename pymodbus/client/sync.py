@@ -310,7 +310,7 @@ class ModbusSerialClient(BaseModbusClient):
         raise ParameterException("Invalid framer method requested")
 
     def connect(self):
-        ''' Connect to the modbus tcp server
+        ''' Connect to the modbus serial server
 
         :returns: True if connection succeeded, False otherwise
         '''

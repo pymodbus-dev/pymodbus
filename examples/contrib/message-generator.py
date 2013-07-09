@@ -6,11 +6,12 @@ Modbus Message Generator
 The following is an example of how to generate example encoded messages
 for the supplied modbus format:
 
-* tcp    - `./generate-messages.py -f tcp -m rx -b`
-* ascii  - `./generate-messages.py -f ascii -m tx -a`
-* rtu    - `./generate-messages.py -f rtu -m rx -b`
-* binary - `./generate-messages.py -f binary -m tx -b`
+* tcp    - `./message-generator.py -f tcp -m rx -b`
+* ascii  - `./message-generator.py -f ascii -m tx -a`
+* rtu    - `./message-generator.py -f rtu -m rx -b`
+* binary - `./message-generator.py -f binary -m tx -b`
 '''
+import binascii
 from optparse import OptionParser
 #--------------------------------------------------------------------------#
 # import all the available framers
@@ -168,8 +169,8 @@ def generate_messages(framer, options):
         print("%-44s = " % message.__class__.__name__, end = '')
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = packet.encode('hex') + '\n'
-        print(packet, end='')   # because ascii ends with a \r\n
+            packet = binascii.b2a_hex(packet)
+        print(packet)   # because ascii ends with a \r\n
 
 
 #---------------------------------------------------------------------------# 

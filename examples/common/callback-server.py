@@ -15,7 +15,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
-from pymodbus.contrib import iterkeys
+from pymodbus.compat import iterkeys
 
 #---------------------------------------------------------------------------# 
 # import the python libraries we need

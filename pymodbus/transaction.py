@@ -858,6 +858,7 @@ class ModbusBinaryFramer(IModbusFramer):
         :returns: the escaped packet
         '''
         def _filter(a):
+            # TODO
             if a in [b'}', b'{']: return a * 2
             else: return a
         return b''.join(imap(_filter, data))

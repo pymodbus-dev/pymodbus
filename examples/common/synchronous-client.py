@@ -43,6 +43,16 @@ log.setLevel(logging.DEBUG)
 #
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
+#
+# There are also other options that can be set on the client that controls
+# how transactions are performed. The current ones are:
+#
+# * retries - Specify how many retries to allow per transaction (default = 3)
+# * retry_on_empty - Is an empty response a retry (default = False)
+#
+# Here is an example of using these options::
+#
+#    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
 #---------------------------------------------------------------------------# 
 client = ModbusClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)

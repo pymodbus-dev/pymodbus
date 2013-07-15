@@ -20,6 +20,12 @@ class Defaults(Singleton):
        The default number of times a client should retry the given
        request before failing (3)
 
+    .. attribute:: RetryOnEmpty
+
+       A flag indicating if a transaction should be retried in the
+       case that an empty response is received. This is useful for
+       slow clients that may need more time to process a requst.
+
     .. attribute:: Timeout
 
        The default amount of time a client should wait for a request
@@ -73,6 +79,7 @@ class Defaults(Singleton):
     '''
     Port          = 502
     Retries       = 3
+    RetryOnEmpty  = False
     Timeout       = 3
     Reconnects    = 0
     TransactionId = 0

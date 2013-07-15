@@ -38,13 +38,15 @@ class ModbusTransactionManager(object):
     This module helps to abstract this away from the framer and protocol.
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, **kwargs):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
+        :param retry_on_empty: Should the client retry on empty
         '''
         self.tid = Defaults.TransactionId
         self.client = client
+        self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -62,6 +64,9 @@ class ModbusTransactionManager(object):
                 # as this may not read the full result set, but right now
                 # it should be fine...
                 result = self.client._recv(1024)
+                if not result and self.retry_on_empty:
+                    retries -= 1
+                    continue
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
             except socket.error, msg:
@@ -132,7 +137,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :returns: An iterator of the managed transactions
         '''
-        return self.transactions.iterkeys()
+        return iter(self.transactions.keys())
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler

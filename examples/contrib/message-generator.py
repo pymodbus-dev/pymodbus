@@ -11,6 +11,7 @@ for the supplied modbus format:
 * rtu    - `./message-generator.py -f rtu -m rx -b`
 * binary - `./message-generator.py -f binary -m tx -b`
 '''
+from __future__ import print_function
 import binascii
 from optparse import OptionParser
 #--------------------------------------------------------------------------#
@@ -169,8 +170,9 @@ def generate_messages(framer, options):
         print("%-44s = " % message.__class__.__name__, end = '')
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = binascii.b2a_hex(packet)
-        print(packet)   # because ascii ends with a \r\n
+            packet = binascii.b2a_hex(packet).decode('utf8') + '\n'
+        else: packet = packet.decode()
+        print(packet, end='')   # because ascii ends with a \r\n
 
 
 #---------------------------------------------------------------------------# 

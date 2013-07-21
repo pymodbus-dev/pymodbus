@@ -17,6 +17,7 @@ using the supplied framers for a number of protocols:
 import sys
 import collections
 import textwrap
+import binascii
 from optparse import OptionParser
 from pymodbus.utilities import computeCRC, computeLRC
 from pymodbus.factory import ClientDecoder, ServerDecoder
@@ -52,17 +53,17 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
-        value = message if self.encode else message.encode('hex')
-        print("="*80)
-        print("Decoding Message %s" % value)
-        print("="*80)
+        value = message if self.encode else binascii.hexlify(message)
+        print("=" * 80)
+        print("Decoding Message %s" % value.decode())
+        print("=" * 80)
         decoders = [
             self.framer(ServerDecoder()),
             self.framer(ClientDecoder()),
         ]
         for decoder in decoders:
             print("%s" % decoder.decoder.__class__.__name__)
-            print("-"*80)
+            print("-" * 80)
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
@@ -84,7 +85,7 @@ class Decoder(object):
         :param message: The message to print
         '''
         print("%-15s = %s" % ('name', message.__class__.__name__))
-        for k,v in message.__dict__.iteritems():
+        for k,v in iteritems(message.__dict__):
             if isinstance(v, dict):
                 print("%-15s =" % k)
                 for kk, vv in iteritems(v):
@@ -155,8 +156,8 @@ def get_messages(option):
             for line in handle:
                 if line.startswith('#'): continue
                 if not option.ascii:
-                    line = line.strip()
-                    line = line.decode('hex')
+                    line = line.strip().encode('ascii')
+                    line = binascii.unhexlify(line)
                 yield line
 
 def main():

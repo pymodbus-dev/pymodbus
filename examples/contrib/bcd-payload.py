@@ -246,7 +246,7 @@ class BcdPayloadUtilityTests(unittest.TestCase):
     def testPayloadDecoder(self):
         ''' Test basic bit message encoding/decoding '''
         decoder = BcdPayloadDecoder(self.payload)
-        self.assertEqual(1,      decoder.decode_int())
+        self.assertEqual(1, decoder.decode_int())
         self.assertEqual(b'test', decoder.decode_string(4))
         self.assertEqual(self.bitstring, decoder.decode_bits())
 

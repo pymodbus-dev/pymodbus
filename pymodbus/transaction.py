@@ -689,10 +689,14 @@ class ModbusAsciiFramer(IModbusFramer):
         data     = struct.pack('>BB', message.unit_id, message.function_code)
         checksum = computeLRC(encoded + data)
 
-        params = (message.unit_id, message.function_code, b2a_hex(encoded))
-        packet = '%02x%02x%s' % params
-        packet = '%c%s%02x%s' % (self.__start[0], packet, checksum, self.__end)
-        return packet.upper()
+        packet = bytearray()
+        params = (message.unit_id, message.function_code)
+        packet.extend(self.__start)
+        packet.extend(('%02x%02x' % params).encode())
+        packet.extend(b2a_hex(encoded))
+        packet.extend(('%02x' % checksum).encode())
+        packet.extend(self.__end)
+        return bytes(packet).upper()
 
 
 #---------------------------------------------------------------------------#
@@ -733,6 +737,7 @@ class ModbusBinaryFramer(IModbusFramer):
         self.__hsize  = 0x02
         self.__start  = b'\x7b'  # {
         self.__end    = b'\x7d'  # }
+        self.__repeat = [b'}'[0], b'{'[0]] # python3 hack
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#
@@ -857,11 +862,12 @@ class ModbusBinaryFramer(IModbusFramer):
         :param data: The message to escape
         :returns: the escaped packet
         '''
-        def _filter(a):
-            # TODO
-            if a in [b'}', b'{']: return a * 2
-            else: return a
-        return b''.join(imap(_filter, data))
+        array = bytearray()
+        for d in data:
+            if d in self.__repeat:
+                array.append(d)
+            array.append(d)
+        return bytes(array)
 
 #---------------------------------------------------------------------------#
 # Exported symbols

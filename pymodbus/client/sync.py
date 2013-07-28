@@ -119,12 +119,14 @@ class ModbusTcpClient(BaseModbusClient):
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
+        :param source_address: The source address tuple to bind to (default ('', 0))
         :param framer: The modbus framer to use (default ModbusSocketFramer)
 
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         '''
         self.host = host
         self.port = port
+        self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
         BaseModbusClient.__init__(self, framer(ClientDecoder()), **kwargs)
 
@@ -135,7 +137,9 @@ class ModbusTcpClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = socket.create_connection((self.host, self.port), Defaults.Timeout)
+            address = (self.host, self.port)
+            self.socket = socket.create_connection((self.host, self.port),
+                timeout=Defaults.Timeout, source_address=self.source_address)
         except socket.error, msg:
             _logger.error('Connection to (%s, %s) failed: %s' % \
                 (self.host, self.port, msg))

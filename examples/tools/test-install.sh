@@ -16,7 +16,7 @@ elif [[ "`which easy_install`" != "" ]]; then
     INSTALL="easy_install -qU"
 else
     echo -e "\E[31m"
-    echo "\E[31mPlease install distutils before continuting"
+    echo "\E[31mPlease install distutils before continuing"
     echo "wget http://peak.telecommunity.com/dist/ez_setup.py | sudo python"
     echo -e "\E[0m"
     exit -1

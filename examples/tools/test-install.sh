@@ -24,7 +24,7 @@ fi
 
 if [[ "`which virtualenv`" == "" ]]; then
     echo -e "\E[31m"
-    echo "Please install virtualenv before continuting"
+    echo "Please install virtualenv before continuing"
     echo "sudo easy_install virtualenv"
     echo -e "\E[0m"
     exit -1

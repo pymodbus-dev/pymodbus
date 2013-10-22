@@ -37,7 +37,7 @@ log.setLevel(logging.DEBUG)
 #
 #     block = ModbusSequentialDataBlock(0x00, [0]*0xff)
 #
-# Continuting, you can choose to use a sequential or a sparse DataBlock in
+# Continuing, you can choose to use a sequential or a sparse DataBlock in
 # your data context.  The difference is that the sequential has no gaps in
 # the data while the sparse can. Once again, there are devices that exhibit
 # both forms of behavior::

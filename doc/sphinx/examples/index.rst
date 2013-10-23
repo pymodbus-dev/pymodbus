@@ -24,6 +24,7 @@ Example Library Code
    updating-server
    callback-server
    changing-framers
+   thread-safe-datastore
 
 Custom Pymodbus Code
 --------------------------------------------------

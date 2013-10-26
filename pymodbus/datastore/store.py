@@ -47,7 +47,10 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 from pymodbus.exceptions import NotImplementedException, ParameterException
-
+#---------------------------------------------------------------------------#
+# configure the service threading
+#---------------------------------------------------------------------------#
+import threading, time
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
@@ -132,6 +135,7 @@ class BaseModbusDataBlock(object):
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
     ''' Creates a sequential modbus datastore '''
+    lock = threading.Lock()
 
     def __init__(self, address, values):
         ''' Initializes the datastore
@@ -172,8 +176,10 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
+        lock.acquire()
         start = address - self.address
         return self.values[start:start + count]
+        lock.release()
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
@@ -181,14 +187,17 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
+        lock.acquire()
         if not isinstance(values, list):
             values = [values]
         start = address - self.address
         self.values[start:start + len(values)] = values
+        lock.release()
 
 
 class ModbusSparseDataBlock(BaseModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
+    lock = threading.Lock()
 
     def __init__(self, values):
         ''' Initializes the datastore
@@ -234,7 +243,9 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
+        lock.acquire()
         return [self.values[i] for i in range(address, address + count)]
+        lock.release()
 
     def setValues(self, address, values):
         ''' Sets the requested values of the datastore
@@ -242,6 +253,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         '''
+        lock.acquire()
         if isinstance(values, dict):
             for idx, val in values.iteritems():
                 self.values[idx] = val
@@ -250,3 +262,4 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                 values = [values]
             for idx, val in enumerate(values):
                 self.values[address + idx] = val
+        lock.release()

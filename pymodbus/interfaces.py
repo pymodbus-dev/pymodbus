@@ -6,6 +6,7 @@ A collection of base classes that are used throughout
 the pymodbus library.
 '''
 from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import ModbusIOException
 
 
 #---------------------------------------------------------------------------#
@@ -102,6 +103,15 @@ class IModbusFramer(object):
         raise NotImplementedException(
             "Method not implemented by derived class")
 
+    def getFrameSize(self):
+        ''' Return to the framer's current knowledge
+        the total size of the frame
+
+        :returns: The current size of the frame
+        '''
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
     def getFrame(self):
         ''' Get the next frame from the buffer
 
@@ -136,8 +146,17 @@ class IModbusFramer(object):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        #import pdb;pdb.set_trace()
+        if data: self.addToFrame(data)
+        while self.isFrameReady():
+            if self.checkFrame():
+                result = self.decoder.decode(self.getFrame())
+                if result is None:
+                    raise ModbusIOException("Unable to decode request")
+                self.populateResult(result)
+                self.advanceFrame()
+                callback(result)  # defer or push to a thread?
+            else: break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

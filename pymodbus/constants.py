@@ -217,6 +217,40 @@ class MoreData(Singleton):
     Nothing     = 0x00
     KeepReading = 0xFF
 
+class FramerState(Singleton):
+    ''' Represents the state machine of a modbus framer
+
+    .. attribute:: Initializing
+
+       This indiates that the framer is waiting for a new message
+       to process.
+
+    .. attribute:: ReadingHeader
+
+       This indicates that the framer is currently reading the
+       fixed size header of the current frame.
+
+    .. attribute:: ReadingContent
+
+       This indicates that the framer is currently reading the
+       content as specified by the header.
+
+    .. attribute:: CompleteFrame
+
+       This indicates that the framer has finished reading a
+       frame and is ready to pass it off to the application.
+
+    .. attribute:: ErrorInFrame
+
+       This indicates that there is an error in the current
+       frame and that it should be discarded.
+    '''
+    Initializing   = 1
+    ReadingHeader  = 2
+    ReadingContent = 3
+    CompleteFrame  = 4
+    ErrorInFrame   = 5
+
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#

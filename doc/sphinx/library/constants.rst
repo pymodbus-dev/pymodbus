@@ -29,3 +29,6 @@ API Documentation
 
 .. autoclass:: MoreData
    :members:
+
+.. autoclass:: FramerState
+   :members:

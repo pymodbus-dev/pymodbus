@@ -205,7 +205,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: A string representation of the instance
         '''
         params = (self.address, len(self.values))
-        return "WriteNCoilRequest (%d) => %d " % params
+        return "WriteCoilsRequest (%d) => %d " % params
 
 
 class WriteMultipleCoilsResponse(ModbusResponse):
@@ -245,7 +245,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "WriteNCoilResponse(%d, %d)" % (self.address, self.count)
+        return "WriteCoilsResponse(%d, %d)" % (self.address, self.count)
 
 #---------------------------------------------------------------------------#
 # Exported symbols

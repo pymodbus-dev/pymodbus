@@ -174,7 +174,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual('', result)
         self._tcp.advanceFrame()
         self._tcp.addToFrame(msg2)
-        self.assertEqual(10, len(self._tcp._ModbusSocketFramer__buffer))
+        self.assertEqual(10, len(self._tcp._buffer))
         self.assertTrue(self._tcp.checkFrame())
         result = self._tcp.getFrame()
         self.assertEqual(msg2[7:], result)
@@ -256,7 +256,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._rtu.populateHeader()
         self._rtu.populateResult(request)
 
-        header_dict = self._rtu._ModbusRtuFramer__header
+        header_dict = self._rtu._header
         self.assertEqual(len(msg), header_dict['len'])
         self.assertEqual(ord(msg[0]), header_dict['uid'])
         self.assertEqual(msg[-2:], header_dict['crc'])

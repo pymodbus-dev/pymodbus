@@ -41,6 +41,7 @@ Custom Pymodbus Code
    serial-forwarder
    modbus-scraper
    modbus-simulator
+   concurrent-client
 
 Example Frontend Code
 --------------------------------------------------

@@ -42,6 +42,7 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
         self.running = True
         self.framer = self.server.framer(self.server.decoder)
         self.server.threads.append(self)
+        self.ignore_undefined_slaves = self.server.ignore_undefined_slaves
 
     def finish(self):
         ''' Callback for when a client disconnects
@@ -58,8 +59,11 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
             context = self.server.context[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request: %s; %s", ex, traceback.format_exc() )
-            response = request.doException(merror.SlaveFailure)
+            if 'slave does not exist' in str(ex) and self.ignore_undefined_slaves:
+                return
+            else:
+                _logger.debug("Datastore unable to fulfill request: %s" % ex, traceback.format_exc() )
+                response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id
         self.send(response)
@@ -336,6 +340,8 @@ class ModbusSerialServer(object):
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
+        :param ignore_undefined_slaves: False (default): an error response is emitted
+                                        True (standard): the request is ignored
 
         '''
         self.threads = []
@@ -356,6 +362,8 @@ class ModbusSerialServer(object):
         self.socket   = None
         self._connect()
         self.is_running = True
+        self.ignore_undefined_slaves = kwargs.get('ignore_undefined_slaves',
+                                                   Defaults.ignore_undefined_slaves)
 
     def _connect(self):
         ''' Connect to the serial server

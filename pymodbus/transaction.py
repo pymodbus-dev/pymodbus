@@ -100,14 +100,14 @@ class ModbusTransactionManager(object):
             # before we start reading, we allow the framer to
             # put itself into a newly consistent state.
             if self.state == FramerState.Initializing:
-                _logger.debug("entering initializing state: %d:%s", len(self.framer._buffer, self.framer._header))
+                _logger.debug("entering initializing state: %d:%s", len(self.framer._buffer), self.framer._header)
                 self.framer.advanceFrame() # initialize
                 self.state = FramerState.ReadingHeader
 
             # we know how much to read for the fixed size
             # header, so we loop until we have it to guide us.
             elif self.state == FramerState.ReadingHeader:
-                _logger.debug("entering reading header state: %d:%s", len(self.framer._buffer, self.framer._header))
+                _logger.debug("entering reading header state: %d:%s", len(self.framer._buffer), self.framer._header)
                 size = self.framer._hsize - len(self.framer._buffer)
                 if size != 0:
                     result = self.client._recv(size) # off by one on clear
@@ -123,7 +123,7 @@ class ModbusTransactionManager(object):
             # after we have the header, we know how much content
             # to read and continue until we finish or fail.
             elif self.state == FramerState.ReadingContent:
-                _logger.debug("entering reading content state: %d:%s", len(self.framer._buffer, self.framer._header))
+                _logger.debug("entering reading content state: %d:%s", len(self.framer._buffer), self.framer._header)
                 size = self.framer.getFrameSize() - len(self.framer._buffer)
                 if size != 0:
                     result = self.client._recv(size)
@@ -139,7 +139,7 @@ class ModbusTransactionManager(object):
             # the application code to process. In this case, we
             # simply add it to the transaction manager.
             elif self.state == FramerState.CompleteFrame:
-                _logger.debug("entering reading complete state: %d:%s", len(self.framer._buffer, self.framer._header))
+                _logger.debug("entering reading complete state: %d:%s", len(self.framer._buffer), self.framer._header)
                 self.framer.processIncomingPacket('', self.addTransaction)
                 return True
 

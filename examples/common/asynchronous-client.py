@@ -35,6 +35,16 @@ def dassert(deferred, callback):
     deferred.addErrback(lambda  _: _assertor(False))
 
 #---------------------------------------------------------------------------# 
+# specify slave to query
+#---------------------------------------------------------------------------# 
+# The slave to query is specified in an optional parameter for each
+# individual request. This can be done by specifying the `unit` parameter
+# which defaults to `0x00`
+#---------------------------------------------------------------------------# 
+def exampleRequests(client):
+    rr = client.read_coils(1, 1, unit=0x02)
+
+#---------------------------------------------------------------------------# 
 # example requests
 #---------------------------------------------------------------------------# 
 # simply call the methods that you would like to use. An example session

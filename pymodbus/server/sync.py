@@ -7,6 +7,7 @@ from binascii import b2a_hex
 import SocketServer
 import serial
 import socket
+import traceback
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -57,7 +58,7 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
             context = self.server.context[request.unit_id]
             response = request.execute(context)
         except Exception, ex:
-            _logger.debug("Datastore unable to fulfill request: %s" % ex)
+            _logger.debug("Datastore unable to fulfill request: %s; %s", ex, traceback.format_exc() )
             response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id
@@ -119,9 +120,18 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     This uses the socketserver.BaseRequestHandler to implement
     the client handler for a connected protocol (TCP).
     '''
-
     def handle(self):
-        ''' Callback when we receive any data
+        '''Callback when we receive any data, until self.running becomes not True.  Blocks indefinitely
+        awaiting data.  If shutdown is required, then the global socket.settimeout(<seconds>) may be
+        used, to allow timely checking of self.running.  However, since this also affects socket
+        connects, if there are outgoing socket connections used in the same program, then these will
+        be prevented, if the specfied timeout is too short.  Hence, this is unreliable.
+
+        To respond to Modbus...Server.server_close() (which clears each handler's self.running),
+        derive from this class to provide an alternative handler that awakens from time to time when
+        no input is available and checks self.running.  Use Modbus...Server( handler=... ) keyword
+        to supply the alternative request handler class.
+
         '''
         while self.running:
             try:
@@ -131,11 +141,16 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
                     _logger.debug(" ".join([hex(ord(x)) for x in data]))
                 # if not self.server.control.ListenOnly:
                 self.framer.processIncomingPacket(data, self.execute)
-            except socket.timeout: pass
-            except socket.error, msg:
-                _logger.error("Socket error occurred %s" % msg)
+            except socket.timeout as msg:
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("Socket timeout occurred %s", msg)
+                pass
+            except socket.error as msg:
+                _logger.error("Socket error occurred %s", msg)
                 self.running = False
-            except: self.running = False
+            except:
+                _logger.error("Socket exception occurred %s", traceback.format_exc() )
+                self.running = False
 
     def send(self, message):
         ''' Send a request (string) to the network
@@ -201,7 +216,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None, address=None):
+    def __init__(self, context, framer=None, identity=None, address=None, handler=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -211,6 +226,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
+        :param handler: A handler for each client session; default is ModbusConnectedRequestHandler
         '''
         self.threads = []
         self.decoder = ServerDecoder()
@@ -223,7 +239,7 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingTCPServer.__init__(self,
-            self.address, ModbusConnectedRequestHandler)
+            self.address, handler or ModbusConnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -252,7 +268,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None, address=None):
+    def __init__(self, context, framer=None, identity=None, address=None, handler=None):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -262,6 +278,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
+        :param handler: A handler for each client session; default is ModbusDisonnectedRequestHandler
         '''
         self.threads = []
         self.decoder = ServerDecoder()
@@ -274,7 +291,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
             self.control.Identity.update(identity)
 
         SocketServer.ThreadingUDPServer.__init__(self,
-            self.address, ModbusDisconnectedRequestHandler)
+            self.address, handler or ModbusDisconnectedRequestHandler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread

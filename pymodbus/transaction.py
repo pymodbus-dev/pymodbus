@@ -69,6 +69,8 @@ class ModbusTransactionManager(object):
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
             except socket.error, msg:
@@ -341,7 +343,6 @@ class ModbusSocketFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        _logger.debug(" ".join([hex(ord(x)) for x in data]))
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():

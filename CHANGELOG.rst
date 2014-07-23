@@ -1,6 +1,14 @@
 Version 1.2.0
 ------------------------------------------------------------
 
+* Added ability to ignore missing slaves
+* Added ability to revert to ZeroMode
+* Passed a number of extra options through the stack
+* Fixed documenation and added a number of examples
+
+Version 1.2.0
+------------------------------------------------------------
+
 * Reworking the transaction managers to be more explicit and
   to handle modbus RTU over TCP.
 * Adding examples for a number of unique requested use cases

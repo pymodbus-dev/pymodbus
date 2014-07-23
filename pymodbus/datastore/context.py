@@ -35,6 +35,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
         self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
+        self.zero_mode  = kwargs.get('zero-mode', Defaults.ZeroMode)
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -56,7 +57,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        address = address + 1  # section 4.4 of specification
+        if not self.zero_mode: address = address + 1
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].validate(address, count)
 
@@ -68,7 +69,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        address = address + 1  # section 4.4 of specification
+        if not self.zero_mode: address = address + 1
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].getValues(address, count)
 
@@ -79,7 +80,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        address = address + 1  # section 4.4 of specification
+        if not self.zero_mode: address = address + 1
         _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
 

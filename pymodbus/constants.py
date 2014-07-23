@@ -76,6 +76,11 @@ class Defaults(Singleton):
 
        The number of bits sent after each character in a message to
        indicate the end of the byte.  This defaults to 1.
+
+    .. attribute:: ZeroMode
+
+       Indicates if the slave datastore should use indexing at 0 or 1.
+       Mor about this can be read in section 4.4 of the modbus specification.
     '''
     Port          = 502
     Retries       = 3
@@ -89,6 +94,7 @@ class Defaults(Singleton):
     Parity        = 'N'
     Bytesize      = 8
     Stopbits      = 1
+    ZeroMode      = False
 
 
 class ModbusStatus(Singleton):

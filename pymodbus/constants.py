@@ -81,20 +81,28 @@ class Defaults(Singleton):
 
        Indicates if the slave datastore should use indexing at 0 or 1.
        Mor about this can be read in section 4.4 of the modbus specification.
+
+    .. attribute:: IgnoreMissingSlaves
+
+       In case a request is made to a missing slave, this defines if an error
+       should be returned or simply ignored. This is useful for the case of a
+       serial server emulater where a request to a non-existant slave on a bus
+       will never respond. The client in this case will simply timeout.
     '''
-    Port          = 502
-    Retries       = 3
-    RetryOnEmpty  = False
-    Timeout       = 3
-    Reconnects    = 0
-    TransactionId = 0
-    ProtocolId    = 0
-    UnitId        = 0x00
-    Baudrate      = 19200
-    Parity        = 'N'
-    Bytesize      = 8
-    Stopbits      = 1
-    ZeroMode      = False
+    Port                = 502
+    Retries             = 3
+    RetryOnEmpty        = False
+    Timeout             = 3
+    Reconnects          = 0
+    TransactionId       = 0
+    ProtocolId          = 0
+    UnitId              = 0x00
+    Baudrate            = 19200
+    Parity              = 'N'
+    Bytesize            = 8
+    Stopbits            = 1
+    ZeroMode            = False
+    IgnoreMissingSlaves = False
 
 
 class ModbusStatus(Singleton):

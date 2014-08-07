@@ -34,4 +34,5 @@ __logging.getLogger(__name__).addHandler(__null())
 try:
     True, False
 except NameError:
-    True, False = (1 == 1), (0 == 1)
+    True = (1 == 1)
+    False =  (0 == 1)

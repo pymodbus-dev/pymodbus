@@ -343,12 +343,23 @@ class ModbusSerialClient(BaseModbusClient):
     def _send(self, request):
         ''' Sends data on the underlying socket
 
+        If receive buffer still holds some data then flush it.
+
         :param request: The encoded request to send
         :return: The number of bytes written
         '''
         if not self.socket:
             raise ConnectionException(self.__str__())
         if request:
+            try:
+                waitingbytes = self.socket.inWaiting()
+                if waitingbytes:
+                    result = self.socket.read(waitingbytes)
+                    if _logger.isEnabledFor(logging.WARNING):
+                        _logger.warning("cleanup recv buffer before send: " + " ".join([hex(ord(x)) for x in result]))
+            except NotImplementedError:
+                pass
+
             return self.socket.write(request)
         return 0
 

@@ -1,5 +1,6 @@
 import socket
 import serial
+import time
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
@@ -322,6 +323,8 @@ class ModbusSerialClient(BaseModbusClient):
         except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
+        self._last_frame_end = time.time()
+        self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
         return self.socket != None
 
     def close(self):
@@ -336,12 +339,20 @@ class ModbusSerialClient(BaseModbusClient):
 
         If receive buffer still holds some data then flush it.
 
+        Sleep if last send finished less than 3.5 character
+        times ago.
+
         :param request: The encoded request to send
         :return: The number of bytes written
         '''
         if not self.socket:
             raise ConnectionException(self.__str__())
         if request:
+            ts = time.time()
+            if ts < self._last_frame_end + self._silent_interval:
+                _logger.debug("will sleep to wait for 3.5 char")
+                time.sleep(self._last_frame_end + self._silent_interval - ts)
+
             try:
                 waitingbytes = self.socket.inWaiting()
                 if waitingbytes:
@@ -351,7 +362,9 @@ class ModbusSerialClient(BaseModbusClient):
             except NotImplementedError:
                 pass
 
-            return self.socket.write(request)
+            size = self.socket.write(request)
+            self._last_frame_end = time.time()
+            return size
         return 0
 
     def _recv(self, size):
@@ -362,7 +375,9 @@ class ModbusSerialClient(BaseModbusClient):
         '''
         if not self.socket:
             raise ConnectionException(self.__str__())
-        return self.socket.read(size)
+        result = self.socket.read(size)
+        self._last_frame_end = time.time()
+        return result
 
     def __str__(self):
         ''' Builds a string representation of the connection

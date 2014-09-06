@@ -530,6 +530,8 @@ class ModbusRtuFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug("IN:"+" ".join([hex(ord(x)) for x in data]))
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -551,6 +553,8 @@ class ModbusRtuFramer(IModbusFramer):
             message.unit_id,
             message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug("OUT:"+" ".join([hex(ord(x)) for x in packet]))
         return packet
 
 
@@ -674,6 +678,8 @@ class ModbusAsciiFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(" ".join([hex(ord(x)) for x in data]))
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -830,6 +836,8 @@ class ModbusBinaryFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(" ".join([hex(ord(x)) for x in data]))
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():

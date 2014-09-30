@@ -3,6 +3,7 @@ Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 '''
+import traceback
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
@@ -13,6 +14,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole

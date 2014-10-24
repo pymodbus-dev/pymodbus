@@ -35,7 +35,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
         self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
-        self.zero_mode  = kwargs.get('zero-mode', Defaults.ZeroMode)
+        self.zero_mode  = kwargs.get('zero_mode', Defaults.ZeroMode)
 
     def __str__(self):
         ''' Returns a string representation of the context

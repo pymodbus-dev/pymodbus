@@ -73,12 +73,12 @@ log.setLevel(logging.DEBUG)
 #     }
 #     context = ModbusServerContext(slaves=slaves, single=False)
 #
-# The slave context can also be initialized in zero-mode which means that a
+# The slave context can also be initialized in zero_mode which means that a
 # request to address(0-7) will map to the address (0-7). The default is
 # False which is based on section 4.4 of the specification, so address(0-7)
 # will map to (1-8)::
 #
-#     store = ModbusSlaveContext(..., zero-mode=True)
+#     store = ModbusSlaveContext(..., zero_mode=True)
 #---------------------------------------------------------------------------# 
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),

@@ -80,7 +80,7 @@ class Defaults(Singleton):
     .. attribute:: ZeroMode
 
        Indicates if the slave datastore should use indexing at 0 or 1.
-       Mor about this can be read in section 4.4 of the modbus specification.
+       More about this can be read in section 4.4 of the modbus specification.
 
     .. attribute:: IgnoreMissingSlaves
 

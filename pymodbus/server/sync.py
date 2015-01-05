@@ -436,9 +436,10 @@ def StartUdpServer(context=None, identity=None, address=None, **kwargs):
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
     :param address: An optional (interface, port) to bind to.
+    :param framer: The framer to operate with (default ModbusSocketFramer)
     :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
-    framer = ModbusSocketFramer
+    framer = kwargs.pop('framer', ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
     server.serve_forever()
 
@@ -448,6 +449,7 @@ def StartSerialServer(context=None, identity=None, **kwargs):
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure
+    :param framer: The framer to operate with (default ModbusAsciiFramer)
     :param port: The serial port to attach to
     :param stopbits: The number of stop bits to use
     :param bytesize: The bytesize of the serial messages
@@ -456,7 +458,7 @@ def StartSerialServer(context=None, identity=None, **kwargs):
     :param timeout: The timeout to use for the serial device
     :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
-    framer = ModbusAsciiFramer
+    framer = kwargs.pop('framer', ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity, **kwargs)
     server.serve_forever()
 

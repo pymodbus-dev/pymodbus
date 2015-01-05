@@ -197,10 +197,12 @@ class ModbusUdpClient(BaseModbusClient):
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
         :param framer: The modbus framer to use (default ModbusSocketFramer)
+        :param timeout: The timeout to use for this socket (default None)
         '''
-        self.host = host
-        self.port = port
-        self.socket = None
+        self.host    = host
+        self.port    = port
+        self.socket  = None
+        self.timeout = kwargs.get('timeout', None)
         BaseModbusClient.__init__(self, framer(ClientDecoder()), **kwargs)
 
     @classmethod
@@ -226,6 +228,7 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             family = ModbusUdpClient._get_address_family(self.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
+            self.settimeout(self.timeout)
         except socket.error, ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()

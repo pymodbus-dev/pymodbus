@@ -199,7 +199,7 @@ class BinaryPayloadDecoder(object):
         :returns: An initialized PayloadDecoder
         '''
         if isinstance(registers, list): # repack into flat binary
-            payload = ''.join(pack('>H', x) for x in registers)
+            payload = ''.join(pack(endian + 'H', x) for x in registers)
             return klass(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 

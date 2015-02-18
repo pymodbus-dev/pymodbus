@@ -33,14 +33,14 @@ class ModbusIOException(ModbusException):
 
 
 class ParameterException(ModbusException):
-    ''' Error resulting from invalid paramater '''
+    ''' Error resulting from invalid parameter '''
 
     def __init__(self, string=""):
         ''' Initialize the exception
 
         :param string: The message to append to the error
         '''
-        message = "[Invalid Paramter] %s" % string
+        message = "[Invalid Parameter] %s" % string
         ModbusException.__init__(self, message)
 
 

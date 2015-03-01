@@ -151,6 +151,14 @@ class IModbusFramer(object):
         raise NotImplementedException(
             "Method not implemented by derived class")
 
+    def getResponseSize(self, message):
+        ''' Returns expected packet size of response for this request
+
+        :returns: The expected packet size
+        '''
+        raise NotImplementedException(
+            "Method not implemented by derived class")
+
 
 class IModbusSlaveContext(object):
     '''

@@ -358,13 +358,15 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, slave_object=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
         '''
-        identifier = '\x70\x79\x6d\x6f\x64\x62\x75\x73'
-        return ReportSlaveIdResponse(identifier)
+        # TODO - get this information from the slave_object, if provided
+        identifier = '\x55'
+        extra_data = '\x70\x79\x6d\x6f\x64\x62\x75\x73'
+        return ReportSlaveIdResponse(identifier, True, extra_data)
 
     def __str__(self):
         ''' Builds a representation of the request
@@ -382,15 +384,20 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier='\x00', status=True, **kwargs):
+    def __init__(self, identifier='\x00', status=True, extra_data=None, **kwargs):
         ''' Initializes a new instance
 
-        :param identifier: The identifier of the slave
+        :param identifier: The identifier of the slave (single byte)
         :param status: The status response to report
+        :param extra_data: Arbitrary data to append (appended as is)
         '''
         ModbusResponse.__init__(self, **kwargs)
+# This is actually an API Usage error, not a modbus error?
+#        if len(identifier) > 1:
+#            return self.doException(merror.IllegalValue)
         self.identifier = identifier
         self.status = status
+        self.extra_data = extra_data
 
     def encode(self):
         ''' Encodes the response
@@ -399,24 +406,33 @@ class ReportSlaveIdResponse(ModbusResponse):
         '''
         if self.status: status = ModbusStatus.SlaveOn
         else: status = ModbusStatus.SlaveOff
-        length = len(self.identifier) + 2
-        packet = struct.pack('>B', length)
-        packet += self.identifier  # we assume it is already encoded
+        rsp_len = 2
+        if self.extra_data:
+            rsp_len += len(self.extra_data)
+
+        packet = struct.pack('>B', rsp_len)
+        packet += self.identifier
         packet += struct.pack('>B', status)
+        if self.extra_data:
+            packet += self.extra_data # Assume already encoded
         return packet
 
     def decode(self, data):
         ''' Decodes a the response
 
-        Since the identifier is device dependent, we just return the
-        raw value that a user can decode to whatever it should be.
+        Since the identifier and extra data is device dependent, we just
+        return the raw value that a user can decode to whatever it should be.
 
         :param data: The packet data to decode
         '''
         length = struct.unpack('>B', data[0])[0]
-        self.identifier = data[1:length + 1]
-        status = struct.unpack('>B', data[-1])[0]
+        self.identifier = data[1]
+        status = struct.unpack('>B', data[2])[0]
         self.status = status == ModbusStatus.SlaveOn
+        self.extra_data = None
+        if length >= 3:
+            # don't read any trailer
+            self.extra_data = data[3:3+length]
 
     def __str__(self):
         ''' Builds a representation of the response

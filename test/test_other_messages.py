@@ -90,15 +90,20 @@ class ModbusOtherMessageTest(unittest.TestCase):
         request.decode('\x12')
         self.assertEqual(request.encode(), '')
         self.assertEqual(request.execute().function_code, 0x11)
-
-        response = ReportSlaveIdResponse(request.execute().identifier, True)
-        self.assertEqual(response.encode(), '\x0apymodbus\xff')
+        req = request.execute()
+        response = ReportSlaveIdResponse(req.identifier, True, req.extra_data)
+        self.assertEqual(response.encode(), '\x0a\x55\xffpymodbus')
         response.decode('\x03\x12\x00')
         self.assertEqual(response.status, False)
-        self.assertEqual(response.identifier, '\x12\x00')
+        self.assertEqual(response.identifier, '\x12')
 
         response.status = False
-        self.assertEqual(response.encode(), '\x04\x12\x00\x00')
+        self.assertEqual('\x02\x12\x00', response.encode())
+
+        response.decode('\x07\x05\xffmagic')
+        self.assertEqual(True, response.status)
+        self.assertEqual('\x05', response.identifier)
+        self.assertEqual("magic", response.extra_data)
 
 #---------------------------------------------------------------------------#
 # Main

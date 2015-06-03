@@ -7,6 +7,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 
+_REG_STRUCT = struct.Struct('>H')
 
 class ReadRegistersRequestBase(ModbusRequest):
     '''
@@ -23,20 +24,23 @@ class ReadRegistersRequestBase(ModbusRequest):
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = count
+        frame_struct = struct.Struct('>HH')
+        self._unpack = frame_struct.unpack
+        self._pack = frame_struct.pack
 
     def encode(self):
         ''' Encodes the request packet
 
         :return: The encoded packet
         '''
-        return struct.pack('>HH', self.address, self.count)
+        return self._pack(self.address, self.count)
 
     def decode(self, data):
         ''' Decode a register request packet
 
         :param data: The request to decode
         '''
-        self.address, self.count = struct.unpack('>HH', data)
+        self.address, self.count = self._unpack(data)
 
     def getResponseSize(self):
         ''' Returns expected packet size of response for this request
@@ -67,6 +71,8 @@ class ReadRegistersResponseBase(ModbusResponse):
         '''
         ModbusResponse.__init__(self, **kwargs)
         self.registers = values or []
+        self._pack_reg = _REG_STRUCT.pack
+        self._unpack_reg = _REG_STRUCT.unpack
 
     def encode(self):
         ''' Encodes the response packet
@@ -75,7 +81,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         '''
         result = chr(len(self.registers) * 2)
         for register in self.registers:
-            result += struct.pack('>H', register)
+            result += self._pack_reg(register)
         return result
 
     def decode(self, data):
@@ -86,7 +92,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         byte_count = ord(data[0])
         self.registers = []
         for i in range(1, byte_count + 1, 2):
-            self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
+            self.registers.append(self._unpack_reg(data[i:i + 2])[0])
 
     def getRegister(self, index):
         ''' Get the requested register
@@ -239,16 +245,22 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         self.write_count = len(self.write_registers)
         self.write_byte_count = self.write_count * 2
 
+        header_struct = struct.Struct('>HHHHB')
+        self._pack_header = header_struct.pack
+        self._unpack_header = header_struct.unpack
+        self._pack_reg = _REG_STRUCT.pack
+        self._unpack_reg = _REG_STRUCT.unpack
+
     def encode(self):
         ''' Encodes the request packet
 
         :returns: The encoded packet
         '''
-        result = struct.pack('>HHHHB',
+        result = self._pack_header(
                 self.read_address,  self.read_count, \
                 self.write_address, self.write_count, self.write_byte_count)
         for register in self.write_registers:
-            result += struct.pack('>H', register)
+            result += self._pack_reg(register)
         return result
 
     def decode(self, data):
@@ -258,10 +270,10 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         '''
         self.read_address,  self.read_count,  \
         self.write_address, self.write_count, \
-        self.write_byte_count = struct.unpack('>HHHHB', data[:9])
+        self.write_byte_count = self._unpack_header(data[:9])
         self.write_registers  = []
         for i in range(9, self.write_byte_count + 9, 2):
-            register = struct.unpack('>H', data[i:i + 2])[0]
+            register = self._unpack_reg(data[i:i + 2])[0]
             self.write_registers.append(register)
 
     def execute(self, context):
@@ -314,6 +326,8 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         ModbusResponse.__init__(self, **kwargs)
         self.registers = values or []
+        self._pack_reg = _REG_STRUCT.pack
+        self._unpack_reg = _REG_STRUCT.unpack
 
     def encode(self):
         ''' Encodes the response packet
@@ -322,7 +336,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         result = chr(len(self.registers) * 2)
         for register in self.registers:
-            result += struct.pack('>H', register)
+            result += self._pack_reg(register)
         return result
 
     def decode(self, data):
@@ -332,7 +346,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         '''
         bytecount = ord(data[0])
         for i in range(1, bytecount, 2):
-            self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
+            self.registers.append(self._unpack_reg(data[i:i + 2])[0])
 
     def __str__(self):
         ''' Returns a string representation of the instance

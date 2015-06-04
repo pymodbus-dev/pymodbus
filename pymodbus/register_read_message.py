@@ -388,7 +388,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
 
 
-class ReadWriteMultipleRegistersResponse(ModbusResponse):
+class ReadWriteMultipleRegistersResponse(ModbusResponse, RegisterResponseMixin):
     '''
     The normal response contains the data from the group of registers that
     were read. The byte count field specifies the quantity of bytes to
@@ -403,19 +403,14 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         :param values: The register values to write
         '''
         ModbusResponse.__init__(self, **kwargs)
-        self.registers = values or []
-        self._pack_reg = _reg_pack
-        self._unpack_reg = _reg_unpack
+        RegisterResponseMixin.__init__(self, values)
 
     def encode(self):
         ''' Encodes the response packet
 
         :returns: The encoded packet
         '''
-        result = chr(len(self.registers) * 2)
-        for register in self.registers:
-            result += self._pack_reg(register)
-        return result
+        return '%c%s' % (len(self) * 2, self.raw_registers)
 
     def decode(self, data):
         ''' Decode the register response packet
@@ -423,15 +418,20 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         :param data: The response to decode
         '''
         bytecount = ord(data[0])
-        for i in range(1, bytecount, 2):
-            self.registers.append(self._unpack_reg(data[i:i + 2]))
+        assert bytecount == len(data)-1
+
+        # Seems the test case assumes the old content of 'registers' is
+        # something other than empty.  I don't know enough of the code to
+        # understand why this is.  So I'll append the new data to preserve
+        # the existing behaviour.
+        self.raw_registers = '%s%s' % (self.raw_registers, data[1:])
 
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        return "ReadWriteNRegisterResponse (%d)" % len(self.registers)
+        return "ReadWriteNRegisterResponse (%d)" % len(self)
 
 #---------------------------------------------------------------------------#
 # Exported symbols

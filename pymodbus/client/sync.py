@@ -228,7 +228,7 @@ class ModbusUdpClient(BaseModbusClient):
         try:
             family = ModbusUdpClient._get_address_family(self.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
-            self.settimeout(self.timeout)
+            self.socket.settimeout(self.timeout)
         except socket.error, ex:
             _logger.error('Unable to create udp socket %s' % ex)
             self.close()

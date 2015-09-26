@@ -17,7 +17,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.internal.ptwisted import InstallManagementConsole
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -215,7 +214,9 @@ def StartTcpServer(context, identity=None, address=None, console=False, **kwargs
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    if console: InstallManagementConsole({'factory': factory})
+    if console:
+        from pymodbus.internal.ptwisted import InstallManagementConsole
+        InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
@@ -262,7 +263,9 @@ def StartSerialServer(context, identity=None,
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    if console: InstallManagementConsole({'factory': factory})
+    if console:
+        from pymodbus.internal.ptwisted import InstallManagementConsole
+        InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging

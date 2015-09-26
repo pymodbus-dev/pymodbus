@@ -19,6 +19,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
+from pymodbus.transaction import ModbusRtuFramer
 #---------------------------------------------------------------------------# 
 # configure the service logging
 #---------------------------------------------------------------------------# 
@@ -103,6 +104,14 @@ identity.MajorMinorRevision = '1.0'
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
+# Tcp:
 StartTcpServer(context, identity=identity, address=("localhost", 5020))
+
+# Udp:
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
+
+# Ascii:
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
+
+# RTU:
+#StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/pts/3', timeout=.005)

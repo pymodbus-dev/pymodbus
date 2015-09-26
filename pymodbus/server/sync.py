@@ -258,6 +258,15 @@ class ModbusTcpServer(SocketServer.ThreadingTCPServer):
         _logger.debug("Started thread to serve client at " + str(client))
         SocketServer.ThreadingTCPServer.process_request(self, request, client)
 
+    def shutdown(self):
+        ''' Stops the serve_forever loop.
+
+        Overridden to signal handlers to stop.
+        '''
+        for thread in self.threads:
+            thread.running = False
+        SocketServer.ThreadingTCPServer.shutdown(self)
+
     def server_close(self):
         ''' Callback for stopping the running server
         '''

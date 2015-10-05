@@ -132,6 +132,18 @@ class ModbusClientMixin(object):
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
         return self.execute(request)
 
+    def mask_write_register(self, *args, **kwargs):
+        '''
+
+        :param address: The address of the register to write
+        :param and_mask: The and bitmask to apply to the register address
+        :param or_mask: The or bitmask to apply to the register address
+        :param unit: The slave unit this request is targeting
+        :returns: A deferred response handle
+        '''
+        request = MaskWriteRegisterRequest(*args, **kwargs)
+        return self.execute(request)
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#

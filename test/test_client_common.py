@@ -3,6 +3,7 @@ import unittest
 from pymodbus.client.common import ModbusClientMixin
 from pymodbus.bit_read_message import *
 from pymodbus.bit_write_message import *
+from pymodbus.file_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
 
@@ -51,3 +52,4 @@ class ModbusCommonClientTests(unittest.TestCase):
         self.assertTrue(isinstance(self.client.read_holding_registers(1,1), ReadHoldingRegistersRequest))
         self.assertTrue(isinstance(self.client.read_input_registers(1,1), ReadInputRegistersRequest))
         self.assertTrue(isinstance(self.client.readwrite_registers(**arguments), ReadWriteMultipleRegistersRequest))
+        self.assertTrue(isinstance(self.client.mask_write_register(1,0,0), MaskWriteRegisterRequest))

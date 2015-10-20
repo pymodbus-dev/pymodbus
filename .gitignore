@@ -4,3 +4,5 @@ build/
 dist/
 pymodbus.egg-info/
 .coverage
+*env/
+.idea/

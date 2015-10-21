@@ -295,6 +295,8 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity   = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
+        self._last_frame_end = 0.0
+        self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
 
     @staticmethod
     def __implementation(method):
@@ -324,7 +326,6 @@ class ModbusSerialClient(BaseModbusClient):
             _logger.error(msg)
             self.close()
         self._last_frame_end = time.time()
-        self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
         return self.socket != None
 
     def close(self):

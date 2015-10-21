@@ -369,6 +369,8 @@ class ModbusSerialClient(BaseModbusClient):
                     result = self.socket.read(waitingbytes)
                     if _logger.isEnabledFor(logging.WARNING):
                         _logger.warning("cleanup recv buffer before send: " + " ".join([hex(ord(x)) for x in result]))
+            except AttributeError:
+                pass    # can happen with test cases using mockSocket.
             except NotImplementedError:
                 pass
 

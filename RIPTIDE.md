@@ -10,12 +10,12 @@ Create an internal version by:
 
 1. Edit `pymodbus/version.py` modifying the `pre=`
 argument to `Version` to be a Riptide IO release candidate
-("rc93101" being riptide rc1, "rc93012" being riptide rc2,
+("rc93101" being riptide rc1, "rc93102" being riptide rc2,
 etc. That way our rc always "wins" the version comparison.)
 2. Commit the changes.
 3. Create an annotated tag:
 
-        git tag -a -m "Riptide release-candidate 1: rc93101" rc93101
+        git tag -a -m "v1.3.0rc931XX" v1.3.0rc931XX  #  Where XX is the RC # 
 
 4. Push the changes, including the annotated tags:
 

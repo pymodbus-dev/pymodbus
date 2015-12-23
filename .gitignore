@@ -6,3 +6,4 @@ pymodbus.egg-info/
 .coverage
 *env/
 .idea/
+RIPTIDE.md

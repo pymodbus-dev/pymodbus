@@ -19,6 +19,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     '''
     function_code = 6
     _rtu_frame_size = 8
+    _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
@@ -123,6 +124,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 16
     _rtu_byte_count_pos = 6
+    _pdu_length = 5  #func + adress1 + adress2 + outputQuant1 + outputQuant2
 
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance

@@ -14,6 +14,7 @@ class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
     _rtu_frame_size = 8
+    _pdu_length = 2  # func + bytcodeLen
 
     def __init__(self, address, count, **kwargs):
         ''' Initializes the read request data
@@ -23,7 +24,8 @@ class ReadBitsRequestBase(ModbusRequest):
         '''
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        self.count   = count
+        self.count = count
+        self._pdu_length += count
 
     def encode(self):
         ''' Encodes a request pdu

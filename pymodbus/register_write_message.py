@@ -61,6 +61,13 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
+    def getResponseSize(self):
+        ''' Returns expected packet size of response for this request
+
+        :returns: The expected packet size
+        '''
+        return 2 + 2
+
     def __str__(self):
         ''' Returns a string representation of the instance
 
@@ -178,6 +185,13 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleRegistersResponse(self.address, self.count)
+
+    def getResponseSize(self):
+        ''' Returns expected packet size of response for this request
+
+        :returns: The expected packet size
+        '''
+        return 2 + 2
 
     def __str__(self):
         ''' Returns a string representation of the instance

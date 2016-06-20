@@ -66,12 +66,12 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException, ex:
+        except NoSuchSlaveException as ex:
             _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
             if self.factory.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
@@ -171,12 +171,12 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException, ex:
+        except NoSuchSlaveException as ex:
             _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
             if self.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)

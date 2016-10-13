@@ -66,6 +66,7 @@ class ModbusTransactionManager(object):
                 # as this may not read the full result set, but right now
                 # it should be fine...
                 result = self.client._recv(1024)
+                result += self.client._recv(1024)
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue

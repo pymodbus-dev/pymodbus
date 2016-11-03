@@ -333,7 +333,7 @@ class ModbusUdpServer(SocketServer.ThreadingUDPServer):
 
 class ModbusSerialServer(object):
     '''
-    A modbus threaded udp socket server
+    A modbus threaded serial socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -454,7 +454,7 @@ def StartUdpServer(context=None, identity=None, address=None, **kwargs):
 
 
 def StartSerialServer(context=None, identity=None, **kwargs):
-    ''' A factory to start and run a udp modbus server
+    ''' A factory to start and run a serial modbus server
 
     :param context: The ModbusServerContext datastore
     :param identity: An optional identify structure

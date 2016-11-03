@@ -25,11 +25,11 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
     The Read Device Identification interface is modeled as an address space
     composed of a set of addressable data elements. The data elements are
-    called objects and an object Id identifies them.  
+    called objects and an object Id identifies them.
     '''
     function_code = 0x2b
     sub_function_code = 0x0e
-    _rtu_frame_size = 3
+    _rtu_frame_size = 7
 
     def __init__(self, read_code=None, object_id=0x00, **kwargs):
         ''' Initializes a new instance

@@ -72,7 +72,7 @@ class ModbusTransactionManager(object):
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
-                break;
+                break
             except socket.error, msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)

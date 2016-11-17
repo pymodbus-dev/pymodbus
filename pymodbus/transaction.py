@@ -56,7 +56,7 @@ class ModbusTransactionManager(object):
         '''
         retries = self.retries
         request.transaction_id = self.getNextTID()
-        _logger.debug("Running transaction %d" % request.transaction_id)
+        _logger.debug("running transaction %d" % request.transaction_id)
 
         while retries > 0:
             try:

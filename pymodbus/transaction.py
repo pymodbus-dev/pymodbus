@@ -64,7 +64,6 @@ class ModbusTransactionManager(object):
             start_time = time.time()
             try:
                 self.client.connect()
-                _logger.debug("Sending request")
                 self.client._send(self.client.framer.buildPacket(request))
                 # I need to fix this to read the header and the result size,
                 # as this may not read the full result set, but right now
@@ -72,14 +71,11 @@ class ModbusTransactionManager(object):
                 result = ''
                 while result == '' and time.time() < start_time + self.client.timeout:
                     # Keep retrying until timeout elapses
-                    _logger.debug("Waiting for data...")
                     result = self.client._recv(1024)
                 if not result and self.retry_on_empty:
                     _logger.debug("No data received within timeout. Querying again")
                     retries -= 1
                     continue
-                elif len(result) < 20:
-                    _logger.debug("Exiting while loop for this: " + repr(result))
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)

@@ -304,7 +304,8 @@ class ModbusSerialClient(BaseModbusClient):
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
         
-        self.socket_poll_rate = 0.1  # seconds -- magic number for how often to check the bus for data
+        # Set a relatively fast timeout on self.socket.
+        self.socket_poll_rate = min(0.1, self.timeout)  
 
     @staticmethod
     def __implementation(method):

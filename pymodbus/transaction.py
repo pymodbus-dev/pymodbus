@@ -4,9 +4,10 @@ Collection of transaction based abstractions
 import sys
 import struct
 import socket
+import time
 from binascii import b2a_hex, a2b_hex
 
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -58,21 +59,31 @@ class ModbusTransactionManager(object):
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
 
+
         while retries > 0:
+            start_time = time.time()
             try:
                 self.client.connect()
+                _logger.debug("Sending request")
                 self.client._send(self.client.framer.buildPacket(request))
                 # I need to fix this to read the header and the result size,
                 # as this may not read the full result set, but right now
                 # it should be fine...
-                result = self.client._recv(1024)
+                result = ''
+                while result == '' and time.time() < start_time + self.client.timeout:
+                    # Keep retrying until timeout elapses
+                    _logger.debug("Waiting for data...")
+                    result = self.client._recv(1024)
                 if not result and self.retry_on_empty:
+                    _logger.debug("No data received within timeout. Querying again")
                     retries -= 1
                     continue
+                elif len(result) < 20:
+                    _logger.debug("Exiting while loop for this: " + repr(result))
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
-                break;
+                break
             except socket.error, msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from mock import Mock
+from unittest.mock import Mock
 from pymodbus.client.async import ModbusClientProtocol, ModbusUdpClientProtocol
 from pymodbus.client.async import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException

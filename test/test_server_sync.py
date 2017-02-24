@@ -4,7 +4,7 @@ import unittest
 if (sys.version_info > (3, 0)): # Python 3
     from unittest.mock import patch, Mock
 else: # Python 2
-    from mock import Mock
+    from mock import patch, Mock
 import serial
 import socket
 

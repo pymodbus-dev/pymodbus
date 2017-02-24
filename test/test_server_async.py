@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+import sys
 import unittest
-from unittest.mock import patch, Mock
+if (sys.version_info > (3, 0)): # Python 3
+    from unittest.mock import patch, Mock
+else: # Python 2
+    from mock import patch, Mock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory

@@ -106,7 +106,7 @@ class ServerDecoder(IModbusDecoder):
         try:
             return self._helper(message)
         except ModbusException as er:
-            _logger.warn("Unable to decode request %s" % er)
+            _logger.warning("Unable to decode request %s" % er)
         return None
 
     def lookupPduClass(self, function_code):

@@ -330,7 +330,7 @@ class ModbusSerialServer(object):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.device   = kwargs.get('port', 0)
+        self.device   = kwargs.get('port', None)
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         self.parity   = kwargs.get('parity',   Defaults.Parity)
@@ -347,7 +347,7 @@ class ModbusSerialServer(object):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.device, timeout=self.timeout,
+            self.socket = serial.Serial(self.device, timeout=self.timeout,
                 bytesize=self.bytesize, stopbits=self.stopbits,
                 baudrate=self.baudrate, parity=self.parity)
         except serial.SerialException as msg:

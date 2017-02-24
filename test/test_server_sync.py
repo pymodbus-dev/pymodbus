@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+import sys
 import unittest
-from unittest.mock import patch, Mock
+if (sys.version_info > (3, 0)): # Python 3
+    from unittest.mock import patch, Mock
+else: # Python 2
+    from mock import Mock
 import serial
 import socket
 

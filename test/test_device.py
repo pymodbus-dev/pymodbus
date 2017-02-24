@@ -264,6 +264,7 @@ class SimpleDataStoreTest(unittest.TestCase):
              [0,0,0,0,0,0,0,0],[0,0],[0],[0,0,0,0,0,0,0,0],
              [0,0,0,0,0,0,0,0],[0],[0],[0,0],[0],[0],[0],[0],[0,0],
              [0],[0],[0],[0],[0],[0,0],[0],[0,0,0,0,0,0,0,0]]
+        
         self.assertEqual(summary, list(statistics.summary()))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
 

@@ -163,6 +163,7 @@ class ModbusPlusStatistics(object):
 
         :returns: 54 16-bit words representing the status
         '''
+        print(self.__data)
         return itervalues(self.__data)
 
     def encode(self):

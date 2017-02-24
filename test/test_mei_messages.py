@@ -45,7 +45,7 @@ class ModbusMeiMessageTest(unittest.TestCase):
         control = ModbusControlBlock()
         control.Identity.VendorName  = "Company"
         control.Identity.ProductCode = "Product"
-        control.Identity.MajorMinorevision = "v2.1.12"
+        control.Identity.MajorMinorRevision = "v2.1.12"
 
         handle  = ReadDeviceInformationRequest()
         result  = handle.execute(context)

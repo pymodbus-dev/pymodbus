@@ -44,7 +44,7 @@ log.setLevel(logging.DEBUG)
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
 #---------------------------------------------------------------------------# 
-client = ModbusClient('localhost', port=502)
+client = ModbusClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
 #client = ModbusClient(method='rtu', port='/dev/pts/2', timeout=1)
 client.connect()

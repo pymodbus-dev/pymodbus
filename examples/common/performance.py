@@ -54,7 +54,7 @@ def single_client_test(host, cycles):
 
     try:
         count  = 0
-        client = ModbusTcpClient(host)
+        client = ModbusTcpClient(host, port=5020)
         while count < cycles:
             result = client.read_holding_registers(10, 1).getRegister(0)
             count += 1

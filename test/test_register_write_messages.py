@@ -5,7 +5,7 @@ from pymodbus.exceptions import ParameterException
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.compat import iteritems, iterkeys
 
-from modbus_mocks import MockContext
+from .modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture

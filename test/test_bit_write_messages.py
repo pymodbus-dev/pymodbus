@@ -14,7 +14,7 @@ from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.compat import iteritems
 
-from modbus_mocks import MockContext, FakeList
+from .modbus_mocks import MockContext, FakeList
 
 #---------------------------------------------------------------------------#
 # Fixture

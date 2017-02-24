@@ -6,7 +6,7 @@ from pymodbus.bit_read_message import *
 from pymodbus.bit_write_message import *
 from pymodbus.register_read_message import *
 from pymodbus.pdu import ExceptionResponse
-from modbus_mocks import mock
+from .modbus_mocks import mock
 
 class RemoteModbusDataStoreTest(unittest.TestCase):
     '''

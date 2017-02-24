@@ -134,13 +134,13 @@ class SimpleFactoryTest(unittest.TestCase):
         ''' Tests that a client factory will fail to decode a bad message '''
         self.client._helper = _raise_exception
         actual = self.client.decode(None)
-        self.assertEquals(actual, None)
+        self.assertEqual(actual, None)
 
     def testServerFactoryFails(self):
         ''' Tests that a server factory will fail to decode a bad message '''
         self.server._helper = _raise_exception
         actual = self.server.decode(None)
-        self.assertEquals(actual, None)
+        self.assertEqual(actual, None)
 
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that

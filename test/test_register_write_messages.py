@@ -5,7 +5,7 @@ from pymodbus.exceptions import ParameterException
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.compat import iteritems, iterkeys
 
-from .modbus_mocks import MockContext
+from modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -51,7 +51,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def testInvalidWriteMultipleRegistersRequest(self):
         request = WriteMultipleRegistersRequest(0, None)
-        self.assertEquals(request.values, [])
+        self.assertEqual(request.values, [])
 
     def testSerializingToString(self):
         for request in iterkeys(self.write):

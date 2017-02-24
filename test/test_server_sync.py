@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 import serial
 import socket
 

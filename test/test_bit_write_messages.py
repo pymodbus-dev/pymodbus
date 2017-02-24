@@ -40,11 +40,11 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testInvalidWriteMultipleCoilsRequest(self):
         request = WriteMultipleCoilsRequest(1, None)
-        self.assertEquals(request.values, [])
+        self.assertEqual(request.values, [])
 
     def testWriteSingleCoilRequestEncode(self):
         request = WriteSingleCoilRequest(1, False)
-        self.assertEquals(request.encode(), b'\x00\x01\x00\x00')
+        self.assertEqual(request.encode(), b'\x00\x01\x00\x00')
 
     def testWriteSingleCoilExecute(self):
         context = MockContext(False, default=True)

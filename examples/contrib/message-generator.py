@@ -6,13 +6,11 @@ Modbus Message Generator
 The following is an example of how to generate example encoded messages
 for the supplied modbus format:
 
-* tcp    - `./message-generator.py -f tcp -m rx -b`
-* ascii  - `./message-generator.py -f ascii -m tx -a`
-* rtu    - `./message-generator.py -f rtu -m rx -b`
-* binary - `./message-generator.py -f binary -m tx -b`
+* tcp    - `./generate-messages.py -f tcp -m rx -b`
+* ascii  - `./generate-messages.py -f ascii -m tx -a`
+* rtu    - `./generate-messages.py -f rtu -m rx -b`
+* binary - `./generate-messages.py -f binary -m tx -b`
 '''
-from __future__ import print_function
-import binascii
 from optparse import OptionParser
 #--------------------------------------------------------------------------#
 # import all the available framers
@@ -167,12 +165,11 @@ def generate_messages(framer, options):
     messages = _request_messages if options.messages == 'tx' else _response_messages
     for message in messages:
         message = message(**_arguments)
-        print("%-44s = " % message.__class__.__name__, end = '')
+        print "%-44s = " % message.__class__.__name__,
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = binascii.b2a_hex(packet).decode('utf8') + '\n'
-        else: packet = packet.decode()
-        print(packet, end='')   # because ascii ends with a \r\n
+            packet = packet.encode('hex') + '\n'
+        print packet,   # because ascii ends with a \r\n
 
 
 #---------------------------------------------------------------------------# 
@@ -216,9 +213,9 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-            logging.basicConfig()
-        except Exception as e:
-    	    print("Logging is not supported on this system")
+    	    logging.basicConfig()
+        except Exception, e:
+    	    print "Logging is not supported on this system"
 
     framer = lookup = {
         'tcp':    ModbusSocketFramer,

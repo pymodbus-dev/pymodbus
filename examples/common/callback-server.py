@@ -15,7 +15,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
-from pymodbus.compat import iterkeys
 
 #---------------------------------------------------------------------------# 
 # import the python libraries we need
@@ -45,7 +44,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         self.devices = devices
         self.queue = queue
 
-        values = {k:0 for k in iterkeys(devices)}
+        values = {k:0 for k in devices.iterkeys()}
         values[0xbeef] = len(values) # the number of devices
         super(CallbackDataBlock, self).__init__(values)
 

@@ -47,8 +47,6 @@ class DiagnosticStatusRequest(ModbusRequest):
         packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
-                packet += self.message.encode()
-            elif isinstance(self.message, bytes):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:
@@ -93,8 +91,6 @@ class DiagnosticStatusResponse(ModbusResponse):
         packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
-                packet += self.message.encode()
-            elif isinstance(self.message, bytes):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:

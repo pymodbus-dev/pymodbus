@@ -8,7 +8,6 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import byte2int
 
 
 #---------------------------------------------------------------------------#
@@ -32,7 +31,7 @@ class FileRecord(object):
         self.file_number     = kwargs.get('file_number', 0x00)
         self.record_number   = kwargs.get('record_number', 0x00)
         self.record_data     = kwargs.get('record_data', '')
-        self.record_length   = kwargs.get('record_length',   len(self.record_data) // 2)
+        self.record_length   = kwargs.get('record_length',   len(self.record_data) / 2)
         self.response_length = kwargs.get('response_length', len(self.record_data) + 1)
 
     def __eq__(self, relf):
@@ -109,8 +108,8 @@ class ReadFileRecordRequest(ModbusRequest):
         :param data: The data to decode into the address
         '''
         self.records = []
-        byte_count = byte2int(data[0])
-        for count in range(1, byte_count, 7):
+        byte_count = struct.unpack('B', data[0])[0]
+        for count in xrange(1, byte_count, 7):
             decoded = struct.unpack('>BHHH', data[count:count+7])
             record  = FileRecord(file_number=decoded[1],
                 record_number=decoded[2], record_length=decoded[3])
@@ -165,7 +164,7 @@ class ReadFileRecordResponse(ModbusResponse):
         :param data: The packet data to decode
         '''
         count, self.records = 1, []
-        byte_count = byte2int(data[0])
+        byte_count = struct.unpack('B', data[0])[0]
         while count < byte_count:
             response_length, reference_type = struct.unpack('>BB', data[count:count+2])
             count += response_length + 1 # the count is not included
@@ -211,7 +210,7 @@ class WriteFileRecordRequest(ModbusRequest):
         :param data: The data to decode into the address
         '''
         count, self.records = 1, []
-        byte_count = byte2int(data[0])
+        byte_count = struct.unpack('B', data[0])[0]
         while count < byte_count:
             decoded = struct.unpack('>BHHH', data[count:count+7])
             response_length = decoded[3] * 2
@@ -267,7 +266,7 @@ class WriteFileRecordResponse(ModbusResponse):
         :param data: The data to decode into the address
         '''
         count, self.records = 1, []
-        byte_count = byte2int(data[0])
+        byte_count = struct.unpack('B', data[0])[0]
         while count < byte_count:
             decoded = struct.unpack('>BHHH', data[count:count+7])
             response_length = decoded[3] * 2
@@ -432,14 +431,14 @@ class ReadFifoQueueResponse(ModbusResponse):
     function_code = 0x18
 
     @classmethod
-    def calculateRtuFrameSize(cls, data):
+    def calculateRtuFrameSize(cls, buffer):
         ''' Calculates the size of the message
 
-        :param data: A buffer containing the data that have been received.
+        :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
         '''
-        hi_byte = byte2int(data[2])
-        lo_byte = byte2int(data[3])
+        hi_byte = struct.unpack(">B", buffer[2])[0]
+        lo_byte = struct.unpack(">B", buffer[3])[0]
         return (hi_byte << 16) + lo_byte + 6
 
     def __init__(self, values=None, **kwargs):
@@ -468,7 +467,7 @@ class ReadFifoQueueResponse(ModbusResponse):
         '''
         self.values = []
         _, count = struct.unpack('>HH', data[0:4])
-        for index in range(0, count - 4):
+        for index in xrange(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
 

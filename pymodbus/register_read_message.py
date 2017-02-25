@@ -6,7 +6,6 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import int2byte, byte2int
 
 
 class ReadRegistersRequestBase(ModbusRequest):
@@ -67,7 +66,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        result = int2byte(len(self.registers) * 2)
+        result = chr(len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack('>H', register)
         return result
@@ -77,7 +76,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :param data: The request to decode
         '''
-        byte_count = byte2int(data[0])
+        byte_count = ord(data[0])
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
@@ -314,7 +313,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        result = int2byte(len(self.registers) * 2)
+        result = chr(len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack('>H', register)
         return result
@@ -324,7 +323,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :param data: The response to decode
         '''
-        bytecount = byte2int(data[0])
+        bytecount = ord(data[0])
         for i in range(1, bytecount, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 

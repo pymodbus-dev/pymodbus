@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-import sys
 import unittest
-if (sys.version_info > (3, 0)): # Python 3
-    from unittest.mock import patch, Mock
-else: # Python 2
-    from mock import patch, Mock
 import socket
 import serial
+from mock import patch, Mock
+from twisted.test import test_protocols
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
 from pymodbus.exceptions import ConnectionException, NotImplementedException
@@ -48,7 +45,7 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, lambda: client._recv(None))
         self.assertRaises(NotImplementedException, lambda: client.__enter__())
         self.assertRaises(NotImplementedException, lambda: client.execute())
-        self.assertEqual("Null Transport", str(client))
+        self.assertEquals("Null Transport", str(client))
         client.close()
         client.__exit__(0,0,0)
 

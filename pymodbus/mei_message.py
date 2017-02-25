@@ -10,7 +10,6 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import iteritems, byte2int
 
 _MCB = ModbusControlBlock()
 
@@ -90,17 +89,17 @@ class ReadDeviceInformationResponse(ModbusResponse):
     sub_function_code = 0x0e
 
     @classmethod
-    def calculateRtuFrameSize(cls, data):
+    def calculateRtuFrameSize(cls, buffer):
         ''' Calculates the size of the message
 
-        :param data: A buffer containing the data that have been received.
+        :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
         '''
         size  = 8 # skip the header information
-        count = byte2int(data[7])
+        count = struct.unpack('>B', buffer[7])[0]
 
         while count > 0:
-            _, object_length = struct.unpack('>BB', data[size:size+2])
+            _, object_length = struct.unpack('>BB', buffer[size:size+2])
             size += object_length + 2
             count -= 1
         return size + 2
@@ -130,9 +129,10 @@ class ReadDeviceInformationResponse(ModbusResponse):
             self.read_code, self.conformity, self.more_follows,
             self.next_object_id, self.number_of_objects)
 
-        for (object_id, data) in iteritems(self.information):
+        for (object_id, data) in self.information.iteritems():
             packet += struct.pack('>BB', object_id, len(data))
             packet += data
+
         return packet
 
     def decode(self, data):

@@ -47,7 +47,6 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 from pymodbus.exceptions import NotImplementedException, ParameterException
-from pymodbus.compat import iteritems, iterkeys, itervalues, get_next
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -127,7 +126,7 @@ class BaseModbusDataBlock(object):
         :returns: An iterator of the data block data
         '''
         if isinstance(self.values, dict):
-            return iteritems(self.values)
+            return self.values.iteritems()
         return enumerate(self.values, self.address)
 
 
@@ -205,8 +204,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             self.values = dict(enumerate(values))
         else: raise ParameterException(
             "Values for datastore must be a list or dictionary")
-        self.default_value = get_next(itervalues(self.values)).__class__()
-        self.address = get_next(iterkeys(self.values))
+        self.default_value = self.values.itervalues().next().__class__()
+        self.address = self.values.iterkeys().next()
 
     @classmethod
     def create(klass):
@@ -226,7 +225,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         '''
         if count == 0: return False
         handle = set(range(address, address + count))
-        return handle.issubset(set(iterkeys(self.values)))
+        return handle.issubset(set(self.values.iterkeys()))
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -244,7 +243,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param values: The new values to be set
         '''
         if isinstance(values, dict):
-            for idx, val in iteritems(values):
+            for idx, val in values.iteritems():
                 self.values[idx] = val
         else:
             if not isinstance(values, list):

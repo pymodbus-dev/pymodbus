@@ -35,19 +35,12 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         self._payload = payload or []
         self._endian  = endian
 
-    def to_string(self):
-        ''' Return the payload buffer as a string
-
-        :returns: The payload buffer as a string
-        '''
-        return b''.join(self._payload)
-
     def __str__(self):
         ''' Return the payload buffer as a string
 
         :returns: The payload buffer as a string
         '''
-        return self.to_string().decode('utf-8')
+        return ''.join(self._payload)
 
     def reset(self):
         ''' Reset the payload buffer
@@ -64,8 +57,8 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         '''
         string = str(self)
         length = len(string)
-        string = string + (b'\x00' * (length % 2))
-        return [string[i:i+2] for i in range(0, length, 2)]
+        string = string + ('\x00' * (length % 2))
+        return [string[i:i+2] for i in xrange(0, length, 2)]
 
     def add_bits(self, values):
         ''' Adds a collection of bits to be encoded
@@ -146,8 +139,9 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         '''
-        fstring = self._endian + str(len(value)) + 's'
-        self._payload.append(pack(fstring, value))
+        fstring = self._endian + 's'
+        for c in value:
+            self._payload.append(pack(fstring, c))
 
 
 class ModiconPayloadDecoder(object):
@@ -184,7 +178,7 @@ class ModiconPayloadDecoder(object):
         :returns: An initialized PayloadDecoder
         '''
         if isinstance(registers, list): # repack into flat binary
-            payload = b''.join(pack('>H', x) for x in registers)
+            payload = ''.join(pack('>H', x) for x in registers)
             return ModiconPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 
@@ -287,4 +281,4 @@ class ModiconPayloadDecoder(object):
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#
-__all__ = ["ModiconPayloadBuilder", "ModiconPayloadDecoder"]
+__all__ = ["BcdPayloadBuilder", "BcdPayloadDecoder"]

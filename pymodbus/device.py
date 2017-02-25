@@ -6,10 +6,10 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+from itertools import izip
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
-from pymodbus.compat import iteritems, itervalues, izip, int2byte
 
 
 #---------------------------------------------------------------------------#
@@ -150,7 +150,7 @@ class ModbusPlusStatistics(object):
 
         :returns: An iterator of the modbus plus statistics
         '''
-        return iteritems(self.__data)
+        return self.__data.iteritems()
 
     def reset(self):
         ''' This clears all of the modbus plus statistics
@@ -163,7 +163,7 @@ class ModbusPlusStatistics(object):
 
         :returns: 54 16-bit words representing the status
         '''
-        return itervalues(self.__data)
+        return self.__data.values()
 
     def encode(self):
         ''' Returns a summary of the modbus plus statistics
@@ -171,7 +171,7 @@ class ModbusPlusStatistics(object):
         :returns: 54 16-bit words representing the status
         '''
         total, values = [], sum(self.__data.values(), [])
-        for c in range(0, len(values), 2):
+        for c in xrange(0, len(values), 2):
             total.append((values[c] << 8) | values[c+1])
         return total
 
@@ -227,14 +227,14 @@ class ModbusDeviceIdentification(object):
 
         :returns: An iterator of the device information
         '''
-        return iteritems(self.__data)
+        return self.__data.iteritems()
 
     def summary(self):
         ''' Return a summary of the main items
 
         :returns: An dictionary of the main items
         '''
-        return dict(zip(self.__names, itervalues(self.__data)))
+        return dict(zip(self.__names, self.__data.itervalues()))
 
     def update(self, value):
         ''' Update the values of this identity
@@ -286,9 +286,9 @@ class DeviceInformationFactory(Singleton):
     '''
 
     __lookup = {
-        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, list(range(0x00, 0x03))),
-        DeviceInformation.Regular:  lambda c,r,i: c.__gets(r, list(range(0x00, 0x08))),
-        DeviceInformation.Extended: lambda c,r,i: c.__gets(r, list(range(0x80, i))),
+        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, range(0x00, 0x03)),
+        DeviceInformation.Regular:  lambda c,r,i: c.__gets(r, range(0x00, 0x08)),
+        DeviceInformation.Extended: lambda c,r,i: c.__gets(r, range(0x80, i)),
         DeviceInformation.Specific: lambda c,r,i: c.__get(r, i),
     }
 
@@ -415,7 +415,7 @@ class ModbusCountersHandler(object):
 
         :returns: An iterator of the device counters
         '''
-        return izip(self.__names, itervalues(self.__data))
+        return izip(self.__names, self.__data.itervalues())
 
     def update(self, values):
         ''' Update the values of this identity
@@ -423,7 +423,7 @@ class ModbusCountersHandler(object):
 
         :param values: The value to copy values from
         '''
-        for k, v in iteritems(values):
+        for k, v in values.iteritems():
             v += self.__getattribute__(k)
             self.__setattr__(k, v)
 
@@ -438,7 +438,7 @@ class ModbusCountersHandler(object):
         :returns: A byte with each bit representing each counter
         '''
         count, result = 0x01, 0x00
-        for i in itervalues(self.__data):
+        for i in self.__data.itervalues():
             if i != 0x00: result |= count
             count <<= 1
         return result
@@ -513,7 +513,7 @@ class ModbusControlBlock(Singleton):
         :returns: The encoded events packet
         '''
         events = [event.encode() for event in self.__events]
-        return b''.join(events)
+        return ''.join(events)
 
     def clearEvents(self):
         ''' Clears the current list of events
@@ -570,11 +570,9 @@ class ModbusControlBlock(Singleton):
         :param char: The new serial delimiter character
         '''
         if isinstance(char, str):
-            self.__delimiter = char.encode()
-        if isinstance(char, bytes):
             self.__delimiter = char
         elif isinstance(char, int):
-            self.__delimiter = int2byte(char)
+            self.__delimiter = chr(char)
 
     Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
@@ -586,7 +584,7 @@ class ModbusControlBlock(Singleton):
 
         :param mapping: Dictionary of key:value pairs to set
         '''
-        for entry in iteritems(mapping):
+        for entry in mapping.iteritems():
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
                 self.__diagnostic[entry[0]] = (entry[1] != 0)
 
@@ -596,7 +594,7 @@ class ModbusControlBlock(Singleton):
         :param bit: The bit to get
         :returns: The current value of the requested bit
         '''
-        if bit and bit >= 0 and bit < len(self.__diagnostic):
+        if bit >= 0 and bit < len(self.__diagnostic):
             return self.__diagnostic[bit]
         return None
 

@@ -40,7 +40,7 @@ class DeepCleanCommand(Command):
 
     def initialize_options(self):
         ''' options setup '''
-        self.trash = ['build', 'dist', 'pymodbus.egg-info', '.tox',
+        self.trash = ['build', 'dist', 'pymodbus.egg-info',
             os.path.join(os.path.join('doc','sphinx'),'build'),
         ]
 
@@ -49,25 +49,22 @@ class DeepCleanCommand(Command):
 
     def run(self):
         ''' command runner '''
-        self.__delete_cache_files()
+        self.__delete_pyc_files()
         self.__delete_trash_dirs()
 
     def __delete_trash_dirs(self):
         ''' remove all directories created in building '''
+        self.__delete_pyc_files()
         for directory in self.trash:
             if os.path.exists(directory):
                 shutil.rmtree(directory)
 
-    def __delete_cache_files(self):
+    def __delete_pyc_files(self):
         ''' remove all python cache files '''
-        for root, directories, files in os.walk('.'):
+        for root,dirs,files in os.walk('.'):
             for file in files:
                 if file.endswith('.pyc'):
-                    os.remove(os.path.join(root, file))
-
-            for directory in directories:
-                if directory == "__pycache__":
-                    shutil.rmtree(os.path.join(root, directory))
+                    os.remove(os.path.join(root,file))
 
 class LintCommand(Command):
     ''' Helper command to perform a lint scan of the
@@ -173,32 +170,6 @@ class Pep8Command(Command):
             return True
         except: return False
 
-class ToxCommand(Command):
-    ''' Helper command to run the tox test runner
-    '''
-    description  = "perform tox unit tests"
-    user_options = []
-
-    def initialize_options(self):
-        ''' options setup '''
-        if not os.path.exists('./tox.ini'):
-            raise Exception("Please run tox-quickstart")
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        ''' command runner '''
-        self.__run_tox()
-
-    def __run_tox(self):
-        try:
-            from tox import cmdline as main
-            sys.argv = '''tox -c tox.ini'''.split()
-            main()
-            return True
-        except Exception as ex: print(ex);return False
-
 #---------------------------------------------------------------------------# 
 # Command Configuration
 #---------------------------------------------------------------------------# 
@@ -208,7 +179,6 @@ command_classes = {
     'lint'          : LintCommand,
     'scan_2to3'     : Python3Command,
     'pep8'          : Pep8Command,
-    'tox'           : ToxCommand,
 }
 
 #---------------------------------------------------------------------------# 

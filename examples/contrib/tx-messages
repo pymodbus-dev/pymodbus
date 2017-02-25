@@ -47,7 +47,7 @@
 # [ tid ][ pid ][ length ][ uid ]
 #   2b     2b     2b        1b           1b           Nb
 #
-# ./message-parser -b -p tcp -f tx-messages
+# ./message-parser -b -p tcp -f messages
 # ------------------------------------------------------------
 #000100000006010300120008
 #000100000006010200120008
@@ -90,7 +90,7 @@
 # [Address ][ Function Code] [ Data ][ CRC ]
 #  1b         1b               Nb      2b   
 #
-# ./message-parser -b -p rtu -f tx-messages
+# ./message-parser -b -p rtu -f messages
 # ------------------------------------------------------------
 #010300120008e409
 #010200120008d9c9
@@ -133,7 +133,7 @@
 # [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
 #   1c        2c         2c         Nc     2c      2c
 #
-# ./message-parser -a -p ascii -f tx-messages
+# ./message-parser -a -p ascii -f messages
 # ------------------------------------------------------------
 #:010300120008E2
 #:010200120008E3
@@ -176,7 +176,7 @@
 # [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
 #   1b        1b         1b         Nb     2b     1b
 #
-# ./message-parser -b -p binary -f tx-messages
+# ./message-parser -b -p binary -f messages
 # ------------------------------------------------------------
 #7b010300120008e4097d
 #7b010200120008d9c97d

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-import sys
 import unittest
-if (sys.version_info > (3, 0)): # Python 3
-    from unittest.mock import patch, Mock
-else: # Python 2
-    from mock import patch, Mock
+from mock import patch, Mock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory
@@ -31,6 +27,10 @@ class AsynchronousServerTest(unittest.TestCase):
         '''
         values = dict((i, '') for i in range(10))
         identity = ModbusDeviceIdentification(info=values)
+
+    def tearDown(self):
+        ''' Cleans up the test environment '''
+        pass
 
     #-----------------------------------------------------------------------#
     # Test Modbus Server Factory
@@ -67,25 +67,25 @@ class AsynchronousServerTest(unittest.TestCase):
     # Test Modbus Server Startups
     #-----------------------------------------------------------------------#
 
-    #def testTcpServerStartup(self):
-    #    ''' Test that the modbus tcp async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartTcpServer(context=None, console=True)
-    #        self.assertEqual(mock_reactor.listenTCP.call_count, 2)
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+    def testTcpServerStartup(self):
+        ''' Test that the modbus tcp async server starts correctly '''
+        with patch('twisted.internet.reactor') as mock_reactor:
+            StartTcpServer(context=None, console=True)
+            self.assertEqual(mock_reactor.listenTCP.call_count, 2)
+            self.assertEqual(mock_reactor.run.call_count, 1)
 
-    #def testUdpServerStartup(self):
-    #    ''' Test that the modbus udp async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartUdpServer(context=None)
-    #        self.assertEqual(mock_reactor.listenUDP.call_count, 1)
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+    def testUdpServerStartup(self):
+        ''' Test that the modbus udp async server starts correctly '''
+        with patch('twisted.internet.reactor') as mock_reactor:
+            StartUdpServer(context=None)
+            self.assertEqual(mock_reactor.listenUDP.call_count, 1)
+            self.assertEqual(mock_reactor.run.call_count, 1)
 
-    #def testSerialServerStartup(self):
-    #    ''' Test that the modbus serial async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartSerialServer(context=None, port='/dev/ptmx')
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+    def testSerialServerStartup(self):
+        ''' Test that the modbus serial async server starts correctly '''
+        with patch('twisted.internet.reactor') as mock_reactor:
+            StartSerialServer(context=None, port='/dev/ptmx')
+            self.assertEqual(mock_reactor.run.call_count, 1)
 
 #---------------------------------------------------------------------------#
 # Main

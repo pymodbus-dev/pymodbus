@@ -147,7 +147,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         '''
         packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
         if self.skip_encode:
-            return packet + b''.join(self.values)
+            return packet + ''.join(self.values)
         
         for value in self.values:
             packet += struct.pack('>H', value)

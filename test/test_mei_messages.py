@@ -29,13 +29,13 @@ class ModbusMeiMessageTest(unittest.TestCase):
         params  = {'read_code':DeviceInformation.Basic, 'object_id':0x00 }
         handle  = ReadDeviceInformationRequest(**params)
         result  = handle.encode()
-        self.assertEqual(result, b'\x0e\x01\x00')
+        self.assertEqual(result, '\x0e\x01\x00')
         self.assertEqual("ReadDeviceInformationRequest(1,0)", str(handle))
 
     def testReadDeviceInformationRequestDecode(self):
         ''' Test basic bit message encoding/decoding '''
         handle  = ReadDeviceInformationRequest()
-        handle.decode(b'\x0e\x01\x00')
+        handle.decode('\x0e\x01\x00')
         self.assertEqual(handle.read_code, DeviceInformation.Basic)
         self.assertEqual(handle.object_id, 0x00)
 
@@ -68,13 +68,12 @@ class ModbusMeiMessageTest(unittest.TestCase):
 
     def testReadDeviceInformationResponseEncode(self):
         ''' Test that the read fifo queue response can encode '''
-        message  = b'\x0e\x01\x83\x00\x00\x03'
-        message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12' 
-
+        message  = '\x0e\x01\x83\x00\x00\x03'
+        message += '\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
         dataset  = {
-            0x00: b'Company',
-            0x01: b'Product',
-            0x02: b'v2.1.12',
+            0x00: 'Company',
+            0x01: 'Product',
+            0x02: 'v2.1.12',
         }
         handle  = ReadDeviceInformationResponse(
             read_code=DeviceInformation.Basic, information=dataset)
@@ -84,20 +83,19 @@ class ModbusMeiMessageTest(unittest.TestCase):
 
     def testReadDeviceInformationResponseDecode(self):
         ''' Test that the read device information response can decode '''
-        message  = b'\x0e\x01\x01\x00\x00\x03'
-        message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12' 
-
+        message  = '\x0e\x01\x01\x00\x00\x03'
+        message += '\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
         handle  = ReadDeviceInformationResponse(read_code=0x00, information=[])
         handle.decode(message)
         self.assertEqual(handle.read_code, DeviceInformation.Basic)
         self.assertEqual(handle.conformity, 0x01)
-        self.assertEqual(handle.information[0x00], b'Company')
-        self.assertEqual(handle.information[0x01], b'Product')
-        self.assertEqual(handle.information[0x02], b'v2.1.12')
+        self.assertEqual(handle.information[0x00], 'Company')
+        self.assertEqual(handle.information[0x01], 'Product')
+        self.assertEqual(handle.information[0x02], 'v2.1.12')
 
     def testRtuFrameSize(self):
         ''' Test that the read device information response can decode '''
-        message = b'\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B'
+        message = '\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B'
         result  = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
         self.assertEqual(result, 18)
         message = '\x00\x2B\x0E\x02\x00\x4D\x47'

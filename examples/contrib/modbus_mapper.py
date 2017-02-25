@@ -49,11 +49,11 @@ populated slave contexts that can be run behing a modbus server::
 import csv
 import json
 from collections import defaultdict
+from StringIO import StringIO
 from tokenize import generate_tokens
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.datastore.store import ModbusSparseDataBlock
 from pymodbus.datastore.context import ModbusSlaveContext
-from pymodbus.compat import StringIO
 
 
 #---------------------------------------------------------------------------# 

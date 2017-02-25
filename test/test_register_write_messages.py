@@ -3,8 +3,9 @@ import unittest
 from pymodbus.register_write_message import *
 from pymodbus.exceptions import ParameterException
 from pymodbus.pdu import ModbusExceptions
+from pymodbus.compat import iteritems, iterkeys
 
-from modbus_mocks import MockContext
+from .modbus_mocks import MockContext
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -27,11 +28,11 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         '''
         self.value  = 0xabcd
         self.values = [0xa, 0xb, 0xc]
-        self.write = {
-            WriteSingleRegisterRequest(1, self.value)       : '\x00\x01\xab\xcd',
-            WriteSingleRegisterResponse(1, self.value)      : '\x00\x01\xab\xcd',
-            WriteMultipleRegistersRequest(1, self.values)   : '\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c',
-            WriteMultipleRegistersResponse(1, 5)            : '\x00\x01\x00\x05',
+        self.write  = {
+            WriteSingleRegisterRequest(1, self.value)       : b'\x00\x01\xab\xcd',
+            WriteSingleRegisterResponse(1, self.value)      : b'\x00\x01\xab\xcd',
+            WriteMultipleRegistersRequest(1, self.values)   : b'\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c',
+            WriteMultipleRegistersResponse(1, 5)            : b'\x00\x01\x00\x05',
         }
 
     def tearDown(self):
@@ -39,23 +40,21 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         del self.write
 
     def testRegisterWriteRequestsEncode(self):
-        for request, response in self.write.iteritems():
+        for request, response in iteritems(self.write):
             self.assertEqual(request.encode(), response)
 
     def testRegisterWriteRequestsDecode(self):
-        addresses = [1,1,1,1]
-        values = sorted(self.write.items())
-        for packet, address in zip(values, addresses):
-            request, response = packet
+        for request, response in self.write.items():
+            address = 1
             request.decode(response)
             self.assertEqual(request.address, address)
 
     def testInvalidWriteMultipleRegistersRequest(self):
         request = WriteMultipleRegistersRequest(0, None)
-        self.assertEquals(request.values, [])
+        self.assertEqual(request.values, [])
 
     def testSerializingToString(self):
-        for request in self.write.iterkeys():
+        for request in iterkeys(self.write):
             self.assertTrue(str(request) != None)
 
     def testWriteSingleRegisterRequest(self):

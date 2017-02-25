@@ -30,9 +30,10 @@ log.setLevel(logging.DEBUG)
 # helper method to test deferred callbacks
 #---------------------------------------------------------------------------# 
 def dassert(deferred, callback):
-    def _assertor(value): assert(value)
+    def _assertor(value, message=None):
+        assert value, message
     deferred.addCallback(lambda r: _assertor(callback(r)))
-    deferred.addErrback(lambda  _: _assertor(False))
+    deferred.addErrback(lambda  e: _assertor(False, e))
 
 #---------------------------------------------------------------------------# 
 # specify slave to query

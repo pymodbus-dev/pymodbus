@@ -29,6 +29,7 @@ and supply the needed callbacks for your given format:
 import csv
 import json
 import xml.etree.ElementTree as xml
+from pymodbus.compat import iteritems
 
 
 class ModbusDatastoreSaver(object):
@@ -57,7 +58,7 @@ class ModbusDatastoreSaver(object):
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)
-                for store_name, store in slave.store.iteritems():
+                for store_name, store in iteritems(slave.store):
                     self.handle_store_start(store_name)
                     self.handle_store_values(iter(store))
                     self.handle_store_end(store_name)

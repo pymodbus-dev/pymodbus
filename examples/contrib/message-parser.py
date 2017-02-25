@@ -17,6 +17,7 @@ using the supplied framers for a number of protocols:
 import sys
 import collections
 import textwrap
+import binascii
 from optparse import OptionParser
 from pymodbus.utilities import computeCRC, computeLRC
 from pymodbus.factory import ClientDecoder, ServerDecoder
@@ -24,6 +25,7 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.compat import iteritems
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -51,24 +53,24 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
-        value = message if self.encode else message.encode('hex')
-        print "="*80
-        print "Decoding Message %s" % value
-        print "="*80
+        value = message if self.encode else binascii.hexlify(message)
+        print("=" * 80)
+        print("Decoding Message %s" % value.decode())
+        print("=" * 80)
         decoders = [
             self.framer(ServerDecoder()),
             self.framer(ClientDecoder()),
         ]
         for decoder in decoders:
-            print "%s" % decoder.decoder.__class__.__name__
-            print "-"*80
+            print("%s" % decoder.decoder.__class__.__name__)
+            print("-" * 80)
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report)
                 else: self.check_errors(decoder, message)
-            except Exception, ex: self.check_errors(decoder, message)
+            except Exception as ex: self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
         ''' Attempt to find message errors
@@ -82,20 +84,20 @@ class Decoder(object):
 
         :param message: The message to print
         '''
-        print "%-15s = %s" % ('name', message.__class__.__name__)
-        for k,v in message.__dict__.iteritems():
+        print("%-15s = %s" % ('name', message.__class__.__name__))
+        for k,v in iteritems(message.__dict__):
             if isinstance(v, dict):
-                print "%-15s =" % k
-                for kk,vv in v.items():
-                    print "  %-12s => %s" % (kk, vv)
+                print("%-15s =" % k)
+                for kk, vv in iteritems(v):
+                    print("  %-12s => %s" % (kk, vv))
 
             elif isinstance(v, collections.Iterable):
-                print "%-15s =" % k
+                print("%-15s =" % k)
                 value = str([int(x) for x  in v])
                 for line in textwrap.wrap(value, 60):
-                    print "%-15s . %s" % ("", line)
-            else: print "%-15s = %s" % (k, hex(v))
-        print "%-15s = %s" % ('documentation', message.__doc__)
+                    print("%-15s . %s" % ("", line))
+            else: print("%-15s = %s" % (k, hex(v)))
+        print("%-15s = %s" % ('documentation', message.__doc__))
 
 
 #---------------------------------------------------------------------------# 
@@ -154,8 +156,8 @@ def get_messages(option):
             for line in handle:
                 if line.startswith('#'): continue
                 if not option.ascii:
-                    line = line.strip()
-                    line = line.decode('hex')
+                    line = line.strip().encode('ascii')
+                    line = binascii.unhexlify(line)
                 yield line
 
 def main():
@@ -166,9 +168,9 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception as e:
+    	    print("Logging is not supported on this system")
 
     framer = lookup = {
         'tcp':    ModbusSocketFramer,

@@ -344,7 +344,7 @@ class ModbusSocketFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        _logger.debug(' '.join([hex(byte2int(x)) for x in data])
+        _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
 
         self.addToFrame(data)
         while self.isFrameReady():

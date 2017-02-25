@@ -27,7 +27,7 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         ''' Test removing on multiple context '''
         def _test():
             del self.context[0x00]
-        self.assertRaises(ParameterException, _test)
+        self.assertRaises(NoSuchSlaveException, _test)
 
     def testSingleContextIter(self):
         ''' Test iterating over a single context '''
@@ -70,7 +70,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
     def testMultipleContextDeletes(self):
         ''' Test removing on multiple context '''
         del self.context[0x00]
-        self.assertRaises(ParameterException, lambda: self.context[0x00])
+        self.assertRaises(NoSuchSlaveException, lambda: self.context[0x00])
 
     def testMultipleContextIter(self):
         ''' Test iterating over multiple context '''
@@ -81,7 +81,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
     def testMultipleContextDefault(self):
         ''' Test that the multiple context default values work '''
         self.context = ModbusServerContext(single=False)
-        self.assertRaises(ParameterException, lambda: self.context[0x00])
+        self.assertRaises(NoSuchSlaveException, lambda: self.context[0x00])
 
     def testMultipleContextSet(self):
         ''' Test a setting multiple slave contexts '''

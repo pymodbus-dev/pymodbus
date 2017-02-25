@@ -3,6 +3,7 @@ Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 '''
+import traceback
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
@@ -13,10 +14,12 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
 from pymodbus.compat import byte2int
+
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -66,6 +69,11 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
+        except NoSuchSlaveException, ex:
+            _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
+            if self.factory.ignore_missing_slaves:
+                return # the client will simply timeout waiting for a response
+            response = request.doException(merror.GatewayNoResponse)
         except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
@@ -97,7 +105,7 @@ class ModbusServerFactory(ServerFactory):
 
     protocol = ModbusTcpProtocol
 
-    def __init__(self, store, framer=None, identity=None):
+    def __init__(self, store, framer=None, identity=None, **kwargs):
         ''' Overloaded initializer for the modbus factory
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -106,13 +114,14 @@ class ModbusServerFactory(ServerFactory):
         :param store: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-
+        :param ignore_missing_slaves: True to not send errors on a request to a missing slave
         '''
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
+        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -124,7 +133,7 @@ class ModbusServerFactory(ServerFactory):
 class ModbusUdpProtocol(protocol.DatagramProtocol):
     ''' Implements a modbus udp server in twisted '''
 
-    def __init__(self, store, framer=None, identity=None):
+    def __init__(self, store, framer=None, identity=None, **kwargs):
         ''' Overloaded initializer for the modbus factory
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -133,13 +142,14 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         :param store: The ModbusServerContext datastore
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-
+        :param ignore_missing_slaves: True to not send errors on a request to a missing slave
         '''
         framer = framer or ModbusSocketFramer
         self.framer = framer(decoder=ServerDecoder())
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
+        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -164,6 +174,11 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
+        except NoSuchSlaveException, ex:
+            _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
+            if self.ignore_missing_slaves:
+                return # the client will simply timeout waiting for a response
+            response = request.doException(merror.GatewayNoResponse)
         except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
@@ -188,38 +203,42 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 #---------------------------------------------------------------------------#
 # Starting Factories
 #---------------------------------------------------------------------------#
-def StartTcpServer(context, identity=None, address=None, console=False):
+def StartTcpServer(context, identity=None, address=None, console=False, **kwargs):
     ''' Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param console: A flag indicating if you want the debug console
+    :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
-    factory = ModbusServerFactory(context, framer, identity)
-    if console: InstallManagementConsole({'factory': factory})
+    factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    if console:
+        from pymodbus.internal.ptwisted import InstallManagementConsole
+        InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
     reactor.run()
 
 
-def StartUdpServer(context, identity=None, address=None):
+def StartUdpServer(context, identity=None, address=None, **kwargs):
     ''' Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
+    :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
-    server  = ModbusUdpProtocol(context, framer, identity)
+    server  = ModbusUdpProtocol(context, framer, identity, **kwargs)
 
     _logger.info("Starting Modbus UDP Server on %s:%s" % address)
     reactor.listenUDP(address[1], server, interface=address[0])
@@ -236,6 +255,7 @@ def StartSerialServer(context, identity=None,
     :param port: The serial port to attach to
     :param baudrate: The baud rate to use for the serial device
     :param console: A flag indicating if you want the debug console
+    :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
@@ -245,8 +265,10 @@ def StartSerialServer(context, identity=None,
     console = kwargs.get('console', False)
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
-    factory = ModbusServerFactory(context, framer, identity)
-    if console: InstallManagementConsole({'factory': factory})
+    factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    if console:
+        from pymodbus.internal.ptwisted import InstallManagementConsole
+        InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging

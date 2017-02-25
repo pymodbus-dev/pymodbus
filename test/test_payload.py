@@ -145,6 +145,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         payload = [1,2,3,4]
         decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Little)
         encoded = b'\x01\x00\x02\x00\x03\x00\x04\x00'
+
         self.assertEqual(encoded, decoder.decode_string(8))
 
         decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Big)

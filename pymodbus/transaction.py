@@ -39,19 +39,23 @@ class ModbusTransactionManager(object):
     This module helps to abstract this away from the framer and protocol.
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, **kwargs):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
+        :param retry_on_empty: Should the client retry on empty
+        :param retries: The number of retries to allow
         '''
         self.tid = Defaults.TransactionId
         self.client = client
+        self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
+        self.retries = kwargs.get('retries', Defaults.Retries)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        retries = Defaults.Retries
+        retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
 
@@ -63,6 +67,11 @@ class ModbusTransactionManager(object):
                 # as this may not read the full result set, but right now
                 # it should be fine...
                 result = self.client._recv(1024)
+                if not result and self.retry_on_empty:
+                    retries -= 1
+                    continue
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
             except socket.error as msg:
@@ -120,13 +129,13 @@ class DictTransactionManager(ModbusTransactionManager):
     results are keyed based on the supplied transaction id.
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, **kwargs):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
         '''
         self.transactions = {}
-        super(DictTransactionManager, self).__init__(client)
+        super(DictTransactionManager, self).__init__(client, **kwargs)
 
     def __iter__(self):
         ''' Iterater over the current managed transactions
@@ -172,12 +181,12 @@ class FifoTransactionManager(ModbusTransactionManager):
     results are returned in a FIFO manner.
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, **kwargs):
         ''' Initializes an instance of the ModbusTransactionManager
 
         :param client: The client socket wrapper
         '''
-        super(FifoTransactionManager, self).__init__(client)
+        super(FifoTransactionManager, self).__init__(client, **kwargs)
         self.transactions = []
 
     def __iter__(self):
@@ -335,7 +344,8 @@ class ModbusSocketFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+        _logger.debug(' '.join([hex(byte2int(x)) for x in data])
+
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():

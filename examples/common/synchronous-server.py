@@ -19,6 +19,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
+from pymodbus.transaction import ModbusRtuFramer
 #---------------------------------------------------------------------------# 
 # configure the service logging
 #---------------------------------------------------------------------------# 
@@ -37,7 +38,7 @@ log.setLevel(logging.DEBUG)
 #
 #     block = ModbusSequentialDataBlock(0x00, [0]*0xff)
 #
-# Continuting, you can choose to use a sequential or a sparse DataBlock in
+# Continuing, you can choose to use a sequential or a sparse DataBlock in
 # your data context.  The difference is that the sequential has no gaps in
 # the data while the sparse can. Once again, there are devices that exhibit
 # both forms of behavior::
@@ -72,6 +73,13 @@ log.setLevel(logging.DEBUG)
 #         0x03: ModbusSlaveContext(...),
 #     }
 #     context = ModbusServerContext(slaves=slaves, single=False)
+#
+# The slave context can also be initialized in zero_mode which means that a
+# request to address(0-7) will map to the address (0-7). The default is
+# False which is based on section 4.4 of the specification, so address(0-7)
+# will map to (1-8)::
+#
+#     store = ModbusSlaveContext(..., zero_mode=True)
 #---------------------------------------------------------------------------# 
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),
@@ -96,6 +104,14 @@ identity.MajorMinorRevision = '1.0'
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
+# Tcp:
 StartTcpServer(context, identity=identity, address=("localhost", 5020))
+
+# Udp:
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
+
+# Ascii:
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
+
+# RTU:
+#StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/pts/3', timeout=.005)

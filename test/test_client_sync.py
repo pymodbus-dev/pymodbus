@@ -100,7 +100,10 @@ class SynchronousClientTest(unittest.TestCase):
     def testUdpClientConnect(self):
         ''' Test the Udp client connection method'''
         with patch.object(socket, 'socket') as mock_method:
-            mock_method.return_value = object()
+            class DummySocket(object):
+                def settimeout(self, *a, **kwa):
+                    pass
+            mock_method.return_value = DummySocket()
             client = ModbusUdpClient()
             self.assertTrue(client.connect())
 

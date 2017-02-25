@@ -43,7 +43,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -144,7 +144,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -249,7 +249,7 @@ class GetCommEventLogRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -359,7 +359,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response

@@ -1,10 +1,7 @@
-Version 1.2.0
+Version 1.3.0
 ------------------------------------------------------------
 
-* Added ability to ignore missing slaves
-* Added ability to revert to ZeroMode
-* Passed a number of extra options through the stack
-* Fixed documenation and added a number of examples
+* Porting to Python 3.
 
 Version 1.2.0
 ------------------------------------------------------------

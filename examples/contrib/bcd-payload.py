@@ -6,7 +6,6 @@ This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a 
 simple binary coded decimal builder and decoder.
 '''
-import unittest
 from struct import pack, unpack
 from pymodbus.constants import Endian
 from pymodbus.interfaces import IPayloadBuilder
@@ -24,7 +23,7 @@ def convert_to_bcd(decimal):
     while decimal > 0:
         nibble = decimal % 10
         bcd += nibble << place
-        decimal //= 10
+        decimal /= 10
         place += 4
     return bcd
 
@@ -77,12 +76,12 @@ class BcdPayloadBuilder(IPayloadBuilder):
         self._payload = payload or []
         self._endian  = endian
 
-    def to_string(self):
+    def __str__(self):
         ''' Return the payload buffer as a string
 
         :returns: The payload buffer as a string
         '''
-        return b''.join(self._payload)
+        return ''.join(self._payload)
 
     def reset(self):
         ''' Reset the payload buffer
@@ -97,10 +96,10 @@ class BcdPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a list
         '''
-        string = self.to_string()
+        string = str(self)
         length = len(string)
-        string = string + (b'\x00' * (length % 2))
-        return [string[i:i+2] for i in range(0, length, 2)]
+        string = string + ('\x00' * (length % 2))
+        return [string[i:i+2] for i in xrange(0, length, 2)]
 
     def add_bits(self, values):
         ''' Adds a collection of bits to be encoded
@@ -217,44 +216,6 @@ class BcdPayloadDecoder(object):
         self._pointer += size
         return self._payload[self._pointer - size:self._pointer]
 
-
-#---------------------------------------------------------------------------#
-# Fixture
-#---------------------------------------------------------------------------#
-class BcdPayloadUtilityTests(unittest.TestCase):
-
-    def setUp(self):
-        '''
-        Initializes the test environment and builds request/result
-        encoding pairs
-        '''
-        self.bitstring = [True, False, False, False, True, False, False, False]
-        self.payload = \
-            b'\x01\x02\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00' \
-            b'\x00\x00\x00\xff\xfe\xff\xfd\xff\xff\xff\xfc\xff' \
-            b'\xff\xff\xff\xff\xff\xff\x00\x00\xa0\x3f\x00\x00' \
-            b'\x00\x00\x00\x00\x19\x40\x74\x65\x73\x74\x11'
-
-    def testPayloadBuilder(self):
-        ''' Test basic bit message encoding/decoding '''
-        builder = BcdPayloadBuilder(endian=Endian.Little)
-        builder.add_number(1)
-        builder.add_string(b'test')
-        builder.add_bits(self.bitstring)
-        self.assertEqual(self.payload, builder.to_string())
-
-    def testPayloadDecoder(self):
-        ''' Test basic bit message encoding/decoding '''
-        decoder = BcdPayloadDecoder(self.payload)
-        self.assertEqual(1, decoder.decode_int())
-        self.assertEqual(b'test', decoder.decode_string(4))
-        self.assertEqual(self.bitstring, decoder.decode_bits())
-
-#---------------------------------------------------------------------------#
-# unit tests
-#---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()
 
 #---------------------------------------------------------------------------#
 # Exported Identifiers

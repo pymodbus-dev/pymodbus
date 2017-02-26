@@ -43,11 +43,31 @@ log.setLevel(logging.DEBUG)
 #
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
+#
+# There are also other options that can be set on the client that controls
+# how transactions are performed. The current ones are:
+#
+# * retries - Specify how many retries to allow per transaction (default = 3)
+# * retry_on_empty - Is an empty response a retry (default = False)
+# * source_address - Specifies the TCP source address to bind to
+#
+# Here is an example of using these options::
+#
+#    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
 #---------------------------------------------------------------------------# 
-client = ModbusClient('localhost', port=5020)
+client = ModbusClient('localhost', port=502)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
 #client = ModbusClient(method='rtu', port='/dev/pts/2', timeout=1)
 client.connect()
+
+#---------------------------------------------------------------------------# 
+# specify slave to query
+#---------------------------------------------------------------------------# 
+# The slave to query is specified in an optional parameter for each
+# individual request. This can be done by specifying the `unit` parameter
+# which defaults to `0x00`
+#---------------------------------------------------------------------------# 
+rr = client.read_coils(1, 1, unit=0x02)
 
 #---------------------------------------------------------------------------# 
 # example requests
@@ -74,7 +94,7 @@ assert(rr.bits == [True]*8)         # test the expected value
 rq = client.write_coils(1, [False]*8)
 rr = client.read_discrete_inputs(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
-assert(rr.bits == [True]*8)         # test the expected value
+assert(rr.bits == [False]*8)         # test the expected value
 
 rq = client.write_register(1, 10)
 rr = client.read_holding_registers(1,1)
@@ -84,7 +104,7 @@ assert(rr.registers[0] == 10)       # test the expected value
 rq = client.write_registers(1, [10]*8)
 rr = client.read_input_registers(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
-assert(rr.registers == [17]*8)      # test the expected value
+assert(rr.registers == [10]*8)      # test the expected value
 
 arguments = {
     'read_address':    1,
@@ -96,7 +116,7 @@ rq = client.readwrite_registers(**arguments)
 rr = client.read_input_registers(1,8)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rq.registers == [20]*8)      # test the expected value
-assert(rr.registers == [17]*8)      # test the expected value
+assert(rr.registers == [20]*8)      # test the expected value
 
 #---------------------------------------------------------------------------# 
 # close the client

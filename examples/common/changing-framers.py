@@ -39,7 +39,7 @@ log.setLevel(logging.DEBUG)
 #---------------------------------------------------------------------------# 
 # Initialize the client
 #---------------------------------------------------------------------------# 
-client = ModbusClient('localhost', port=502, framer=ModbusFramer)
+client = ModbusClient('localhost', port=5020, framer=ModbusFramer)
 client.connect()
 
 #---------------------------------------------------------------------------# 

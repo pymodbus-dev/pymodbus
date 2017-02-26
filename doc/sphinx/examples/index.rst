@@ -17,6 +17,7 @@ Example Library Code
    custom-message
    modbus-logging
    modbus-payload
+   modbus-payload-server
    synchronous-client
    synchronous-client-ext
    synchronous-server
@@ -24,6 +25,7 @@ Example Library Code
    updating-server
    callback-server
    changing-framers
+   thread-safe-datastore
 
 Custom Pymodbus Code
 --------------------------------------------------
@@ -40,6 +42,9 @@ Custom Pymodbus Code
    serial-forwarder
    modbus-scraper
    modbus-simulator
+   concurrent-client
+   libmodbus-client
+   remote-server-context
 
 Example Frontend Code
 --------------------------------------------------

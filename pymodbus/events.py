@@ -143,7 +143,7 @@ class EnteredListenModeEvent(ModbusEvent):
     '''
 
     value = 0x04
-    __encoded = '\x04'
+    __encoded = b'\x04'
 
     def encode(self):
         ''' Encodes the status bits to an event message
@@ -179,7 +179,7 @@ class CommunicationRestartEvent(ModbusEvent):
     '''
 
     value = 0x00
-    __encoded = '\x00'
+    __encoded = b'\x00'
 
     def encode(self):
         ''' Encodes the status bits to an event message

@@ -57,7 +57,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
     layer code is deferred to a higher level wrapper.
     '''
 
-    def __init__(self, framer=None, **kwargs):
+    def __init__(self, framer=None):
         ''' Initializes the framer module
 
         :param framer: The framer to use for the protocol
@@ -65,8 +65,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         self._connected = False
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
         if isinstance(self.framer, ModbusSocketFramer):
-            self.transaction = DictTransactionManager(self, **kwargs)
-        else: self.transaction = FifoTransactionManager(self, **kwargs)
+            self.transaction = DictTransactionManager(self)
+        else: self.transaction = FifoTransactionManager(self)
 
     def connectionMade(self):
         ''' Called upon a successful client connection.
@@ -81,7 +81,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
-        for tid in self.transaction:
+        for tid in list(self.transaction):
             self.transaction.getTransaction(tid).errback(Failure(
                 ConnectionException('Connection lost during request')))
 
@@ -146,15 +146,15 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
     layer code is deferred to a higher level wrapper.
     '''
 
-    def __init__(self, framer=None, **kwargs):
+    def __init__(self, framer=None):
         ''' Initializes the framer module
 
         :param framer: The framer to use for the protocol
         '''
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
         if isinstance(self.framer, ModbusSocketFramer):
-            self.transaction = DictTransactionManager(self, **kwargs)
-        else: self.transaction = FifoTransactionManager(self, **kwargs)
+            self.transaction = DictTransactionManager(self)
+        else: self.transaction = FifoTransactionManager(self)
 
     def datagramReceived(self, data, params):
         ''' Get response, check for valid message, decode result

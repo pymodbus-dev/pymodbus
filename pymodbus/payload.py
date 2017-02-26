@@ -36,27 +36,24 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         self._payload = payload or []
         self._endian  = endian
 
+    def to_string(self):
+        ''' Return the payload buffer as a string
+
+        :returns: The payload buffer as a string
+        '''
+        return b''.join(self._payload)
+
     def __str__(self):
         ''' Return the payload buffer as a string
 
         :returns: The payload buffer as a string
         '''
-        return ''.join(self._payload)
+        return self.to_string().decode('utf-8')
 
     def reset(self):
         ''' Reset the payload buffer
         '''
         self._payload = []
-
-    def to_registers(self):
-        ''' Convert the payload buffer into a register
-        layout that can be used as a context block.
-
-        :returns: The register layout to use as a block
-        '''
-        fstring = self._endian + 'H'
-        payload = self.build()
-        return [unpack(fstring, value)[0] for value in payload]
 
     def build(self):
         ''' Return the payload buffer as a list
@@ -66,10 +63,10 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a list
         '''
-        string = str(self)
+        string = self.to_string()
         length = len(string)
-        string = string + ('\x00' * (length % 2))
-        return [string[i:i+2] for i in xrange(0, length, 2)]
+        string = string + (b'\x00' * (length % 2))
+        return [string[i:i+2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         ''' Adds a collection of bits to be encoded
@@ -168,9 +165,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         '''
-        fstring = self._endian + 's'
-        for c in value:
-            self._payload.append(pack(fstring, c))
+        fstring = self._endian + str(len(value)) + 's'
+        self._payload.append(pack(fstring, value))
 
 
 class BinaryPayloadDecoder(object):
@@ -209,7 +205,7 @@ class BinaryPayloadDecoder(object):
         :returns: An initialized PayloadDecoder
         '''
         if isinstance(registers, list): # repack into flat binary
-            payload = ''.join(pack(endian + 'H', x) for x in registers)
+            payload = b''.join(pack(endian + 'H', x) for x in registers)
             return klass(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 

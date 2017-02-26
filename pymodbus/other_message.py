@@ -8,6 +8,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
+from pymodbus.compat import byte2int, int2byte
 
 _MCB = ModbusControlBlock()
 
@@ -33,7 +34,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
     def encode(self):
         ''' Encodes the message
         '''
-        return ''
+        return b''
 
     def decode(self, data):
         ''' Decodes data part of the message.
@@ -42,7 +43,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self, context):
+    def execute(self):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -85,11 +86,11 @@ class ReadExceptionStatusResponse(ModbusResponse):
         return struct.pack('>B', self.status)
 
     def decode(self, data):
-        ''' Decodes a the response
+        ''' Decodes the response
 
         :param data: The packet data to decode
         '''
-        self.status = struct.unpack('>B', data)[0]
+        self.status = byte2int(data[0])
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -134,7 +135,7 @@ class GetCommEventCounterRequest(ModbusRequest):
     def encode(self):
         ''' Encodes the message
         '''
-        return ''
+        return b''
 
     def decode(self, data):
         ''' Decodes data part of the message.
@@ -143,7 +144,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self, context):
+    def execute(self):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -239,7 +240,7 @@ class GetCommEventLogRequest(ModbusRequest):
     def encode(self):
         ''' Encodes the message
         '''
-        return ''
+        return b''
 
     def decode(self, data):
         ''' Decodes data part of the message.
@@ -248,7 +249,7 @@ class GetCommEventLogRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self, context):
+    def execute(self):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -303,7 +304,7 @@ class GetCommEventLogResponse(ModbusResponse):
         packet  = struct.pack('>B', 6 + len(self.events))
         packet += struct.pack('>H', ready)
         packet += struct.pack('>HH', self.event_count, self.message_count)
-        packet += ''.join(struct.pack('>B', e) for e in self.events)
+        packet += b''.join(struct.pack('>B', e) for e in self.events)
         return packet
 
     def decode(self, data):
@@ -311,15 +312,15 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = struct.unpack('>B', data[0])[0]
+        length = byte2int(data[0])
         status = struct.unpack('>H', data[1:3])[0]
         self.status = (status == ModbusStatus.Ready)
         self.event_count = struct.unpack('>H', data[3:5])[0]
         self.message_count = struct.unpack('>H', data[5:7])[0]
 
         self.events = []
-        for e in xrange(7, length + 1):
-            self.events.append(struct.unpack('>B', data[e])[0])
+        for e in range(7, length + 1):
+            self.events.append(byte2int(data[e]))
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -349,7 +350,7 @@ class ReportSlaveIdRequest(ModbusRequest):
     def encode(self):
         ''' Encodes the message
         '''
-        return ''
+        return b''
 
     def decode(self, data):
         ''' Decodes data part of the message.
@@ -358,12 +359,12 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self, context):
+    def execute(self):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
         '''
-        identifier = '\x70\x79\x6d\x6f\x64\x62\x75\x73'
+        identifier = b'\x70\x79\x6d\x6f\x64\x62\x75\x73'
         return ReportSlaveIdResponse(identifier)
 
     def __str__(self):
@@ -382,7 +383,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier='\x00', status=True, **kwargs):
+    def __init__(self, identifier=b'\x00', status=True, **kwargs):
         ''' Initializes a new instance
 
         :param identifier: The identifier of the slave
@@ -399,10 +400,10 @@ class ReportSlaveIdResponse(ModbusResponse):
         '''
         if self.status: status = ModbusStatus.SlaveOn
         else: status = ModbusStatus.SlaveOff
-        length = len(self.identifier) + 2
-        packet = struct.pack('>B', length)
+        length  = len(self.identifier) + 2
+        packet  = int2byte(length)
         packet += self.identifier  # we assume it is already encoded
-        packet += struct.pack('>B', status)
+        packet += int2byte(status)
         return packet
 
     def decode(self, data):
@@ -413,9 +414,9 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = struct.unpack('>B', data[0])[0]
+        length = byte2int(data[0])
         self.identifier = data[1:length + 1]
-        status = struct.unpack('>B', data[-1])[0]
+        status = byte2int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
     def __str__(self):

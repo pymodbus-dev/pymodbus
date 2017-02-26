@@ -10,6 +10,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.compat import iteritems, byte2int
 
 _MCB = ModbusControlBlock()
 
@@ -25,11 +26,11 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
     The Read Device Identification interface is modeled as an address space
     composed of a set of addressable data elements. The data elements are
-    called objects and an object Id identifies them.
+    called objects and an object Id identifies them.  
     '''
     function_code = 0x2b
     sub_function_code = 0x0e
-    _rtu_frame_size = 7
+    _rtu_frame_size = 3
 
     def __init__(self, read_code=None, object_id=0x00, **kwargs):
         ''' Initializes a new instance
@@ -89,17 +90,17 @@ class ReadDeviceInformationResponse(ModbusResponse):
     sub_function_code = 0x0e
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
+    def calculateRtuFrameSize(cls, data):
         ''' Calculates the size of the message
 
-        :param buffer: A buffer containing the data that have been received.
+        :param data: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
         '''
         size  = 8 # skip the header information
-        count = struct.unpack('>B', buffer[7])[0]
+        count = byte2int(data[7])
 
         while count > 0:
-            _, object_length = struct.unpack('>BB', buffer[size:size+2])
+            _, object_length = struct.unpack('>BB', data[size:size+2])
             size += object_length + 2
             count -= 1
         return size + 2
@@ -129,10 +130,9 @@ class ReadDeviceInformationResponse(ModbusResponse):
             self.read_code, self.conformity, self.more_follows,
             self.next_object_id, self.number_of_objects)
 
-        for (object_id, data) in self.information.iteritems():
+        for (object_id, data) in iteritems(self.information):
             packet += struct.pack('>BB', object_id, len(data))
             packet += data
-
         return packet
 
     def decode(self, data):

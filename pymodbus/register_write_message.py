@@ -35,9 +35,12 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :returns: The encoded packet
         '''
+        packet = struct.pack('>H', self.address)
         if self.skip_encode:
-            return self.value
-        return struct.pack('>HH', self.address, self.value)
+            packet += self.value
+        else:
+            packet += struct.pack('>H', self.value)
+        return packet
 
     def decode(self, data):
         ''' Decode a write single register packet packet request

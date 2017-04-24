@@ -34,6 +34,35 @@ class RemoteSlaveContext(IModbusSlaveContext):
         ''' Resets all the datastores to their default values '''
         raise NotImplementedException()
 
+    def prevalid(self, fx, address, count=1):
+        '''Check cache to see if address is known in range a priori
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to test
+        :returns: True if the request in within range, False otherwise
+        '''
+        _logger.debug("prevalid[%d] %d:%d" % (fx, address, count))
+
+        try:
+            result = all([self.__valid_addrs[self.decode(fx)][i] for i in range(address,address+count)])
+            _logger.debug("  --> %s" % result)
+            return result
+        except:
+            return None
+
+    def prevalidate(self, fx, address, count=1, value=True):
+        '''Assert that address range is known good
+
+        :param fx: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to test
+        '''
+
+        _logger.debug("prevalidate[%d] %d:%d %s" % (fx, address, count, str(value)))
+        for i in range(address,address+count):
+            self.__valid_addrs[self.decode(fx)][i] = value
+
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
 
@@ -43,8 +72,14 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         '''
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
+        if self.prevalid(fx, address, count):
+            return True
         result = self.__get_callbacks[self.decode(fx)](address, count)
-        return result.function_code < 0x80
+        if result.function_code < 0x80:
+            self.prevalidate(fx, address, count, True)
+            return True
+        self.prevalidate(fx, address, count, False)
+        return False
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -57,6 +92,9 @@ class RemoteSlaveContext(IModbusSlaveContext):
         # TODO deal with deferreds
         _logger.debug("get values[%d] %d:%d" % (fx, address, count))
         result = self.__get_callbacks[self.decode(fx)](address, count)
+        if result.function_code >= 0x80:
+            self.prevalidate(fx, address, count, False)
+            return None
         return self.__extract_result(self.decode(fx), result)
 
     def setValues(self, fx, address, values):

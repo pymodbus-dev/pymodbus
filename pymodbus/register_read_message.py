@@ -126,6 +126,8 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if not values:
+            return self.doException(merror.SlaveFailure)
         return ReadHoldingRegistersResponse(values)
 
 
@@ -176,6 +178,8 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if not values:
+            return self.doException(merror.SlaveFailure)
         return ReadInputRegistersResponse(values)
 
 
@@ -279,6 +283,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
                           self.write_registers)
         registers = context.getValues(self.function_code, self.read_address,
                                       self.read_count)
+        if not registers:
+            return self.doException(merror.SlaveFailure)
         return ReadWriteMultipleRegistersResponse(registers)
 
     def __str__(self):

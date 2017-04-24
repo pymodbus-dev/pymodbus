@@ -141,6 +141,8 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if not values:
+            return self.doException(merror.SlaveFailure)
         return ReadCoilsResponse(values)
 
 
@@ -200,6 +202,8 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if not values:
+            return self.doException(merror.SlaveFailure)
         return ReadDiscreteInputsResponse(values)
 
 

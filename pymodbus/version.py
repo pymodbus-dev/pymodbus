@@ -21,7 +21,6 @@ class Version(object):
         self.major = major
         self.minor = minor
         self.micro = micro
-        self.pre = pre
 
     def short(self):
         ''' Return a string in canonical short version format

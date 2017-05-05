@@ -27,11 +27,7 @@ class Version(object):
         ''' Return a string in canonical short version format
         <major>.<minor>.<micro>
         '''
-<<<<<<< HEAD
         return '%d.%d.%d' % (self.major, self.minor, self.micro)
-=======
-        return '%d.%d.%d%s' % (self.major, self.minor, self.micro, self.pre)
->>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
 
     def __str__(self):
         ''' Returns a string representation of the object
@@ -40,11 +36,9 @@ class Version(object):
         '''
         return '[%s, version %s]' % (self.package, self.short())
 
-<<<<<<< HEAD
+
 version = Version('pymodbus', 1, 3, 0)
-=======
-version = Version('pymodbus', 1, 3, 0, "rc93104")
->>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
+
 version.__name__ = 'pymodbus'  # fix epydoc error
 
 #---------------------------------------------------------------------------#

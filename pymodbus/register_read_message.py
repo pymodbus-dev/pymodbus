@@ -23,7 +23,7 @@ class ReadRegistersRequestBase(ModbusRequest):
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = count
-        self._pdu_length += 2*count
+
     def encode(self):
         ''' Encodes the request packet
 

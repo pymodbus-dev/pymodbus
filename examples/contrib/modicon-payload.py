@@ -155,21 +155,16 @@ class ModiconPayloadDecoder(object):
         second  = decoder.decode_16bit_uint()
     '''
 
-<<<<<<< HEAD
     def __init__(self, payload, endian):
-=======
-    def __init__(self, payload):
->>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
+
         ''' Initialize a new payload decoder
 
         :param payload: The payload to decode with
         '''
         self._payload = payload
         self._pointer = 0x00
-<<<<<<< HEAD
         self._endian = endian
-=======
->>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
+
 
     @staticmethod
     def fromRegisters(registers, endian=Endian.Little):

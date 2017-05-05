@@ -155,7 +155,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     function_code = 15
     _rtu_byte_count_pos = 6
-    _pdu_length = 5 # func + adress1 + adress2 + outputQuant1 + outputQuant2
+    
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 

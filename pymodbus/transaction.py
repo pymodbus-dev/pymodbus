@@ -107,6 +107,7 @@ class ModbusTransactionManager(object):
                 retries -= 1
         return self.getTransaction(request.transaction_id)
 
+
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
 
@@ -606,7 +607,7 @@ class ModbusRtuFramer(IModbusFramer):
             else:
                 if len(self.__buffer):
                     # Possible error ???
-                    if self.__header['len'] < 2:
+                    if self.__header.get('len', 0) < 2:
                         self._process(callback, error=True)
                 break
 

@@ -288,7 +288,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     '''
     function_code = 0x16
     _rtu_frame_size = 10
-    _pdu_length = 7   # func + adress1 + adress2 + andMaskHi + andMaskLo + orMaskHi + orMaskLo
+    
 
     def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000, **kwargs):
         ''' Initializes a new instance

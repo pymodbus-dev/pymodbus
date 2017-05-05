@@ -1,5 +1,3 @@
-# From https://github.com/bashwork/pymodbus/pull/55/files#diff-94a93850ad7c75a7ff75226d4f3539c3
-
 import socket
 import serial
 import time

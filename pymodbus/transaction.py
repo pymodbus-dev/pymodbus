@@ -82,6 +82,7 @@ class ModbusTransactionManager(object):
             expected_response_length = self._calculate_response_length(response_pdu_size)
         else:
             expected_response_length = 1024
+
         while retries > 0:
             try:
                 self.client.connect()

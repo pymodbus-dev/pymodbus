@@ -13,7 +13,7 @@ class ReadRegistersRequestBase(ModbusRequest):
     Base class for reading a modbus register
     '''
     _rtu_frame_size = 8
-    
+
     def __init__(self, address, count, **kwargs):
         ''' Initializes a new instance
 
@@ -23,7 +23,7 @@ class ReadRegistersRequestBase(ModbusRequest):
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = count
-
+        self._pdu_length += 2*count
     def encode(self):
         ''' Encodes the request packet
 
@@ -220,7 +220,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 23
     _rtu_byte_count_pos = 10
-    
+
     def __init__(self, **kwargs):
         ''' Initializes a new request message
 
@@ -238,7 +238,6 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             self.write_registers = [self.write_registers]
         self.write_count = len(self.write_registers)
         self.write_byte_count = self.write_count * 2
-        
 
     def encode(self):
         ''' Encodes the request packet

@@ -123,7 +123,11 @@ License Information
 Pymodbus is built on top of code developed from/by:
   * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
   * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
+<<<<<<< HEAD
   * Hynek Petrak, https://github.com/HynekPetrak
+=======
+  * Hynek Petrak <hynek@swac.cz>
+>>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
   * Twisted Matrix
 
 Released under the BSD License

@@ -46,7 +46,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param data: The request to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
-
+    
     def execute(self, context):
         ''' Run a write single register request against a datastore
 
@@ -62,6 +62,13 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
+        :return: 
+        """
+        return 1 + 2 + 2
+    
     def __str__(self):
         ''' Returns a string representation of the instance
 

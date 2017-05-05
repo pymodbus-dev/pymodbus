@@ -17,7 +17,10 @@ Example Library Code
    custom-message
    modbus-logging
    modbus-payload
+<<<<<<< HEAD
    modbus-payload-server
+=======
+>>>>>>> a2e18e5bbe08da5eff7994bcabe2e9668ae1a9d5
    synchronous-client
    synchronous-client-ext
    synchronous-server

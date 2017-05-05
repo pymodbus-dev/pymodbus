@@ -13,7 +13,7 @@ class ReadRegistersRequestBase(ModbusRequest):
     Base class for reading a modbus register
     '''
     _rtu_frame_size = 8
-
+    
     def __init__(self, address, count, **kwargs):
         ''' Initializes a new instance
 
@@ -37,6 +37,13 @@ class ReadRegistersRequestBase(ModbusRequest):
         :param data: The request to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
+
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
+        :return: 
+        """
+        return 1 + 1 + 2 * self.count
 
     def __str__(self):
         ''' Returns a string representation of the instance
@@ -213,7 +220,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     '''
     function_code = 23
     _rtu_byte_count_pos = 10
-
+    
     def __init__(self, **kwargs):
         ''' Initializes a new request message
 
@@ -231,6 +238,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             self.write_registers = [self.write_registers]
         self.write_count = len(self.write_registers)
         self.write_byte_count = self.write_count * 2
+        
 
     def encode(self):
         ''' Encodes the request packet

@@ -6,7 +6,7 @@ import struct
 import socket
 from binascii import b2a_hex, a2b_hex
 
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -77,7 +77,11 @@ class ModbusTransactionManager(object):
         retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
-        expected_response_length = self._calculate_response_length(request._pdu_length)
+        if hasattr(request, "get_response_pdu_size"):
+            response_pdu_size = request.get_response_pdu_size()
+            expected_response_length = self._calculate_response_length(response_pdu_size)
+        else:
+            expected_response_length = 1024
         while retries > 0:
             try:
                 self.client.connect()
@@ -100,7 +104,6 @@ class ModbusTransactionManager(object):
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
         return self.getTransaction(request.transaction_id)
-
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler

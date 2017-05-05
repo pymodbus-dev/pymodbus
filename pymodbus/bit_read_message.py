@@ -14,7 +14,6 @@ class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
     _rtu_frame_size = 8
-    
     def __init__(self, address, count, **kwargs):
         ''' Initializes the read request data
 

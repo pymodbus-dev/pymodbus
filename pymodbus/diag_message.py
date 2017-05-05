@@ -72,6 +72,7 @@ class DiagnosticStatusRequest(ModbusRequest):
         return 1 + 2 + 2 * len(self.message)
 
 
+
 class DiagnosticStatusResponse(ModbusResponse):
     '''
     This is a base class for all of the diagnostic response functions
@@ -242,7 +243,6 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         #if _MCB.ListenOnly:
         return RestartCommunicationsOptionResponse(self.message)
 
-       
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
     '''
     The remote device serial line port must be initialized and restarted, and

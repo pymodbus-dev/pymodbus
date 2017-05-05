@@ -49,7 +49,8 @@ class ModbusTransactionManager(object):
         self.client = client
         self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
         self.retries = kwargs.get('retries', Defaults.Retries)
-        self._set_adu_size()
+        if client:
+            self._set_adu_size()
 
     def _set_adu_size(self):
         # base ADU size of modbus frame in bytes

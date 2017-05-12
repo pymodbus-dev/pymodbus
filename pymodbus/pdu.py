@@ -5,6 +5,7 @@ from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
 from pymodbus.utilities import rtuFrameSize
+from pymodbus.compat import iteritems, int2byte, byte2int
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -152,7 +153,7 @@ class ModbusExceptions(Singleton):
         
         :param code: The code number to translate
         '''
-        values = dict((v, k) for k, v in cls.__dict__.iteritems()
+        values = dict((v, k) for k, v in iteritems(cls.__dict__)
             if not k.startswith('__') and not callable(v))
         return values.get(code, None)
 
@@ -178,14 +179,14 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The encoded exception packet
         '''
-        return chr(self.exception_code)
+        return int2byte(self.exception_code)
 
     def decode(self, data):
         ''' Decodes a modbus exception response
 
         :param data: The packet data to decode
         '''
-        self.exception_code = ord(data[0])
+        self.exception_code = byte2int(data[0])
 
     def __str__(self):
         ''' Builds a representation of an exception response

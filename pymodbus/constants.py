@@ -20,12 +20,6 @@ class Defaults(Singleton):
        The default number of times a client should retry the given
        request before failing (3)
 
-    .. attribute:: RetryOnEmpty
-
-       A flag indicating if a transaction should be retried in the
-       case that an empty response is received. This is useful for
-       slow clients that may need more time to process a requst.
-
     .. attribute:: Timeout
 
        The default amount of time a client should wait for a request
@@ -76,33 +70,18 @@ class Defaults(Singleton):
 
        The number of bits sent after each character in a message to
        indicate the end of the byte.  This defaults to 1.
-
-    .. attribute:: ZeroMode
-
-       Indicates if the slave datastore should use indexing at 0 or 1.
-       More about this can be read in section 4.4 of the modbus specification.
-
-    .. attribute:: IgnoreMissingSlaves
-
-       In case a request is made to a missing slave, this defines if an error
-       should be returned or simply ignored. This is useful for the case of a
-       serial server emulater where a request to a non-existant slave on a bus
-       will never respond. The client in this case will simply timeout.
     '''
-    Port                = 502
-    Retries             = 3
-    RetryOnEmpty        = False
-    Timeout             = 3
-    Reconnects          = 0
-    TransactionId       = 0
-    ProtocolId          = 0
-    UnitId              = 0x00
-    Baudrate            = 19200
-    Parity              = 'N'
-    Bytesize            = 8
-    Stopbits            = 1
-    ZeroMode            = False
-    IgnoreMissingSlaves = False
+    Port          = 502
+    Retries       = 3
+    Timeout       = 3
+    Reconnects    = 0
+    TransactionId = 0
+    ProtocolId    = 0
+    UnitId        = 0x00
+    Baudrate      = 19200
+    Parity        = 'N'
+    Bytesize      = 8
+    Stopbits      = 1
 
 
 class ModbusStatus(Singleton):

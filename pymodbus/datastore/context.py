@@ -1,7 +1,8 @@
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import ParameterException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.constants import Defaults
+from pymodbus.compat import iteritems, itervalues
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -35,7 +36,6 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
         self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
-        self.zero_mode  = kwargs.get('zero_mode', Defaults.ZeroMode)
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -46,7 +46,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in self.store.itervalues():
+        for datastore in itervalues(self.store):
             datastore.reset()
 
     def validate(self, fx, address, count=1):
@@ -57,7 +57,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        if not self.zero_mode: address = address + 1
+        address = address + 1  # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].validate(address, count)
 
@@ -69,7 +69,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        if not self.zero_mode: address = address + 1
+        address = address + 1  # section 4.4 of specification
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].getValues(address, count)
 
@@ -80,7 +80,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        if not self.zero_mode: address = address + 1
+        address = address + 1  # section 4.4 of specification
         _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
 
@@ -110,7 +110,7 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        return self.__slaves.iteritems()
+        return iteritems(self.__slaves)
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list
@@ -129,7 +129,7 @@ class ModbusServerContext(object):
         if self.single: slave = Defaults.UnitId
         if 0xf7 >= slave >= 0x00:
             self.__slaves[slave] = context
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else: raise ParameterException('slave index out of range')
 
     def __delitem__(self, slave):
         ''' Wrapper used to access the slave context
@@ -138,7 +138,7 @@ class ModbusServerContext(object):
         '''
         if not self.single and (0xf7 >= slave >= 0x00):
             del self.__slaves[slave]
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else: raise ParameterException('slave index out of range')
 
     def __getitem__(self, slave):
         ''' Used to get access to a slave context
@@ -149,4 +149,4 @@ class ModbusServerContext(object):
         if self.single: slave = Defaults.UnitId
         if slave in self.__slaves:
             return self.__slaves.get(slave)
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else: raise ParameterException("slave does not exist, or is out of range")

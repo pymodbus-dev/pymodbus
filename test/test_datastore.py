@@ -3,7 +3,6 @@ import unittest
 from pymodbus.datastore import *
 from pymodbus.datastore.store import BaseModbusDataBlock
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.exceptions import ParameterException
 from pymodbus.datastore.remote import RemoteSlaveContext
 
@@ -129,8 +128,8 @@ class ModbusDataStoreTest(unittest.TestCase):
         def _set(ctx):
             ctx[0xffff] = None
         context = ModbusServerContext(single=False)
-        self.assertRaises(NoSuchSlaveException, lambda: _set(context))
-        self.assertRaises(NoSuchSlaveException, lambda: context[0xffff])
+        self.assertRaises(ParameterException, lambda: _set(context))
+        self.assertRaises(ParameterException, lambda: context[0xffff])
 
 #---------------------------------------------------------------------------#
 # Main

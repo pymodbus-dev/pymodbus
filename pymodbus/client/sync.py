@@ -303,6 +303,9 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity   = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
+        
+        # Set a relatively fast timeout on self.socket.
+        self.socket_poll_rate = min(0.1, self.timeout)  
 
     @staticmethod
     def __implementation(method):
@@ -325,9 +328,10 @@ class ModbusSerialClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.port, timeout=self.timeout,
-                bytesize=self.bytesize, stopbits=self.stopbits,
-                baudrate=self.baudrate, parity=self.parity)
+            self.socket = serial.Serial(port=self.port, 
+                timeout=self.socket_poll_rate, bytesize=self.bytesize, 
+                stopbits=self.stopbits, baudrate=self.baudrate, 
+                parity=self.parity)
         except serial.SerialException, msg:
             _logger.error(msg)
             self.close()

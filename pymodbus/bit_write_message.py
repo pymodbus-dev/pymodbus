@@ -83,6 +83,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
+        :return: 
+        """
+        return 1 + 2 + 2
+
     def __str__(self):
         ''' Returns a string representation of the instance
 
@@ -148,7 +155,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     function_code = 15
     _rtu_byte_count_pos = 6
-
+    
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 

@@ -14,7 +14,11 @@ from pymodbus.server.sync import ModbusTcpServer, ModbusUdpServer, ModbusSerialS
 from pymodbus.server.sync import StartTcpServer, StartUdpServer, StartSerialServer
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+import sys
 
+SERIAL_PORT = "/dev/ptmx"
+if sys.platform == "darwin":
+    SERIAL_PORT = "/dev/ptyp0"
 #---------------------------------------------------------------------------#
 # Mock Classes
 #---------------------------------------------------------------------------#
@@ -322,7 +326,7 @@ class SynchronousServerTest(unittest.TestCase):
     def testStartSerialServer(self):
         ''' Test the serial server starting factory '''
         with patch.object(ModbusSerialServer, 'serve_forever') as mock_server:
-            StartSerialServer()
+            StartSerialServer(port=SERIAL_PORT)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -6,7 +6,7 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
-from itertools import izip
+
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
@@ -415,7 +415,7 @@ class ModbusCountersHandler(object):
 
         :returns: An iterator of the device counters
         '''
-        return izip(self.__names, self.__data.itervalues())
+        return zip(self.__names, self.__data.itervalues())
 
     def update(self, values):
         ''' Update the values of this identity

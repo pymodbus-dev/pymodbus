@@ -57,12 +57,12 @@ class ModbusBaseRequestHandler(SocketServer.BaseRequestHandler):
         try:
             context = self.server.context[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException, ex:
+        except NoSuchSlaveException asex:
             _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
             if self.server.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s; %s", ex, traceback.format_exc() )
             response = request.doException(merror.SlaveFailure)
         response.transaction_id = request.transaction_id
@@ -102,7 +102,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                     if _logger.isEnabledFor(logging.DEBUG):
                         _logger.debug(" ".join([hex(ord(x)) for x in data]))
                     self.framer.processIncomingPacket(data, self.execute)
-            except Exception, msg:
+            except Exception as msg:
                 # since we only have a single socket, we cannot exit
                 _logger.error("Socket error occurred %s" % msg)
 

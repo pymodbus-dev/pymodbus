@@ -106,6 +106,13 @@ class ModbusRequest(ModbusPDU):
                 (self.function_code, exception))
         return ExceptionResponse(self.function_code, exception)
 
+    def getResponseSize(self):
+        ''' Returns expected packet size of response for this request
+
+        :raises: A not implemented exception
+        '''
+        raise NotImplementedException()
+
 
 class ModbusResponse(ModbusPDU):
     ''' Base class for a modbus response PDU

@@ -38,6 +38,13 @@ class ReadRegistersRequestBase(ModbusRequest):
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
+    def getResponseSize(self):
+        ''' Returns expected packet size of response for this request
+
+        :returns: The expected packet size
+        '''
+        return 1 + 2 * self.count
+
     def __str__(self):
         ''' Returns a string representation of the instance
 

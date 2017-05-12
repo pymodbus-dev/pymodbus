@@ -458,7 +458,7 @@ class ModbusCountersHandler(object):
 
 
 #---------------------------------------------------------------------------#
-# Main server controll block
+# Main server control block
 #---------------------------------------------------------------------------#
 class ModbusControlBlock(Singleton):
     '''

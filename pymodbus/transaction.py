@@ -6,7 +6,7 @@ import struct
 import socket
 from binascii import b2a_hex, a2b_hex
 
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -62,10 +62,19 @@ class ModbusTransactionManager(object):
             try:
                 self.client.connect()
                 self.client._send(self.client.framer.buildPacket(request))
-                # I need to fix this to read the header and the result size,
-                # as this may not read the full result set, but right now
-                # it should be fine...
-                result = self.client._recv(1024)
+                try:
+                    recvsize = self.client.framer.getResponseSize(request)
+                except NotImplementedException:
+                    recvsize = 0;
+
+                # TODO: read first only as much as needed to check Modbus
+                # exception and then all remaining bytes. Otherwise
+                # exception always takes _timeout_ seconds.
+                if recvsize:
+                    result = self.client._recv(recvsize)
+                else:
+                    result = self.client._recv(1024)
+
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
@@ -552,6 +561,14 @@ class ModbusRtuFramer(IModbusFramer):
             message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
         return packet
+
+    def getResponseSize(self, message):
+        ''' Returns expected packet size of response for request
+
+        :param message: Request message
+        :returns: The expected packet size
+        '''
+        return 1 + 1 + message.getResponseSize() + 2
 
 
 #---------------------------------------------------------------------------#

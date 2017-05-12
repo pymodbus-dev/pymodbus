@@ -17,6 +17,7 @@
 #pyasn1==0.2.3
 #pycrypto==2.6.1
 #wsgiref==0.1.2
+#cryptography==1.8.1
 # -------------------------------------------------------------------
 # if you want to build the documentation, uncomment these
 # -------------------------------------------------------------------
@@ -24,3 +25,5 @@
 #Pygments==2.2.0
 #Sphinx==1.5.5
 #docutils==0.13.1
+#pydoctor==16.3.0
+

@@ -5,13 +5,17 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory
 from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
+
+import sys
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
+SERIAL_PORT = "/dev/ptmx"
+if sys.platform == "darwin":
+    SERIAL_PORT = "/dev/ptyp0"
+
+
 class AsynchronousServerTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.server.async module
@@ -84,7 +88,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testSerialServerStartup(self):
         ''' Test that the modbus serial async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None, port='/dev/ptmx')
+            StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
 #---------------------------------------------------------------------------#

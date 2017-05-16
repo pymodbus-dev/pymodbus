@@ -1,7 +1,8 @@
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import ParameterException, NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.constants import Defaults
+from pymodbus.compat import iteritems, itervalues
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -46,7 +47,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in self.store.itervalues():
+        for datastore in itervalues(self.store):
             datastore.reset()
 
     def validate(self, fx, address, count=1):
@@ -110,7 +111,7 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        return self.__slaves.iteritems()
+        return iteritems(self.__slaves)
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list
@@ -129,7 +130,8 @@ class ModbusServerContext(object):
         if self.single: slave = Defaults.UnitId
         if 0xf7 >= slave >= 0x00:
             self.__slaves[slave] = context
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else:
+            raise NoSuchSlaveException('slave index :{} out of range'.format(slave))
 
     def __delitem__(self, slave):
         ''' Wrapper used to access the slave context
@@ -138,7 +140,8 @@ class ModbusServerContext(object):
         '''
         if not self.single and (0xf7 >= slave >= 0x00):
             del self.__slaves[slave]
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else:
+            raise NoSuchSlaveException('slave index: {} out of range'.format(slave))
 
     def __getitem__(self, slave):
         ''' Used to get access to a slave context
@@ -149,4 +152,5 @@ class ModbusServerContext(object):
         if self.single: slave = Defaults.UnitId
         if slave in self.__slaves:
             return self.__slaves.get(slave)
-        else: raise NoSuchSlaveException('slave index[%d] out of range' % slave)
+        else:
+            raise NoSuchSlaveException("slave - {} does not exist, or is out of range".format(slave))

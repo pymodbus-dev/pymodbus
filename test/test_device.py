@@ -93,7 +93,7 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testModbusDeviceIdentificationSummary(self):
         ''' Test device identification summary creation '''
         summary  = sorted(self.ident.summary().values())
-        expected = sorted(self.info.values()[:-3]) # remove private
+        expected = sorted(list(self.info.values())[:-3]) # remove private
         self.assertEqual(summary, expected)
 
     def testModbusDeviceIdentificationSet(self):
@@ -172,12 +172,12 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testModbusControlBlockDelimiter(self):
         ''' Tests the MCB delimiter setting methods '''
-        self.control.Delimiter = '\r'
-        self.assertEqual(self.control.Delimiter, '\r')
+        self.control.Delimiter = b'\r'
+        self.assertEqual(self.control.Delimiter, b'\r')
         self.control.Delimiter = '='
-        self.assertEqual(self.control.Delimiter, '=')
+        self.assertEqual(self.control.Delimiter, b'=')
         self.control.Delimiter = 61
-        self.assertEqual(self.control.Delimiter, '=')
+        self.assertEqual(self.control.Delimiter, b'=')
 
     def testModbusControlBlockDiagnostic(self):
         ''' Tests the MCB delimiter setting methods '''
@@ -242,7 +242,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.control.addEvent(event)
         self.assertEqual(self.control.Events, [event])
         packet = self.control.getEvents()
-        self.assertEqual(packet, '\x40')
+        self.assertEqual(packet, b'\x40')
 
     def testModbusPlusStatistics(self):
         ''' Test device identification reading '''
@@ -265,7 +265,8 @@ class SimpleDataStoreTest(unittest.TestCase):
              [0,0,0,0,0,0,0,0],[0,0],[0],[0,0,0,0,0,0,0,0],
              [0,0,0,0,0,0,0,0],[0],[0],[0,0],[0],[0],[0],[0],[0,0],
              [0],[0],[0],[0],[0],[0,0],[0],[0,0,0,0,0,0,0,0]]
-        self.assertEqual(summary, statistics.summary())
+        stats_summary = [x for x in statistics.summary()]
+        self.assertEqual(sorted(summary), sorted(stats_summary))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
 
 #---------------------------------------------------------------------------#

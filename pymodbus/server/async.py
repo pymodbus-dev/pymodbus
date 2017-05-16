@@ -3,7 +3,6 @@ Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 '''
-import traceback
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
@@ -17,6 +16,9 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.internal.ptwisted import InstallManagementConsole
+from pymodbus.compat import byte2int
+from twisted.internet import reactor
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -54,7 +56,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         :param data: The data sent by the client
         '''
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(" ".join([hex(ord(x)) for x in data]))
+            _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         if not self.factory.control.ListenOnly:
             self.framer.processIncomingPacket(data, self._execute)
 
@@ -66,12 +68,12 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException, ex:
-            _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
+        except NoSuchSlaveException as ex:
+            _logger.debug("requested slave does not exist: %s" % request.unit_id )
             if self.factory.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
@@ -171,12 +173,12 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException, ex:
-            _logger.debug("requested slave does not exist: %s; %s", ex, traceback.format_exc() )
+        except NoSuchSlaveException as ex:
+            _logger.debug("requested slave does not exist: %s" % request.unit_id )
             if self.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception, ex:
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
@@ -215,7 +217,6 @@ def StartTcpServer(context, identity=None, address=None, console=False, **kwargs
     framer  = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     if console:
-        from pymodbus.internal.ptwisted import InstallManagementConsole
         InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
@@ -264,7 +265,6 @@ def StartSerialServer(context, identity=None,
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     if console:
-        from pymodbus.internal.ptwisted import InstallManagementConsole
         InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)

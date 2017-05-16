@@ -38,6 +38,13 @@ class ReadRegistersRequestBase(ModbusRequest):
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
+        :return: 
+        """
+        return 1 + 1 + 2 * self.count
+
     def __str__(self):
         ''' Returns a string representation of the instance
 

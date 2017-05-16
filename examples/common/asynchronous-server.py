@@ -31,7 +31,7 @@ log.setLevel(logging.DEBUG)
 # initialize your data store
 #---------------------------------------------------------------------------# 
 # The datastores only respond to the addresses that they are initialized to.
-# Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
+# Therefore, if you initialize a DataBlock to addresses from 0x00 to 0xFF, a
 # request to 0x100 will respond with an invalid address exception. This is
 # because many devices exhibit this kind of behavior (but not all)::
 #
@@ -103,7 +103,7 @@ identity.MajorMinorRevision = '1.0'
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-StartTcpServer(context, identity=identity, address=("localhost", 502))
+StartTcpServer(context, identity=identity, address=("localhost", 5020))
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusRtuFramer)
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusAsciiFramer)

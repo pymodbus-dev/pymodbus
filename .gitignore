@@ -4,6 +4,11 @@ build/
 dist/
 pymodbus.egg-info/
 .coverage
+<<<<<<< HEAD
 .vscode
 .idea
 .noseids
+=======
+.idea/
+
+>>>>>>> 7f1153560c70941a73c7c74725e61b380096c0a7

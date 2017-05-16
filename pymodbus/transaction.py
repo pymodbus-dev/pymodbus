@@ -6,7 +6,7 @@ import struct
 import socket
 from binascii import b2a_hex, a2b_hex
 
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -49,6 +49,27 @@ class ModbusTransactionManager(object):
         self.client = client
         self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
         self.retries = kwargs.get('retries', Defaults.Retries)
+        if client:
+            self._set_adu_size()
+
+    def _set_adu_size(self):
+        # base ADU size of modbus frame in bytes
+        if isinstance(self.client.framer, ModbusSocketFramer):
+            self.base_adu_size = 7 # tid(2), pid(2), length(2), uid(1)
+        elif isinstance(self.client.framer, ModbusRtuFramer):
+            self.base_adu_size = 3 # address(1), CRC(2)
+        elif isinstance(self.client.framer, ModbusAsciiFramer):
+            self.base_adu_size = 4 # Address(2), LRC(2)
+        elif isinstance(self.client.framer, ModbusBinaryFramer):
+            self.base_adu_size = 3 #, Address(1), CRC(2)
+        else:
+            self.base_adu_size = -1
+
+    def _calculate_response_length(self, expected_pdu_size):
+        if self.base_adu_size == -1:
+            return 1024
+        else:
+            return self.base_adu_size + expected_pdu_size
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -57,6 +78,11 @@ class ModbusTransactionManager(object):
         retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
+        if hasattr(request, "get_response_pdu_size"):
+            response_pdu_size = request.get_response_pdu_size()
+            expected_response_length = self._calculate_response_length(response_pdu_size)
+        else:
+            expected_response_length = 1024
 
         while retries > 0:
             try:
@@ -65,7 +91,9 @@ class ModbusTransactionManager(object):
                 # I need to fix this to read the header and the result size,
                 # as this may not read the full result set, but right now
                 # it should be fine...
-                result = self.client._recv(1024)
+
+                result = self.client._recv(expected_response_length)
+                # result = self.client._recv(1024)
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
@@ -78,6 +106,7 @@ class ModbusTransactionManager(object):
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
         return self.getTransaction(request.transaction_id)
+
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
@@ -344,15 +373,46 @@ class ModbusSocketFramer(IModbusFramer):
         :param callback: The function to send results to
         '''
         self.addToFrame(data)
-        while self.isFrameReady():
-            if self.checkFrame():
-                result = self.decoder.decode(self.getFrame())
-                if result is None:
-                    raise ModbusIOException("Unable to decode request")
-                self.populateResult(result)
-                self.advanceFrame()
-                callback(result)  # defer or push to a thread?
-            else: break
+        while True:
+            if self.isFrameReady():
+                if self.checkFrame():
+                    self._process(callback)
+                else: self.resetFrame()
+            else:
+                if len(self.__buffer):
+                    # Possible error ???
+                    if self.__header['len'] < 2:
+                        self._process(callback, error=True)
+                break
+
+    def _process(self, callback, error=False):
+        """
+        Process incoming packets irrespective error condition 
+        """
+        data = self.getRawFrame() if error else self.getFrame()
+        result = self.decoder.decode(data)
+        if result is None:
+            raise ModbusIOException("Unable to decode request")
+        self.populateResult(result)
+        self.advanceFrame()
+        callback(result)  # defer or push to a thread?
+
+    def resetFrame(self):
+        ''' Reset the entire message frame.
+        This allows us to skip ovver errors that may be in the stream.
+        It is hard to know if we are simply out of sync or if there is
+        an error in the stream as we have no way to check the start or
+        end of the message (python just doesn't have the resolution to
+        check for millisecond delays).
+        '''
+        self.__buffer = ''
+        self.__header = {}
+
+    def getRawFrame(self):
+        """
+        Returns the complete buffer 
+        """
+        return self.__buffer
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -442,7 +502,11 @@ class ModbusRtuFramer(IModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         '''
-        self.__buffer = self.__buffer[self.__header['len']:]
+        try:
+            self.__buffer = self.__buffer[self.__header['len']:]
+        except KeyError:
+            #   Error response, no header len found
+            self.resetFrame()
         self.__header = {}
 
     def resetFrame(self):
@@ -531,15 +595,21 @@ class ModbusRtuFramer(IModbusFramer):
         :param callback: The function to send results to
         '''
         self.addToFrame(data)
-        while self.isFrameReady():
-            if self.checkFrame():
-                result = self.decoder.decode(self.getFrame())
-                if result is None:
-                    raise ModbusIOException("Unable to decode response")
-                self.populateResult(result)
-                self.advanceFrame()
-                callback(result)  # defer or push to a thread?
-            else: self.resetFrame() # clear possible errors
+        while True:
+            if self.isFrameReady():
+                if self.checkFrame():
+                    self._process(callback)
+                else:
+                    # Could be an error response
+                    if len(self.__buffer):
+                        # Possible error ???
+                       self._process(callback, error=True)
+            else:
+                if len(self.__buffer):
+                    # Possible error ???
+                    if self.__header.get('len', 0) < 2:
+                        self._process(callback, error=True)
+                break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -552,6 +622,25 @@ class ModbusRtuFramer(IModbusFramer):
             message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
         return packet
+
+    def _process(self, callback, error=False):
+        """
+        Process incoming packets irrespective error condition
+        """
+        data = self.getRawFrame() if error else self.getFrame()
+        result = self.decoder.decode(data)
+        if result is None:
+            raise ModbusIOException("Unable to decode request")
+        self.populateResult(result)
+        self.advanceFrame()
+        callback(result)  # defer or push to a thread?
+
+    def getRawFrame(self):
+        """
+        Returns the complete buffer
+        """
+        return self.__buffer
+
 
 
 #---------------------------------------------------------------------------#

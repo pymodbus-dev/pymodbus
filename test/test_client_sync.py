@@ -2,7 +2,7 @@
 import unittest
 import socket
 import serial
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from twisted.test import test_protocols
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
@@ -22,6 +22,7 @@ class mockSocket(object):
     def write(self, msg): return len(msg)
     def recvfrom(self, size): return ['\x00'*size]
     def sendto(self, msg, *args): return len(msg)
+    def in_waiting(self): return None
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -229,12 +230,15 @@ class SynchronousClientTest(unittest.TestCase):
             client = ModbusSerialClient()
             self.assertFalse(client.connect())
 
-    def testSerialClientSend(self):
+    @patch("serial.Serial")
+    def testSerialClientSend(self, mock_serial):
         ''' Test the serial client send method'''
+        mock_serial.in_waiting.return_value = None
+        mock_serial.write = lambda x: len(x)
         client = ModbusSerialClient()
         self.assertRaises(ConnectionException, lambda: client._send(None))
-
-        client.socket = mockSocket()
+        # client.connect()
+        client.socket = mock_serial
         self.assertEqual(0, client._send(None))
         self.assertEqual(4, client._send('1234'))
 

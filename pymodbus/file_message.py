@@ -31,8 +31,10 @@ class FileRecord(object):
         self.file_number     = kwargs.get('file_number', 0x00)
         self.record_number   = kwargs.get('record_number', 0x00)
         self.record_data     = kwargs.get('record_data', '')
-        self.record_length   = kwargs.get('record_length',   len(self.record_data) / 2)
-        self.response_length = kwargs.get('response_length', len(self.record_data) + 1)
+        self.record_length   = kwargs.get('record_length',
+                                          len(self.record_data) / 2)
+        self.response_length = kwargs.get('response_length',
+                                          len(self.record_data) + 1)
 
     def __eq__(self, relf):
         ''' Compares the left object to the right
@@ -286,6 +288,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     '''
     function_code = 0x16
     _rtu_frame_size = 10
+    
 
     def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000, **kwargs):
         ''' Initializes a new instance

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.datastore import *
-from pymodbus.exceptions import *
+from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.compat import iteritems
 
 class ModbusServerSingleContextTest(unittest.TestCase):
     ''' This is the unittest for the pymodbus.datastore.ModbusServerContext
@@ -19,7 +20,7 @@ class ModbusServerSingleContextTest(unittest.TestCase):
 
     def testSingleContextGets(self):
         ''' Test getting on a single context '''
-        for id in xrange(0, 0xff):
+        for id in range(0, 0xff):
             self.assertEqual(self.slave, self.context[id])
 
     def testSingleContextDeletes(self):
@@ -54,7 +55,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def setUp(self):
         ''' Sets up the test environment '''
-        self.slaves  = dict((id, ModbusSlaveContext()) for id in xrange(10))
+        self.slaves  = dict((id, ModbusSlaveContext()) for id in range(10))
         self.context = ModbusServerContext(slaves=self.slaves, single=False)
 
     def tearDown(self):
@@ -63,7 +64,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def testMultipleContextGets(self):
         ''' Test getting on multiple context '''
-        for id in xrange(0, 10):
+        for id in range(0, 10):
             self.assertEqual(self.slaves[id], self.context[id])
 
     def testMultipleContextDeletes(self):
@@ -84,10 +85,10 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def testMultipleContextSet(self):
         ''' Test a setting multiple slave contexts '''
-        slaves = dict((id, ModbusSlaveContext()) for id in xrange(10))
-        for id, slave in slaves.iteritems():
+        slaves = dict((id, ModbusSlaveContext()) for id in range(10))
+        for id, slave in iteritems(slaves):
             self.context[id] = slave
-        for id, slave in slaves.iteritems():
+        for id, slave in iteritems(slaves):
             actual = self.context[id]
             self.assertEqual(slave, actual)
 

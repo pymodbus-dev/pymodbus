@@ -5,7 +5,7 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
-import struct
+from pymodbus.compat import int2byte, byte2int
 
 
 #---------------------------------------------------------------------------#
@@ -58,18 +58,18 @@ def pack_bitstring(bits):
         bits   = [False, True, False, True]
         result = pack_bitstring(bits)
     '''
-    ret = ''
+    ret = b''
     i = packed = 0
     for bit in bits:
         if bit: packed += 128
         i += 1
         if i == 8:
-            ret += chr(packed)
+            ret += int2byte(packed)
             i = packed = 0
         else: packed >>= 1
     if i > 0 and i < 8:
         packed >>= (7 - i)
-        ret += chr(packed)
+        ret += int2byte(packed)
     return ret
 
 
@@ -86,7 +86,7 @@ def unpack_bitstring(string):
     byte_count = len(string)
     bits = []
     for byte in range(byte_count):
-        value = ord(string[byte])
+        value = byte2int(string[byte])
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
@@ -128,7 +128,7 @@ def computeCRC(data):
     '''
     crc = 0xffff
     for a in data:
-        idx = __crc16_table[(crc ^ ord(a)) & 0xff];
+        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff];
         crc = ((crc >> 8) & 0xff) ^ idx
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped
@@ -154,7 +154,7 @@ def computeLRC(data):
     :returns: The calculated LRC
 
     '''
-    lrc = sum(ord(a) for a in data) & 0xff
+    lrc = sum(byte2int(a) for a in data) & 0xff
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff
 
@@ -169,10 +169,10 @@ def checkLRC(data, check):
     return computeLRC(data) == check
 
 
-def rtuFrameSize(buffer, byte_count_pos):
+def rtuFrameSize(data, byte_count_pos):
     ''' Calculates the size of the frame based on the byte count.
 
-    :param buffer: The buffer containing the frame.
+    :param data: The buffer containing the frame.
     :param byte_count_pos: The index of the byte count in the buffer.
     :returns: The size of the frame.
 
@@ -189,7 +189,7 @@ def rtuFrameSize(buffer, byte_count_pos):
     field, and finally increment the sum by three (one byte for the
     byte count field, two for the CRC).
     '''
-    return struct.unpack('>B', buffer[byte_count_pos])[0] + byte_count_pos + 3
+    return byte2int(data[byte_count_pos]) + byte_count_pos + 3
 
 #---------------------------------------------------------------------------#
 # Exported symbols

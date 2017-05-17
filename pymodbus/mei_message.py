@@ -132,7 +132,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         for (object_id, data) in iteritems(self.information):
             packet += struct.pack('>BB', object_id, len(data))
-            packet += data
+            packet += data.encode()
         return packet
 
     def decode(self, data):

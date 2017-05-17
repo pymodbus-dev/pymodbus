@@ -19,7 +19,7 @@ log.setLevel(logging.INFO)
 #---------------------------------------------------------------------------# 
 # We are going to use a simple client to send our requests
 #---------------------------------------------------------------------------# 
-client = ModbusClient('127.0.0.1')
+client = ModbusClient('127.0.0.1', port=5020)
 client.connect()
 
 #---------------------------------------------------------------------------# 
@@ -43,7 +43,7 @@ builder.add_8bit_int(0x12)
 builder.add_bits([0,1,0,1,1,0,1,0])
 payload = builder.build()
 address = 0x01
-result  = client.write_registers(address, payload, skip_encode=True)
+result  = client.write_registers(address, payload, skip_encode=True, unit=1)
 
 #---------------------------------------------------------------------------# 
 # If you need to decode a collection of registers in a weird layout, the
@@ -60,7 +60,7 @@ result  = client.write_registers(address, payload, skip_encode=True)
 #---------------------------------------------------------------------------# 
 address = 0x01
 count   = 8
-result  = client.read_input_registers(address, count)
+result  = client.read_input_registers(address, count,  unit=1)
 decoder = BinaryPayloadDecoder.fromRegisters(result.registers, endian=Endian.Little)
 decoded = {
     'string': decoder.decode_string(8),

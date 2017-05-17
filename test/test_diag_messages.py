@@ -15,48 +15,48 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def setUp(self):
         self.requests = [
-            #(DiagnosticStatusRequest,                      '\x00\x00\x00\x00'),
-            #(DiagnosticStatusSimpleRequest,                '\x00\x00\x00\x00'),
-            (RestartCommunicationsOptionRequest,            '\x00\x01\x00\x00', '\x00\x01\xff\x00'),
-            (ReturnDiagnosticRegisterRequest,               '\x00\x02\x00\x00', '\x00\x02\x00\x00'),
-            (ChangeAsciiInputDelimiterRequest,              '\x00\x03\x00\x00', '\x00\x03\x00\x00'),
-            (ForceListenOnlyModeRequest,                    '\x00\x04\x00\x00', '\x00\x04'),
-            (ReturnQueryDataRequest,                        '\x00\x00\x00\x00', '\x00\x00\x00\x00'),
-            (ClearCountersRequest,                          '\x00\x0a\x00\x00', '\x00\x0a\x00\x00'),
-            (ReturnBusMessageCountRequest,                  '\x00\x0b\x00\x00', '\x00\x0b\x00\x00'),
-            (ReturnBusCommunicationErrorCountRequest,       '\x00\x0c\x00\x00', '\x00\x0c\x00\x00'),
-            (ReturnBusExceptionErrorCountRequest,           '\x00\x0d\x00\x00', '\x00\x0d\x00\x00'),
-            (ReturnSlaveMessageCountRequest,                '\x00\x0e\x00\x00', '\x00\x0e\x00\x00'),
-            (ReturnSlaveNoResponseCountRequest,             '\x00\x0f\x00\x00', '\x00\x0f\x00\x00'),
-            (ReturnSlaveNAKCountRequest,                    '\x00\x10\x00\x00', '\x00\x10\x00\x00'),
-            (ReturnSlaveBusyCountRequest,                   '\x00\x11\x00\x00', '\x00\x11\x00\x00'),
-            (ReturnSlaveBusCharacterOverrunCountRequest,    '\x00\x12\x00\x00', '\x00\x12\x00\x00'),
-            (ReturnIopOverrunCountRequest,                  '\x00\x13\x00\x00', '\x00\x13\x00\x00'),
-            (ClearOverrunCountRequest,                      '\x00\x14\x00\x00', '\x00\x14\x00\x00'),
-            (GetClearModbusPlusRequest,                     '\x00\x15\x00\x00', '\x00\x15' + '\x00\x00' * 55),
+            #(DiagnosticStatusRequest,                      b'\x00\x00\x00\x00'),
+            #(DiagnosticStatusSimpleRequest,                b'\x00\x00\x00\x00'),
+            (RestartCommunicationsOptionRequest,            b'\x00\x01\x00\x00', b'\x00\x01\xff\x00'),
+            (ReturnDiagnosticRegisterRequest,               b'\x00\x02\x00\x00', b'\x00\x02\x00\x00'),
+            (ChangeAsciiInputDelimiterRequest,              b'\x00\x03\x00\x00', b'\x00\x03\x00\x00'),
+            (ForceListenOnlyModeRequest,                    b'\x00\x04\x00\x00', b'\x00\x04'),
+            (ReturnQueryDataRequest,                        b'\x00\x00\x00\x00', b'\x00\x00\x00\x00'),
+            (ClearCountersRequest,                          b'\x00\x0a\x00\x00', b'\x00\x0a\x00\x00'),
+            (ReturnBusMessageCountRequest,                  b'\x00\x0b\x00\x00', b'\x00\x0b\x00\x00'),
+            (ReturnBusCommunicationErrorCountRequest,       b'\x00\x0c\x00\x00', b'\x00\x0c\x00\x00'),
+            (ReturnBusExceptionErrorCountRequest,           b'\x00\x0d\x00\x00', b'\x00\x0d\x00\x00'),
+            (ReturnSlaveMessageCountRequest,                b'\x00\x0e\x00\x00', b'\x00\x0e\x00\x00'),
+            (ReturnSlaveNoResponseCountRequest,             b'\x00\x0f\x00\x00', b'\x00\x0f\x00\x00'),
+            (ReturnSlaveNAKCountRequest,                    b'\x00\x10\x00\x00', b'\x00\x10\x00\x00'),
+            (ReturnSlaveBusyCountRequest,                   b'\x00\x11\x00\x00', b'\x00\x11\x00\x00'),
+            (ReturnSlaveBusCharacterOverrunCountRequest,    b'\x00\x12\x00\x00', b'\x00\x12\x00\x00'),
+            (ReturnIopOverrunCountRequest,                  b'\x00\x13\x00\x00', b'\x00\x13\x00\x00'),
+            (ClearOverrunCountRequest,                      b'\x00\x14\x00\x00', b'\x00\x14\x00\x00'),
+            (GetClearModbusPlusRequest,                     b'\x00\x15\x00\x00', b'\x00\x15' + b'\x00\x00' * 55),
         ]
 
         self.responses = [
-            #(DiagnosticStatusResponse,                     '\x00\x00\x00\x00'),
-            #(DiagnosticStatusSimpleResponse,               '\x00\x00\x00\x00'),
-            (ReturnQueryDataResponse,                      '\x00\x00\x00\x00'),
-            (RestartCommunicationsOptionResponse,          '\x00\x01\x00\x00'),
-            (ReturnDiagnosticRegisterResponse,             '\x00\x02\x00\x00'),
-            (ChangeAsciiInputDelimiterResponse,            '\x00\x03\x00\x00'),
-            (ForceListenOnlyModeResponse,                  '\x00\x04'),
-            (ReturnQueryDataResponse,                      '\x00\x00\x00\x00'),
-            (ClearCountersResponse,                        '\x00\x0a\x00\x00'),
-            (ReturnBusMessageCountResponse,                '\x00\x0b\x00\x00'),
-            (ReturnBusCommunicationErrorCountResponse,     '\x00\x0c\x00\x00'),
-            (ReturnBusExceptionErrorCountResponse,         '\x00\x0d\x00\x00'),
-            (ReturnSlaveMessageCountResponse,              '\x00\x0e\x00\x00'),
-            (ReturnSlaveNoReponseCountResponse,            '\x00\x0f\x00\x00'),
-            (ReturnSlaveNAKCountResponse,                  '\x00\x10\x00\x00'),
-            (ReturnSlaveBusyCountResponse,                 '\x00\x11\x00\x00'),
-            (ReturnSlaveBusCharacterOverrunCountResponse,  '\x00\x12\x00\x00'),
-            (ReturnIopOverrunCountResponse,                '\x00\x13\x00\x00'),
-            (ClearOverrunCountResponse,                    '\x00\x14\x00\x00'),
-            (GetClearModbusPlusResponse,                   '\x00\x15' + '\x00\x00' * 55),
+            #(DiagnosticStatusResponse,                     b'\x00\x00\x00\x00'),
+            #(DiagnosticStatusSimpleResponse,               b'\x00\x00\x00\x00'),
+            (ReturnQueryDataResponse,                      b'\x00\x00\x00\x00'),
+            (RestartCommunicationsOptionResponse,          b'\x00\x01\x00\x00'),
+            (ReturnDiagnosticRegisterResponse,             b'\x00\x02\x00\x00'),
+            (ChangeAsciiInputDelimiterResponse,            b'\x00\x03\x00\x00'),
+            (ForceListenOnlyModeResponse,                  b'\x00\x04'),
+            (ReturnQueryDataResponse,                      b'\x00\x00\x00\x00'),
+            (ClearCountersResponse,                        b'\x00\x0a\x00\x00'),
+            (ReturnBusMessageCountResponse,                b'\x00\x0b\x00\x00'),
+            (ReturnBusCommunicationErrorCountResponse,     b'\x00\x0c\x00\x00'),
+            (ReturnBusExceptionErrorCountResponse,         b'\x00\x0d\x00\x00'),
+            (ReturnSlaveMessageCountResponse,              b'\x00\x0e\x00\x00'),
+            (ReturnSlaveNoReponseCountResponse,            b'\x00\x0f\x00\x00'),
+            (ReturnSlaveNAKCountResponse,                  b'\x00\x10\x00\x00'),
+            (ReturnSlaveBusyCountResponse,                 b'\x00\x11\x00\x00'),
+            (ReturnSlaveBusCharacterOverrunCountResponse,  b'\x00\x12\x00\x00'),
+            (ReturnIopOverrunCountResponse,                b'\x00\x13\x00\x00'),
+            (ClearOverrunCountResponse,                    b'\x00\x14\x00\x00'),
+            (GetClearModbusPlusResponse,                   b'\x00\x15' + b'\x00\x00' * 55),
         ]
 
     def tearDown(self):
@@ -73,10 +73,10 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testDiagnosticSimpleRequests(self):
         ''' Testing diagnostic request messages encoding '''
-        request = DiagnosticStatusSimpleRequest('\x12\x34')
+        request = DiagnosticStatusSimpleRequest(b'\x12\x34')
         request.sub_function_code = 0x1234
         self.assertRaises(NotImplementedException, lambda: request.execute())
-        self.assertEqual(request.encode(), '\x12\x34\x12\x34')
+        self.assertEqual(request.encode(), b'\x12\x34\x12\x34')
 
         response = DiagnosticStatusSimpleResponse(None)
 
@@ -99,34 +99,34 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testDiagnosticExecute(self):
         ''' Testing diagnostic message execution '''
-        for msg,enc,exe in self.requests:
-            self.assertEqual(msg().execute().encode(), exe)
+        for message, encoded, executed in self.requests:
+            self.assertEqual(message().execute().encode(), executed)
 
     def testReturnQueryDataRequest(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataRequest([0x0000]*2)
-        self.assertEqual(message.encode(), '\x00\x00\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00');
         message = ReturnQueryDataRequest(0x0000)
-        self.assertEqual(message.encode(), '\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00');
 
     def testReturnQueryDataResponse(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataResponse([0x0000]*2)
-        self.assertEqual(message.encode(), '\x00\x00\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00');
         message = ReturnQueryDataResponse(0x0000)
-        self.assertEqual(message.encode(), '\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00');
 
     def testRestartCommunicationsOption(self):
         ''' Testing diagnostic message execution '''
         request = RestartCommunicationsOptionRequest(True);
-        self.assertEqual(request.encode(), '\x00\x01\xff\x00')
+        self.assertEqual(request.encode(), b'\x00\x01\xff\x00')
         request = RestartCommunicationsOptionRequest(False);
-        self.assertEqual(request.encode(), '\x00\x01\x00\x00')
+        self.assertEqual(request.encode(), b'\x00\x01\x00\x00')
 
         response = RestartCommunicationsOptionResponse(True);
-        self.assertEqual(response.encode(), '\x00\x01\xff\x00')
+        self.assertEqual(response.encode(), b'\x00\x01\xff\x00')
         response = RestartCommunicationsOptionResponse(False);
-        self.assertEqual(response.encode(), '\x00\x01\x00\x00')
+        self.assertEqual(response.encode(), b'\x00\x01\x00\x00')
 
     def testGetClearModbusPlusRequestExecute(self):
         ''' Testing diagnostic message execution '''

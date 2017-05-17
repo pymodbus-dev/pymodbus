@@ -12,8 +12,9 @@ import unittest
 from pymodbus.bit_write_message import *
 from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
+from pymodbus.compat import iteritems
 
-from modbus_mocks import MockContext, FakeList
+from .modbus_mocks import MockContext, FakeList
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -37,28 +38,28 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def testBitWriteBaseRequests(self):
         messages = {
-            WriteSingleCoilRequest(1, 0xabcd)      : '\x00\x01\xff\x00',
-            WriteSingleCoilResponse(1, 0xabcd)     : '\x00\x01\xff\x00',
-            WriteMultipleCoilsRequest(1, [True]*5) : '\x00\x01\x00\x05\x01\x1f',
-            WriteMultipleCoilsResponse(1, 5)       : '\x00\x01\x00\x05',
+            WriteSingleCoilRequest(1, 0xabcd)      : b'\x00\x01\xff\x00',
+            WriteSingleCoilResponse(1, 0xabcd)     : b'\x00\x01\xff\x00',
+            WriteMultipleCoilsRequest(1, [True]*5) : b'\x00\x01\x00\x05\x01\x1f',
+            WriteMultipleCoilsResponse(1, 5)       : b'\x00\x01\x00\x05',
         }
-        for request, expected in messages.iteritems():
+        for request, expected in iteritems(messages):
             self.assertEqual(request.encode(), expected)
 
     def testWriteMultipleCoilsRequest(self):
         request = WriteMultipleCoilsRequest(1, [True]*5)
-        request.decode('\x00\x01\x00\x05\x01\x1f')
+        request.decode(b'\x00\x01\x00\x05\x01\x1f')
         self.assertEqual(request.byte_count, 1)
         self.assertEqual(request.address, 1)
         self.assertEqual(request.values, [True]*5)
 
     def testInvalidWriteMultipleCoilsRequest(self):
         request = WriteMultipleCoilsRequest(1, None)
-        self.assertEquals(request.values, [])
+        self.assertEqual(request.values, [])
 
     def testWriteSingleCoilRequestEncode(self):
         request = WriteSingleCoilRequest(1, False)
-        self.assertEquals(request.encode(), '\x00\x01\x00\x00')
+        self.assertEqual(request.encode(), b'\x00\x01\x00\x00')
 
     def testWriteSingleCoilExecute(self):
         context = MockContext(False, default=True)
@@ -68,12 +69,12 @@ class ModbusBitMessageTests(unittest.TestCase):
 
         context.valid = True
         result = request.execute(context)
-        self.assertEqual(result.encode(), '\x00\x02\xff\x00')
+        self.assertEqual(result.encode(), b'\x00\x02\xff\x00')
 
         context = MockContext(True, default=False)
         request = WriteSingleCoilRequest(2, False)
         result = request.execute(context)
-        self.assertEqual(result.encode(), '\x00\x02\x00\x00')
+        self.assertEqual(result.encode(), b'\x00\x02\x00\x00')
 
     def testWriteMultipleCoilsExecute(self):
         context = MockContext(False)
@@ -97,11 +98,11 @@ class ModbusBitMessageTests(unittest.TestCase):
         # validated request
         context.valid = True
         result  = request.execute(context)
-        self.assertEqual(result.encode(), '\x00\x02\x00\x04')
+        self.assertEqual(result.encode(), b'\x00\x02\x00\x04')
 
     def testWriteMultipleCoilsResponse(self):
         response = WriteMultipleCoilsResponse()
-        response.decode('\x00\x80\x00\x08')
+        response.decode(b'\x00\x80\x00\x08')
         self.assertEqual(response.address, 0x80)
         self.assertEqual(response.count, 0x08)
 

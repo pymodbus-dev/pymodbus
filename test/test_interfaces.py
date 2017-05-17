@@ -23,7 +23,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         ''' Test that the singleton interface works '''
         first  = _SingleInstance()
         second = _SingleInstance()
-        self.assertEquals(first, second)
+        self.assertEqual(first, second)
 
     def testModbusDecoderInterface(self):
         ''' Test that the base class isn't implemented '''

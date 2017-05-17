@@ -81,7 +81,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         _logger.debug("Client disconnected from modbus server: %s" % reason)
         self._connected = False
-        for tid in self.transaction:
+        for tid in list(self.transaction):
             self.transaction.getTransaction(tid).errback(Failure(
                 ConnectionException('Connection lost during request')))
 

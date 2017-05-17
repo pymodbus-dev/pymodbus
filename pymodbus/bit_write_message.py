@@ -83,6 +83,13 @@ class WriteSingleCoilRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
+        :return: 
+        """
+        return 1 + 2 + 2
+
     def __str__(self):
         ''' Returns a string representation of the instance
 
@@ -148,7 +155,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     function_code = 15
     _rtu_byte_count_pos = 6
-
+    
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 
@@ -160,7 +167,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         if not values: values = []
         elif not hasattr(values, '__iter__'): values = [values]
         self.values  = values
-        self.byte_count = (len(self.values) + 7) / 8
+        self.byte_count = (len(self.values) + 7) // 8
 
     def encode(self):
         ''' Encodes write coils request
@@ -168,7 +175,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: The byte encoded message
         '''
         count   = len(self.values)
-        self.byte_count = (count + 7) / 8
+        self.byte_count = (count + 7) // 8
         packet  = struct.pack('>HHB', self.address, count, self.byte_count)
         packet += pack_bitstring(self.values)
         return packet
@@ -191,7 +198,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         count = len(self.values)
         if not (1 <= count <= 0x07b0):
             return self.doException(merror.IllegalValue)
-        if (self.byte_count != (count + 7) / 8):
+        if (self.byte_count != (count + 7) // 8):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)

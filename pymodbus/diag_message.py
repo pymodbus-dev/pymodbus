@@ -47,6 +47,8 @@ class DiagnosticStatusRequest(ModbusRequest):
         packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
+                packet += self.message.encode()
+            elif isinstance(self.message, bytes):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:
@@ -61,6 +63,16 @@ class DiagnosticStatusRequest(ModbusRequest):
         :param data: The data to decode into the function code
         '''
         self.sub_function_code, self.message = struct.unpack('>HH', data)
+    
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
+        :return: 
+        """
+        if not isinstance(self.message,list):
+            self.message = [self.message]
+        return 1 + 2 + 2 * len(self.message)
+
 
 
 class DiagnosticStatusResponse(ModbusResponse):
@@ -91,6 +103,8 @@ class DiagnosticStatusResponse(ModbusResponse):
         packet = struct.pack('>H', self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
+                packet += self.message.encode()
+            elif isinstance(self.message, bytes):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:
@@ -171,7 +185,8 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, **kwargs)
         if isinstance(message, list):
             self.message = message
-        else: self.message = [message]
+        else:
+            self.message = [message]
 
     def execute(self, *args):
         ''' Executes the loopback request (builds the response)
@@ -231,7 +246,6 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         '''
         #if _MCB.ListenOnly:
         return RestartCommunicationsOptionResponse(self.message)
-
 
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
     '''

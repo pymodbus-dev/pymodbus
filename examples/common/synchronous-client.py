@@ -18,7 +18,7 @@ the guard construct that is available in python 2.5 and up::
 #---------------------------------------------------------------------------# 
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 #from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-#from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+# from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -55,9 +55,9 @@ log.setLevel(logging.DEBUG)
 #
 #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
 #---------------------------------------------------------------------------# 
-client = ModbusClient('localhost', port=502)
+client = ModbusClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
-#client = ModbusClient(method='rtu', port='/dev/pts/2', timeout=1)
+# client = ModbusClient(method='rtu', port='/dev/ttyp0', timeout=1)
 client.connect()
 
 #---------------------------------------------------------------------------# 
@@ -67,7 +67,7 @@ client.connect()
 # individual request. This can be done by specifying the `unit` parameter
 # which defaults to `0x00`
 #---------------------------------------------------------------------------# 
-rr = client.read_coils(1, 1, unit=0x02)
+rr = client.read_coils(1, 1, unit=0x01)
 
 #---------------------------------------------------------------------------# 
 # example requests
@@ -81,30 +81,37 @@ rr = client.read_coils(1, 1, unit=0x02)
 # Keep both of these cases in mind when testing as the following will
 # _only_ pass with the supplied async modbus server (script supplied).
 #---------------------------------------------------------------------------# 
-rq = client.write_coil(1, True)
-rr = client.read_coils(1,1)
+rq = client.write_coil(0, True, unit=1)
+rr = client.read_coils(0, 1, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rr.bits[0] == True)          # test the expected value
 
-rq = client.write_coils(1, [True]*8)
-rr = client.read_coils(1,8)
+rq = client.write_coils(1, [True]*8, unit=1)
+rr = client.read_coils(1, 8, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rr.bits == [True]*8)         # test the expected value
 
-rq = client.write_coils(1, [False]*8)
-rr = client.read_discrete_inputs(1,8)
+rq = client.write_coils(1, [False]*8, unit=1)
+rr = client.read_coils(1, 8, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rr.bits == [False]*8)         # test the expected value
 
-rq = client.write_register(1, 10)
-rr = client.read_holding_registers(1,1)
+
+rr = client.read_discrete_inputs(0, 8, unit=1)
+assert(rq.function_code < 0x80)     # test that we are not an error
+
+rq = client.write_register(1, 10, unit=1)
+rr = client.read_holding_registers(1, 1, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rr.registers[0] == 10)       # test the expected value
 
-rq = client.write_registers(1, [10]*8)
-rr = client.read_input_registers(1,8)
+rq = client.write_registers(1, [10]*8, unit=1)
+rr = client.read_holding_registers(1, 8, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rr.registers == [10]*8)      # test the expected value
+
+rr = client.read_input_registers(1, 8, unit=1)
+assert(rq.function_code < 0x80)     # test that we are not an error
 
 arguments = {
     'read_address':    1,
@@ -112,8 +119,8 @@ arguments = {
     'write_address':   1,
     'write_registers': [20]*8,
 }
-rq = client.readwrite_registers(**arguments)
-rr = client.read_input_registers(1,8)
+rq = client.readwrite_registers(unit=1, **arguments)
+rr = client.read_holding_registers(1, 8, unit=1)
 assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rq.registers == [20]*8)      # test the expected value
 assert(rr.registers == [20]*8)      # test the expected value

@@ -13,13 +13,15 @@ import logging, os
 from time import time
 from multiprocessing import log_to_stderr
 from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client.sync import ModbusSerialClient
 
 #---------------------------------------------------------------------------# 
 # choose between threads or processes
 #---------------------------------------------------------------------------# 
 #from multiprocessing import Process as Worker
 from threading import Thread as Worker
-
+from threading import Lock
+_thread_lock = Lock()
 #---------------------------------------------------------------------------# 
 # initialize the test
 #---------------------------------------------------------------------------# 
@@ -29,8 +31,8 @@ from threading import Thread as Worker
 # * cycles  - the total number of requests to send
 # * host    - the host to send the requests to
 #---------------------------------------------------------------------------# 
-workers = 1
-cycles  = 10000
+workers = 10
+cycles  = 1000
 host    = '127.0.0.1'
 
 
@@ -54,10 +56,12 @@ def single_client_test(host, cycles):
 
     try:
         count  = 0
-        client = ModbusTcpClient(host)
+        # client = ModbusTcpClient(host, port=5020)
+        client = ModbusSerialClient(method="rtu", port="/dev/ttyp0", baudrate=9600)
         while count < cycles:
-            result = client.read_holding_registers(10, 1).getRegister(0)
-            count += 1
+            with _thread_lock:
+                result = client.read_holding_registers(10, 1, unit=1).getRegister(0)
+                count += 1
     except: logger.exception("failed to run test successfully")
     logger.debug("finished worker: %d" % os.getpid())
 
@@ -76,3 +80,4 @@ any(p.start() for p in procs)   # start the workers
 any(p.join()  for p in procs)   # wait for the workers to finish
 stop  = time()
 print "%d requests/second" % ((1.0 * cycles) / (stop - start))
+print "time taken to complete %s cycle by %s workers is %s seconds" % (cycles, workers, stop-start)

@@ -6,6 +6,7 @@ import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.compat import int2byte, byte2int
 
 
 class ReadRegistersRequestBase(ModbusRequest):
@@ -38,6 +39,13 @@ class ReadRegistersRequestBase(ModbusRequest):
         '''
         self.address, self.count = struct.unpack('>HH', data)
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
+        :return: 
+        """
+        return 1 + 1 + 2 * self.count
+
     def __str__(self):
         ''' Returns a string representation of the instance
 
@@ -66,7 +74,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        result = chr(len(self.registers) * 2)
+        result = int2byte(len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack('>H', register)
         return result
@@ -76,7 +84,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :param data: The request to decode
         '''
-        byte_count = ord(data[0])
+        byte_count = byte2int(data[0])
         self.registers = []
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
@@ -313,7 +321,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: The encoded packet
         '''
-        result = chr(len(self.registers) * 2)
+        result = int2byte(len(self.registers) * 2)
         for register in self.registers:
             result += struct.pack('>H', register)
         return result
@@ -323,7 +331,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :param data: The response to decode
         '''
-        bytecount = ord(data[0])
+        bytecount = byte2int(data[0])
         for i in range(1, bytecount, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 

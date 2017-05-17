@@ -11,7 +11,6 @@ class ModbusException(Exception):
 
     def __init__(self, string):
         ''' Initialize the exception
-
         :param string: The message to append to the error
         '''
         self.string = string
@@ -25,7 +24,6 @@ class ModbusIOException(ModbusException):
 
     def __init__(self, string=""):
         ''' Initialize the exception
-
         :param string: The message to append to the error
         '''
         message = "[Input/Output] %s" % string
@@ -62,7 +60,6 @@ class NotImplementedException(ModbusException):
 
     def __init__(self, string=""):
         ''' Initialize the exception
-
         :param string: The message to append to the error
         '''
         message = "[Not Implemented] %s" % string

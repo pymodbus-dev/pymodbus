@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import unittest
+from pymodbus.compat import IS_PYTHON3
+if IS_PYTHON3: # Python 3
+    from unittest.mock import patch, Mock
+else: # Python 2
+    from mock import patch, Mock
 import socket
 import serial
-from mock import patch, Mock
-from twisted.test import test_protocols
+
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
 from pymodbus.exceptions import ConnectionException, NotImplementedException
@@ -22,6 +26,7 @@ class mockSocket(object):
     def write(self, msg): return len(msg)
     def recvfrom(self, size): return ['\x00'*size]
     def sendto(self, msg, *args): return len(msg)
+    def in_waiting(self): return None
 
 #---------------------------------------------------------------------------#
 # Fixture
@@ -45,7 +50,7 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, lambda: client._recv(None))
         self.assertRaises(NotImplementedException, lambda: client.__enter__())
         self.assertRaises(NotImplementedException, lambda: client.execute())
-        self.assertEquals("Null Transport", str(client))
+        self.assertEqual("Null Transport", str(client))
         client.close()
         client.__exit__(0,0,0)
 
@@ -197,12 +202,17 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertTrue(isinstance(ModbusSerialClient(method='binary').framer, ModbusBinaryFramer))
         self.assertRaises(ParameterException, lambda: ModbusSerialClient(method='something'))
 
-    def testBasicSyncSerialClient(self):
+    @patch("serial.Serial")
+    def testBasicSyncSerialClient(self, mock_serial):
         ''' Test the basic methods for the serial sync client'''
 
         # receive/send
+        mock_serial.in_waiting = 0
+        mock_serial.write = lambda x: len(x)
+
+        mock_serial.read = lambda size: '\x00' * size
         client = ModbusSerialClient()
-        client.socket = mockSocket()
+        client.socket = mock_serial
         self.assertEqual(0, client._send(None))
         self.assertEqual(1, client._send('\x00'))
         self.assertEqual('\x00', client._recv(1))
@@ -229,12 +239,15 @@ class SynchronousClientTest(unittest.TestCase):
             client = ModbusSerialClient()
             self.assertFalse(client.connect())
 
-    def testSerialClientSend(self):
+    @patch("serial.Serial")
+    def testSerialClientSend(self, mock_serial):
         ''' Test the serial client send method'''
+        mock_serial.in_waiting = None
+        mock_serial.write = lambda x: len(x)
         client = ModbusSerialClient()
         self.assertRaises(ConnectionException, lambda: client._send(None))
-
-        client.socket = mockSocket()
+        # client.connect()
+        client.socket = mock_serial
         self.assertEqual(0, client._send(None))
         self.assertEqual(4, client._send('1234'))
 

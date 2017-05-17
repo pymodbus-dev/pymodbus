@@ -85,32 +85,32 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         raise NotImplementedException("Method not implemented by derived class")
 
 
-class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
-    ''' Implements the modbus server protocol
-
-    This uses the socketserver.BaseRequestHandler to implement
-    the client handler for a single client(serial clients)
-    '''
-
-    def handle(self):
-        ''' Callback when we receive any data
-        '''
-        while self.running:
-            try:
-                data = self.request.recv(1024)
-                if data:
-                    if _logger.isEnabledFor(logging.DEBUG):
-                        _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
-                    self.framer.processIncomingPacket(data, self.execute)
-            except Exception as msg:
-                # since we only have a single socket, we cannot exit
-                _logger.error("Socket error occurred %s" % msg)
-
-    def send(self, message):
-        ''' Send a request (string) to the network
-
-        :param message: The unencoded modbus response
-        '''
+# class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
+#     ''' Implements the modbus server protocol
+#
+#     This uses the socketserver.BaseRequestHandler to implement
+#     the client handler for a single client(serial clients)
+#     '''
+#
+#     def handle(self):
+#         ''' Callback when we receive any data
+#         '''
+#         while self.running:
+#             try:
+#                 data = self.request.recv(1024)
+#                 if data:
+#                     if _logger.isEnabledFor(logging.DEBUG):
+#                         _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+#                     self.framer.processIncomingPacket(data, self.execute)
+#             except Exception as msg:
+#                 # since we only have a single socket, we cannot exit
+#                 _logger.error("Socket error occurred %s" % msg)
+#
+#     def send(self, message):
+#         ''' Send a request (string) to the network
+#
+#         :param message: The unencoded modbus response
+#         '''
 
 
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler):

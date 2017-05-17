@@ -96,16 +96,16 @@ context = ModbusServerContext(slaves=store, single=True)
 identity = ModbusDeviceIdentification()
 identity.VendorName  = 'Pymodbus'
 identity.ProductCode = 'PM'
-identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
+identity.VendorUrl   = 'http://github.com/riptideio/pymodbus/'
 identity.ProductName = 'Pymodbus Server'
 identity.ModelName   = 'Pymodbus Server'
 identity.MajorMinorRevision = '1.0'
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # run the server you want
 #---------------------------------------------------------------------------# 
 # Tcp:
-StartTcpServer(context, identity=identity, address=("localhost", 5020))
+# StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 # Udp:
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
@@ -114,4 +114,4 @@ StartTcpServer(context, identity=identity, address=("localhost", 5020))
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
 
 # RTU:
-#StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/pts/3', timeout=.005)
+StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ptyp0', timeout=.005, baudrate=9600)

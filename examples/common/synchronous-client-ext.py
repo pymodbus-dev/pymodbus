@@ -10,9 +10,9 @@ modbus protocol.
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+# from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 #from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-#from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -32,7 +32,8 @@ log.setLevel(logging.DEBUG)
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
 #---------------------------------------------------------------------------# 
-client = ModbusClient('127.0.0.1')
+client = ModbusClient(method='rtu', port="/dev/ttyp0")
+# client = ModbusClient('127.0.0.1', port=5020)
 client.connect()
 
 #---------------------------------------------------------------------------# 
@@ -65,35 +66,35 @@ from pymodbus.mei_message import *
 #---------------------------------------------------------------------------# 
 # information requests
 #---------------------------------------------------------------------------# 
-rq = ReadDeviceInformationRequest()
+rq = ReadDeviceInformationRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                             # not supported by reference
 assert(rr.function_code < 0x80)                 # test that we are not an error
-assert(rr.information[0] == 'proconX Pty Ltd')  # test the vendor name
-assert(rr.information[1] == 'FT-MBSV')          # test the product code
-assert(rr.information[2] == 'EXPERIMENTAL')     # test the code revision
+assert(rr.information[0] == 'Pymodbus')  # test the vendor name
+assert(rr.information[1] == 'PM')          # test the product code
+assert(rr.information[2] == '1.0')     # test the code revision
 
-rq = ReportSlaveIdRequest()
+rq = ReportSlaveIdRequest(unit=1)
 rr = client.execute(rq)
-assert(rr == None)                              # not supported by reference
+# assert(rr == None)                              # not supported by reference
 #assert(rr.function_code < 0x80)                # test that we are not an error
 #assert(rr.identifier  == 0x00)                 # test the slave identifier
 #assert(rr.status  == 0x00)                     # test that the status is ok
 
-rq = ReadExceptionStatusRequest()
+rq = ReadExceptionStatusRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                             # not supported by reference
-assert(rr.function_code < 0x80)                 # test that we are not an error
-assert(rr.status == 0x55)                       # test the status code
+#assert(rr.function_code < 0x80)                 # test that we are not an error
+#assert(rr.status == 0x55)                       # test the status code
 
-rq = GetCommEventCounterRequest()
+rq = GetCommEventCounterRequest(unit=1)
 rr = client.execute(rq)
-assert(rr == None)                              # not supported by reference
+#assert(rr == None)                              # not supported by reference
 #assert(rr.function_code < 0x80)                # test that we are not an error
 #assert(rr.status == True)                      # test the status code
 #assert(rr.count == 0x00)                       # test the status code
 
-rq = GetCommEventLogRequest()
+rq = GetCommEventLogRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                             # not supported by reference
 #assert(rr.function_code < 0x80)                # test that we are not an error
@@ -105,68 +106,68 @@ rr = client.execute(rq)
 #---------------------------------------------------------------------------# 
 # diagnostic requests
 #---------------------------------------------------------------------------# 
-rq = ReturnQueryDataRequest()
+rq = ReturnQueryDataRequest(unit=1)
 rr = client.execute(rq)
-assert(rr == None)                             # not supported by reference
+# assert(rr == None)                             # not supported by reference
 #assert(rr.message[0] == 0x0000)               # test the resulting message
 
-rq = RestartCommunicationsOptionRequest()
+rq = RestartCommunicationsOptionRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 #assert(rr.message == 0x0000)                  # test the resulting message
 
-rq = ReturnDiagnosticRegisterRequest()
+rq = ReturnDiagnosticRegisterRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ChangeAsciiInputDelimiterRequest()
+rq = ChangeAsciiInputDelimiterRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ForceListenOnlyModeRequest()
+rq = ForceListenOnlyModeRequest(unit=1)
 client.execute(rq)                             # does not send a response
 
 rq = ClearCountersRequest()
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnBusCommunicationErrorCountRequest()
+rq = ReturnBusCommunicationErrorCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnBusExceptionErrorCountRequest()
+rq = ReturnBusExceptionErrorCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnSlaveMessageCountRequest()
+rq = ReturnSlaveMessageCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnSlaveNoResponseCountRequest()
+rq = ReturnSlaveNoResponseCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnSlaveNAKCountRequest()
+rq = ReturnSlaveNAKCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnSlaveBusyCountRequest()
+rq = ReturnSlaveBusyCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnSlaveBusCharacterOverrunCountRequest()
+rq = ReturnSlaveBusCharacterOverrunCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ReturnIopOverrunCountRequest()
+rq = ReturnIopOverrunCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = ClearOverrunCountRequest()
+rq = ClearOverrunCountRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-rq = GetClearModbusPlusRequest()
+rq = GetClearModbusPlusRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 

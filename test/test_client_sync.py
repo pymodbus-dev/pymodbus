@@ -202,12 +202,17 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertTrue(isinstance(ModbusSerialClient(method='binary').framer, ModbusBinaryFramer))
         self.assertRaises(ParameterException, lambda: ModbusSerialClient(method='something'))
 
-    def testBasicSyncSerialClient(self):
+    @patch("serial.Serial")
+    def testBasicSyncSerialClient(self, mock_serial):
         ''' Test the basic methods for the serial sync client'''
 
         # receive/send
+        mock_serial.in_waiting = 0
+        mock_serial.write = lambda x: len(x)
+
+        mock_serial.read = lambda size: '\x00' * size
         client = ModbusSerialClient()
-        client.socket = mockSocket()
+        client.socket = mock_serial
         self.assertEqual(0, client._send(None))
         self.assertEqual(1, client._send('\x00'))
         self.assertEqual('\x00', client._recv(1))
@@ -237,7 +242,7 @@ class SynchronousClientTest(unittest.TestCase):
     @patch("serial.Serial")
     def testSerialClientSend(self, mock_serial):
         ''' Test the serial client send method'''
-        mock_serial.in_waiting.return_value = None
+        mock_serial.in_waiting = None
         mock_serial.write = lambda x: len(x)
         client = ModbusSerialClient()
         self.assertRaises(ConnectionException, lambda: client._send(None))

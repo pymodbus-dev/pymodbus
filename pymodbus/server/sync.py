@@ -4,7 +4,6 @@ Implementation of a Threaded Modbus Server
 
 '''
 from binascii import b2a_hex
-import SocketServer
 import serial
 import socket
 import traceback

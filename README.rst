@@ -49,6 +49,9 @@ a user to test as many devices as their base operating system will allow (*allow
 in this case means how many Virtual IP addresses are allowed).
 
 For more information please browse the project documentation:
+
+http://riptideio.github.io/pymodbus/ 
+or
 http://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 ------------------------------------------------------------
@@ -72,7 +75,8 @@ need, feel free to submit them so others can benefit.
 Also, if you have questions, please ask them on the mailing list
 so that others can benefit from the results and so that I can
 trace them. I get a lot of email and sometimes these requests
-get lost in the noise: http://groups.google.com/group/pymodbus
+get lost in the noise: http://groups.google.com/group/pymodbus or 
+at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 ------------------------------------------------------------
 Installing

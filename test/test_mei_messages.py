@@ -71,9 +71,9 @@ class ModbusMeiMessageTest(unittest.TestCase):
         message  = b'\x0e\x01\x83\x00\x00\x03'
         message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
         dataset  = {
-            0x00: b'Company',
-            0x01: b'Product',
-            0x02: b'v2.1.12',
+            0x00: 'Company',
+            0x01: 'Product',
+            0x02: 'v2.1.12',
         }
         handle  = ReadDeviceInformationResponse(
             read_code=DeviceInformation.Basic, information=dataset)

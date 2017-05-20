@@ -1,9 +1,10 @@
+[![Build Status](https://travis-ci.org/riptideio/pymodbus.svg?branch=master)](https://travis-ci.org/riptideio/pymodbus)
 ### Summary
 
 Pymodbus is a full Modbus protocol implementation using twisted for its
 asynchronous communications core.  It can also be used without any third
 party dependencies (aside from pyserial) if a more lightweight project is
-needed.  Furthermore, it should work fine under any python version > 2.3.
+needed.  Furthermore, it should work fine under any python version > 2.7
 
 ### Client Features
 
@@ -83,18 +84,30 @@ Either method will install all the required dependencies
 
 ### Current Work In Progress
 
-Since I don't have access to any live modbus devices anymore
-it is a bit hard to test on live hardware. However, if you would
-like your device tested, I accept devices via mail or by IP address.
+* Add CI support
+* Make PEP-8 compatible and flake8 ready
+* Fixing bugs/feature requests
+* Architecture documentation
+* Functional testing against any reference I can find
+* The remaining edges of the protocol (that I think no one uses)
 
-That said, the current work mainly involves polishing the library as
-I get time doing such tasks as:
+### Development Instructions
 
-  * Fixing bugs/feature requests
-  * Architecture documentation
-  * Functional testing against any reference I can find
-  * The remaining edges of the protocol (that I think no one uses)
-   
+The current code base is compatible with both py2 and py3.
+Use make to perform a range of activities
+```
+$ make
+       Makefile for pymodbus
+
+    Usage:
+
+     make install    install the package in a virtual environment
+     make reset      recreate the virtual environment
+     make check      check coding style (PEP-8, PEP-257)
+     make test       run the test suite, report coverage
+     make tox        run the tests on all Python versions
+     make clean      cleanup all temporary files 
+```
 ### License Information
 
 Pymodbus is built on top of code developed from/by:

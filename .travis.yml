@@ -1,0 +1,32 @@
+sudo: false
+language: python
+matrix:
+  include:
+  - os: linux
+    python: "2.7"
+  - os: linux
+    python: "3.4"
+  - os: linux
+    python: "3.5"
+  - os: linux
+    python: "3.6"
+  - os: osx
+    language: generic
+before_install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install openssl; fi
+
+install:
+#  - scripts/travis.sh pip install pip-accel
+  - scripts/travis.sh pip install coveralls
+  - scripts/travis.sh pip install --requirement=requirements-checks.txt
+  - scripts/travis.sh pip install --requirement=requirements-tests.txt
+  - scripts/travis.sh LC_ALL=C pip install .
+script:
+#  - scripts/travis.sh make check
+  - scripts/travis.sh make test
+after_success:
+  - scripts/travis.sh coveralls
+branches:
+  except:
+    - /^[0-9]/

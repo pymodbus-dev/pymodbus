@@ -23,7 +23,7 @@ try:
     from setup_commands import command_classes
 except ImportError:
     command_classes = {}
-from pymodbus import __version__, __author__
+from pymodbus import __version__, __author__, __maintainer__
 
 #---------------------------------------------------------------------------# 
 # configuration
@@ -52,9 +52,9 @@ setup(name  = 'pymodbus',
     keywords = 'modbus, twisted, scada',
     author = __author__,
     author_email = 'bashwork@gmail.com',
-    maintainer = __author__,
-    maintainer_email = 'bashwork@gmail.com',
-    url='http://code.google.com/p/pymodbus/',
+    maintainer = __maintainer__,
+    maintainer_email = 'otlasanju@gmail.com',
+    url='https://github.com/riptideio/pymodbus/',
     license = 'BSD',
     packages = find_packages(exclude=['examples', 'test']),
     exclude_package_data = {'' : ['examples', 'test', 'tools', 'doc']},

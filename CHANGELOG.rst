@@ -1,6 +1,14 @@
-Version 1.2.0
-------------------------------------------------------------
 
+Version 1.3.0.rc2
+------------------------------------------------------------
+* fix encoding problem for ReadDeviceInformationRequest method on python3
+
+Version 1.3.0.rc1
+------------------------------------------------------------
+* Timing improvements over MODBUS Serial interface
+* Modbus RTU use 3.5 char silence before and after transactions
+* Bug fix on FifoTransactionManager , flush stray data before transaction
+* Update repository information
 * Added ability to ignore missing slaves
 * Added ability to revert to ZeroMode
 * Passed a number of extra options through the stack

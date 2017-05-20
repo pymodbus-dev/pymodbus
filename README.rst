@@ -1,3 +1,5 @@
+.. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
+   :target: https://travis-ci.org/riptideio/pymodbus
 ============================================================
 Summary
 ============================================================
@@ -49,6 +51,9 @@ a user to test as many devices as their base operating system will allow (*allow
 in this case means how many Virtual IP addresses are allowed).
 
 For more information please browse the project documentation:
+
+http://riptideio.github.io/pymodbus/ 
+or
 http://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 ------------------------------------------------------------
@@ -72,7 +77,8 @@ need, feel free to submit them so others can benefit.
 Also, if you have questions, please ask them on the mailing list
 so that others can benefit from the results and so that I can
 trace them. I get a lot of email and sometimes these requests
-get lost in the noise: http://groups.google.com/group/pymodbus
+get lost in the noise: http://groups.google.com/group/pymodbus or 
+at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 ------------------------------------------------------------
 Installing
@@ -111,11 +117,34 @@ like your device tested, I accept devices via mail or by IP address.
 That said, the current work mainly involves polishing the library as
 I get time doing such tasks as:
 
+  * Add CI support
+  * Make PEP-8 compatible and flake8 ready
   * Fixing bugs/feature requests
   * Architecture documentation
   * Functional testing against any reference I can find
   * The remaining edges of the protocol (that I think no one uses)
-   
+
+------------------------------------------------------------
+Development Instructions
+------------------------------------------------------------
+The current code base is compatible with both py2 and py3.
+Use make to perform a range of activities
+
+::
+
+    $ make
+       Makefile for pymodbus
+
+    Usage:
+
+     make install    install the package in a virtual environment
+     make reset      recreate the virtual environment
+     make check      check coding style (PEP-8, PEP-257)
+     make test       run the test suite, report coverage
+     make tox        run the tests on all Python versions
+     make clean      cleanup all temporary files 
+
+
 ------------------------------------------------------------
 License Information
 ------------------------------------------------------------
@@ -123,6 +152,7 @@ License Information
 Pymodbus is built on top of code developed from/by:
   * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
   * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
+
   * Hynek Petrak, https://github.com/HynekPetrak
   * Twisted Matrix
 

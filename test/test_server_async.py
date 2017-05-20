@@ -1,17 +1,25 @@
 #!/usr/bin/env python
+from pymodbus.compat import IS_PYTHON3
 import unittest
-from mock import patch, Mock
+if IS_PYTHON3: # Python 3
+    from unittest.mock import patch, Mock
+else: # Python 2
+    from mock import patch, Mock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory
 from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
+
+import sys
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
+SERIAL_PORT = "/dev/ptmx"
+if sys.platform == "darwin":
+    SERIAL_PORT = "/dev/ptyp0"
+
+
 class AsynchronousServerTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.server.async module
@@ -70,8 +78,14 @@ class AsynchronousServerTest(unittest.TestCase):
     def testTcpServerStartup(self):
         ''' Test that the modbus tcp async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartTcpServer(context=None, console=True)
-            self.assertEqual(mock_reactor.listenTCP.call_count, 2)
+            if IS_PYTHON3:
+                console = False
+                call_count = 1
+            else:
+                console = True
+                call_count = 2
+            StartTcpServer(context=None, console=console)
+            self.assertEqual(mock_reactor.listenTCP.call_count, call_count)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
     def testUdpServerStartup(self):
@@ -84,7 +98,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testSerialServerStartup(self):
         ''' Test that the modbus serial async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None, port='/dev/ptmx')
+            StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
 #---------------------------------------------------------------------------#

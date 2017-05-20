@@ -24,7 +24,7 @@ class ModbusEventsTest(unittest.TestCase):
 
     def testRemoteReceiveEvent(self):
         event = RemoteReceiveEvent()
-        event.decode('\x70')
+        event.decode(b'\x70')
         self.assertTrue(event.overrun)
         self.assertTrue(event.listen)
         self.assertTrue(event.broadcast)
@@ -32,8 +32,8 @@ class ModbusEventsTest(unittest.TestCase):
     def testRemoteSentEvent(self):
         event = RemoteSendEvent()
         result = event.encode()
-        self.assertEqual(result, '\x40')
-        event.decode('\x7f')
+        self.assertEqual(result, b'\x40')
+        event.decode(b'\x7f')
         self.assertTrue(event.read)
         self.assertTrue(event.slave_abort)
         self.assertTrue(event.slave_busy)
@@ -52,23 +52,23 @@ class ModbusEventsTest(unittest.TestCase):
         }
         event = RemoteSendEvent(**arguments)
         result = event.encode()
-        self.assertEqual(result, '\x7f')
+        self.assertEqual(result, b'\x7f')
 
     def testEnteredListenModeEvent(self):
         event = EnteredListenModeEvent()
         result = event.encode()
-        self.assertEqual(result, '\x04')
-        event.decode('\x04')
+        self.assertEqual(result, b'\x04')
+        event.decode(b'\x04')
         self.assertEqual(event.value, 0x04)
-        self.assertRaises(ParameterException, lambda: event.decode('\x00'))
+        self.assertRaises(ParameterException, lambda: event.decode(b'\x00'))
 
     def testCommunicationRestartEvent(self):
         event = CommunicationRestartEvent()
         result = event.encode()
-        self.assertEqual(result, '\x00')
-        event.decode('\x00')
+        self.assertEqual(result, b'\x00')
+        event.decode(b'\x00')
         self.assertEqual(event.value, 0x00)
-        self.assertRaises(ParameterException, lambda: event.decode('\x04'))
+        self.assertRaises(ParameterException, lambda: event.decode(b'\x04'))
 
 #---------------------------------------------------------------------------#
 # Main

@@ -31,7 +31,7 @@ log.setLevel(logging.DEBUG)
 # initialize your data store
 #---------------------------------------------------------------------------# 
 # The datastores only respond to the addresses that they are initialized to.
-# Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
+# Therefore, if you initialize a DataBlock to addresses from 0x00 to 0xFF, a
 # request to 0x100 will respond with an invalid address exception. This is
 # because many devices exhibit this kind of behavior (but not all)::
 #

@@ -14,6 +14,7 @@ Released under the the BSD license
 import pymodbus.version as __version
 __version__ = __version.version.short()
 __author__  = 'Galen Collins'
+__maintainer__ = 'dhoomakethu'
 
 #---------------------------------------------------------------------------#
 # Block unhandled logging
@@ -28,10 +29,3 @@ except ImportError:
 
 __logging.getLogger(__name__).addHandler(__null())
 
-#---------------------------------------------------------------------------#
-# Define True and False if we don't have them (2.3.2)
-#---------------------------------------------------------------------------#
-try:
-    True, False
-except NameError:
-    True, False = (1 == 1), (0 == 1)

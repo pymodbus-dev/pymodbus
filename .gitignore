@@ -4,3 +4,13 @@ build/
 dist/
 pymodbus.egg-info/
 .coverage
+.vscode
+.idea
+.noseids
+
+.idea/
+.tox/
+doc/api/epydoc/html/
+.vscode/
+
+

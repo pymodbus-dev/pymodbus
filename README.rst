@@ -128,20 +128,20 @@ Development Instructions
 The current code base is compatible with both py2 and py3.
 Use make to perform a range of activities
 
-```
-$ make
-Makefile for pymodbus
+::
 
-Usage:
+    $ make
+       Makefile for pymodbus
 
-    make install    install the package in a virtual environment
-    make reset      recreate the virtual environment
-    make check      check coding style (PEP-8, PEP-257)
-    make test       run the test suite, report coverage
-    make tox        run the tests on all Python versions
-    make clean      cleanup all temporary files
+    Usage:
 
-```
+     make install    install the package in a virtual environment
+     make reset      recreate the virtual environment
+     make check      check coding style (PEP-8, PEP-257)
+     make test       run the test suite, report coverage
+     make tox        run the tests on all Python versions
+     make clean      cleanup all temporary files 
+
 
 ------------------------------------------------------------
 License Information

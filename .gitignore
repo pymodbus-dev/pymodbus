@@ -9,3 +9,8 @@ pymodbus.egg-info/
 .noseids
 
 .idea/
+.tox/
+doc/api/epydoc/html/
+.vscode/
+
+

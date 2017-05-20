@@ -165,11 +165,11 @@ def generate_messages(framer, options):
     messages = _request_messages if options.messages == 'tx' else _response_messages
     for message in messages:
         message = message(**_arguments)
-        print "%-44s = " % message.__class__.__name__,
+        print ("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
             packet = packet.encode('hex') + '\n'
-        print packet,   # because ascii ends with a \r\n
+        print (packet)   # because ascii ends with a \r\n
 
 
 #---------------------------------------------------------------------------# 
@@ -205,6 +205,7 @@ def get_options():
     (opt, arg) = parser.parse_args()
     return opt
 
+
 def main():
     ''' The main runner function
     '''
@@ -213,9 +214,9 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception as e:
+            print("Logging is not supported on this system")
 
     framer = lookup = {
         'tcp':    ModbusSocketFramer,

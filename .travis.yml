@@ -21,7 +21,7 @@ install:
   - scripts/travis.sh pip-accel install --requirement=requirements-tests.txt
   - scripts/travis.sh LC_ALL=C pip install .
 script:
-  - scripts/travis.sh make check
+#  - scripts/travis.sh make check
   - scripts/travis.sh make test
 after_success:
   - scripts/travis.sh coveralls

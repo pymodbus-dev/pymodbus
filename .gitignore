@@ -11,4 +11,6 @@ pymodbus.egg-info/
 .idea/
 .tox/
 doc/api/epydoc/html/
+.vscode/
+
 

@@ -1,4 +1,5 @@
 Version 1.3.0.rc1
+------------------------------------------------------------
 * Timing improvements over MODBUS Serial interface
 * Modbus RTU use 3.5 char silence before and after transactions
 * Bug fix on FifoTransactionManager , flush stray data before transaction

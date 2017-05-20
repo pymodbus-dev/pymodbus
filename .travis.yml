@@ -14,7 +14,7 @@ matrix:
     language: generic
 before_install:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi
-  - if [ $TRAVIS_OS_NAME = linux ]; then brew install openssl; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install openssl; fi
 
 install:
 #  - scripts/travis.sh pip install pip-accel

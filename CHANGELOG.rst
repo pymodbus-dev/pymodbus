@@ -1,3 +1,8 @@
+
+Version 1.3.0.rc2
+------------------------------------------------------------
+* fix encoding problem for ReadDeviceInformationRequest method on python3
+
 Version 1.3.0.rc1
 ------------------------------------------------------------
 * Timing improvements over MODBUS Serial interface

@@ -1,3 +1,5 @@
+.. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
+   :target: https://travis-ci.org/riptideio/pymodbus
 ============================================================
 Summary
 ============================================================

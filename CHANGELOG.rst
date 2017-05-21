@@ -1,7 +1,8 @@
 
 Version 1.3.0.rc2
 ------------------------------------------------------------
-* fix encoding problem for ReadDeviceInformationRequest method on python3
+* Fix encoding problem for ReadDeviceInformationRequest method on python3
+* Enhancement for ModbusTcpClient, ModbusTcpClient can now accept connection timeout as one of the parameter
 
 Version 1.3.0.rc1
 ------------------------------------------------------------

@@ -1,0 +1,14 @@
+# Created by .ignore support plugin (hsz.mobi)
+.coverage
+.idea/
+.noseids
+.tox/
+.vscode/
+__pycache__/
+build/
+dist/
+doc/
+pymodbus.egg-info/
+pymodbus/
+*.pyc
+test/

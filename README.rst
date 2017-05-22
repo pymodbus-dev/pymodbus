@@ -1,5 +1,9 @@
 .. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
-   :target: https://travis-ci.org/riptideio/pymodbus
+   :target: https://travis-ci.org/riptideio/pymodbus 
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/pymodbus_dev/Lobby
+
 ============================================================
 Summary
 ============================================================

@@ -95,7 +95,7 @@ class ModbusTransactionManager(object):
                     retries -= 1
                     continue
                 if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("recv: " + " ".join([hex(ord(x)) for x in result]))
+                    _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break;
             except socket.error as msg:

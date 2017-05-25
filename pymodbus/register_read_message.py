@@ -289,6 +289,13 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
                                       self.read_count)
         return ReadWriteMultipleRegistersResponse(registers)
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
+        :return: 
+        """
+        return 1 + 1 + 2 * self.read_count
+
     def __str__(self):
         ''' Returns a string representation of the instance
 

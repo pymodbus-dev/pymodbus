@@ -4,6 +4,7 @@ import time
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
+from pymodbus.compat import byte2int
 from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import FifoTransactionManager
@@ -377,7 +378,7 @@ class ModbusSerialClient(BaseModbusClient):
                 if waitingbytes:
                     result = self.socket.read(waitingbytes)
                     if _logger.isEnabledFor(logging.WARNING):
-                        _logger.warning("cleanup recv buffer before send: " + " ".join([hex(ord(x)) for x in result]))
+                        _logger.warning("cleanup recv buffer before send: " + " ".join([hex(byte2int(x)) for x in result]))
             except NotImplementedError:
                 pass
 

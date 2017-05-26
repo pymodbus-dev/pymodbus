@@ -12,9 +12,6 @@ API Documentation
 
 .. automodule:: pymodbus.client.sync
 
-.. autoclass:: ModbusTransactionManager
-   :members:
-
 .. autoclass:: BaseModbusClient
    :members:
 

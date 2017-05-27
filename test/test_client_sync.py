@@ -251,6 +251,19 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(0, client._send(None))
         self.assertEqual(4, client._send('1234'))
 
+    @patch("serial.Serial")
+    def testSerialClientCleanupBufferBeforeSend(self, mock_serial):
+        ''' Test the serial client send method'''
+        mock_serial.in_waiting = 4
+        mock_serial.read = lambda x: b'1'*x
+        mock_serial.write = lambda x: len(x)
+        client = ModbusSerialClient()
+        self.assertRaises(ConnectionException, lambda: client._send(None))
+        # client.connect()
+        client.socket = mock_serial
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(4, client._send('1234'))
+
     def testSerialClientRecv(self):
         ''' Test the serial client receive method'''
         client = ModbusSerialClient()

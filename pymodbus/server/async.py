@@ -160,7 +160,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         '''
         _logger.debug("Client Connected [%s:%s]" % addr)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(" ".join([hex(ord(x)) for x in data]))
+            _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
             self.framer.processIncomingPacket(data, continuation)

@@ -18,5 +18,5 @@ run behind gunicorn, cherrypi, etc wsgi containers.
 Main Program
 --------------------------------------------------
 
-.. literalinclude:: ../../../examples/gui/web/frontend.py
+.. literalinclude:: ../../../examples/gui/bottle/frontend.py
 

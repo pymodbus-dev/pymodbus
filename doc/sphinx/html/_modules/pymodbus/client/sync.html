@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pymodbus.client.sync &#8212; pymodbus 1.3.0.rc1 documentation</title>
+    <title>pymodbus.client.sync &#8212; pymodbus 1.3.0.rc2 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.3.0.rc1',
+        VERSION:     '1.3.0.rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +37,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pymodbus 1.3.0.rc1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pymodbus 1.3.0.rc2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -54,6 +54,7 @@
 
 <span class="kn">from</span> <span class="nn">pymodbus.constants</span> <span class="k">import</span> <span class="n">Defaults</span>
 <span class="kn">from</span> <span class="nn">pymodbus.factory</span> <span class="k">import</span> <span class="n">ClientDecoder</span>
+<span class="kn">from</span> <span class="nn">pymodbus.compat</span> <span class="k">import</span> <span class="n">byte2int</span>
 <span class="kn">from</span> <span class="nn">pymodbus.exceptions</span> <span class="k">import</span> <span class="n">NotImplementedException</span><span class="p">,</span> <span class="n">ParameterException</span>
 <span class="kn">from</span> <span class="nn">pymodbus.exceptions</span> <span class="k">import</span> <span class="n">ConnectionException</span>
 <span class="kn">from</span> <span class="nn">pymodbus.transaction</span> <span class="k">import</span> <span class="n">FifoTransactionManager</span>
@@ -171,6 +172,7 @@
 <span class="sd">        :param host: The host to connect to (default 127.0.0.1)</span>
 <span class="sd">        :param port: The modbus port to connect to (default 502)</span>
 <span class="sd">        :param source_address: The source address tuple to bind to (default (&#39;&#39;, 0))</span>
+<span class="sd">        :param timeout: The timeout to use for this socket (default Defaults.Timeout)</span>
 <span class="sd">        :param framer: The modbus framer to use (default ModbusSocketFramer)</span>
 
 <span class="sd">        .. note:: The host argument will accept ipv4 and ipv6 hosts</span>
@@ -179,6 +181,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source_address</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_address&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>  <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout&#39;</span><span class="p">,</span>  <span class="n">Defaults</span><span class="o">.</span><span class="n">Timeout</span><span class="p">)</span>
         <span class="n">BaseModbusClient</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">framer</span><span class="p">(</span><span class="n">ClientDecoder</span><span class="p">()),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModbusTcpClient.connect"><a class="viewcode-back" href="../../../library/sync-client.html#pymodbus.client.sync.ModbusTcpClient.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -190,7 +193,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">address</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">create_connection</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="n">Defaults</span><span class="o">.</span><span class="n">Timeout</span><span class="p">,</span> <span class="n">source_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source_address</span><span class="p">)</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">source_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source_address</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
             <span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Connection to (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) failed: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> \
                 <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
@@ -425,7 +428,7 @@
                 <span class="k">if</span> <span class="n">waitingbytes</span><span class="p">:</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">waitingbytes</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">_logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">):</span>
-                        <span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;cleanup recv buffer before send: &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">hex</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]))</span>
+                        <span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;cleanup recv buffer before send: &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">hex</span><span class="p">(</span><span class="n">byte2int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]))</span>
             <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
                 <span class="k">pass</span>
 
@@ -491,12 +494,12 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">pymodbus 1.3.0.rc1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pymodbus 1.3.0.rc2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, riptideio/bashworks.
+        &#169; Copyright 2017, Galen Collins, dhoomakethu.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>

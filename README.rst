@@ -4,6 +4,10 @@
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby
 
+.. image:: https://readthedocs.org/projects/pymodbus-n/badge/?version=latest
+   :target: http://pymodbus-n.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 ============================================================
 Summary
 ============================================================

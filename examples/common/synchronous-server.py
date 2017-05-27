@@ -105,7 +105,7 @@ identity.MajorMinorRevision = '1.0'
 # run the server you want
 #---------------------------------------------------------------------------# 
 # Tcp:
-# StartTcpServer(context, identity=identity, address=("localhost", 5020))
+StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 # Udp:
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
@@ -114,4 +114,4 @@ identity.MajorMinorRevision = '1.0'
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
 
 # RTU:
-StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ptyp0', timeout=.005, baudrate=9600)
+# StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ptyp0', timeout=.005, baudrate=9600)

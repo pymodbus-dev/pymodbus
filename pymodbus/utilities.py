@@ -5,8 +5,8 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 '''
-from pymodbus.compat import int2byte, byte2int
-
+from pymodbus.compat import int2byte, byte2int, IS_PYTHON3
+from six import string_types
 
 #---------------------------------------------------------------------------#
 # Helpers
@@ -93,6 +93,15 @@ def unpack_bitstring(string):
     return bits
 
 
+def make_byte_string(s):
+    """
+    Returns byte string from a given string, python3 specific fix
+    :param s: 
+    :return: 
+    """
+    if IS_PYTHON3 and isinstance(s, string_types):
+        s = s.encode()
+    return s
 #---------------------------------------------------------------------------#
 # Error Detection Functions
 #---------------------------------------------------------------------------#

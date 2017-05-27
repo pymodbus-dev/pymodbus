@@ -3,6 +3,7 @@ Version 1.3.0.rc2
 ------------------------------------------------------------
 * Fix encoding problem for ReadDeviceInformationRequest method on python3
 * Fix problem with the usage of ord in python3 while cleaning up receive buffer
+* Fix struct unpack errors with BinaryPayloadDecoder on python3 - string vs bytestring error
 * Calculate expected response size for ReadWriteMultipleRegistersRequest
 * Enhancement for ModbusTcpClient, ModbusTcpClient can now accept connection timeout as one of the parameter
 * Misc updates

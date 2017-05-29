@@ -141,7 +141,6 @@ class ModbusTcpClient(BaseModbusClient):
         '''
         if self.socket: return True
         try:
-            address = (self.host, self.port)
             self.socket = socket.create_connection((self.host, self.port),
                 timeout=self.timeout, source_address=self.source_address)
         except socket.error as msg:

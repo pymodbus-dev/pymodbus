@@ -76,7 +76,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        return "WriteRegisterRequest %d => %d" % (self.address, self.value)
+        return "WriteRegisterRequest %d" % self.address
 
 
 class WriteSingleRegisterResponse(ModbusResponse):

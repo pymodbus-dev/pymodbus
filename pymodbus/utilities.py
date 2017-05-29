@@ -137,7 +137,7 @@ def computeCRC(data):
     '''
     crc = 0xffff
     for a in data:
-        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff];
+        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff]
         crc = ((crc >> 8) & 0xff) ^ idx
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped

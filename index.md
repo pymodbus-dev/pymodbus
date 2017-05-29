@@ -1,4 +1,7 @@
 [![Build Status](https://travis-ci.org/riptideio/pymodbus.svg?branch=master)](https://travis-ci.org/riptideio/pymodbus)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pymodbus_dev/Lobby)
+[![Documentation Status](https://readthedocs.org/projects/pymodbus-n/badge/?version=latest)](http://pymodbus-n.readthedocs.io/en/latest/?badge=latest)
+
 ### Summary
 
 Pymodbus is a full Modbus protocol implementation using twisted for its

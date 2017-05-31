@@ -7,7 +7,7 @@ from pymodbus.compat import iteritems, itervalues
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging;
+import logging
 _logger = logging.getLogger(__name__)
 
 

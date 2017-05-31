@@ -1,5 +1,13 @@
 .. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
-   :target: https://travis-ci.org/riptideio/pymodbus
+   :target: https://travis-ci.org/riptideio/pymodbus 
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/pymodbus_dev/Lobby
+
+.. image:: https://readthedocs.org/projects/pymodbus-n/badge/?version=latest
+   :target: http://pymodbus-n.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 ============================================================
 Summary
 ============================================================

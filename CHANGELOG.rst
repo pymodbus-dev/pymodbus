@@ -1,4 +1,10 @@
 
+Version 1.3.1
+------------------------------------------------------------
+* register_write_message.py: Observe skip_encode option when encoding a single register request
+* fix wrong expected response length for coils and discrete inputs
+* misc cosmetic updates
+
 Version 1.3.0.rc2
 ------------------------------------------------------------
 * Fix encoding problem for ReadDeviceInformationRequest method on python3

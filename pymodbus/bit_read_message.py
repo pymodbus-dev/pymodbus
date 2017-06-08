@@ -15,6 +15,7 @@ class ReadBitsRequestBase(ModbusRequest):
     ''' Base class for Messages Requesting bit values '''
 
     _rtu_frame_size = 8
+
     def __init__(self, address, count, **kwargs):
         ''' Initializes the read request data
 
@@ -41,10 +42,15 @@ class ReadBitsRequestBase(ModbusRequest):
     
     def get_response_pdu_size(self):
         """
-        Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)
+        Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)/8,
+        if the remainder is different of 0 then N = N+1
         :return: 
         """
-        return 1 + 1 + self.count
+        count = self.count//8
+        if self.count % 8:
+            count += 1
+
+        return 1 + 1 + count
     
     def __str__(self):
         ''' Returns a string representation of the instance

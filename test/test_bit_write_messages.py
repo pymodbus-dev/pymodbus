@@ -46,6 +46,14 @@ class ModbusBitMessageTests(unittest.TestCase):
         for request, expected in iteritems(messages):
             self.assertEqual(request.encode(), expected)
 
+    def testBitWriteMessageGetResponsePDU(self):
+        requests = {
+            WriteSingleCoilRequest(1, 0xabcd): 5
+        }
+        for request, expected in iteritems(requests):
+            pdu_len = request.get_response_pdu_size()
+            self.assertEqual(pdu_len, expected)
+
     def testWriteMultipleCoilsRequest(self):
         request = WriteMultipleCoilsRequest(1, [True]*5)
         request.decode(b'\x00\x01\x00\x05\x01\x1f')

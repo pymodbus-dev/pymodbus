@@ -88,7 +88,10 @@ class ModbusTransactionManager(object):
         while retries > 0:
             try:
                 self.client.connect()
-                self.client._send(self.client.framer.buildPacket(request))
+                packet = self.client.framer.buildPacket(request)
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
+                self.client._send(packet)
                 result = self.client._recv(expected_response_length)
 
                 if not result and self.retry_on_empty:

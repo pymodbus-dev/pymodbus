@@ -13,7 +13,8 @@ using the supplied framers for a number of protocols:
 '''
 #---------------------------------------------------------------------------# 
 # import needed libraries
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
+from __future__ import print_function
 import sys
 import collections
 import textwrap
@@ -52,23 +53,25 @@ class Decoder(object):
         :param message: The messge to decode
         '''
         value = message if self.encode else message.encode('hex')
-        print "="*80
-        print "Decoding Message %s" % value
-        print "="*80
+        print("="*80)
+        print("Decoding Message %s" % value)
+        print("="*80)
         decoders = [
             self.framer(ServerDecoder()),
             self.framer(ClientDecoder()),
         ]
         for decoder in decoders:
-            print "%s" % decoder.decoder.__class__.__name__
-            print "-"*80
+            print("%s" % decoder.decoder.__class__.__name__)
+            print("-"*80)
             try:
-                decoder.addToFrame(message)
+                decoder.addToFrame(message.encode())
                 if decoder.checkFrame():
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report)
-                else: self.check_errors(decoder, message)
-            except Exception, ex: self.check_errors(decoder, message)
+                else:
+                    self.check_errors(decoder, message)
+            except Exception as ex:
+                self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
         ''' Attempt to find message errors
@@ -82,20 +85,21 @@ class Decoder(object):
 
         :param message: The message to print
         '''
-        print "%-15s = %s" % ('name', message.__class__.__name__)
+        print("%-15s = %s" % ('name', message.__class__.__name__))
         for k,v in message.__dict__.iteritems():
             if isinstance(v, dict):
-                print "%-15s =" % k
+                print("%-15s =" % k)
                 for kk,vv in v.items():
-                    print "  %-12s => %s" % (kk, vv)
+                    print("  %-12s => %s" % (kk, vv))
 
             elif isinstance(v, collections.Iterable):
-                print "%-15s =" % k
+                print("%-15s =" % k)
                 value = str([int(x) for x  in v])
                 for line in textwrap.wrap(value, 60):
-                    print "%-15s . %s" % ("", line)
-            else: print "%-15s = %s" % (k, hex(v))
-        print "%-15s = %s" % ('documentation', message.__doc__)
+                    print("%-15s . %s" % ("", line))
+            else:
+                print("%-15s = %s" % (k, hex(v)))
+        print("%-15s = %s" % ('documentation', message.__doc__))
 
 
 #---------------------------------------------------------------------------# 
@@ -166,9 +170,9 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception as e:
+            print("Logging is not supported on this system- {}".format(e))
 
     framer = lookup = {
         'tcp':    ModbusSocketFramer,

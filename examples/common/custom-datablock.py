@@ -8,7 +8,8 @@ written to the datastore.
 '''
 #---------------------------------------------------------------------------# 
 # import the modbus libraries we need
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
+from __future__ import print_function
 from pymodbus.server.async import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
@@ -45,14 +46,14 @@ class CustomDataBlock(ModbusSparseDataBlock):
         # however make sure not to do too much work here or it will
         # block the server, espectially if the server is being written
         # to very quickly
-        print "wrote {} to {}".format(value, address)
+        print("wrote {} to {}".format(value, address))
 
 
 #---------------------------------------------------------------------------# 
 # initialize your data store
 #---------------------------------------------------------------------------# 
 
-block   = CustomDataBlock()
+block   = CustomDataBlock([0]*100)
 store   = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
 context = ModbusServerContext(slaves=store, single=True)
 
@@ -72,6 +73,6 @@ identity.MajorMinorRevision = '1.0'
 # run the server you want
 #---------------------------------------------------------------------------# 
 
-p = Process(target=device_writer, args=(queue,))
-p.start()
+# p = Process(target=device_writer, args=(queue,))
+# p.start()
 StartTcpServer(context, identity=identity, address=("localhost", 5020))

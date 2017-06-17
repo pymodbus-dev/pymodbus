@@ -66,7 +66,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         '''
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        result = context.get_callbacks[self.decode(fx)](address, count, self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](address, count, self.unit_id)
         return result.function_code < 0x80
 
     def getValues(self, fx, address, count=1):
@@ -78,7 +78,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         '''
         _logger.debug("get values[%d] %d:%d" % (fx, address, count))
-        result = context.get_callbacks[self.decode(fx)](address, count, self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](address, count, self.unit_id)
         return self.__extract_result(self.decode(fx), result)
 
     def setValues(self, fx, address, values):
@@ -89,7 +89,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param values: The new values to be set
         '''
         _logger.debug("set values[%d] %d:%d" % (fx, address, len(values)))
-        context.set_callbacks[self.decode(fx)](address, values, self.unit_id)
+        self.context.set_callbacks[self.decode(fx)](address, values, self.unit_id)
 
     def __str__(self):
         ''' Returns a string representation of the context

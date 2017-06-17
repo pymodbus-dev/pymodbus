@@ -5,6 +5,7 @@ Pymodbus Web Frontend
 This is a simple web frontend using bottle as the web framework.
 This can be hosted using any wsgi adapter.
 '''
+from __future__ import print_function
 import json, inspect
 from bottle import route, request, Bottle
 from bottle import static_file
@@ -125,7 +126,8 @@ class ModbusApiWebApp(object):
             result  = { 'data' : values }
             result.update(Response.success)
             return result
-        except Exception, ex: log.error(ex)
+        except Exception as ex:
+            log.error(ex)
         return Response.failure
 
     def get_coils(self, address='0', count='1'):
@@ -147,11 +149,12 @@ class ModbusApiWebApp(object):
         try:
             address = int(address)
             values  = json.loads(values)
-            print values
+            print(values)
             context = self._server.store[int(store)]
             context.setValues(store, address, values)
             return Response.success
-        except Exception, ex: log.error(ex)
+        except Exception as ex:
+            log.error(ex)
         return Response.failure
 
     def post_coils(self, address='0'):

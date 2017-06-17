@@ -30,7 +30,8 @@ log.setLevel(logging.DEBUG)
 # helper method to test deferred callbacks
 #---------------------------------------------------------------------------# 
 def dassert(deferred, callback):
-    def _assertor(value): assert(value)
+    def _assertor(value):
+        assert(value)
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(lambda  _: _assertor(False))
 
@@ -121,6 +122,6 @@ def beginAsynchronousTest(client):
 # directory, or start a pymodbus server.
 #---------------------------------------------------------------------------# 
 defer = protocol.ClientCreator(reactor, ModbusClientProtocol
-        ).connectTCP("localhost", Defaults.Port)
+        ).connectTCP("localhost", 5020)
 defer.addCallback(beginAsynchronousTest)
 reactor.run()

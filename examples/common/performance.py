@@ -8,7 +8,8 @@ modbus client.
 '''
 #---------------------------------------------------------------------------# 
 # import the necessary modules
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
+from __future__ import print_function
 import logging, os
 from time import time
 from multiprocessing import log_to_stderr
@@ -79,5 +80,5 @@ start = time()
 any(p.start() for p in procs)   # start the workers
 any(p.join()  for p in procs)   # wait for the workers to finish
 stop  = time()
-print "%d requests/second" % ((1.0 * cycles) / (stop - start))
-print "time taken to complete %s cycle by %s workers is %s seconds" % (cycles, workers, stop-start)
+print("%d requests/second" % ((1.0 * cycles) / (stop - start)))
+print("time taken to complete %s cycle by %s workers is %s seconds" % (cycles, workers, stop-start))

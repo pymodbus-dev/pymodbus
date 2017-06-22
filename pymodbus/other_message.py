@@ -43,7 +43,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -144,7 +144,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -249,7 +249,7 @@ class GetCommEventLogRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -359,12 +359,12 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         pass
 
-    def execute(self):
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
         '''
-        identifier = b'\x70\x79\x6d\x6f\x64\x62\x75\x73'
+        identifier = b'Pymodbus'
         return ReportSlaveIdResponse(identifier)
 
     def __str__(self):
@@ -392,14 +392,17 @@ class ReportSlaveIdResponse(ModbusResponse):
         ModbusResponse.__init__(self, **kwargs)
         self.identifier = identifier
         self.status = status
+        self.byte_count = None
 
     def encode(self):
         ''' Encodes the response
 
         :returns: The byte encoded message
         '''
-        if self.status: status = ModbusStatus.SlaveOn
-        else: status = ModbusStatus.SlaveOff
+        if self.status:
+            status = ModbusStatus.SlaveOn
+        else:
+            status = ModbusStatus.SlaveOff
         length  = len(self.identifier) + 2
         packet  = int2byte(length)
         packet += self.identifier  # we assume it is already encoded
@@ -414,8 +417,8 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = byte2int(data[0])
-        self.identifier = data[1:length + 1]
+        self.byte_count = byte2int(data[0])
+        self.identifier = data[1:self.byte_count + 1]
         status = byte2int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
@@ -425,7 +428,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :returns: The string representation of the response
         '''
         arguments = (self.function_code, self.identifier, self.status)
-        return "ResportSlaveIdResponse(%d, %d, %d)" % arguments
+        return "ResportSlaveIdResponse(%s, %s, %s)" % arguments
 
 #---------------------------------------------------------------------------#
 # TODO Make these only work on serial

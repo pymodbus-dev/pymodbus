@@ -7,6 +7,7 @@ import socket
 from binascii import b2a_hex, a2b_hex
 
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
+from pymodbus.exceptions import InvalidResponseRecievedException
 from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
@@ -107,7 +108,6 @@ class ModbusTransactionManager(object):
         retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
-
         expected_response_length = None
         if hasattr(request, "get_response_pdu_size"):
             response_pdu_size = request.get_response_pdu_size()
@@ -116,12 +116,12 @@ class ModbusTransactionManager(object):
 
         while retries > 0:
             try:
+                last_exception = None
                 self.client.connect()
                 packet = self.client.framer.buildPacket(request)
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
                 self.client._send(packet)
-
                 exception = False
                 result = self.client._recv(expected_response_length or 1024)
                 while result and expected_response_length and len(result) < expected_response_length:
@@ -139,12 +139,18 @@ class ModbusTransactionManager(object):
                     _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break
-            except socket.error as msg:
+            except (socket.error, ModbusIOException, InvalidResponseRecievedException) as msg:
                 self.client.close()
                 _logger.debug("Transaction failed. (%s) " % msg)
                 retries -= 1
-        return self.getTransaction(request.transaction_id)
+                last_exception = msg
+        response = self.getTransaction(request.transaction_id)
+        if not response:
+            last_exception = last_exception or ("No Response "
+                                                "received from the remote unit")
+            response = ModbusIOException(last_exception)
 
+        return response
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
@@ -432,9 +438,12 @@ class ModbusSocketFramer(IModbusFramer):
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
-        self.populateResult(result)
-        self.advanceFrame()
-        callback(result)  # defer or push to a thread?
+        elif error and result.function_code < 0x80:
+            raise InvalidResponseRecievedException(result)
+        else:
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer or push to a thread?
 
     def resetFrame(self):
         ''' Reset the entire message frame.
@@ -670,9 +679,12 @@ class ModbusRtuFramer(IModbusFramer):
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
-        self.populateResult(result)
-        self.advanceFrame()
-        callback(result)  # defer or push to a thread?
+        elif error and result.function_code < 0x80:
+            raise InvalidResponseRecievedException(result)
+        else:
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer or push to a thread?
 
     def getRawFrame(self):
         """
@@ -811,7 +823,8 @@ class ModbusAsciiFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer this
-            else: break
+            else:
+                break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet
@@ -972,7 +985,8 @@ class ModbusBinaryFramer(IModbusFramer):
                 self.populateResult(result)
                 self.advanceFrame()
                 callback(result)  # defer or push to a thread?
-            else: break
+            else:
+                break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

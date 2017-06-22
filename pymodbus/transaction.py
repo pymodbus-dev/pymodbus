@@ -68,9 +68,37 @@ class ModbusTransactionManager(object):
 
     def _calculate_response_length(self, expected_pdu_size):
         if self.base_adu_size == -1:
-            return 1024
+            return None
         else:
             return self.base_adu_size + expected_pdu_size
+
+    def _calculate_exception_length(self):
+        ''' Returns the length of the Modbus Exception Response according to
+        the type of Framer.
+        '''
+        if isinstance(self.client.framer, ModbusSocketFramer):
+            return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
+        elif isinstance(self.client.framer, ModbusAsciiFramer):
+            return self.base_adu_size + 4  # Fcode(2), ExcecptionCode(2)
+        elif isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
+            return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
+
+        return None
+
+    def _check_response(self, response):
+        ''' Checks if the response is a Modbus Exception.
+        '''
+        if isinstance(self.client.framer, ModbusSocketFramer):
+            if len(response) >= 8 and byte2int(response[7]) > 128:
+                return False
+        elif isinstance(self.client.framer, ModbusAsciiFramer):
+            if len(response) >= 5 and int(response[3:5], 16) > 128:
+                return False
+        elif isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
+            if len(response) >= 2 and byte2int(response[1]) > 128:
+                return False
+
+        return True
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -79,11 +107,12 @@ class ModbusTransactionManager(object):
         retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
+
+        expected_response_length = None
         if hasattr(request, "get_response_pdu_size"):
             response_pdu_size = request.get_response_pdu_size()
-            expected_response_length = self._calculate_response_length(response_pdu_size)
-        else:
-            expected_response_length = 1024
+            if response_pdu_size:
+                expected_response_length = self._calculate_response_length(response_pdu_size)
 
         while retries > 0:
             try:
@@ -92,11 +121,20 @@ class ModbusTransactionManager(object):
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
                 self.client._send(packet)
-                result = self.client._recv(expected_response_length)
+
+                exception = False
+                result = self.client._recv(expected_response_length or 1024)
+                while result and expected_response_length and len(result) < expected_response_length:
+                    if not exception and not self._check_response(result):
+                        exception = True
+                        expected_response_length = self._calculate_exception_length()
+                        continue
+                    result += self.client._recv(expected_response_length - len(result))
 
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
+
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)

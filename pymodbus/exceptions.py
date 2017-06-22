@@ -77,6 +77,21 @@ class ConnectionException(ModbusException):
         message = "[Connection] %s" % string
         ModbusException.__init__(self, message)
 
+
+class InvalidResponseRecievedException(ModbusException):
+    """
+    Error resulting from invalid response received or decoded
+    """
+
+
+def __init__(self, string=""):
+    ''' Initialize the exception
+
+    :param string: The message to append to the error
+    '''
+    message = "[Invalid Response] %s" % string
+    ModbusException.__init__(self, message)
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#

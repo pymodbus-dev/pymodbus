@@ -1,4 +1,14 @@
 
+Version 1.3.1
+------------------------------------------------------------
+* Recall socket recv until get a complete response
+* Register_write_message.py: Observe skip_encode option when encoding a single register request
+* Fix wrong expected response length for coils and discrete inputs
+* Fix decode errors with ReadDeviceInformationRequest and  ReportSlaveIdRequest on Python3
+* Move MaskWriteRegisterRequest/MaskWriteRegisterResponse  to register_write_message.py from file_message.py
+* Python3 compatible examples [WIP]
+* Misc updates with examples
+
 Version 1.3.0.rc2
 ------------------------------------------------------------
 * Fix encoding problem for ReadDeviceInformationRequest method on python3

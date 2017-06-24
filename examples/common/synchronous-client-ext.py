@@ -70,9 +70,9 @@ rq = ReadDeviceInformationRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                             # not supported by reference
 assert(rr.function_code < 0x80)                 # test that we are not an error
-assert(rr.information[0] == 'Pymodbus')  # test the vendor name
-assert(rr.information[1] == 'PM')          # test the product code
-assert(rr.information[2] == '1.0')     # test the code revision
+assert(rr.information[0] == b'Pymodbus')  # test the vendor name
+assert(rr.information[1] == b'PM')          # test the product code
+assert(rr.information[2] == b'1.0')     # test the code revision
 
 rq = ReportSlaveIdRequest(unit=1)
 rr = client.execute(rq)

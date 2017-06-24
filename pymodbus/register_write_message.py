@@ -241,10 +241,107 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         params = (self.address, self.count)
         return "WriteMultipleRegisterResponse (%d,%d)" % params
 
+class MaskWriteRegisterRequest(ModbusRequest):
+    '''
+    This function code is used to modify the contents of a specified holding
+    register using a combination of an AND mask, an OR mask, and the
+    register's current contents. The function can be used to set or clear
+    individual bits in the register.
+    '''
+    function_code = 0x16
+    _rtu_frame_size = 10
+
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
+                 **kwargs):
+        ''' Initializes a new instance
+
+        :param address: The mask pointer address (0x0000 to 0xffff)
+        :param and_mask: The and bitmask to apply to the register address
+        :param or_mask: The or bitmask to apply to the register address
+        '''
+        ModbusRequest.__init__(self, **kwargs)
+        self.address = address
+        self.and_mask = and_mask
+        self.or_mask = or_mask
+
+    def encode(self):
+        ''' Encodes the request packet
+
+        :returns: The byte encoded packet
+        '''
+        return struct.pack('>HHH', self.address, self.and_mask,
+                           self.or_mask)
+
+    def decode(self, data):
+        ''' Decodes the incoming request
+
+        :param data: The data to decode into the address
+        '''
+        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH',
+                                                                  data)
+
+    def execute(self, context):
+        ''' Run a mask write register request against the store
+
+        :param context: The datastore to request from
+        :returns: The populated response
+        '''
+        if not (0x0000 <= self.and_mask <= 0xffff):
+            return self.doException(merror.IllegalValue)
+        if not (0x0000 <= self.or_mask <= 0xffff):
+            return self.doException(merror.IllegalValue)
+        if not context.validate(self.function_code, self.address, 1):
+            return self.doException(merror.IllegalAddress)
+        values = context.getValues(self.function_code, self.address, 1)[0]
+        values = ((values & self.and_mask) | self.or_mask)
+        context.setValues(self.function_code, self.address, [values])
+        return MaskWriteRegisterResponse(self.address, self.and_mask,
+                                         self.or_mask)
+
+
+class MaskWriteRegisterResponse(ModbusResponse):
+    '''
+    The normal response is an echo of the request. The response is returned
+    after the register has been written.
+    '''
+    function_code = 0x16
+    _rtu_frame_size = 10
+
+    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
+                 **kwargs):
+        ''' Initializes a new instance
+
+        :param address: The mask pointer address (0x0000 to 0xffff)
+        :param and_mask: The and bitmask applied to the register address
+        :param or_mask: The or bitmask applied to the register address
+        '''
+        ModbusResponse.__init__(self, **kwargs)
+        self.address = address
+        self.and_mask = and_mask
+        self.or_mask = or_mask
+
+    def encode(self):
+        ''' Encodes the response
+
+        :returns: The byte encoded message
+        '''
+        return struct.pack('>HHH', self.address, self.and_mask,
+                           self.or_mask)
+
+    def decode(self, data):
+        ''' Decodes a the response
+
+        :param data: The packet data to decode
+        '''
+        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH',
+                                                                  data)
+
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
     "WriteSingleRegisterRequest", "WriteSingleRegisterResponse",
     "WriteMultipleRegistersRequest", "WriteMultipleRegistersResponse",
+    "MaskWriteRegisterRequest", "MaskWriteRegisterResponse"
 ]

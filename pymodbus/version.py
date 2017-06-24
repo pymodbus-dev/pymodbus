@@ -31,7 +31,7 @@ class Version(object):
         if self.pre:
             return '%d.%d.%d.%s' % (self.major, self.minor, self.micro, self.pre)
         else:
-            return '%d.%d.%d.%s' % (self.major, self.minor, self.micro)
+            return '%d.%d.%d' % (self.major, self.minor, self.micro)
 
     def __str__(self):
         ''' Returns a string representation of the object
@@ -41,7 +41,7 @@ class Version(object):
         return '[%s, version %s]' % (self.package, self.short())
 
 
-version = Version('pymodbus', 1, 3, 0, "rc2")
+version = Version('pymodbus', 1, 3, 1)
 
 
 version.__name__ = 'pymodbus'  # fix epydoc error

@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import iteritems, byte2int
+from pymodbus.compat import iteritems, byte2int, IS_PYTHON3
 
 _MCB = ModbusControlBlock()
 
@@ -132,7 +132,13 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         for (object_id, data) in iteritems(self.information):
             packet += struct.pack('>BB', object_id, len(data))
-            packet += data.encode()
+            if IS_PYTHON3:
+                if isinstance(data, bytes):
+                    packet += data
+                else:
+                    packet += data.encode()
+            else:
+                packet += data.encode()
         return packet
 
     def decode(self, data):

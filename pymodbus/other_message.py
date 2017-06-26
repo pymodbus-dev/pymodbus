@@ -403,7 +403,7 @@ class ReportSlaveIdResponse(ModbusResponse):
             status = ModbusStatus.SlaveOn
         else:
             status = ModbusStatus.SlaveOff
-        length  = len(self.identifier) + 2
+        length  = len(self.identifier) + 1
         packet  = int2byte(length)
         packet += self.identifier  # we assume it is already encoded
         packet += int2byte(status)

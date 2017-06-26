@@ -74,7 +74,6 @@ class DiagnosticStatusRequest(ModbusRequest):
         return 1 + 2 + 2 * len(self.message)
 
 
-
 class DiagnosticStatusResponse(ModbusResponse):
     '''
     This is a base class for all of the diagnostic response functions
@@ -118,7 +117,11 @@ class DiagnosticStatusResponse(ModbusResponse):
 
         :param data: The data to decode into the function code
         '''
-        self.sub_function_code, self.message = struct.unpack('>HH', data)
+        word_len = len(data)//2
+        if len(data) % 2:
+            word_len += 1
+        data = struct.unpack('>' + 'H'*word_len, data)
+        self.sub_function_code, self.message = data[0], data[1:]
 
 
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
@@ -708,6 +711,23 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
     '''
     sub_function_code = 0x0015
 
+    def __init__(self, **kwargs):
+        super(GetClearModbusPlusRequest, self).__init__(**kwargs)
+
+    def get_response_pdu_size(self):
+        """
+        Returns a series of 54 16-bit words (108 bytes) in the data field of the response
+        (this function differs from the usual two-byte length of the data field). The data
+        contains the statistics for the Modbus Plus peer processor in the slave device.
+        Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
+        :return:
+        """
+        if self.message == ModbusPlusOperation.GetStatistics:
+            data = 2 + 108 # byte count(2) + data (54*2)
+        else:
+            data = 0
+        return 1 + 2 + 2 + 2+ data
+
     def execute(self, *args):
         ''' Execute the diagnostic request on the given device
 
@@ -716,8 +736,22 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         message = None # the clear operation does not return info
         if self.message == ModbusPlusOperation.ClearStatistics:
             _MCB.Plus.reset()
-        else: message = _MCB.Plus.encode()
+            message = self.message
+        else:
+            message = [self.message]
+            message += _MCB.Plus.encode()
         return GetClearModbusPlusResponse(message)
+
+    def encode(self):
+        '''
+        Base encoder for a diagnostic response
+        we encode the data set in self.message
+
+        :returns: The encoded packet
+        '''
+        packet = struct.pack('>H', self.sub_function_code)
+        packet += struct.pack('>H', self.message)
+        return packet
 
 
 class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):

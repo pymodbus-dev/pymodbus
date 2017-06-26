@@ -1,3 +1,9 @@
+Version 1.3.2
+------------------------------------------------------------
+* Fix response length calculation for ModbusASCII protocol
+* Fix response length calculation ReportSlaveIdResponse, DiagnosticStatusResponse
+* Fix never ending transaction case when response is recieved without header and CRC
+* Fix tests
 
 Version 1.3.1
 ------------------------------------------------------------

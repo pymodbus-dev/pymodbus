@@ -214,7 +214,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         while self.running:
             try:
                 data, self.request = self.request
-                if not data: self.running = False
+                if not data:
+                    self.running = False
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
                 # if not self.server.control.ListenOnly:
@@ -223,7 +224,9 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             except socket.error as msg:
                 _logger.error("Socket error occurred %s" % msg)
                 self.running = False
-            except: self.running = False
+            except Exception as msg:
+                _logger.error(msg)
+                self.running = False
 
     def send(self, message):
         ''' Send a request (string) to the network

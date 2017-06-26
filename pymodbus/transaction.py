@@ -61,7 +61,7 @@ class ModbusTransactionManager(object):
         elif isinstance(self.client.framer, ModbusRtuFramer):
             self.base_adu_size = 3 # address(1), CRC(2)
         elif isinstance(self.client.framer, ModbusAsciiFramer):
-            self.base_adu_size = 4 # Address(2), LRC(2)
+            self.base_adu_size = 7 # start(1)+ Address(2), LRC(2) + end(2)
         elif isinstance(self.client.framer, ModbusBinaryFramer):
             self.base_adu_size = 3 #, Address(1), CRC(2)
         else:
@@ -95,7 +95,8 @@ class ModbusTransactionManager(object):
         elif isinstance(self.client.framer, ModbusAsciiFramer):
             if len(response) >= 5 and int(response[3:5], 16) > 128:
                 return False
-        elif isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
+        elif isinstance(self.client.framer, (ModbusRtuFramer,
+                                             ModbusBinaryFramer)):
             if len(response) >= 2 and byte2int(response[1]) > 128:
                 return False
 
@@ -111,6 +112,8 @@ class ModbusTransactionManager(object):
         expected_response_length = None
         if hasattr(request, "get_response_pdu_size"):
             response_pdu_size = request.get_response_pdu_size()
+            if isinstance(self.client.framer, ModbusAsciiFramer):
+                response_pdu_size = response_pdu_size * 2
             if response_pdu_size:
                 expected_response_length = self._calculate_response_length(response_pdu_size)
 
@@ -129,7 +132,13 @@ class ModbusTransactionManager(object):
                         exception = True
                         expected_response_length = self._calculate_exception_length()
                         continue
-                    result += self.client._recv(expected_response_length - len(result))
+                    if isinstance(self.client.framer, ModbusSocketFramer):
+                        break
+                    r = self.client._recv(expected_response_length - len(result))
+                    if not r:
+                        # If no response being recived there is no point in conitnuing
+                        break
+                    result += r
 
                 if not result and self.retry_on_empty:
                     retries -= 1
@@ -146,9 +155,12 @@ class ModbusTransactionManager(object):
                 last_exception = msg
         response = self.getTransaction(request.transaction_id)
         if not response:
-            last_exception = last_exception or ("No Response "
-                                                "received from the remote unit")
-            response = ModbusIOException(last_exception)
+            if len(self.transactions):
+                response = self.getTransaction(tid=0)
+            else:
+                last_exception = last_exception or ("No Response "
+                                                    "received from the remote unit")
+                response = ModbusIOException(last_exception)
 
         return response
 

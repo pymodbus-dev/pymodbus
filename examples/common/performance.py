@@ -13,7 +13,7 @@ from __future__ import print_function
 import logging, os
 from time import time
 from multiprocessing import log_to_stderr
-from pymodbus.client.sync import ModbusTcpClient
+# from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.client.sync import ModbusSerialClient
 
 #---------------------------------------------------------------------------# 
@@ -61,9 +61,10 @@ def single_client_test(host, cycles):
         client = ModbusSerialClient(method="rtu", port="/dev/ttyp0", baudrate=9600)
         while count < cycles:
             with _thread_lock:
-                result = client.read_holding_registers(10, 1, unit=1).getRegister(0)
+                client.read_holding_registers(10, 1, unit=1).registers[0]
                 count += 1
-    except: logger.exception("failed to run test successfully")
+    except:
+        logger.exception("failed to run test successfully")
     logger.debug("finished worker: %d" % os.getpid())
 
 #---------------------------------------------------------------------------# 
@@ -73,6 +74,10 @@ def single_client_test(host, cycles):
 # threads that was specified. We then start all the threads and block on
 # them to finish. This may need to switch to another mechanism to signal
 # finished as the process/thread start up/shut down may skew the test a bit.
+
+# RTU 32 requests/second @9600
+# TCP 31430 requests/second
+
 #---------------------------------------------------------------------------# 
 args  = (host, int(cycles * 1.0 / workers))
 procs = [Worker(target=single_client_test, args=args) for _ in range(workers)]

@@ -2,7 +2,11 @@
 import unittest
 import socket
 import serial
-from mock import patch, Mock
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
+
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
 from pymodbus.exceptions import ConnectionException, NotImplementedException

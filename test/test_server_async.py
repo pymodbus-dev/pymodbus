@@ -1,87 +1,91 @@
 #!/usr/bin/env python
-import unittest
-from mock import patch, Mock
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.async import ModbusServerFactory
-from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+# due to implicit twisted dependency in imports these tests to not run under
+# Python 3:
+from pymodbus.compat import IS_PYTHON2
+if IS_PYTHON2:
 
-#---------------------------------------------------------------------------#
-# Fixture
-#---------------------------------------------------------------------------#
-class AsynchronousServerTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.server.async module
-    '''
+    from mock import patch, Mock
+    from pymodbus.device import ModbusDeviceIdentification
+    from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
+    from pymodbus.server.async import ModbusServerFactory
+    from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer
+    from pymodbus.exceptions import ConnectionException, NotImplementedException
+    from pymodbus.exceptions import ParameterException
+    from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
-    #-----------------------------------------------------------------------#
-    # Setup/TearDown
-    #-----------------------------------------------------------------------#
-
-    def setUp(self):
+    #---------------------------------------------------------------------------#
+    # Fixture
+    #---------------------------------------------------------------------------#
+    class AsynchronousServerTest(unittest.TestCase):
         '''
-        Initializes the test environment
+        This is the unittest for the pymodbus.server.async module
         '''
-        values = dict((i, '') for i in range(10))
-        identity = ModbusDeviceIdentification(info=values)
 
-    #-----------------------------------------------------------------------#
-    # Test Modbus Server Factory
-    #-----------------------------------------------------------------------#
+        #-----------------------------------------------------------------------#
+        # Setup/TearDown
+        #-----------------------------------------------------------------------#
 
-    def testModbusServerFactory(self):
-        ''' Test the base class for all the clients '''
-        factory = ModbusServerFactory(store=None)
-        self.assertEqual(factory.control.Identity.VendorName, '')
+        def setUp(self):
+            '''
+            Initializes the test environment
+            '''
+            values = dict((i, '') for i in range(10))
+            identity = ModbusDeviceIdentification(info=values)
 
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-        factory = ModbusServerFactory(store=None, identity=identity)
-        self.assertEqual(factory.control.Identity.VendorName, 'VendorName')
+        #-----------------------------------------------------------------------#
+        # Test Modbus Server Factory
+        #-----------------------------------------------------------------------#
 
-    #-----------------------------------------------------------------------#
-    # Test Modbus TCP Server
-    #-----------------------------------------------------------------------#
-    def testTCPServerDisconnect(self):
-        protocol = ModbusTcpProtocol()
-        protocol.connectionLost('because of an error')
+        def testModbusServerFactory(self):
+            ''' Test the base class for all the clients '''
+            factory = ModbusServerFactory(store=None)
+            self.assertEqual(factory.control.Identity.VendorName, '')
 
-    #-----------------------------------------------------------------------#
-    # Test Modbus UDP Server
-    #-----------------------------------------------------------------------#
-    def testUdpServerInitialize(self):
-        protocol = ModbusUdpProtocol(store=None)
-        self.assertEqual(protocol.control.Identity.VendorName, '')
+            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+            factory = ModbusServerFactory(store=None, identity=identity)
+            self.assertEqual(factory.control.Identity.VendorName, 'VendorName')
 
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-        protocol = ModbusUdpProtocol(store=None, identity=identity)
-        self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
+        #-----------------------------------------------------------------------#
+        # Test Modbus TCP Server
+        #-----------------------------------------------------------------------#
+        def testTCPServerDisconnect(self):
+            protocol = ModbusTcpProtocol()
+            protocol.connectionLost('because of an error')
 
-    #-----------------------------------------------------------------------#
-    # Test Modbus Server Startups
-    #-----------------------------------------------------------------------#
+        #-----------------------------------------------------------------------#
+        # Test Modbus UDP Server
+        #-----------------------------------------------------------------------#
+        def testUdpServerInitialize(self):
+            protocol = ModbusUdpProtocol(store=None)
+            self.assertEqual(protocol.control.Identity.VendorName, '')
 
-    #def testTcpServerStartup(self):
-    #    ''' Test that the modbus tcp async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartTcpServer(context=None, console=True)
-    #        self.assertEqual(mock_reactor.listenTCP.call_count, 2)
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+            protocol = ModbusUdpProtocol(store=None, identity=identity)
+            self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
 
-    #def testUdpServerStartup(self):
-    #    ''' Test that the modbus udp async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartUdpServer(context=None)
-    #        self.assertEqual(mock_reactor.listenUDP.call_count, 1)
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+        #-----------------------------------------------------------------------#
+        # Test Modbus Server Startups
+        #-----------------------------------------------------------------------#
 
-    #def testSerialServerStartup(self):
-    #    ''' Test that the modbus serial async server starts correctly '''
-    #    with patch('twisted.internet.reactor') as mock_reactor:
-    #        StartSerialServer(context=None, port='/dev/ptmx')
-    #        self.assertEqual(mock_reactor.run.call_count, 1)
+        #def testTcpServerStartup(self):
+        #    ''' Test that the modbus tcp async server starts correctly '''
+        #    with patch('twisted.internet.reactor') as mock_reactor:
+        #        StartTcpServer(context=None, console=True)
+        #        self.assertEqual(mock_reactor.listenTCP.call_count, 2)
+        #        self.assertEqual(mock_reactor.run.call_count, 1)
+
+        #def testUdpServerStartup(self):
+        #    ''' Test that the modbus udp async server starts correctly '''
+        #    with patch('twisted.internet.reactor') as mock_reactor:
+        #        StartUdpServer(context=None)
+        #        self.assertEqual(mock_reactor.listenUDP.call_count, 1)
+        #        self.assertEqual(mock_reactor.run.call_count, 1)
+
+        #def testSerialServerStartup(self):
+        #    ''' Test that the modbus serial async server starts correctly '''
+        #    with patch('twisted.internet.reactor') as mock_reactor:
+        #        StartSerialServer(context=None, port='/dev/ptmx')
+        #        self.assertEqual(mock_reactor.run.call_count, 1)
 
 #---------------------------------------------------------------------------#
 # Main

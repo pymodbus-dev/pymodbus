@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import unittest
-from mock import patch, Mock
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
 import serial
 import socket
 
@@ -232,12 +235,14 @@ class SynchronousServerTest(unittest.TestCase):
     def testTcpServerClose(self):
         ''' test that the synchronous TCP server closes correctly '''
         with patch.object(socket.socket, 'bind') as mock_socket:
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-            server = ModbusTcpServer(context=None, identity=identity)
-            server.threads.append(Mock(**{'running': True}))
-            server.server_close()
-            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-            self.assertFalse(server.threads[0].running)
+            with patch.object(socket.socket, 'getsockname') as mock_getsockname:
+                with patch.object(socketserver.TCPServer, 'server_activate') as mock_activator:
+                    identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+                    server = ModbusTcpServer(context=None, identity=identity)
+                    server.threads.append(Mock(**{'running': True}))
+                    server.server_close()
+                    self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+                    self.assertFalse(server.threads[0].running)
 
     def testTcpServerProcess(self):
         ''' test that the synchronous TCP server processes requests '''
@@ -252,12 +257,14 @@ class SynchronousServerTest(unittest.TestCase):
     def testUdpServerClose(self):
         ''' test that the synchronous UDP server closes correctly '''
         with patch.object(socket.socket, 'bind') as mock_socket:
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-            server = ModbusUdpServer(context=None, identity=identity)
-            server.threads.append(Mock(**{'running': True}))
-            server.server_close()
-            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-            self.assertFalse(server.threads[0].running)
+            with patch.object(socket.socket, 'getsockname') as mock_getsockname:
+                with patch.object(socketserver.TCPServer, 'server_activate') as mock_activator:
+                    identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+                    server = ModbusUdpServer(context=None, identity=identity)
+                    server.threads.append(Mock(**{'running': True}))
+                    server.server_close()
+                    self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+                    self.assertFalse(server.threads[0].running)
 
     def testUdpServerProcess(self):
         ''' test that the synchronous UDP server processes requests '''
@@ -311,13 +318,15 @@ class SynchronousServerTest(unittest.TestCase):
         ''' Test the tcp server starting factory '''
         with patch.object(ModbusTcpServer, 'serve_forever') as mock_server:
             with patch.object(socketserver.TCPServer, 'server_bind') as mock_binder:
-                StartTcpServer()
+                with patch.object(socketserver.TCPServer, 'server_activate') as mock_activator:
+                    StartTcpServer()
 
     def testStartUdpServer(self):
         ''' Test the udp server starting factory '''
         with patch.object(ModbusUdpServer, 'serve_forever') as mock_server:
             with patch.object(socketserver.UDPServer, 'server_bind') as mock_binder:
-                StartUdpServer()
+                with patch.object(socketserver.TCPServer, 'server_activate') as mock_activator:
+                    StartUdpServer()
 
     def testStartSerialServer(self):
         ''' Test the serial server starting factory '''

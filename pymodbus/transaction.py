@@ -663,6 +663,7 @@ class ModbusRtuFramer(IModbusFramer):
                     # Could be an error response
                     if len(self.__buffer):
                         # Possible error ???
+                       self.resetFrame()
                        self._process(callback, error=True)
             else:
                 if len(self.__buffer):

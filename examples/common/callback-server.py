@@ -19,7 +19,8 @@ from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 #---------------------------------------------------------------------------# 
 # import the python libraries we need
 #---------------------------------------------------------------------------# 
-from multiprocessing import Queue, Process
+from multiprocessing import Queue
+from threading import Thread
 
 #---------------------------------------------------------------------------# 
 # configure the service logging
@@ -127,6 +128,6 @@ identity.MajorMinorRevision = '1.0'
 #---------------------------------------------------------------------------# 
 # run the server you want
 #---------------------------------------------------------------------------# 
-p = Process(target=device_writer, args=(queue,))
+p = Thread(target=device_writer, args=(queue,))
 p.start()
 StartTcpServer(context, identity=identity, address=("localhost", 5020))

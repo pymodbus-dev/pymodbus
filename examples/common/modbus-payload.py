@@ -9,6 +9,7 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.compat import iteritems
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -72,11 +73,11 @@ decoded = {
     'bits': decoder.decode_bits(),
 }
 
-print "-" * 60
-print "Decoded Data"
-print "-" * 60
-for name, value in decoded.iteritems():
-    print ("%s\t" % name), value
+print("-" * 60)
+print("Decoded Data")
+print("-" * 60)
+for name, value in iteritems(decoded):
+    print ("%s\t" % name, value)
 
 #---------------------------------------------------------------------------# 
 # close the client

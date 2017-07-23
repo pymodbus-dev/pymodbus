@@ -16,6 +16,7 @@ from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
+
 #---------------------------------------------------------------------------# 
 # import the python libraries we need
 #---------------------------------------------------------------------------# 
@@ -31,7 +32,8 @@ log.setLevel(logging.DEBUG)
 
 #---------------------------------------------------------------------------# 
 # create your custom data block with callbacks
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
+
 class CallbackDataBlock(ModbusSparseDataBlock):
     ''' A datablock that stores the new value in memory
     and passes the operation to a message queue for further
@@ -44,7 +46,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         self.devices = devices
         self.queue = queue
 
-        values = {k:0 for k in devices.iterkeys()}
+        values = {k:0 for k in devices.keys()}
         values[0xbeef] = len(values) # the number of devices
         super(CallbackDataBlock, self).__init__(values)
 

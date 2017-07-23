@@ -109,6 +109,7 @@ class ModbusTransactionManager(object):
         retries = self.retries
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
+        self.client.framer.resetFrame()
         expected_response_length = None
         if hasattr(request, "get_response_pdu_size"):
             response_pdu_size = request.get_response_pdu_size()
@@ -465,7 +466,7 @@ class ModbusSocketFramer(IModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         '''
-        self.__buffer = ''
+        self.__buffer = b''
         self.__header = {}
 
     def getRawFrame(self):

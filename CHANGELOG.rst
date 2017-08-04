@@ -1,5 +1,6 @@
 Version 1.3.2
 ------------------------------------------------------------
+* Fix issue with server and client where in the frame buffer had values from previous unsuccesful transaction
 * Fix response length calculation for ModbusASCII protocol
 * Fix response length calculation ReportSlaveIdResponse, DiagnosticStatusResponse
 * Fix never ending transaction case when response is recieved without header and CRC

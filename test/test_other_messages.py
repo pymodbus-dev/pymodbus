@@ -92,6 +92,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(request.execute().function_code, 0x11)
 
         response = ReportSlaveIdResponse(request.execute().identifier, True)
+
         self.assertEqual(response.encode(), b'\tPymodbus\xff')
         response.decode(b'\x03\x12\x00')
         self.assertEqual(response.status, False)

@@ -128,6 +128,7 @@ class ModbusTransactionManager(object):
                 self._send(packet)
                 # exception = False
                 result = self._recv(expected_response_length or 1024)
+
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
@@ -177,6 +178,7 @@ class ModbusTransactionManager(object):
                 break
             retries -= 1
         return result
+
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler

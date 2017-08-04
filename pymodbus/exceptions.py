@@ -91,6 +91,7 @@ class InvalidMessageRecievedException(ModbusException):
         message = "[Invalid Message] %s" % string
         ModbusException.__init__(self, message)
 
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#

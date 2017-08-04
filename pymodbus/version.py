@@ -44,6 +44,7 @@ class Version(object):
 version = Version('pymodbus', 1, 3, 2)
 
 
+
 version.__name__ = 'pymodbus'  # fix epydoc error
 
 #---------------------------------------------------------------------------#

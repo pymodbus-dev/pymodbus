@@ -15,8 +15,6 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageRecievedException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.compat import socketserver, byte2int
 
@@ -30,6 +28,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Protocol Handlers
 #---------------------------------------------------------------------------#
+
 class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     ''' Implements the modbus server protocol
 
@@ -87,34 +86,6 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         raise NotImplementedException("Method not implemented by derived class")
 
 
-# class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
-#     ''' Implements the modbus server protocol
-#
-#     This uses the socketserver.BaseRequestHandler to implement
-#     the client handler for a single client(serial clients)
-#     '''
-#
-#     def handle(self):
-#         ''' Callback when we receive any data
-#         '''
-#         while self.running:
-#             try:
-#                 data = self.request.recv(1024)
-#                 if data:
-#                     if _logger.isEnabledFor(logging.DEBUG):
-#                         _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
-#                     self.framer.processIncomingPacket(data, self.execute)
-#             except Exception as msg:
-#                 # since we only have a single socket, we cannot exit
-#                 _logger.error("Socket error occurred %s" % msg)
-#
-#     def send(self, message):
-#         ''' Send a request (string) to the network
-#
-#         :param message: The unencoded modbus response
-#         '''
-
-
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
     ''' Implements the modbus server protocol
 
@@ -138,7 +109,6 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 self.framer.resetFrame()
                 _logger.error("Socket error occurred %s" % msg)
 
-
     def send(self, message):
         ''' Send a request (string) to the network
 
@@ -150,6 +120,16 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug('send: %s' % b2a_hex(pdu))
             return self.request.send(pdu)
+
+
+class CustomSingleRequestHandler(ModbusSingleRequestHandler):
+
+    def __init__(self, request, client_address, server):
+        self.request = request
+        self.client_address = client_address
+        self.server = server
+        self.running = True
+        self.setup()
 
 
 class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
@@ -389,6 +369,8 @@ class ModbusSerialServer(object):
     server context instance.
     '''
 
+    handler = None
+
     def __init__(self, context, framer=None, identity=None, **kwargs):
         ''' Overloaded initializer for the socket server
 
@@ -425,6 +407,7 @@ class ModbusSerialServer(object):
         self.socket   = None
         self._connect()
         self.is_running = True
+        self._build_handler()
 
     def _connect(self):
         ''' Connect to the serial server
@@ -449,9 +432,9 @@ class ModbusSerialServer(object):
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        handler = ModbusSingleRequestHandler(request,
-            (self.device, self.device), self)
-        return handler
+        self.handler = CustomSingleRequestHandler(request,
+                                                  (self.device, self.device),
+                                                  self)
 
     def serve_forever(self):
         ''' Callback for connecting a new client thread
@@ -460,15 +443,19 @@ class ModbusSerialServer(object):
         :param client: The address of the client
         '''
         _logger.debug("Started thread to serve client")
-        handler = self._build_handler()
+        if not self.handler:
+            self._build_handler()
         while self.is_running:
-            handler.handle()
+            self.handler.handle()
 
     def server_close(self):
         ''' Callback for stopping the running server
         '''
         _logger.debug("Modbus server stopped")
         self.is_running = False
+        self.handler.finish()
+        self.handler.running = False
+        self.handler = None
         self.socket.close()
 
 

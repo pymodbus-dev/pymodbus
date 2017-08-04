@@ -405,9 +405,9 @@ class ModbusSerialServer(object):
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
         self.socket   = None
-        self._connect()
-        self.is_running = True
-        self._build_handler()
+        if self._connect():
+            self.is_running = True
+            self._build_handler()
 
     def _connect(self):
         ''' Connect to the serial server
@@ -429,6 +429,7 @@ class ModbusSerialServer(object):
 
         :returns: A patched handler
         '''
+
         request = self.socket
         request.send = request.write
         request.recv = request.read
@@ -442,11 +443,14 @@ class ModbusSerialServer(object):
         :param request: The request to handle
         :param client: The address of the client
         '''
-        _logger.debug("Started thread to serve client")
-        if not self.handler:
-            self._build_handler()
-        while self.is_running:
-            self.handler.handle()
+        if self._connect():
+            _logger.debug("Started thread to serve client")
+            if not self.handler:
+                self._build_handler()
+            while self.is_running:
+                self.handler.handle()
+        else:
+            _logger.error("Error opening serial port , Unable to start server!!")
 
     def server_close(self):
         ''' Callback for stopping the running server

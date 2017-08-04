@@ -33,6 +33,7 @@ class MockServer(object):
         self.threads = []
         self.context = {}
 
+
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
@@ -280,24 +281,30 @@ class SynchronousServerTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
     def testSerialServerConnect(self):
         with patch.object(serial, 'Serial') as mock_serial:
-            mock_serial.return_value = "socket"
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-            server = ModbusSerialServer(context=None, identity=identity)
-            self.assertEqual(server.socket, "socket")
-            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+                # mock_serial.return_value = "socket"
+                mock_serial.write = lambda x: len(x)
+                mock_serial.read = lambda size: '\x00' * size
+                identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+                server = ModbusSerialServer(context=None, identity=identity, port="dummy")
+                # # mock_serial.return_value = "socket"
+                # self.assertEqual(server.socket.port, "dummy")
+                self.assertEquals(server.handler.__class__.__name__, "CustomSingleRequestHandler")
+                self.assertEqual(server.control.Identity.VendorName, 'VendorName')
 
-            server._connect()
-            self.assertEqual(server.socket, "socket")
+                server._connect()
+                # self.assertEqual(server.socket, "socket")
 
         with patch.object(serial, 'Serial') as mock_serial:
+            mock_serial.write = lambda x: len(x)
+            mock_serial.read = lambda size: '\x00' * size
             mock_serial.side_effect = serial.SerialException()
-            server = ModbusSerialServer(None)
+            server = ModbusSerialServer(None, port="dummy")
             self.assertEqual(server.socket, None)
 
     def testSerialServerServeForever(self):
         ''' test that the synchronous serial server closes correctly '''
         with patch.object(serial, 'Serial') as mock_serial:
-            with patch('pymodbus.server.sync.ModbusSingleRequestHandler') as mock_handler:
+            with patch('pymodbus.server.sync.CustomSingleRequestHandler') as mock_handler:
                 server = ModbusSerialServer(None)
                 instance = mock_handler.return_value
                 instance.handle.side_effect = server.server_close

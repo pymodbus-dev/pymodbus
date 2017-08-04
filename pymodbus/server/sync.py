@@ -15,6 +15,8 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import *
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import InvalidMessageRecievedException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.compat import socketserver, byte2int
 
@@ -132,7 +134,10 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                     self.framer.processIncomingPacket(data, self.execute)
             except Exception as msg:
                 # since we only have a single socket, we cannot exit
+                # Clear frame buffer
+                self.framer.resetFrame()
                 _logger.error("Socket error occurred %s" % msg)
+
 
     def send(self, message):
         ''' Send a request (string) to the network
@@ -167,6 +172,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         to supply the alternative request handler class.
 
         '''
+        reset_frame = False
         while self.running:
             try:
                 data = self.request.recv(1024)
@@ -178,13 +184,18 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
             except socket.timeout as msg:
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("Socket timeout occurred %s", msg)
-                pass
+                reset_frame = True
             except socket.error as msg:
                 _logger.error("Socket error occurred %s" % msg)
                 self.running = False
             except:
                 _logger.error("Socket exception occurred %s" % traceback.format_exc() )
                 self.running = False
+                reset_frame = True
+            finally:
+                if reset_frame:
+                    self.framer.resetFrame()
+                    reset_frame = False
 
     def send(self, message):
         ''' Send a request (string) to the network
@@ -211,6 +222,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
     def handle(self):
         ''' Callback when we receive any data
         '''
+        reset_frame = False
         while self.running:
             try:
                 data, self.request = self.request
@@ -224,9 +236,15 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             except socket.error as msg:
                 _logger.error("Socket error occurred %s" % msg)
                 self.running = False
+                reset_frame = True
             except Exception as msg:
                 _logger.error(msg)
                 self.running = False
+                reset_frame = True
+            finally:
+                if reset_frame:
+                    self.framer.resetFrame()
+                    reset_frame = False
 
     def send(self, message):
         ''' Send a request (string) to the network

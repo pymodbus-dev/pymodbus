@@ -131,7 +131,7 @@ class ModbusTransactionManager(object):
                         expected_response_length = self._calculate_exception_length()
                         continue
                     local_retries -= 1
-                    print("retries %d"%local_retries)
+                    _logger.debug("retries %d"%local_retries)
                     result += self.client._recv(expected_response_length - len(result))
 
                 if not result and self.retry_on_empty:

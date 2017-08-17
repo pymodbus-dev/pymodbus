@@ -349,6 +349,14 @@ class BinaryPayloadDecoder(object):
         self._pointer += size
         return self._payload[self._pointer - size:self._pointer]
 
+    def skip_bytes(self, nbytes):
+        ''' Skip n bytes in the buffer
+
+        :param nbytes: The number of bytes to skip
+        '''
+        self._pointer += nbytes
+        return None
+
 #---------------------------------------------------------------------------#
 # Exported Identifiers
 #---------------------------------------------------------------------------#

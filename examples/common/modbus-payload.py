@@ -34,6 +34,7 @@ client.connect()
 # - a 8 byte string 'abcdefgh'
 # - a 32 bit float 22.34
 # - a 16 bit unsigned int 0x1234
+# - another 16 bit unsigned int 0x5678
 # - an 8 bit int 0x12
 # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
 #---------------------------------------------------------------------------# 
@@ -41,6 +42,7 @@ builder = BinaryPayloadBuilder(endian=Endian.Big)
 builder.add_string('abcdefgh')
 builder.add_32bit_float(22.34)
 builder.add_16bit_uint(0x1234)
+builder.add_16bit_uint(0x5678)
 builder.add_8bit_int(0x12)
 builder.add_bits([0,1,0,1,1,0,1,0])
 payload = builder.build()
@@ -57,6 +59,7 @@ result  = client.write_registers(address, payload, skip_encode=True, unit=1)
 # - a 8 byte string 'abcdefgh'
 # - a 32 bit float 22.34
 # - a 16 bit unsigned int 0x1234
+# - another 16 bit unsigned int which we will ignore
 # - an 8 bit int 0x12
 # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
 #---------------------------------------------------------------------------# 
@@ -68,6 +71,7 @@ decoded = {
     'string': decoder.decode_string(8),
     'float': decoder.decode_32bit_float(),
     '16uint': decoder.decode_16bit_uint(),
+    'ignored': decoder.skip_bytes(2),
     '8int': decoder.decode_8bit_int(),
     'bits': decoder.decode_bits(),
 }

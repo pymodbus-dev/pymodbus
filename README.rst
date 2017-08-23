@@ -125,7 +125,6 @@ like your device tested, I accept devices via mail or by IP address.
 That said, the current work mainly involves polishing the library as
 I get time doing such tasks as:
 
-  * Add CI support
   * Make PEP-8 compatible and flake8 ready
   * Fixing bugs/feature requests
   * Architecture documentation
@@ -152,6 +151,10 @@ Use make to perform a range of activities
      make tox        run the tests on all Python versions
      make clean      cleanup all temporary files 
 
+------------------------------------------------------------
+Contributing
+------------------------------------------------------------
+Just fork the repo and raise your PR against `dev` branch.
 
 ------------------------------------------------------------
 License Information

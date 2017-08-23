@@ -12,7 +12,7 @@ pymodbus.egg-info/
 .tox/
 doc/api/epydoc/html/
 .vscode/
-
+.venv
 __pycache__/
 pymodbus/__pycache__/
 pymodbus/client/__pycache__/

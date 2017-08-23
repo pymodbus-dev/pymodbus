@@ -35,10 +35,10 @@ log.setLevel(logging.DEBUG)
 # build your payload
 #---------------------------------------------------------------------------# 
 builder = BinaryPayloadBuilder(endian=Endian.Little)
-builder.add_string('abcdefgh')
-builder.add_32bit_float(22.34)
-builder.add_16bit_uint(0x1234)
-builder.add_8bit_int(0x12)
+# builder.add_string('abcdefgh')
+# builder.add_32bit_float(22.34)
+# builder.add_16bit_uint(4660)
+# builder.add_8bit_int(18)
 builder.add_bits([0,1,0,1,1,0,1,0])
 
 #---------------------------------------------------------------------------# 

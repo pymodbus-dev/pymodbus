@@ -202,6 +202,13 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertTrue(isinstance(ModbusSerialClient(method='binary').framer, ModbusBinaryFramer))
         self.assertRaises(ParameterException, lambda: ModbusSerialClient(method='something'))
 
+    def testSyncSerialRTUClientTimeouts(self):
+        client = ModbusSerialClient(method="rtu", baudrate=9600)
+        assert client._silent_interval == (3.5 * 11/9600)
+        client = ModbusSerialClient(method="rtu", baudrate=38400)
+        assert client._silent_interval == (1.75/1000)
+
+
     @patch("serial.Serial")
     def testBasicSyncSerialClient(self, mock_serial):
         ''' Test the basic methods for the serial sync client'''

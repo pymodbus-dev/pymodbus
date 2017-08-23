@@ -33,7 +33,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnSlaveBusCharacterOverrunCountRequest,    b'\x00\x12\x00\x00', b'\x00\x12\x00\x00'),
             (ReturnIopOverrunCountRequest,                  b'\x00\x13\x00\x00', b'\x00\x13\x00\x00'),
             (ClearOverrunCountRequest,                      b'\x00\x14\x00\x00', b'\x00\x14\x00\x00'),
-            (GetClearModbusPlusRequest,                     b'\x00\x15\x00\x00', b'\x00\x15' + b'\x00\x00' * 55),
+            (GetClearModbusPlusRequest,                     b'\x00\x15\x00\x00', b'\x00\x15\x00\x00' + b'\x00\x00' * 55),
         ]
 
         self.responses = [
@@ -56,7 +56,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnSlaveBusCharacterOverrunCountResponse,  b'\x00\x12\x00\x00'),
             (ReturnIopOverrunCountResponse,                b'\x00\x13\x00\x00'),
             (ClearOverrunCountResponse,                    b'\x00\x14\x00\x00'),
-            (GetClearModbusPlusResponse,                   b'\x00\x15' + b'\x00\x00' * 55),
+            (GetClearModbusPlusResponse,                   b'\x00\x15\x00\x04' + b'\x00\x00' * 55),
         ]
 
     def tearDown(self):
@@ -100,7 +100,8 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testDiagnosticExecute(self):
         ''' Testing diagnostic message execution '''
         for message, encoded, executed in self.requests:
-            self.assertEqual(message().execute().encode(), executed)
+            encoded = message().execute().encode()
+            self.assertEqual(encoded, executed)
 
     def testReturnQueryDataRequest(self):
         ''' Testing diagnostic message execution '''
@@ -130,13 +131,14 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def testGetClearModbusPlusRequestExecute(self):
         ''' Testing diagnostic message execution '''
-        request = GetClearModbusPlusRequest(ModbusPlusOperation.ClearStatistics);
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics);
         response = request.execute()
-        self.assertEqual(response.message, None)
+        self.assertEqual(response.message, ModbusPlusOperation.ClearStatistics)
 
-        request = GetClearModbusPlusRequest(ModbusPlusOperation.GetStatistics);
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GetStatistics);
         response = request.execute()
-        self.assertEqual(response.message, [0x00] * 55)
+        resp = [ModbusPlusOperation.GetStatistics]
+        self.assertEqual(response.message, resp+[0x00] * 55)
 
 #---------------------------------------------------------------------------#
 # Main

@@ -308,7 +308,10 @@ class ModbusSerialClient(BaseModbusClient):
         self.timeout  = kwargs.get('timeout',  Defaults.Timeout)
         if self.method == "rtu":
             self._last_frame_end = 0.0
-            self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
+            if self.baudrate > 19200:
+                self._silent_interval = 1.75/1000  # ms
+            else:
+                self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
 
     @staticmethod
     def __implementation(method):

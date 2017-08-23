@@ -1,4 +1,13 @@
 
+Version 1.3.2
+------------------------------------------------------------
+* ModbusSerialServer could now be stopped when running on a seperate thread.
+* Fix issue with server and client where in the frame buffer had values from previous unsuccesful transaction
+* Fix response length calculation for ModbusASCII protocol
+* Fix response length calculation ReportSlaveIdResponse, DiagnosticStatusResponse
+* Fix never ending transaction case when response is recieved without header and CRC
+* Fix tests
+
 Version 1.3.1
 ------------------------------------------------------------
 * Recall socket recv until get a complete response

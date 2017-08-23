@@ -31,13 +31,15 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
                        b'\x01\x02\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00' \
                        b'\x00\x00\x00\xff\xfe\xff\xfd\xff\xff\xff\xfc\xff' \
                        b'\xff\xff\xff\xff\xff\xff\x00\x00\xa0\x3f\x00\x00' \
-                       b'\x00\x00\x00\x00\x19\x40\x74\x65\x73\x74\x11'
+                       b'\x00\x00\x00\x00\x19\x40\x01\x00\x74\x65\x73\x74' \
+                       b'\x11'
 
         self.big_endian_payload = \
                        b'\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00' \
                        b'\x00\x00\x04\xff\xff\xfe\xff\xff\xff\xfd\xff\xff' \
                        b'\xff\xff\xff\xff\xff\xfc\x3f\xa0\x00\x00\x40\x19' \
-                       b'\x00\x00\x00\x00\x00\x00\x74\x65\x73\x74\x11'
+                       b'\x00\x00\x00\x00\x00\x00\x00\x01\x74\x65\x73\x74' \
+                       b'\x11'
 
         self.bitstring = [True, False, False, False, True, False, False, False]
 
@@ -62,6 +64,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_int(-4)
         builder.add_32bit_float(1.25)
         builder.add_64bit_float(6.25)
+        builder.add_16bit_uint(1)      # placeholder
         builder.add_string(b'test')
         builder.add_bits(self.bitstring)
         self.assertEqual(self.little_endian_payload, builder.to_string())
@@ -79,6 +82,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_64bit_int(-4)
         builder.add_32bit_float(1.25)
         builder.add_64bit_float(6.25)
+        builder.add_16bit_uint(1)      # placeholder
         builder.add_string('test')
         builder.add_bits(self.bitstring)
         self.assertEqual(self.big_endian_payload, builder.to_string())
@@ -125,6 +129,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(-4,     decoder.decode_64bit_int())
         self.assertEqual(1.25,   decoder.decode_32bit_float())
         self.assertEqual(6.25,   decoder.decode_64bit_float())
+        self.assertEqual(None,   decoder.skip_bytes(2))
         self.assertEqual('test', decoder.decode_string(4).decode())
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
@@ -141,6 +146,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(-4,     decoder.decode_64bit_int())
         self.assertEqual(1.25,   decoder.decode_32bit_float())
         self.assertEqual(6.25,   decoder.decode_64bit_float())
+        self.assertEqual(None,   decoder.skip_bytes(2))
         self.assertEqual(b'test', decoder.decode_string(4))
         self.assertEqual(self.bitstring, decoder.decode_bits())
 

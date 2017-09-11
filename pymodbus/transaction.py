@@ -460,7 +460,7 @@ class ModbusSocketFramer(IModbusFramer):
 
     def _process(self, callback, error=False):
         """
-        Process incoming packets irrespective error condition 
+        Process incoming packets irrespective error condition
         """
         data = self.getRawFrame() if error else self.getFrame()
         result = self.decoder.decode(data)
@@ -486,7 +486,7 @@ class ModbusSocketFramer(IModbusFramer):
 
     def getRawFrame(self):
         """
-        Returns the complete buffer 
+        Returns the complete buffer
         """
         return self.__buffer
 
@@ -670,22 +670,29 @@ class ModbusRtuFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
+
         self.addToFrame(data)
-        while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    self._process(callback)
-                else:
-                    # Could be an error response
-                    if len(self.__buffer):
-                        # Possible error ???
-                       self._process(callback, error=True)
-            else:
-                if len(self.__buffer):
-                    # Possible error ???
-                    if self.__header.get('len', 0) < 2:
-                        self._process(callback, error=True)
-                break
+        if self.isFrameReady():
+            if self.checkFrame():
+                self._process(callback)
+
+        # previous fix attempt:
+        # self.addToFrame(data)
+        # while True:
+        #     if self.isFrameReady():
+        #         if self.checkFrame():
+        #             self._process(callback)
+        #         else:
+        #             # Could be an error response
+        #             if len(self.__buffer):
+        #                 # Possible error ???
+        #                self._process(callback, error=True)
+        #     else:
+        #         if len(self.__buffer):
+        #             # Possible error ???
+        #             if self.__header.get('len', 0) < 2:
+        #                 self._process(callback, error=True)
+        #         break
 
     def buildPacket(self, message):
         ''' Creates a ready to send modbus packet

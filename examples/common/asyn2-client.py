@@ -10,12 +10,14 @@ client implementation from pymodbus.
 # import needed libraries
 #---------------------------------------------------------------------------#
 from twisted.internet import reactor, protocol
+
+from pymodbus.client.async import AsyncModbusTCPClient, schedulers
 from pymodbus.constants import Defaults
 
 #---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 #---------------------------------------------------------------------------#
-from pymodbus.client.async_old import ModbusClientProtocol
+
 #from pymodbus.client.async import ModbusUdpClientProtocol
 
 #---------------------------------------------------------------------------#
@@ -121,7 +123,15 @@ def beginAsynchronousTest(client):
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
 #---------------------------------------------------------------------------#
-defer = protocol.ClientCreator(reactor, ModbusClientProtocol
-        ).connectTCP("localhost", 5020)
-defer.addCallback(beginAsynchronousTest)
-reactor.run()
+
+def err(*args, **kwargs):
+    print "Err", args, kwargs
+
+proto, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
+                         # callback=beginAsynchronousTest,
+                         # errback=err)
+deferred.addCallback(beginAsynchronousTest)
+deferred.addErrback(err)
+proto.start()
+
+

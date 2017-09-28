@@ -13,12 +13,12 @@ coloredlogs>=7.0
 # -------------------------------------------------------------------
 # if you want to use the asynchronous version, uncomment these
 # -------------------------------------------------------------------
-#Twisted==17.1.0
-#zope.interface==4.4.0
-#pyasn1==0.2.3
-#pycrypto==2.6.1
-#wsgiref==0.1.2
-#cryptography==1.8.1
+Twisted==17.1.0
+zope.interface==4.4.0
+pyasn1==0.2.3
+pycrypto==2.6.1
+wsgiref==0.1.2
+cryptography==1.8.1
 # -------------------------------------------------------------------
 # if you want to build the documentation, uncomment these
 # -------------------------------------------------------------------

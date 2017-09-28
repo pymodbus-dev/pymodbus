@@ -35,7 +35,7 @@ Another example::
 from __future__ import unicode_literals
 from twisted.internet import defer, protocol
 
-from pymodbus.client.async import ModbusTCPClientMixin
+from pymodbus.client.async.tcp import ModbusTCPClientMixin
 from pymodbus.exceptions import ConnectionException
 from pymodbus.client.common import ModbusClientMixin
 from twisted.python.failure import Failure

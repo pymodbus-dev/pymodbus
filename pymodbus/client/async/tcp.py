@@ -3,6 +3,7 @@ Copyright (c) 2017 by Riptide I/O
 All rights reserved.
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import logging
 
@@ -33,12 +34,25 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
     protocol = EventLoopThread("reactor", reactor.run, reactor.stop,
                                installSignalHandlers=0)
+    protocol.start()
+
     return protocol, deferred
 
 
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                    source_address=None, timeout=None, **kwargs):
-    pass
+    from tornado.ioloop import IOLoop
+    from pymodbus.client.async.tornado import AsyncTornadoModbusTCPClient
+
+    client = AsyncTornadoModbusTCPClient(host=host, port=port, framer=framer,
+                                         source_address=source_address,
+                                         timeout=timeout, **kwargs)
+    protocol = EventLoopThread("ioloop", IOLoop.current().start,
+                               IOLoop.current().stop)
+    protocol.start()
+    future = client.connect()
+
+    return protocol, future
 
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,

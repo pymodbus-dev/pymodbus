@@ -9,6 +9,8 @@ from threading import Thread
 
 import logging
 
+from tornado.ioloop import IOLoop
+
 LOGGER = logging.getLogger(__name__)
 
 

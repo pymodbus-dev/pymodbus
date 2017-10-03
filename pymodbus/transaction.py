@@ -111,12 +111,13 @@ class ModbusTransactionManager(object):
         _logger.debug("Running transaction %d" % request.transaction_id)
         self.client.framer.resetFrame()
         expected_response_length = None
-        if hasattr(request, "get_response_pdu_size"):
-            response_pdu_size = request.get_response_pdu_size()
-            if isinstance(self.client.framer, ModbusAsciiFramer):
-                response_pdu_size = response_pdu_size * 2
-            if response_pdu_size:
-                expected_response_length = self._calculate_response_length(response_pdu_size)
+        if not isinstance(self.client.framer, ModbusSocketFramer):
+            if hasattr(request, "get_response_pdu_size"):
+                response_pdu_size = request.get_response_pdu_size()
+                if isinstance(self.client.framer, ModbusAsciiFramer):
+                    response_pdu_size = response_pdu_size * 2
+                if response_pdu_size:
+                    expected_response_length = self._calculate_response_length(response_pdu_size)
 
         while retries > 0:
             try:

@@ -10,6 +10,8 @@ client implementation from pymodbus.
 # import needed libraries
 #---------------------------------------------------------------------------#
 import functools
+
+from tornado.ioloop import IOLoop
 from twisted.internet import reactor
 
 from pymodbus.client.async.tcp import AsyncModbusTCPClient, schedulers
@@ -32,6 +34,7 @@ log.setLevel(logging.DEBUG)
 # helper method to test deferred callbacks
 #---------------------------------------------------------------------------#
 def dassert(future, callback):
+
     def _assertor(value):
         assert(value)
 
@@ -41,7 +44,7 @@ def dassert(future, callback):
             print exc
             return _assertor(False)
 
-        return _assertor(f.result())
+        return _assertor(callback(f.result()))
 
     future.add_done_callback(on_done)
 
@@ -105,7 +108,9 @@ def beginAsynchronousTest(client, protocol):
     #-----------------------------------------------------------------------#
     # close the client at some time later
     #-----------------------------------------------------------------------#
-    protocol.stop()
+    IOLoop.current().add_timeout(IOLoop.current().time() + 1, client.close)
+    IOLoop.current().add_timeout(IOLoop.current().time() + 2, protocol.stop)
+
 
 #---------------------------------------------------------------------------#
 # extra requests
@@ -147,6 +152,7 @@ def callback(protocol, future):
 protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, port=5020)
                          # callback=beginAsynchronousTest,
                          # errback=err)
+# beginAsynchronousTest(client, protocol)
 future.add_done_callback(functools.partial(callback, protocol))
 # deferred.addCallback(beginAsynchronousTest)
 # deferred.addErrback(err)

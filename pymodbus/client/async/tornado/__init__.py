@@ -4,7 +4,6 @@ import socket
 
 import logging
 
-import functools
 from tornado import gen
 from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
@@ -27,18 +26,13 @@ class AsyncTornadoModbusTCPClient(ModbusTCPClientMixin, ModbusClientMixin):
         :returns: Future
         :rtype:
         """
-        conn = socket.socket(socket.AF_INET)
-
-        if self.source_address:
-            try:
-                conn.bind(self.source_address)
-            except socket.error:
-                conn.close()
-                raise
+        conn = socket.create_connection((self.host, self.port),
+                                        timeout=self.timeout,
+                                        source_address=self.source_address)
 
         self.stream = IOStream(conn, io_loop=IOLoop.current())
-        yield gen.Task(self.stream.connect, (self.host, self.port))
-
+        self.stream.read_until_close(None,
+                                     streaming_callback=self.data_received)
         self._connected = True
 
         raise gen.Return(self)
@@ -46,6 +40,7 @@ class AsyncTornadoModbusTCPClient(ModbusTCPClientMixin, ModbusClientMixin):
     def close(self):
         """Closes the underlying IOStream
         """
+        LOGGER.debug("Client disconnected")
         if self.stream:
             self.stream.close_fd()
 
@@ -62,7 +57,7 @@ class AsyncTornadoModbusTCPClient(ModbusTCPClientMixin, ModbusClientMixin):
     def execute(self, request=None):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        self.stream.write(packet, callback=self.data_received)
+        self.stream.write(packet)
         return self._build_response(request.transaction_id)
 
     def _handle_response(self, reply):

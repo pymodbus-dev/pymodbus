@@ -9,10 +9,10 @@ client implementation from pymodbus.
 #---------------------------------------------------------------------------#
 # import needed libraries
 #---------------------------------------------------------------------------#
-from twisted.internet import reactor, protocol
+import functools
+from twisted.internet import reactor
 
-from pymodbus.client.async import AsyncModbusTCPClient, schedulers
-from pymodbus.constants import Defaults
+from pymodbus.client.async.tcp import AsyncModbusTCPClient, schedulers
 
 #---------------------------------------------------------------------------#
 # choose the requested modbus protocol
@@ -31,11 +31,19 @@ log.setLevel(logging.DEBUG)
 #---------------------------------------------------------------------------#
 # helper method to test deferred callbacks
 #---------------------------------------------------------------------------#
-def dassert(deferred, callback):
+def dassert(future, callback):
     def _assertor(value):
         assert(value)
-    deferred.addCallback(lambda r: _assertor(callback(r)))
-    deferred.addErrback(lambda  _: _assertor(False))
+
+    def on_done(f):
+        exc = f.exception()
+        if exc:
+            print exc
+            return _assertor(False)
+
+        return _assertor(f.result())
+
+    future.add_done_callback(on_done)
 
 #---------------------------------------------------------------------------#
 # specify slave to query
@@ -57,7 +65,7 @@ def exampleRequests(client):
 # the result of the operation.  We are handling the result using the
 # deferred assert helper(dassert).
 #---------------------------------------------------------------------------#
-def beginAsynchronousTest(client):
+def beginAsynchronousTest(client, protocol):
     rq = client.write_coil(1, True)
     rr = client.read_coils(1,1)
     dassert(rq, lambda r: r.function_code < 0x80)     # test that we are not an error
@@ -97,8 +105,7 @@ def beginAsynchronousTest(client):
     #-----------------------------------------------------------------------#
     # close the client at some time later
     #-----------------------------------------------------------------------#
-    reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop)
+    protocol.stop()
 
 #---------------------------------------------------------------------------#
 # extra requests
@@ -127,11 +134,21 @@ def beginAsynchronousTest(client):
 def err(*args, **kwargs):
     print "Err", args, kwargs
 
-proto, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
+def callback(protocol, future):
+    print "Client connected"
+    exp = future.exception()
+    if exp:
+        return err(exp)
+
+    client = future.result()
+    return beginAsynchronousTest(client, protocol)
+
+
+protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, port=5020)
                          # callback=beginAsynchronousTest,
                          # errback=err)
-deferred.addCallback(beginAsynchronousTest)
-deferred.addErrback(err)
-proto.start()
+future.add_done_callback(functools.partial(callback, protocol))
+# deferred.addCallback(beginAsynchronousTest)
+# deferred.addErrback(err)
 
 

@@ -3,6 +3,8 @@ from __future__ import absolute_import
 
 import logging
 
+from pymodbus.client.sync import BaseModbusClient
+
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer, DictTransactionManager, \
     FifoTransactionManager
@@ -11,7 +13,7 @@ from pymodbus.transaction import ModbusSocketFramer, DictTransactionManager, \
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseAsyncModbusClient(object):
+class BaseAsyncModbusClient(BaseModbusClient):
     """
     This represents the base ModbusAsyncClient.
     """
@@ -24,11 +26,8 @@ class BaseAsyncModbusClient(object):
         :type framer: pymodbus.transaction.ModbusSocketFramer
         """
         self._connected = False
-        self.framer = framer or ModbusSocketFramer(ClientDecoder())
 
-        if isinstance(self.framer, ModbusSocketFramer):
-            self.transaction = DictTransactionManager(self, **kwargs)
-        else:
-            self.transaction = FifoTransactionManager(self, **kwargs)
-
+        super(BaseAsyncModbusClient, self).__init__(
+            framer or ModbusSocketFramer(ClientDecoder()), **kwargs
+        )
 

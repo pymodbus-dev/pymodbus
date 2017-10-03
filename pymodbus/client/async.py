@@ -39,6 +39,7 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import FifoTransactionManager
 from pymodbus.transaction import DictTransactionManager
 from pymodbus.client.common import ModbusClientMixin
+from pymodbus.compat import iterkeys, imap, byte2int
 from twisted.python.failure import Failure
 
 #---------------------------------------------------------------------------#
@@ -90,6 +91,9 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param data: The data returned from the server
         '''
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(
+                "recv: " + " ".join([hex(byte2int(x)) for x in data]))
         self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):
@@ -97,7 +101,12 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         consumer.write(Frame(request))
         '''
         request.transaction_id = self.transaction.getNextTID()
+        _logger.debug("Running transaction %d" % request.transaction_id)
+        self.framer.resetFrame()
         packet = self.framer.buildPacket(request)
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(
+                "send: " + " ".join([hex(byte2int(x)) for x in packet]))
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
 

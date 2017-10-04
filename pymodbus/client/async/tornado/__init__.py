@@ -16,6 +16,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BaseTornadoClient(AsyncModbusClientMixin):
+    def __init__(self, *args, **kwargs):
+        self.ioloop = kwargs.pop("ioloop")
+        super(BaseTornadoClient, self).__init__(*args, **kwargs)
+
     @abc.abstractmethod
     def get_socket(self):
         """return instance of the socket to connect to
@@ -29,7 +33,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :rtype: tornado.concurrent.Future
         """
         conn = self.get_socket()
-        self.stream = IOStream(conn, io_loop=IOLoop.current())
+        self.stream = IOStream(conn, io_loop=self.ioloop or IOLoop.current())
         self.stream.connect((self.host, self.port))
         self.stream.read_until_close(None,
                                      streaming_callback=self.on_receive)

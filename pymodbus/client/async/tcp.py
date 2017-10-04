@@ -45,12 +45,14 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     from pymodbus.client.async.tornado.tcp import AsyncModbusTCPClient as \
         Client
 
+    ioloop = IOLoop()
+    protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
+    protocol.start()
+
     client = Client(host=host, port=port, framer=framer,
                     source_address=source_address,
-                    timeout=timeout, **kwargs)
-    protocol = EventLoopThread("ioloop", IOLoop.current().start,
-                               IOLoop.current().stop)
-    protocol.start()
+                    timeout=timeout, ioloop=ioloop, **kwargs)
+
     future = client.connect()
 
     return protocol, future

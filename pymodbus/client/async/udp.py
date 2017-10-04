@@ -17,11 +17,11 @@ LOGGER = logging.getLogger(__name__)
 def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
     from twisted.internet import reactor, protocol
-    from pymodbus.client.async.twisted import ModbusClientProtocol
+    from pymodbus.client.async.twisted import ModbusUdpClientProtocol
 
     deferred = protocol.ClientCreator(
-        reactor, ModbusClientProtocol
-    ).connectTCP(host, port, timeout=timeout, bindAddress=source_address)
+        reactor, ModbusUdpClientProtocol
+    ).connect(host, port, timeout=timeout, bindAddress=source_address)
 
     callback = kwargs.get("callback")
     errback = kwargs.get("errback")
@@ -42,7 +42,7 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                    source_address=None, timeout=None, **kwargs):
     from tornado.ioloop import IOLoop
-    from pymodbus.client.async.tornado.tcp import AsyncModbusTCPClient as \
+    from pymodbus.client.async.tornado.udp import AsyncModbusUDPClient as \
         Client
 
     client = Client(host=host, port=port, framer=framer,
@@ -75,7 +75,7 @@ def get_factory(scheduler):
         raise Exception("Invalid Scheduler '{}'".format(scheduler))
 
 
-class AsyncModbusTCPClient(object):
+class AsyncModbusUDPClient(object):
     def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
                 framer=None, source_address=None, timeout=None, **kwargs):
         factory_class = get_factory(scheduler)

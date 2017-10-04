@@ -11,7 +11,7 @@ client implementation from pymodbus.
 #---------------------------------------------------------------------------#
 from twisted.internet import reactor, protocol
 
-from pymodbus.client.async.tcp import AsyncModbusTCPClient, schedulers
+from pymodbus.client.async.udp import AsyncModbusUDPClient, schedulers
 from pymodbus.constants import Defaults
 
 #---------------------------------------------------------------------------#
@@ -97,7 +97,7 @@ def beginAsynchronousTest(client):
     #-----------------------------------------------------------------------#
     # close the client at some time later
     #-----------------------------------------------------------------------#
-    reactor.callLater(1, client.transport.loseConnection)
+    #reactor.callLater(1, client.transport.loseConnection)
     reactor.callLater(2, reactor.stop)
 
 #---------------------------------------------------------------------------#
@@ -127,7 +127,7 @@ def beginAsynchronousTest(client):
 def err(*args, **kwargs):
     print "Err", args, kwargs
 
-protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
+protocol, deferred = AsyncModbusUDPClient(schedulers.REACTOR, port=5020)
                          # callback=beginAsynchronousTest,
                          # errback=err)
 deferred.addCallback(beginAsynchronousTest)

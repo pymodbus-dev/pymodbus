@@ -4,10 +4,10 @@ from __future__ import absolute_import
 import logging
 
 from pymodbus.client.sync import BaseModbusClient
+from pymodbus.constants import Defaults
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import ModbusSocketFramer, DictTransactionManager, \
-    FifoTransactionManager
+from pymodbus.transaction import ModbusSocketFramer
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,3 +31,12 @@ class BaseAsyncModbusClient(BaseModbusClient):
             framer or ModbusSocketFramer(ClientDecoder()), **kwargs
         )
 
+
+class AsyncModbusClientMixin(BaseAsyncModbusClient):
+    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None,
+                 source_address=None, timeout=None, **kwargs):
+        super(AsyncModbusClientMixin, self).__init__(framer=framer, **kwargs)
+        self.host = host
+        self.port = port
+        self.source_address = source_address or ("", 0)
+        self.timeout = timeout if timeout is not None else Defaults.Timeout

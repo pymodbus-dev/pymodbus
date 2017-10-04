@@ -13,24 +13,24 @@ the guard construct that is available in python 2.5 and up::
         result = client.read_coils(1,10)
         print result
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the various server implementations
-#---------------------------------------------------------------------------# 
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-#from pymodbus.client.sync import ModbusUdpClient as ModbusClient
+#---------------------------------------------------------------------------#
+# from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 # from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # configure the client logging
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # choose the client you want
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # make sure to start an implementation to hit against. For this
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
@@ -54,15 +54,15 @@ log.setLevel(logging.DEBUG)
 # Here is an example of using these options::
 #
 #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 client = ModbusClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
 # client = ModbusClient(method='rtu', port='/dev/ttyp0', timeout=1)
 client.connect()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # specify slave to query
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # The slave to query is specified in an optional parameter for each
 # individual request. This can be done by specifying the `unit` parameter
 # which defaults to `0x00`
@@ -70,9 +70,9 @@ client.connect()
 log.debug("Reading Coils")
 rr = client.read_coils(1, 1, unit=0x01)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # example requests
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # simply call the methods that you would like to use. An example session
 # is displayed below along with some assert checks. Note that some modbus
 # implementations differentiate holding/input discrete/coils and as such
@@ -142,7 +142,7 @@ assert(rq.function_code < 0x80)     # test that we are not an error
 assert(rq.registers == [20]*8)      # test the expected value
 assert(rr.registers == [20]*8)      # test the expected value
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # close the client
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 client.close()

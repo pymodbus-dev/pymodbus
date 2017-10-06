@@ -1,5 +1,5 @@
 doc export-ignore
-tests export-ignore
+test export-ignore
 examples export-ignore
 scripts export-ignore
 .* export-ignore

@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import logging
 
 from pymodbus.client.sync import BaseModbusClient
+
 from pymodbus.constants import Defaults
 
 from pymodbus.factory import ClientDecoder
@@ -40,3 +41,11 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
         self.port = port
         self.source_address = source_address or ("", 0)
         self.timeout = timeout if timeout is not None else Defaults.Timeout
+
+
+class AsyncModbusSerialClientMixin(BaseAsyncModbusClient):
+    def __init__(self, framer=None, port=None, **kwargs):
+        super(AsyncModbusSerialClientMixin, self).__init__(framer=framer)
+        self.port = port
+        self.serial_settings = kwargs
+

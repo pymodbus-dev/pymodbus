@@ -35,9 +35,12 @@ Another example::
 from __future__ import unicode_literals
 from twisted.internet import defer, protocol
 
-from pymodbus.client.async import AsyncModbusClientMixin
-from pymodbus.client.common import ModbusClientMixin
 from pymodbus.exceptions import ConnectionException
+from pymodbus.factory import ClientDecoder
+from pymodbus.client.async import AsyncModbusClientMixin
+from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.compat import  byte2int
 from twisted.python.failure import Failure
 
 
@@ -51,11 +54,22 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Connected Client Protocols
 #---------------------------------------------------------------------------#
-class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
+class ModbusClientProtocol(protocol.Protocol,
+                           AsyncModbusClientMixin):
     """
     This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
+    def __init__(self, framer=None, **kwargs):
+        self._connected = False
+        if framer:
+            self.framer = framer
+
+        if isinstance(self.framer, ModbusSocketFramer):
+            self.transaction = DictTransactionManager(self, **kwargs)
+
+        else:
+            self.transaction = FifoTransactionManager(self, **kwargs)
 
     def connectionMade(self):
         """ Called upon a successful client connection.
@@ -79,6 +93,7 @@ class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
 
         :param data: The data returned from the server
         """
+        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
         self.framer.processIncomingPacket(data, self._handleResponse)
 
     def execute(self, request):
@@ -86,11 +101,15 @@ class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
-        packet = self.framer.buildPacket(request)
+        try:
+            packet = self.framer.buildPacket(request)
+        except Exception as e:
+            _logger.error(e)
+        _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
 
-    def _handleResponse(self, reply):
+    def _handleResponse(self, reply, **kwargs):
         """ Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
@@ -117,6 +136,13 @@ class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
         self.transaction.addTransaction(d, tid)
         return d
 
+
+class ModbusTcpClientProtocol(ModbusClientProtocol):
+    framer = ModbusSocketFramer(ClientDecoder())
+
+
+class ModbusSerClientProtocol(ModbusClientProtocol):
+    pass
     #----------------------------------------------------------------------#
     # Extra Functions
     #----------------------------------------------------------------------#
@@ -129,8 +155,7 @@ class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
 #---------------------------------------------------------------------------#
 # Not Connected Client Protocol
 #---------------------------------------------------------------------------#
-class ModbusUdpClientProtocol(protocol.DatagramProtocol,
-                              AsyncModbusClientMixin):
+class ModbusUdpClientProtocol(protocol.DatagramProtocol, AsyncModbusClientMixin):
     '''
     This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.

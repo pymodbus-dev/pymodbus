@@ -16,27 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
-    from twisted.internet import reactor, protocol
-    from pymodbus.client.async.twisted import ModbusUdpClientProtocol
-
-    deferred = protocol.ClientCreator(
-        reactor, ModbusUdpClientProtocol
-    ).connect(host, port, timeout=timeout, bindAddress=source_address)
-
-    callback = kwargs.get("callback")
-    errback = kwargs.get("errback")
-
-    if callback:
-        deferred.addCallback(callback)
-
-    if errback:
-        deferred.addErrback(errback)
-
-    protocol = EventLoopThread("reactor", reactor.run, reactor.stop,
-                               installSignalHandlers=0)
-    protocol.start()
-
-    return protocol, deferred
+    raise NotImplementedError()
 
 
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
@@ -58,7 +38,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                      source_address=None, timeout=None, **kwargs):
-    pass
+    raise NotImplementedError()
 
 
 def get_factory(scheduler):

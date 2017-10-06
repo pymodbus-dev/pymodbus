@@ -1,23 +1,28 @@
 #!/usr/bin/env python
-'''
+"""
 Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus
-client implementation from pymodbus using Tornado.
-'''
-
+client implementation from pymodbus.
+"""
+# ---------------------------------------------------------------------------#
+# import needed libraries
+# ---------------------------------------------------------------------------#
 import functools
 
 from tornado.ioloop import IOLoop
 from pymodbus.client.async import schedulers
+from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.factory import ClientDecoder
+
+
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-# from pymodbus.client.async import ModbusUdpClientProtocol
-from pymodbus.client.async.tcp import AsyncModbusTCPClient
+from pymodbus.client.async.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging
@@ -26,7 +31,6 @@ import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-
 
 # ---------------------------------------------------------------------------#
 # helper method to test deferred callbacks
@@ -124,6 +128,7 @@ def beginAsynchronousTest(client, protocol):
     IOLoop.current().add_timeout(IOLoop.current().time() + 1, client.close)
     IOLoop.current().add_timeout(IOLoop.current().time() + 2, protocol.stop)
 
+
 # ---------------------------------------------------------------------------#
 # choose the client you want
 # ---------------------------------------------------------------------------#
@@ -131,7 +136,6 @@ def beginAsynchronousTest(client, protocol):
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
 # ---------------------------------------------------------------------------#
-
 
 def err(*args, **kwargs):
     log.error("Err", args, kwargs)
@@ -147,7 +151,11 @@ def callback(protocol, future):
     return beginAsynchronousTest(client, protocol)
 
 
-protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, port=5020)
+framer = ModbusRtuFramer(ClientDecoder())
+# Create temporary serial ports using SOCAT
+# socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
+
+protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, framer, port="/tmp/ttyp0", baudrate=9600, timeout=2)
 future.add_done_callback(functools.partial(callback, protocol))
 
 

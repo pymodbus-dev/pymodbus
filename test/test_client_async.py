@@ -5,8 +5,10 @@ if IS_PYTHON3: # Python 3
     from unittest.mock import patch, Mock
 else: # Python 2
     from mock import patch, Mock
-from pymodbus.client.async import ModbusClientProtocol, ModbusUdpClientProtocol
-from pymodbus.client.async import ModbusClientFactory
+from pymodbus.client.async.twisted import (
+    ModbusClientProtocol, ModbusUdpClientProtocol
+)
+from pymodbus.client.async.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse

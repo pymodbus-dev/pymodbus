@@ -9,13 +9,16 @@ client implementation from pymodbus.
 #---------------------------------------------------------------------------#
 # import needed libraries
 #---------------------------------------------------------------------------#
-from twisted.internet import reactor, protocol
-from pymodbus.constants import Defaults
+from twisted.internet import reactor
+
+from pymodbus.client.async.tcp import AsyncModbusTCPClient
+# from pymodbus.client.async.udp import AsyncModbusUDPClient
+from pymodbus.client.async import schedulers
 
 #---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 #---------------------------------------------------------------------------#
-from pymodbus.client.async_old import ModbusClientProtocol
+
 #from pymodbus.client.async import ModbusUdpClientProtocol
 
 #---------------------------------------------------------------------------#
@@ -29,11 +32,17 @@ log.setLevel(logging.DEBUG)
 #---------------------------------------------------------------------------#
 # helper method to test deferred callbacks
 #---------------------------------------------------------------------------#
+
+
+def err(*args, **kwargs):
+    logging.error("Err-{}-{}".format(args, kwargs))
+
+
 def dassert(deferred, callback):
     def _assertor(value):
         assert(value)
     deferred.addCallback(lambda r: _assertor(callback(r)))
-    deferred.addErrback(lambda  _: _assertor(False))
+    deferred.addErrback(err)
 
 #---------------------------------------------------------------------------#
 # specify slave to query
@@ -42,6 +51,7 @@ def dassert(deferred, callback):
 # individual request. This can be done by specifying the `unit` parameter
 # which defaults to `0x00`
 #---------------------------------------------------------------------------#
+
 def exampleRequests(client):
     rr = client.read_coils(1, 1, unit=0x02)
 
@@ -95,7 +105,7 @@ def beginAsynchronousTest(client):
     #-----------------------------------------------------------------------#
     # close the client at some time later
     #-----------------------------------------------------------------------#
-    reactor.callLater(1, client.transport.loseConnection)
+    #reactor.callLater(1, client.transport.loseConnection)
     reactor.callLater(2, reactor.stop)
 
 #---------------------------------------------------------------------------#
@@ -121,7 +131,13 @@ def beginAsynchronousTest(client):
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
 #---------------------------------------------------------------------------#
-defer = protocol.ClientCreator(reactor, ModbusClientProtocol
-        ).connectTCP("localhost", 5020)
-defer.addCallback(beginAsynchronousTest)
-reactor.run()
+
+
+protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
+# protocol, deferred = AsyncModbusUDPClient(schedulers.REACTOR, port=5020)
+                         # callback=beginAsynchronousTest,
+                         # errback=err)
+deferred.addCallback(beginAsynchronousTest)
+deferred.addErrback(err)
+
+

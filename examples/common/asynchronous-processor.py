@@ -6,45 +6,45 @@ Pymodbus Asynchronous Processor Example
 The following is a full example of a continuous client processor. Feel
 free to use it as a skeleton guide in implementing your own.
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the neccessary modules
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 from twisted.internet import serialport, reactor
 from twisted.internet.protocol import ClientFactory
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async import ModbusClientProtocol
+from pymodbus.client.async.twisted import ModbusClientProtocol
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Choose the framer you want to use
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 #from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 #from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 #from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # configure the client logging
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # state a few constants
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 SERIAL_PORT  = "/dev/ttyS0"
 STATUS_REGS  = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # an example custom protocol
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Here you can perform your main procesing loop utilizing defereds and timed
 # callbacks.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class ExampleProtocol(ModbusClientProtocol):
 
     def __init__(self, framer, endpoint):
@@ -93,9 +93,9 @@ class ExampleProtocol(ModbusClientProtocol):
         log.error(failure)
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # a factory for the example protocol
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # This is used to build client protocol's if you tie into twisted's method
 # of processing. It basically produces client instances of the underlying
 # protocol::
@@ -103,7 +103,7 @@ class ExampleProtocol(ModbusClientProtocol):
 #     Factory(Protocol) -> ProtocolInstance
 #
 # It also persists data between client instances (think protocol singelton).
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class ExampleFactory(ClientFactory):
 
     protocol = ExampleProtocol
@@ -120,16 +120,16 @@ class ExampleFactory(ClientFactory):
         return proto
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # a custom client for our device
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Twisted provides a number of helper methods for creating and starting
 # clients:
 # - protocol.ClientCreator
 # - reactor.connectTCP
 #
 # How you start your client is really up to you.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class SerialModbusClient(serialport.SerialPort):
 
     def __init__(self, factory, *args, **kwargs):
@@ -142,14 +142,14 @@ class SerialModbusClient(serialport.SerialPort):
         serialport.SerialPort.__init__(self, protocol, *args, **kwargs)
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # a custom endpoint for our results
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # An example line reader, this can replace with:
 # - the TCP protocol
 # - a context recorder
 # - a database or file recorder
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class LoggingLineReader(object):
 
     def write(self, response):
@@ -159,16 +159,16 @@ class LoggingLineReader(object):
         '''
         log.info("Read Data: %d" % response)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # start running the processor
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # This initializes the client, the framer, the factory, and starts the
 # twisted event loop (the reactor). It should be noted that a number of
 # things could be chanegd as one sees fit:
 # - The ModbusRtuFramer could be replaced with a ModbusAsciiFramer
 # - The SerialModbusClient could be replaced with reactor.connectTCP
 # - The LineReader endpoint could be replaced with a database store
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def main():
     log.debug("Initializing the client")
     framer  = ModbusFramer(ClientDecoder())

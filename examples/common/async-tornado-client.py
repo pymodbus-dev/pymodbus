@@ -16,8 +16,8 @@ from pymodbus.client.async import schedulers
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-# from pymodbus.client.async import ModbusUdpClientProtocol
-from pymodbus.client.async.tcp import AsyncModbusTCPClient
+# from pymodbus.client.async.udp import AsyncModbusUDPClient as ModbusClient
+from pymodbus.client.async.tcp import AsyncModbusTCPClient as ModbusClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging
@@ -147,7 +147,7 @@ def callback(protocol, future):
     return beginAsynchronousTest(client, protocol)
 
 
-protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, port=5020)
+protocol, future = ModbusClient(schedulers.IO_LOOP, port=5020)
 future.add_done_callback(functools.partial(callback, protocol))
 
 

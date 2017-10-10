@@ -60,7 +60,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         if not self.factory.control.ListenOnly:
             self.framer.processIncomingPacket(data, self._execute)
 
-    def _execute(self, request):
+    def _execute(self, request, **kwargs):
         ''' Executes the request and returns the result
 
         :param request: The decoded request message

@@ -50,7 +50,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
         self.server.threads.remove(self)
 
-    def execute(self, request):
+    def execute(self, request, **kwargs):
         ''' The callback to call with the resulting message
 
         :param request: The decoded request message

@@ -23,7 +23,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
     io_loop = None
 
     def __init__(self, *args, **kwargs):
-        self.ioloop = kwargs.pop("ioloop")
+        self.ioloop = kwargs.pop("ioloop", None)
         super(BaseTornadoClient, self).__init__(*args, **kwargs)
 
     @abc.abstractmethod

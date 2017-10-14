@@ -17,13 +17,18 @@ class RemoteSlaveContext(IModbusSlaveContext):
     a remote device (depending on the client used)
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, unit=None):
         ''' Initializes the datastores
 
         :param client: The client to retrieve values with
+        :param unit: 
         '''
         self._client = client
+        self.kwargs = {}
+        if unit:
+            self.kwargs['unit'] = unit
         self.__build_mapping()
+
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
@@ -78,17 +83,18 @@ class RemoteSlaveContext(IModbusSlaveContext):
         code mapper.
         '''
         self.__get_callbacks = {
-            'd': lambda a, c: self._client.read_discrete_inputs(a, c),
-            'c': lambda a, c: self._client.read_coils(a, c),
-            'h': lambda a, c: self._client.read_holding_registers(a, c),
-            'i': lambda a, c: self._client.read_input_registers(a, c),
+            'd': lambda a, c: self._client.read_discrete_inputs(a, c, **self.kwargs),
+            'c': lambda a, c: self._client.read_coils(a, c, **self.kwargs),
+            'h': lambda a, c: self._client.read_holding_registers(a, c, **self.kwargs),
+            'i': lambda a, c: self._client.read_input_registers(a, c, **self.kwargs),
         }
         self.__set_callbacks = {
-            'd': lambda a, v: self._client.write_coils(a, v),
-            'c': lambda a, v: self._client.write_coils(a, v),
-            'h': lambda a, v: self._client.write_registers(a, v),
-            'i': lambda a, v: self._client.write_registers(a, v),
+            'd': lambda a, v: self._client.write_coils(a, v, **self.kwargs),
+            'c': lambda a, v: self._client.write_coils(a, v, **self.kwargs),
+            'h': lambda a, v: self._client.write_registers(a, v, **self.kwargs),
+            'i': lambda a, v: self._client.write_registers(a, v, **self.kwargs),
         }
+        self.__valid_addrs = { 'd': {}, 'c': {}, 'h': {}, 'i': {} }
 
     def __extract_result(self, fx, result):
         ''' A helper method to extract the values out of

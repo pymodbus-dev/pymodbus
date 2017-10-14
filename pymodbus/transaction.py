@@ -102,6 +102,22 @@ class ModbusTransactionManager(object):
 
         return True
 
+    def calculate_response_length(self, request):
+        """
+        Calculate the expected response length for a given request
+        :param request: Pymodbus request
+        :return: Length or 1024
+        """
+        flag = hasattr(request, "get_response_pdu_size")
+        if isinstance(self.client.framer, ModbusSocketFramer) or not flag:
+            return 1024
+
+        response_pdu_size = request.get_response_pdu_size()
+        if isinstance(self.client.framer, ModbusAsciiFramer):
+            response_pdu_size = response_pdu_size * 2
+
+        return self._calculate_response_length(response_pdu_size)
+
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -110,13 +126,7 @@ class ModbusTransactionManager(object):
         request.transaction_id = self.getNextTID()
         _logger.debug("Running transaction %d" % request.transaction_id)
         self.client.framer.resetFrame()
-        expected_response_length = None
-        if hasattr(request, "get_response_pdu_size"):
-            response_pdu_size = request.get_response_pdu_size()
-            if isinstance(self.client.framer, ModbusAsciiFramer):
-                response_pdu_size = response_pdu_size * 2
-            if response_pdu_size:
-                expected_response_length = self._calculate_response_length(response_pdu_size)
+        expected_response_length = self.calculate_response_length(request)
 
         while retries > 0:
             try:
@@ -126,8 +136,8 @@ class ModbusTransactionManager(object):
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
                 self._send(packet)
-                # exception = False
-                result = self._recv(expected_response_length or 1024)
+
+                result = self._recv(expected_response_length)
 
                 if not result and self.retry_on_empty:
                     retries -= 1

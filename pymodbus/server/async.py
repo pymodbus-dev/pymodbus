@@ -58,7 +58,9 @@ class ModbusTcpProtocol(protocol.Protocol):
         if _logger.isEnabledFor(logging.DEBUG):
             _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         if not self.factory.control.ListenOnly:
-            self.framer.processIncomingPacket(data, self._execute)
+            unit_address = byte2int(data[0])
+            if unit_address in self.factory.store:
+                self.framer.processIncomingPacket(data, self._execute)
 
     def _execute(self, request):
         ''' Executes the request and returns the result

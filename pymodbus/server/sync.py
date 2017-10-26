@@ -102,7 +102,9 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 if data:
                     if _logger.isEnabledFor(logging.DEBUG):
                         _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
-                    self.framer.processIncomingPacket(data, self.execute)
+                    unit_address = byte2int(data[0])
+                    if unit_address in self.server.context:
+                        self.framer.processIncomingPacket(data, self.execute)
             except Exception as msg:
                 # since we only have a single socket, we cannot exit
                 # Clear frame buffer
@@ -198,6 +200,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
     only difference is that we have to specify who to send the
     resulting packet data to.
     '''
+    socket = None
 
     def handle(self):
         ''' Callback when we receive any data
@@ -205,7 +208,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         reset_frame = False
         while self.running:
             try:
-                data, self.request = self.request
+                data, self.socket = self.request
                 if not data:
                     self.running = False
                 if _logger.isEnabledFor(logging.DEBUG):
@@ -236,7 +239,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.request.sendto(pdu, self.client_address)
+            return self.socket.sendto(pdu, self.client_address)
 
 
 #---------------------------------------------------------------------------#

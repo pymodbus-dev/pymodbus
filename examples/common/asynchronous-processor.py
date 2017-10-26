@@ -19,8 +19,8 @@ from pymodbus.client.async import ModbusClientProtocol
 #---------------------------------------------------------------------------# 
 #from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 #from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
-#from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
-from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
+from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
+# from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
 #---------------------------------------------------------------------------# 
 # configure the client logging
@@ -33,7 +33,7 @@ log.setLevel(logging.DEBUG)
 #---------------------------------------------------------------------------# 
 # state a few constants
 #---------------------------------------------------------------------------# 
-SERIAL_PORT  = "/dev/ttyS0"
+SERIAL_PORT  = "/dev/ttyp0"
 STATUS_REGS  = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -62,7 +62,7 @@ class ExampleProtocol(ModbusClientProtocol):
         ''' Defer fetching holding registers
         '''
         log.debug("Starting the next cycle")
-        d = self.read_holding_registers(*STATUS_REGS)
+        d = self.read_holding_registers(*STATUS_REGS, unit=1)
         d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
@@ -72,7 +72,7 @@ class ExampleProtocol(ModbusClientProtocol):
         '''
         self.endpoint.write(response.getRegister(0))
         self.endpoint.write(response.getRegister(1))
-        d = self.read_coils(*STATUS_COILS)
+        d = self.read_coils(*STATUS_COILS, unit=1)
         d.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):

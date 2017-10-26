@@ -41,7 +41,7 @@ class Version(object):
         return '[%s, version %s]' % (self.package, self.short())
 
 
-version = Version('pymodbus', 1, 3, 2)
+version = Version('pymodbus', 1, 4, 0, "rc1")
 
 
 

@@ -141,6 +141,7 @@ class RemoteServerContext(object):
             'h': lambda a, v, s: client.write_registers(a, v, s),
             'i': lambda a, v, s: client.write_registers(a, v, s),
         }
+        self._client = client
         self.slaves = {} # simply a cache
 
     def __str__(self):
@@ -157,7 +158,7 @@ class RemoteServerContext(object):
         :returns: An iterator over the slave contexts
         '''
         # note, this may not include all slaves
-        return self.__slaves.iteritems()
+        return iter(self.slaves.items())
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list

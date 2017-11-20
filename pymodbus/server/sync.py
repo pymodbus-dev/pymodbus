@@ -102,7 +102,10 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 if data:
                     if _logger.isEnabledFor(logging.DEBUG):
                         _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
-                    unit_address = byte2int(data[0])
+                    if not isinstance(self.framer, ModbusBinaryFramer):
+                        unit_address = byte2int(data[0])
+                    else:
+                        unit_address = byte2int(data[1])
                     if unit_address in self.server.context:
                         self.framer.processIncomingPacket(data, self.execute)
             except Exception as msg:

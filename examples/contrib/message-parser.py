@@ -163,10 +163,12 @@ def get_messages(option):
     '''
     if option.message:
         if option.transaction:
-            # option.message = "".join(int2byte(int(x, 16)) for x in option.message.split())
-            # option.message = "".join(x.replace("0x", "") for x in option.message.split())
-            seg = option.message.split()
-            import pdb; pdb.set_trace()
+            msg = ""
+            for segment in option.message.split():
+                segment = segment.replace("0x", "")
+                segment = "0" + segment if len(segment) == 1 else segment
+                msg = msg + segment
+            option.message = msg
 
         if not option.ascii:
             if not six.PY3:

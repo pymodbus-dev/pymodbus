@@ -15,7 +15,6 @@ using the supplied framers for a number of protocols:
 # import needed libraries
 #---------------------------------------------------------------------------#
 from __future__ import print_function
-import six
 import sys
 import collections
 import textwrap
@@ -28,7 +27,7 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.compat import byte2int, int2byte
+from pymodbus.compat import byte2int, int2byte, IS_PYTHON3
 
 
 #--------------------------------------------------------------------------#
@@ -57,7 +56,7 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
-        if six.PY3:
+        if IS_PYTHON3:
             value = message if self.encode else c.encode(message, 'hex_codec')
         else:
             value = message if self.encode else message.encode('hex')
@@ -171,7 +170,7 @@ def get_messages(option):
             option.message = msg
 
         if not option.ascii:
-            if not six.PY3:
+            if not IS_PYTHON3:
                 option.message = option.message.decode('hex')
             else:
                 option.message = c.decode(option.message.encode(), 'hex_codec')

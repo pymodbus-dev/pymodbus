@@ -13,7 +13,6 @@ for the supplied modbus format:
 '''
 from optparse import OptionParser
 import codecs as c
-import six
 #--------------------------------------------------------------------------#
 # import all the available framers
 #--------------------------------------------------------------------------#
@@ -32,6 +31,7 @@ from pymodbus.other_message import *
 from pymodbus.mei_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
+from pymodbus.compat import IS_PYTHON3
 
 #--------------------------------------------------------------------------#
 # initialize logging
@@ -170,7 +170,7 @@ def generate_messages(framer, options):
         print ("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
-            if not six.PY3:
+            if not IS_PYTHON3:
                 packet = packet.encode('hex')
             else:
                 packet = c.encode(packet, 'hex_codec').decode('utf-8')

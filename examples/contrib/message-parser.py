@@ -28,6 +28,8 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.compat import byte2int, int2byte
+
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -142,6 +144,10 @@ def get_options():
         help="The file containing messages to parse",
         dest="file", default=None)
 
+    parser.add_option("-t", "--transaction",
+        help="If the incoming message is in hexadecimal format",
+        action="store_true", dest="transaction", default=False)
+
     (opt, arg) = parser.parse_args()
 
     if not opt.message and len(arg) > 0:
@@ -156,6 +162,12 @@ def get_messages(option):
     :returns: The message iterator to parse
     '''
     if option.message:
+        if option.transaction:
+            # option.message = "".join(int2byte(int(x, 16)) for x in option.message.split())
+            # option.message = "".join(x.replace("0x", "") for x in option.message.split())
+            seg = option.message.split()
+            import pdb; pdb.set_trace()
+
         if not option.ascii:
             if not six.PY3:
                 option.message = option.message.decode('hex')

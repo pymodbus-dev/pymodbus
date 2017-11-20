@@ -11,14 +11,17 @@ using the supplied framers for a number of protocols:
 * rtu
 * binary
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import needed libraries
 #---------------------------------------------------------------------------#
 from __future__ import print_function
+import six
 import sys
 import collections
 import textwrap
 from optparse import OptionParser
+import codecs as c
+
 from pymodbus.utilities import computeCRC, computeLRC
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusSocketFramer
@@ -33,9 +36,9 @@ import logging
 modbus_log = logging.getLogger("pymodbus")
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # build a quick wrapper around the framers
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class Decoder(object):
 
     def __init__(self, framer, encode=False):
@@ -52,7 +55,10 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
-        value = message if self.encode else message.encode('hex')
+        if six.PY3:
+            value = message if self.encode else c.encode(message, 'hex_codec')
+        else:
+            value = message if self.encode else message.encode('hex')
         print("="*80)
         print("Decoding Message %s" % value)
         print("="*80)
@@ -64,7 +70,7 @@ class Decoder(object):
             print("%s" % decoder.decoder.__class__.__name__)
             print("-"*80)
             try:
-                decoder.addToFrame(message.encode())
+                decoder.addToFrame(message)
                 if decoder.checkFrame():
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report)
@@ -86,7 +92,7 @@ class Decoder(object):
         :param message: The message to print
         '''
         print("%-15s = %s" % ('name', message.__class__.__name__))
-        for k,v in message.__dict__.iteritems():
+        for (k, v) in message.__dict__.items():
             if isinstance(v, dict):
                 print("%-15s =" % k)
                 for kk,vv in v.items():
@@ -102,9 +108,9 @@ class Decoder(object):
         print("%-15s = %s" % ('documentation', message.__doc__))
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # and decode our message
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def get_options():
     ''' A helper method to parse the command line options
 
@@ -151,7 +157,10 @@ def get_messages(option):
     '''
     if option.message:
         if not option.ascii:
-            option.message = option.message.decode('hex')
+            if not six.PY3:
+                option.message = option.message.decode('hex')
+            else:
+                option.message = c.decode(option.message.encode(), 'hex_codec')
         yield option.message
     elif option.file:
         with open(option.file, "r") as handle:

@@ -56,6 +56,12 @@ class AsyncModbusClientMixin(ModbusClientMixin):
         for tid in list(self.transaction):
             self.raise_future(self.transaction.getTransaction(tid), ConnectionException('Connection lost during request'))
 
+    @property
+    def connected(self):
+        """ Return connection status.
+        """
+        return self._connected
+
     def _dataReceived(self, data):
         ''' Get response, check for valid message, decode result
 

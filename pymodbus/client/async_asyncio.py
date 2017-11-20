@@ -33,10 +33,12 @@ class ModbusClientProtocol(asyncio.Protocol, AsyncModbusClientMixin):
         return asyncio.Future()
 
     def resolve_future(self, f, result):
-        f.set_result(result)
+        if not f.done():
+            f.set_result(result)
 
     def raise_future(self, f, exc):
-        f.set_exception(exc)
+        if not f.done():
+            f.set_exception(exc)
 
 
 class ReconnectingAsyncioModbusTcpClient(object):

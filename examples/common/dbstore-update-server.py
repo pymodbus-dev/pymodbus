@@ -16,7 +16,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import DatabaseSlaveContext
-from pymodbus.datastore.database import DatabaseSlaveContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 #---------------------------------------------------------------------------#

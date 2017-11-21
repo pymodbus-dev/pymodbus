@@ -11,6 +11,7 @@ pipelines:
         caches:
           - pip
         script: # Modify the commands below to build your repository.
+          - scripts/travis.sh
           - pip install --requirement=requirements-checks.txt
           - pip install --requirement=requirements-tests.txt
           - make test

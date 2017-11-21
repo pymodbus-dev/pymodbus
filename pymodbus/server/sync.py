@@ -257,7 +257,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None, address=None, handler=None, **kwargs):
+    def __init__(self, context, framer=None, identity=None, address=None, **kwargs):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock

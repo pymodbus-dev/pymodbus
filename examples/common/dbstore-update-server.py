@@ -2,8 +2,8 @@
 Pymodbus Server With Updating Thread
 --------------------------------------------------------------------------
 This is an example of having a background thread updating the
-context while the server is operating. This can also be done with
-a python thread::
+context in an SQLite4 database while the server is operating.
+This can also be done with a python thread::
     from threading import Thread
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
@@ -37,11 +37,11 @@ log.setLevel(logging.DEBUG)
 #---------------------------------------------------------------------------#
 def updating_writer(a):
     ''' A worker process that runs every so often and
-    updates live values of the context. It should be noted
-    that there is a race condition for the update.
+    updates live values of the context which resides in an SQLite3 database.
+    It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     '''
-    log.debug("updating the context")
+    log.debug("Updating the database context")
     context  = a[0]
     readfunction = 0x03 # read holding registers
     writefunction = 0x10
@@ -50,7 +50,7 @@ def updating_writer(a):
 
 
     values = context[slave_id].getValues(readfunction, address, count=3)
-    log.debug("new values: " + str(values))
+    log.debug("New values from datastore: " + str(values))
 
 
 #---------------------------------------------------------------------------#

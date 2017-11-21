@@ -257,7 +257,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
     server context instance.
     '''
 
-    def __init__(self, context, framer=None, identity=None, address=None, **kwargs):
+    def __init__(self, context, framer=None, identity=None, address=None, handler=None, **kwargs):
         ''' Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -276,13 +276,14 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
+        self.handler = handler if isinstance(handler, ModbusBaseRequestHandler) else ModbusConnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingTCPServer.__init__(self,
-            self.address, ModbusConnectedRequestHandler)
+            self.address, self.handler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -339,13 +340,14 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
+        self.handler = handler if isinstance(handler, ModbusBaseRequestHandler) else ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingUDPServer.__init__(self,
-            self.address, ModbusDisconnectedRequestHandler)
+            self.address, self.handler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread

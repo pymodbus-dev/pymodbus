@@ -276,7 +276,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
-        self.handler = handler if isinstance(handler, ModbusBaseRequestHandler) else ModbusConnectedRequestHandler
+        self.handler = handler or ModbusConnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -340,7 +340,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
-        self.handler = handler if isinstance(handler, ModbusBaseRequestHandler) else ModbusDisconnectedRequestHandler
+        self.handler = handler or ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):

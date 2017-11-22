@@ -3,6 +3,11 @@ Pymodbus Server With Updating Thread
 --------------------------------------------------------------------------
 This is an example of having a background thread updating the
 context in an SQLite4 database while the server is operating.
+
+This scrit generates a random address range (within 0 - 65000) and a random
+value and stores it in a database. It then reads the same address to verify
+that the process works as expected
+
 This can also be done with a python thread::
     from threading import Thread
     thread = Thread(target=updating_writer, args=(context,))
@@ -17,6 +22,7 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import DatabaseSlaveContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+import random
 
 #---------------------------------------------------------------------------#
 # import the twisted libraries we need
@@ -45,11 +51,18 @@ def updating_writer(a):
     readfunction = 0x03 # read holding registers
     writefunction = 0x10
     slave_id = 0x01 # slave address
-    address  = 16 # adress : 400017
+    count = 50
 
+    # import pdb; pdb.set_trace()
 
-    values = context[slave_id].getValues(readfunction, address, count=3)
-    log.debug("New values from datastore: " + str(values))
+    rand_value = random.randint(0, 9999)
+    rand_addr = random.randint(0, 65000)
+    log.debug("Writing to datastore: {}, {}".format(rand_addr, rand_value))
+    # import pdb; pdb.set_trace()
+    context[slave_id].setValues(writefunction, rand_addr, [rand_value])
+    values = context[slave_id].getValues(readfunction, rand_addr, count)
+    log.debug("Values from datastore: " + str(values))
+
 
 
 #---------------------------------------------------------------------------#

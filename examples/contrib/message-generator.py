@@ -12,6 +12,7 @@ for the supplied modbus format:
 * binary - `./generate-messages.py -f binary -m tx -b`
 '''
 from optparse import OptionParser
+import codecs as c
 #--------------------------------------------------------------------------#
 # import all the available framers
 #--------------------------------------------------------------------------#
@@ -30,6 +31,7 @@ from pymodbus.other_message import *
 from pymodbus.mei_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
+from pymodbus.compat import IS_PYTHON3
 
 #--------------------------------------------------------------------------#
 # initialize logging
@@ -51,17 +53,17 @@ _request_messages = [
     WriteSingleRegisterRequest,
     WriteSingleCoilRequest,
     ReadWriteMultipleRegistersRequest,
-    
+
     ReadExceptionStatusRequest,
     GetCommEventCounterRequest,
     GetCommEventLogRequest,
     ReportSlaveIdRequest,
-    
+
     ReadFileRecordRequest,
     WriteFileRecordRequest,
     MaskWriteRegisterRequest,
     ReadFifoQueueRequest,
-    
+
     ReadDeviceInformationRequest,
 
     ReturnQueryDataRequest,
@@ -97,7 +99,7 @@ _response_messages = [
     WriteSingleRegisterResponse,
     WriteSingleCoilResponse,
     ReadWriteMultipleRegistersResponse,
-    
+
     ReadExceptionStatusResponse,
     GetCommEventCounterResponse,
     GetCommEventLogResponse,
@@ -149,13 +151,13 @@ _arguments = {
     'write_registers'   : [0x01] * 8,
     'transaction'       : 0x01,
     'protocol'          : 0x00,
-    'unit'              : 0x01,
+    'unit'              : 0xff,
 }
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # generate all the requested messages
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def generate_messages(framer, options):
     ''' A helper method to parse the command line options
 
@@ -168,13 +170,16 @@ def generate_messages(framer, options):
         print ("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = packet.encode('hex') + '\n'
-        print (packet)   # because ascii ends with a \r\n
+            if not IS_PYTHON3:
+                packet = packet.encode('hex')
+            else:
+                packet = c.encode(packet, 'hex_codec').decode('utf-8')
+        print ("{}\n".format(packet))   # because ascii ends with a \r\n
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # initialize our program settings
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def get_options():
     ''' A helper method to parse the command line options
 

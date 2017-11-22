@@ -133,7 +133,6 @@ class DatabaseSlaveContext(IModbusSlaveContext):
 
     def _check(self, type, offset, values):
         result = self._get(type, offset, count=1)
-        # import pdb; pdb.set_trace()
         return False if len(result) > 0 else True
 
     def _set(self, type, offset, values):
@@ -143,7 +142,6 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         :param offset: The address offset to start at
         :param values: The values to set
         '''
-        # import pdb; pdb.set_trace()
         if self._check(type, offset, values):
             context = self._build_set(type, offset, values)
             query   = self._table.insert()

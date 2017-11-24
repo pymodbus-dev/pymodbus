@@ -275,7 +275,7 @@ def StartSerialServer(context, identity=None,
     reactor.run()
 
 
-def _stop_server():
+def StopServer():
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()
@@ -285,13 +285,10 @@ def _stop_server():
         _logger.debug("Stopping current thread")
 
 
-StopTcpServer = StopSerialServer = _stop_server
-
 
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer", "StopTcpServer",
-    "StopSerialServer"
+    "StartTcpServer", "StartUdpServer", "StartSerialServer", "StopServer"
 ]

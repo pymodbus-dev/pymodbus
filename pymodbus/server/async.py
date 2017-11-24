@@ -279,9 +279,10 @@ def _stop_server():
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()
+        _logger.debug("Stopping main thread")
     else:
         reactor.callFromThread(reactor.stop)
-    _logger.debug("Stopping main thread")
+        _logger.debug("Stopping current thread")
 
 
 StopTcpServer = StopSerialServer = _stop_server

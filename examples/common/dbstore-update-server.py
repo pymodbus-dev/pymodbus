@@ -20,7 +20,7 @@ from pymodbus.server.async import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.datastore.database import DatabaseSlaveContext
+from pymodbus.datastore.database import SqlSlaveContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 import random
 
@@ -69,7 +69,7 @@ def updating_writer(a):
 # initialize your data store
 #---------------------------------------------------------------------------#
 block = ModbusSequentialDataBlock(0x00, [0]*0xff)
-store = DatabaseSlaveContext(block)
+store = SqlSlaveContext(block)
 
 context = ModbusServerContext(slaves={1: store}, single=False)
 

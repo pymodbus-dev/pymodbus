@@ -17,7 +17,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Context
 #---------------------------------------------------------------------------#
-class DatabaseSlaveContext(IModbusSlaveContext):
+class SqlSlaveContext(IModbusSlaveContext):
     '''
     This creates a modbus data model with each data access
     stored in its own personal block

@@ -275,7 +275,7 @@ def StartSerialServer(context, identity=None,
     reactor.run()
 
 
-def _stop_server(is_mainthread=True):
+def _stop_server():
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()

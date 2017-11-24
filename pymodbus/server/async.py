@@ -274,9 +274,23 @@ def StartSerialServer(context, identity=None,
     SerialPort(protocol, port, reactor, baudrate)
     reactor.run()
 
+
+def _stop_server(is_mainthread=True):
+    from twisted.internet import reactor
+    if _is_main_thread():
+        reactor.stop()
+    else:
+        reactor.callFromThread(reactor.stop)
+    _logger.debug("Stopping main thread")
+
+
+StopTcpServer = StopSerialServer = _stop_server
+
+
 #---------------------------------------------------------------------------#
 # Exported symbols
 #---------------------------------------------------------------------------#
 __all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer",
+    "StartTcpServer", "StartUdpServer", "StartSerialServer", "StopTcpServer",
+    "StopSerialServer"
 ]

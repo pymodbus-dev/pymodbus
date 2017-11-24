@@ -6,6 +6,7 @@ Implementation of a Twisted Modbus Server
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
+from twisted.internet import reactor
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -18,7 +19,7 @@ from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
 from pymodbus.compat import byte2int
-from twisted.internet import reactor
+from pymodbus.compat import IS_PYTHON3
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -204,6 +205,21 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 #---------------------------------------------------------------------------#
 # Starting Factories
 #---------------------------------------------------------------------------#
+def _is_main_thread():
+    import threading
+
+    if IS_PYTHON3:
+        if threading.current_thread() != threading.main_thread():
+            _logger.debug("Starting in spawned thread")
+            return False
+    else:
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            _logger.debug("Starting in spawned thread")
+            return False
+    _logger.debug("Starting in Main thread")
+    return True
+
+
 def StartTcpServer(context, identity=None, address=None, console=False, **kwargs):
     ''' Helper method to start the Modbus Async TCP server
 
@@ -223,7 +239,7 @@ def StartTcpServer(context, identity=None, address=None, console=False, **kwargs
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
-    reactor.run()
+    reactor.run(installSignalHandlers=_is_main_thread())
 
 
 def StartUdpServer(context, identity=None, address=None, **kwargs):
@@ -242,7 +258,7 @@ def StartUdpServer(context, identity=None, address=None, **kwargs):
 
     _logger.info("Starting Modbus UDP Server on %s:%s" % address)
     reactor.listenUDP(address[1], server, interface=address[0])
-    reactor.run()
+    reactor.run(installSignalHandlers=_is_main_thread())
 
 
 def StartSerialServer(context, identity=None,
@@ -272,7 +288,7 @@ def StartSerialServer(context, identity=None,
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port # hack for logging
     SerialPort(protocol, port, reactor, baudrate)
-    reactor.run()
+    reactor.run(installSignalHandlers=_is_main_thread())
 
 #---------------------------------------------------------------------------#
 # Exported symbols

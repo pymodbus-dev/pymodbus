@@ -276,6 +276,9 @@ def StartSerialServer(context, identity=None,
 
 
 def StopServer():
+    """
+    Helper method to stop Async Server
+    """
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()

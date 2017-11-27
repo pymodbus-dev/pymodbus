@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 import unittest
+import mock
+from mock import MagicMock
+import redis
 from pymodbus.datastore import *
 from pymodbus.datastore.store import BaseModbusDataBlock
+from pymodbus.datastore.database import SqlSlaveContext
+from pymodbus.datastore.database import RedisSlaveContext
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.exceptions import ParameterException
@@ -113,7 +118,7 @@ class ModbusDataStoreTest(unittest.TestCase):
         }
         context = ModbusSlaveContext(**store)
         self.assertNotEqual(str(context), None)
-        
+
         for fx in [1,2,3,4]:
             context.setValues(fx, 0, [True]*10)
             self.assertTrue(context.validate(fx, 0,10))
@@ -131,6 +136,120 @@ class ModbusDataStoreTest(unittest.TestCase):
         context = ModbusServerContext(single=False)
         self.assertRaises(NoSuchSlaveException, lambda: _set(context))
         self.assertRaises(NoSuchSlaveException, lambda: context[0xffff])
+
+
+class RedisDataStoreTest(unittest.TestCase):
+    '''
+    This is the unittest for the pymodbus.datastore.database.redis module
+    '''
+
+    def setUp(self):
+        self.slave = RedisSlaveContext()
+
+    def tearDown(self):
+        ''' Cleans up the test environment '''
+        pass
+
+    def testStr(self):
+        # slave = RedisSlaveContext()
+        self.assertEqual(str(self.slave), "Redis Slave Context %s" % self.slave.client)
+
+    def testReset(self):
+        assert isinstance(self.slave.client, redis.Redis)
+        self.slave.client = MagicMock()
+        self.slave.reset()
+        self.slave.client.flushall.assert_called_once_with()
+
+    def testValCallbacksSuccess(self):
+        self.slave._build_mapping()
+        mock_count = 3
+        mock_offset = 0
+        self.slave.client.mset = MagicMock()
+        self.slave.client.mget = MagicMock(return_value=['11'])
+
+        for key in ('d', 'c', 'h', 'i'):
+            self.assertTrue(
+                self.slave._val_callbacks[key](mock_offset, mock_count)
+            )
+
+    def testValCallbacksFailure(self):
+        self.slave._build_mapping()
+        mock_count = 3
+        mock_offset = 0
+        self.slave.client.mset = MagicMock()
+        self.slave.client.mget = MagicMock(return_value=['11', None])
+
+        for key in ('d', 'c', 'h', 'i'):
+            self.assertFalse(
+                self.slave._val_callbacks[key](mock_offset, mock_count)
+            )
+
+    def testGetCallbacks(self):
+        self.slave._build_mapping()
+        mock_count = 3
+        mock_offset = 0
+        self.slave.client.mset = MagicMock()
+        self.slave.client.mget = MagicMock(return_value="11")
+
+        for key in ('d', 'c'):
+            resp = self.slave._get_callbacks[key](mock_offset, mock_count)
+            self.assertEqual(resp, [True, False, False])
+
+        for key in ('h', 'i'):
+            resp = self.slave._get_callbacks[key](mock_offset, mock_count)
+            self.assertEqual(resp, ['1', '1'])
+
+    def testSetCallbacks(self):
+        self.slave._build_mapping()
+        mock_values = [3]
+        mock_offset = 0
+        self.slave.client.mset = MagicMock()
+        self.slave.client.mget = MagicMock()
+
+        for key in ['c', 'd']:
+            self.slave._set_callbacks[key](mock_offset, [3])
+            k = "pymodbus:{}:{}".format(key, mock_offset)
+            self.slave.client.mset.assert_called_with(
+                {k: '\x01'}
+            )
+
+        for key in ('h', 'i'):
+            self.slave._set_callbacks[key](mock_offset, [3])
+            k = "pymodbus:{}:{}".format(key, mock_offset)
+            self.slave.client.mset.assert_called_with(
+                {k: mock_values[0]}
+            )
+
+    def testValidate(self):
+        self.slave.client.mget = MagicMock(return_value=[123])
+        self.assertTrue(self.slave.validate(0x01, 3000))
+
+    def testSetValue(self):
+        self.slave.client.mset = MagicMock()
+        self.slave.client.mget = MagicMock()
+        self.assertEqual(self.slave.setValues(0x01, 1000, [12]), None)
+
+    def testGetValue(self):
+        self.slave.client.mget = MagicMock(return_value=["123"])
+        self.assertEqual(self.slave.getValues(0x01, 23), [])
+
+
+class SqlDataStoreTest(unittest.TestCase):
+    '''
+    This is the unittest for the pymodbus.datastore.database.SqlSlaveContesxt
+    module
+    '''
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        ''' Cleans up the test environment '''
+        pass
+
+    def testStr(self):
+        pass
+
 
 #---------------------------------------------------------------------------#
 # Main

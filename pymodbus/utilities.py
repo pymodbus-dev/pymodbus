@@ -86,7 +86,10 @@ def unpack_bitstring(string):
     byte_count = len(string)
     bits = []
     for byte in range(byte_count):
-        value = byte2int(string[byte])
+        if IS_PYTHON3:
+            value = byte2int(int(string[byte]))
+        else:
+            value = byte2int(string[byte])
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1

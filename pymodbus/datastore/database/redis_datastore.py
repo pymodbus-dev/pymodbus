@@ -172,7 +172,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         current = self._get_bit_values(key, offset, count)
         current = (r or self._bit_default for r in current)
         current = ''.join(current)
-        current = current[0:offset] + value + current[offset + count:]
+        current = current[0:offset] + value.decode('utf-8') + current[offset + count:]
         final   = (current[s:s + self._bit_size] for s in range(0, count, self._bit_size))
 
         key = self._get_prefix(key)

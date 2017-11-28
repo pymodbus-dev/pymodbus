@@ -189,8 +189,7 @@ class RedisDataStoreTest(unittest.TestCase):
         self.slave._build_mapping()
         mock_count = 3
         mock_offset = 0
-        self.slave.client.mset = MagicMock()
-        self.slave.client.mget = MagicMock(return_value="11")
+        self.slave.client.mget = MagicMock(return_value='11')
 
         for key in ('d', 'c'):
             resp = self.slave._get_callbacks[key](mock_offset, mock_count)
@@ -251,7 +250,7 @@ class SqlDataStoreTest(unittest.TestCase):
         self.slave = SqlSlaveContext()
         self.slave._metadata.drop_all = MagicMock()
         self.slave._db_create = MagicMock()
-        self.slave._table = MagicMock()
+        self.slave._table.select = MagicMock()
         self.slave._connection = MagicMock()
 
         self.mock_addr = random.randint(0, 65000)

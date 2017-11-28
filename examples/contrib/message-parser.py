@@ -11,7 +11,7 @@ using the supplied framers for a number of protocols:
 * rtu
 * binary
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import needed libraries
 #---------------------------------------------------------------------------#
 from __future__ import print_function
@@ -19,12 +19,16 @@ import sys
 import collections
 import textwrap
 from optparse import OptionParser
+import codecs as c
+
 from pymodbus.utilities import computeCRC, computeLRC
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.compat import byte2int, int2byte, IS_PYTHON3
+
 
 #--------------------------------------------------------------------------#
 # Logging
@@ -33,9 +37,9 @@ import logging
 modbus_log = logging.getLogger("pymodbus")
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # build a quick wrapper around the framers
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 class Decoder(object):
 
     def __init__(self, framer, encode=False):
@@ -52,7 +56,10 @@ class Decoder(object):
 
         :param message: The messge to decode
         '''
-        value = message if self.encode else message.encode('hex')
+        if IS_PYTHON3:
+            value = message if self.encode else c.encode(message, 'hex_codec')
+        else:
+            value = message if self.encode else message.encode('hex')
         print("="*80)
         print("Decoding Message %s" % value)
         print("="*80)
@@ -64,7 +71,7 @@ class Decoder(object):
             print("%s" % decoder.decoder.__class__.__name__)
             print("-"*80)
             try:
-                decoder.addToFrame(message.encode())
+                decoder.addToFrame(message)
                 if decoder.checkFrame():
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report)
@@ -86,7 +93,7 @@ class Decoder(object):
         :param message: The message to print
         '''
         print("%-15s = %s" % ('name', message.__class__.__name__))
-        for k,v in message.__dict__.iteritems():
+        for (k, v) in message.__dict__.items():
             if isinstance(v, dict):
                 print("%-15s =" % k)
                 for kk,vv in v.items():
@@ -102,9 +109,9 @@ class Decoder(object):
         print("%-15s = %s" % ('documentation', message.__doc__))
 
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # and decode our message
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 def get_options():
     ''' A helper method to parse the command line options
 
@@ -136,6 +143,10 @@ def get_options():
         help="The file containing messages to parse",
         dest="file", default=None)
 
+    parser.add_option("-t", "--transaction",
+        help="If the incoming message is in hexadecimal format",
+        action="store_true", dest="transaction", default=False)
+
     (opt, arg) = parser.parse_args()
 
     if not opt.message and len(arg) > 0:
@@ -150,8 +161,19 @@ def get_messages(option):
     :returns: The message iterator to parse
     '''
     if option.message:
+        if option.transaction:
+            msg = ""
+            for segment in option.message.split():
+                segment = segment.replace("0x", "")
+                segment = "0" + segment if len(segment) == 1 else segment
+                msg = msg + segment
+            option.message = msg
+
         if not option.ascii:
-            option.message = option.message.decode('hex')
+            if not IS_PYTHON3:
+                option.message = option.message.decode('hex')
+            else:
+                option.message = c.decode(option.message.encode(), 'hex_codec')
         yield option.message
     elif option.file:
         with open(option.file, "r") as handle:

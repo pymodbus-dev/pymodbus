@@ -32,9 +32,9 @@ class ModbusTransactionTest(unittest.TestCase):
         del self._rtu
         del self._ascii
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # Dictionary based transaction manager
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def testDictTransactionManagerTID(self):
         ''' Test the dict transaction manager TID '''
         for tid in range(1, self._manager.getNextTID() + 10):
@@ -65,9 +65,9 @@ class ModbusTransactionTest(unittest.TestCase):
         self._manager.delTransaction(handle.transaction_id)
         self.assertEqual(None, self._manager.getTransaction(handle.transaction_id))
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # Queue based transaction manager
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     def testFifoTransactionManagerTID(self):
         ''' Test the fifo transaction manager TID '''
         for tid in range(1, self._queue_manager.getNextTID() + 10):
@@ -98,7 +98,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._queue_manager.delTransaction(handle.transaction_id)
         self.assertEqual(None, self._queue_manager.getTransaction(handle.transaction_id))
 
-    #---------------------------------------------------------------------------# 
+    #---------------------------------------------------------------------------#
     # TCP tests
     #---------------------------------------------------------------------------#
     def testTCPFramerTransactionReady(self):
@@ -361,7 +361,7 @@ class ModbusTransactionTest(unittest.TestCase):
     def testBinaryFramerTransactionFull(self):
         ''' Test a full binary frame transaction '''
         msg  = b'\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d'
-        pack = msg[3:-3]
+        pack = msg[2:-3]
         self._binary.addToFrame(msg)
         self.assertTrue(self._binary.checkFrame())
         result = self._binary.getFrame()
@@ -372,7 +372,7 @@ class ModbusTransactionTest(unittest.TestCase):
         ''' Test a half completed binary frame transaction '''
         msg1 = b'\x7b\x01\x03\x00'
         msg2 = b'\x00\x00\x05\x85\xC9\x7d'
-        pack = msg1[3:] + msg2[:-3]
+        pack = msg1[2:] + msg2[:-3]
         self._binary.addToFrame(msg1)
         self.assertFalse(self._binary.checkFrame())
         result = self._binary.getFrame()

@@ -17,7 +17,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Context
 #---------------------------------------------------------------------------#
-class DatabaseSlaveContext(IModbusSlaveContext):
+class SqlSlaveContext(IModbusSlaveContext):
     '''
     This creates a modbus data model with each data access
     stored in its own personal block
@@ -30,7 +30,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         self.table = kwargs.get('table', 'pymodbus')
         self.database = kwargs.get('database', 'sqlite:///pymodbus.db')
-        self.__db_create(self.table, self.database)
+        self._db_create(self.table, self.database)
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -42,8 +42,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
     def reset(self):
         ''' Resets all the datastores to their default values '''
         self._metadata.drop_all()
-        self.__db_create(self.table, self.database)
-        raise NotImplementedException()  # TODO drop table?
+        self._db_create(self.table, self.database)
 
     def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -55,7 +54,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1  # section 4.4 of specification
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        return self.__validate(self.decode(fx), address, count)
+        return self._validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -67,7 +66,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1  # section 4.4 of specification
         _logger.debug("get-values[%d] %d:%d" % (fx, address, count))
-        return self.__get(self.decode(fx), address, count)
+        return self._get(self.decode(fx), address, count)
 
     def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
@@ -78,12 +77,12 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         '''
         address = address + 1  # section 4.4 of specification
         _logger.debug("set-values[%d] %d:%d" % (fx, address, len(values)))
-        self.__set(self.decode(fx), address, values)
+        self._set(self.decode(fx), address, values)
 
     #--------------------------------------------------------------------------#
     # Sqlite Helper Methods
     #--------------------------------------------------------------------------#
-    def __db_create(self, table, database):
+    def _db_create(self, table, database):
         ''' A helper method to initialize the database and handles
 
         :param table: The table name to create
@@ -99,9 +98,8 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
 
-    def __get(self, type, offset, count):
+    def _get(self, type, offset, count):
         '''
-
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
@@ -110,47 +108,56 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         query  = self._table.select(and_(
             self._table.c.type == type,
             self._table.c.index >= offset,
-            self._table.c.index <= offset + count))
+            self._table.c.index <= offset + count)
+        )
         query = query.order_by(self._table.c.index.asc())
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def __build_set(self, type, offset, values, p=''):
+    def _build_set(self, type, offset, values, prefix=''):
         ''' A helper method to generate the sql update context
 
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
+        :param prefix: Prefix fields index and type, defaults to empty string
         '''
         result = []
         for index, value in enumerate(values):
             result.append({
-                p + 'type'  : type,
-                p + 'index' : offset + index,
+                prefix + 'type'  : type,
+                prefix + 'index' : offset + index,
                     'value' : value
             })
         return result
 
-    def __set(self, type, offset, values):
+    def _check(self, type, offset, values):
+        result = self._get(type, offset, count=1)
+        return False if len(result) > 0 else True
+
+    def _set(self, type, offset, values):
         '''
 
         :param key: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
         '''
-        context = self.__build_set(type, offset, values)
-        query   = self._table.insert()
-        result  = self._connection.execute(query, context)
-        return result.rowcount == len(values)
+        if self._check(type, offset, values):
+            context = self._build_set(type, offset, values)
+            query   = self._table.insert()
+            result  = self._connection.execute(query, context)
+            return result.rowcount == len(values)
+        else:
+            return False
 
-    def __update(self, type, offset, values):
+    def _update(self, type, offset, values):
         '''
 
         :param type: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
         '''
-        context = self.__build_set(type, offset, values, p='x_')
+        context = self._build_set(type, offset, values, prefix='x_')
         query   = self._table.update().values(name='value')
         query   = query.where(and_(
             self._table.c.type  == bindparam('x_type'),
@@ -158,7 +165,7 @@ class DatabaseSlaveContext(IModbusSlaveContext):
         result  = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
-    def __validate(self, key, offset, count):
+    def _validate(self, type, offset, count):
         '''
         :param key: The key prefix to use
         :param offset: The address offset to start at

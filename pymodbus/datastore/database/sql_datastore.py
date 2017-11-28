@@ -100,7 +100,6 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def _get(self, type, offset, count):
         '''
-
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
@@ -115,18 +114,19 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(self, type, offset, values, p=''):
+    def _build_set(self, type, offset, values, prefix=''):
         ''' A helper method to generate the sql update context
 
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
+        :param prefix: Prefix fields index and type, defaults to empty string
         '''
         result = []
         for index, value in enumerate(values):
             result.append({
-                p + 'type'  : type,
-                p + 'index' : offset + index,
+                prefix + 'type'  : type,
+                prefix + 'index' : offset + index,
                     'value' : value
             })
         return result
@@ -157,7 +157,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param offset: The address offset to start at
         :param values: The values to set
         '''
-        context = self._build_set(type, offset, values, p='x_')
+        context = self._build_set(type, offset, values, prefix='x_')
         query   = self._table.update().values(name='value')
         query   = query.where(and_(
             self._table.c.type  == bindparam('x_type'),

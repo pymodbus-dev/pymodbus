@@ -23,7 +23,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
     io_loop = None
 
     def __init__(self, *args, **kwargs):
-        self.ioloop = kwargs.pop("ioloop", None)
+        self.io_loop = kwargs.pop("ioloop", None)
         super(BaseTornadoClient, self).__init__(*args, **kwargs)
 
     @abc.abstractmethod
@@ -39,7 +39,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :rtype: tornado.concurrent.Future
         """
         conn = self.get_socket()
-        self.stream = IOStream(conn, io_loop=self.ioloop or IOLoop.current())
+        self.stream = IOStream(conn, io_loop=self.io_loop or IOLoop.current())
         self.stream.connect((self.host, self.port))
         self.stream.read_until_close(None,
                                      streaming_callback=self.on_receive)
@@ -89,6 +89,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
             self.stream.close_fd()
 
         self.stream = None
+        self._connected = False
 
 
 class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
@@ -96,7 +97,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
     io_loop = None
 
     def __init__(self, *args, **kwargs):
-        self.ioloop = kwargs.pop("ioloop")
+        self.io_loop = kwargs.pop("ioloop", None)
         super(BaseTornadoSerialClient, self).__init__(*args, **kwargs)
 
     @abc.abstractmethod
@@ -105,10 +106,10 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         """
 
     def on_receive(self, *args):
+        # Will be handled ine execute method
         pass
 
     def execute(self, request=None):
-        f = Future()
         request.transaction_id = self.transaction.getNextTID()
 
         def callback(*args):
@@ -122,7 +123,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
 
         packet = self.framer.buildPacket(request)
         self.stream.write(packet, callback=callback)
-        self.transaction.addTransaction(f, request.transaction_id)
+        f = self._build_response(request.transaction_id)
         return f
 
     def _handle_response(self, reply, **kwargs):
@@ -134,6 +135,16 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
             else:
                 LOGGER.debug("Unrequested message: {}".format(reply))
 
+    def _build_response(self, tid):
+        f = Future()
+
+        if not self._connected:
+            f.set_exception(ConnectionException("Client is not connected"))
+            return f
+
+        self.transaction.addTransaction(f, tid)
+        return f
+
     def close(self):
         """Closes the underlying IOStream
         """
@@ -142,6 +153,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
             self.stream.close_fd()
 
         self.stream = None
+        self._connected = False
 
 
 class SerialIOStream(BaseIOStream):

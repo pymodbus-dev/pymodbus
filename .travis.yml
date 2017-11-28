@@ -11,6 +11,7 @@ matrix:
   - os: linux
     python: "3.6"
   - os: osx
+    osx_image: xcode8.3
     language: generic
 before_install:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi

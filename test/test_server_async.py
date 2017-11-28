@@ -15,9 +15,17 @@ import sys
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
-SERIAL_PORT = "/dev/ptmx"
-if sys.platform == "darwin":
-    SERIAL_PORT = "/dev/ptyp0"
+import platform
+from distutils.version import LooseVersion
+
+IS_DARWIN = platform.system().lower() == "darwin"
+OSX_SIERRA = LooseVersion("10.12")
+if IS_DARWIN:
+    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
+else:
+    IS_HIGH_SIERRA_OR_ABOVE = False
+    SERIAL_PORT = "/dev/ptmx"
 
 
 class AsynchronousServerTest(unittest.TestCase):
@@ -95,13 +103,15 @@ class AsynchronousServerTest(unittest.TestCase):
             self.assertEqual(mock_reactor.listenUDP.call_count, 1)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
-    def testSerialServerStartup(self):
+    @patch("twisted.internet.serialport.SerialPort")
+    def testSerialServerStartup(self, mock_sp):
         ''' Test that the modbus serial async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
-    def testStopServerFromMainThread(self):
+    @patch("twisted.internet.serialport.SerialPort")
+    def testStopServerFromMainThread(self, mock_sp):
         """
         Stop async server
         :return:
@@ -112,7 +122,8 @@ class AsynchronousServerTest(unittest.TestCase):
             StopServer()
             self.assertEqual(mock_reactor.stop.call_count, 1)
 
-    def testStopServerFromThread(self):
+    @patch("twisted.internet.serialport.SerialPort")
+    def testStopServerFromThread(self, mock_sp):
         """
         Stop async server from child thread
         :return:

@@ -10,7 +10,7 @@ of nodes which can be helpful for testing monitoring software.
 #---------------------------------------------------------------------------# 
 # import the various server implementations
 #---------------------------------------------------------------------------# 
-from pymodbus.server.async import StartTcpServer
+from pymodbus.server.async import StartTcpServer, StopServer
 from pymodbus.server.async import StartUdpServer
 from pymodbus.server.async import StartSerialServer
 
@@ -100,9 +100,32 @@ identity.ProductName = 'Pymodbus Server'
 identity.ModelName   = 'Pymodbus Server'
 identity.MajorMinorRevision = '1.0'
 
-#---------------------------------------------------------------------------# 
+# ---------------------------------------------------------------------------#
+# Stop the server after some time
+# ---------------------------------------------------------------------------#
+
+import threading
+def stop_server(timeout=5):
+    """
+    Stops async server after some time
+    :param timeout:
+    :return:
+    """
+    log.debug("Will stop the server after %r seconds", timeout)
+    import time
+    start = time.time()
+    while (time.time() - start) <= timeout:
+        time.sleep(0.5)
+    log.debug("Stopping the server !!!")
+    StopServer()
+
+
+t = threading.Thread(target=stop_server, kwargs={"timeout": 100})
+t.start()
+#---------------------------------------------------------------------------#
 # run the server you want
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
+
 StartTcpServer(context, identity=identity, address=("localhost", 5020))
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusRtuFramer)

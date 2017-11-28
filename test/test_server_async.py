@@ -8,7 +8,7 @@ else: # Python 2
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory
-from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer
+from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer, StopServer
 
 
 import sys
@@ -100,6 +100,32 @@ class AsynchronousServerTest(unittest.TestCase):
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
+
+    def testStopServerFromMainThread(self):
+        """
+        Stop async server
+        :return:
+        """
+        with patch('twisted.internet.reactor') as mock_reactor:
+            StartSerialServer(context=None, port=SERIAL_PORT)
+            self.assertEqual(mock_reactor.run.call_count, 1)
+            StopServer()
+            self.assertEqual(mock_reactor.stop.call_count, 1)
+
+    def testStopServerFromThread(self):
+        """
+        Stop async server from child thread
+        :return:
+        """
+        from threading import Thread
+        import time
+        with patch('twisted.internet.reactor') as mock_reactor:
+            StartSerialServer(context=None, port=SERIAL_PORT)
+            self.assertEqual(mock_reactor.run.call_count, 1)
+            t = Thread(target=StopServer)
+            t.start()
+            time.sleep(2)
+            self.assertEqual(mock_reactor.callFromThread.call_count, 1)
 
 #---------------------------------------------------------------------------#
 # Main

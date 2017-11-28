@@ -6,7 +6,6 @@ Implementation of a Twisted Modbus Server
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
-from twisted.internet import reactor
 
 from pymodbus.constants import Defaults
 from pymodbus.factory import ServerDecoder
@@ -18,8 +17,8 @@ from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.internal.ptwisted import InstallManagementConsole
-from pymodbus.compat import byte2int
-from pymodbus.compat import IS_PYTHON3
+from pymodbus.compat import byte2int, IS_PYTHON3
+from twisted.internet import reactor
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -63,7 +62,7 @@ class ModbusTcpProtocol(protocol.Protocol):
             if unit_address in self.factory.store:
                 self.framer.processIncomingPacket(data, self._execute)
 
-    def _execute(self, request):
+    def _execute(self, request, **kwargs):
         ''' Executes the request and returns the result
 
         :param request: The decoded request message
@@ -210,13 +209,13 @@ def _is_main_thread():
 
     if IS_PYTHON3:
         if threading.current_thread() != threading.main_thread():
-            _logger.debug("Starting in spawned thread")
+            _logger.debug("Running in spawned thread")
             return False
     else:
         if not isinstance(threading.current_thread(), threading._MainThread):
-            _logger.debug("Starting in spawned thread")
+            _logger.debug("Running in spawned thread")
             return False
-    _logger.debug("Starting in Main thread")
+    _logger.debug("Running in Main thread")
     return True
 
 
@@ -230,7 +229,6 @@ def StartTcpServer(context, identity=None, address=None, console=False, **kwargs
     :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
     from twisted.internet import reactor
-
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
@@ -251,7 +249,6 @@ def StartUdpServer(context, identity=None, address=None, **kwargs):
     :param ignore_missing_slaves: True to not send errors on a request to a missing slave
     '''
     from twisted.internet import reactor
-
     address = address or ("", Defaults.Port)
     framer  = ModbusSocketFramer
     server  = ModbusUdpProtocol(context, framer, identity, **kwargs)
@@ -261,8 +258,7 @@ def StartUdpServer(context, identity=None, address=None, **kwargs):
     reactor.run(installSignalHandlers=_is_main_thread())
 
 
-def StartSerialServer(context, identity=None,
-    framer=ModbusAsciiFramer, **kwargs):
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, **kwargs):
     ''' Helper method to start the Modbus Async Serial server
 
     :param context: The server data context
@@ -298,10 +294,10 @@ def StopServer():
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()
-        _logger.debug("Stopping main thread")
+        _logger.debug("Stopping server from main thread")
     else:
         reactor.callFromThread(reactor.stop)
-        _logger.debug("Stopping current thread")
+        _logger.debug("Stopping Server from another thread")
 
 
 

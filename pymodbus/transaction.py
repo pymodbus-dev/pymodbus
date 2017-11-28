@@ -121,7 +121,6 @@ class ModbusTransactionManager(object):
 
         while retries > 0:
             try:
-                last_exception = None
                 self.client.connect()
                 packet = self.client.framer.buildPacket(request)
                 if _logger.isEnabledFor(logging.DEBUG):
@@ -136,7 +135,7 @@ class ModbusTransactionManager(object):
 
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
-                self.client.framer.processIncomingPacket(result, self.addTransaction)
+                self.client.framer.processIncomingPacket(result, self.addTransaction, self.tid)
                 break
             except (socket.error, ModbusIOException, InvalidMessageRecievedException) as msg:
                 self.client.close()
@@ -430,7 +429,7 @@ class ModbusSocketFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     # Public Member Functions
     #-----------------------------------------------------------------------#
-    def processIncomingPacket(self, data, callback):
+    def processIncomingPacket(self, data, callback, tid=None):
         ''' The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
@@ -450,16 +449,16 @@ class ModbusSocketFramer(IModbusFramer):
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    self._process(callback)
+                    self._process(callback, tid=tid)
                 else: self.resetFrame()
             else:
                 if len(self.__buffer):
                     # Possible error ???
                     if self.__header['len'] < 2:
-                        self._process(callback, error=True)
+                        self._process(callback, error=True, tid=tid)
                 break
 
-    def _process(self, callback, error=False):
+    def _process(self, callback, error=False, tid=None):
         """
         Process incoming packets irrespective error condition 
         """
@@ -472,7 +471,7 @@ class ModbusSocketFramer(IModbusFramer):
         else:
             self.populateResult(result)
             self.advanceFrame()
-            callback(result)  # defer or push to a thread?
+            callback(result, tid=tid)  # defer or push to a thread?
 
     def resetFrame(self):
         ''' Reset the entire message frame.
@@ -656,7 +655,7 @@ class ModbusRtuFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     # Public Member Functions
     #-----------------------------------------------------------------------#
-    def processIncomingPacket(self, data, callback):
+    def processIncomingPacket(self, data, callback, tid=None):
         ''' The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
@@ -675,17 +674,17 @@ class ModbusRtuFramer(IModbusFramer):
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    self._process(callback)
+                    self._process(callback, tid=tid)
                 else:
                     # Could be an error response
                     if len(self.__buffer):
                         # Possible error ???
-                       self._process(callback, error=True)
+                       self._process(callback, error=True, tid=tid)
             else:
                 if len(self.__buffer):
                     # Possible error ???
                     if self.__header.get('len', 0) < 2:
-                        self._process(callback, error=True)
+                        self._process(callback, error=True, tid=tid)
                 break
 
     def buildPacket(self, message):
@@ -700,12 +699,14 @@ class ModbusRtuFramer(IModbusFramer):
         packet += struct.pack(">H", computeCRC(packet))
         return packet
 
-    def _process(self, callback, error=False):
+    def _process(self, callback, error=False, tid=None):
         """
         Process incoming packets irrespective error condition
         """
         data = self.getRawFrame() if error else self.getFrame()
         result = self.decoder.decode(data)
+        if tid is not None:
+            result.transaction_id = tid
         if result is None:
             raise ModbusIOException("Unable to decode request")
         elif error and result.function_code < 0x80:
@@ -713,7 +714,7 @@ class ModbusRtuFramer(IModbusFramer):
         else:
             self.populateResult(result)
             self.advanceFrame()
-            callback(result)  # defer or push to a thread?
+            callback(result, tid=tid)  # defer or push to a thread?
 
     def getRawFrame(self):
         """
@@ -839,7 +840,7 @@ class ModbusAsciiFramer(IModbusFramer):
     #-----------------------------------------------------------------------#
     # Public Member Functions
     #-----------------------------------------------------------------------#
-    def processIncomingPacket(self, data, callback):
+    def processIncomingPacket(self, data, callback, tid=None):
         ''' The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
@@ -862,7 +863,7 @@ class ModbusAsciiFramer(IModbusFramer):
                     raise ModbusIOException("Unable to decode response")
                 self.populateResult(result)
                 self.advanceFrame()
-                callback(result)  # defer this
+                callback(result, tid=tid)  # defer this
             else:
                 break
 

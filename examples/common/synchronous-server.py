@@ -8,11 +8,11 @@ party libraries (unless you need to use the serial protocols which require
 pyserial). This is helpful in constrained or old environments where using
 twisted just is not feasable. What follows is an examle of its use:
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the various server implementations
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 from pymodbus.server.sync import StartTcpServer
-from pymodbus.server.sync import StartUdpServer
+# from pymodbus.server.sync import StartUdpServer
 from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
@@ -20,17 +20,17 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 from pymodbus.transaction import ModbusRtuFramer
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # configure the service logging
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # initialize your data store
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # The datastores only respond to the addresses that they are initialized to.
 # Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
 # request to 0x100 will respond with an invalid address exception. This is
@@ -80,19 +80,19 @@ log.setLevel(logging.DEBUG)
 # will map to (1-8)::
 #
 #     store = ModbusSlaveContext(..., zero_mode=True)
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),
     co = ModbusSequentialDataBlock(0, [17]*100),
     hr = ModbusSequentialDataBlock(0, [17]*100),
     ir = ModbusSequentialDataBlock(0, [17]*100))
-context = ModbusServerContext(slaves=store, single=True)
+context = ModbusServerContext(slaves={1: store}, single=False)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # initialize the server information
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # If you don't set this or any fields, they are defaulted to empty strings.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 identity = ModbusDeviceIdentification()
 identity.VendorName  = 'Pymodbus'
 identity.ProductCode = 'PM'
@@ -103,15 +103,15 @@ identity.MajorMinorRevision = '1.0'
 
 #---------------------------------------------------------------------------#
 # run the server you want
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # Tcp:
-StartTcpServer(context, identity=identity, address=("localhost", 5020))
+# StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 # Udp:
-#StartUdpServer(context, identity=identity, address=("localhost", 502))
+# StartUdpServer(context, identity=identity, address=("localhost", 5020))
 
 # Ascii:
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
 
 # RTU:
-# StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ptyp0', timeout=.005, baudrate=9600)
+StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ttyp0', timeout=.005, baudrate=9600)

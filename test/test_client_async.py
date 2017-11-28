@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.compat import IS_PYTHON3
-if IS_PYTHON3: # Python 3
+if IS_PYTHON3:
     from unittest.mock import patch, Mock
 else: # Python 2
     from mock import patch, Mock
-from pymodbus.client.async import ModbusClientProtocol, ModbusUdpClientProtocol
-from pymodbus.client.async import ModbusClientFactory
+from pymodbus.client.async.twisted import (
+    ModbusClientProtocol, ModbusUdpClientProtocol, ModbusSerClientProtocol, ModbusTcpClientProtocol
+)
+from pymodbus.factory import ClientDecoder
+from pymodbus.client.async.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
+
 class AsynchronousClientTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.client.async module
@@ -28,7 +32,7 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertFalse(protocol._connected)
-        self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
+        self.assertTrue(protocol.framer == None)
 
         framer = object()
         protocol = ModbusClientProtocol(framer=framer)
@@ -38,7 +42,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
     def testClientProtocolConnect(self):
         ''' Test the client protocol connect '''
-        protocol = ModbusClientProtocol()
+        decoder = object()
+        framer = ModbusSocketFramer(decoder)
+        protocol = ModbusClientProtocol(framer=framer)
         self.assertFalse(protocol._connected)
         protocol.connectionMade()
         self.assertTrue(protocol._connected)
@@ -58,7 +64,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
     def testClientProtocolDataReceived(self):
         ''' Test the client protocol data received '''
-        protocol = ModbusClientProtocol()
+        protocol = ModbusClientProtocol(ModbusSocketFramer(ClientDecoder()))
         protocol.connectionMade()
         out = []
         data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
@@ -72,7 +78,8 @@ class AsynchronousClientTest(unittest.TestCase):
 
     def testClientProtocolExecute(self):
         ''' Test the client protocol execute method '''
-        protocol = ModbusClientProtocol()
+        framer = ModbusSocketFramer(None)
+        protocol = ModbusClientProtocol(framer=framer)
         protocol.connectionMade()
         protocol.transport = Mock()
         protocol.transport.write = Mock()
@@ -114,6 +121,32 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol._connected = True
         d = protocol._buildResponse(0x00)
         self.assertEqual(1, len(list(protocol.transaction)))
+
+    #-----------------------------------------------------------------------#
+    # Test TCP Client Protocol
+    #-----------------------------------------------------------------------#
+    def testTcpClientProtocolInit(self):
+        ''' Test the udp client protocol initialize '''
+        protocol = ModbusTcpClientProtocol()
+        self.assertEqual(0, len(list(protocol.transaction)))
+        self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
+
+        framer = object()
+        protocol = ModbusClientProtocol(framer=framer)
+        self.assertTrue(framer is protocol.framer)
+
+    #-----------------------------------------------------------------------#
+    # Test Serial Client Protocol
+    #-----------------------------------------------------------------------#
+    def testSerialClientProtocolInit(self):
+        ''' Test the udp client protocol initialize '''
+        protocol = ModbusSerClientProtocol()
+        self.assertEqual(0, len(list(protocol.transaction)))
+        self.assertTrue(isinstance(protocol.framer, ModbusRtuFramer))
+
+        framer = object()
+        protocol = ModbusClientProtocol(framer=framer)
+        self.assertTrue(framer is protocol.framer)
 
     #-----------------------------------------------------------------------#
     # Test Udp Client Protocol

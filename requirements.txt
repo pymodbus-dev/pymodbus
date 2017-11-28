@@ -1,8 +1,8 @@
-coloredlogs>=7.0
+six
 # -------------------------------------------------------------------
 # if want to use the pymodbus serial stack, uncomment these
 # -------------------------------------------------------------------
-#pyserial==3.3
+pyserial>=3.4
 # -------------------------------------------------------------------
 # if you want to run the tests and code coverage, uncomment these
 # -------------------------------------------------------------------
@@ -19,6 +19,7 @@ coloredlogs>=7.0
 #pycrypto==2.6.1
 #wsgiref==0.1.2
 #cryptography==1.8.1
+
 # -------------------------------------------------------------------
 # if you want to build the documentation, uncomment these
 # -------------------------------------------------------------------

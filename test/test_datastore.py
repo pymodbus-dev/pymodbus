@@ -3,6 +3,7 @@ import unittest
 import mock
 from mock import MagicMock
 import redis
+import random
 from pymodbus.datastore import *
 from pymodbus.datastore.store import BaseModbusDataBlock
 from pymodbus.datastore.database import SqlSlaveContext
@@ -234,6 +235,12 @@ class RedisDataStoreTest(unittest.TestCase):
         self.assertEqual(self.slave.getValues(0x01, 23), [])
 
 
+class MockSqlResult(object):
+        def __init__(self, rowcount=0, value=0):
+            self.rowcount = rowcount
+            self.value = value
+
+
 class SqlDataStoreTest(unittest.TestCase):
     '''
     This is the unittest for the pymodbus.datastore.database.SqlSlaveContesxt
@@ -241,15 +248,126 @@ class SqlDataStoreTest(unittest.TestCase):
     '''
 
     def setUp(self):
-        pass
+        self.slave = SqlSlaveContext()
+        self.slave._metadata.drop_all = MagicMock()
+        self.slave._db_create = MagicMock()
+        self.slave._table = MagicMock()
+        self.slave._connection = MagicMock()
+
+        self.mock_addr = random.randint(0, 65000)
+        self.mock_values = random.sample(range(1, 100), 5)
+        self.mock_function = 0x01
+        self.mock_type = 'h'
+        self.mock_offset = 0
+        self.mock_count = 1
+
+        self.function_map = {2: 'd', 4: 'i'}
+        self.function_map.update([(i, 'h') for i in [3, 6, 16, 22, 23]])
+        self.function_map.update([(i, 'c') for i in [1, 5, 15]])
 
     def tearDown(self):
         ''' Cleans up the test environment '''
         pass
 
     def testStr(self):
-        pass
+        self.assertEqual(str(self.slave), "Modbus Slave Context")
 
+    def testReset(self):
+        self.slave.reset()
+
+        self.slave._metadata.drop_all.assert_called_once_with()
+        self.slave._db_create.assert_called_once_with(
+            self.slave.table, self.slave.database
+        )
+    def testValidateSuccess(self):
+        mock_result = MockSqlResult(
+            rowcount=len(self.mock_values)
+        )
+        self.slave._connection.execute = MagicMock(return_value=mock_result)
+        self.assertTrue(self.slave.validate(
+            self.mock_function, self.mock_addr, len(self.mock_values))
+        )
+
+    def testValidateFailure(self):
+        wrong_count = 9
+        mock_result = MockSqlResult(rowcount=len(self.mock_values))
+        self.slave._connection.execute = MagicMock(return_value=mock_result)
+        self.assertFalse(self.slave.validate(
+            self.mock_function, self.mock_addr, wrong_count)
+        )
+
+    def testBuildSet(self):
+        mock_set = [
+            {
+                'index': 0,
+                'type': 'h',
+                'value': 11
+            },
+            {
+                'index': 1,
+                'type': 'h',
+                'value': 12
+            }
+        ]
+        self.assertListEqual(self.slave._build_set('h', 0, [11, 12]), mock_set)
+
+    def testCheckSuccess(self):
+        mock_success_results = [1, 2, 3]
+        self.slave._get = MagicMock(return_value=mock_success_results)
+        self.assertFalse(self.slave._check('h', 0, 1))
+
+    def testCheckFailure(self):
+        mock_success_results = []
+        self.slave._get = MagicMock(return_value=mock_success_results)
+        self.assertTrue(self.slave._check('h', 0, 1))
+
+    def testGetValues(self):
+        self.slave._get = MagicMock()
+
+        for key, value in self.function_map.items():
+            self.slave.getValues(key, self.mock_addr, self.mock_count)
+            self.slave._get.assert_called_with(
+                value, self.mock_addr + 1, self.mock_count
+            )
+
+    def testSetValues(self):
+        self.slave._set = MagicMock()
+
+        for key, value in self.function_map.items():
+            self.slave.setValues(key, self.mock_addr, self.mock_values)
+            self.slave._set.assert_called_with(
+                value, self.mock_addr + 1, self.mock_values
+            )
+
+    def testSet(self):
+        self.slave._check = MagicMock(return_value=True)
+        self.slave._connection.execute = MagicMock(
+            return_value=MockSqlResult(rowcount=len(self.mock_values))
+        )
+        self.assertTrue(self.slave._set(
+            self.mock_type, self.mock_offset, self.mock_values)
+        )
+
+        self.slave._check = MagicMock(return_value=False)
+        self.assertFalse(
+            self.slave._set(self.mock_type, self.mock_offset, self.mock_values)
+        )
+
+    def testUpdateSuccess(self):
+        self.slave._connection.execute = MagicMock(
+            return_value=MockSqlResult(rowcount=len(self.mock_values))
+        )
+        self.assertTrue(
+            self.slave._update(self.mock_type, self.mock_offset, self.mock_values)
+        )
+
+    def testUpdateFailure(self):
+        self.slave._connection.execute = MagicMock(
+            return_value=MockSqlResult(rowcount=100)
+        )
+        self.assertFalse(
+            self.slave._update(self.mock_type, self.mock_offset, self.mock_values)
+        )
 
 #---------------------------------------------------------------------------#
 # Main

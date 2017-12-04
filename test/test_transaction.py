@@ -421,6 +421,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._rtu._process(mock_callback)
         self._rtu.populateResult.assert_called_with(mock_result)
         self._rtu.advanceFrame.assert_called_with()
+        self.assertTrue(self._rtu.advanceFrame.called)
 
         #Check errors
         self._rtu.decoder.decode = MagicMock(return_value=None)

@@ -32,14 +32,14 @@ from pymodbus.mei_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
 from pymodbus.compat import IS_PYTHON3
-
+from pymodbus.pdu import ExceptionResponse
 #--------------------------------------------------------------------------#
 # initialize logging
 #--------------------------------------------------------------------------#
 import logging
 modbus_log = logging.getLogger("pymodbus")
 
-
+exp = ExceptionResponse(0x01, 0x0B)
 #--------------------------------------------------------------------------#
 # enumerate all request messages
 #--------------------------------------------------------------------------#
@@ -83,6 +83,7 @@ _request_messages = [
     ReturnIopOverrunCountRequest,
     ClearOverrunCountRequest,
     GetClearModbusPlusRequest,
+    exp
 ]
 
 
@@ -129,6 +130,7 @@ _response_messages = [
     ReturnIopOverrunCountResponse,
     ClearOverrunCountResponse,
     GetClearModbusPlusResponse,
+    exp
 ]
 
 

@@ -7,7 +7,7 @@ pymodbus.egg-info/
 .vscode
 .idea
 .noseids
-
+*.db
 .idea/
 .tox/
 doc/api/epydoc/html/

@@ -132,10 +132,8 @@ class ModbusTransactionManager(object):
                 if not result and self.retry_on_empty:
                     retries -= 1
                     continue
-
                 if _logger.isEnabledFor(logging.DEBUG):
-                    _test_msg = " ".join([hex(byte2int(x)) for x in result])
-                    _logger.debug("recv: {}".format(_test_msg))
+                    _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
                 self.client.framer.processIncomingPacket(result, self.addTransaction)
                 break
             except (socket.error, ModbusIOException, InvalidMessageRecievedException) as msg:

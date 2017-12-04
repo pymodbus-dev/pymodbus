@@ -74,7 +74,8 @@ class AsynchronousServerTest(unittest.TestCase):
 
     def testDataReceived(self):
         protocol = ModbusTcpProtocol()
-        mock_data = "Hellow world!"
+        # mock_data = "Hellow world!"
+        mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         protocol.factory = MagicMock()
         protocol.factory.control.ListenOnly = False
         protocol.factory.store = [byte2int(mock_data[0])]
@@ -129,13 +130,14 @@ class AsynchronousServerTest(unittest.TestCase):
                 self.should_respond = resp
                 self.msg = msg
 
+        mock_msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         protocol = ModbusTcpProtocol()
-        mock_data =MockMsg(resp=True, msg="helloworld")
+        mock_data = MockMsg(resp=True, msg=mock_msg)
 
         protocol.control = MagicMock()
         protocol.framer = MagicMock()
         protocol.factory = MagicMock()
-        protocol.framer.buildPacket = MagicMock(return_value='a')
+        protocol.framer.buildPacket = MagicMock(return_value=mock_msg)
         protocol.transport= MagicMock()
 
         protocol._send(mock_data)
@@ -184,7 +186,7 @@ class AsynchronousServerTest(unittest.TestCase):
             self.assertEqual(mock_reactor.run.call_count, 1)
 
     def testDatagramReceived(self):
-        mock_data = "hello world"
+        mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         mock_addr = 0x01
         protocol = ModbusUdpProtocol(store=None)
         protocol.framer.processIncomingPacket = MagicMock()
@@ -196,12 +198,12 @@ class AsynchronousServerTest(unittest.TestCase):
 
     def testSendUdp(self):
         protocol = ModbusUdpProtocol(store=None)
-        mock_data = "hello world"
+        mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         mock_addr = 0x01
 
         protocol.control = MagicMock()
         protocol.framer = MagicMock()
-        protocol.framer.buildPacket = MagicMock(return_value='a')
+        protocol.framer.buildPacket = MagicMock(return_value=mock_data)
         protocol.transport= MagicMock()
 
         protocol._send(mock_data, mock_addr)

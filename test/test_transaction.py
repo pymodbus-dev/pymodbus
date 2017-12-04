@@ -92,6 +92,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertTrue(self._tm._check_response(mock_response))
 
     def testExecute(self):
+        mock_recv = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         class MockRequest(object):
             def __init__(self, tid=0, pdu=1024):
                 self.transaction_id = tid
@@ -104,7 +105,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._tm.client = MagicMock()
         self._tm.base_adu_size = 10
         self._tm.send = MagicMock()
-        self._tm._recv = MagicMock(return_value="asd")
+        self._tm._recv = MagicMock(return_value=mock_recv)
         self._tm.getTransaction = MagicMock(return_value="mock_resp")
         self._tm.retries = 1
 

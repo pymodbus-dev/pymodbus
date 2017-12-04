@@ -125,7 +125,8 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             ModbusIOException, protocol._execute(request)
         )
-        protocol._send.assert_called()
+        # protocol._send.assert_called()
+        self.assertTrue(protocol._send.called)
 
     def testSendTcp(self):
 
@@ -258,7 +259,8 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             ModbusIOException, protocol._execute(request, mock_addr)
         )
-        protocol._send.assert_called()
+        # protocol._send.assert_called()
+        self.assertTrue(protocol._send.called)
 
     def testStopServer(self):
         from twisted.internet import reactor

@@ -82,8 +82,6 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.framer = protocol._execute = MagicMock()
 
         protocol.dataReceived(mock_data)
-        # import pdb; pdb.set_trace()
-        # protocol.framer.processIncomingPacket.assert_called()
         self.assertTrue(protocol.framer.processIncomingPacket.called)
 
         # test datareceived returns None
@@ -98,7 +96,6 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # tst  if _send being called
         protocol._execute(request)
-        # protocol._send.assert_called()
         self.assertTrue(protocol._send.called)
 
     def testTcpExecuteFailure(self):
@@ -112,7 +109,6 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             NoSuchSlaveException, protocol._execute(request)
         )
-        # request.doException.assert_called()
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -125,7 +121,6 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             ModbusIOException, protocol._execute(request)
         )
-        # protocol._send.assert_called()
         self.assertTrue(protocol._send.called)
 
     def testSendTcp(self):
@@ -147,9 +142,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         protocol._send(mock_data)
 
-        # protocol.framer.buildPacket.assert_called_with(mock_data)
         self.assertTrue(protocol.framer.buildPacket.called)
-        # protocol.transport.write.assert_called()
         self.assertTrue(protocol.transport.write.called)
 
         mock_data =MockMsg(resp=False, msg="helloworld")
@@ -201,7 +194,6 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol._execute = MagicMock()
 
         protocol.datagramReceived(mock_data, mock_addr)
-        # protocol.framer.processIncomingPacket.assert_called()
         self.assertTrue(protocol.framer.processIncomingPacket.called)
 
     def testSendUdp(self):
@@ -216,9 +208,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         protocol._send(mock_data, mock_addr)
 
-        # protocol.framer.buildPacket.assert_called_with(mock_data)
         self.assertTrue(protocol.framer.buildPacket.called)
-        # protocol.transport.write.assert_called()
         self.assertTrue(protocol.transport.write.called)
 
 
@@ -231,7 +221,6 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # tst  if _send being called
         protocol._execute(request, mock_addr)
-        # protocol._send.assert_called()
         self.assertTrue(protocol._send.called)
 
     def testUdpExecuteFailure(self):
@@ -246,7 +235,6 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             NoSuchSlaveException, protocol._execute(request, mock_addr)
         )
-        # request.doException.assert_called()
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -259,7 +247,6 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertRaises(
             ModbusIOException, protocol._execute(request, mock_addr)
         )
-        # protocol._send.assert_called()
         self.assertTrue(protocol._send.called)
 
     def testStopServer(self):
@@ -267,7 +254,6 @@ class AsynchronousServerTest(unittest.TestCase):
         reactor.stop = MagicMock()
         StopServer()
 
-        # reactor.stop.assert_called()
         self.assertTrue(reactor.stop.called)
 
     def testIsMainThread(self):

@@ -131,14 +131,15 @@ class ModbusTransactionTest(unittest.TestCase):
         self._tm._check_response = MagicMock(retutn_value=True)
 
     def testAddTransaction(self):
+        mock_trans = "some trans"
         self.assertRaises(
-            NotImplementedException, lambda: self._tm.addTransaction("asd")
+            NotImplementedException, lambda: self._tm.addTransaction(mock_trans)
         )
         self.assertRaises(
-            NotImplementedException, lambda: self._tm.getTransaction("asd")
+            NotImplementedException, lambda: self._tm.getTransaction(mock_trans)
         )
         self.assertRaises(
-            NotImplementedException, lambda: self._tm.delTransaction("asd")
+            NotImplementedException, lambda: self._tm.delTransaction(mock_trans)
         )
 
     def testGetNextTID(self):

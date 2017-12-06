@@ -16,7 +16,7 @@ from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 #--------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
-
+_logger = logging.getLogger(__name__)
 server_log   = logging.getLogger("pymodbus.server")
 protocol_log = logging.getLogger("pymodbus.protocol")
 
@@ -70,8 +70,9 @@ class Configuration:
         :param config: The pickled datastore
         '''
         try:
-            self.file = open(config, "r")
-        except Exception:
+            self.file = open(config, "rb")
+        except Exception as e:
+            _logger.critical(str(e))
             raise ConfigurationException("File not found %s" % config)
 
     def parse(self):
@@ -79,11 +80,12 @@ class Configuration:
         '''
         handle = pickle.load(self.file)
         try: # test for existance, or bomb
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
-        except Exception:
+            dsd = handle.store['d']
+            csd = handle.store['c']
+            hsd = handle.store['h']
+            isd = handle.store['i']
+        except Exception as e:
+            _logger.critical(str(e))
             raise ConfigurationException("Invalid Configuration")
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
@@ -107,16 +109,16 @@ def main():
         try:
             server_log.setLevel(logging.DEBUG)
             protocol_log.setLevel(logging.DEBUG)
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+        except Exception as e:
+    	    _logger.critical("Logging is not supported on this system %r", e)
 
     # parse configuration file and run
     try:
         conf = Configuration(opt.file)
         StartTcpServer(context=conf.parse())
-    except ConfigurationException, err:
-        print err
-        parser.print_help()
+    except Exception as e:
+        _logger.critical(str(e))
+        _logger.error("ABORTED")
 
 #---------------------------------------------------------------------------#
 # Main jumper

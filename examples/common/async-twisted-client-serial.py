@@ -9,8 +9,6 @@ client implementation from pymodbus.
 
 from twisted.internet import reactor
 from pymodbus.client.async import schedulers
-from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.factory import ClientDecoder
 from pymodbus.client.async.serial import AsyncModbusSerialClient
 from pymodbus.client.async.twisted import ModbusClientProtocol
 import logging
@@ -18,10 +16,11 @@ logging.basicConfig()
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
 # state a few constants
-#---------------------------------------------------------------------------#
-SERIAL_PORT  = "/tmp/ptyp0"
+# ---------------------------------------------------------------------------#
+
+SERIAL_PORT  = "/dev/ptyp0"
 STATUS_REGS  = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -74,8 +73,7 @@ class ExampleProtocol(ModbusClientProtocol):
         log.error(failure)
 
 
-framer = ModbusRtuFramer(ClientDecoder())
-client, proto = AsyncModbusSerialClient(schedulers.REACTOR, framer, port=SERIAL_PORT, timeout=2, proto_cls=ExampleProtocol)
+client, proto = AsyncModbusSerialClient(schedulers.REACTOR, method="rtu", port=SERIAL_PORT, timeout=2, proto_cls=ExampleProtocol)
 proto.start()
 # proto.stop()
 

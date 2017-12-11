@@ -15,7 +15,7 @@ from pymodbus.constants import Defaults
 LOGGER = logging.getLogger(__name__)
 
 
-def reactor_factory(framer, port, **kwargs):
+def reactor_factory(port, framer, **kwargs):
     from twisted.internet import reactor, serialport
     from twisted.internet.protocol import ClientFactory
     from pymodbus.factory import ClientDecoder
@@ -59,7 +59,6 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
     protocol.start()
-
     client = Client(port=port, framer=framer, ioloop=ioloop, **kwargs)
 
     future = client.connect()
@@ -67,9 +66,24 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     return protocol, future
 
 
-def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                     source_address=None, timeout=None, **kwargs):
-    pass
+def async_io_factory(port=Defaults.Port, framer=None, **kwargs):
+    import asyncio
+    from pymodbus.client.async.asyncio import ModbusClientProtocol
+    loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
+    proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
+
+    try:
+        from serial_asyncio import create_serial_connection
+    except ImportError:
+        LOGGER.critical("pyserial-asyncio is not installed, install with 'pip install pyserial-asyncio")
+        exit(0)
+
+    def proto_factory():
+        return proto_cls(framer=framer)
+
+    coro = create_serial_connection(loop, proto_factory, port, **kwargs)
+    transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
+    return loop, protocol
 
 
 def get_factory(scheduler):

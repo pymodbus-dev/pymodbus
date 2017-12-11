@@ -60,7 +60,13 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                      source_address=None, timeout=None, **kwargs):
-    pass
+    import asyncio
+    from pymodbus.client.async.asyncio import init_client
+    loop = kwargs.get("loop") or asyncio.get_event_loop()
+    proto_cls = kwargs.get("proto_cls", None)
+    cor = init_client(proto_cls, loop, host, port)
+    client = loop.run_until_complete(asyncio.gather(cor))[0]
+    return loop, client
 
 
 def get_factory(scheduler):

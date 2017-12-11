@@ -13,8 +13,7 @@ import functools
 
 from tornado.ioloop import IOLoop
 from pymodbus.client.async import schedulers
-from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.factory import ClientDecoder
+
 
 
 
@@ -151,11 +150,20 @@ def callback(protocol, future):
     return beginAsynchronousTest(client, protocol)
 
 
-framer = ModbusRtuFramer(ClientDecoder())
 # Create temporary serial ports using SOCAT
 # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
+# Default framer is ModbusRtuFramer
+# If you want to use some other framer
+# from pymodbus.transaction import ModbusAsciiFramer
 
-protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, framer, port="/dev/ptyp0", baudrate=9600, timeout=2)
+# Rtu
+protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method="rtu", port="/dev/ptyp0", baudrate=9600, timeout=2)
+
+# Ascci
+# protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method="ascii", port="/dev/ptyp0", framer=ModbusAsciiFramer, baudrate=9600, timeout=2)
+
+# Binary
+# protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method="binary", port="/dev/ptyp0", framer=ModbusAsciiFramer, baudrate=9600, timeout=2)
 future.add_done_callback(functools.partial(callback, protocol))
 
 

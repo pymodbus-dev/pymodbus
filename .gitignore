@@ -20,4 +20,10 @@ pymodbus/datastore/__pycache__/
 pymodbus/internal/__pycache__/
 pymodbus/server/__pycache__/
 test/__pycache__/
-/pymodbus.db
+**/pymodbus.db
+/.eggs/
+/test/bin/
+/test/include/
+/test/lib/
+/test/pip-selfcheck.json
+/test/.Python

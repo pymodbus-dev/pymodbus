@@ -38,7 +38,7 @@ check: install
 
 test: install
 	@pip install --quiet --requirement=requirements-tests.txt
-	@nosetests --with-coverage --cover-html
+	@py.test
 	@coverage report --fail-under=90 -i
 
 tox: install

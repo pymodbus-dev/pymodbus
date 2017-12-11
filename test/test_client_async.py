@@ -96,7 +96,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
     def testSerialTornadoClient(self):
         """ Test the serial tornado client client initialize """
-        protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, port=SERIAL_PORT,framer=ModbusRtuFramer(ClientDecoder()))
+        protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method="rtu", port=SERIAL_PORT)
         client = future.result()
         self.assertTrue(isinstance(client, AsyncTornadoModbusSerialClient))
         self.assertEqual(0, len(list(client.transaction)))

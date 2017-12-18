@@ -39,7 +39,7 @@ check: install
 test: install
 	@pip install --quiet --requirement=requirements-tests.txt
 	@py.test
-	@coverage report --fail-under=90 -i
+	@coverage report --fail-under=85 -i
 
 tox: install
 	@pip install --quiet tox && tox

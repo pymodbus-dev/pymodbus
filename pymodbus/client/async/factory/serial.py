@@ -16,7 +16,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def reactor_factory(port, framer, **kwargs):
-    from twisted.internet import reactor, serialport
+    from twisted.internet import reactor
+    from twisted.internet.serialport import SerialPort
     from twisted.internet.protocol import ClientFactory
     from pymodbus.factory import ClientDecoder
 
@@ -32,7 +33,7 @@ def reactor_factory(port, framer, **kwargs):
             proto.factory = self
             return proto
 
-    class SerialModbusClient(serialport.SerialPort):
+    class SerialModbusClient(SerialPort):
 
         def __init__(self, framer, *args, **kwargs):
             ''' Setup the client and start listening on the serial port
@@ -42,7 +43,7 @@ def reactor_factory(port, framer, **kwargs):
             self.decoder = ClientDecoder()
             proto_cls = kwargs.pop("proto_cls", None)
             proto = SerialClientFactory(framer, proto_cls).buildProtocol()
-            serialport.SerialPort.__init__(self, proto, *args, **kwargs)
+            SerialPort.__init__(self, proto, *args, **kwargs)
 
     proto = EventLoopThread("reactor", reactor.run, reactor.stop,
                             installSignalHandlers=0)

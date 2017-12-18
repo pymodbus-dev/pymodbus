@@ -1,10 +1,23 @@
-from pymodbus.compat import IS_PYTHON3
-if IS_PYTHON3:
+from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+import pytest
+if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     from unittest import mock
-    from pymodbus.client.async.asyncio import ReconnectingAsyncioModbusTcpClient, ModbusClientProtocol
+    from pymodbus.client.async.asyncio import (ReconnectingAsyncioModbusTcpClient,
+        ModbusClientProtocol, ModbusUdpClientProtocol)
     from test.asyncio_test_helper import return_as_coroutine, run_coroutine
+    from pymodbus.factory import ClientDecoder
+    from pymodbus.exceptions import ConnectionException
+    from pymodbus.transaction import ModbusSocketFramer
+    from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+    protocols = [ModbusUdpClientProtocol, ModbusClientProtocol]
+else:
+    import mock
+    protocols = [None, None]
 
-    def test_protocol_connection_state_propagation_to_factory():
+
+@pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
+class TestAsyncioClient(object):
+    def test_protocol_connection_state_propagation_to_factory(self):
         protocol = ModbusClientProtocol()
         assert protocol.factory is None
         assert protocol.transport is None
@@ -24,8 +37,7 @@ if IS_PYTHON3:
         assert protocol.factory.protocol_made_connection.call_count == 0
         protocol.factory.protocol_lost_connection.assert_called_once_with(protocol)
 
-
-    def test_factory_initialization_state():
+    def test_factory_initialization_state(self):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -35,8 +47,7 @@ if IS_PYTHON3:
         assert client.loop is mock_loop
         assert client.protocol_class is mock_protocol_class
 
-
-    def test_factory_reset_wait_before_reconnect():
+    def test_factory_reset_wait_before_reconnect(self):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -49,7 +60,7 @@ if IS_PYTHON3:
         assert client.delay_ms == initial_delay
 
 
-    def test_factory_stop():
+    def test_factory_stop(self):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -65,8 +76,7 @@ if IS_PYTHON3:
         client.stop()
         client.protocol.transport.close.assert_called_once_with()
 
-
-    def test_factory_protocol_made_connection():
+    def test_factory_protocol_made_connection(self):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -81,9 +91,8 @@ if IS_PYTHON3:
         assert client.connected
         assert client.protocol is mock.sentinel.PROTOCOL
 
-
     @mock.patch('pymodbus.client.async.asyncio.asyncio.async')
-    def test_factory_protocol_lost_connection(mock_async):
+    def test_factory_protocol_lost_connection(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -106,9 +115,8 @@ if IS_PYTHON3:
         assert not client.connected
         assert client.protocol is None
 
-
     @mock.patch('pymodbus.client.async.asyncio.asyncio.async')
-    def test_factory_start_success(mock_async):
+    def test_factory_start_success(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -117,9 +125,8 @@ if IS_PYTHON3:
         mock_loop.create_connection.assert_called_once_with(mock.ANY, mock.sentinel.HOST, mock.sentinel.PORT)
         assert mock_async.call_count == 0
 
-
     @mock.patch('pymodbus.client.async.asyncio.asyncio.async')
-    def test_factory_start_failing_and_retried(mock_async):
+    def test_factory_start_failing_and_retried(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         mock_loop.create_connection = mock.MagicMock(side_effect=Exception('Did not work.'))
@@ -132,9 +139,8 @@ if IS_PYTHON3:
             mock_reconnect.assert_called_once_with()
             mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 
-
     @mock.patch('pymodbus.client.async.asyncio.asyncio.sleep')
-    def test_factory_reconnect(mock_sleep):
+    def test_factory_reconnect(self, mock_sleep):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
@@ -145,3 +151,125 @@ if IS_PYTHON3:
         run_coroutine(client._reconnect())
         mock_sleep.assert_called_once_with(5)
         assert mock_loop.create_connection.call_count == 1
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolConnectionMade(self, protocol):
+        """
+        Test the client protocol close
+        :return:
+        """
+        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
+        transport = mock.MagicMock()
+        factory = mock.MagicMock()
+        if isinstance(protocol, ModbusUdpClientProtocol):
+            protocol.factory = factory
+        protocol.connection_made(transport)
+        assert protocol.transport == transport
+        assert protocol.connected
+        if isinstance(protocol, ModbusUdpClientProtocol):
+            assert protocol.factory.protocol_made_connection.call_count == 1
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolClose(self, protocol):
+        """
+        Test the client protocol close
+        :return:
+        """
+        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
+        transport = mock.MagicMock()
+        factory = mock.MagicMock()
+        if isinstance(protocol, ModbusUdpClientProtocol):
+            protocol.factory = factory
+        protocol.connection_made(transport)
+        assert protocol.transport == transport
+        assert protocol.connected
+        protocol.close()
+        transport.close.assert_called_once_with()
+        assert not protocol.connected
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolConnectionLost(self, protocol):
+        ''' Test the client protocol connection lost'''
+        framer = ModbusSocketFramer(None)
+        protocol = protocol(framer=framer)
+        transport = mock.MagicMock()
+        factory = mock.MagicMock()
+        if isinstance(protocol, ModbusUdpClientProtocol):
+            protocol.factory = factory
+        protocol.connection_made(transport)
+        protocol.transport.write = mock.Mock()
+
+        request = ReadCoilsRequest(1, 1)
+        d = protocol.execute(request)
+        protocol.connection_lost("REASON")
+        excp = d.exception()
+        assert (isinstance(excp, ConnectionException))
+        if isinstance(protocol, ModbusUdpClientProtocol):
+            assert protocol.factory.protocol_lost_connection.call_count == 1
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolDataReceived(self, protocol):
+        ''' Test the client protocol data received '''
+        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
+        transport = mock.MagicMock()
+        protocol.connection_made(transport)
+        assert protocol.transport == transport
+        assert protocol.connected
+        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+
+        # setup existing request
+        d = protocol._buildResponse(0x00)
+        if isinstance(protocol, ModbusClientProtocol):
+            protocol.data_received(data)
+        else:
+            protocol.datagram_received(data, None)
+        result = d.result()
+        assert isinstance(result, ReadCoilsResponse)
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolExecute(self, protocol):
+        ''' Test the client protocol execute method '''
+        framer = ModbusSocketFramer(None)
+        protocol = protocol(framer=framer)
+        transport = mock.MagicMock()
+        protocol.connection_made(transport)
+        protocol.transport.write = mock.Mock()
+
+        request = ReadCoilsRequest(1, 1)
+        d = protocol.execute(request)
+        tid = request.transaction_id
+        assert d == protocol.transaction.getTransaction(tid)
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolHandleResponse(self, protocol):
+        ''' Test the client protocol handles responses '''
+        protocol = protocol()
+        transport = mock.MagicMock()
+        protocol.connection_made(transport=transport)
+        reply = ReadCoilsRequest(1, 1)
+        reply.transaction_id = 0x00
+
+        # handle skipped cases
+        protocol._handleResponse(None)
+        protocol._handleResponse(reply)
+
+        # handle existing cases
+        d = protocol._buildResponse(0x00)
+        protocol._handleResponse(reply)
+        result = d.result()
+        assert result == reply
+
+    @pytest.mark.parametrize("protocol", protocols)
+    def testClientProtocolBuildResponse(self, protocol):
+        ''' Test the udp client protocol builds responses '''
+        protocol = protocol()
+        assert not len(list(protocol.transaction))
+
+        d = protocol._buildResponse(0x00)
+        excp = d.exception()
+        assert (isinstance(excp, ConnectionException))
+        assert not len(list(protocol.transaction))
+
+        protocol._connected = True
+        protocol._buildResponse(0x00)
+        assert len(list(protocol.transaction)) == 1

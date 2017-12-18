@@ -202,11 +202,11 @@ class SynchronousServerTest(unittest.TestCase):
         handler.socket = Mock()
         request = ReadCoilsResponse([1])
         handler.send(request)
-        self.assertEqual(handler.socket.sendto.call_count, 1)
+        self.assertEqual(handler.request.sendto.call_count, 1)
 
         request.should_respond = False
         handler.send(request)
-        self.assertEqual(handler.socket.sendto.call_count, 1)
+        self.assertEqual(handler.request.sendto.call_count, 1)
 
     def testModbusDisconnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)

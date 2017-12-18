@@ -11,9 +11,9 @@ twisted just is not feasable. What follows is an examle of its use:
 #---------------------------------------------------------------------------#
 # import the various server implementations
 #---------------------------------------------------------------------------#
-from pymodbus.server.sync import StartTcpServer
-# from pymodbus.server.sync import StartUdpServer
-from pymodbus.server.sync import StartSerialServer
+# from pymodbus.server.sync import StartTcpServer
+from pymodbus.server.sync import StartUdpServer
+# from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
@@ -108,10 +108,10 @@ identity.MajorMinorRevision = '1.0'
 # StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 # Udp:
-# StartUdpServer(context, identity=identity, address=("localhost", 5020))
+StartUdpServer(context, identity=identity, address=("localhost", 5020))
 
 # Ascii:
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', timeout=1)
 
 # RTU:
-StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ttyp0', timeout=.005, baudrate=9600)
+# StartSerialServer(context, framer=ModbusRtuFramer, identity=identity, port='/dev/ttyp0', timeout=.005, baudrate=9600)

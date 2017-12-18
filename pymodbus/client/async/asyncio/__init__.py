@@ -109,6 +109,119 @@ class ModbusClientProtocol(asyncio.Protocol, AsyncModbusClientMixin):
             self.transaction.addTransaction(f, tid)
         return f
 
+    def close(self):
+        self.transport.close()
+        self._connected = False
+
+
+class ModbusUdpClientProtocol(asyncio.DatagramProtocol, AsyncModbusClientMixin):
+    """
+    Asyncio specific implementation of asynchronous modbus udp client protocol.
+    """
+
+    #: Factory that created this instance.
+    factory = None
+
+    def __init__(self, host=None, port=0, **kwargs):
+        self.host = host
+        self.port = port
+        super(self.__class__, self).__init__(**kwargs)
+
+    def connection_made(self, transport):
+        self.transport = transport
+        self._connectionMade()
+
+        if self.factory:
+            self.factory.protocol_made_connection(self)
+
+    def connection_lost(self, reason):
+        self.transport = None
+        self._connectionLost(reason)
+
+        if self.factory:
+            self.factory.protocol_lost_connection(self)
+
+    def execute(self, request):
+        ''' Starts the producer to send the next request to
+        consumer.write(Frame(request))
+        '''
+        request.transaction_id = self.transaction.getNextTID()
+        packet = self.framer.buildPacket(request)
+        self.transport.sendto(packet, (self.host, self.port))
+        return self._buildResponse(request.transaction_id)
+
+    def datagram_received(self, data, addr):
+        self._dataReceived(data)
+
+    def create_future(self):
+        return asyncio.Future()
+
+    def resolve_future(self, f, result):
+        f.set_result(result)
+
+    def raise_future(self, f, exc):
+        f.set_exception(exc)
+
+    def _connectionMade(self):
+        ''' Called upon a successful client connection.
+        '''
+        _logger.debug("Client connected to modbus server")
+        self._connected = True
+
+    def _connectionLost(self, reason):
+        ''' Called upon a client disconnect
+
+        :param reason: The reason for the disconnect
+        '''
+        _logger.debug("Client disconnected from modbus server: %s" % reason)
+        self._connected = False
+        for tid in list(self.transaction):
+            self.raise_future(self.transaction.getTransaction(tid), ConnectionException('Connection lost during request'))
+
+    def _handleResponse(self, reply, **kwargs):
+        ''' Handle the processed response and link to correct deferred
+
+        :param reply: The reply to process
+        '''
+        if reply is not None:
+            tid = reply.transaction_id
+            handler = self.transaction.getTransaction(tid)
+            if handler:
+                self.resolve_future(handler, reply)
+            else:
+                _logger.debug("Unrequested message: " + str(reply))
+
+    def _buildResponse(self, tid):
+        ''' Helper method to return a deferred response
+        for the current request.
+
+        :param tid: The transaction identifier for this response
+        :returns: A defer linked to the latest request
+        '''
+        f = self.create_future()
+        if not self._connected:
+            self.raise_future(f, ConnectionException('Client is not connected'))
+        else:
+            self.transaction.addTransaction(f, tid)
+        return f
+
+    def _dataReceived(self, data):
+        ''' Get response, check for valid message, decode result
+
+        :param data: The data returned from the server
+        '''
+        self.framer.processIncomingPacket(data, self._handleResponse)
+
+    def close(self):
+        self.transport.close()
+        self._connected = False
+
+    @property
+    def connected(self):
+        """ Return connection status.
+        """
+        return self._connected
+
 
 class ReconnectingAsyncioModbusTcpClient(object):
     """Client to connect to modbus device repeatedly over TCP/IP."""
@@ -145,7 +258,6 @@ class ReconnectingAsyncioModbusTcpClient(object):
         _logger.debug('Connecting to %s:%s.' % (host, port))
         self.host = host
         self.port = port
-
         yield from self._connect()
 
     def stop(self):
@@ -383,8 +495,6 @@ class AsyncioModbusUdpClient(object):
 
         self.connected = False
 
-
-
     def stop(self):
         # prevent reconnect:
         # self.host = None
@@ -438,9 +548,84 @@ class AsyncioModbusUdpClient(object):
             _logger.error('Factory protocol disconnect callback called while not connected.')
 
 
+class AsyncioModbusSerialClient(object):
+    """Client to connect to modbus device over serial."""
+    transport = None
+    framer = None
+
+    def __init__(self, port, protocol_class=None, framer=None,  loop=None):
+        #: Protocol used to talk to modbus device.
+        self.protocol_class = protocol_class or ModbusClientProtocol
+        #: Current protocol instance.
+        self.protocol = None
+        #: Event loop to use.
+        self.loop = loop or asyncio.get_event_loop()
+        self.port = port
+        self.framer = framer
+        self._connected = False
+
+    def stop(self):
+
+        if self._connected:
+            if self.protocol:
+                if self.protocol.transport:
+                    self.protocol.transport.close()
+
+    def _create_protocol(self):
+        """Factory function to create initialized protocol instance."""
+        from serial_asyncio import create_serial_connection
+
+        def factory():
+            return self.protocol_class(framer=self.framer)
+
+        cor = create_serial_connection(self.loop, factory, self.port)
+        return cor
+
+    @asyncio.coroutine
+    def connect(self):
+        _logger.debug('Connecting.')
+        try:
+            yield from self.loop.create_connection(self._create_protocol, self.host, self.port)
+            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+        except Exception as ex:
+            _logger.warning('Failed to connect: %s' % ex)
+            # asyncio.async(self._reconnect(), loop=self.loop)
+
+    def protocol_made_connection(self, protocol):
+        """Protocol notification of successful connection."""
+        _logger.info('Protocol made connection.')
+        if not self._connected:
+            self._connected = True
+            self.protocol = protocol
+        else:
+            _logger.error('Factory protocol connect callback called while connected.')
+
+    def protocol_lost_connection(self, protocol):
+        """Protocol notification of lost connection."""
+        if self._connected:
+            _logger.info('Protocol lost connection.')
+            if protocol is not self.protocol:
+                _logger.error('Factory protocol callback called from unexpected protocol instance.')
+
+            self._connected = False
+            self.protocol = None
+            # if self.host:
+            #     asyncio.async(self._reconnect(), loop=self.loop)
+        else:
+            _logger.error('Factory protocol disconnect callback called while not connected.')
+
+
 @asyncio.coroutine
-def init_client(proto_cls, loop, host, port, **kwargs):
+def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     client = ReconnectingAsyncioModbusTcpClient(protocol_class=proto_cls,
+                                                loop=loop)
+    yield from client.start(host, port)
+    return client
+
+
+@asyncio.coroutine
+def init_udp_client(proto_cls, loop, host, port, **kwargs):
+    client = ReconnectingAsyncioModbusUdpClient(protocol_class=proto_cls,
                                                 loop=loop)
     yield from client.start(host, port)
     return client

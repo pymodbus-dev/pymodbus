@@ -1,6 +1,7 @@
 import asyncio
 
 from pymodbus.client.async.tcp import AsyncModbusTCPClient as ModbusClient
+from pymodbus.client.async.udp import AsyncModbusUDPClient as ModbusClient
 from pymodbus.client.async import schedulers
 
 
@@ -23,7 +24,7 @@ async def start_async_test(client):
     # which defaults to `0x00`
     #---------------------------------------------------------------------------#
     log.debug("Reading Coils")
-    rr = client.read_coils(1, 1, unit=0x01)
+    rr = await client.read_coils(1, 1, unit=0x01)
 
     #---------------------------------------------------------------------------# 
     # example requests
@@ -100,6 +101,6 @@ async def start_async_test(client):
 
 
 if __name__ == '__main__':
-    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5440)
+    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020)
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()

@@ -73,7 +73,7 @@ class ExampleProtocol(ModbusClientProtocol):
         log.error(failure)
 
 
-client, proto = AsyncModbusSerialClient(schedulers.REACTOR, method="rtu", port=SERIAL_PORT, timeout=2, proto_cls=ExampleProtocol)
+proto, client = AsyncModbusSerialClient(schedulers.REACTOR, method="rtu", port=SERIAL_PORT, timeout=2, proto_cls=ExampleProtocol)
 proto.start()
 # proto.stop()
 

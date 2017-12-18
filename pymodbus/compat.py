@@ -17,8 +17,9 @@ import struct
 #---------------------------------------------------------------------------#
 # python version checks
 #---------------------------------------------------------------------------#
-IS_PYTHON2 = sys.version_info[0] == 2
-IS_PYTHON3 = sys.version_info[0] == 3
+PYTHON_VERSION = sys.version_info
+IS_PYTHON2 = PYTHON_VERSION[0] == 2
+IS_PYTHON3 = PYTHON_VERSION[0] == 3
 IS_PYPY    = hasattr(sys, 'pypy_translation_info')
 IS_JYTHON  = sys.platform.startswith('java')
 

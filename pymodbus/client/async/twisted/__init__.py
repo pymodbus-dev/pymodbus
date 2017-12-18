@@ -135,6 +135,11 @@ class ModbusClientProtocol(protocol.Protocol,
         self.transaction.addTransaction(d, tid)
         return d
 
+    def close(self):
+        if self.transport and hasattr(self.transport, "close"):
+            self.transport.close()
+        self._connected = False
+
 
 class ModbusTcpClientProtocol(ModbusClientProtocol):
     framer = ModbusSocketFramer(ClientDecoder())

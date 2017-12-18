@@ -46,9 +46,9 @@ def reactor_factory(port, framer, **kwargs):
 
     proto = EventLoopThread("reactor", reactor.run, reactor.stop,
                             installSignalHandlers=0)
-    s = SerialModbusClient(framer, port, reactor, **kwargs)
+    ser_client = SerialModbusClient(framer, port, reactor, **kwargs)
 
-    return s, proto
+    return proto, ser_client
 
 
 def io_loop_factory(port=None, framer=None, **kwargs):
@@ -68,7 +68,7 @@ def io_loop_factory(port=None, framer=None, **kwargs):
 
 def async_io_factory(port=Defaults.Port, framer=None, **kwargs):
     import asyncio
-    from pymodbus.client.async.asyncio import ModbusClientProtocol
+    from pymodbus.client.async.asyncio import ModbusClientProtocol, AsyncioModbusSerialClient
     loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
 
@@ -76,14 +76,19 @@ def async_io_factory(port=Defaults.Port, framer=None, **kwargs):
         from serial_asyncio import create_serial_connection
     except ImportError:
         LOGGER.critical("pyserial-asyncio is not installed, install with 'pip install pyserial-asyncio")
-        exit(0)
+        import sys
+        sys.exit(1)
+    #
+    # def proto_factory():
+    #     return proto_cls(framer=framer)
 
-    def proto_factory():
-        return proto_cls(framer=framer)
-
-    coro = create_serial_connection(loop, proto_factory, port, **kwargs)
+    client = AsyncioModbusSerialClient(port, proto_cls, framer, loop)
+    # coro = create_serial_connection(loop, proto_factory, port, **kwargs)
+    coro = client._create_protocol()
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
-    return loop, protocol
+    client.transport = transport
+    client.protocol = protocol
+    return loop, client
 
 
 def get_factory(scheduler):

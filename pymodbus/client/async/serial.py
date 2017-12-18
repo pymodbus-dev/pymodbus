@@ -65,7 +65,8 @@ class AsyncModbusSerialClient(object):
         """
         if not IS_PYTHON3 and scheduler == ASYNC_IO:
             logger.critical("ASYNCIO is supported only on python3")
-            exit(0)
+            import sys
+            sys.exit(1)
         factory_class = get_factory(scheduler)
         framer = cls._framer(method)
         yieldable = factory_class(framer=framer, port=port, **kwargs)

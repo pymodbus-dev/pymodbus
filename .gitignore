@@ -27,3 +27,4 @@ test/__pycache__/
 /test/lib/
 /test/pip-selfcheck.json
 /test/.Python
+/.cache/

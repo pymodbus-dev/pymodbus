@@ -3,7 +3,7 @@ coverage >= 4.2
 mock >= 1.0.1
 pytest==3.3.1
 pytest-cov==2.5.1
-pyserial-asyncio==4.0
+pyserial-asyncio==0.4.0;python_version>="3.4"
 pep8>=1.7.0
 verboselogs >= 1.5
 tornado>=4.5.2

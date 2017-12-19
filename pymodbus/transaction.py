@@ -169,7 +169,9 @@ class ModbusTransactionManager(object):
                     expected_response_length = self._calculate_exception_length()
                     continue
                 if isinstance(self.client.framer, ModbusSocketFramer):
-                    break
+                    length = struct.unpack(">H", result[4:6])[0] -1  # Ommit UID, which is included in header size
+                    expected_response_length = self.client.framer._ModbusSocketFramer__hsize + length
+
                 r = self.client._recv(expected_response_length - len(result))
                 if not r:
                     # If no response being recived there is no point in conitnuing

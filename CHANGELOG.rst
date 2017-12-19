@@ -1,3 +1,20 @@
+Version 1.4.0
+------------------------------------------------------------
+* Bug fix Modbus TCP client reading incomplete data
+* Check for slave unit id before processing the request for serial clients
+* Bug fix serial servers with Modbus Binary Framer
+* Bug fix header size for ModbusBinaryFramer
+* Support Database slave contexts (SqlStore and RedisStore)
+* Custom handlers could be passed to Modbus TCP servers
+* Asynchronous Server could now be stopped when running on a seperate thread (StopServer)
+* Signal handlers on Asyncronous servers are now handled based on current thread
+* Registers in Database datastore could now be read from remote clients
+* Fix examples in contrib (message_parser.py/message_generator.py/remote_server_context)
+* Add new example for SqlStore and RedisStore (db store slave context)
+* Fix minor comaptibility issues with utilities.
+* Update test requirements
+* Update/Add new unit tests
+* Move twisted requirements to extra so that it is not installed by default on pymodbus installtion
 
 Version 1.3.2
 ------------------------------------------------------------

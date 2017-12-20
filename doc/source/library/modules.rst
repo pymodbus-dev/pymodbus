@@ -1,4 +1,4 @@
-pymodbus
+Pymodbus
 ========
 
 .. toctree::

@@ -1,4 +1,4 @@
-pymodbus package
+Pymodbus package
 ================
 
 Subpackages

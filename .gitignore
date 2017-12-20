@@ -28,3 +28,5 @@ test/__pycache__/
 /doc/quality/
 /doc/pymodbus.pdf
 /doc/sphinx/
+/doc/html/
+/doc/_build/

@@ -1,47 +1,47 @@
-'''
+"""
 Pymodbus Web Frontend
 =======================================
 
 This is a simple web frontend using bottle as the web framework.
 This can be hosted using any wsgi adapter.
-'''
+"""
 from __future__ import print_function
 import json, inspect
 from bottle import route, request, Bottle
 from bottle import static_file
 from bottle import jinja2_template as template
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 # configure the client logging
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 # REST API
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 class Response(object):
-    '''
+    """
     A collection of common responses for the frontend api
-    '''
+    """
     success = { 'status' : 200 }
     failure = { 'status' : 500 }
 
 class ModbusApiWebApp(object):
-    '''
+    """
     This is the web REST api interace into the pymodbus
     service.  It can be consumed by any utility that can
     make web requests (javascript).
-    '''
+    """
     _namespace = '/api/v1'
 
     def __init__(self, server):
-        ''' Initialize a new instance of the ModbusApi
+        """ Initialize a new instance of the ModbusApi
 
         :param server: The current server instance
-        '''
+        """
         self._server = server
 
     #---------------------------------------------------------------------#
@@ -177,12 +177,12 @@ class ModbusApiWebApp(object):
 # webpage routes
 #---------------------------------------------------------------------#
 def register_web_routes(application, register):
-    ''' A helper method to register the default web routes of
+    """ A helper method to register the default web routes of
     a single page application.
 
     :param application: The application instance to register
     :param register: The bottle instance to register the application with
-    '''
+    """
     def get_index_file():
         return template('index.html')
     
@@ -192,17 +192,17 @@ def register_web_routes(application, register):
     register.route('/', method='GET', name='get_index_file')(get_index_file)
     register.route('/media/<filename:path>', method='GET', name='get_static_file')(get_static_file)
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 # Configurations
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 def register_api_routes(application, register):
-    ''' A helper method to register the routes of an application
+    """ A helper method to register the routes of an application
     based on convention. This is easier to manage than having to
     decorate each method with a static route name.
 
     :param application: The application instance to register
     :param register: The bottle instance to register the application with
-    '''
+    """
     log.info("installing application routes:")
     methods = inspect.getmembers(application)
     methods = filter(lambda n: not n[0].startswith('_'), methods)
@@ -219,11 +219,11 @@ def register_api_routes(application, register):
         register.route(path, method=verb, name=method)(func)
 
 def build_application(server):
-    ''' Helper method to create and initiailze a bottle application
+    """ Helper method to create and initiailze a bottle application
 
     :param server: The modbus server to pull instance data from
     :returns: An initialied bottle application
-    '''
+    """
     log.info("building web application")
     api = ModbusApiWebApp(server)
     register = Bottle()
@@ -231,26 +231,26 @@ def build_application(server):
     register_web_routes(api, register)
     return register
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 # Start Methods
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 def RunModbusFrontend(server, port=8080):
-    ''' Helper method to host bottle in twisted
+    """ Helper method to host bottle in twisted
 
     :param server: The modbus server to pull instance data from
     :param port: The port to host the service on
-    '''
+    """
     from bottle import TwistedServer, run
 
     application = build_application(server)
     run(app=application, server=TwistedServer, port=port)
 
 def RunDebugModbusFrontend(server, port=8080):
-    ''' Helper method to start the bottle server
+    """ Helper method to start the bottle server
 
     :param server: The modbus server to pull instance data from
     :param port: The port to host the service on
-    '''
+    """
     from bottle import run
 
     application = build_application(server)

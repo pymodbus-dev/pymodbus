@@ -16,8 +16,8 @@ default:
 	@echo '    make check      check coding style (PEP-8, PEP-257)'
 	@echo '    make test       run the test suite, report coverage'
 	@echo '    make tox        run the tests on all Python versions'
-    @echo '    make docs       Creates sphinx documentation in html'
-	@echo '    make clean      cleanup all temporary files'
+	@echo '    make docs        creates sphinx documentation in html'
+	@echo '    make clean        cleanup all temporary files'
 	@echo
 
 install:

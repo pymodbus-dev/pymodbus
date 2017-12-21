@@ -2,6 +2,7 @@
 cryptography==2.1.4 # Required to parse some files
 humanfriendly==4.4.1
 pyasn1==0.4.2       # Required to parse some files
+pyserial==3.4       # Required to parse some files
 redis==2.10.6       # Required to parse some files
 Sphinx==1.6.5
 sphinx-rtd-theme==0.2.4

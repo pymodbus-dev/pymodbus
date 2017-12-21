@@ -1,7 +1,3 @@
-"""
-Copyright (c) 2017 by Riptide I/O
-All rights reserved.
-"""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -10,14 +6,20 @@ from pymodbus.client.async.factory.serial import get_factory
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
-from pymodbus.compat import IS_PYTHON3
+from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 from pymodbus.client.async.schedulers import ASYNC_IO
 
 logger = logging.getLogger(__name__)
 
 
 class AsyncModbusSerialClient(object):
+    """
+    Actual Async Serial Client to be used.
 
+    To use do::
+
+        from pymodbus.client.async.serial import AsyncModbusSerialClient
+    """
     @classmethod
     def _framer(cls, method):
         """
@@ -63,7 +65,8 @@ class AsyncModbusSerialClient(object):
         :param kwargs:
         :return:
         """
-        if not IS_PYTHON3 and scheduler == ASYNC_IO:
+        if (not (IS_PYTHON3 and PYTHON_VERSION >= (3, 4))
+                and scheduler == ASYNC_IO):
             logger.critical("ASYNCIO is supported only on python3")
             import sys
             sys.exit(1)

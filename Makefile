@@ -16,7 +16,8 @@ default:
 	@echo '    make check      check coding style (PEP-8, PEP-257)'
 	@echo '    make test       run the test suite, report coverage'
 	@echo '    make tox        run the tests on all Python versions'
-	@echo '    make clean      cleanup all temporary files'
+	@echo '    make docs        creates sphinx documentation in html'
+	@echo '    make clean        cleanup all temporary files'
 	@echo
 
 install:
@@ -45,8 +46,8 @@ tox: install
 	@pip install --quiet tox && tox
 
 docs: install
-	@pip install --quiet sphinx
-	@cd doc/sphinx && sphinx-build -nb html -d doctrees . html
+	@pip install --quiet --requirement=requirements-docs.txt
+	@cd doc && make html
 
 publish: install
 	git push origin && git push --tags origin

@@ -1,6 +1,5 @@
 """
-Copyright (c) 2017 by Riptide I/O
-All rights reserved.
+Factory to create async serial clients based on twisted/tornado/asyncio
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -9,13 +8,18 @@ import logging
 
 from pymodbus.client.async import schedulers
 from pymodbus.client.async.thread import EventLoopThread
-from pymodbus.constants import Defaults
-
 
 LOGGER = logging.getLogger(__name__)
 
 
 def reactor_factory(port, framer, **kwargs):
+    """
+    Factory to create twisted serial async client
+    :param port: Serial port
+    :param framer: Modbus Framer
+    :param kwargs:
+    :return: event_loop_thread and twisted serial client
+    """
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
     from twisted.internet.protocol import ClientFactory
@@ -53,9 +57,17 @@ def reactor_factory(port, framer, **kwargs):
 
 
 def io_loop_factory(port=None, framer=None, **kwargs):
+    """
+    Factory to create Tornado based async serial clients
+    :param port:  Serial port
+    :param framer: Modbus Framer
+    :param kwargs:
+    :return: event_loop_thread and tornado future
+    """
+
     from tornado.ioloop import IOLoop
-    from pymodbus.client.async.tornado import AsyncModbusSerialClient as \
-        Client
+    from pymodbus.client.async.tornado import (AsyncModbusSerialClient as
+                                               Client)
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
@@ -67,24 +79,29 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     return protocol, future
 
 
-def async_io_factory(port=Defaults.Port, framer=None, **kwargs):
+def async_io_factory(port=None, framer=None, **kwargs):
+    """
+    Factory to create asyncio based async serial clients
+    :param port:  Serial port
+    :param framer: Modbus Framer
+    :param kwargs:
+    :return: asyncio event loop and serial client
+    """
     import asyncio
-    from pymodbus.client.async.asyncio import ModbusClientProtocol, AsyncioModbusSerialClient
+    from pymodbus.client.async.asyncio import (ModbusClientProtocol,
+                                               AsyncioModbusSerialClient)
     loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
 
     try:
         from serial_asyncio import create_serial_connection
     except ImportError:
-        LOGGER.critical("pyserial-asyncio is not installed, install with 'pip install pyserial-asyncio")
+        LOGGER.critical("pyserial-asyncio is not installed, "
+                        "install with 'pip install pyserial-asyncio")
         import sys
         sys.exit(1)
-    #
-    # def proto_factory():
-    #     return proto_cls(framer=framer)
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop)
-    # coro = create_serial_connection(loop, proto_factory, port, **kwargs)
     coro = client._create_protocol()
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     client.transport = transport
@@ -93,6 +110,11 @@ def async_io_factory(port=Defaults.Port, framer=None, **kwargs):
 
 
 def get_factory(scheduler):
+    """
+    Gets protocol factory based on the backend scheduler being used
+    :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
+    :return:
+    """
     if scheduler == schedulers.REACTOR:
         return reactor_factory
     elif scheduler == schedulers.IO_LOOP:
@@ -104,4 +126,3 @@ def get_factory(scheduler):
             schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
         ))
         raise Exception("Invalid Scheduler '{}'".format(scheduler))
-

@@ -1,6 +1,5 @@
 """
-Copyright (c) 2017 by Riptide I/O
-All rights reserved.
+Factory to create async tcp clients based on twisted/tornado/asyncio
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -16,6 +15,16 @@ LOGGER = logging.getLogger(__name__)
 
 def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
+    """
+    Factory to create twisted tcp async client
+    :param host: Host IP address
+    :param port: Port
+    :param framer: Modbus Framer
+    :param source_address: Bind address
+    :param timeout: Timeout in seconds
+    :param kwargs:
+    :return: event_loop_thread and twisted_deferred
+    """
     from twisted.internet import reactor, protocol
     from pymodbus.client.async.twisted import ModbusTcpClientProtocol
 
@@ -40,7 +49,17 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                   source_address=None, timeout=None, **kwargs):
+                    source_address=None, timeout=None, **kwargs):
+    """
+    Factory to create Tornado based async tcp clients
+    :param host: Host IP address
+    :param port: Port
+    :param framer: Modbus Framer
+    :param source_address: Bind address
+    :param timeout: Timeout in seconds
+    :param kwargs:
+    :return: event_loop_thread and tornado future
+    """
     from tornado.ioloop import IOLoop
     from pymodbus.client.async.tornado import AsyncModbusTCPClient as \
         Client
@@ -60,6 +79,16 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                      source_address=None, timeout=None, **kwargs):
+    """
+    Factory to create asyncio based async tcp clients
+    :param host: Host IP address
+    :param port: Port
+    :param framer: Modbus Framer
+    :param source_address: Bind address
+    :param timeout: Timeout in seconds
+    :param kwargs:
+    :return: asyncio event loop and tcp client
+    """
     import asyncio
     from pymodbus.client.async.asyncio import init_tcp_client
     loop = kwargs.get("loop") or asyncio.get_event_loop()
@@ -70,6 +99,11 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 
 def get_factory(scheduler):
+    """
+    Gets protocol factory based on the backend scheduler being used
+    :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
+    :return
+    """
     if scheduler == schedulers.REACTOR:
         return reactor_factory
     elif scheduler == schedulers.IO_LOOP:

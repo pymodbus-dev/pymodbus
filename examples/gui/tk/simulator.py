@@ -1,27 +1,27 @@
 #!/usr/bin/env python
-'''
+"""
 Note that this is not finished
-'''
-#---------------------------------------------------------------------------#
+"""
+# --------------------------------------------------------------------------- #
 # System
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 import os
 import getpass
 import pickle
 from threading import Thread
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # For Gui
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 from Tkinter import *
 from tkFileDialog import askopenfilename as OpenFilename
 from twisted.internet import tksupport
 root = Tk()
 tksupport.install(root)
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # SNMP Simulator
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
 from pymodbus.server.async import ModbusServerFactory
@@ -33,49 +33,49 @@ from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 import logging
 log = logging.getLogger(__name__)
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Application Error
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 class ConfigurationException(Exception):
-    ''' Exception for configuration error '''
+    """ Exception for configuration error """
     pass
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Extra Global Functions
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # These are extra helper functions that don't belong in a class
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 def root_test():
-    ''' Simple test to see if we are running as root '''
+    """ Simple test to see if we are running as root """
     return getpass.getuser() == "root"
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Simulator Class
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 class Simulator(object):
-    '''
+    """
     Class used to parse configuration file and create and modbus
     datastore.
 
     The format of the configuration file is actually just a
     python pickle, which is a compressed memory dump from
     the scraper.
-    '''
+    """
 
     def __init__(self, config):
-        '''
+        """
         Trys to load a configuration file, lets the file not
         found exception fall through
 
         @param config The pickled datastore
-        '''
+        """
         try:
             self.file = open(config, "r")
         except Exception:
             raise ConfigurationException("File not found %s" % config)
 
     def _parse(self):
-        ''' Parses the config file and creates a server context '''
+        """ Parses the config file and creates a server context """
         try:
             handle = pickle.load(self.file)
             dsd = handle['di']
@@ -88,7 +88,7 @@ class Simulator(object):
         return ModbusServerContext(slaves=slave)
 
     def _simulator(self):
-        ''' Starts the snmp simulator '''
+        """ Starts the snmp simulator """
         ports = [502]+range(20000,25000)
         for port in ports:
             try:
@@ -99,48 +99,48 @@ class Simulator(object):
                 pass
 
     def run(self):
-        ''' Used to run the simulator '''
+        """ Used to run the simulator """
         reactor.callWhenRunning(self._simulator)
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Network reset thread
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # This is linux only, maybe I should make a base class that can be filled
 # in for linux(debian/redhat)/windows/nix
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 class NetworkReset(Thread):
-    '''
+    """
     This class is simply a daemon that is spun off at the end of the
     program to call the network restart function (an easy way to
     remove all the virtual interfaces)
-    '''
+    """
     def __init__(self):
         Thread.__init__(self)
         self.setDaemon(True)
 
     def run(self):
-        ''' Run the network reset '''
+        """ Run the network reset """
         os.system("/etc/init.d/networking restart")
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Main Gui Class
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 class SimulatorFrame(Frame):
-    '''
+    """
     This class implements the GUI for the flasher application
-    '''
+    """
     subnet  = 205
     number  = 1
     restart = 0
 
     def __init__(self, master, font):
-        ''' Sets up the gui, callback, and widget handles '''
+        """ Sets up the gui, callback, and widget handles """
         Frame.__init__(self, master)
         self._widgets = []
 
-        #---------------------------------------------------------------------------#
+        # --------------------------------------------------------------------------- #
         # Initialize Buttons Handles
-        #---------------------------------------------------------------------------#
+        # --------------------------------------------------------------------------- #
         frame = Frame(self)
         frame.pack(side=BOTTOM, pady=5)
 
@@ -156,9 +156,9 @@ class SimulatorFrame(Frame):
         button.pack(side=LEFT, padx=15)
         #self._widgets.append(button) # we don't want to grey this out
 
-        #---------------------------------------------------------------------------#
+        # --------------------------------------------------------------------------- #
         # Initialize Input Fields
-        #---------------------------------------------------------------------------#
+        # --------------------------------------------------------------------------- #
         frame = Frame(self)
         frame.pack(side=TOP, padx=10, pady=5)
 
@@ -192,25 +192,25 @@ class SimulatorFrame(Frame):
         #if not root_test():
         #    self.error_dialog("This program must be run with root permissions!", True)
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Gui helpers
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Not callbacks, but used by them
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
     def show_buttons(self, state=False):
-        ''' Greys out the buttons '''
+        """ Greys out the buttons """
         state = 'active' if state else 'disabled'
         for widget in self._widgets:
             widget.configure(state=state)
 
     def destroy_interfaces(self):
-        ''' This is used to reset the virtual interfaces '''
+        """ This is used to reset the virtual interfaces """
         if self.restart:
             n = NetworkReset()
             n.start()
 
     def error_dialog(self, message, quit=False):
-        ''' Quick pop-up for error messages '''
+        """ Quick pop-up for error messages """
         dialog = gtk.MessageDialog(
             parent          = self.window,
             flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
@@ -223,13 +223,13 @@ class SimulatorFrame(Frame):
         else: dialog.connect("response", lambda w, r: w.destroy())
         dialog.show()
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Button Actions
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # These are all callbacks for the various buttons
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
     def start_clicked(self):
-        ''' Starts the simulator '''
+        """ Starts the simulator """
         start = 1
         base = "172.16"
 
@@ -264,7 +264,7 @@ class SimulatorFrame(Frame):
             try:
                 handle = Simulator(config=filename)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
@@ -272,7 +272,7 @@ class SimulatorFrame(Frame):
             return False
 
     def help_clicked(self):
-        ''' Quick pop-up for about page '''
+        """ Quick pop-up for about page """
         data = gtk.AboutDialog()
         data.set_version("0.1")
         data.set_name(('Modbus Simulator'))
@@ -285,55 +285,55 @@ class SimulatorFrame(Frame):
         data.run()
 
     def close_clicked(self):
-        ''' Callback for close button '''
+        """ Callback for close button """
         #self.destroy_interfaces()
         reactor.stop()
 
     def file_clicked(self):
-        ''' Callback for the filename change '''
+        """ Callback for the filename change """
         file = OpenFilename()
         self.tdevice_value.set(file)
 
 class SimulatorApp(object):
-    ''' The main wx application handle for our simulator
-    '''
+    """ The main wx application handle for our simulator
+    """
 
     def __init__(self, master):
-        '''
+        """
         Called by wxWindows to initialize our application
 
         :param master: The master window to connect to
-        '''
+        """
         font  = ('Helvetica', 12, 'normal')
         frame = SimulatorFrame(master, font)
         frame.pack()
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Main handle function
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # This is called when the application is run from a console
 # We simply start the gui and start the twisted event loop
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 def main():
-    '''
+    """
     Main control function
     This either launches the gui or runs the command line application
-    '''
+    """
     debug = True
     if debug:
         try:
             log.setLevel(logging.DEBUG)
     	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+        except Exception as e:
+    	    print("Logging is not supported on this system")
     simulator = SimulatorApp(root)
     root.title("Modbus Simulator")
     reactor.run()
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Library/Console Test
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # If this is called from console, we start main
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     main()

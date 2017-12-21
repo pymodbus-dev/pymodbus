@@ -2,7 +2,8 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 import pytest
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     from unittest import mock
-    from pymodbus.client.async.asyncio import (ReconnectingAsyncioModbusTcpClient,
+    from pymodbus.client.async.asyncio import (
+        ReconnectingAsyncioModbusTcpClient,
         ModbusClientProtocol, ModbusUdpClientProtocol)
     from test.asyncio_test_helper import return_as_coroutine, run_coroutine
     from pymodbus.factory import ClientDecoder

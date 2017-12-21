@@ -46,8 +46,8 @@ tox: install
 	@pip install --quiet tox && tox
 
 docs: install
-	@pip install --quiet sphinx sphinx_rtd_theme
-	@cd doc && sphinx-build -nb html -d _build/doctrees . html
+	@pip install --quiet --requirement=requirements-docs.txt
+	@cd doc && make html
 
 publish: install
 	git push origin && git push --tags origin

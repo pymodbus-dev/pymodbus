@@ -75,7 +75,9 @@ setup(
             'mock >= 1.0.0',
             'pep8 >= 1.3.3'
         ],
-        'documents': ['sphinx >= 1.1.3', 'sphinx_rtd_theme'],
+        'documents': ['sphinx >= 1.1.3',
+                      'sphinx_rtd_theme',
+                      'humanfriendly'],
         'twisted': [
             'twisted >= 12.2.0',
             'pyasn1 >= 0.1.4',

@@ -101,10 +101,12 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 data = self.request.recv(1024)
                 if data:
                     if _logger.isEnabledFor(logging.DEBUG):
-                        _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
-                    if not isinstance(self.framer, ModbusBinaryFramer):
+                        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
+                    if isinstance(self.framer, ModbusRtuFramer):
                         unit_address = byte2int(data[0])
-                    else:
+                    elif isinstance(self.framer, ModbusAsciiFramer):
+                        unit_address = int(data[1:3], 16)
+                    if isinstance(self.framer, ModbusBinaryFramer):
                         unit_address = byte2int(data[1])
                     if unit_address in self.server.context:
                         self.framer.processIncomingPacket(data, self.execute)
@@ -113,6 +115,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 # Clear frame buffer
                 self.framer.resetFrame()
                 _logger.error("Socket error occurred %s" % msg)
+
 
     def send(self, message):
         ''' Send a request (string) to the network

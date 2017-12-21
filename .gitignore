@@ -22,7 +22,6 @@ pymodbus/server/__pycache__/
 test/__pycache__/
 **/pymodbus.db
 /.eggs/
-<<<<<<< HEAD
 /test/bin/
 /test/include/
 /test/lib/
@@ -36,4 +35,5 @@ test/__pycache__/
 /doc/sphinx/
 /doc/html/
 /doc/_build/
+
 

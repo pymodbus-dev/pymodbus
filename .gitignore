@@ -23,3 +23,10 @@ test/__pycache__/
 **/pymodbus.db
 /.eggs/
 /.cache/
+/doc/sphinx/doctrees/
+/doc_new/
+/doc/quality/
+/doc/pymodbus.pdf
+/doc/sphinx/
+/doc/html/
+/doc/_build/

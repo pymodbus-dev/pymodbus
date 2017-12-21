@@ -3,26 +3,26 @@ import time
 from subprocess import Popen as execute
 from twisted.internet.defer import Deferred
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # configure the client logging
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 import logging
 log = logging.getLogger(__name__)
 
 class Runner(object):
-    '''
+    """
     This is the base runner class for all the integration tests
-    '''
+    """
 
     def initialize(self, service):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         self.fnull  = open(os.devnull, 'w')
         self.server = execute(service, stdout=self.fnull, stderr=self.fnull)
         log.debug("%s service started: %s", service, self.server.pid)
         time.sleep(0.2)
 
     def shutdown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         self.server.kill()
         self.fnull.close()
         log.debug("service stopped")
@@ -70,11 +70,11 @@ class Runner(object):
         self.__validate(rr, lambda r: r.registers == [20]*8)
 
     def __validate(self, result, test):
-        ''' Validate the result whether it is a result or a deferred.
+        """ Validate the result whether it is a result or a deferred.
 
         :param result: The result to __validate
         :param callback: The test to __validate
-        '''
+        """
         if isinstance(result, Deferred):
             deferred.callback(lambda : self.assertTrue(test(result)))
             deferred.errback(lambda _: self.assertTrue(False))

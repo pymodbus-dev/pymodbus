@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 # Application Error
 #---------------------------------------------------------------------------#
 class ConfigurationException(Exception):
-    ''' Exception for configuration error '''
+    """ Exception for configuration error """
 
     def __init__(self, string):
         Exception.__init__(self, string)
@@ -48,36 +48,36 @@ class ConfigurationException(Exception):
 # These are extra helper functions that don't belong in a class
 #---------------------------------------------------------------------------#
 def root_test():
-    ''' Simple test to see if we are running as root '''
+    """ Simple test to see if we are running as root """
     return getpass.getuser() == "root"
 
 #---------------------------------------------------------------------------#
 # Simulator Class
 #---------------------------------------------------------------------------#
 class Simulator(object):
-    '''
+    """
     Class used to parse configuration file and create and modbus
     datastore.
 
     The format of the configuration file is actually just a
     python pickle, which is a compressed memory dump from
     the scraper.
-    '''
+    """
 
     def __init__(self, config):
-        '''
+        """
         Trys to load a configuration file, lets the file not
         found exception fall through
 
         @param config The pickled datastore
-        '''
+        """
         try:
             self.file = open(config, "r")
         except Exception:
             raise ConfigurationException("File not found %s" % config)
 
     def _parse(self):
-        ''' Parses the config file and creates a server context '''
+        """ Parses the config file and creates a server context """
         try:
             handle = pickle.load(self.file)
             dsd = handle['di']
@@ -90,7 +90,7 @@ class Simulator(object):
         return ModbusServerContext(slaves=slave)
 
     def _simulator(self):
-        ''' Starts the snmp simulator '''
+        """ Starts the snmp simulator """
         ports = [502]+range(20000,25000)
         for port in ports:
             try:
@@ -101,7 +101,7 @@ class Simulator(object):
                 pass
 
     def run(self):
-        ''' Used to run the simulator '''
+        """ Used to run the simulator """
         reactor.callWhenRunning(self._simulator)
 
 #---------------------------------------------------------------------------#
@@ -111,17 +111,17 @@ class Simulator(object):
 # in for linux(debian/redhat)/windows/nix
 #---------------------------------------------------------------------------#
 class NetworkReset(Thread):
-    '''
+    """
     This class is simply a daemon that is spun off at the end of the
     program to call the network restart function (an easy way to
     remove all the virtual interfaces)
-    '''
+    """
     def __init__(self):
         Thread.__init__(self)
         self.setDaemon(True)
 
     def run(self):
-        ''' Run the network reset '''
+        """ Run the network reset """
         os.system("/etc/init.d/networking restart")
 
 #---------------------------------------------------------------------------#
@@ -153,16 +153,16 @@ class NetworkReset(Thread):
 #                       handle = Simulator(config=self.file)
 #---------------------------------------------------------------------------#
 class SimulatorApp(object):
-    '''
+    """
     This class implements the GUI for the flasher application
-    '''
+    """
     file = "none"
     subnet = 205
     number = 1
     restart = 0
 
     def __init__(self, xml):
-        ''' Sets up the gui, callback, and widget handles '''
+        """ Sets up the gui, callback, and widget handles """
 
         #---------------------------------------------------------------------------#
         # Action Handles
@@ -196,7 +196,7 @@ class SimulatorApp(object):
 # Not callbacks, but used by them
 #---------------------------------------------------------------------------#
     def show_buttons(self, state=False, all=0):
-        ''' Greys out the buttons '''
+        """ Greys out the buttons """
         if all:
             self.window.set_sensitive(state)
         self.bstart.set_sensitive(state)
@@ -205,13 +205,13 @@ class SimulatorApp(object):
         self.tnumber.set_sensitive(state)
 
     def destroy_interfaces(self):
-        ''' This is used to reset the virtual interfaces '''
+        """ This is used to reset the virtual interfaces """
         if self.restart:
             n = NetworkReset()
             n.start()
 
     def error_dialog(self, message, quit=False):
-        ''' Quick pop-up for error messages '''
+        """ Quick pop-up for error messages """
         dialog = gtk.MessageDialog(
             parent         = self.window,
             flags          = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
@@ -231,7 +231,7 @@ class SimulatorApp(object):
 # These are all callbacks for the various buttons
 #---------------------------------------------------------------------------#
     def start_clicked(self, widget):
-        ''' Starts the simulator '''
+        """ Starts the simulator """
         start = 1
         base = "172.16"
 
@@ -273,7 +273,7 @@ class SimulatorApp(object):
             return False
 
     def help_clicked(self, widget):
-        ''' Quick pop-up for about page '''
+        """ Quick pop-up for about page """
         data = gtk.AboutDialog()
         data.set_version("0.1")
         data.set_name(('Modbus Simulator'))
@@ -286,12 +286,12 @@ class SimulatorApp(object):
         data.run()
 
     def close_clicked(self, widget):
-        ''' Callback for close button '''
+        """ Callback for close button """
         self.destroy_interfaces()
         reactor.stop()          # quit twisted
 
     def file_changed(self, widget):
-        ''' Callback for the filename change '''
+        """ Callback for the filename change """
         self.file = widget.get_filename()
 
 #---------------------------------------------------------------------------#
@@ -301,10 +301,10 @@ class SimulatorApp(object):
 # We simply start the gui and start the twisted event loop
 #---------------------------------------------------------------------------#
 def main():
-    '''
+    """
     Main control function
     This either launches the gui or runs the command line application
-    '''
+    """
     debug = True
     if debug:
         try:

@@ -168,7 +168,7 @@ class ModbusTransactionManager(object):
                     continue
                 if isinstance(self.client.framer, ModbusSocketFramer):
                     # Ommit UID, which is included in header size
-                    h_size = self.client.framer._ModbusSocketFramer__hsize
+                    h_size = self.client.framer._hsize
                     length = struct.unpack(">H", result[4:6])[0] -1
                     expected_response_length = h_size + length
 
@@ -936,12 +936,12 @@ class ModbusBinaryFramer(IModbusFramer):
 
         :param decoder: The decoder implementation to use
         '''
-        self.__buffer = b''
-        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
-        self.__hsize  = 0x01
-        self.__start  = b'\x7b'  # {
-        self.__end    = b'\x7d'  # }
-        self.__repeat = [b'}'[0], b'{'[0]] # python3 hack
+        self._buffer = b''
+        self._header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self._hsize  = 0x01
+        self._start  = b'\x7b'  # {
+        self._end    = b'\x7d'  # }
+        self._repeat = [b'}'[0], b'{'[0]] # python3 hack
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#

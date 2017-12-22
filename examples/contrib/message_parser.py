@@ -10,13 +10,8 @@ using the supplied framers for a number of protocols:
 * ascii
 * rtu
 * binary
-<<<<<<< HEAD:examples/contrib/message-parser.py
-'''
-#---------------------------------------------------------------------------#
-=======
 """
 # -------------------------------------------------------------------------- #
->>>>>>> dev:examples/contrib/message_parser.py
 # import needed libraries
 # -------------------------------------------------------------------------- #
 from __future__ import print_function
@@ -25,20 +20,12 @@ import textwrap
 from optparse import OptionParser
 import codecs as c
 
-<<<<<<< HEAD:examples/contrib/message-parser.py
-from pymodbus.utilities import computeCRC, computeLRC
-=======
->>>>>>> dev:examples/contrib/message_parser.py
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
-<<<<<<< HEAD:examples/contrib/message-parser.py
-from pymodbus.compat import byte2int, int2byte, IS_PYTHON3
-=======
 from pymodbus.compat import  IS_PYTHON3
->>>>>>> dev:examples/contrib/message_parser.py
 
 
 # -------------------------------------------------------------------------- #
@@ -48,15 +35,9 @@ import logging
 modbus_log = logging.getLogger("pymodbus")
 
 
-<<<<<<< HEAD:examples/contrib/message-parser.py
-#---------------------------------------------------------------------------#
-# build a quick wrapper around the framers
-#---------------------------------------------------------------------------#
-=======
 # -------------------------------------------------------------------------- #
 # build a quick wrapper around the framers
 # -------------------------------------------------------------------------- #
->>>>>>> dev:examples/contrib/message_parser.py
 class Decoder(object):
 
     def __init__(self, framer, encode=False):
@@ -72,11 +53,7 @@ class Decoder(object):
         """ Attempt to decode the supplied message
 
         :param message: The messge to decode
-<<<<<<< HEAD:examples/contrib/message-parser.py
-        '''
-=======
         """
->>>>>>> dev:examples/contrib/message_parser.py
         if IS_PYTHON3:
             value = message if self.encode else c.encode(message, 'hex_codec')
         else:
@@ -130,15 +107,9 @@ class Decoder(object):
         print("%-15s = %s" % ('documentation', message.__doc__))
 
 
-<<<<<<< HEAD:examples/contrib/message-parser.py
-#---------------------------------------------------------------------------#
-# and decode our message
-#---------------------------------------------------------------------------#
-=======
 # -------------------------------------------------------------------------- #
 # and decode our message
 # -------------------------------------------------------------------------- #
->>>>>>> dev:examples/contrib/message_parser.py
 def get_options():
     """ A helper method to parse the command line options
 

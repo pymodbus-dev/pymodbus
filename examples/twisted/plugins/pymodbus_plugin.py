@@ -1,5 +1,5 @@
-'''
-'''
+"""
+"""
 from zope.interface import implements
 
 from twisted.python import usage
@@ -13,10 +13,10 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.internal.ptwisted import InstallManagementConsole
 
 class Options(usage.Options):
-    '''
+    """
     The following are the options available to the
     pymodbus server.
-    '''
+    """
     optParameters = [
         ["port", "p", Defaults.Port, "The port number to listen on."],
         ["type", "t", "tcp", "The type of server to host (tcp, udp, ascii, rtu)"],
@@ -25,18 +25,18 @@ class Options(usage.Options):
     ]
 
 class ModbusServiceMaker(object):
-    '''
+    """
     A helper class used to build a twisted plugin
-    '''
+    """
     implements(IServiceMaker, IPlugin)
     tapname = "pymodbus"
     description = "A modbus server"
     options = Options
 
     def makeService(self, options):
-        '''
+        """
         Construct a service from the given options
-        '''
+        """
         if options["type"] == "tcp":
             server = internet.TCPServer
         else: server = internet.UDPServer
@@ -50,10 +50,10 @@ class ModbusServiceMaker(object):
         return server(int(options["port"]), factory)
 
     def _build_context(self, path):
-        '''
+        """
         A helper method to unpickle a datastore,
         note, this should be a ModbusServerContext.
-        '''
+        """
         import pickle
         try:
             context = pickle.load(path)

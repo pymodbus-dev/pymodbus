@@ -101,11 +101,14 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 data = self.request.recv(1024)
                 if data:
                     if _logger.isEnabledFor(logging.DEBUG):
-                        _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
-                    if not isinstance(self.framer, ModbusBinaryFramer):
-                        unit_address = byte2int(data[0])
-                    else:
+                        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
+                    if isinstance(self.framer, ModbusAsciiFramer):
+                        unit_address = int(data[1:3], 16)
+                    elif isinstance(self.framer, ModbusBinaryFramer):
                         unit_address = byte2int(data[1])
+                    else:
+                        unit_address = byte2int(data[0])
+
                     if unit_address in self.server.context:
                         self.framer.processIncomingPacket(data, self.execute)
             except Exception as msg:

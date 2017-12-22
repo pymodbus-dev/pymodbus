@@ -5,7 +5,7 @@ import sys
 import struct
 import socket
 from binascii import b2a_hex, a2b_hex
-
+from serial import SerialException
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.exceptions import InvalidMessageRecievedException
 from pymodbus.constants  import Defaults
@@ -57,13 +57,13 @@ class ModbusTransactionManager(object):
     def _set_adu_size(self):
         # base ADU size of modbus frame in bytes
         if isinstance(self.client.framer, ModbusSocketFramer):
-            self.base_adu_size = 7 # tid(2), pid(2), length(2), uid(1)
+            self.base_adu_size = 7  # tid(2), pid(2), length(2), uid(1)
         elif isinstance(self.client.framer, ModbusRtuFramer):
-            self.base_adu_size = 3 # address(1), CRC(2)
+            self.base_adu_size = 3  # address(1), CRC(2)
         elif isinstance(self.client.framer, ModbusAsciiFramer):
-            self.base_adu_size = 7 # start(1)+ Address(2), LRC(2) + end(2)
+            self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
         elif isinstance(self.client.framer, ModbusBinaryFramer):
-            self.base_adu_size = 3 #, Address(1), CRC(2)
+            self.base_adu_size = 5  # start(1) + Address(1), CRC(2) + end(1)
         else:
             self.base_adu_size = -1
 
@@ -167,17 +167,34 @@ class ModbusTransactionManager(object):
                     expected_response_length = self._calculate_exception_length()
                     continue
                 if isinstance(self.client.framer, ModbusSocketFramer):
+                    # Ommit UID, which is included in header size
+                    h_size = self.client.framer._ModbusSocketFramer__hsize
+                    length = struct.unpack(">H", result[4:6])[0] -1
+                    expected_response_length = h_size + length
+
+                if expected_response_length != len(result):
+                    _logger.debug("Expected - {} bytes, "
+                                  "Actual - {} bytes".format(
+                        expected_response_length, len(result))
+                    )
+                    try:
+                        r = self.client._recv(
+                            expected_response_length - len(result)
+                        )
+                        result += r
+                        if not r:
+                            # If no response being recived there
+                            # is no point in conitnuing
+                            break
+                    except (TimeoutError, SerialException):
+                        break
+                else:
                     break
-                r = self.client._recv(expected_response_length - len(result))
-                if not r:
-                    # If no response being recived there is no point in conitnuing
-                    break
-                result += r
+
             if result:
                 break
             retries -= 1
         return result
-
 
     def addTransaction(self, request, tid=None):
         ''' Adds a transaction to the handler
@@ -919,12 +936,12 @@ class ModbusBinaryFramer(IModbusFramer):
 
         :param decoder: The decoder implementation to use
         '''
-        self._buffer = b''
-        self._header = {'crc':0x0000, 'len':0, 'uid':0x00}
-        self._hsize  = 0x01
-        self._start  = b'\x7b'  # {
-        self._end    = b'\x7d'  # }
-        self._repeat = [b'}'[0], b'{'[0]] # python3 hack
+        self.__buffer = b''
+        self.__header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self.__hsize  = 0x01
+        self.__start  = b'\x7b'  # {
+        self.__end    = b'\x7d'  # }
+        self.__repeat = [b'}'[0], b'{'[0]] # python3 hack
         self.decoder  = decoder
 
     #-----------------------------------------------------------------------#

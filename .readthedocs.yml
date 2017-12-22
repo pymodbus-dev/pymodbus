@@ -1,0 +1,9 @@
+# Build PDF & ePub
+formats:
+    - epub
+    - pdf
+requirements_file: requirements-docs.txt
+python:
+    extra_requirements:
+        - twisted
+        - documents

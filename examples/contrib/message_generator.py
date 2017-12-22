@@ -82,7 +82,7 @@ _request_messages = [
     ReturnSlaveBusCharacterOverrunCountRequest,
     ReturnIopOverrunCountRequest,
     ClearOverrunCountRequest,
-    GetClearModbusPlusRequest,
+    GetClearModbusPlusRequest
 ]
 
 
@@ -128,7 +128,7 @@ _response_messages = [
     ReturnSlaveBusCharacterOverrunCountResponse,
     ReturnIopOverrunCountResponse,
     ClearOverrunCountResponse,
-    GetClearModbusPlusResponse,
+    GetClearModbusPlusResponse
 ]
 
 

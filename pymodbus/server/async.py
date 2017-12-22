@@ -161,7 +161,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 
         :param data: The data sent by the client
         '''
-        _logger.debug("Client Connected [%s:%s]" % addr)
+        _logger.debug("Client Connected [%s]" % addr)
         if _logger.isEnabledFor(logging.DEBUG):
             _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
         if not self.control.ListenOnly:

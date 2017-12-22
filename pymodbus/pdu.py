@@ -149,8 +149,8 @@ class ModbusExceptions(Singleton):
     @classmethod
     def decode(cls, code):
         ''' Given an error code, translate it to a
-        string error name. 
-        
+        string error name.
+
         :param code: The code number to translate
         '''
         values = dict((v, k) for k, v in iteritems(cls.__dict__)

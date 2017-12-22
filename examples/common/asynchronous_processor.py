@@ -33,11 +33,12 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 # state a few constants
 # --------------------------------------------------------------------------- #
-SERIAL_PORT = "/dev/ptyp0"
+SERIAL_PORT = "/tmp/ttyp0"
 # --------------------------------------------------------------------------- #
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
+UNIT = 0x01
 
 
 # --------------------------------------------------------------------------- #
@@ -63,7 +64,7 @@ class ExampleProtocol(ModbusClientProtocol):
         """ Defer fetching holding registers
         """
         log.debug("Starting the next cycle")
-        d = self.read_holding_registers(*STATUS_REGS, unit=1)
+        d = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
         d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
@@ -73,7 +74,7 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         self.endpoint.write(response.getRegister(0))
         self.endpoint.write(response.getRegister(1))
-        d = self.read_coils(*STATUS_COILS, unit=1)
+        d = self.read_coils(*STATUS_COILS, unit=UNIT)
         d.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):

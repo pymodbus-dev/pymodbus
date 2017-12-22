@@ -23,7 +23,7 @@ except ImportError:
 try:
     from setup_commands import command_classes
 except ImportError:
-    command_classes = {}
+    command_classes={}
 from pymodbus import __version__, __author__, __maintainer__
 
 with open('requirements.txt') as reqs:
@@ -31,6 +31,7 @@ with open('requirements.txt') as reqs:
         line for line in reqs.read().split('\n')
         if (line and not line.startswith('--'))
     ]
+    install_requires.append("pyserial >= 3.4")
 # --------------------------------------------------------------------------- #
 # configuration
 # --------------------------------------------------------------------------- #
@@ -70,9 +71,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
-    install_requires=[
-        'pyserial >= 2.6'
-    ],
+    install_requires=install_requires,
     extras_require={
         'quality': [
             'coverage >= 3.5.3',
@@ -92,5 +91,4 @@ setup(
     test_suite='nose.collector',
     cmdclass=command_classes,
 )
-
 

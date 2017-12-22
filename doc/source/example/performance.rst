@@ -1,7 +1,5 @@
+==================
 performance module
 ==================
+.. literalinclude:: ../../../examples/common/performance.py
 
-.. automodule:: performance
-    :members:
-    :undoc-members:
-    :show-inheritance:

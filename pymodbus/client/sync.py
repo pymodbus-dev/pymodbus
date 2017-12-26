@@ -344,6 +344,10 @@ class ModbusSerialClient(BaseModbusClient):
             self._last_frame_end = time.time()
         return self.socket != None
 
+    @property
+    def _connected(self):
+        return True if self.socket else False
+
     def close(self):
         ''' Closes the underlying socket connection
         '''

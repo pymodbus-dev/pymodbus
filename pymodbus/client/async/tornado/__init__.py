@@ -83,11 +83,17 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :param request:
         :return:
         """
+        # import pdb, pdb.set_trace()
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         LOGGER.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
         self.stream.write(packet)
         return self._build_response(request.transaction_id)
+
+    def on_connection_close(self):
+        # The client has given up and gone home lol
+        # this sould automatically create a new client
+        self.connection_closed = True
 
     def _handle_response(self, reply, **kwargs):
         """

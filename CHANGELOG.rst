@@ -4,6 +4,7 @@ Version 1.4.0
 * Check for slave unit id before processing the request for serial clients
 * Bug fix serial servers with Modbus Binary Framer
 * Bug fix header size for ModbusBinaryFramer
+* Bug fix payload decoder with endian Little
 * Support Database slave contexts (SqlStore and RedisStore)
 * Custom handlers could be passed to Modbus TCP servers
 * Asynchronous Server could now be stopped when running on a seperate thread (StopServer)

@@ -24,7 +24,7 @@ def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('127.0.0.1', port=5020)
+    client = ModbusClient('127.0.0.1', port=5440)
     client.connect()
     
     # ----------------------------------------------------------------------- #
@@ -41,7 +41,7 @@ def run_binary_payload_ex():
     # - an 8 bit int 0x12
     # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(endian=Endian.Big)
+    builder = BinaryPayloadBuilder(endian=Endian.Little)
     builder.add_string('abcdefgh')
     builder.add_32bit_float(22.34)
     builder.add_16bit_uint(0x1234)
@@ -67,10 +67,10 @@ def run_binary_payload_ex():
     # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
     # ----------------------------------------------------------------------- #
     address = 0x00
-    count = 8
+    count = len(payload)
     result = client.read_holding_registers(address, count,  unit=1)
     decoder = BinaryPayloadDecoder.fromRegisters(result.registers, 
-                                                 endian=Endian.Big)
+                                                 endian=Endian.Little)
     decoded = {
         'string': decoder.decode_string(8),
         'float': decoder.decode_32bit_float(),
@@ -84,7 +84,7 @@ def run_binary_payload_ex():
     print("Decoded Data")
     print("-" * 60)
     for name, value in iteritems(decoded):
-        print("%s\t" % name, value)
+        print("%s\t" % name, hex(value) if isinstance(value, int) else value)
     
     # ----------------------------------------------------------------------- #
     # close the client

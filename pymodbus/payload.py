@@ -216,8 +216,8 @@ class BinaryPayloadDecoder(object):
         :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         '''
-        if isinstance(registers, list): # repack into flat binary
-            payload = b''.join(pack(endian + 'H', x) for x in registers)
+        if isinstance(registers, list):  # repack into flat binary
+            payload = b''.join(pack('!H', x) for x in registers)
             return klass(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')
 

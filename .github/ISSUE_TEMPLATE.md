@@ -14,6 +14,9 @@ Before opening a new issue, make sure you do the following:
 * Pymodbus:
 * Modbus Hardware (if used): 
 
+### Pymodbus Specific
+* Server: tcp/rtu/ascii - sync/async
+* Client: tcp/rtu/ascii - sync/async
 
 ### Description
 

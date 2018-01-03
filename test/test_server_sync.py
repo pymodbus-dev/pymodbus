@@ -17,6 +17,7 @@ from pymodbus.server.sync import ModbusTcpServer, ModbusUdpServer, ModbusSerialS
 from pymodbus.server.sync import StartTcpServer, StartUdpServer, StartSerialServer
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.datastore import  ModbusServerContext
 import sys
 from pymodbus.compat import socketserver
 
@@ -97,6 +98,8 @@ class SynchronousServerTest(unittest.TestCase):
         handler.framer  = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
+        handler.socket = Mock()
+        handler.server = Mock()
         handler.request.recv.return_value = b"\x12\x34"
 
         # exit if we are not running
@@ -109,6 +112,8 @@ class SynchronousServerTest(unittest.TestCase):
             handler.running = False # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
+        # Ugly hack
+        handler.server.context = ModbusServerContext(slaves={18: None}, single=False)
         handler.handle()
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
@@ -128,7 +133,7 @@ class SynchronousServerTest(unittest.TestCase):
     def testModbusConnectedRequestHandlerSend(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusConnectedRequestHandler
-        handler.framer  = Mock()
+        handler.framer = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
         request = ReadCoilsResponse([1])
@@ -187,13 +192,14 @@ class SynchronousServerTest(unittest.TestCase):
         handler.framer  = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
+        handler.socket = Mock()
         request = ReadCoilsResponse([1])
         handler.send(request)
-        self.assertEqual(handler.request.sendto.call_count, 1)
+        self.assertEqual(handler.socket.sendto.call_count, 1)
 
         request.should_respond = False
         handler.send(request)
-        self.assertEqual(handler.request.sendto.call_count, 1)
+        self.assertEqual(handler.socket.sendto.call_count, 1)
 
     def testModbusDisconnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)

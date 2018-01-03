@@ -17,12 +17,14 @@ class RemoteSlaveContext(IModbusSlaveContext):
     a remote device (depending on the client used)
     '''
 
-    def __init__(self, client):
+    def __init__(self, client, unit=None):
         ''' Initializes the datastores
 
         :param client: The client to retrieve values with
+        :param unit: Unit ID of the remote slave
         '''
         self._client = client
+        self.unit = unit
         self.__build_mapping()
 
     def reset(self):
@@ -77,17 +79,20 @@ class RemoteSlaveContext(IModbusSlaveContext):
         A quick helper method to build the function
         code mapper.
         '''
+        kwargs = {}
+        if self.unit:
+            kwargs["unit"] = self.unit
         self.__get_callbacks = {
-            'd': lambda a, c: self._client.read_discrete_inputs(a, c),
-            'c': lambda a, c: self._client.read_coils(a, c),
-            'h': lambda a, c: self._client.read_holding_registers(a, c),
-            'i': lambda a, c: self._client.read_input_registers(a, c),
+            'd': lambda a, c: self._client.read_discrete_inputs(a, c, **kwargs),
+            'c': lambda a, c: self._client.read_coils(a, c, **kwargs),
+            'h': lambda a, c: self._client.read_holding_registers(a, c, **kwargs),
+            'i': lambda a, c: self._client.read_input_registers(a, c, **kwargs),
         }
         self.__set_callbacks = {
-            'd': lambda a, v: self._client.write_coils(a, v),
-            'c': lambda a, v: self._client.write_coils(a, v),
-            'h': lambda a, v: self._client.write_registers(a, v),
-            'i': lambda a, v: self._client.write_registers(a, v),
+            'd': lambda a, v: self._client.write_coils(a, v, **kwargs),
+            'c': lambda a, v: self._client.write_coils(a, v, **kwargs),
+            'h': lambda a, v: self._client.write_registers(a, v, **kwargs),
+            'i': lambda a, v: self._client.write_registers(a, v, **kwargs),
         }
 
     def __extract_result(self, fx, result):

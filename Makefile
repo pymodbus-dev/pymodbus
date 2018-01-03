@@ -16,7 +16,8 @@ default:
 	@echo '    make check      check coding style (PEP-8, PEP-257)'
 	@echo '    make test       run the test suite, report coverage'
 	@echo '    make tox        run the tests on all Python versions'
-	@echo '    make clean      cleanup all temporary files'
+	@echo '    make docs        creates sphinx documentation in html'
+	@echo '    make clean        cleanup all temporary files'
 	@echo
 
 install:
@@ -45,8 +46,8 @@ tox: install
 	@pip install --quiet tox && tox
 
 docs: install
-	@pip install --quiet sphinx
-	@cd doc/sphinx && sphinx-build -nb html -d doctrees . html
+	@pip install --quiet --requirement=requirements-docs.txt
+	@cd doc && make html
 
 publish: install
 	git push origin && git push --tags origin
@@ -57,8 +58,8 @@ publish: install
 	$(MAKE) clean
 
 clean:
-	@rm -Rf *.egg .cache .coverage .tox build dist docs/build htmlcov
-	@find -depth -type d -name __pycache__ -exec rm -Rf {} \;
-	@find -type f -name '*.pyc' -delete
+	@rm -Rf *.egg .eggs *.egg-info *.db .cache .coverage .tox build dist docs/build htmlcov doc/_build test/.Python test/pip-selfcheck.json test/lib/ test/include/ test/bin/
+	@find . -depth -type d -name __pycache__ -exec rm -Rf {} \;
+	@find . -type f -name '*.pyc' -delete
 
 .PHONY: default install reset check test tox docs publish clean

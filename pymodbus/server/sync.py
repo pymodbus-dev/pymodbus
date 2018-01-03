@@ -101,8 +101,16 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 data = self.request.recv(1024)
                 if data:
                     if _logger.isEnabledFor(logging.DEBUG):
-                        _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
-                    self.framer.processIncomingPacket(data, self.execute)
+                        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
+                    if isinstance(self.framer, ModbusAsciiFramer):
+                        unit_address = int(data[1:3], 16)
+                    elif isinstance(self.framer, ModbusBinaryFramer):
+                        unit_address = byte2int(data[1])
+                    else:
+                        unit_address = byte2int(data[0])
+
+                    if unit_address in self.server.context:
+                        self.framer.processIncomingPacket(data, self.execute)
             except Exception as msg:
                 # since we only have a single socket, we cannot exit
                 # Clear frame buffer
@@ -198,6 +206,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
     only difference is that we have to specify who to send the
     resulting packet data to.
     '''
+    socket = None
 
     def handle(self):
         ''' Callback when we receive any data
@@ -205,7 +214,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         reset_frame = False
         while self.running:
             try:
-                data, self.request = self.request
+                data, self.socket = self.request
                 if not data:
                     self.running = False
                 if _logger.isEnabledFor(logging.DEBUG):
@@ -236,7 +245,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.request.sendto(pdu, self.client_address)
+            return self.socket.sendto(pdu, self.client_address)
 
 
 #---------------------------------------------------------------------------#
@@ -270,13 +279,14 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
+        self.handler = handler or ModbusConnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingTCPServer.__init__(self,
-            self.address, ModbusConnectedRequestHandler)
+            self.address, self.handler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread
@@ -333,13 +343,14 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
+        self.handler = handler or ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingUDPServer.__init__(self,
-            self.address, ModbusDisconnectedRequestHandler)
+            self.address, self.handler)
 
     def process_request(self, request, client):
         ''' Callback for connecting a new client thread

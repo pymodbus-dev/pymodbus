@@ -30,7 +30,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         '''
         self.value  = 0xabcd
         self.values = [0xa, 0xb, 0xc]
-        builder = BinaryPayloadBuilder(endian=Endian.Big)
+        builder = BinaryPayloadBuilder(byteorder=Endian.Big)
         builder.add_16bit_uint(0x1234)
         self.payload = builder.build()
         self.write  = {

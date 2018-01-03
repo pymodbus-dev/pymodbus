@@ -36,7 +36,7 @@ def run_payload_server():
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(endian=Endian.Little)
+    builder = BinaryPayloadBuilder(byteorder=Endian.Little)
     # builder.add_string('abcdefgh')
     # builder.add_32bit_float(22.34)
     # builder.add_16bit_uint(4660)

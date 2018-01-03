@@ -5,6 +5,7 @@ Version 1.4.0
 * Bug fix serial servers with Modbus Binary Framer
 * Bug fix header size for ModbusBinaryFramer
 * Bug fix payload decoder with endian Little
+* Payload builder and decoder can now deal with the wordorder as well of 32/64 bit data.
 * Support Database slave contexts (SqlStore and RedisStore)
 * Custom handlers could be passed to Modbus TCP servers
 * Asynchronous Server could now be stopped when running on a seperate thread (StopServer)

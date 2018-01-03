@@ -185,14 +185,14 @@ class SunspecDecoder(BinaryPayloadDecoder):
     binary format.
     """
 
-    def __init__(self, payload, endian):
+    def __init__(self, payload, byteorder):
         """ Initialize a new instance of the SunspecDecoder
 
         .. note:: This is always set to big endian byte order
         as specified in the protocol.
         """
-        endian = Endian.Big
-        BinaryPayloadDecoder.__init__(self, payload, endian)
+        byteorder = Endian.Big
+        BinaryPayloadDecoder.__init__(self, payload, byteorder)
 
     def decode_string(self, size=1):
         """ Decodes a string from the buffer

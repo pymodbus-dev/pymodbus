@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 Payload Utilities Test Fixture
 --------------------------------
 This fixture tests the functionality of the payload
@@ -7,7 +7,7 @@ utilities.
 
 * PayloadBuilder
 * PayloadDecoder
-'''
+"""
 import unittest
 from pymodbus.exceptions import ParameterException
 from pymodbus.constants import Endian
@@ -18,15 +18,15 @@ from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 #---------------------------------------------------------------------------#
 class ModbusPayloadUtilityTests(unittest.TestCase):
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Setup/TearDown
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
 
     def setUp(self):
-        '''
+        """
         Initializes the test environment and builds request/result
         encoding pairs
-        '''
+        """
         self.little_endian_payload = \
                        b'\x01\x02\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00' \
                        b'\x00\x00\x00\xff\xfe\xff\xfd\xff\xff\xff\xfc\xff' \
@@ -44,16 +44,17 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.bitstring = [True, False, False, False, True, False, False, False]
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         pass
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Payload Builder Tests
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
 
     def testLittleEndianPayloadBuilder(self):
-        ''' Test basic bit message encoding/decoding '''
-        builder = BinaryPayloadBuilder(endian=Endian.Little)
+        """ Test basic bit message encoding/decoding """
+        builder = BinaryPayloadBuilder(byteorder=Endian.Little,
+                                       wordorder=Endian.Little)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
         builder.add_32bit_uint(3)
@@ -70,8 +71,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(self.little_endian_payload, builder.to_string())
 
     def testBigEndianPayloadBuilder(self):
-        ''' Test basic bit message encoding/decoding '''
-        builder = BinaryPayloadBuilder(endian=Endian.Big)
+        """ Test basic bit message encoding/decoding """
+        builder = BinaryPayloadBuilder(byteorder=Endian.Big)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
         builder.add_32bit_uint(3)
@@ -88,7 +89,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(self.big_endian_payload, builder.to_string())
 
     def testPayloadBuilderReset(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         builder = BinaryPayloadBuilder()
         builder.add_8bit_uint(0x12)
         builder.add_8bit_uint(0x34)
@@ -101,24 +102,26 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual([], builder.build())
 
     def testPayloadBuilderWithRawPayload(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'])
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([13330, 30806], builder.to_registers())
 
         builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'],
-                                       endian=Endian.Big)
+                                       byteorder=Endian.Big)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([4660, 22136], builder.to_registers())
         self.assertEqual('\x12\x34\x56\x78', str(builder))
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Payload Decoder Tests
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
 
     def testLittleEndianPayloadDecoder(self):
-        ''' Test basic bit message encoding/decoding '''
-        decoder = BinaryPayloadDecoder(self.little_endian_payload, endian=Endian.Little)
+        """ Test basic bit message encoding/decoding """
+        decoder = BinaryPayloadDecoder(self.little_endian_payload, 
+                                       byteorder=Endian.Little,
+                                       wordorder=Endian.Little)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
         self.assertEqual(3,      decoder.decode_32bit_uint())
@@ -134,8 +137,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
     def testBigEndianPayloadDecoder(self):
-        ''' Test basic bit message encoding/decoding '''
-        decoder = BinaryPayloadDecoder(self.big_endian_payload, endian=Endian.Big)
+        """ Test basic bit message encoding/decoding """
+        decoder = BinaryPayloadDecoder(self.big_endian_payload, 
+                                       byteorder=Endian.Big)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
         self.assertEqual(3,      decoder.decode_32bit_uint())
@@ -151,7 +155,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
     def testPayloadDecoderReset(self):
-        ''' Test the payload decoder reset functionality '''
+        """ Test the payload decoder reset functionality """
         decoder = BinaryPayloadDecoder(b'\x12\x34')
         self.assertEqual(0x12, decoder.decode_8bit_uint())
         self.assertEqual(0x34, decoder.decode_8bit_uint())
@@ -159,13 +163,13 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(0x3412, decoder.decode_16bit_uint())
 
     def testPayloadDecoderRegisterFactory(self):
-        ''' Test the payload decoder reset functionality '''
+        """ Test the payload decoder reset functionality """
         payload = [1, 2, 3, 4]
-        decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Little)
+        decoder = BinaryPayloadDecoder.fromRegisters(payload, byteorder=Endian.Little)
         encoded = b'\x00\x01\x00\x02\x00\x03\x00\x04'
         self.assertEqual(encoded, decoder.decode_string(8))
 
-        decoder = BinaryPayloadDecoder.fromRegisters(payload, endian=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(payload, byteorder=Endian.Big)
         encoded = b'\x00\x01\x00\x02\x00\x03\x00\x04'
         self.assertEqual(encoded, decoder.decode_string(8))
 
@@ -173,13 +177,13 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
             lambda: BinaryPayloadDecoder.fromRegisters('abcd'))
 
     def testPayloadDecoderCoilFactory(self):
-        ''' Test the payload decoder reset functionality '''
+        """ Test the payload decoder reset functionality """
         payload = [1,0,0,0, 1,0,0,0, 0,0,0,1, 0,0,0,1]
-        decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Little)
+        decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.Little)
         encoded = b'\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 
-        decoder = BinaryPayloadDecoder.fromCoils(payload, endian=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.Big)
         encoded = b'\x11\x88'
         self.assertEqual(encoded, decoder.decode_string(2))
 

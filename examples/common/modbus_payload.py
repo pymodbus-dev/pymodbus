@@ -40,18 +40,47 @@ def run_binary_payload_ex():
     # - another 16 bit unsigned int 0x5678
     # - an 8 bit int 0x12
     # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
+    # - an 32 bit uint 0x12345678
+    # - an 32 bit signed int -0x1234
+    # - an 64 bit signed int 0x12345678
+
+    # The packing can also be applied to the word (wordorder) and bytes in each
+    # word (byteorder)
+
+    # The wordorder is applicable only for 32 and 64 bit values
+    # Lets say we need to write a value 0x12345678 to a 32 bit register
+
+    # The following combinations could be used to write the register
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+    # Word Order - Big                      Byte Order - Big
+    # word1 =0x1234 word2 = 0x5678
+
+    # Word Order - Big                      Byte Order - Little
+    # word1 =0x3412 word2 = 0x7856
+
+    # Word Order - Little                   Byte Order - Big
+    # word1 = 0x5678 word2 = 0x1234
+
+    # Word Order - Little                   Byte Order - Little
+    # word1 =0x7856 word2 = 0x3412
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(endian=Endian.Little)
+    builder = BinaryPayloadBuilder(byteorder=Endian.Little,
+                                   wordorder=Endian.Big)
     builder.add_string('abcdefgh')
     builder.add_32bit_float(22.34)
     builder.add_16bit_uint(0x1234)
     builder.add_16bit_uint(0x5678)
     builder.add_8bit_int(0x12)
-    builder.add_bits([0,1,0,1,1,0,1,0])
+    builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+    builder.add_32bit_uint(0x12345678)
+    builder.add_32bit_int(-0x1234)
+    builder.add_64bit_int(0x1234567890ABCDEF)
     payload = builder.build()
     address = 0
-    result = client.write_registers(address, payload, skip_encode=True, unit=1)
-    
+    client.write_registers(address, payload, skip_encode=True, unit=1)
     # ----------------------------------------------------------------------- #
     # If you need to decode a collection of registers in a weird layout, the
     # payload decoder can help you as well.
@@ -69,8 +98,14 @@ def run_binary_payload_ex():
     address = 0x00
     count = len(payload)
     result = client.read_holding_registers(address, count,  unit=1)
-    decoder = BinaryPayloadDecoder.fromRegisters(result.registers, 
-                                                 endian=Endian.Little)
+    print("-" * 60)
+    print("Registers")
+    print("-" * 60)
+    print(result.registers)
+    print("\n")
+    decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
+                                                 byteorder=Endian.Little,
+                                                 wordorder=Endian.Big)
     decoded = {
         'string': decoder.decode_string(8),
         'float': decoder.decode_32bit_float(),
@@ -78,6 +113,9 @@ def run_binary_payload_ex():
         'ignored': decoder.skip_bytes(2),
         '8int': decoder.decode_8bit_int(),
         'bits': decoder.decode_bits(),
+        "32uints": decoder.decode_32bit_uint(),
+        "32ints": decoder.decode_32bit_int(),
+        "64ints": decoder.decode_64bit_int(),
     }
     
     print("-" * 60)

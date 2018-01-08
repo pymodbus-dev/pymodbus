@@ -3,21 +3,21 @@ import time
 from subprocess import Popen as execute
 from twisted.internet.defer import Deferred
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 # configure the client logging
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
 import logging
 log = logging.getLogger(__name__)
 
 class ContextRunner(object):
-    '''
+    """
     This is the base runner class for all the integration tests
-    '''
+    """
     __bit_functions = [2,1] # redundant are removed for now
     __reg_functions = [4,3] # redundant are removed for now
 
     def initialize(self, service=None):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         if service:
             self.fnull   = open(os.devnull, 'w')
             self.service = execute(service, stdout=self.fnull, stderr=self.fnull)
@@ -27,7 +27,7 @@ class ContextRunner(object):
         log.debug("%s context started", self.context)
 
     def shutdown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         try:
             if self.service:
                 self.service.kill()
@@ -37,7 +37,7 @@ class ContextRunner(object):
         log.debug("%s context stopped" % self.context)
 
     def testDataContextRegisters(self):
-        ''' Test that the context gets and sets registers '''
+        """ Test that the context gets and sets registers """
         address = 10
         values = [0x1234] * 32
         for fx in self.__reg_functions:
@@ -47,7 +47,7 @@ class ContextRunner(object):
             self.assertEquals(result, values)
 
     def testDataContextDiscretes(self):
-        ''' Test that the context gets and sets discretes '''
+        """ Test that the context gets and sets discretes """
         address = 10
         values = [True] * 32
         for fx in self.__bit_functions:

@@ -1,4 +1,4 @@
-'''
+"""
 Given a modbus mapping file, this is used to generate
 decoder blocks so that non-programmers can define the
 register values and then decode a modbus device all
@@ -45,26 +45,32 @@ populated slave contexts that can be run behing a modbus server::
     slave_context = modbus_context_decoder(raw_mapping)
     context = ModbusServerContext(slaves=slave_context, single=True)
     StartTcpServer(context)
-'''
+"""
 import csv
 import json
 from collections import defaultdict
-from StringIO import StringIO
+
 from tokenize import generate_tokens
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.datastore.store import ModbusSparseDataBlock
+from pymodbus.compat import IS_PYTHON3
 from pymodbus.datastore.context import ModbusSlaveContext
+if IS_PYTHON3:
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
-
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # raw mapping input parsers
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # These generate the raw mapping_blocks from some form of input
 # which can then be passed to the decoder in question to supply
 # the requested output result.
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- #
+
+
 def csv_mapping_parser(path, template):
-    ''' Given a csv file of the the mapping data for
+    """ Given a csv file of the the mapping data for
     a modbus device, return a mapping layout that can
     be used to decode an new block.
 
@@ -79,7 +85,7 @@ def csv_mapping_parser(path, template):
     :param path: The path to the csv input file
     :param template: The row value template
     :returns: The decoded csv dictionary
-    '''
+    """
     mapping_blocks = defaultdict(dict)
     with open(path, 'r') as handle:
         reader = csv.reader(handle)
@@ -93,7 +99,7 @@ def csv_mapping_parser(path, template):
 
 
 def json_mapping_parser(path, template):
-    ''' Given a json file of the the mapping data for
+    """ Given a json file of the the mapping data for
     a modbus device, return a mapping layout that can
     be used to decode an new block.
 
@@ -113,7 +119,7 @@ def json_mapping_parser(path, template):
     :param path: The path to the csv input file
     :param template: The row value template
     :returns: The decoded csv dictionary
-    '''
+    """
     mapping_blocks = {}
     with open(path, 'r') as handle:
         for tid, rows in json.load(handle).iteritems():
@@ -126,7 +132,7 @@ def json_mapping_parser(path, template):
 
 
 def xml_mapping_parser(path):
-    ''' Given an xml file of the the mapping data for
+    """ Given an xml file of the the mapping data for
     a modbus device, return a mapping layout that can
     be used to decode an new block.
 
@@ -135,18 +141,18 @@ def xml_mapping_parser(path):
 
     :param path: The path to the xml input file
     :returns: The decoded csv dictionary
-    '''
+    """
     pass
 
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # modbus context decoders
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # These are used to decode a raw mapping_block into a slave context with
 # populated function data blocks.
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 def modbus_context_decoder(mapping_blocks):
-    ''' Given a mapping block input, generate a backing
+    """ Given a mapping block input, generate a backing
     slave context with initialized data blocks.
 
     .. note:: This expects the following for each block:
@@ -156,7 +162,7 @@ def modbus_context_decoder(mapping_blocks):
 
     :param mapping_blocks: The mapping blocks
     :returns: The initialized modbus slave context
-    '''
+    """
     blocks = defaultdict(dict)
     for block in mapping_blocks.itervalues():
         for mapping in block.itervalues():
@@ -167,15 +173,15 @@ def modbus_context_decoder(mapping_blocks):
     return ModbusSlaveContext(**blocks)
 
 
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # modbus mapping decoder
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 # These are used to decode a raw mapping_block into a request decoder.
 # So this allows one to simply grab a number of registers, and then
 # pass them to this decoder which will do the rest.
-#---------------------------------------------------------------------------# 
+# --------------------------------------------------------------------------- # 
 class ModbusTypeDecoder(object):
-    ''' This is a utility to determine the correct
+    """ This is a utility to determine the correct
     decoder to use given a type name. By default this
     supports all the types available in the default modbus
     decoder, however this can easily be extended this class
@@ -189,10 +195,10 @@ class ModbusTypeDecoder(object):
             def parse_my_bitfield(self, tokens):
                 return lambda d: d.decode_my_type()
 
-    '''
+    """
     def __init__(self):
-        ''' Initializes a new instance of the decoder
-        '''
+        """ Initializes a new instance of the decoder
+        """
         self.default = lambda m: self.parse_16bit_uint
         self.parsers = {
             'uint':    self.parse_16bit_uint,
@@ -212,68 +218,80 @@ class ModbusTypeDecoder(object):
             'bits':    self.parse_bits,
         }
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------ #
     # Type parsers
-    #------------------------------------------------------------
-    def parse_string(self, tokens):
+    # ------------------------------------------------------------ #
+    @staticmethod
+    def parse_string(tokens):
         _ = tokens.next()
         size = int(tokens.next())
         return lambda d: d.decode_string(size=size)
 
-    def parse_bits(self, tokens):
+    @staticmethod
+    def parse_bits(tokens):
         return lambda d: d.decode_bits()
 
-    def parse_8bit_uint(self, tokens):
+    @staticmethod
+    def parse_8bit_uint(tokens):
         return lambda d: d.decode_8bit_uint()
 
-    def parse_16bit_uint(self, tokens):
+    @staticmethod
+    def parse_16bit_uint(tokens):
         return lambda d: d.decode_16bit_uint()
 
-    def parse_32bit_uint(self, tokens):
+    @staticmethod
+    def parse_32bit_uint(tokens):
         return lambda d: d.decode_32bit_uint()
 
-    def parse_64bit_uint(self, tokens):
+    @staticmethod
+    def parse_64bit_uint(tokens):
         return lambda d: d.decode_64bit_uint()
 
-    def parse_8bit_int(self, tokens):
+    @staticmethod
+    def parse_8bit_int(tokens):
         return lambda d: d.decode_8bit_int()
 
-    def parse_16bit_int(self, tokens):
+    @staticmethod
+    def parse_16bit_int(tokens):
         return lambda d: d.decode_16bit_int()
 
-    def parse_32bit_int(self, tokens):
+    @staticmethod
+    def parse_32bit_int(tokens):
         return lambda d: d.decode_32bit_int()
 
-    def parse_64bit_int(self, tokens):
+    @staticmethod
+    def parse_64bit_int(tokens):
         return lambda d: d.decode_64bit_int()
 
-    def parse_32bit_float(self, tokens):
+    @staticmethod
+    def parse_32bit_float(tokens):
         return lambda d: d.decode_32bit_float()
 
-    def parse_64bit_float(self, tokens):
+    @staticmethod
+    def parse_64bit_float(tokens):
         return lambda d: d.decode_64bit_float()
 
     #------------------------------------------------------------
     # Public Interface
     #------------------------------------------------------------
     def tokenize(self, value):
-        ''' Given a value, return the tokens
+        """ Given a value, return the tokens
     
         :param value: The value to tokenize
         :returns: A token generator
-        '''
+        """
         tokens = generate_tokens(StringIO(value).readline)
         for toknum, tokval, _, _, _ in tokens:
             yield tokval
 
     def parse(self, value):
-        ''' Given a type value, return a function
+        """ Given a type value, return a function
         that supplied with a decoder, will decode
         the correct value.
 
         :param value: The type of value to parse
         :returns: The decoder method to use
-        '''
+        """
         tokens = self.tokenize(value)
         token  = tokens.next().lower()
         parser = self.parsers.get(token, self.default)
@@ -281,17 +299,15 @@ class ModbusTypeDecoder(object):
 
 
 def mapping_decoder(mapping_blocks, decoder=None):
-    ''' Given the raw mapping blocks, convert
+    """ Given the raw mapping blocks, convert
     them into modbus value decoder map.
 
     :param mapping_blocks: The mapping blocks
     :param decoder: The type decoder to use
-    '''
+    """
     decoder = decoder or ModbusTypeDecoder()
     for block in mapping_blocks.itervalues():
         for mapping in block.itervalues():
             mapping['address'] = int(mapping['address'])
-            mapping['size']    = int(mapping['size'])
-            mapping['type']    = decoder.parse(mapping['type'])
-
-
+            mapping['size'] = int(mapping['size'])
+            mapping['type'] = decoder.parse(mapping['type'])

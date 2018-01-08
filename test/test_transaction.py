@@ -3,8 +3,16 @@ import unittest
 from binascii import a2b_hex
 from pymodbus.pdu import *
 from pymodbus.transaction import *
+from pymodbus.transaction import (
+    ModbusTransactionManager, ModbusSocketFramer, ModbusAsciiFramer,
+    ModbusRtuFramer, ModbusBinaryFramer
+)
 from pymodbus.factory import ServerDecoder
 from pymodbus.compat import byte2int
+from mock import MagicMock
+from pymodbus.exceptions import (
+    NotImplementedException, ModbusIOException, InvalidMessageRecievedException
+)
 
 class ModbusTransactionTest(unittest.TestCase):
     '''
@@ -24,6 +32,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._binary  = ModbusBinaryFramer(decoder=self.decoder)
         self._manager = DictTransactionManager(self.client)
         self._queue_manager = FifoTransactionManager(self.client)
+        self._tm = ModbusTransactionManager(self.client)
 
     def tearDown(self):
         ''' Cleans up the test environment '''
@@ -175,7 +184,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(b'', result)
         self._tcp.advanceFrame()
         self._tcp.addToFrame(msg2)
-        self.assertEqual(10, len(self._tcp._ModbusSocketFramer__buffer))
+        self.assertEqual(10, len(self._tcp._buffer))
         self.assertTrue(self._tcp.checkFrame())
         result = self._tcp.getFrame()
         self.assertEqual(msg2[7:], result)
@@ -257,7 +266,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._rtu.populateHeader()
         self._rtu.populateResult(request)
 
-        header_dict = self._rtu._ModbusRtuFramer__header
+        header_dict = self._rtu._header
         self.assertEqual(len(msg), header_dict['len'])
         self.assertEqual(byte2int(msg[0]), header_dict['uid'])
         self.assertEqual(msg[-2:], header_dict['crc'])
@@ -282,6 +291,43 @@ class ModbusTransactionTest(unittest.TestCase):
         actual = self._rtu.addToFrame(message)
         result = self._rtu.checkFrame()
         self.assertTrue(result)
+
+    def testProcess(self):
+        class MockResult(object):
+            def __init__(self, code):
+                self.function_code = code
+
+        def mock_callback(self):
+            pass
+
+        mock_result = MockResult(code=0)
+        self._rtu.getRawFrame = self._rtu.getFrame = MagicMock()
+        self._rtu.decoder = MagicMock()
+        self._rtu.decoder.decode = MagicMock(return_value=mock_result)
+        self._rtu.populateResult = MagicMock()
+        self._rtu.advanceFrame = MagicMock()
+
+        self._rtu._process(mock_callback)
+        self._rtu.populateResult.assert_called_with(mock_result)
+        self._rtu.advanceFrame.assert_called_with()
+        self.assertTrue(self._rtu.advanceFrame.called)
+
+        #Check errors
+        self._rtu.decoder.decode = MagicMock(return_value=None)
+        self.assertRaises(ModbusIOException, lambda: self._rtu._process(mock_callback))
+
+    def testRTUProcessIncomingPAkcets(self):
+        mock_data = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
+
+        def mock_callback(self):
+            pass
+
+        self._rtu.addToFrame = MagicMock()
+        self._rtu._process = MagicMock()
+        self._rtu.isFrameReady = MagicMock(return_value=False)
+        self._rtu._buffer = mock_data
+
+        self._rtu.processIncomingPacket(mock_data, mock_callback)
 
     #---------------------------------------------------------------------------#
     # ASCII tests
@@ -342,6 +388,19 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 
+    def testAsciiProcessIncomingPakcets(self):
+        mock_data = msg = b':F7031389000A60\r\n'
+
+        def mock_callback(mock_data):
+            pass
+
+        self._ascii.processIncomingPacket(mock_data, mock_callback)
+
+        # Test failure:
+        self._ascii.checkFrame = MagicMock(return_value=False)
+        self._ascii.processIncomingPacket(mock_data, mock_callback)
+
+
     #---------------------------------------------------------------------------#
     # Binary tests
     #---------------------------------------------------------------------------#
@@ -400,6 +459,18 @@ class ModbusTransactionTest(unittest.TestCase):
         actual = self._binary.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
+
+    def testBinaryProcessIncomingPacket(self):
+        mock_data = b'\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d'
+
+        def mock_callback(mock_data):
+            pass
+
+        self._binary.processIncomingPacket(mock_data, mock_callback)
+
+        # Test failure:
+        self._binary.checkFrame = MagicMock(return_value=False)
+        self._binary.processIncomingPacket(mock_data, mock_callback)
 
 #---------------------------------------------------------------------------#
 # Main

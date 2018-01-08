@@ -7,46 +7,46 @@ The following is an example of how to use the synchronous modbus client
 implementation from pymodbus to perform the extended portions of the
 modbus protocol.
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the various server implementations
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 #from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # configure the client logging
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # choose the client you want
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # make sure to start an implementation to hit against. For this
 # you can use an existing device, the reference implementation in the tools
 # directory, or start a pymodbus server.
 #
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 client = ModbusClient(method='rtu', port="/dev/ttyp0")
 # client = ModbusClient('127.0.0.1', port=5020)
 client.connect()
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the extended messages to perform
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
 from pymodbus.mei_message import *
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # extra requests
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # If you are performing a request that is not available in the client
 # mixin, you have to perform the request like this instead::
 #
@@ -61,11 +61,11 @@ from pymodbus.mei_message import *
 #
 # What follows is a listing of all the supported methods. Feel free to
 # comment, uncomment, or modify each result set to match with your reference.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # information requests
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 rq = ReadDeviceInformationRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                             # not supported by reference
@@ -103,9 +103,9 @@ rr = client.execute(rq)
 #assert(rr.message_count == 0x00)               # test the number of messages
 #assert(len(rr.events) == 0x00)                 # test the number of events
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # diagnostic requests
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 rq = ReturnQueryDataRequest(unit=1)
 rr = client.execute(rq)
 # assert(rr == None)                             # not supported by reference
@@ -171,7 +171,7 @@ rq = GetClearModbusPlusRequest(unit=1)
 rr = client.execute(rq)
 #assert(rr == None)                            # not supported by reference
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # close the client
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 client.close()

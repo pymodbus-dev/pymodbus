@@ -128,6 +128,9 @@ class ModbusResponse(ModbusPDU):
         ''' Proxy to the lower level initializer '''
         ModbusPDU.__init__(self, **kwargs)
 
+    def isError(self):
+        return False if self.function_code < 0x80 else True
+
 
 #---------------------------------------------------------------------------#
 # Exception PDU's

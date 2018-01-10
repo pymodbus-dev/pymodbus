@@ -14,23 +14,23 @@ all transports will produce predictable or correct results (for example
 tcp transport with an RTU framer). However, please let us know of any
 success cases that are not documented!
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the modbus client and the framers
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # Import the modbus framer that you want
-# --------------------------------------------------------------------------- # 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 #from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 #from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 #from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the client logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 logging.basicConfig()
 log = logging.getLogger()
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     rq = client.write_coil(1, True)
     rr = client.read_coils(1,1)
-    assert(rq.function_code < 0x80)     # test that we are not an error
+    assert(rq.isError() is False)     # test that we are not an error
     assert(rr.bits[0] == True)          # test the expected value
 
     # ----------------------------------------------------------------------- #

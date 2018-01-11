@@ -14,6 +14,12 @@ from pymodbus.utilities  import checkCRC, computeCRC
 from pymodbus.utilities  import checkLRC, computeLRC
 from pymodbus.compat import iterkeys, imap, byte2int
 
+# Python 2 compatibility.
+try:
+    TimeoutError
+except NameError:
+    TimeoutError = socket.timeout
+
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
@@ -186,7 +192,7 @@ class ModbusTransactionManager(object):
                             # If no response being recived there
                             # is no point in conitnuing
                             break
-                    except (TimeoutError, SerialException):
+                    except (TimeoutError, socket.timeout, SerialException):
                         break
                 else:
                     break

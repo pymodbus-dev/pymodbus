@@ -12,7 +12,7 @@ from pymodbus.constants  import Defaults
 from pymodbus.interfaces import IModbusFramer
 from pymodbus.utilities  import checkCRC, computeCRC
 from pymodbus.utilities  import checkLRC, computeLRC
-from pymodbus.compat import iterkeys, imap, byte2int
+from pymodbus.compat import iterkeys, imap, byte2int, IS_PYTHON3
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -20,6 +20,10 @@ from pymodbus.compat import iterkeys, imap, byte2int
 import logging
 _logger = logging.getLogger(__name__)
 
+if IS_PYTHON3:
+    timeoutException = TimeoutError
+else:
+    timeoutException = socket.timeout
 
 #---------------------------------------------------------------------------#
 # The Global Transaction Manager
@@ -186,7 +190,7 @@ class ModbusTransactionManager(object):
                             # If no response being recived there
                             # is no point in conitnuing
                             break
-                    except (TimeoutError, SerialException):
+                    except (timeoutException, SerialException):
                         break
                 else:
                     break

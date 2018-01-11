@@ -26,13 +26,11 @@ from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.compat import  IS_PYTHON3
-
-
 # -------------------------------------------------------------------------- #
-# Logging
 # -------------------------------------------------------------------------- #
 import logging
 modbus_log = logging.getLogger("pymodbus")
+
 
 
 # -------------------------------------------------------------------------- #
@@ -145,6 +143,10 @@ def get_options():
     parser.add_option("-t", "--transaction",
                       help="If the incoming message is in hexadecimal format",
                       action="store_true", dest="transaction", default=False)
+
+    parser.add_option("-t", "--transaction",
+        help="If the incoming message is in hexadecimal format",
+        action="store_true", dest="transaction", default=False)
 
     parser.add_option("-t", "--transaction",
         help="If the incoming message is in hexadecimal format",

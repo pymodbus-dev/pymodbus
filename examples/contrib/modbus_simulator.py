@@ -76,8 +76,9 @@ class Configuration:
         :param config: The pickled datastore
         """
         try:
-            self.file = open(config, "r")
-        except Exception:
+            self.file = open(config, "rb")
+        except Exception as e:
+            _logger.critical(str(e))
             raise ConfigurationException("File not found %s" % config)
 
     def parse(self):
@@ -134,5 +135,5 @@ def main():
 if __name__ == "__main__":
     if root_test():
         main()
-    else: 
+    else:
         print("This script must be run as root!")

@@ -482,7 +482,7 @@ class ModbusSocketFramer(IModbusFramer):
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
-        elif error and result.function_code < 0x80:
+        elif error and result.isError() is False:
             raise InvalidMessageRecievedException(result)
         else:
             self.populateResult(result)
@@ -723,7 +723,7 @@ class ModbusRtuFramer(IModbusFramer):
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
-        elif error and result.function_code < 0x80:
+        elif error and result.isError() is False:
             raise InvalidMessageRecievedException(result)
         else:
             self.populateResult(result)

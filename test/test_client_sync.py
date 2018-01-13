@@ -220,7 +220,9 @@ class SynchronousClientTest(unittest.TestCase):
         mock_serial.read = lambda size: '\x00' * size
         client = ModbusSerialClient()
         client.socket = mock_serial
+        client.state = 0
         self.assertEqual(0, client._send(None))
+        client.state = 0
         self.assertEqual(1, client._send('\x00'))
         self.assertEqual('\x00', client._recv(1))
 
@@ -255,7 +257,9 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(ConnectionException, lambda: client._send(None))
         # client.connect()
         client.socket = mock_serial
+        client.state = 0
         self.assertEqual(0, client._send(None))
+        client.state = 0
         self.assertEqual(4, client._send('1234'))
 
     @patch("serial.Serial")
@@ -268,7 +272,9 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(ConnectionException, lambda: client._send(None))
         # client.connect()
         client.socket = mock_serial
+        client.state = 0
         self.assertEqual(0, client._send(None))
+        client.state = 0
         self.assertEqual(4, client._send('1234'))
 
     def testSerialClientRecv(self):

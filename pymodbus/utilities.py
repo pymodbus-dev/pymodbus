@@ -205,6 +205,16 @@ def rtuFrameSize(data, byte_count_pos):
     """
     return byte2int(data[byte_count_pos]) + byte_count_pos + 3
 
+
+def hexlify_packets(packet):
+    """
+    Returns hex representation of bytestring recieved
+    :param packet:
+    :return:
+    """
+    if not packet:
+        return ''
+    return " ".join([hex(byte2int(x)) for x in packet])
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #

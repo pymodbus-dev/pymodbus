@@ -9,6 +9,7 @@ from twisted.internet.protocol import ServerFactory
 from twisted.internet import reactor
 
 from pymodbus.constants import Defaults
+from pymodbus.utilities import hexlify_packets
 from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
@@ -57,9 +58,9 @@ class ModbusTcpProtocol(protocol.Protocol):
         :param data: The data sent by the client
         '''
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+            _logger.debug('Data Received: ' + hexlify_packets(data))
         if not self.factory.control.ListenOnly:
-            unit_address = byte2int(data[0])
+            unit_address = byte2int(data[6])
             if unit_address in self.factory.store:
                 self.framer.processIncomingPacket(data, self._execute)
 
@@ -163,7 +164,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         '''
         _logger.debug("Client Connected [%s]" % addr)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(" ".join([hex(byte2int(x)) for x in data]))
+            _logger.debug("Datagram Received: "+ hexlify_packets(data))
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
             self.framer.processIncomingPacket(data, continuation)

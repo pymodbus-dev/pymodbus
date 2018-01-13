@@ -1,3 +1,13 @@
+Version 1.5.0
+------------------------------------------------------------
+* Improve transaction speeds for sync clients (RTU/ASCII), now retry on empty happens only when retry_on_empty kwarg is passed to client during intialization
+
+`client = Client(..., retry_on_empty=True)`
+
+* Fix tcp servers (sync/async) not processing requests with transaction id > 255
+* Introduce new api to check if the received response is an error or not (response.isError())
+* Fix Misc examples
+
 Version 1.4.0
 ------------------------------------------------------------
 * Bug fix Modbus TCP client reading incomplete data

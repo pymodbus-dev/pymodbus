@@ -1,18 +1,20 @@
 '''
 Collection of transaction based abstractions
 '''
-import sys
 import struct
 import socket
 from binascii import b2a_hex, a2b_hex
 from serial import SerialException
+from threading import RLock
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
 from pymodbus.exceptions import InvalidMessageRecievedException
-from pymodbus.constants  import Defaults
+from pymodbus.constants import Defaults
 from pymodbus.interfaces import IModbusFramer
-from pymodbus.utilities  import checkCRC, computeCRC
-from pymodbus.utilities  import checkLRC, computeLRC
+from pymodbus.utilities import checkCRC, computeCRC
+from pymodbus.utilities import checkLRC, computeLRC
+from pymodbus.utilities import hexlify_packets
 from pymodbus.compat import iterkeys, imap, byte2int
+from pymodbus.client.common import ModbusTransactionState
 
 # Python 2 compatibility.
 try:
@@ -56,7 +58,9 @@ class ModbusTransactionManager(object):
         self.tid = Defaults.TransactionId
         self.client = client
         self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
-        self.retries = kwargs.get('retries', Defaults.Retries)
+        self.retries = kwargs.get('retries', Defaults.Retries) or 1
+        self._transaction_lock = RLock()
+        self._no_response_devices = []
         if client:
             self._set_adu_size()
 
@@ -111,95 +115,137 @@ class ModbusTransactionManager(object):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
         '''
-        retries = self.retries
-        request.transaction_id = self.getNextTID()
-        _logger.debug("Running transaction %d" % request.transaction_id)
-        self.client.framer.resetFrame()
-        expected_response_length = None
-        if not isinstance(self.client.framer, ModbusSocketFramer):
-            if hasattr(request, "get_response_pdu_size"):
-                response_pdu_size = request.get_response_pdu_size()
-                if isinstance(self.client.framer, ModbusAsciiFramer):
-                    response_pdu_size = response_pdu_size * 2
-                if response_pdu_size:
-                    expected_response_length = self._calculate_response_length(response_pdu_size)
-
-        while retries > 0:
-            try:
-                last_exception = None
-                self.client.connect()
-                packet = self.client.framer.buildPacket(request)
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
-                self._send(packet)
-                # exception = False
-                result = self._recv(expected_response_length or 1024)
-
-                if not result and self.retry_on_empty:
-                    retries -= 1
-                    continue
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in result]))
-                self.client.framer.processIncomingPacket(result, self.addTransaction)
-                break
-            except (socket.error, ModbusIOException, InvalidMessageRecievedException) as msg:
-                self.client.close()
-                _logger.debug("Transaction failed. (%s) " % msg)
-                retries -= 1
-                last_exception = msg
-        response = self.getTransaction(request.transaction_id)
-        if not response:
-            if len(self.transactions):
-                response = self.getTransaction(tid=0)
+        with self._transaction_lock:
+            retries = self.retries
+            request.transaction_id = self.getNextTID()
+            _logger.debug("Running transaction %d" % request.transaction_id)
+            _buffer = hexlify_packets(self.client.framer._buffer)
+            _logger.debug("Current Frame : - {}".format(_buffer))
+            expected_response_length = None
+            if not isinstance(self.client.framer, ModbusSocketFramer):
+                if hasattr(request, "get_response_pdu_size"):
+                    response_pdu_size = request.get_response_pdu_size()
+                    if isinstance(self.client.framer, ModbusAsciiFramer):
+                        response_pdu_size = response_pdu_size * 2
+                    if response_pdu_size:
+                        expected_response_length = self._calculate_response_length(response_pdu_size)
+            if request.unit_id in self._no_response_devices:
+                full = True
             else:
-                last_exception = last_exception or ("No Response "
-                                                    "received from the remote unit")
-                response = ModbusIOException(last_exception)
+                full = False
+            response, last_exception = self._transact(request,
+                                                      expected_response_length,
+                                                      full=full
+                                                      )
+            if not response and (
+                    request.unit_id not in self._no_response_devices):
+                self._no_response_devices.append(request.unit_id)
+            elif request.unit_id in self._no_response_devices:
+                self._no_response_devices.remove(request.unit_id)
+            if not response and self.retry_on_empty and retries:
+                while retries > 0:
+                    if hasattr(self.client, "state"):
+                        _logger.debug("RESETTING Transaction state to "
+                                      "'IDLE' for retry")
+                        self.client.state = ModbusTransactionState.IDLE
+                    _logger.debug("Retry on empty - {}".format(retries))
+                    response, last_exception = self._transact(
+                        request,
+                        expected_response_length
+                    )
+                    if not response:
+                        retries -= 1
+                        continue
+                    break
+            self.client.framer.processIncomingPacket(response,
+                                                     self.addTransaction)
+            response = self.getTransaction(request.transaction_id)
+            if not response:
+                if len(self.transactions):
+                    response = self.getTransaction(tid=0)
+                else:
+                    last_exception = last_exception or ("No Response received "
+                                                        "from the remote unit")
+                    response = ModbusIOException(last_exception)
+            if hasattr(self.client, "state"):
+                _logger.debug("Changing transaction state from "
+                              "'PROCESSING REPLY' to 'TRANSCATION_COMPLETE'")
+                self.client.state = ModbusTransactionState.TRANSCATION_COMPLETE
+            return response
 
-        return response
+    def _transact(self, packet, response_length, full=False):
+        """
+        Does a Write and Read transaction
+        :param packet: packet to be sent
+        :param response_length:  Expected response length
+        :param full: the target device was notorious for its no response. Dont
+            waste time this time by partial querying
+        :return: response
+        """
+        last_exception = None
+        try:
+            self.client.connect()
+            packet = self.client.framer.buildPacket(packet)
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug("send: " + hexlify_packets(packet))
+            self._send(packet)
+            result = self._recv(response_length or 1024, full)
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug("recv: " + hexlify_packets(result))
+        except (socket.error, ModbusIOException,
+                InvalidMessageRecievedException) as msg:
+            self.client.close()
+            _logger.debug("Transaction failed. (%s) " % msg)
+            last_exception = msg
+            result = b''
+        return result, last_exception
 
     def _send(self, packet):
         return self.client._send(packet)
 
-    def _recv(self, expected_response_length):
-        retries = self.retries
-        exception = False
-        while retries:
-            result = self.client._recv(expected_response_length or 1024)
-            while result and expected_response_length and len(
-                    result) < expected_response_length:
-                if not exception and not self._check_response(result):
-                    exception = True
-                    expected_response_length = self._calculate_exception_length()
-                    continue
+    def _recv(self, expected_response_length, full):
+        # retries = self.retries
+        # exception = False
+        expected_response_length = expected_response_length or 1024
+        if not full:
+            exception_length = self._calculate_exception_length()
+            if isinstance(self.client.framer, ModbusSocketFramer):
+                min_size = 8
+            elif isinstance(self.client.framer, ModbusRtuFramer):
+                min_size = 2
+            elif isinstance(self.client.framer, ModbusAsciiFramer):
+                min_size = 5
+            elif isinstance(self.client.framer, ModbusBinaryFramer):
+                min_size = 3
+            else:
+                min_size = expected_response_length
+
+            read_min = self.client._recv(min_size)
+            if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
-                    # Ommit UID, which is included in header size
-                    h_size = self.client.framer._hsize
-                    length = struct.unpack(">H", result[4:6])[0] -1
-                    expected_response_length = h_size + length
-
-                if expected_response_length != len(result):
-                    _logger.debug("Expected - {} bytes, "
-                                  "Actual - {} bytes".format(
-                        expected_response_length, len(result))
-                    )
-                    try:
-                        r = self.client._recv(
-                            expected_response_length - len(result)
-                        )
-                        result += r
-                        if not r:
-                            # If no response being recived there
-                            # is no point in conitnuing
-                            break
-                    except (TimeoutError, socket.timeout, SerialException):
-                        break
+                    func_code = byte2int(read_min[-1])
+                elif isinstance(self.client.framer, ModbusRtuFramer):
+                    func_code = byte2int(read_min[-1])
+                elif isinstance(self.client.framer, ModbusAsciiFramer):
+                    func_code = int(read_min[3:5], 16)
+                elif isinstance(self.client.framer, ModbusBinaryFramer):
+                    func_code = byte2int(read_min[-1])
                 else:
-                    break
+                    func_code = -1
 
-            if result:
-                break
-            retries -= 1
+                if func_code < 0x80:    # Not an error
+                    if isinstance(self.client.framer, ModbusSocketFramer):
+                        # Ommit UID, which is included in header size
+                        h_size = self.client.framer._hsize
+                        length = struct.unpack(">H", read_min[4:6])[0] - 1
+                        expected_response_length = h_size + length
+                    expected_response_length -= min_size
+                else:
+                    expected_response_length = exception_length - min_size
+        else:
+            read_min = b''
+        result = self.client._recv(expected_response_length)
+        result = read_min + result
         return result
 
     def addTransaction(self, request, tid=None):
@@ -466,7 +512,7 @@ class ModbusSocketFramer(IModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         '''
-        _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+        _logger.debug("Processing: "+ hexlify_packets(data))
         self.addToFrame(data)
         while True:
             if self.isFrameReady():
@@ -605,6 +651,7 @@ class ModbusRtuFramer(IModbusFramer):
         except KeyError:
             #   Error response, no header len found
             self.resetFrame()
+        _logger.debug("Frame advanced, resetting header!!")
         self._header = {}
 
     def resetFrame(self):
@@ -615,6 +662,8 @@ class ModbusRtuFramer(IModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         '''
+        _logger.debug("Resetting frame - Current Frame in "
+                      "buffer - {}".format(hexlify_packets(self._buffer)))
         self._buffer = b''
         self._header = {}
 
@@ -658,10 +707,12 @@ class ModbusRtuFramer(IModbusFramer):
 
         :returns: The frame data or ''
         '''
-        start  = self._hsize
-        end    = self._header['len'] - 2
+        start = self._hsize
+        end = self._header['len'] - 2
         buffer = self._buffer[start:end]
-        if end > 0: return buffer
+        if end > 0:
+            _logger.debug("Getting Frame - {}".format(hexlify_packets(buffer)))
+            return buffer
         return ''
 
     def populateResult(self, result):
@@ -740,6 +791,7 @@ class ModbusRtuFramer(IModbusFramer):
         """
         Returns the complete buffer
         """
+        _logger.debug("Getting Raw Frame - {}".format(self._buffer))
         return self._buffer
 
 
@@ -966,7 +1018,7 @@ class ModbusBinaryFramer(IModbusFramer):
         end = self._buffer.find(self._end)
         if (end != -1):
             self._header['len'] = end
-            self._header['uid'] = struct.unpack('>B', self._buffer[1:2])
+            self._header['uid'] = struct.unpack('>B', self._buffer[1:2])[0]
             self._header['crc'] = struct.unpack('>H', self._buffer[end - 2:end])[0]
             data = self._buffer[start + 1:end - 2]
             return checkCRC(data, self._header['crc'])

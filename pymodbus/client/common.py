@@ -15,6 +15,19 @@ from pymodbus.file_message import *
 from pymodbus.other_message import *
 
 
+class ModbusTransactionState(object):
+    """
+    Modbus Client States
+    """
+    IDLE = 0
+    SENDING = 1
+    WAITING_FOR_REPLY = 2
+    WAITING_TURNAROUND_DELAY = 3
+    PROCESSING_REPLY = 4
+    PROCESSING_ERROR = 5
+    TRANSCATION_COMPLETE = 6
+
+
 class ModbusClientMixin(object):
     '''
     This is a modbus client mixin that provides additional factory

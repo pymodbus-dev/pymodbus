@@ -113,7 +113,8 @@ class SynchronousServerTest(unittest.TestCase):
         handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
         # Ugly hack
-        handler.server.context = ModbusServerContext(slaves={18: None}, single=False)
+        handler.server.context = ModbusServerContext(slaves={-1: None},
+                                                     single=False)
         handler.handle()
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
@@ -181,7 +182,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler.request.recv.return_value = None
         handler.running = True
         handler.handle()
-        self.assertEqual(handler.framer.processIncomingPacket.call_count, 3)
+        self.assertEqual(handler.framer.processIncomingPacket.call_count, 4)
 
     #-----------------------------------------------------------------------#
     # Test Disconnected Request Handler
@@ -239,7 +240,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler.request = (None, handler.request)
         handler.running = True
         handler.handle()
-        self.assertEqual(handler.framer.processIncomingPacket.call_count, 3)
+        self.assertEqual(handler.framer.processIncomingPacket.call_count, 4)
 
     #-----------------------------------------------------------------------#
     # Test TCP Server

@@ -388,11 +388,11 @@ class ModbusSocketFramer(IModbusFramer):
             self._header['len'], self._header['uid'] = struct.unpack(
                     '>HHHB', self._buffer[0:self._hsize])
 
-            # someone sent us an error? ignore it
-            if self._header['len'] < 2:
-                self.advanceFrame()
+            # someone sent a partial frame, frame not ready
+            #if self._header['len'] < 2:
+            #    self.advanceFrame()
             # we have at least a complete message, continue
-            elif len(self._buffer) - self._hsize + 1 >= self._header['len']:
+            if len(self._buffer) - self._hsize + 1 >= self._header['len']:
                 return True
         # we don't have enough of a message yet, wait
         return False
@@ -406,6 +406,15 @@ class ModbusSocketFramer(IModbusFramer):
         length = self._hsize + self._header['len'] - 1
         self._buffer = self._buffer[length:]
         self._header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
+
+    def isFrameHeaderReady(self):
+        ''' Check if we should continue decode logic
+        This is meant to be used in a while loop in the decoding phase to let
+        the decoder factory know that there is still data in the buffer.
+
+        :returns: True if ready, False otherwise
+        '''
+        return len(self._buffer) > self._hsize
 
     def isFrameReady(self):
         ''' Check if we should continue decode logic
@@ -462,17 +471,8 @@ class ModbusSocketFramer(IModbusFramer):
         '''
         _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
         self.addToFrame(data)
-        while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    self._process(callback)
-                else: self.resetFrame()
-            else:
-                if len(self._buffer):
-                    # Possible error ???
-                    if self._header['len'] < 2:
-                        self._process(callback, error=True)
-                break
+        while self.isFrameHeaderReady() and self.checkFrame():
+            self._process(callback)
 
     def _process(self, callback, error=False):
         """
@@ -497,8 +497,9 @@ class ModbusSocketFramer(IModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         '''
+        _logger.debug("resetFrame()")
         self._buffer = b''
-        self._header = {}
+        self._header = {'tid':0, 'pid':0, 'len':0, 'uid':0}
 
     def getRawFrame(self):
         """

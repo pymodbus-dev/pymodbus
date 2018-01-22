@@ -219,6 +219,154 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 
+    def testTCPProcessPackets01(self):
+        '''
+        Test an incoming write single coil hi frame, split in header
+        '''
+        mock_datas = [b"\x00\x00\x00\x00\x00\x06",b"\xfc\x05\x00\x03\xff\x00"]
+        expected_pdus = [b"\x05\x00\x03\xff\x00"]
+
+        class resultStore():
+            def __init__(self):
+                self.results=[]
+
+            def mock_callback(self,result_pdu):
+                self.results.append(result_pdu)
+
+        actual = resultStore()
+
+        def mock__process(callback):
+            callback(self._tcp.getFrame())
+            self._tcp.advanceFrame()
+
+        self._tcp._process = mock__process
+
+        self._tcp.resetFrame()
+        for mock_chunk in mock_datas:
+            self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
+
+        self.assertCountEqual(actual.results,expected_pdus)
+
+    def testTCPProcessPackets02(self):
+        '''
+        Test an incoming write single coil hi frame, split in data
+        '''
+        mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00",b"\x03\xff\x00"]
+        expected_pdus = [b"\x05\x00\x03\xff\x00"]
+
+        class resultStore():
+            def __init__(self):
+                self.results=[]
+
+            def mock_callback(self,result_pdu):
+                self.results.append(result_pdu)
+
+        actual = resultStore()
+
+        def mock__process(callback):
+            callback(self._tcp.getFrame())
+            self._tcp.advanceFrame()
+
+        self._tcp._process = mock__process
+
+        self._tcp.resetFrame()
+        for mock_chunk in mock_datas:
+            self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
+
+        self.assertCountEqual(actual.results,expected_pdus)
+
+    def testTCPProcessPackets03(self):
+        '''
+        Test two appended incoming write single coil frames
+        '''
+        mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00\x03\xff\x00\x00\x01\x00\x00\x00\x06\xfc\x05\x00\x07\x00\x00"]
+        expected_pdus = [b"\x05\x00\x03\xff\x00",b"\x05\x00\x07\x00\x00"]
+
+        class resultStore():
+            def __init__(self):
+                self.results=[]
+
+            def mock_callback(self,result_pdu):
+                self.results.append(result_pdu)
+
+        actual = resultStore()
+
+        def mock__process(callback):
+            callback(self._tcp.getFrame())
+            self._tcp.advanceFrame()
+
+        self._tcp._process = mock__process
+
+        self._tcp.resetFrame()
+        for mock_chunk in mock_datas:
+            self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
+
+        self.assertCountEqual(actual.results,expected_pdus)
+
+    def testTCPProcessPackets04(self):
+        '''
+        Test two appended frames, read coils and write registers, fragmented in 2nd frame header
+        '''
+        #mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00\x03\xff\x00",b"\x00\x01\x00\x00\x00\x06\xfc\x05\x00\x07\x00\x00"]
+        mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x01\x00\x02\x00\x03\x00\x01\x00",
+                b"\x00\x00\x0b\xfc\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
+        expected_pdus = [b"\x01\x00\x02\x00\x03",b"\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
+
+        class resultStore():
+            def __init__(self):
+                self.results=[]
+
+            def mock_callback(self,result_pdu):
+                self.results.append(result_pdu)
+
+        actual = resultStore()
+
+        def mock__process(callback):
+            callback(self._tcp.getFrame())
+            self._tcp.advanceFrame()
+
+        self._tcp._process = mock__process
+
+        self._tcp.resetFrame()
+        for mock_chunk in mock_datas:
+            self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
+
+        self.assertCountEqual(actual.results,expected_pdus)
+
+    def testTCPProcessPackets05(self):
+        '''
+        Test two frames, read coils and write registers, with junk bytes following the first frame
+        Test will currently fail
+        '''
+        #mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00\x03\xff\x00",b"\x00\x01\x00\x00\x00\x06\xfc\x05\x00\x07\x00\x00"]
+        mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x01\x00\x02\x00\x03",b"\xe0\xdf\x09",
+                b"\x00\x01\x00\x00\x00\x0b\xfc\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
+        expected_pdus = [b"\x01\x00\x02\x00\x03",b"\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
+
+        class resultStore():
+            def __init__(self):
+                self.results=[]
+
+            def mock_callback(self,result_pdu):
+                self.results.append(result_pdu)
+
+        actual = resultStore()
+
+        def mock__process(callback):
+            callback(self._tcp.getFrame())
+            self._tcp.advanceFrame()
+
+        self._tcp._process = mock__process
+
+        self._tcp.resetFrame()
+        for mock_chunk in mock_datas:
+            self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
+
+        print("expected: {}".format(expected_pdus))
+        print("actual  : {}".format(actual.results))
+
+        self.assertCountEqual(actual.results,expected_pdus)
+
     #---------------------------------------------------------------------------#
     # RTU tests
     #---------------------------------------------------------------------------#

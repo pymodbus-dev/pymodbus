@@ -659,7 +659,8 @@ class AsyncioModbusSerialClient(object):
     transport = None
     framer = None
 
-    def __init__(self, port, protocol_class=None, framer=None,  loop=None):
+    def __init__(self, port, protocol_class=None, framer=None,  loop=None,
+                 baudrate=9600, bytesize=8, parity='E', stopbits=1):
         """
         Initializes Asyncio Modbus Serial Client
         :param port: Port to connect
@@ -674,6 +675,10 @@ class AsyncioModbusSerialClient(object):
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
         self.port = port
+        self.baudrate = baudrate
+        self.bytesize = bytesize
+        self.parity = parity
+        self.stopbits = stopbits
         self.framer = framer
         self._connected = False
 
@@ -687,18 +692,6 @@ class AsyncioModbusSerialClient(object):
                 if self.protocol.transport:
                     self.protocol.transport.close()
 
-    def _create_protocol(self):
-        """
-        Factory function to create initialized protocol instance.
-        """
-        from serial_asyncio import create_serial_connection
-
-        def factory():
-            return self.protocol_class(framer=self.framer)
-
-        cor = create_serial_connection(self.loop, factory, self.port)
-        return cor
-
     @asyncio.coroutine
     def connect(self):
         """
@@ -707,11 +700,18 @@ class AsyncioModbusSerialClient(object):
         """
         _logger.debug('Connecting.')
         try:
-            yield from self.loop.create_connection(self._create_protocol)
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+            from serial_asyncio import create_serial_connection
+
+            def factory():
+                return self.protocol_class(framer=self.framer)
+
+            yield from create_serial_connection(
+                self.loop, factory, self.port, baudrate=self.baudrate,
+                bytesize=self.bytesize, stopbits=self.stopbits
+            )
+            _logger.info('Connected to %s', self.port)
         except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
-            # asyncio.async(self._reconnect(), loop=self.loop)
+            _logger.warning('Failed to connect: %s', ex)
 
     def protocol_made_connection(self, protocol):
         """

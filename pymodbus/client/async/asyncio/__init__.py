@@ -660,7 +660,7 @@ class AsyncioModbusSerialClient(object):
     framer = None
 
     def __init__(self, port, protocol_class=None, framer=None,  loop=None,
-                 baudrate=9600, bytesize=8, parity='E', stopbits=1):
+                 baudrate=9600, bytesize=8, parity='N', stopbits=1):
         """
         Initializes Asyncio Modbus Serial Client
         :param port: Port to connect

@@ -84,7 +84,7 @@ def async_io_factory(port=None, framer=None, **kwargs):
     Factory to create asyncio based async serial clients
     :param port:  Serial port
     :param framer: Modbus Framer
-    :param kwargs:
+    :param kwargs: Serial port options
     :return: asyncio event loop and serial client
     """
     import asyncio
@@ -101,8 +101,8 @@ def async_io_factory(port=None, framer=None, **kwargs):
         import sys
         sys.exit(1)
 
-    client = AsyncioModbusSerialClient(port, proto_cls, framer, loop)
-    coro = client._create_protocol()
+    client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
+    coro = client.connect()
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     client.transport = transport
     client.protocol = protocol

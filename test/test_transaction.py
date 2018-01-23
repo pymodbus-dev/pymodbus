@@ -307,7 +307,6 @@ class ModbusTransactionTest(unittest.TestCase):
         '''
         Test two appended frames, read coils and write registers, fragmented in 2nd frame header
         '''
-        #mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00\x03\xff\x00",b"\x00\x01\x00\x00\x00\x06\xfc\x05\x00\x07\x00\x00"]
         mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x01\x00\x02\x00\x03\x00\x01\x00",
                 b"\x00\x00\x0b\xfc\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
         expected_pdus = [b"\x01\x00\x02\x00\x03",b"\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
@@ -338,7 +337,6 @@ class ModbusTransactionTest(unittest.TestCase):
         Test two frames, read coils and write registers, with junk bytes following the first frame
         Test will currently fail
         '''
-        #mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x05\x00\x03\xff\x00",b"\x00\x01\x00\x00\x00\x06\xfc\x05\x00\x07\x00\x00"]
         mock_datas = [b"\x00\x00\x00\x00\x00\x06\xfc\x01\x00\x02\x00\x03",b"\xe0\xdf\x09",
                 b"\x00\x01\x00\x00\x00\x0b\xfc\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
         expected_pdus = [b"\x01\x00\x02\x00\x03",b"\x10\x00\x20\x00\x02\x04\x0a\x07\x10\xb4"]
@@ -361,9 +359,6 @@ class ModbusTransactionTest(unittest.TestCase):
         self._tcp.resetFrame()
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
-
-        print("expected: {}".format(expected_pdus))
-        print("actual  : {}".format(actual.results))
 
         self.assertCountEqual(actual.results,expected_pdus)
 

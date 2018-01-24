@@ -103,9 +103,7 @@ def async_io_factory(port=None, framer=None, **kwargs):
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
     coro = client.connect()
-    transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
-    client.transport = transport
-    client.protocol = protocol
+    loop.run_until_complete(coro)
     return loop, client
 
 

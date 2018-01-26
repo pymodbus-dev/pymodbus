@@ -116,62 +116,70 @@ class ModbusTransactionManager(object):
         consumer.write(Frame(request))
         '''
         with self._transaction_lock:
-            retries = self.retries
-            request.transaction_id = self.getNextTID()
-            _logger.debug("Running transaction %d" % request.transaction_id)
-            _buffer = hexlify_packets(self.client.framer._buffer)
-            _logger.debug("Current Frame : - {}".format(_buffer))
-            expected_response_length = None
-            if not isinstance(self.client.framer, ModbusSocketFramer):
-                if hasattr(request, "get_response_pdu_size"):
-                    response_pdu_size = request.get_response_pdu_size()
-                    if isinstance(self.client.framer, ModbusAsciiFramer):
-                        response_pdu_size = response_pdu_size * 2
-                    if response_pdu_size:
-                        expected_response_length = self._calculate_response_length(response_pdu_size)
-            if request.unit_id in self._no_response_devices:
-                full = True
-            else:
-                full = False
-            response, last_exception = self._transact(request,
-                                                      expected_response_length,
-                                                      full=full
-                                                      )
-            if not response and (
-                    request.unit_id not in self._no_response_devices):
-                self._no_response_devices.append(request.unit_id)
-            elif request.unit_id in self._no_response_devices:
-                self._no_response_devices.remove(request.unit_id)
-            if not response and self.retry_on_empty and retries:
-                while retries > 0:
-                    if hasattr(self.client, "state"):
-                        _logger.debug("RESETTING Transaction state to "
-                                      "'IDLE' for retry")
-                        self.client.state = ModbusTransactionState.IDLE
-                    _logger.debug("Retry on empty - {}".format(retries))
-                    response, last_exception = self._transact(
-                        request,
-                        expected_response_length
-                    )
-                    if not response:
-                        retries -= 1
-                        continue
-                    break
-            self.client.framer.processIncomingPacket(response,
-                                                     self.addTransaction)
-            response = self.getTransaction(request.transaction_id)
-            if not response:
-                if len(self.transactions):
-                    response = self.getTransaction(tid=0)
+            try:
+                retries = self.retries
+                request.transaction_id = self.getNextTID()
+                _logger.debug("Running transaction %d" % request.transaction_id)
+                _buffer = hexlify_packets(self.client.framer._buffer)
+                if _buffer:
+                    _logger.debug("Clearing current Frame : - {}".format(_buffer))
+                    self.client.framer.resetFrame()
+
+                expected_response_length = None
+                if not isinstance(self.client.framer, ModbusSocketFramer):
+                    if hasattr(request, "get_response_pdu_size"):
+                        response_pdu_size = request.get_response_pdu_size()
+                        if isinstance(self.client.framer, ModbusAsciiFramer):
+                            response_pdu_size = response_pdu_size * 2
+                        if response_pdu_size:
+                            expected_response_length = self._calculate_response_length(response_pdu_size)
+                if request.unit_id in self._no_response_devices:
+                    full = True
                 else:
-                    last_exception = last_exception or ("No Response received "
-                                                        "from the remote unit")
-                    response = ModbusIOException(last_exception)
-            if hasattr(self.client, "state"):
-                _logger.debug("Changing transaction state from "
-                              "'PROCESSING REPLY' to 'TRANSCATION_COMPLETE'")
+                    full = False
+                response, last_exception = self._transact(request,
+                                                          expected_response_length,
+                                                          full=full
+                                                          )
+                if not response and (
+                        request.unit_id not in self._no_response_devices):
+                    self._no_response_devices.append(request.unit_id)
+                elif request.unit_id in self._no_response_devices:
+                    self._no_response_devices.remove(request.unit_id)
+                if not response and self.retry_on_empty and retries:
+                    while retries > 0:
+                        if hasattr(self.client, "state"):
+                            _logger.debug("RESETTING Transaction state to "
+                                          "'IDLE' for retry")
+                            self.client.state = ModbusTransactionState.IDLE
+                        _logger.debug("Retry on empty - {}".format(retries))
+                        response, last_exception = self._transact(
+                            request,
+                            expected_response_length
+                        )
+                        if not response:
+                            retries -= 1
+                            continue
+                        break
+                self.client.framer.processIncomingPacket(response,
+                                                         self.addTransaction)
+                response = self.getTransaction(request.transaction_id)
+                if not response:
+                    if len(self.transactions):
+                        response = self.getTransaction(tid=0)
+                    else:
+                        last_exception = last_exception or ("No Response received "
+                                                            "from the remote unit")
+                        response = ModbusIOException(last_exception)
+                if hasattr(self.client, "state"):
+                    _logger.debug("Changing transaction state from "
+                                  "'PROCESSING REPLY' to 'TRANSCATION_COMPLETE'")
+                    self.client.state = ModbusTransactionState.TRANSCATION_COMPLETE
+                return response
+            except Exception as ex:
+                _logger.exception(ex)
                 self.client.state = ModbusTransactionState.TRANSCATION_COMPLETE
-            return response
+                raise
 
     def _transact(self, packet, response_length, full=False):
         """
@@ -187,11 +195,11 @@ class ModbusTransactionManager(object):
             self.client.connect()
             packet = self.client.framer.buildPacket(packet)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug("send: " + hexlify_packets(packet))
+                _logger.debug("SEND: " + hexlify_packets(packet))
             self._send(packet)
             result = self._recv(response_length or 1024, full)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug("recv: " + hexlify_packets(result))
+                _logger.debug("RECV: " + hexlify_packets(result))
         except (socket.error, ModbusIOException,
                 InvalidMessageRecievedException) as msg:
             self.client.close()
@@ -240,12 +248,22 @@ class ModbusTransactionManager(object):
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = h_size + length
                     expected_response_length -= min_size
+                    total = expected_response_length + min_size
                 else:
                     expected_response_length = exception_length - min_size
+                    total = expected_response_length + min_size
+            else:
+                total = expected_response_length
         else:
             read_min = b''
+            total = expected_response_length
         result = self.client._recv(expected_response_length)
         result = read_min + result
+        actual = len(result)
+        if actual != total:
+            _logger.debug("Incomplete message received, "
+                          "Expected {} bytes Recieved "
+                          "{} bytes !!!!".format(total, actual))
         return result
 
     def addTransaction(self, request, tid=None):
@@ -322,7 +340,7 @@ class DictTransactionManager(ModbusTransactionManager):
         :param tid: The overloaded transaction id to use
         '''
         tid = tid if tid != None else request.transaction_id
-        _logger.debug("adding transaction %d" % tid)
+        _logger.debug("Adding transaction %d" % tid)
         self.transactions[tid] = request
 
     def getTransaction(self, tid):
@@ -332,7 +350,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to retrieve
         '''
-        _logger.debug("getting transaction %d" % tid)
+        _logger.debug("Getting transaction %d" % tid)
         return self.transactions.pop(tid, None)
 
     def delTransaction(self, tid):
@@ -340,7 +358,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to remove
         '''
-        _logger.debug("deleting transaction %d" % tid)
+        _logger.debug("Deleting transaction %d" % tid)
         self.transactions.pop(tid, None)
 
 
@@ -374,7 +392,7 @@ class FifoTransactionManager(ModbusTransactionManager):
         :param tid: The overloaded transaction id to use
         '''
         tid = tid if tid != None else request.transaction_id
-        _logger.debug("adding transaction %d" % tid)
+        _logger.debug("Adding transaction %d" % tid)
         self.transactions.append(request)
 
     def getTransaction(self, tid):
@@ -384,7 +402,7 @@ class FifoTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to retrieve
         '''
-        _logger.debug("getting transaction %s" % str(tid))
+        _logger.debug("Getting transaction %s" % str(tid))
         return self.transactions.pop(0) if self.transactions else None
 
     def delTransaction(self, tid):
@@ -392,7 +410,7 @@ class FifoTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to remove
         '''
-        _logger.debug("deleting transaction %d" % tid)
+        _logger.debug("Deleting transaction %d" % tid)
         if self.transactions: self.transactions.pop(0)
 
 
@@ -713,7 +731,7 @@ class ModbusRtuFramer(IModbusFramer):
         if end > 0:
             _logger.debug("Getting Frame - {}".format(hexlify_packets(buffer)))
             return buffer
-        return ''
+        return b''
 
     def populateResult(self, result):
         ''' Populates the modbus result header

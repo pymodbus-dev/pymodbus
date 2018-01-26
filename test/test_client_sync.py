@@ -204,9 +204,9 @@ class SynchronousClientTest(unittest.TestCase):
 
     def testSyncSerialRTUClientTimeouts(self):
         client = ModbusSerialClient(method="rtu", baudrate=9600)
-        assert client._silent_interval == (3.5 * 11/9600)
+        assert client._silent_interval == round((3.5 * 11/9600), 6)
         client = ModbusSerialClient(method="rtu", baudrate=38400)
-        assert client._silent_interval == (1.75/1000)
+        assert client._silent_interval == round((1.75/1000), 6)
 
 
     @patch("serial.Serial")

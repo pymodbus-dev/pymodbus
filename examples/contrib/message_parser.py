@@ -144,14 +144,6 @@ def get_options():
                       help="If the incoming message is in hexadecimal format",
                       action="store_true", dest="transaction", default=False)
 
-    parser.add_option("-t", "--transaction",
-        help="If the incoming message is in hexadecimal format",
-        action="store_true", dest="transaction", default=False)
-
-    parser.add_option("-t", "--transaction",
-        help="If the incoming message is in hexadecimal format",
-        action="store_true", dest="transaction", default=False)
-
     (opt, arg) = parser.parse_args()
 
     if not opt.message and len(arg) > 0:

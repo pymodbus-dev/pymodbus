@@ -324,11 +324,12 @@ class ModbusSerialClient(BaseModbusClient):
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
         if self.method == "rtu":
-            self._last_frame_end = 0.0
+            self._last_frame_end = None
             if self.baudrate > 19200:
                 self._silent_interval = 1.75/1000  # ms
             else:
                 self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
+            self._silent_interval = round(self._silent_interval, 6)
 
     @staticmethod
     def __implementation(method):
@@ -353,7 +354,8 @@ class ModbusSerialClient(BaseModbusClient):
 
         :returns: True if connection succeeded, False otherwise
         """
-        if self.socket: return True
+        if self.socket:
+            return True
         try:
             self.socket = serial.Serial(port=self.port,
                                         timeout=self.timeout,
@@ -390,26 +392,30 @@ class ModbusSerialClient(BaseModbusClient):
                       "state - {}".format(TransactionStateString[self.state]))
         while self.state != ModbusTransactionState.IDLE:
             if self.state == ModbusTransactionState.TRANSCATION_COMPLETE:
+                ts = round(time.time(), 6)
+                _logger.debug("Changing state to IDLE - Last Frame End - {}, "
+                              "Current Time stamp - {}".format(
+                    self._last_frame_end, ts))
+                if self.method == "rtu":
+                    if self._last_frame_end:
+                        idle_time = self._last_frame_end + self._silent_interval
+                        if round(ts-idle_time, 6) <= self._silent_interval:
+                            _logger.debug("Waiting for 3.5 char before next "
+                                          "send - {} ms".format(
+                                self._silent_interval*1000))
+                            time.sleep(self._silent_interval)
+                    else:
+                        # Recovering from last error ??
+                        time.sleep(self._silent_interval)
                 self.state = ModbusTransactionState.IDLE
             else:
+                _logger.debug("Sleeping")
                 time.sleep(self._silent_interval)
         _logger.debug("Transaction state 'IDLE', intiating a new transaction")
         self.state = ModbusTransactionState.SENDING
         if not self.socket:
             raise ConnectionException(self.__str__())
         if request:
-            ts = time.time()
-            if self.method == "rtu":
-                if self._last_frame_end:
-                    if ts < self._last_frame_end + self._silent_interval:
-                        _logger.debug("waiting for 3.5 char before next "
-                                      "send".format(self._silent_interval))
-                        time.sleep(
-                            self._last_frame_end + self._silent_interval - ts
-                        )
-                        _logger.debug("waited for - {} "
-                                      "ms".format(self._silent_interval*1000))
-
             try:
                 in_waiting = ("in_waiting" if hasattr(
                     self.socket, "in_waiting") else "inWaiting")
@@ -431,7 +437,7 @@ class ModbusSerialClient(BaseModbusClient):
                           "to 'WAITING FOR REPLY'")
             self.state = ModbusTransactionState.WAITING_FOR_REPLY
             if self.method == "rtu":
-                self._last_frame_end = time.time()
+                self._last_frame_end = round(time.time(), 6)
             return size
         return 0
 
@@ -444,11 +450,12 @@ class ModbusSerialClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         result = self.socket.read(size)
-        _logger.debug("Changing transaction state from 'WAITING FOR REPLY' "
-                      "to 'PROCESSING REPLY'")
-        self.state = ModbusTransactionState.PROCESSING_REPLY
+        if self.state != ModbusTransactionState.PROCESSING_REPLY:
+            _logger.debug("Changing transaction state from "
+                          "'WAITING FOR REPLY' to 'PROCESSING REPLY'")
+            self.state = ModbusTransactionState.PROCESSING_REPLY
         if self.method == "rtu":
-            self._last_frame_end = time.time()
+            self._last_frame_end = round(time.time(), 6)
         return result
 
     def __str__(self):

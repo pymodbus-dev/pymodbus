@@ -680,17 +680,26 @@ class AsyncioModbusSerialClient(object):
         self.parity = parity
         self.stopbits = stopbits
         self.framer = framer
-        self._connected = False
+        self._connected_event = asyncio.Event()
 
     def stop(self):
         """
         Stops connection
         :return:
         """
-        if self._connected:
+        if self._connected.is_set():
             if self.protocol:
                 if self.protocol.transport:
                     self.protocol.transport.close()
+
+    def _create_protocol(self):
+        protocol = self.protocol_class(framer=self.framer)
+        protocol.factory = self
+        return protocol
+
+    @property
+    def _connected(self):
+        return self._connected_event.is_set()
 
     @asyncio.coroutine
     def connect(self):
@@ -702,13 +711,11 @@ class AsyncioModbusSerialClient(object):
         try:
             from serial_asyncio import create_serial_connection
 
-            def factory():
-                return self.protocol_class(framer=self.framer)
-
             yield from create_serial_connection(
-                self.loop, factory, self.port, baudrate=self.baudrate,
+                self.loop, self._create_protocol, self.port, baudrate=self.baudrate,
                 bytesize=self.bytesize, stopbits=self.stopbits
             )
+            yield from self._connected_event.wait()
             _logger.info('Connected to %s', self.port)
         except Exception as ex:
             _logger.warning('Failed to connect: %s', ex)
@@ -718,8 +725,8 @@ class AsyncioModbusSerialClient(object):
         Protocol notification of successful connection.
         """
         _logger.info('Protocol made connection.')
-        if not self._connected:
-            self._connected = True
+        if not self._connected_event.is_set():
+            self._connected_event.set()
             self.protocol = protocol
         else:
             _logger.error('Factory protocol connect '
@@ -729,13 +736,13 @@ class AsyncioModbusSerialClient(object):
         """
         Protocol notification of lost connection.
         """
-        if self._connected:
+        if self._connected_event.is_set():
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
                 _logger.error('Factory protocol callback called'
                               ' from unexpected protocol instance.')
 
-            self._connected = False
+            self._connected_event.clear()
             self.protocol = None
             # if self.host:
             #     asyncio.async(self._reconnect(), loop=self.loop)

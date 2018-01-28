@@ -725,7 +725,7 @@ class AsyncioModbusSerialClient(object):
         Protocol notification of successful connection.
         """
         _logger.info('Protocol made connection.')
-        if not self._connected_event.is_set():
+        if not self._connected:
             self._connected_event.set()
             self.protocol = protocol
         else:
@@ -736,7 +736,7 @@ class AsyncioModbusSerialClient(object):
         """
         Protocol notification of lost connection.
         """
-        if self._connected_event.is_set():
+        if self._connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
                 _logger.error('Factory protocol callback called'

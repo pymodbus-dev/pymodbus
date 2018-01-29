@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import six
 import unittest
 from binascii import a2b_hex
 from pymodbus.pdu import *
@@ -245,7 +246,7 @@ class ModbusTransactionTest(unittest.TestCase):
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
 
-        self.assertCountEqual(actual.results,expected_pdus)
+        six.assertCountEqual(self,actual.results,expected_pdus)
 
     def testTCPProcessPackets02(self):
         '''
@@ -273,7 +274,7 @@ class ModbusTransactionTest(unittest.TestCase):
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
 
-        self.assertCountEqual(actual.results,expected_pdus)
+        six.assertCountEqual(self,actual.results,expected_pdus)
 
     def testTCPProcessPackets03(self):
         '''
@@ -301,7 +302,7 @@ class ModbusTransactionTest(unittest.TestCase):
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
 
-        self.assertCountEqual(actual.results,expected_pdus)
+        six.assertCountEqual(self,actual.results,expected_pdus)
 
     def testTCPProcessPackets04(self):
         '''
@@ -330,7 +331,7 @@ class ModbusTransactionTest(unittest.TestCase):
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
 
-        self.assertCountEqual(actual.results,expected_pdus)
+        six.assertCountEqual(self,actual.results,expected_pdus)
 
     def testTCPProcessPackets05(self):
         '''
@@ -360,7 +361,7 @@ class ModbusTransactionTest(unittest.TestCase):
         for mock_chunk in mock_datas:
             self._tcp.processIncomingPacket(mock_chunk, actual.mock_callback)
 
-        self.assertCountEqual(actual.results,expected_pdus)
+        six.assertCountEqual(self,actual.results,expected_pdus)
 
     #---------------------------------------------------------------------------#
     # RTU tests

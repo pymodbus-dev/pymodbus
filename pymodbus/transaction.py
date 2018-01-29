@@ -388,9 +388,9 @@ class ModbusSocketFramer(IModbusFramer):
             self._header['len'], self._header['uid'] = struct.unpack(
                     '>HHHB', self._buffer[0:self._hsize])
 
-            # someone sent a partial frame, frame not ready
-            #if self._header['len'] < 2:
-            #    self.advanceFrame()
+            # someone sent a short frame, move to next
+            if self._header['len'] < 2:
+                self.advanceFrame()
             # we have at least a complete message, continue
             if len(self._buffer) - self._hsize + 1 >= self._header['len']:
                 return True

@@ -70,7 +70,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         result = self.context.get_callbacks[self.decode(fx)](address,
                                                              count,
                                                              self.unit_id)
-        return result.isError()
+        return not result.isError()
 
     def getValues(self, fx, address, count=1):
         """ Validates the request to make sure it is in range

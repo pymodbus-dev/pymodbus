@@ -6,6 +6,10 @@ Version 1.5.0
 
 * Fix tcp servers (sync/async) not processing requests with transaction id > 255
 * Introduce new api to check if the received response is an error or not (response.isError())
+* Move timing logic to framers so that irrespective of client, correct timing logics are followed.
+* Move framers from transaction.py to respective modules
+* Fix modbus payload builder and decoder
+* Async servers can now have an option to defer `reactor.run()` when using `Start<Tcp/Serial/Udo>Server(...,defer_reactor_run=True)`
 * Fix Misc examples
 
 Version 1.4.0

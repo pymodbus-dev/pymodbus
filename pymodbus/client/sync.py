@@ -1,9 +1,10 @@
 import socket
 import serial
 import time
+import sys
 
 from pymodbus.constants import Defaults
-from pymodbus.utilities import hexlify_packets
+from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.exceptions import ConnectionException
@@ -11,7 +12,7 @@ from pymodbus.transaction import FifoTransactionManager
 from pymodbus.transaction import DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
-from pymodbus.client.common import ModbusClientMixin, ModbusTransactionState
+from pymodbus.client.common import ModbusClientMixin
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -19,20 +20,10 @@ from pymodbus.client.common import ModbusClientMixin, ModbusTransactionState
 import logging
 _logger = logging.getLogger(__name__)
 
-
-TransactionStateString = {
-    ModbusTransactionState.IDLE: "IDLE",
-    ModbusTransactionState.SENDING: "SENDING",
-    ModbusTransactionState.WAITING_FOR_REPLY: "WAITING_FOR_REPLY",
-    ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
-    ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
-    ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
-    ModbusTransactionState.TRANSCATION_COMPLETE: "TRANSCATION_COMPLETE"
-}
-
 # --------------------------------------------------------------------------- #
 # The Synchronous Clients
 # --------------------------------------------------------------------------- #
+
 
 class BaseModbusClient(ModbusClientMixin):
     """
@@ -41,7 +32,6 @@ class BaseModbusClient(ModbusClientMixin):
     simply need to implement the transport methods and set the correct
     framer.
     """
-
     def __init__(self, framer, **kwargs):
         """ Initialize a client instance
 
@@ -52,6 +42,8 @@ class BaseModbusClient(ModbusClientMixin):
             self.transaction = DictTransactionManager(self, **kwargs)
         else:
             self.transaction = FifoTransactionManager(self, **kwargs)
+        self._debug = False
+        self._debugfd = None
 
     # ----------------------------------------------------------------------- #
     # Client interface
@@ -68,6 +60,21 @@ class BaseModbusClient(ModbusClientMixin):
         """
         pass
 
+    def is_socket_open(self):
+        """
+        Check whether the underlying socket/serial is open or not.
+
+        :returns: True if socket/serial is open, False otherwise
+        """
+        raise NotImplementedException(
+            "is_socket_open() not implemented by {}".format(self.__str__())
+        )
+
+    def send(self, request):
+        _logger.debug("New Transaction state 'SENDING'")
+        self.state = ModbusTransactionState.SENDING
+        return self._send(request)
+
     def _send(self, request):
         """ Sends data on the underlying socket
 
@@ -75,6 +82,9 @@ class BaseModbusClient(ModbusClientMixin):
         :return: The number of bytes written
         """
         raise NotImplementedException("Method not implemented by derived class")
+
+    def recv(self, size):
+        return self._recv(size)
 
     def _recv(self, size):
         """ Reads data from the underlying descriptor
@@ -112,6 +122,36 @@ class BaseModbusClient(ModbusClientMixin):
         """ Implement the client with exit block """
         self.close()
 
+    def idle_time(self):
+        if self.last_frame_end is None or self.silent_interval is None:
+            return 0
+        return self.last_frame_end + self.silent_interval
+
+    def debug_enabled(self):
+        """
+        Returns a boolean indicating if debug is enabled.
+        """
+        return self._debug
+
+    def set_debug(self, debug):
+        """
+        Sets the current debug flag.
+        """
+        self._debug = debug
+
+    def trace(self, writeable):
+        if writeable:
+            self.set_debug(True)
+        self._debugfd = writeable
+
+    def _dump(self, data, direction):
+        fd = self._debugfd if self._debugfd else sys.stdout
+        try:
+            fd.write(hexlify_packets(data))
+        except Exception as e:
+            self._logger.debug(hexlify_packets(data))
+            self._logger.exception(e)
+
     def __str__(self):
         """ Builds a string representation of the connection
 
@@ -144,7 +184,7 @@ class ModbusTcpClient(BaseModbusClient):
         self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        BaseModbusClient.__init__(self, framer(ClientDecoder()), **kwargs)
+        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     def connect(self):
         """ Connect to the modbus tcp server
@@ -192,6 +232,9 @@ class ModbusTcpClient(BaseModbusClient):
             raise ConnectionException(self.__str__())
         return self.socket.recv(size)
 
+    def is_socket_open(self):
+        return True if self.socket is not None else False
+
     def __str__(self):
         """ Builds a string representation of the connection
 
@@ -220,7 +263,7 @@ class ModbusUdpClient(BaseModbusClient):
         self.port = port
         self.socket = None
         self.timeout = kwargs.get('timeout', None)
-        BaseModbusClient.__init__(self, framer(ClientDecoder()), **kwargs)
+        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     @classmethod
     def _get_address_family(cls, address):
@@ -279,6 +322,9 @@ class ModbusUdpClient(BaseModbusClient):
             raise ConnectionException(self.__str__())
         return self.socket.recvfrom(size)[0]
 
+    def is_socket_open(self):
+        return True if self.socket is not None else False
+
     def __str__(self):
         """ Builds a string representation of the connection
 
@@ -314,7 +360,7 @@ class ModbusSerialClient(BaseModbusClient):
         """
         self.method = method
         self.socket = None
-        BaseModbusClient.__init__(self, self.__implementation(method),
+        BaseModbusClient.__init__(self, self.__implementation(method, self),
                                   **kwargs)
 
         self.port = kwargs.get('port', 0)
@@ -323,16 +369,16 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        self.last_frame_end = None
         if self.method == "rtu":
-            self._last_frame_end = None
             if self.baudrate > 19200:
-                self._silent_interval = 1.75/1000  # ms
+                self.silent_interval = 1.75 / 1000  # ms
             else:
-                self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
-            self._silent_interval = round(self._silent_interval, 6)
+                self.silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
+            self.silent_interval = round(self.silent_interval, 6)
 
     @staticmethod
-    def __implementation(method):
+    def __implementation(method, client):
         """ Returns the requested framer
 
         :method: The serial framer to instantiate
@@ -340,13 +386,13 @@ class ModbusSerialClient(BaseModbusClient):
         """
         method = method.lower()
         if method == 'ascii':
-            return ModbusAsciiFramer(ClientDecoder())
+            return ModbusAsciiFramer(ClientDecoder(), client)
         elif method == 'rtu':
-            return ModbusRtuFramer(ClientDecoder())
+            return ModbusRtuFramer(ClientDecoder(), client)
         elif method == 'binary':
-            return ModbusBinaryFramer(ClientDecoder())
+            return ModbusBinaryFramer(ClientDecoder(), client)
         elif method == 'socket':
-            return ModbusSocketFramer(ClientDecoder())
+            return ModbusSocketFramer(ClientDecoder(), client)
         raise ParameterException("Invalid framer method requested")
 
     def connect(self):
@@ -367,7 +413,7 @@ class ModbusSerialClient(BaseModbusClient):
             _logger.error(msg)
             self.close()
         if self.method == "rtu":
-            self._last_frame_end = None
+            self.last_frame_end = None
         return self.socket is not None
 
     def close(self):
@@ -388,31 +434,6 @@ class ModbusSerialClient(BaseModbusClient):
         :param request: The encoded request to send
         :return: The number of bytes written
         """
-        _logger.debug("Current transaction "
-                      "state - {}".format(TransactionStateString[self.state]))
-        while self.state != ModbusTransactionState.IDLE:
-            if self.state == ModbusTransactionState.TRANSCATION_COMPLETE:
-                ts = round(time.time(), 6)
-                _logger.debug("Changing state to IDLE - Last Frame End - {}, "
-                              "Current Time stamp - {}".format(
-                    self._last_frame_end, ts))
-                if self.method == "rtu":
-                    if self._last_frame_end:
-                        idle_time = self._last_frame_end + self._silent_interval
-                        if round(ts-idle_time, 6) <= self._silent_interval:
-                            _logger.debug("Waiting for 3.5 char before next "
-                                          "send - {} ms".format(
-                                self._silent_interval*1000))
-                            time.sleep(self._silent_interval)
-                    else:
-                        # Recovering from last error ??
-                        time.sleep(self._silent_interval)
-                self.state = ModbusTransactionState.IDLE
-            else:
-                _logger.debug("Sleeping")
-                time.sleep(self._silent_interval)
-        _logger.debug("Transaction state 'IDLE', intiating a new transaction")
-        self.state = ModbusTransactionState.SENDING
         if not self.socket:
             raise ConnectionException(self.__str__())
         if request:
@@ -433,11 +454,6 @@ class ModbusSerialClient(BaseModbusClient):
                 pass
 
             size = self.socket.write(request)
-            _logger.debug("Changing transaction state from 'SENDING' "
-                          "to 'WAITING FOR REPLY'")
-            self.state = ModbusTransactionState.WAITING_FOR_REPLY
-            if self.method == "rtu":
-                self._last_frame_end = round(time.time(), 6)
             return size
         return 0
 
@@ -450,13 +466,12 @@ class ModbusSerialClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         result = self.socket.read(size)
-        if self.state != ModbusTransactionState.PROCESSING_REPLY:
-            _logger.debug("Changing transaction state from "
-                          "'WAITING FOR REPLY' to 'PROCESSING REPLY'")
-            self.state = ModbusTransactionState.PROCESSING_REPLY
-        if self.method == "rtu":
-            self._last_frame_end = round(time.time(), 6)
         return result
+
+    def is_socket_open(self):
+        if self.socket:
+            return self.socket.is_open()
+        return False
 
     def __str__(self):
         """ Builds a string representation of the connection

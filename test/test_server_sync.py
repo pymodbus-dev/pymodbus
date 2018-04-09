@@ -108,7 +108,7 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback1(a, b):
+        def _callback1(a, b, *args, **kwargs):
             handler.running = False # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
@@ -119,7 +119,7 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
         # exceptions are simply ignored
-        def _callback2(a, b):
+        def _callback2(a, b, *args, **kwargs):
             if handler.framer.processIncomingPacket.call_count == 2:
                 raise Exception("example exception")
             else: handler.running = False # stop infinite loop
@@ -148,6 +148,9 @@ class SynchronousServerTest(unittest.TestCase):
     def testModbusConnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusConnectedRequestHandler
+        handler.server = Mock()
+        # handler.server.context.slaves = Mock()
+        # protocol.factory.store.single = True
         handler.framer  = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
@@ -159,7 +162,7 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback(a, b):
+        def _callback(a, b, *args, **kwargs):
             handler.running = False # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback
         handler.running = True
@@ -191,6 +194,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer  = Mock()
+        handler.server = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
         handler.socket = Mock()
@@ -206,6 +210,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer  = Mock()
+        handler.server = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = (b"\x12\x34", handler.request)
 

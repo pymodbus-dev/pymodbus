@@ -14,18 +14,7 @@ from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
 
-
-class ModbusTransactionState(object):
-    """
-    Modbus Client States
-    """
-    IDLE = 0
-    SENDING = 1
-    WAITING_FOR_REPLY = 2
-    WAITING_TURNAROUND_DELAY = 3
-    PROCESSING_REPLY = 4
-    PROCESSING_ERROR = 5
-    TRANSCATION_COMPLETE = 6
+from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusClientMixin(object):
@@ -43,6 +32,9 @@ class ModbusClientMixin(object):
        client = ModbusClient(...)
        response = client.read_coils(1, 10)
     '''
+    state = ModbusTransactionState.IDLE
+    last_frame_end = 0
+    silent_interval = 0
 
     def read_coils(self, address, count=1, **kwargs):
         '''

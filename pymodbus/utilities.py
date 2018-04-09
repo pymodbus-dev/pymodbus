@@ -8,9 +8,37 @@ data computing checksums, and decode checksums.
 from pymodbus.compat import int2byte, byte2int, IS_PYTHON3
 from six import string_types
 
+
+class ModbusTransactionState(object):
+    """
+    Modbus Client States
+    """
+    IDLE = 0
+    SENDING = 1
+    WAITING_FOR_REPLY = 2
+    WAITING_TURNAROUND_DELAY = 3
+    PROCESSING_REPLY = 4
+    PROCESSING_ERROR = 5
+    TRANSCATION_COMPLETE = 6
+
+    @classmethod
+    def to_string(cls, state):
+        states = {
+            ModbusTransactionState.IDLE: "IDLE",
+            ModbusTransactionState.SENDING: "SENDING",
+            ModbusTransactionState.WAITING_FOR_REPLY: "WAITING_FOR_REPLY",
+            ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
+            ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
+            ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
+            ModbusTransactionState.TRANSCATION_COMPLETE: "TRANSCATION_COMPLETE"
+        }
+        return states.get(state, None)
+
+
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
 def default(value):
     """
     Given a python object, return the default value

@@ -162,3 +162,7 @@ class ModbusServerContext(object):
         else:
             raise NoSuchSlaveException("slave - {} does not exist, "
                                        "or is out of range".format(slave))
+
+    def slaves(self):
+        # Python3 now returns keys() as iterable
+        return list(self._slaves.keys())

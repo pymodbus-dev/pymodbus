@@ -91,7 +91,7 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket = False
         client.close()
 
-        self.assertEqual("127.0.0.1:502", str(client))
+        self.assertEqual("ModbusUdpClient(127.0.0.1:502)", str(client))
 
     def testUdpClientAddressFamily(self):
         ''' Test the Udp client get address family method'''
@@ -158,7 +158,7 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket = False
         client.close()
 
-        self.assertEqual("127.0.0.1:502", str(client))
+        self.assertEqual("ModbusTcpClient(127.0.0.1:502)", str(client))
 
     def testTcpClientConnect(self):
         ''' Test the tcp client connection method'''
@@ -234,7 +234,7 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket = False
         client.close()
 
-        self.assertEqual('ascii baud[19200]', str(client))
+        self.assertEqual('ModbusSerialClient(ascii baud[19200])', str(client))
 
     def testSerialClientConnect(self):
         ''' Test the serial client connection method'''

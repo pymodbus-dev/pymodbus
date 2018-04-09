@@ -140,6 +140,9 @@ class ModbusTransactionManager(object):
                     full = True
                 else:
                     full = False
+                c_str = str(self.client)
+                if "modbusudpclient" in c_str.lower().strip():
+                    full = True
                 response, last_exception = self._transact(request,
                                                           expected_response_length,
                                                           full=full

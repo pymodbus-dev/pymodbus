@@ -112,9 +112,13 @@ def run_server():
     # ----------------------------------------------------------------------- # 
     # Tcp:
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
-    
+
+    # TCP with different framer
+    # StartTcpServer(context, identity=identity,
+    #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
+
     # Udp:
-    # StartUdpServer(context, identity=identity, address=("localhost", 5020))
+    # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
     
     # Ascii:
     # StartSerialServer(context, identity=identity,

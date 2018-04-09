@@ -369,7 +369,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
 
         socketserver.ThreadingUDPServer.__init__(self,
             self.address, self.handler)
-        self._BaseServer__shutdown_request = True
+        # self._BaseServer__shutdown_request = True
 
     def process_request(self, request, client):
         """ Callback for connecting a new client thread

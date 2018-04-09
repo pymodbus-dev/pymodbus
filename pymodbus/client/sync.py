@@ -240,7 +240,7 @@ class ModbusTcpClient(BaseModbusClient):
 
         :returns: The string representation
         """
-        return "%s:%s" % (self.host, self.port)
+        return "ModbusTcpClient(%s:%s)" % (self.host, self.port)
 
 
 # --------------------------------------------------------------------------- #
@@ -330,7 +330,7 @@ class ModbusUdpClient(BaseModbusClient):
 
         :returns: The string representation
         """
-        return "%s:%s" % (self.host, self.port)
+        return "ModbusUdpClient(%s:%s)" % (self.host, self.port)
 
 
 # --------------------------------------------------------------------------- #
@@ -478,7 +478,7 @@ class ModbusSerialClient(BaseModbusClient):
 
         :returns: The string representation
         """
-        return "%s baud[%s]" % (self.method, self.baudrate)
+        return "ModbusSerialClient(%s baud[%s])" % (self.method, self.baudrate)
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

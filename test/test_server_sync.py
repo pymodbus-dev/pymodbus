@@ -29,7 +29,7 @@ if sys.platform == "darwin":
 #---------------------------------------------------------------------------#
 class MockServer(object):
     def __init__(self):
-        self.framer  = lambda _: "framer"
+        self.framer  = lambda _, client=None: "framer"
         self.decoder = "decoder"
         self.threads = []
         self.context = {}
@@ -59,7 +59,6 @@ class SynchronousServerTest(unittest.TestCase):
         request = ReadCoilsRequest(1, 1)
         address = ('server', 12345)
         server  = MockServer()
-        
         with patch.object(ModbusBaseRequestHandler, 'handle') as mock_handle:
             with patch.object(ModbusBaseRequestHandler, 'send') as mock_send:
                 mock_handle.return_value = True

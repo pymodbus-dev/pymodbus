@@ -2,9 +2,9 @@
 import unittest
 from pymodbus.compat import IS_PYTHON3
 if IS_PYTHON3: # Python 3
-    from unittest.mock import patch, Mock
+    from unittest.mock import patch, Mock, MagicMock
 else: # Python 2
-    from mock import patch, Mock
+    from mock import patch, Mock, MagicMock
 import socket
 import serial
 
@@ -20,12 +20,13 @@ from pymodbus.transaction import ModbusBinaryFramer
 #---------------------------------------------------------------------------#
 class mockSocket(object):
     def close(self): return True
-    def recv(self, size): return '\x00'*size
-    def read(self, size): return '\x00'*size
+    def recv(self, size): return b'\x00'*size
+    def read(self, size): return b'\x00'*size
     def send(self, msg): return len(msg)
     def write(self, msg): return len(msg)
-    def recvfrom(self, size): return ['\x00'*size]
+    def recvfrom(self, size): return [b'\x00'*size]
     def sendto(self, msg, *args): return len(msg)
+    def setblocking(self, flag): return None
     def in_waiting(self): return None
 
 #---------------------------------------------------------------------------#
@@ -80,8 +81,8 @@ class SynchronousClientTest(unittest.TestCase):
         client = ModbusUdpClient()
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))
-        self.assertEqual(1, client._send('\x00'))
-        self.assertEqual('\x00', client._recv(1))
+        self.assertEqual(1, client._send(b'\x00'))
+        self.assertEqual(b'\x00', client._recv(1))
 
         # connect/disconnect
         self.assertTrue(client.connect())
@@ -129,8 +130,19 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(ConnectionException, lambda: client._recv(1024))
 
         client.socket = mockSocket()
-        self.assertEqual('', client._recv(0))
-        self.assertEqual('\x00'*4, client._recv(4))
+        self.assertEqual(b'', client._recv(0))
+        self.assertEqual(b'\x00'*4, client._recv(4))
+
+        mock_socket = MagicMock()
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        client.socket = mock_socket
+        client.timeout = 1
+        self.assertEqual(b'\x00\x01\x02', client._recv(3))
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        self.assertEqual(b'\x00\x01', client._recv(2))
+
+        mock_socket.recv.side_effect = socket.error('No data')
+        self.assertEqual(b'', client._recv(2))
 
     #-----------------------------------------------------------------------#
     # Test TCP Client
@@ -147,8 +159,8 @@ class SynchronousClientTest(unittest.TestCase):
         client = ModbusTcpClient()
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))
-        self.assertEqual(1, client._send('\x00'))
-        self.assertEqual('\x00', client._recv(1))
+        self.assertEqual(1, client._send(b'\x00'))
+        self.assertEqual(b'\x00', client._recv(1))
 
         # connect/disconnect
         self.assertTrue(client.connect())
@@ -187,9 +199,20 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(ConnectionException, lambda: client._recv(1024))
 
         client.socket = mockSocket()
-        self.assertEqual('', client._recv(0))
-        self.assertEqual('\x00'*4, client._recv(4))
-    
+        self.assertEqual(b'', client._recv(0))
+        self.assertEqual(b'\x00'*4, client._recv(4))
+
+        mock_socket = MagicMock()
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        client.socket = mock_socket
+        client.timeout = 1
+        self.assertEqual(b'\x00\x01\x02', client._recv(3))
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        self.assertEqual(b'\x00\x01', client._recv(2))
+
+        mock_socket.recv.side_effect = socket.error('No data')
+        self.assertEqual(b'', client._recv(2))
+
     #-----------------------------------------------------------------------#
     # Test Serial Client
     #-----------------------------------------------------------------------#
@@ -217,14 +240,14 @@ class SynchronousClientTest(unittest.TestCase):
         mock_serial.in_waiting = 0
         mock_serial.write = lambda x: len(x)
 
-        mock_serial.read = lambda size: '\x00' * size
+        mock_serial.read = lambda size: b'\x00' * size
         client = ModbusSerialClient()
         client.socket = mock_serial
         client.state = 0
         self.assertEqual(0, client._send(None))
         client.state = 0
-        self.assertEqual(1, client._send('\x00'))
-        self.assertEqual('\x00', client._recv(1))
+        self.assertEqual(1, client._send(b'\x00'))
+        self.assertEqual(b'\x00', client._recv(1))
 
         # connect/disconnect
         self.assertTrue(client.connect())
@@ -283,8 +306,8 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertRaises(ConnectionException, lambda: client._recv(1024))
 
         client.socket = mockSocket()
-        self.assertEqual('', client._recv(0))
-        self.assertEqual('\x00'*4, client._recv(4))
+        self.assertEqual(b'', client._recv(0))
+        self.assertEqual(b'\x00'*4, client._recv(4))
 
 #---------------------------------------------------------------------------#
 # Main

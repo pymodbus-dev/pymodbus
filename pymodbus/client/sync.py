@@ -195,7 +195,6 @@ class ModbusTcpClient(BaseModbusClient):
         try:
             self.socket = socket.create_connection(
                 (self.host, self.port),
-                timeout=self.timeout,
                 source_address=self.source_address)
         except socket.error as msg:
             _logger.error('Connection to (%s, %s) '
@@ -230,7 +229,27 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
-        return self.socket.recv(size)
+
+        # socket.recv(size) waits until it gets some data from the host but
+        # not necessarily the entire response that can be fragmented in
+        # many packets.
+        # To avoid the splitted responses to be recognized as invalid messages
+        # and to be discarded, loops socket.recv until full data is received,
+        # or timeout is expired.
+        # If timeout expires returns the read data, also if its length is less
+        # than the expected size.
+        self.socket.setblocking(0)
+        begin = time.time()
+
+        data = b''
+        while(len(data) < size):
+            try:
+                data += self.socket.recv(size - len(data))
+            except socket.error:
+                pass
+            if not self.timeout or (time.time() - begin > self.timeout):
+                break
+        return data
 
     def is_socket_open(self):
         return True if self.socket is not None else False
@@ -320,7 +339,27 @@ class ModbusUdpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
-        return self.socket.recvfrom(size)[0]
+
+        # socket.recv(size) waits until it gets some data from the host but
+        # not necessarily the entire response that can be fragmented in
+        # many packets.
+        # To avoid the splitted responses to be recognized as invalid messages
+        # and to be discarded, loops socket.recv until full data is received,
+        # or timeout is expired.
+        # If timeout expires returns the read data, also if its length is less
+        # than the expected size.
+        self.socket.setblocking(0)
+        begin = time.time()
+
+        data = b''
+        while(len(data) < size):
+            try:
+                data += self.socket.recv(size - len(data))
+            except socket.error:
+                pass
+            if not self.timeout or (time.time() - begin > self.timeout):
+                break
+        return data
 
     def is_socket_open(self):
         return True if self.socket is not None else False

@@ -6,7 +6,7 @@ import socket
 from threading import RLock
 
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
-from pymodbus.exceptions import InvalidMessageRecievedException
+from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.constants import Defaults
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -74,14 +74,9 @@ class ModbusTransactionManager(object):
             self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
         elif isinstance(self.client.framer, ModbusBinaryFramer):
             self.base_adu_size = 5  # start(1) + Address(1), CRC(2) + end(1)
-        else:
-            self.base_adu_size = -1
 
     def _calculate_response_length(self, expected_pdu_size):
-        if self.base_adu_size == -1:
-            return None
-        else:
-            return self.base_adu_size + expected_pdu_size
+        return self.base_adu_size + expected_pdu_size
 
     def _calculate_exception_length(self):
         ''' Returns the length of the Modbus Exception Response according to
@@ -93,8 +88,6 @@ class ModbusTransactionManager(object):
             return self.base_adu_size + 4  # Fcode(2), ExcecptionCode(2)
         elif isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
             return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
-
-        return None
 
     def _check_response(self, response):
         ''' Checks if the response is a Modbus Exception.
@@ -208,11 +201,11 @@ class ModbusTransactionManager(object):
                 _logger.debug("Changing transaction state from 'SENDING' "
                               "to 'WAITING FOR REPLY'")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-            result = self._recv(response_length or 1024, full)
+            result = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug("RECV: " + hexlify_packets(result))
         except (socket.error, ModbusIOException,
-                InvalidMessageRecievedException) as msg:
+                InvalidMessageReceivedException) as msg:
             self.client.close()
             _logger.debug("Transaction failed. (%s) " % msg)
             last_exception = msg
@@ -223,7 +216,6 @@ class ModbusTransactionManager(object):
         return self.client.framer.sendPacket(packet)
 
     def _recv(self, expected_response_length, full):
-        expected_response_length = expected_response_length or 1024
         if not full:
             exception_length = self._calculate_exception_length()
             if isinstance(self.client.framer, ModbusSocketFramer):
@@ -238,31 +230,37 @@ class ModbusTransactionManager(object):
                 min_size = expected_response_length
 
             read_min = self.client.framer.recvPacket(min_size)
-            if read_min:
-                if isinstance(self.client.framer, ModbusSocketFramer):
-                    func_code = byte2int(read_min[-1])
-                elif isinstance(self.client.framer, ModbusRtuFramer):
-                    func_code = byte2int(read_min[-1])
-                elif isinstance(self.client.framer, ModbusAsciiFramer):
-                    func_code = int(read_min[3:5], 16)
-                elif isinstance(self.client.framer, ModbusBinaryFramer):
-                    func_code = byte2int(read_min[-1])
-                else:
-                    func_code = -1
+            if not read_min:
+                return read_min
 
-                if func_code < 0x80:    # Not an error
-                    if isinstance(self.client.framer, ModbusSocketFramer):
-                        # Ommit UID, which is included in header size
-                        h_size = self.client.framer._hsize
-                        length = struct.unpack(">H", read_min[4:6])[0] - 1
-                        expected_response_length = h_size + length
-                    expected_response_length -= min_size
-                    total = expected_response_length + min_size
-                else:
-                    expected_response_length = exception_length - min_size
-                    total = expected_response_length + min_size
+            if len(read_min) < min_size:
+                raise InvalidMessageReceivedException(
+                    "Incomplete message received, expected at least %d bytes (%d received)"
+                    % (min_size, len(read_min)))
+
+            if isinstance(self.client.framer, ModbusSocketFramer):
+                func_code = byte2int(read_min[-1])
+            elif isinstance(self.client.framer, ModbusRtuFramer):
+                func_code = byte2int(read_min[-1])
+            elif isinstance(self.client.framer, ModbusAsciiFramer):
+                func_code = int(read_min[3:5], 16)
+            elif isinstance(self.client.framer, ModbusBinaryFramer):
+                func_code = byte2int(read_min[-1])
             else:
-                total = expected_response_length
+                func_code = -1
+
+            if func_code < 0x80:    # Not an error
+                if isinstance(self.client.framer, ModbusSocketFramer):
+                    # Ommit UID, which is included in header size
+                    h_size = self.client.framer._hsize
+                    length = struct.unpack(">H", read_min[4:6])[0] - 1
+                    expected_response_length = h_size + length
+                expected_response_length -= min_size
+                total = expected_response_length + min_size
+            else:
+                expected_response_length = exception_length - min_size
+                total = expected_response_length + min_size
+
         else:
             read_min = b''
             total = expected_response_length
@@ -273,6 +271,9 @@ class ModbusTransactionManager(object):
             _logger.debug("Incomplete message received, "
                           "Expected {} bytes Recieved "
                           "{} bytes !!!!".format(total, actual))
+            raise InvalidMessageReceivedException(
+                "Incomplete message received, %d bytes expected (%d received)"
+                % (total, actual))
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
                           "'WAITING FOR REPLY' to 'PROCESSING REPLY'")

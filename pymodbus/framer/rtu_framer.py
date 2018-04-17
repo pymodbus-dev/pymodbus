@@ -2,7 +2,7 @@ import struct
 import time
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageRecievedException
+from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.utilities import checkCRC, computeCRC
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.compat import byte2int
@@ -313,7 +313,7 @@ class ModbusRtuFramer(ModbusFramer):
         if result is None:
             raise ModbusIOException("Unable to decode request")
         elif error and result.function_code < 0x80:
-            raise InvalidMessageRecievedException(result)
+            raise InvalidMessageReceivedException(result)
         else:
             self.populateResult(result)
             self.advanceFrame()

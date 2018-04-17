@@ -8,10 +8,13 @@ from pymodbus.transaction import (
     ModbusRtuFramer, ModbusBinaryFramer
 )
 from pymodbus.factory import ServerDecoder
-from pymodbus.compat import byte2int
-from mock import MagicMock
+from pymodbus.compat import IS_PYTHON3, byte2int
+if IS_PYTHON3: # Python 3
+    from unittest.mock import MagicMock, PropertyMock
+else: # Python 2
+    from mock import MagicMock, PropertyMock
 from pymodbus.exceptions import (
-    NotImplementedException, ModbusIOException, InvalidMessageRecievedException
+    NotImplementedException, ModbusIOException, InvalidMessageReceivedException
 )
 
 class ModbusTransactionTest(unittest.TestCase):
@@ -40,6 +43,25 @@ class ModbusTransactionTest(unittest.TestCase):
         del self._tcp
         del self._rtu
         del self._ascii
+
+    def testTransactionManagerRecv(self):
+        mock_client = MagicMock()
+        mock_client.recv.side_effect = iter([b'\x11\x04', b'\x02\x00\x0a\xf8\xf4'])
+        framer = ModbusRtuFramer(self.decoder, mock_client)
+        type(mock_client).framer = PropertyMock(return_value=framer)
+        manager = ModbusTransactionManager(mock_client)
+        self.assertEqual(manager._recv(7, False), b'\x11\x04\x02\x00\x0a\xf8\xf4')
+
+        mock_client.recv.side_effect = iter([b'\x11'])
+        with self.assertRaises(InvalidMessageReceivedException):
+            manager._recv(7, False)
+
+        mock_client.recv.side_effect = iter([b''])
+        self.assertEqual(manager._recv(7, False), b'')
+
+        mock_client.recv.side_effect = iter([b'\x11\x04', b'\x02'])
+        with self.assertRaises(InvalidMessageReceivedException):
+            manager._recv(7, False)
 
     #---------------------------------------------------------------------------#
     # Dictionary based transaction manager

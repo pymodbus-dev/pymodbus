@@ -2,7 +2,7 @@ import struct
 import time
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageRecievedException
+from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.utilities import checkCRC, computeCRC
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.compat import byte2int
@@ -213,27 +213,16 @@ class ModbusRtuFramer(ModbusFramer):
             unit = [unit]
         self.addToFrame(data)
         single = kwargs.get("single", False)
-        while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
-                        self._process(callback)
-                    else:
-                        _logger.debug("Not a valid unit id - {}, "
-                                      "ignoring!!".format(self._header['uid']))
-                        self.resetFrame()
-
+        if self.isFrameReady():
+            if self.checkFrame():
+                if self._validate_unit_id(unit, single):
+                    self._process(callback)
                 else:
-                    # Could be an error response
-                    if len(self._buffer):
-                        # Possible error ???
-                        self._process(callback, error=True)
-            else:
-                if len(self._buffer):
-                    # Possible error ???
-                    if self._header.get('len', 0) < 2:
-                        self._process(callback, error=True)
-                break
+                    _logger.debug("Not a valid unit id - {}, "
+                                  "ignoring!!".format(self._header['uid']))
+                    self.resetFrame()
+        else:
+            _logger.debug("Frame - [{}] not ready".format(data))
 
     def buildPacket(self, message):
         """
@@ -258,7 +247,7 @@ class ModbusRtuFramer(ModbusFramer):
         #     ModbusTransactionState.to_string(self.client.state))
         # )
         while self.client.state != ModbusTransactionState.IDLE:
-            if self.client.state == ModbusTransactionState.TRANSCATION_COMPLETE:
+            if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 ts = round(time.time(), 6)
                 _logger.debug("Changing state to IDLE - Last Frame End - {}, "
                               "Current Time stamp - {}".format(
@@ -296,11 +285,6 @@ class ModbusRtuFramer(ModbusFramer):
         :return:
         """
         result = self.client.recv(size)
-        # if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
-        #     _logger.debug("Changing transaction state from "
-        #                   "'WAITING FOR REPLY' to 'PROCESSING REPLY'")
-        #     self.client.state = ModbusTransactionState.PROCESSING_REPLY
-
         self.client.last_frame_end = round(time.time(), 6)
         return result
 
@@ -313,7 +297,7 @@ class ModbusRtuFramer(ModbusFramer):
         if result is None:
             raise ModbusIOException("Unable to decode request")
         elif error and result.function_code < 0x80:
-            raise InvalidMessageRecievedException(result)
+            raise InvalidMessageReceivedException(result)
         else:
             self.populateResult(result)
             self.advanceFrame()

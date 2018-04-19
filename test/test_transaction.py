@@ -11,7 +11,7 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.compat import byte2int
 from mock import MagicMock
 from pymodbus.exceptions import (
-    NotImplementedException, ModbusIOException, InvalidMessageRecievedException
+    NotImplementedException, ModbusIOException, InvalidMessageReceivedException
 )
 
 class ModbusTransactionTest(unittest.TestCase):

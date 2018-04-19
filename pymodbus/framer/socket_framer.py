@@ -1,6 +1,6 @@
 import struct
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageRecievedException
+from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.utilities import hexlify_packets
 from pymodbus.framer import ModbusFramer, SOCKET_FRAME_HEADER
 
@@ -174,7 +174,7 @@ class ModbusSocketFramer(ModbusFramer):
         if result is None:
             raise ModbusIOException("Unable to decode request")
         elif error and result.function_code < 0x80:
-            raise InvalidMessageRecievedException(result)
+            raise InvalidMessageReceivedException(result)
         else:
             self.populateResult(result)
             self.advanceFrame()

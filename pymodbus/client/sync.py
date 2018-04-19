@@ -230,7 +230,35 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
-        return self.socket.recv(size)
+            # socket.recv(size) waits until it gets some data from the host but
+            # not necessarily the entire response that can be fragmented in
+            # many packets.
+            # To avoid the splitted responses to be recognized as invalid
+            # messages and to be discarded, loops socket.recv until full data
+            # is received or timeout is expired.
+            # If timeout expires returns the read data, also if its length is
+            # less than the expected size.
+        self.socket.setblocking(0)
+        begin = time.time()
+
+        data = b''
+        if size is not None:
+            while len(data) < size:
+                try:
+                    data += self.socket.recv(size - len(data))
+                except socket.error:
+                    pass
+                if not self.timeout or (time.time() - begin > self.timeout):
+                    break
+        else:
+            while True:
+                try:
+                    data += self.socket.recv(1)
+                except socket.error:
+                    pass
+                if not self.timeout or (time.time() - begin > self.timeout):
+                    break
+        return data
 
     def is_socket_open(self):
         return True if self.socket is not None else False
@@ -423,6 +451,16 @@ class ModbusSerialClient(BaseModbusClient):
             self.socket.close()
         self.socket = None
 
+    def _in_waiting(self):
+        in_waiting = ("in_waiting" if hasattr(
+            self.socket, "in_waiting") else "inWaiting")
+
+        if in_waiting == "in_waiting":
+            waitingbytes = getattr(self.socket, in_waiting)
+        else:
+            waitingbytes = getattr(self.socket, in_waiting)()
+        return waitingbytes
+
     def _send(self, request):
         """ Sends data on the underlying socket
 
@@ -438,13 +476,7 @@ class ModbusSerialClient(BaseModbusClient):
             raise ConnectionException(self.__str__())
         if request:
             try:
-                in_waiting = ("in_waiting" if hasattr(
-                    self.socket, "in_waiting") else "inWaiting")
-
-                if in_waiting == "in_waiting":
-                    waitingbytes = getattr(self.socket, in_waiting)
-                else:
-                    waitingbytes = getattr(self.socket, in_waiting)()
+                waitingbytes = self._in_waiting()
                 if waitingbytes:
                     result = self.socket.read(waitingbytes)
                     if _logger.isEnabledFor(logging.WARNING):
@@ -465,6 +497,8 @@ class ModbusSerialClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
+        if size is None:
+            size = self._in_waiting()
         result = self.socket.read(size)
         return result
 

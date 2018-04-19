@@ -78,7 +78,7 @@ class ConnectionException(ModbusException):
         ModbusException.__init__(self, message)
 
 
-class InvalidMessageRecievedException(ModbusException):
+class InvalidMessageReceivedException(ModbusException):
     """
     Error resulting from invalid response received or decoded
     """

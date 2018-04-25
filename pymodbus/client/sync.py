@@ -498,7 +498,12 @@ class ModbusSerialClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         if size is None:
-            size = self._in_waiting()
+            start = time.time()
+            while (time.time() - start) <= self.timeout:
+                size = self._in_waiting()
+                if size:
+                    break
+                time.sleep(0.01)
         result = self.socket.read(size)
         return result
 

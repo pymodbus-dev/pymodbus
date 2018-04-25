@@ -13,6 +13,7 @@ Version 1.5.0
 * Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest)
 * Add expected response lengths for WriteMultipleCoilRequest and WriteMultipleRegisterRequest
 * Fix struct errors while decoding stray response
+* Modbus read retries works only when empty/no message is received
 * Change test runner from nosetest to pytest
 * Fix Misc examples
 

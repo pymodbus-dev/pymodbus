@@ -181,7 +181,8 @@ class ModbusTransactionManager(object):
                         response = self.getTransaction(tid=0)
                     else:
                         last_exception = last_exception or (
-                            "No Response received from the remote unit")
+                            "No Response received from the remote unit"
+                            "/Unable to decode response")
                         response = ModbusIOException(last_exception)
                 if hasattr(self.client, "state"):
                     _logger.debug("Changing transaction state from "

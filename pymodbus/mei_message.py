@@ -114,18 +114,14 @@ class ReadDeviceInformationResponse(ModbusResponse):
         ModbusResponse.__init__(self, **kwargs)
         self.read_code = read_code or DeviceInformation.Basic
         self.information = information or {}
-        self.number_of_objects = len(self.information)
-        for obj in self.information:
-            if isinstance(obj, list):
-                self.number_of_objects += (len(obj) - 1)
+        self.number_of_objects = 0
         self.conformity = 0x83 # I support everything right now
 
         # TODO calculate
         self.next_object_id = 0x00 # self.information[-1](0)
         self.more_follows = MoreData.Nothing
 
-    @staticmethod
-    def _encode_object(object_id, data):
+    def _encode_object(self, object_id, data):
         encoded_obj = struct.pack('>BB', object_id, len(data))
         if IS_PYTHON3:
             if isinstance(data, bytes):
@@ -134,6 +130,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
                 encoded_obj += data.encode()
         else:
             encoded_obj += data.encode()
+        self.number_of_objects += 1
         return encoded_obj
 
     def encode(self):
@@ -141,16 +138,20 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        packet = struct.pack('>BBBBBB', self.sub_function_code,
-            self.read_code, self.conformity, self.more_follows,
-            self.next_object_id, self.number_of_objects)
+        packet = struct.pack('>BBB', self.sub_function_code,
+                             self.read_code, self.conformity)
 
+        objects = b''
         for (object_id, data) in iteritems(self.information):
             if isinstance(data, list):
                 for item in data:
-                    packet += self._encode_object(object_id, item)
+                    objects += self._encode_object(object_id, item)
             else:
-                packet += self._encode_object(object_id, data)
+                objects += self._encode_object(object_id, data)
+
+        packet += struct.pack('>BBB', self.more_follows, self.next_object_id,
+                              self.number_of_objects)
+        packet += objects
         return packet
 
     def decode(self, data):

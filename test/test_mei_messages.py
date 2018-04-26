@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 MEI Message Test Fixture
 --------------------------------
@@ -46,13 +45,21 @@ class ModbusMeiMessageTest(unittest.TestCase):
         control.Identity.VendorName  = "Company"
         control.Identity.ProductCode = "Product"
         control.Identity.MajorMinorRevision = "v2.1.12"
+        control.Identity.update({0x81: ['Test', 'Repeated']})
 
         handle  = ReadDeviceInformationRequest()
         result  = handle.execute(context)
         self.assertTrue(isinstance(result, ReadDeviceInformationResponse))
-        self.assertTrue(result.information[0x00], "Company")
-        self.assertTrue(result.information[0x01], "Product")
-        self.assertTrue(result.information[0x02], "v2.1.12")
+        self.assertEqual(result.information[0x00], "Company")
+        self.assertEqual(result.information[0x01], "Product")
+        self.assertEqual(result.information[0x02], "v2.1.12")
+        with self.assertRaises(KeyError):
+            _ = result.information[0x81]
+
+        handle = ReadDeviceInformationRequest(read_code=DeviceInformation.Extended,
+                                              object_id=0x80)
+        result = handle.execute(context)
+        self.assertEqual(result.information[0x81], ['Test', 'Repeated'])
 
     def testReadDeviceInformationRequestError(self):
         ''' Test basic bit message encoding/decoding '''
@@ -81,10 +88,25 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual(result, message)
         self.assertEqual("ReadDeviceInformationResponse(1)", str(handle))
 
+        dataset = {
+            0x00: 'Company',
+            0x01: 'Product',
+            0x02: 'v2.1.12',
+            0x81: ['Test', 'Repeated']
+        }
+        message = b'\x0e\x03\x83\x00\x00\x05'
+        message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
+        message += b'\x81\x04Test\x81\x08Repeated'
+        handle = ReadDeviceInformationResponse(
+            read_code=DeviceInformation.Extended, information=dataset)
+        result = handle.encode()
+        self.assertEqual(result, message)
+
     def testReadDeviceInformationResponseDecode(self):
         ''' Test that the read device information response can decode '''
-        message  = b'\x0e\x01\x01\x00\x00\x03'
+        message  = b'\x0e\x01\x01\x00\x00\x05'
         message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
+        message += b'\x81\x04Test\x81\x08Repeated'
         handle  = ReadDeviceInformationResponse(read_code=0x00, information=[])
         handle.decode(message)
         self.assertEqual(handle.read_code, DeviceInformation.Basic)
@@ -92,6 +114,7 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual(handle.information[0x00], b'Company')
         self.assertEqual(handle.information[0x01], b'Product')
         self.assertEqual(handle.information[0x02], b'v2.1.12')
+        self.assertEqual(handle.information[0x81], [b'Test', b'Repeated'])
 
     def testRtuFrameSize(self):
         ''' Test that the read device information response can decode '''

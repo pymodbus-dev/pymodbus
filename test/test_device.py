@@ -93,8 +93,10 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(sorted(result.keys()), [0x06, 0x80, 0x82, 0xFF])
         result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x80)
         self.assertEqual(sorted(result.keys()), [0x80, 0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x81)
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x82)
         self.assertEqual(sorted(result.keys()), [0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x81)
+        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
 
     def testBasicCommands(self):
         ''' Test device identification reading '''

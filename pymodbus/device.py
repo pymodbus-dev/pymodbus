@@ -288,9 +288,12 @@ class DeviceInformationFactory(Singleton):
 
     __lookup = {
         DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))),
-        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))),
-        DeviceInformation.Extended: lambda c, r, i:
-            c.__gets(r, [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]),
+        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))
+            if c.__get(r, i)[i] else list(range(0, 0x07))),
+        DeviceInformation.Extended: lambda c, r, i: c.__gets(r,
+            [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]
+            if c.__get(r, i)[i] else
+            [x for x in range(0, 0x100) if x not in range(0x07, 0x80)]),
         DeviceInformation.Specific: lambda c, r, i: c.__get(r, i),
     }
 

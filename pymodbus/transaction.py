@@ -4,9 +4,10 @@ Collection of transaction based abstractions
 import struct
 import socket
 from threading import RLock
+from functools import partial
 
 from pymodbus.exceptions import ModbusIOException, NotImplementedException
-from pymodbus.exceptions import InvalidMessageRecievedException
+from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.constants import Defaults
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
@@ -143,6 +144,8 @@ class ModbusTransactionManager(object):
                 c_str = str(self.client)
                 if "modbusudpclient" in c_str.lower().strip():
                     full = True
+                    if not expected_response_length:
+                        expected_response_length = 1024
                 response, last_exception = self._transact(request,
                                                           expected_response_length,
                                                           full=full
@@ -167,25 +170,30 @@ class ModbusTransactionManager(object):
                             retries -= 1
                             continue
                         break
+                addTransaction = partial(self.addTransaction,
+                                         tid=request.transaction_id)
                 self.client.framer.processIncomingPacket(response,
-                                                         self.addTransaction,
+                                                         addTransaction,
                                                          request.unit_id)
                 response = self.getTransaction(request.transaction_id)
                 if not response:
                     if len(self.transactions):
                         response = self.getTransaction(tid=0)
                     else:
-                        last_exception = last_exception or ("No Response received "
-                                                            "from the remote unit")
+                        last_exception = last_exception or (
+                            "No Response received from the remote unit"
+                            "/Unable to decode response")
                         response = ModbusIOException(last_exception)
                 if hasattr(self.client, "state"):
                     _logger.debug("Changing transaction state from "
-                                  "'PROCESSING REPLY' to 'TRANSCATION_COMPLETE'")
-                    self.client.state = ModbusTransactionState.TRANSCATION_COMPLETE
+                                  "'PROCESSING REPLY' to "
+                                  "'TRANSACTION_COMPLETE'")
+                    self.client.state = (
+                        ModbusTransactionState.TRANSACTION_COMPLETE)
                 return response
             except Exception as ex:
                 _logger.exception(ex)
-                self.client.state = ModbusTransactionState.TRANSCATION_COMPLETE
+                self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 raise
 
     def _transact(self, packet, response_length, full=False):
@@ -208,11 +216,11 @@ class ModbusTransactionManager(object):
                 _logger.debug("Changing transaction state from 'SENDING' "
                               "to 'WAITING FOR REPLY'")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-            result = self._recv(response_length or 1024, full)
+            result = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug("RECV: " + hexlify_packets(result))
         except (socket.error, ModbusIOException,
-                InvalidMessageRecievedException) as msg:
+                InvalidMessageReceivedException) as msg:
             self.client.close()
             _logger.debug("Transaction failed. (%s) " % msg)
             last_exception = msg
@@ -223,7 +231,7 @@ class ModbusTransactionManager(object):
         return self.client.framer.sendPacket(packet)
 
     def _recv(self, expected_response_length, full):
-        expected_response_length = expected_response_length or 1024
+        total = None
         if not full:
             exception_length = self._calculate_exception_length()
             if isinstance(self.client.framer, ModbusSocketFramer):
@@ -256,8 +264,9 @@ class ModbusTransactionManager(object):
                         h_size = self.client.framer._hsize
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = h_size + length
-                    expected_response_length -= min_size
-                    total = expected_response_length + min_size
+                    if expected_response_length is not None:
+                        expected_response_length -= min_size
+                        total = expected_response_length + min_size
                 else:
                     expected_response_length = exception_length - min_size
                     total = expected_response_length + min_size
@@ -269,7 +278,7 @@ class ModbusTransactionManager(object):
         result = self.client.framer.recvPacket(expected_response_length)
         result = read_min + result
         actual = len(result)
-        if actual != total:
+        if total is not None and actual != total:
             _logger.debug("Incomplete message received, "
                           "Expected {} bytes Recieved "
                           "{} bytes !!!!".format(total, actual))

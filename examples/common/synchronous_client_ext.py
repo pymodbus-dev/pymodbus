@@ -13,7 +13,7 @@ modbus protocol.
 # from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
-from pymodbus.transaction import ModbusRtuFramer
+
 
 # --------------------------------------------------------------------------- # 
 # import the extended messages to perform
@@ -51,6 +51,8 @@ def execute_extended_requests():
     # client = ModbusClient(method='ascii', port="/dev/ptyp0")
     # client = ModbusClient(method='binary', port="/dev/ptyp0")
     # client = ModbusClient('127.0.0.1', port=5020)
+    # from pymodbus.transaction import ModbusRtuFramer
+    # client = ModbusClient('127.0.0.1', port=5020, framer=ModbusRtuFramer)
     client.connect()
 
     # ----------------------------------------------------------------------- # 

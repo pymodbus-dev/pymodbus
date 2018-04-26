@@ -214,6 +214,13 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         params = (self.address, len(self.values))
         return "WriteNCoilRequest (%d) => %d " % params
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)
+        :return:
+        """
+        return 1 + 2 + 2
+
 
 class WriteMultipleCoilsResponse(ModbusResponse):
     '''

@@ -192,6 +192,13 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleRegistersResponse(self.address, self.count)
 
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)
+        :return:
+        """
+        return 1 + 2 + 2
+
     def __str__(self):
         ''' Returns a string representation of the instance
 

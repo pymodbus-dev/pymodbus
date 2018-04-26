@@ -17,7 +17,7 @@ the guard construct that is available in python 2.5 and up::
 # import the various server implementations
 # --------------------------------------------------------------------------- # 
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-#from pymodbus.client.sync import ModbusUdpClient as ModbusClient
+# from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 # from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- # 
@@ -62,6 +62,7 @@ def run_sync_client():
     #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
     # ------------------------------------------------------------------------# 
     client = ModbusClient('localhost', port=5020)
+    # from pymodbus.transaction import ModbusRtuFramer
     # client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
     # client = ModbusClient(method='binary', port='/dev/ptyp0', timeout=1)
     # client = ModbusClient(method='ascii', port='/dev/ptyp0', timeout=1)

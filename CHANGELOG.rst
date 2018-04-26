@@ -10,7 +10,11 @@ Version 1.5.0
 * Move framers from transaction.py to respective modules
 * Fix modbus payload builder and decoder
 * Async servers can now have an option to defer `reactor.run()` when using `Start<Tcp/Serial/Udo>Server(...,defer_reactor_run=True)`
-* Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest) 
+* Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest)
+* Add expected response lengths for WriteMultipleCoilRequest and WriteMultipleRegisterRequest
+* Fix struct errors while decoding stray response
+* Modbus read retries works only when empty/no message is received
+* Change test runner from nosetest to pytest
 * Fix Misc examples
 
 Version 1.4.0

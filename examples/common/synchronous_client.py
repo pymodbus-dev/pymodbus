@@ -77,7 +77,6 @@ def run_sync_client():
     # individual request. This can be done by specifying the `unit` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
-    rr = client.read_holding_registers(0, 130, unit=UNIT)
     log.debug("Reading Coils")
     rr = client.read_coils(1, 1, unit=UNIT)
     log.debug(rr)

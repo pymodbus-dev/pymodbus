@@ -21,6 +21,7 @@ from pymodbus.transaction import ModbusBinaryFramer
 # Mock Classes
 # ---------------------------------------------------------------------------#
 class mockSocket(object):
+    timeout = 2
     def close(self): return True
 
     def recv(self, size): return b'\x00' * size
@@ -38,6 +39,7 @@ class mockSocket(object):
     def setblocking(self, flag): return None
 
     def in_waiting(self): return None
+
 
 
 # ---------------------------------------------------------------------------#
@@ -213,9 +215,13 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(b'\x00\x01\x02', client._recv(3))
         mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
         self.assertEqual(b'\x00\x01', client._recv(2))
-
         mock_socket.recv.side_effect = socket.error('No data')
         self.assertEqual(b'', client._recv(2))
+        client.socket = mockSocket()
+        client.socket.timeout = 0.1
+        self.assertIn(b'\x00', client._recv(None))
+
+
 
     # -----------------------------------------------------------------------#
     # Test Serial Client
@@ -315,6 +321,11 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket = mockSocket()
         self.assertEqual(b'', client._recv(0))
         self.assertEqual(b'\x00' * 4, client._recv(4))
+        client.socket = MagicMock()
+        client.socket.read.return_value = b''
+        self.assertEqual(b'', client._recv(None))
+        client.socket.timeout = 0
+        self.assertEqual(b'', client._recv(0))
 
 
 # ---------------------------------------------------------------------------#

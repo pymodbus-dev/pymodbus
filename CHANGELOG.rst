@@ -12,6 +12,8 @@ Version 1.5.0
 * Async servers can now have an option to defer `reactor.run()` when using `Start<Tcp/Serial/Udo>Server(...,defer_reactor_run=True)`
 * Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest)
 * Add expected response lengths for WriteMultipleCoilRequest and WriteMultipleRegisterRequest
+* Fix _rtu_byte_count_pos for GetCommEventLogResponse
+* Add support for repeated MEI device information Object IDs
 * Fix struct errors while decoding stray response
 * Modbus read retries works only when empty/no message is received
 * Change test runner from nosetest to pytest

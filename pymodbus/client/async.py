@@ -64,9 +64,13 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
         '''
         self._connected = False
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
+        if isinstance(self.framer, type):
+            # Framer class not instance
+            self.framer = self.framer(ClientDecoder(), client=None)
         if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self, **kwargs)
-        else: self.transaction = FifoTransactionManager(self, **kwargs)
+        else:
+            self.transaction = FifoTransactionManager(self, **kwargs)
 
     def connectionMade(self):
         ''' Called upon a successful client connection.
@@ -90,7 +94,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        self.framer.processIncomingPacket(data, self._handleResponse)
+        unit = self.framer.decode_data(data).get("uid", 0)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to
@@ -111,7 +116,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):
             handler = self.transaction.getTransaction(tid)
             if handler:
                 handler.callback(reply)
-            else: _logger.debug("Unrequested message: " + str(reply))
+            else:
+                _logger.debug("Unrequested message: " + str(reply))
 
     def _buildResponse(self, tid):
         ''' Helper method to return a deferred response
@@ -163,7 +169,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):
         :param params: The host parameters sending the datagram
         '''
         _logger.debug("Datagram from: %s:%d" % params)
-        self.framer.processIncomingPacket(data, self._handleResponse)
+        unit = self.framer.decode_data(data).get("uid", 0)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def execute(self, request):
         ''' Starts the producer to send the next request to

@@ -29,13 +29,16 @@ from pymodbus.compat import  IS_PYTHON3
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #
 import logging
-modbus_log = logging.getLogger("pymodbus")
-
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
+log = logging.getLogger()
 
 
 # -------------------------------------------------------------------------- #
 # build a quick wrapper around the framers
 # -------------------------------------------------------------------------- #
+
 class Decoder(object):
 
     def __init__(self, framer, encode=False):
@@ -60,8 +63,8 @@ class Decoder(object):
         print("Decoding Message %s" % value)
         print("="*80)
         decoders = [
-            self.framer(ServerDecoder()),
-            self.framer(ClientDecoder()),
+            self.framer(ServerDecoder(), client=None),
+            self.framer(ClientDecoder(), client=None)
         ]
         for decoder in decoders:
             print("%s" % decoder.decoder.__class__.__name__)
@@ -69,8 +72,9 @@ class Decoder(object):
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
+                    unit = decoder._header.get("uid", 0x00)
                     decoder.advanceFrame()
-                    decoder.processIncomingPacket(message, self.report)
+                    decoder.processIncomingPacket(message, self.report, unit)
                 else:
                     self.check_errors(decoder, message)
             except Exception as ex:
@@ -81,7 +85,8 @@ class Decoder(object):
 
         :param message: The message to find errors in
         """
-        pass
+        log.error("Unable to parse message - {} with {}".format(message,
+                                                                decoder))
 
     def report(self, message):
         """ The callback to print the message information
@@ -143,14 +148,6 @@ def get_options():
     parser.add_option("-t", "--transaction",
                       help="If the incoming message is in hexadecimal format",
                       action="store_true", dest="transaction", default=False)
-
-    parser.add_option("-t", "--transaction",
-        help="If the incoming message is in hexadecimal format",
-        action="store_true", dest="transaction", default=False)
-
-    parser.add_option("-t", "--transaction",
-        help="If the incoming message is in hexadecimal format",
-        action="store_true", dest="transaction", default=False)
 
     (opt, arg) = parser.parse_args()
 

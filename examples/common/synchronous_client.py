@@ -17,14 +17,16 @@ the guard construct that is available in python 2.5 and up::
 # import the various server implementations
 # --------------------------------------------------------------------------- # 
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-#from pymodbus.client.sync import ModbusUdpClient as ModbusClient
+# from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 # from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- # 
 # configure the client logging
 # --------------------------------------------------------------------------- # 
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s '
+          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -60,8 +62,12 @@ def run_sync_client():
     #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
     # ------------------------------------------------------------------------# 
     client = ModbusClient('localhost', port=5020)
-    # client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
-    # client = ModbusClient(method='rtu', port='/dev/ttyp0', timeout=1)
+    # from pymodbus.transaction import ModbusRtuFramer
+    # client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
+    # client = ModbusClient(method='binary', port='/dev/ptyp0', timeout=1)
+    # client = ModbusClient(method='ascii', port='/dev/ptyp0', timeout=1)
+    # client = ModbusClient(method='rtu', port='/dev/ptyp0', timeout=1,
+    #                       baudrate=9600)
     client.connect()
     
     # ------------------------------------------------------------------------# 
@@ -72,9 +78,10 @@ def run_sync_client():
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
     log.debug("Reading Coils")
-    rr = client.read_coils(1, 1, unit=0x01)
-    print(rr)
-    
+    rr = client.read_coils(1, 1, unit=UNIT)
+    log.debug(rr)
+
+
     # ----------------------------------------------------------------------- #
     # example requests
     # ----------------------------------------------------------------------- #

@@ -194,8 +194,8 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
     def get_response_pdu_size(self):
         """
-        Func_code (1 byte) + Register Address(2 byte) + Quantity of Registers (2 bytes)
-        :return: 
+        Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)
+        :return:
         """
         return 1 + 2 + 2
 

@@ -29,7 +29,7 @@ if sys.platform == "darwin":
 #---------------------------------------------------------------------------#
 class MockServer(object):
     def __init__(self):
-        self.framer  = lambda _: "framer"
+        self.framer  = lambda _, client=None: "framer"
         self.decoder = "decoder"
         self.threads = []
         self.context = {}
@@ -59,7 +59,6 @@ class SynchronousServerTest(unittest.TestCase):
         request = ReadCoilsRequest(1, 1)
         address = ('server', 12345)
         server  = MockServer()
-        
         with patch.object(ModbusBaseRequestHandler, 'handle') as mock_handle:
             with patch.object(ModbusBaseRequestHandler, 'send') as mock_send:
                 mock_handle.return_value = True
@@ -108,17 +107,18 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback1(a, b):
+        def _callback1(a, b, *args, **kwargs):
             handler.running = False # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
         # Ugly hack
-        handler.server.context = ModbusServerContext(slaves={18: None}, single=False)
+        handler.server.context = ModbusServerContext(slaves={-1: None},
+                                                     single=False)
         handler.handle()
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
         # exceptions are simply ignored
-        def _callback2(a, b):
+        def _callback2(a, b, *args, **kwargs):
             if handler.framer.processIncomingPacket.call_count == 2:
                 raise Exception("example exception")
             else: handler.running = False # stop infinite loop
@@ -147,6 +147,9 @@ class SynchronousServerTest(unittest.TestCase):
     def testModbusConnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusConnectedRequestHandler
+        handler.server = Mock()
+        # handler.server.context.slaves = Mock()
+        # protocol.factory.store.single = True
         handler.framer  = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
@@ -158,7 +161,7 @@ class SynchronousServerTest(unittest.TestCase):
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback(a, b):
+        def _callback(a, b, *args, **kwargs):
             handler.running = False # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback
         handler.running = True
@@ -181,7 +184,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler.request.recv.return_value = None
         handler.running = True
         handler.handle()
-        self.assertEqual(handler.framer.processIncomingPacket.call_count, 3)
+        self.assertEqual(handler.framer.processIncomingPacket.call_count, 4)
 
     #-----------------------------------------------------------------------#
     # Test Disconnected Request Handler
@@ -190,6 +193,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer  = Mock()
+        handler.server = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
         handler.socket = Mock()
@@ -205,6 +209,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer  = Mock()
+        handler.server = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = (b"\x12\x34", handler.request)
 
@@ -239,7 +244,7 @@ class SynchronousServerTest(unittest.TestCase):
         handler.request = (None, handler.request)
         handler.running = True
         handler.handle()
-        self.assertEqual(handler.framer.processIncomingPacket.call_count, 3)
+        self.assertEqual(handler.framer.processIncomingPacket.call_count, 4)
 
     #-----------------------------------------------------------------------#
     # Test TCP Server

@@ -220,7 +220,7 @@ class ModbusDeviceIdentification(object):
         '''
         if isinstance(info, dict):
             for key in info:
-                if (0x06 >= key >= 0x00) or (0x80 > key > 0x08):
+                if (0x06 >= key >= 0x00) or (0xFF >= key >= 0x80):
                     self.__data[key] = info[key]
 
     def __iter__(self):
@@ -287,10 +287,11 @@ class DeviceInformationFactory(Singleton):
     '''
 
     __lookup = {
-        DeviceInformation.Basic:    lambda c,r,i: c.__gets(r, list(range(0x00, 0x03))),
-        DeviceInformation.Regular:  lambda c,r,i: c.__gets(r, list(range(0x00, 0x08))),
-        DeviceInformation.Extended: lambda c,r,i: c.__gets(r, list(range(0x80, i))),
-        DeviceInformation.Specific: lambda c,r,i: c.__get(r, i),
+        DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))),
+        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))),
+        DeviceInformation.Extended: lambda c, r, i:
+            c.__gets(r, [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]),
+        DeviceInformation.Specific: lambda c, r, i: c.__get(r, i),
     }
 
     @classmethod
@@ -323,7 +324,7 @@ class DeviceInformationFactory(Singleton):
         :param object_ids: The specific object ids to read
         :returns: The requested data (id, length, value)
         '''
-        return dict((oid, identity[oid]) for oid in object_ids)
+        return dict((oid, identity[oid]) for oid in object_ids if identity[oid])
 
 
 #---------------------------------------------------------------------------#

@@ -115,11 +115,26 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.read_code = read_code or DeviceInformation.Basic
         self.information = information or {}
         self.number_of_objects = len(self.information)
+        for obj in self.information:
+            if isinstance(obj, list):
+                self.number_of_objects += (len(obj) - 1)
         self.conformity = 0x83 # I support everything right now
 
         # TODO calculate
         self.next_object_id = 0x00 # self.information[-1](0)
         self.more_follows = MoreData.Nothing
+
+    @staticmethod
+    def _encode_object(object_id, data):
+        encoded_obj = struct.pack('>BB', object_id, len(data))
+        if IS_PYTHON3:
+            if isinstance(data, bytes):
+                encoded_obj += data
+            else:
+                encoded_obj += data.encode()
+        else:
+            encoded_obj += data.encode()
+        return encoded_obj
 
     def encode(self):
         ''' Encodes the response
@@ -131,14 +146,11 @@ class ReadDeviceInformationResponse(ModbusResponse):
             self.next_object_id, self.number_of_objects)
 
         for (object_id, data) in iteritems(self.information):
-            packet += struct.pack('>BB', object_id, len(data))
-            if IS_PYTHON3:
-                if isinstance(data, bytes):
-                    packet += data
-                else:
-                    packet += data.encode()
+            if isinstance(data, list):
+                for item in data:
+                    packet += self._encode_object(object_id, item)
             else:
-                packet += data.encode()
+                packet += self._encode_object(object_id, data)
         return packet
 
     def decode(self, data):

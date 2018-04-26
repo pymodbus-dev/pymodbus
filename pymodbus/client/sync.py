@@ -2,7 +2,7 @@ import socket
 import serial
 import time
 import sys
-
+from functools import partial
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.factory import ClientDecoder
@@ -489,6 +489,19 @@ class ModbusSerialClient(BaseModbusClient):
             return size
         return 0
 
+    def _wait_for_data(self):
+        if self.timeout is not None and self.timeout != 0:
+            condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self.timeout)
+        else:
+            condition = partial(lambda dummy1, dummy2: True, dummy2=None)
+        start = time.time()
+        while condition(start):
+            size = self._in_waiting()
+            if size:
+                break
+            time.sleep(0.01)
+        return size
+
     def _recv(self, size):
         """ Reads data from the underlying descriptor
 
@@ -498,12 +511,7 @@ class ModbusSerialClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         if size is None:
-            start = time.time()
-            while (time.time() - start) <= self.timeout:
-                size = self._in_waiting()
-                if size:
-                    break
-                time.sleep(0.01)
+            size = self._wait_for_data()
         result = self.socket.read(size)
         return result
 

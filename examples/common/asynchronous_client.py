@@ -118,7 +118,7 @@ def beginAsynchronousTest(client):
         'write_address':   1,
         'write_registers': [20]*8,
     }
-    rq = client.readwrite_registers(**arguments, unit=UNIT)
+    rq = client.readwrite_registers(arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.registers == [20]*8)      # test the expected value
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value

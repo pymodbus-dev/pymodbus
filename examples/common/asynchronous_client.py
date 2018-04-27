@@ -16,13 +16,16 @@ from pymodbus.constants import Defaults
 # choose the requested modbus protocol
 # --------------------------------------------------------------------------- #
 from pymodbus.client.async import ModbusClientProtocol
-#from pymodbus.client.async import ModbusUdpClientProtocol
+from pymodbus.client.async import ModbusUdpClientProtocol
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -34,7 +37,6 @@ log.setLevel(logging.DEBUG)
 def dassert(deferred, callback):
     def _assertor(value):
         assert value
-
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(lambda _: _assertor(False))
 
@@ -47,8 +49,20 @@ def dassert(deferred, callback):
 # --------------------------------------------------------------------------- #
 
 
+def processResponse(result):
+    log.debug(result)
+
+
 def exampleRequests(client):
     rr = client.read_coils(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_holding_registers(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_discrete_inputs(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_input_registers(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    stopAsynchronousTest(client)
 
 # --------------------------------------------------------------------------- #
 # example requests
@@ -61,7 +75,16 @@ def exampleRequests(client):
 # deferred assert helper(dassert).
 # --------------------------------------------------------------------------- #
 
-UNIT = 0x01
+
+UNIT = 0x00
+
+
+def stopAsynchronousTest(client):
+    # ----------------------------------------------------------------------- #
+    # close the client at some time later
+    # ----------------------------------------------------------------------- #
+    reactor.callLater(1, client.transport.loseConnection)
+    reactor.callLater(2, reactor.stop)
 
 def beginAsynchronousTest(client):
     rq = client.write_coil(1, True, unit=UNIT)
@@ -99,12 +122,8 @@ def beginAsynchronousTest(client):
     rr = client.read_input_registers(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.registers == [20]*8)      # test the expected value
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value
+    stopAsynchronousTest(client)
 
-    # ----------------------------------------------------------------------- #
-    # close the client at some time later
-    # ----------------------------------------------------------------------- #
-    reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop)
 
 # --------------------------------------------------------------------------- #
 # extra requests
@@ -134,5 +153,11 @@ def beginAsynchronousTest(client):
 if __name__ == "__main__":
     defer = protocol.ClientCreator(
         reactor, ModbusClientProtocol).connectTCP("localhost", 5020)
+
+    # TCP server with a different framer
+
+    # defer = protocol.ClientCreator(
+    #     reactor, ModbusClientProtocol, framer=ModbusRtuFramer).connectTCP(
+    #     "localhost", 5020)
     defer.addCallback(beginAsynchronousTest)
     reactor.run()

@@ -27,7 +27,9 @@ from pymodbus.payload import BinaryPayloadBuilder
 # configure the service logging
 # --------------------------------------------------------------------------- # 
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -36,12 +38,24 @@ def run_payload_server():
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(byteorder=Endian.Little)
-    # builder.add_string('abcdefgh')
-    # builder.add_32bit_float(22.34)
-    # builder.add_16bit_uint(4660)
-    # builder.add_8bit_int(18)
+    builder = BinaryPayloadBuilder(byteorder=Endian.Little,
+                                   wordorder=Endian.Little)
+    builder.add_string('abcdefgh')
     builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+    builder.add_8bit_int(-0x12)
+    builder.add_8bit_uint(0x12)
+    builder.add_16bit_int(-0x5678)
+    builder.add_16bit_uint(0x1234)
+    builder.add_32bit_int(-0x1234)
+    builder.add_32bit_uint(0x12345678)
+    builder.add_32bit_float(22.34)
+    builder.add_32bit_float(-22.34)
+    builder.add_64bit_int(-0xDEADBEEF)
+    builder.add_64bit_uint(0x12345678DEADBEEF)
+    builder.add_64bit_uint(0xDEADBEEFDEADBEED)
+    builder.add_64bit_float(123.45)
+    builder.add_64bit_float(-123.45)
+
     
     # ----------------------------------------------------------------------- #
     # use that payload in the data store
@@ -64,7 +78,7 @@ def run_payload_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.0'
+    identity.MajorMinorRevision = '1.5'
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #

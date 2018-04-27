@@ -78,7 +78,9 @@ class AsynchronousServerTest(unittest.TestCase):
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         protocol.factory = MagicMock()
         protocol.factory.control.ListenOnly = False
-        protocol.factory.store = [byte2int(mock_data[0])]
+        protocol.factory.store.slaves = MagicMock()
+        protocol.factory.store.single = True
+        protocol.factory.store.slaves.return_value = [byte2int(mock_data[6])]
         protocol.framer = protocol._execute = MagicMock()
 
         protocol.dataReceived(mock_data)
@@ -100,7 +102,10 @@ class AsynchronousServerTest(unittest.TestCase):
 
     def testTcpExecuteFailure(self):
         protocol = ModbusTcpProtocol()
+        protocol.factory = MagicMock()
+        protocol.factory.store = MagicMock()
         protocol.store = MagicMock()
+        protocol.factory.ignore_missing_slaves = False
         request = MagicMock()
         protocol._send = MagicMock()
 

@@ -75,7 +75,7 @@ For those of you that just want to get started fast, here you go::
     client = ModbusTcpClient('127.0.0.1')
     client.write_coil(1, True)
     result = client.read_coils(1,1)
-    print result.bits[0]
+    print(result.bits[0])
     client.close()
 
 For more advanced examples, check out the examples included in the

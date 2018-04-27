@@ -278,7 +278,7 @@ class GetCommEventLogResponse(ModbusResponse):
     field defines the total length of the data in these four field
     '''
     function_code = 0x0c
-    _rtu_byte_count_pos = 3
+    _rtu_byte_count_pos = 2
 
     def __init__(self, **kwargs):
         ''' Initializes a new instance

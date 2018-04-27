@@ -16,7 +16,6 @@ from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 
 # --------------------------------------------------------------------------- # 
-
 # import the extended messages to perform
 # --------------------------------------------------------------------------- #
 from pymodbus.diag_message import *
@@ -47,7 +46,6 @@ def execute_extended_requests():
     #
     # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
-
     # ------------------------------------------------------------------------# 
     client = ModbusClient(method='rtu', port="/dev/ptyp0")
     # client = ModbusClient(method='ascii', port="/dev/ptyp0")
@@ -84,7 +82,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)              # not supported by reference
-    # assert (rr.isError() is False)  # test that we are not an error
+    # assert (not rr.isError())  # test that we are not an error
     # assert (rr.information[0] == b'Pymodbus')  # test the vendor name
     # assert (rr.information[1] == b'PM')  # test the product code
     # assert (rr.information[2] == b'1.0')  # test the code revision
@@ -94,7 +92,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                        # not supported by reference
-    # assert(rr.isError() is False)           # test that we are not an error
+    # assert(not rr.isError())           # test that we are not an error
     # assert(rr.identifier  == 0x00)            # test the slave identifier
     # assert(rr.status  == 0x00)                # test that the status is ok
 
@@ -103,7 +101,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                        # not supported by reference
-    # assert(rr.isError() is False)           # test that we are not an error
+    # assert(not rr.isError())           # test that we are not an error
     # assert(rr.status == 0x55)                 # test the status code
 
     log.debug("Running GetCommEventCounterRequest")
@@ -111,7 +109,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                       # not supported by reference
-    # assert(rr.isError() is False)          # test that we are not an error
+    # assert(not rr.isError())          # test that we are not an error
     # assert(rr.status == True)                # test the status code
     # assert(rr.count == 0x00)                 # test the status code
 
@@ -120,7 +118,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                       # not supported by reference
-    # assert(rr.isError() is False)          # test that we are not an error
+    # assert(not rr.isError())          # test that we are not an error
     # assert(rr.status == True)                # test the status code
     # assert(rr.event_count == 0x00)           # test the number of events
     # assert(rr.message_count == 0x00)         # test the number of messages

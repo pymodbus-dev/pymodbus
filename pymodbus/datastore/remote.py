@@ -99,7 +99,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         ''' A helper method to extract the values out of
         a response.  TODO make this consistent (values?)
         '''
-        if result.isError() is False:
+        if not result.isError():
             if fx in ['d', 'c']: return result.bits
             if fx in ['h', 'i']: return result.registers
         else: return result

@@ -23,8 +23,8 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # Import the modbus framer that you want
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
-#from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
-from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
+from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
+# from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 #from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 #from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     rq = client.write_coil(1, True)
     rr = client.read_coils(1,1)
-    assert(rq.isError() is False)     # test that we are not an error
+    assert(not rq.isError())     # test that we are not an error
     assert(rr.bits[0] == True)          # test the expected value
 
     # ----------------------------------------------------------------------- #

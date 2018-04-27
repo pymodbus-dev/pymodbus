@@ -29,14 +29,14 @@ def run_serial_forwarder():
     # ----------------------------------------------------------------------- #
     # initialize the datastore(serial client)
     # ----------------------------------------------------------------------- #
-    client = ModbusClient(method='ascii', port='/dev/pts/14')
+    client = ModbusClient(method='rtu', port='/dev/ptyp0')
     store = RemoteSlaveContext(client)
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
-    StartServer(context)
+    StartServer(context, address=("localhost", 5020))
 
 
 if __name__ == "__main__":

@@ -113,7 +113,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param fx: The function to call
         :param result: The resulting data
         """
-        if result.isError() is False:
+        if not result.isError():
             if fx in ['d', 'c']:
                 return result.bits
             if fx in ['h', 'i']:

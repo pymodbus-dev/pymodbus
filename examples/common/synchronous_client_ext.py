@@ -7,9 +7,9 @@ The following is an example of how to use the synchronous modbus client
 implementation from pymodbus to perform the extended portions of the
 modbus protocol.
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the various server implementations
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
@@ -17,15 +17,15 @@ from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- # 
 # import the extended messages to perform
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
 from pymodbus.mei_message import *
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the client logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s '
           '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -37,14 +37,14 @@ UNIT = 0x01
 
 
 def execute_extended_requests():
-    # ------------------------------------------------------------------------# 
+    # ------------------------------------------------------------------------#
     # choose the client you want
-    # ------------------------------------------------------------------------# 
+    # ------------------------------------------------------------------------#
     # make sure to start an implementation to hit against. For this
     # you can use an existing device, the reference implementation in the tools
     # directory, or start a pymodbus server.
     #
-    # It should be noted that you can supply an ipv4 or an ipv6 host address 
+    # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
     # ------------------------------------------------------------------------# 
     client = ModbusClient(method='rtu', port="/dev/ptyp0")
@@ -55,9 +55,9 @@ def execute_extended_requests():
     # client = ModbusClient('127.0.0.1', port=5020, framer=ModbusRtuFramer)
     client.connect()
 
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # extra requests
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # If you are performing a request that is not available in the client
     # mixin, you have to perform the request like this instead::
     #
@@ -72,9 +72,9 @@ def execute_extended_requests():
     #
     # What follows is a listing of all the supported methods. Feel free to
     # comment, uncomment, or modify each result set to match with your ref.
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
 
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # information requests
     # ----------------------------------------------------------------------- #
     log.debug("Running ReadDeviceInformationRequest")
@@ -82,7 +82,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)              # not supported by reference
-    # assert (rr.function_code < 0x80)  # test that we are not an error
+    # assert (not rr.isError())  # test that we are not an error
     # assert (rr.information[0] == b'Pymodbus')  # test the vendor name
     # assert (rr.information[1] == b'PM')  # test the product code
     # assert (rr.information[2] == b'1.0')  # test the code revision
@@ -92,7 +92,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                        # not supported by reference
-    # assert(rr.function_code < 0x80)           # test that we are not an error
+    # assert(not rr.isError())           # test that we are not an error
     # assert(rr.identifier  == 0x00)            # test the slave identifier
     # assert(rr.status  == 0x00)                # test that the status is ok
 
@@ -101,7 +101,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                        # not supported by reference
-    # assert(rr.function_code < 0x80)           # test that we are not an error
+    # assert(not rr.isError())           # test that we are not an error
     # assert(rr.status == 0x55)                 # test the status code
 
     log.debug("Running GetCommEventCounterRequest")
@@ -109,7 +109,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                       # not supported by reference
-    # assert(rr.function_code < 0x80)          # test that we are not an error
+    # assert(not rr.isError())          # test that we are not an error
     # assert(rr.status == True)                # test the status code
     # assert(rr.count == 0x00)                 # test the status code
 
@@ -118,13 +118,13 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)                       # not supported by reference
-    # assert(rr.function_code < 0x80)          # test that we are not an error
+    # assert(not rr.isError())          # test that we are not an error
     # assert(rr.status == True)                # test the status code
     # assert(rr.event_count == 0x00)           # test the number of events
     # assert(rr.message_count == 0x00)         # test the number of messages
     # assert(len(rr.events) == 0x00)           # test the number of events
 
-    # ------------------------------------------------------------------------# 
+    # ------------------------------------------------------------------------#
     # diagnostic requests
     # ------------------------------------------------------------------------#
     log.debug("Running ReturnQueryDataRequest")
@@ -193,7 +193,7 @@ def execute_extended_requests():
     rr = client.execute(rq)
     log.debug(rr)
     # assert(rr == None)               # not supported by reference
-    
+
     log.debug("Running ReturnSlaveBusyCountRequest")
     rq = ReturnSlaveBusyCountRequest(unit=UNIT)
     rr = client.execute(rq)
@@ -224,9 +224,9 @@ def execute_extended_requests():
     log.debug(rr)
     # assert(rr == None)               # not supported by reference
 
-    # ------------------------------------------------------------------------# 
+    # ------------------------------------------------------------------------#
     # close the client
-    # ------------------------------------------------------------------------# 
+    # ------------------------------------------------------------------------#
     client.close()
 
 

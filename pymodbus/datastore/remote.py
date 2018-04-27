@@ -41,7 +41,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         '''
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         result = self.__get_callbacks[self.decode(fx)](address, count)
-        return result.function_code < 0x80
+        return not result.isError()
 
     def getValues(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
@@ -99,7 +99,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         ''' A helper method to extract the values out of
         a response.  TODO make this consistent (values?)
         '''
-        if result.function_code < 0x80:
+        if not result.isError():
             if fx in ['d', 'c']: return result.bits
             if fx in ['h', 'i']: return result.registers
         else: return result

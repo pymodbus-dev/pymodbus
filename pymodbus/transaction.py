@@ -97,21 +97,6 @@ class ModbusTransactionManager(object):
 
         return None
 
-    def _check_response(self, response):
-        ''' Checks if the response is a Modbus Exception.
-        '''
-        if isinstance(self.client.framer, ModbusSocketFramer):
-            if len(response) >= 8 and byte2int(response[7]) > 128:
-                return False
-        elif isinstance(self.client.framer, ModbusAsciiFramer):
-            if len(response) >= 5 and int(response[3:5], 16) > 128:
-                return False
-        elif isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
-            if len(response) >= 2 and byte2int(response[1]) > 128:
-                return False
-
-        return True
-
     def execute(self, request):
         ''' Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -145,7 +130,7 @@ class ModbusTransactionManager(object):
                 if "modbusudpclient" in c_str.lower().strip():
                     full = True
                     if not expected_response_length:
-                        expected_response_length = 1024
+                        expected_response_length = Defaults.ReadSize
                 response, last_exception = self._transact(request,
                                                           expected_response_length,
                                                           full=full
@@ -153,7 +138,7 @@ class ModbusTransactionManager(object):
                 if not response and (
                         request.unit_id not in self._no_response_devices):
                     self._no_response_devices.append(request.unit_id)
-                elif request.unit_id in self._no_response_devices:
+                elif request.unit_id in self._no_response_devices and response:
                     self._no_response_devices.remove(request.unit_id)
                 if not response and self.retry_on_empty and retries:
                     while retries > 0:
@@ -169,6 +154,8 @@ class ModbusTransactionManager(object):
                         if not response:
                             retries -= 1
                             continue
+                        # Remove entry
+                        self._no_response_devices.remove(request.unit_id)
                         break
                 addTransaction = partial(self.addTransaction,
                                          tid=request.transaction_id)
@@ -191,10 +178,11 @@ class ModbusTransactionManager(object):
                     self.client.state = (
                         ModbusTransactionState.TRANSACTION_COMPLETE)
                 return response
-            except Exception as ex:
+            except ModbusIOException as ex:
+                # Handle decode errors in processIncomingPacket method
                 _logger.exception(ex)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                raise
+                return ex
 
     def _transact(self, packet, response_length, full=False):
         """
@@ -246,6 +234,11 @@ class ModbusTransactionManager(object):
                 min_size = expected_response_length
 
             read_min = self.client.framer.recvPacket(min_size)
+            if len(read_min) != min_size:
+                raise InvalidMessageReceivedException(
+                    "Incomplete message received, expected at least %d bytes "
+                    "(%d received)" % (min_size, len(read_min))
+                )
             if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
                     func_code = byte2int(read_min[-1])

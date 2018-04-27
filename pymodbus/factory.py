@@ -223,6 +223,9 @@ class ClientDecoder(IModbusDecoder):
             return self._helper(message)
         except ModbusException as er:
             _logger.error("Unable to decode response %s" % er)
+
+        except Exception as ex:
+            _logger.error(ex)
         return None
 
     def _helper(self, data):
@@ -234,8 +237,13 @@ class ClientDecoder(IModbusDecoder):
         :param data: The response packet to decode
         :returns: The decoded request or an exception response object
         '''
-        function_code = byte2int(data[0])
-        _logger.debug("Factory Response[%d]" % function_code)
+        fc_string = function_code = byte2int(data[0])
+        if function_code in self.__lookup:
+            fc_string = "%s: %s" % (
+                str(self.__lookup[function_code]).split('.')[-1].rstrip("'>"),
+                function_code
+            )
+        _logger.debug("Factory Response[%s]" % fc_string)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7f  # strip error portion

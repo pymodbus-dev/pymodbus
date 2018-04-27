@@ -4,6 +4,8 @@ Modbus Payload Builders
 
 A collection of utilities for building and decoding
 modbus messages payloads.
+
+
 """
 from struct import pack, unpack
 from pymodbus.interfaces import IPayloadBuilder
@@ -12,6 +14,23 @@ from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.utilities import make_byte_string
 from pymodbus.exceptions import ParameterException
+
+# --------------------------------------------------------------------------- #
+# Logging
+# --------------------------------------------------------------------------- #
+import logging
+_logger = logging.getLogger(__name__)
+
+
+WC = {
+    "b": 1,
+    "h": 2,
+    "i": 4,
+    "l": 4,
+    "q": 8,
+    "f": 4,
+    "d": 8
+}
 
 
 class BinaryPayloadBuilder(IPayloadBuilder):
@@ -22,41 +41,52 @@ class BinaryPayloadBuilder(IPayloadBuilder):
     time looking up the format strings. What follows is a simple
     example::
 
-        builder = BinaryPayloadBuilder(endian=Endian.Little)
+        builder = BinaryPayloadBuilder(byteorder=Endian.Little)
         builder.add_8bit_uint(1)
         builder.add_16bit_uint(2)
         payload = builder.build()
     """
 
     def __init__(self, payload=None, byteorder=Endian.Little,
-                 wordorder=Endian.Big):
+                 wordorder=Endian.Big, repack=False):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw binary payload data to initialize with
         :param byteorder: The endianess of the bytes in the words
         :param wordorder: The endianess of the word (when wordcount is >= 2)
+        :param repack: Repack the provided payload based on BO
         """
         self._payload = payload or []
         self._byteorder = byteorder
         self._wordorder = wordorder
+        self._repack = repack
 
     def _pack_words(self, fstring, value):
         """
-        Packs Words based on the word order
+        Packs Words based on the word order and byte order
+
+        # ---------------------------------------------- #
+        # pack in to network ordered value               #
+        # unpack in to network ordered  unsigned integer #
+        # Change Word order if little endian word order  #
+        # Pack values back based on correct byte order   #
+        # ---------------------------------------------- #
+
         :param value: Value to be packed
         :return:
         """
-        payload = pack(fstring, value)
-        if self._wordorder == Endian.Little:
-            payload = [payload[i:i + 2] for i in range(0, len(payload), 2)]
-            if self._byteorder == Endian.Big:
-                payload = b''.join(list(reversed(payload)))
-            else:
-                payload = b''.join(payload)
+        value = pack("!{}".format(fstring), value)
+        wc = WC.get(fstring.lower())//2
+        up = "!{}H".format(wc)
+        payload = unpack(up, value)
 
-        elif self._wordorder == Endian.Big and self._byteorder == Endian.Little:
-            payload = [payload[i:i + 2] for i in range(0, len(payload), 2)]
-            payload = b''.join(list(reversed(payload)))
+        if self._wordorder == Endian.Little:
+            payload = list(reversed(payload))
+
+        fstring = self._byteorder + "H"
+        payload = [pack(fstring, word) for word in payload]
+        payload = b''.join(payload)
+
         return payload
 
     def to_string(self):
@@ -84,9 +114,15 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :returns: The register layout to use as a block
         """
-        fstring = self._byteorder + 'H'
+        # fstring = self._byteorder+'H'
+        fstring = '!H'
         payload = self.build()
-        return [unpack(fstring, value)[0] for value in payload]
+        if self._repack:
+            payload = [unpack(self._byteorder+"H", value)[0] for value in payload]
+        else:
+            payload = [unpack(fstring, value)[0] for value in payload]
+        _logger.debug(payload)
+        return payload
 
     def build(self):
         """ Return the payload buffer as a list
@@ -134,7 +170,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'I'
+        fstring = 'I'
+        # fstring = self._byteorder + 'I'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -143,7 +180,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'Q'
+        fstring = 'Q'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -168,7 +205,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'i'
+        fstring = 'i'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -177,7 +214,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'q'
+        fstring = 'q'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -186,7 +223,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'f'
+        fstring = 'f'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -195,7 +232,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'd'
+        fstring = 'd'
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -248,6 +285,7 @@ class BinaryPayloadDecoder(object):
         :param wordorder: The endianess of the word (when wordcount is >= 2)
         :returns: An initialized PayloadDecoder
         """
+        _logger.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
             payload = b''.join(pack('!H', x) for x in registers)
             return klass(payload, byteorder, wordorder)
@@ -271,21 +309,28 @@ class BinaryPayloadDecoder(object):
 
     def _unpack_words(self, fstring, handle):
         """
-        Packs Words based on the word order
+        Un Packs Words based on the word order and byte order
+
+        # ---------------------------------------------- #
+        # Unpack in to network ordered unsigned integer  #
+        # Change Word order if little endian word order  #
+        # Pack values back based on correct byte order   #
+        # ---------------------------------------------- #
         :param handle: Value to be unpacked
         :return:
         """
         handle = make_byte_string(handle)
+        wc = WC.get(fstring.lower())//2
+        up = "!{}H".format(wc)
+        handle = unpack(up, handle)
         if self._wordorder == Endian.Little:
-            handle = [handle[i:i + 2] for i in range(0, len(handle), 2)]
-            if self._byteorder == Endian.Big:
-                handle = b''.join(list(reversed(handle)))
-            else:
-                handle = b''.join(handle)
-        elif self._wordorder == Endian.Big and self._byteorder == Endian.Little:
-            handle = [handle[i:i + 2] for i in range(0, len(handle), 2)]
-            handle = b''.join(list(reversed(handle)))
+            handle = list(reversed(handle))
 
+        # Repack as unsigned Integer
+        pk = self._byteorder + 'H'
+        handle = [pack(pk, p) for p in handle]
+        handle = b''.join(handle)
+        _logger.debug(handle)
         return handle
 
     def reset(self):
@@ -324,19 +369,20 @@ class BinaryPayloadDecoder(object):
         """ Decodes a 32 bit unsigned int from the buffer
         """
         self._pointer += 4
-        fstring = self._byteorder + 'I'
+        fstring = 'I'
+        # fstring = 'I'
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_64bit_uint(self):
         """ Decodes a 64 bit unsigned int from the buffer
         """
         self._pointer += 8
-        fstring = self._byteorder + 'Q'
+        fstring = 'Q'
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_8bit_int(self):
         """ Decodes a 8 bit signed int from the buffer
@@ -360,37 +406,37 @@ class BinaryPayloadDecoder(object):
         """ Decodes a 32 bit signed int from the buffer
         """
         self._pointer += 4
-        fstring = self._byteorder + 'i'
+        fstring = 'i'
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_64bit_int(self):
         """ Decodes a 64 bit signed int from the buffer
         """
         self._pointer += 8
-        fstring = self._byteorder + 'q'
+        fstring = 'q'
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_32bit_float(self):
         """ Decodes a 32 bit float from the buffer
         """
         self._pointer += 4
-        fstring = self._byteorder + 'f'
+        fstring = 'f'
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_64bit_float(self):
         """ Decodes a 64 bit float(double) from the buffer
         """
         self._pointer += 8
-        fstring = self._byteorder + 'd'
+        fstring = 'd'
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
-        return unpack(fstring, handle)[0]
+        return unpack("!"+fstring, handle)[0]
 
     def decode_string(self, size=1):
         """ Decodes a string from the buffer
@@ -398,7 +444,8 @@ class BinaryPayloadDecoder(object):
         :param size: The size of the string to decode
         """
         self._pointer += size
-        return self._payload[self._pointer - size:self._pointer]
+        s = self._payload[self._pointer - size:self._pointer]
+        return s
 
     def skip_bytes(self, nbytes):
         """ Skip n bytes in the buffer

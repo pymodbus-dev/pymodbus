@@ -8,9 +8,37 @@ data computing checksums, and decode checksums.
 from pymodbus.compat import int2byte, byte2int, IS_PYTHON3
 from six import string_types
 
+
+class ModbusTransactionState(object):
+    """
+    Modbus Client States
+    """
+    IDLE = 0
+    SENDING = 1
+    WAITING_FOR_REPLY = 2
+    WAITING_TURNAROUND_DELAY = 3
+    PROCESSING_REPLY = 4
+    PROCESSING_ERROR = 5
+    TRANSACTION_COMPLETE = 6
+
+    @classmethod
+    def to_string(cls, state):
+        states = {
+            ModbusTransactionState.IDLE: "IDLE",
+            ModbusTransactionState.SENDING: "SENDING",
+            ModbusTransactionState.WAITING_FOR_REPLY: "WAITING_FOR_REPLY",
+            ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
+            ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
+            ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
+            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSCATION_COMPLETE"
+        }
+        return states.get(state, None)
+
+
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
 def default(value):
     """
     Given a python object, return the default value
@@ -205,6 +233,16 @@ def rtuFrameSize(data, byte_count_pos):
     """
     return byte2int(data[byte_count_pos]) + byte_count_pos + 3
 
+
+def hexlify_packets(packet):
+    """
+    Returns hex representation of bytestring recieved
+    :param packet:
+    :return:
+    """
+    if not packet:
+        return ''
+    return " ".join([hex(byte2int(x)) for x in packet])
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #

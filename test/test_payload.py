@@ -103,7 +103,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testPayloadBuilderWithRawPayload(self):
         """ Test basic bit message encoding/decoding """
-        builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'])
+        builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'], repack=True)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([13330, 30806], builder.to_registers())
 

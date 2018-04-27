@@ -103,7 +103,7 @@ class Defaults(Singleton):
     Stopbits            = 1
     ZeroMode            = False
     IgnoreMissingSlaves = False
-
+    ReadSize            = 1024
 
 class ModbusStatus(Singleton):
     '''

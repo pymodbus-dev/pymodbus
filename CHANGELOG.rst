@@ -1,3 +1,24 @@
+Version 1.5.0
+------------------------------------------------------------
+* Improve transaction speeds for sync clients (RTU/ASCII), now retry on empty happens only when retry_on_empty kwarg is passed to client during intialization
+
+`client = Client(..., retry_on_empty=True)`
+
+* Fix tcp servers (sync/async) not processing requests with transaction id > 255
+* Introduce new api to check if the received response is an error or not (response.isError())
+* Move timing logic to framers so that irrespective of client, correct timing logics are followed.
+* Move framers from transaction.py to respective modules
+* Fix modbus payload builder and decoder
+* Async servers can now have an option to defer `reactor.run()` when using `Start<Tcp/Serial/Udo>Server(...,defer_reactor_run=True)`
+* Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest)
+* Add expected response lengths for WriteMultipleCoilRequest and WriteMultipleRegisterRequest
+* Fix _rtu_byte_count_pos for GetCommEventLogResponse
+* Add support for repeated MEI device information Object IDs
+* Fix struct errors while decoding stray response
+* Modbus read retries works only when empty/no message is received
+* Change test runner from nosetest to pytest
+* Fix Misc examples
+
 Version 1.4.0
 ------------------------------------------------------------
 * Bug fix Modbus TCP client reading incomplete data

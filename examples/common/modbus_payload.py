@@ -10,12 +10,16 @@ from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.compat import iteritems
+from collections import OrderedDict
 
 # --------------------------------------------------------------------------- # 
 # configure the client logging
 # --------------------------------------------------------------------------- # 
+
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -24,7 +28,7 @@ def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('127.0.0.1', port=5440)
+    client = ModbusClient('127.0.0.1', port=5020)
     client.connect()
     
     # ----------------------------------------------------------------------- #
@@ -67,19 +71,36 @@ def run_binary_payload_ex():
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(byteorder=Endian.Little,
-                                   wordorder=Endian.Big)
+    builder = BinaryPayloadBuilder(byteorder=Endian.Big,
+                                   wordorder=Endian.Little)
     builder.add_string('abcdefgh')
-    builder.add_32bit_float(22.34)
-    builder.add_16bit_uint(0x1234)
-    builder.add_16bit_uint(0x5678)
-    builder.add_8bit_int(0x12)
     builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
-    builder.add_32bit_uint(0x12345678)
+    builder.add_8bit_int(-0x12)
+    builder.add_8bit_uint(0x12)
+    builder.add_16bit_int(-0x5678)
+    builder.add_16bit_uint(0x1234)
     builder.add_32bit_int(-0x1234)
-    builder.add_64bit_int(0x1234567890ABCDEF)
+    builder.add_32bit_uint(0x12345678)
+    builder.add_32bit_float(22.34)
+    builder.add_32bit_float(-22.34)
+    builder.add_64bit_int(-0xDEADBEEF)
+    builder.add_64bit_uint(0x12345678DEADBEEF)
+    builder.add_64bit_uint(0x12345678DEADBEEF)
+    builder.add_64bit_float(123.45)
+    builder.add_64bit_float(-123.45)
+    payload = builder.to_registers()
+    print("-" * 60)
+    print("Writing Registers")
+    print("-" * 60)
+    print(payload)
+    print("\n")
     payload = builder.build()
     address = 0
+    # Can write registers
+    # registers = builder.to_registers()
+    # client.write_registers(address, registers, unit=1)
+
+    # Or can write encoded binary string
     client.write_registers(address, payload, skip_encode=True, unit=1)
     # ----------------------------------------------------------------------- #
     # If you need to decode a collection of registers in a weird layout, the
@@ -95,7 +116,7 @@ def run_binary_payload_ex():
     # - an 8 bit int 0x12
     # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
     # ----------------------------------------------------------------------- #
-    address = 0x00
+    address = 0x0
     count = len(payload)
     result = client.read_holding_registers(address, count,  unit=1)
     print("-" * 60)
@@ -105,19 +126,26 @@ def run_binary_payload_ex():
     print("\n")
     decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
                                                  byteorder=Endian.Little,
-                                                 wordorder=Endian.Big)
-    decoded = {
-        'string': decoder.decode_string(8),
-        'float': decoder.decode_32bit_float(),
-        '16uint': decoder.decode_16bit_uint(),
-        'ignored': decoder.skip_bytes(2),
-        '8int': decoder.decode_8bit_int(),
-        'bits': decoder.decode_bits(),
-        "32uints": decoder.decode_32bit_uint(),
-        "32ints": decoder.decode_32bit_int(),
-        "64ints": decoder.decode_64bit_int(),
-    }
-    
+                                                 wordorder=Endian.Little)
+
+    decoded = OrderedDict([
+        ('string', decoder.decode_string(8)),
+        ('bits', decoder.decode_bits()),
+        ('8int', decoder.decode_8bit_int()),
+        ('8uint', decoder.decode_8bit_uint()),
+        ('16int', decoder.decode_16bit_int()),
+        ('16uint', decoder.decode_16bit_uint()),
+        ('32int', decoder.decode_32bit_int()),
+        ('32uint', decoder.decode_32bit_uint()),
+        ('32float', decoder.decode_32bit_float()),
+        ('32float2', decoder.decode_32bit_float()),
+        ('64int', decoder.decode_64bit_int()),
+        ('64uint', decoder.decode_64bit_uint()),
+        ('ignore', decoder.skip_bytes(8)),
+        ('64float', decoder.decode_64bit_float()),
+        ('64float2', decoder.decode_64bit_float()),
+    ])
+
     print("-" * 60)
     print("Decoded Data")
     print("-" * 60)

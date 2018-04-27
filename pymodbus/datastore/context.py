@@ -31,7 +31,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'hr' - Holding Register initializer
             'ir' - Input Registers iniatializer
         '''
-        self.store = {}
+        self.store = dict()
         self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock.create())
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
@@ -100,10 +100,10 @@ class ModbusServerContext(object):
         :param slaves: A dictionary of client contexts
         :param single: Set to true to treat this as a single context
         '''
-        self.single   = single
-        self.__slaves = slaves or {}
+        self.single = single
+        self._slaves = slaves or {}
         if self.single:
-            self.__slaves = {Defaults.UnitId: self.__slaves}
+            self._slaves = {Defaults.UnitId: self._slaves}
 
     def __iter__(self):
         ''' Iterater over the current collection of slave
@@ -111,7 +111,7 @@ class ModbusServerContext(object):
 
         :returns: An iterator over the slave contexts
         '''
-        return iteritems(self.__slaves)
+        return iteritems(self._slaves)
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list
@@ -119,7 +119,10 @@ class ModbusServerContext(object):
         :param slave: slave The slave to check for existance
         :returns: True if the slave exists, False otherwise
         '''
-        return slave in self.__slaves
+        if self.single and self._slaves:
+            return True
+        else:
+            return slave in self._slaves
 
     def __setitem__(self, slave, context):
         ''' Used to set a new slave context
@@ -127,11 +130,13 @@ class ModbusServerContext(object):
         :param slave: The slave context to set
         :param context: The new context to set for this slave
         '''
-        if self.single: slave = Defaults.UnitId
+        if self.single:
+            slave = Defaults.UnitId
         if 0xf7 >= slave >= 0x00:
-            self.__slaves[slave] = context
+            self._slaves[slave] = context
         else:
-            raise NoSuchSlaveException('slave index :{} out of range'.format(slave))
+            raise NoSuchSlaveException('slave index :{} '
+                                       'out of range'.format(slave))
 
     def __delitem__(self, slave):
         ''' Wrapper used to access the slave context
@@ -139,9 +144,10 @@ class ModbusServerContext(object):
         :param slave: The slave context to remove
         '''
         if not self.single and (0xf7 >= slave >= 0x00):
-            del self.__slaves[slave]
+            del self._slaves[slave]
         else:
-            raise NoSuchSlaveException('slave index: {} out of range'.format(slave))
+            raise NoSuchSlaveException('slave index: {} '
+                                       'out of range'.format(slave))
 
     def __getitem__(self, slave):
         ''' Used to get access to a slave context
@@ -149,8 +155,14 @@ class ModbusServerContext(object):
         :param slave: The slave context to get
         :returns: The requested slave context
         '''
-        if self.single: slave = Defaults.UnitId
-        if slave in self.__slaves:
-            return self.__slaves.get(slave)
+        if self.single:
+            slave = Defaults.UnitId
+        if slave in self._slaves:
+            return self._slaves.get(slave)
         else:
-            raise NoSuchSlaveException("slave - {} does not exist, or is out of range".format(slave))
+            raise NoSuchSlaveException("slave - {} does not exist, "
+                                       "or is out of range".format(slave))
+
+    def slaves(self):
+        # Python3 now returns keys() as iterable
+        return list(self._slaves.keys())

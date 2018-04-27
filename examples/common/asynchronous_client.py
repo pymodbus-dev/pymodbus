@@ -89,27 +89,27 @@ def stopAsynchronousTest(client):
 def beginAsynchronousTest(client):
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.isError())     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.bits[0] == True)          # test the expected value
 
     rq = client.write_coils(1, [True]*8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.isError())     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.bits == [True]*8)        # test the expected value
 
     rq = client.write_coils(1, [False]*8, unit=UNIT)
     rr = client.read_discrete_inputs(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.isError())     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.bits == [True]*8)        # test the expected value
 
     rq = client.write_register(1, 10, unit=UNIT)
     rr = client.read_holding_registers(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.isError())     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.registers[0] == 10)       # test the expected value
 
     rq = client.write_registers(1, [10]*8, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.isError())     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value
 
     arguments = {

@@ -27,7 +27,10 @@ class SimpleDataStoreTest(unittest.TestCase):
             0x06: 'unittest',               # UserApplicationName
             0x07: 'x',                      # reserved
             0x08: 'x',                      # reserved
-            0x10: 'private'                 # private data
+            0x10: 'reserved',               # reserved
+            0x80: 'custom1',                # device specific start
+            0x82: 'custom2',                # device specific
+            0xFF: 'customlast',             # device specific last
         }
         self.ident   = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
@@ -71,6 +74,30 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(result[0x05], 'bashwork')
         self.assertEqual(result[0x06], 'unittest')
 
+    def testDeviceInformationFactoryLookup(self):
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x00)
+        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x02)
+        self.assertEqual(sorted(result.keys()), [0x02])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x00)
+        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x01)
+        self.assertEqual(sorted(result.keys()), [0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x05)
+        self.assertEqual(sorted(result.keys()), [0x05, 0x06])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x00)
+        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x02)
+        self.assertEqual(sorted(result.keys()), [0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x06)
+        self.assertEqual(sorted(result.keys()), [0x06, 0x80, 0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x80)
+        self.assertEqual(sorted(result.keys()), [0x80, 0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x82)
+        self.assertEqual(sorted(result.keys()), [0x82, 0xFF])
+        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x81)
+        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
+
     def testBasicCommands(self):
         ''' Test device identification reading '''
         self.assertEqual(str(self.ident),   "DeviceIdentity")
@@ -87,13 +114,13 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(self.ident[0x06], 'unittest')
         self.assertNotEqual(self.ident[0x07], 'x')
         self.assertNotEqual(self.ident[0x08], 'x')
-        self.assertEqual(self.ident[0x10], 'private')
+        self.assertNotEqual(self.ident[0x10], 'reserved')
         self.assertEqual(self.ident[0x54], '')
 
     def testModbusDeviceIdentificationSummary(self):
         ''' Test device identification summary creation '''
         summary  = sorted(self.ident.summary().values())
-        expected = sorted(list(self.info.values())[:-3]) # remove private
+        expected = sorted(list(self.info.values())[:0x07]) # remove private
         self.assertEqual(summary, expected)
 
     def testModbusDeviceIdentificationSet(self):

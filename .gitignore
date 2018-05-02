@@ -30,3 +30,4 @@ test/__pycache__/
 /doc/sphinx/
 /doc/html/
 /doc/_build/
+.pytest_cache/

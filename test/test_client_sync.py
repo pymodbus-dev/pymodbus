@@ -149,7 +149,13 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(b'', client._recv(0))
         self.assertEqual(b'\x00' * 4, client._recv(4))
 
-
+    def testUdpClientRepr(self):
+        client = ModbusUdpClient()
+        rep = "<{} at {} socket={}, ipaddr={}, port={}, timeout={}>".format(
+            client.__class__.__name__, hex(id(client)), client.socket,
+            client.host, client.port, client.timeout
+        )
+        self.assertEqual(repr(client), rep)
     # -----------------------------------------------------------------------#
     # Test TCP Client
     # -----------------------------------------------------------------------#
@@ -221,7 +227,13 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket.timeout = 0.1
         self.assertIn(b'\x00', client._recv(None))
 
-
+    def testSerialClientRpr(self):
+        client = ModbusTcpClient()
+        rep = "<{} at {} socket={}, ipaddr={}, port={}, timeout={}>".format(
+            client.__class__.__name__, hex(id(client)), client.socket,
+            client.host, client.port, client.timeout
+        )
+        self.assertEqual(repr(client), rep)
 
     # -----------------------------------------------------------------------#
     # Test Serial Client
@@ -327,7 +339,13 @@ class SynchronousClientTest(unittest.TestCase):
         client.socket.timeout = 0
         self.assertEqual(b'', client._recv(0))
 
-
+    def testSerialClientRepr(self):
+        client = ModbusSerialClient()
+        rep = "<{} at {} socket={}, method={}, timeout={}>".format(
+            client.__class__.__name__, hex(id(client)), client.socket,
+            client.method, client.timeout
+        )
+        self.assertEqual(repr(client), rep)
 # ---------------------------------------------------------------------------#
 # Main
 # ---------------------------------------------------------------------------#

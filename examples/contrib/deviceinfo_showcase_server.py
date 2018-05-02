@@ -58,6 +58,18 @@ def run_server():
     identity.MajorMinorRevision = '1.5'
 
     # ----------------------------------------------------------------------- #
+    # Add an example which is long enough to force the ReadDeviceInformation
+    # request / response to require multiple responses to send back all of the
+    # information.
+    # ----------------------------------------------------------------------- #
+
+    identity[0x80] = "Lorem ipsum dolor sit amet, consectetur adipiscing " \
+                     "elit. Vivamus rhoncus massa turpis, sit amet " \
+                     "ultrices orci semper ut. Aliquam tristique sapien in " \
+                     "lacus pharetra, in convallis nunc consectetur. Nunc " \
+                     "velit elit, vehicula tempus tempus sed. "
+
+    # ----------------------------------------------------------------------- #
     # Add an example with repeated object IDs. The MODBUS specification is
     # entirely silent on whether or not this is allowed. In practice, this
     # should be assumed to be contrary to the MODBUS specification and other

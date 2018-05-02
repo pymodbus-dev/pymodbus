@@ -15,6 +15,21 @@ from pymodbus.compat import iteritems, byte2int, IS_PYTHON3
 _MCB = ModbusControlBlock()
 
 
+class _OutOfSpaceException(Exception):
+    # This exception exists here as a simple, local way to manage response
+    # length control for the only MODBUS command which requires it under
+    # standard, non-error conditions. It and the structures associated with
+    # it should ideally be refactored and applied to all responses, however,
+    # since a Client can make requests which result in disallowed conditions,
+    # such as, for instance, requesting a register read of more registers
+    # than will fit in a single PDU. As per the specification, the PDU is
+    # restricted to 253 bytes, irrespective of the transport used.
+    #
+    # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
+    def __init__(self, oid):
+        self.oid = oid
+
+
 #---------------------------------------------------------------------------#
 # Read Device Information
 #---------------------------------------------------------------------------#
@@ -115,13 +130,15 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.read_code = read_code or DeviceInformation.Basic
         self.information = information or {}
         self.number_of_objects = 0
-        self.conformity = 0x83 # I support everything right now
-
-        # TODO calculate
-        self.next_object_id = 0x00 # self.information[-1](0)
+        self.conformity = 0x83  # I support everything right now
+        self.next_object_id = 0x00
         self.more_follows = MoreData.Nothing
+        self.space_left = None
 
     def _encode_object(self, object_id, data):
+        self.space_left -= (2 + len(data))
+        if self.space_left <= 0:
+            raise _OutOfSpaceException(object_id)
         encoded_obj = struct.pack('>BB', object_id, len(data))
         if IS_PYTHON3:
             if isinstance(data, bytes):
@@ -140,14 +157,18 @@ class ReadDeviceInformationResponse(ModbusResponse):
         '''
         packet = struct.pack('>BBB', self.sub_function_code,
                              self.read_code, self.conformity)
-
+        self.space_left = 253 - 6
         objects = b''
-        for (object_id, data) in iteritems(self.information):
-            if isinstance(data, list):
-                for item in data:
-                    objects += self._encode_object(object_id, item)
-            else:
-                objects += self._encode_object(object_id, data)
+        try:
+            for (object_id, data) in iteritems(self.information):
+                if isinstance(data, list):
+                    for item in data:
+                        objects += self._encode_object(object_id, item)
+                else:
+                    objects += self._encode_object(object_id, data)
+        except _OutOfSpaceException as e:
+            self.next_object_id = e.oid
+            self.more_follows = MoreData.KeepReading
 
         packet += struct.pack('>BBB', self.more_follows, self.next_object_id,
                               self.number_of_objects)

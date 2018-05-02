@@ -78,13 +78,20 @@ def run_sync_client():
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
     log.debug("Reading Device Information")
-    rq = ReadDeviceInformationRequest(read_code=0x03, object_id=0x00, unit=UNIT)
-    rr = client.execute(rq)
-    log.debug(rr)
+    information = {}
+    rr = None
+
+    while not rr or rr.more_follows:
+        next_object_id = rr.next_object_id if rr else 0
+        rq = ReadDeviceInformationRequest(read_code=0x03, unit=UNIT,
+                                          object_id=next_object_id)
+        rr = client.execute(rq)
+        information.update(rr.information)
+        log.debug(rr)
 
     print("Device Information : ")
-    for key in rr.information.keys():
-        print(key, rr.information[key])
+    for key in information.keys():
+        print(key, information[key])
 
     # ----------------------------------------------------------------------- #
     # You can also have the information parsed through the
@@ -92,7 +99,7 @@ def run_sync_client():
     # to access the Basic and Regular device information objects which are
     # specifically listed in the Modbus specification
     # ----------------------------------------------------------------------- #
-    di = ModbusDeviceIdentification(info=rr.information)
+    di = ModbusDeviceIdentification(info=information)
     print('Product Name : ', di.ProductName)
 
     # ----------------------------------------------------------------------- #

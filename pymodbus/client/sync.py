@@ -373,7 +373,6 @@ class ModbusUdpClient(BaseModbusClient):
             "port={self.port}, timeout={self.timeout}>"
         ).format(self.__class__.__name__, hex(id(self)), self=self)
 
-
 # --------------------------------------------------------------------------- #
 # Modbus Serial Client Transport Implementation
 # --------------------------------------------------------------------------- #

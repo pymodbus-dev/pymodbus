@@ -270,6 +270,13 @@ class ModbusTcpClient(BaseModbusClient):
         """
         return "ModbusTcpClient(%s:%s)" % (self.host, self.port)
 
+    def __repr__(self):
+        return (
+            "<{} at {} socket={self.socket}, ipaddr={self.host}, "
+            "port={self.port}, timeout={self.timeout}>"
+        ).format(self.__class__.__name__, hex(id(self)), self=self)
+
+
 
 # --------------------------------------------------------------------------- #
 # Modbus UDP Client Transport Implementation
@@ -359,6 +366,12 @@ class ModbusUdpClient(BaseModbusClient):
         :returns: The string representation
         """
         return "ModbusUdpClient(%s:%s)" % (self.host, self.port)
+
+    def __repr__(self):
+        return (
+            "<{} at {} socket={self.socket}, ipaddr={self.host}, "
+            "port={self.port}, timeout={self.timeout}>"
+        ).format(self.__class__.__name__, hex(id(self)), self=self)
 
 
 # --------------------------------------------------------------------------- #
@@ -526,6 +539,12 @@ class ModbusSerialClient(BaseModbusClient):
         :returns: The string representation
         """
         return "ModbusSerialClient(%s baud[%s])" % (self.method, self.baudrate)
+
+    def __repr__(self):
+        return (
+            "<{} at {} socket={self.socket}, method={self.method}, "
+            "timeout={self.timeout}>"
+        ).format(self.__class__.__name__, hex(id(self)), self=self)
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

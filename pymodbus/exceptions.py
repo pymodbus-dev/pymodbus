@@ -18,6 +18,10 @@ class ModbusException(Exception):
     def __str__(self):
         return 'Modbus Error: %s' % self.string
 
+    def isError(self):
+        """Error"""
+        return True
+
 
 class ModbusIOException(ModbusException):
     ''' Error resulting from data i/o '''

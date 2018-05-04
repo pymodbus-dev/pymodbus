@@ -129,6 +129,7 @@ class ModbusResponse(ModbusPDU):
         ModbusPDU.__init__(self, **kwargs)
 
     def isError(self):
+        """Checks if the error is a success or failure"""
         return self.function_code > 0x80
 
 

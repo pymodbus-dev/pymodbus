@@ -1,3 +1,21 @@
+Version 1.5.1
+------------------------------------------------------------
+* Fix device information selectors
+* Fixed behaviour of the MEI device information command as a server when an invalid object_id is provided by an external client.
+* Add support for repeated MEI device information Object IDs (client/server)
+* Added support for encoding device information when it requires more than one PDU to pack.
+* Added REPR statements for all syncchronous clients
+* Added `isError` method to exceptions, Any response received can be tested for success before proceeding.
+
+    ```
+    res = client.read_holding_registers(...)
+    if not res.isError():
+        # proceed
+    else:
+        # handle error or raise
+    ```
+* Add examples for MEI read device information request
+
 Version 1.5.0
 ------------------------------------------------------------
 * Improve transaction speeds for sync clients (RTU/ASCII), now retry on empty happens only when retry_on_empty kwarg is passed to client during intialization

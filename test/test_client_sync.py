@@ -156,6 +156,8 @@ class SynchronousClientTest(unittest.TestCase):
             client.host, client.port, client.timeout
         )
         self.assertEqual(repr(client), rep)
+
+
     # -----------------------------------------------------------------------#
     # Test TCP Client
     # -----------------------------------------------------------------------#
@@ -234,7 +236,6 @@ class SynchronousClientTest(unittest.TestCase):
             client.host, client.port, client.timeout
         )
         self.assertEqual(repr(client), rep)
-
     # -----------------------------------------------------------------------#
     # Test Serial Client
     # -----------------------------------------------------------------------#

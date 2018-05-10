@@ -7,7 +7,7 @@ pymodbus.egg-info/
 .vscode
 .idea
 .noseids
-
+*.db
 .idea/
 .tox/
 doc/api/epydoc/html/
@@ -35,3 +35,4 @@ test/__pycache__/
 /doc/sphinx/
 /doc/html/
 /doc/_build/
+.pytest_cache/

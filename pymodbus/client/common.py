@@ -14,6 +14,8 @@ from pymodbus.diag_message import *
 from pymodbus.file_message import *
 from pymodbus.other_message import *
 
+from pymodbus.utilities import ModbusTransactionState
+
 
 class ModbusClientMixin(object):
     '''
@@ -30,6 +32,9 @@ class ModbusClientMixin(object):
        client = ModbusClient(...)
        response = client.read_coils(1, 10)
     '''
+    state = ModbusTransactionState.IDLE
+    last_frame_end = 0
+    silent_interval = 0
 
     def read_coils(self, address, count=1, **kwargs):
         '''

@@ -95,7 +95,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.async.tornado.IOLoop")
     @patch("pymodbus.client.async.tornado.IOStream")
-    def testBaseClientHandleResponse(self, mock_iostream, mock_ioloop):
+    def testBaseClientHandleResponse(self,  mock_iostream, mock_ioloop):
         """ Test the BaseTornado client handles responses """
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -179,7 +179,6 @@ class AsynchronousClientTest(unittest.TestCase):
         """ Test the tornado serial client client initialize """
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP, framer=ModbusRtuFramer(ClientDecoder()), port=SERIAL_PORT)
         self.assertEqual(0, len(list(client.transaction)))
-        print(isinstance(client.framer, ModbusRtuFramer))
         self.assertTrue(isinstance(client.framer, ModbusRtuFramer))
 
         framer = object()

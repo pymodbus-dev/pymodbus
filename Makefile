@@ -39,8 +39,8 @@ check: install
 
 test: install
 	@pip install --quiet --requirement=requirements-tests.txt
-	@py.test
-	@coverage report --fail-under=85 -i
+	@py.test --cov=pymodbus/ --cov-report term-missing
+	@coverage report --fail-under=90
 
 tox: install
 	@pip install --quiet tox && tox
@@ -58,8 +58,8 @@ publish: install
 	$(MAKE) clean
 
 clean:
-	@rm -Rf *.egg .cache .coverage .tox build dist docs/build htmlcov
-	@find -depth -type d -name __pycache__ -exec rm -Rf {} \;
-	@find -type f -name '*.pyc' -delete
+	@rm -Rf *.egg .eggs *.egg-info *.db .cache .coverage .tox build dist docs/build htmlcov doc/_build test/.Python test/pip-selfcheck.json test/lib/ test/include/ test/bin/
+	@find . -depth -type d -name __pycache__ -exec rm -Rf {} \;
+	@find . -type f -name '*.pyc' -delete
 
 .PHONY: default install reset check test tox docs publish clean

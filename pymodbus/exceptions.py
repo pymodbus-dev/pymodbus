@@ -18,6 +18,10 @@ class ModbusException(Exception):
     def __str__(self):
         return 'Modbus Error: %s' % self.string
 
+    def isError(self):
+        """Error"""
+        return True
+
 
 class ModbusIOException(ModbusException):
     ''' Error resulting from data i/o '''
@@ -78,7 +82,7 @@ class ConnectionException(ModbusException):
         ModbusException.__init__(self, message)
 
 
-class InvalidMessageRecievedException(ModbusException):
+class InvalidMessageReceivedException(ModbusException):
     """
     Error resulting from invalid response received or decoded
     """
@@ -99,5 +103,5 @@ __all__ = [
     "ModbusException", "ModbusIOException",
     "ParameterException", "NotImplementedException",
     "ConnectionException", "NoSuchSlaveException",
-    "InvalidMessageRecievedException"
+    "InvalidMessageReceivedException"
 ]

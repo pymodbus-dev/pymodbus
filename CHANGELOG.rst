@@ -4,12 +4,54 @@ Version 2.0.0rc1
 
 * Async client implementation based on Tornado, Twisted and asyncio
 
+Version 1.5.1
+------------------------------------------------------------
+* Fix device information selectors
+* Fixed behaviour of the MEI device information command as a server when an invalid object_id is provided by an external client.
+* Add support for repeated MEI device information Object IDs (client/server)
+* Added support for encoding device information when it requires more than one PDU to pack.
+* Added REPR statements for all syncchronous clients
+* Added `isError` method to exceptions, Any response received can be tested for success before proceeding.
+
+    ```
+    res = client.read_holding_registers(...)
+    if not res.isError():
+        # proceed
+    else:
+        # handle error or raise
+    ```
+* Add examples for MEI read device information request
+
+Version 1.5.0
+------------------------------------------------------------
+* Improve transaction speeds for sync clients (RTU/ASCII), now retry on empty happens only when retry_on_empty kwarg is passed to client during intialization
+
+`client = Client(..., retry_on_empty=True)`
+
+* Fix tcp servers (sync/async) not processing requests with transaction id > 255
+* Introduce new api to check if the received response is an error or not (response.isError())
+* Move timing logic to framers so that irrespective of client, correct timing logics are followed.
+* Move framers from transaction.py to respective modules
+* Fix modbus payload builder and decoder
+* Async servers can now have an option to defer `reactor.run()` when using `Start<Tcp/Serial/Udo>Server(...,defer_reactor_run=True)`
+* Fix UDP client issue while handling MEI messages (ReadDeviceInformationRequest)
+* Add expected response lengths for WriteMultipleCoilRequest and WriteMultipleRegisterRequest
+* Fix _rtu_byte_count_pos for GetCommEventLogResponse
+* Add support for repeated MEI device information Object IDs
+* Fix struct errors while decoding stray response
+* Modbus read retries works only when empty/no message is received
+* Change test runner from nosetest to pytest
+* Fix Misc examples
+>>>>>>> master
+
 Version 1.4.0
 ------------------------------------------------------------
 * Bug fix Modbus TCP client reading incomplete data
 * Check for slave unit id before processing the request for serial clients
 * Bug fix serial servers with Modbus Binary Framer
 * Bug fix header size for ModbusBinaryFramer
+* Bug fix payload decoder with endian Little
+* Payload builder and decoder can now deal with the wordorder as well of 32/64 bit data.
 * Support Database slave contexts (SqlStore and RedisStore)
 * Custom handlers could be passed to Modbus TCP servers
 * Asynchronous Server could now be stopped when running on a seperate thread (StopServer)

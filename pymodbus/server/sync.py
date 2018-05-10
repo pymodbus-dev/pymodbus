@@ -9,6 +9,7 @@ import socket
 import traceback
 
 from pymodbus.constants import Defaults
+from pymodbus.utilities import hexlify_packets
 from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
@@ -43,7 +44,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         """
         _logger.debug("Client Connected [%s:%s]" % self.client_address)
         self.running = True
-        self.framer = self.server.framer(self.server.decoder)
+        self.framer = self.server.framer(self.server.decoder, client=None)
         self.server.threads.append(self)
 
     def finish(self):
@@ -52,7 +53,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
         self.server.threads.remove(self)
 
-    def execute(self, request, **kwargs):
+    def execute(self, request):
         """ The callback to call with the resulting message
 
         :param request: The decoded request message
@@ -64,7 +65,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
             _logger.debug("requested slave does "
                           "not exist: %s" % request.unit_id )
             if self.server.ignore_missing_slaves:
-                return # the client will simply timeout waiting for a response
+                return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
         except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: "
@@ -82,7 +83,6 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         """
         raise NotImplementedException("Method not implemented"
                                       " by derived class")
-
     def send(self, message):
         """ Send a request (string) to the network
 
@@ -91,14 +91,12 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         raise NotImplementedException("Method not implemented "
                                       "by derived class")
 
-
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
     """ Implements the modbus server protocol
 
     This uses the socketserver.BaseRequestHandler to implement
     the client handler for a single client(serial clients)
     """
-
     def handle(self):
         """ Callback when we receive any data
         """
@@ -106,22 +104,15 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
             try:
                 data = self.request.recv(1024)
                 if data:
-                    if _logger.isEnabledFor(logging.DEBUG):
-                        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
-                    if isinstance(self.framer, ModbusAsciiFramer):
-                        unit_address = int(data[1:3], 16)
-                    elif isinstance(self.framer, ModbusBinaryFramer):
-                        unit_address = byte2int(data[1])
-                    else:
-                        unit_address = byte2int(data[0])
-
-                    if unit_address in self.server.context:
-                        self.framer.processIncomingPacket(data, self.execute)
+                    units = self.server.context.slaves()
+                    single = self.server.context.single
+                    self.framer.processIncomingPacket(data, self.execute,
+                                                      units, single=single)
             except Exception as msg:
-                # since we only have a single socket, we cannot exit
+                # Since we only have a single socket, we cannot exit
                 # Clear frame buffer
                 self.framer.resetFrame()
-                _logger.error("Socket error occurred %s" % msg)
+                _logger.debug("Error: Socket error occurred %s" % msg)
 
     def send(self, message):
         """ Send a request (string) to the network
@@ -154,13 +145,13 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     """
 
     def handle(self):
-        """Callback when we receive any data, until self.running becomes not
-        True.  Blocks indefinitely awaiting data.  If shutdown is required,
-        then the global socket.settimeout(<seconds>) may be used, to allow
-        timely checking of self.running.  However, since this also affects
-        socket connects, if there are outgoing socket connections used in the
-        same program, then these will be prevented, if the specfied timeout is
-        too short.  Hence, this is unreliable.
+        """Callback when we receive any data, until self.running becomes False.
+        Blocks indefinitely awaiting data.  If shutdown is required, then the
+        global socket.settimeout(<seconds>) may be used, to allow timely
+        checking of self.running.  However, since this also affects socket
+        connects, if there are outgoing socket connections used in the same
+        program, then these will be prevented, if the specfied timeout is too
+        short.  Hence, this is unreliable.
 
         To respond to Modbus...Server.server_close() (which clears each
         handler's self.running), derive from this class to provide an
@@ -174,11 +165,16 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         while self.running:
             try:
                 data = self.request.recv(1024)
-                if not data: self.running = False
+                if not data:
+                    self.running = False
                 if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+                    _logger.debug('Handling data: ' + hexlify_packets(data))
                 # if not self.server.control.ListenOnly:
-                self.framer.processIncomingPacket(data, self.execute)
+
+                units = self.server.context.slaves()
+                single = self.server.context.single
+                self.framer.processIncomingPacket(data, self.execute, units,
+                                                  single=single)
             except socket.timeout as msg:
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("Socket timeout occurred %s", msg)
@@ -225,13 +221,16 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         reset_frame = False
         while self.running:
             try:
-                data, self.request = self.request
+                data, self.socket = self.request
                 if not data:
                     self.running = False
                 if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug(' '.join([hex(byte2int(x)) for x in data]))
+                    _logger.debug('Handling data: ' + hexlify_packets(data))
                 # if not self.server.control.ListenOnly:
-                self.framer.processIncomingPacket(data, self.execute)
+                units = self.server.context.slaves()
+                single = self.server.context.single
+                self.framer.processIncomingPacket(data, self.execute,
+                                                  units, single=single)
             except socket.timeout: pass
             except socket.error as msg:
                 _logger.error("Socket error occurred %s" % msg)
@@ -242,6 +241,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
                 self.running = False
                 reset_frame = True
             finally:
+                # Reset data after processing
+                self.request = (None, self.socket)
                 if reset_frame:
                     self.framer.resetFrame()
                     reset_frame = False
@@ -252,11 +253,11 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
         :param message: The unencoded modbus response
         """
         if message.should_respond:
-            # self.server.control.Counter.BusMessage += 1
+            #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.request.sendto(pdu, self.client_address)
+            return self.socket.sendto(pdu, self.client_address)
 
 
 # --------------------------------------------------------------------------- #
@@ -284,12 +285,12 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         :param address: An optional (interface, port) to bind to.
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler
-        :param ignore_missing_slaves: True to not send errors on a request to
-                                        a missing slave
+        :param ignore_missing_slaves: True to not send errors on a request
+                                        to a missing slave
         """
         self.threads = []
         self.decoder = ServerDecoder()
-        self.framer = framer  or ModbusSocketFramer
+        self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
@@ -351,9 +352,9 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
         :param handler: A handler for each client session; default is
-                        ModbusDisonnectedRequestHandler
-        :param ignore_missing_slaves: True to not send errors on a request to a
-                                      missing slave
+                            ModbusDisonnectedRequestHandler
+        :param ignore_missing_slaves: True to not send errors on a request
+                                        to a missing slave
         """
         self.threads = []
         self.decoder = ServerDecoder()
@@ -370,6 +371,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
 
         socketserver.ThreadingUDPServer.__init__(self,
             self.address, self.handler)
+        # self._BaseServer__shutdown_request = True
 
     def process_request(self, request, client):
         """ Callback for connecting a new client thread
@@ -416,8 +418,8 @@ class ModbusSerialServer(object):
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
-        :param ignore_missing_slaves: True to not send errors on a request to a
-                                      missing slave
+        :param ignore_missing_slaves: True to not send errors on a request
+                                        to a missing slave
         """
         self.threads = []
         self.decoder = ServerDecoder()
@@ -508,7 +510,7 @@ def StartTcpServer(context=None, identity=None, address=None, **kwargs):
     :param ignore_missing_slaves: True to not send errors on a request to a
                                   missing slave
     """
-    framer = ModbusSocketFramer
+    framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusTcpServer(context, framer, identity, address, **kwargs)
     server.serve_forever()
 
@@ -520,8 +522,8 @@ def StartUdpServer(context=None, identity=None, address=None, **kwargs):
     :param identity: An optional identify structure
     :param address: An optional (interface, port) to bind to.
     :param framer: The framer to operate with (default ModbusSocketFramer)
-    :param ignore_missing_slaves: True to not send errors on a request to a
-                                  missing slave
+    :param ignore_missing_slaves: True to not send errors on a request
+                                    to a missing slave
     """
     framer = kwargs.pop('framer', ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
@@ -555,3 +557,4 @@ def StartSerialServer(context=None, identity=None, **kwargs):
 __all__ = [
     "StartTcpServer", "StartUdpServer", "StartSerialServer"
 ]
+

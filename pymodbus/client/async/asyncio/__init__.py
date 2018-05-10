@@ -132,7 +132,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :param data: The data returned from the server
         '''
         _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
-        self.framer.processIncomingPacket(data, self._handleResponse)
+        unit = self.framer.decode_data(data).get("uid", 0)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def _handleResponse(self, reply, **kwargs):
         """

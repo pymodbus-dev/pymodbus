@@ -32,7 +32,7 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertFalse(protocol._connected)
-        self.assertTrue(protocol.framer == None)
+        self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
 
         framer = object()
         protocol = ModbusClientProtocol(framer=framer)

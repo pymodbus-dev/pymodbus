@@ -13,8 +13,10 @@ Subpackages
 
     pymodbus.client
     pymodbus.datastore
+    pymodbus.framer
     pymodbus.internal
     pymodbus.server
+
 
 Submodules
 ----------

@@ -26,15 +26,17 @@ from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
-logging.basicConfig()
-log = logging.getLogger("pymodbus")
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
+log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 # --------------------------------------------------------------------------- #
 # state a few constants
 # --------------------------------------------------------------------------- #
-SERIAL_PORT = "/tmp/ttyp0"
-# --------------------------------------------------------------------------- #
+
+SERIAL_PORT = "/dev/ptyp0"
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -175,7 +177,7 @@ class LoggingLineReader(object):
 
 def main():
     log.debug("Initializing the client")
-    framer = ModbusFramer(ClientDecoder())
+    framer = ModbusFramer(ClientDecoder(), client=None)
     reader = LoggingLineReader()
     factory = ExampleFactory(framer, reader)
     SerialModbusClient(factory, SERIAL_PORT, reactor)

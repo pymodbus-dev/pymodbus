@@ -16,15 +16,17 @@ from pymodbus.server.sync import StartUdpServer
 from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 # --------------------------------------------------------------------------- # 
 # configure the service logging
 # --------------------------------------------------------------------------- # 
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -85,10 +87,11 @@ def run_server():
     #     store = ModbusSlaveContext(..., zero_mode=True)
     # ----------------------------------------------------------------------- # 
     store = ModbusSlaveContext(
-        di = ModbusSequentialDataBlock(0, [17]*100),
-        co = ModbusSequentialDataBlock(0, [17]*100),
-        hr = ModbusSequentialDataBlock(0, [17]*100),
-        ir = ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17]*100),
+        co=ModbusSequentialDataBlock(0, [17]*100),
+        hr=ModbusSequentialDataBlock(0, [17]*100),
+        ir=ModbusSequentialDataBlock(0, [17]*100))
+
     context = ModbusServerContext(slaves=store, single=True)
     
     # ----------------------------------------------------------------------- # 
@@ -102,24 +105,35 @@ def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.0'
+    identity.MajorMinorRevision = '1.5'
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- # 
     # Tcp:
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
-    
+
+    # TCP with different framer
+    # StartTcpServer(context, identity=identity,
+    #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
+
     # Udp:
-    # StartUdpServer(context, identity=identity, address=("localhost", 502))
+    # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
     
     # Ascii:
-    #  StartSerialServer(context, identity=identity,
-    #                    port='/dev/pts/3', timeout=1)
+    # StartSerialServer(context, identity=identity,
+    #                    port='/dev/ttyp0', timeout=1)
     
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ptyp0', timeout=.005, baudrate=9600)
+    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+
+    # Binary
+    # StartSerialServer(context,
+    #                   identity=identity,
+    #                   framer=ModbusBinaryFramer,
+    #                   port='/dev/ttyp0',
+    #                   timeout=1)
 
 
 if __name__ == "__main__":

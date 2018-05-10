@@ -64,12 +64,12 @@ class ModbusClientProtocol(protocol.Protocol,
 
     def __init__(self, framer=None, **kwargs):
         self._connected = False
-        if framer:
-            self.framer = framer
-
+        self.framer = framer or ModbusSocketFramer(ClientDecoder())
+        if isinstance(self.framer, type):
+            # Framer class not instance
+            self.framer = self.framer(ClientDecoder(), client=None)
         if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self, **kwargs)
-
         else:
             self.transaction = FifoTransactionManager(self, **kwargs)
 
@@ -98,8 +98,9 @@ class ModbusClientProtocol(protocol.Protocol,
 
         :param data: The data returned from the server
         """
-        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
-        self.framer.processIncomingPacket(data, self._handleResponse)
+        unit = self.framer.decode_data(data).get("uid", 0)
+        self.framer.processIncomingPacket(data, self._handleResponse,
+                                          unit=unit)
 
     def execute(self, request):
         """ 
@@ -123,7 +124,8 @@ class ModbusClientProtocol(protocol.Protocol,
             handler = self.transaction.getTransaction(tid)
             if handler:
                 handler.callback(reply)
-            else: _logger.debug("Unrequested message: " + str(reply))
+            else:
+                _logger.debug("Unrequested message: " + str(reply))
 
     def _buildResponse(self, tid):
         """ 
@@ -166,7 +168,9 @@ class ModbusSerClientProtocol(ModbusClientProtocol):
     
     Default framer: ModbusRtuFramer
     """
-    framer = ModbusRtuFramer(ClientDecoder())
+    def __init__(self, framer=None, **kwargs):
+        framer = framer or ModbusRtuFramer(ClientDecoder())
+        super(ModbusSerClientProtocol, self).__init__(framer, **kwargs)
 
 
 # --------------------------------------------------------------------------- #
@@ -187,7 +191,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         :param params: The host parameters sending the datagram
         """
         _logger.debug("Datagram from: %s:%d" % params)
-        self.framer.processIncomingPacket(data, self._handleResponse)
+        unit = self.framer.decode_data(data).get("uid", 0)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def execute(self, request):
         """

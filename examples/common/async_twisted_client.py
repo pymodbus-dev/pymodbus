@@ -9,6 +9,7 @@ client implementation from pymodbus.
 # --------------------------------------------------------------------------- #
 # import needed libraries
 # --------------------------------------------------------------------------- #
+
 from twisted.internet import reactor
 
 from pymodbus.client.async.tcp import AsyncModbusTCPClient
@@ -21,11 +22,20 @@ from pymodbus.client.async import schedulers
 
 #from pymodbus.client.async import ModbusUdpClientProtocol
 
+from twisted.internet import reactor, protocol
+from pymodbus.constants import Defaults
+
+# --------------------------------------------------------------------------- #
+# choose the requested modbus protocol
+# --------------------------------------------------------------------------- #
+
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -40,7 +50,7 @@ def err(*args, **kwargs):
 
 def dassert(deferred, callback):
     def _assertor(value):
-        assert(value)
+        assert value
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(err)
 
@@ -55,9 +65,20 @@ def dassert(deferred, callback):
 
 UNIT = 0x01
 
+def processResponse(result):
+    log.debug(result)
+
 
 def exampleRequests(client):
     rr = client.read_coils(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_holding_registers(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_discrete_inputs(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    rr = client.read_input_registers(1, 1, unit=0x02)
+    rr.addCallback(processResponse)
+    stopAsynchronousTest(client)
 
 # --------------------------------------------------------------------------- #
 # example requests
@@ -70,31 +91,38 @@ def exampleRequests(client):
 # deferred assert helper(dassert).
 # --------------------------------------------------------------------------- #
 
+def stopAsynchronousTest(client):
+    # ----------------------------------------------------------------------- #
+    # close the client at some time later
+    # ----------------------------------------------------------------------- #
+    reactor.callLater(1, client.transport.loseConnection)
+    reactor.callLater(2, reactor.stop)
+
 
 def beginAsynchronousTest(client):
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.bits[0] == True)          # test the expected value
 
     rq = client.write_coils(1, [True]*8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, lambda r: r.bits == [True]*8)         # test the expected value
+    dassert(rq, lambda r: not r.isError())     # test for no error
+    dassert(rr, lambda r: r.bits == [True]*8)        # test the expected value
 
     rq = client.write_coils(1, [False]*8, unit=UNIT)
     rr = client.read_discrete_inputs(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, lambda r: r.bits == [True]*8)         # test the expected value
+    dassert(rq, lambda r: not r.isError())     # test for no error
+    dassert(rr, lambda r: r.bits == [True]*8)        # test the expected value
 
     rq = client.write_register(1, 10, unit=UNIT)
     rr = client.read_holding_registers(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.registers[0] == 10)       # test the expected value
 
     rq = client.write_registers(1, [10]*8, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
+    dassert(rq, lambda r: not r.isError())     # test for no error
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value
 
     arguments = {
@@ -103,10 +131,11 @@ def beginAsynchronousTest(client):
         'write_address':   1,
         'write_registers': [20]*8,
     }
-    rq = client.readwrite_registers(**arguments, unit=UNIT)
+    rq = client.readwrite_registers(arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.registers == [20]*8)      # test the expected value
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value
+    stopAsynchronousTest(client)
 
     # ----------------------------------------------------------------------- #
     # close the client at some time later
@@ -140,11 +169,9 @@ def beginAsynchronousTest(client):
 
 
 if __name__ == "__main__":
-
     protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
     # protocol, deferred = AsyncModbusUDPClient(schedulers.REACTOR, port=5020)
                              # callback=beginAsynchronousTest,
                              # errback=err)
     deferred.addCallback(beginAsynchronousTest)
     deferred.addErrback(err)
-

@@ -17,13 +17,17 @@ from pymodbus.server.async import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+from pymodbus.transaction import (ModbusRtuFramer,
+                                  ModbusAsciiFramer,
+                                  ModbusBinaryFramer)
 
 # --------------------------------------------------------------------------- # 
 # configure the service logging
 # --------------------------------------------------------------------------- # 
 import logging
-logging.basicConfig()
+FORMAT = ('%(asctime)-15s %(threadName)-15s'
+          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -101,18 +105,41 @@ def run_async_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.0'
+    identity.MajorMinorRevision = '1.5'
     
     # ----------------------------------------------------------------------- # 
     # run the server you want
     # ----------------------------------------------------------------------- # 
-    
+
+    # TCP Server
+
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
-    # StartUdpServer(context, identity=identity, address=("localhost", 502))
-    # StartSerialServer(context, identity=identity, 
-    #                   port='/dev/pts/3', framer=ModbusRtuFramer)
-    # StartSerialServer(context, identity=identity, 
-    #                   port='/dev/pts/3', framer=ModbusAsciiFramer)
+
+    # TCP Server with deferred reactor run
+
+    # from twisted.internet import reactor
+    # StartTcpServer(context, identity=identity, address=("localhost", 5020),
+    #                defer_reactor_run=True)
+    # reactor.run()
+
+    # Server with RTU framer
+    # StartTcpServer(context, identity=identity, address=("localhost", 5020),
+    #                framer=ModbusRtuFramer)
+
+    # UDP Server
+    # StartUdpServer(context, identity=identity, address=("127.0.0.1", 5020))
+
+    # RTU Server
+    # StartSerialServer(context, identity=identity,
+    #                   port='/dev/ttyp0', framer=ModbusRtuFramer)
+
+    # ASCII Server
+    # StartSerialServer(context, identity=identity,
+    #                   port='/dev/ttyp0', framer=ModbusAsciiFramer)
+
+    # Binary Server
+    # StartSerialServer(context, identity=identity,
+    #                   port='/dev/ttyp0', framer=ModbusBinaryFramer)
 
 
 if __name__ == "__main__":

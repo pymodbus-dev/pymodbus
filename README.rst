@@ -4,9 +4,12 @@
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby
 
-.. image:: https://readthedocs.org/projects/pymodbus-n/badge/?version=latest
-   :target: http://pymodbus-n.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
+   :target: http://pymodbus.readthedocs.io/en/async/?badge=latest
    :alt: Documentation Status
+
+.. important::
+   **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
 
 ============================================================
 Summary

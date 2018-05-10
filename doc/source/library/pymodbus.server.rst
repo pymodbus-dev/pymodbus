@@ -1,6 +1,11 @@
 pymodbus\.server package
 ========================
 
+.. automodule:: pymodbus.server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -21,10 +26,3 @@ pymodbus\.server\.sync module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pymodbus.server
-    :members:
-    :undoc-members:
-    :show-inheritance:

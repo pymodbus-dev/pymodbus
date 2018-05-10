@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 Bit Message Test Fixture
 --------------------------------
 This fixture tests the functionality of all the 
@@ -7,7 +7,7 @@ bit based request/response messages:
 
 * Read/Write Discretes
 * Read Coils
-'''
+"""
 import unittest, struct
 from pymodbus.bit_read_message import *
 from pymodbus.bit_read_message import ReadBitsRequestBase
@@ -29,18 +29,18 @@ class ModbusBitMessageTests(unittest.TestCase):
     #-----------------------------------------------------------------------#
 
     def setUp(self):
-        '''
+        """
         Initializes the test environment and builds request/result
         encoding pairs
-        '''
+        """
         pass
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         pass
 
     def testReadBitBaseClassMethods(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         handle = ReadBitsRequestBase(1, 1)
         msg    = "ReadBitRequest(1,1)"
         self.assertEqual(msg, str(handle))
@@ -49,7 +49,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         self.assertEqual(msg, str(handle))
 
     def testBitReadBaseRequestEncoding(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         for i in range(20):
             handle = ReadBitsRequestBase(i, i)
             result = struct.pack('>HH',i, i)
@@ -58,7 +58,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             self.assertEqual((handle.address, handle.count), (i,i))
 
     def testBitReadBaseResponseEncoding(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         for i in range(20):
             input  = [True] * i
             handle = ReadBitsResponseBase(input)
@@ -67,7 +67,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             self.assertEqual(handle.bits[:i], input)
 
     def testBitReadBaseResponseHelperMethods(self):
-        ''' Test the extra methods on a ReadBitsResponseBase '''
+        """ Test the extra methods on a ReadBitsResponseBase """
         input  = [False] * 8
         handle = ReadBitsResponseBase(input)
         for i in [1,3,5]: handle.setBit(i, True)
@@ -76,7 +76,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             self.assertEqual(handle.getBit(i), False)
 
     def testBitReadBaseRequests(self):
-        ''' Test bit read request encoding '''
+        """ Test bit read request encoding """
         messages = {
             ReadBitsRequestBase(12, 14)        : b'\x00\x0c\x00\x0e',
             ReadBitsResponseBase([1,0,1,1,0])  : b'\x01\x0d'
@@ -85,7 +85,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             self.assertEqual(request.encode(), expected)
 
     def testBitReadMessageExecuteValueErrors(self):
-        ''' Test bit read request encoding '''
+        """ Test bit read request encoding """
         context = MockContext()
         requests = [
             ReadCoilsRequest(1,0x800),
@@ -97,7 +97,7 @@ class ModbusBitMessageTests(unittest.TestCase):
                 result.exception_code)
 
     def testBitReadMessageExecuteAddressErrors(self):
-        ''' Test bit read request encoding '''
+        """ Test bit read request encoding """
         context = MockContext()
         requests = [
             ReadCoilsRequest(1,5),
@@ -108,7 +108,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
 
     def testBitReadMessageExecuteSuccess(self):
-        ''' Test bit read request encoding '''
+        """ Test bit read request encoding """
         context = MockContext()
         context.validate = lambda a,b,c: True
         requests = [

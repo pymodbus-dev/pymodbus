@@ -1,3 +1,9 @@
+Version 2.0.0rc1
+-----------------------------------------------------------
+**Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
+
+* Async client implementation based on Tornado, Twisted and asyncio
+
 Version 1.5.1
 ------------------------------------------------------------
 * Fix device information selectors
@@ -36,6 +42,7 @@ Version 1.5.0
 * Modbus read retries works only when empty/no message is received
 * Change test runner from nosetest to pytest
 * Fix Misc examples
+>>>>>>> master
 
 Version 1.4.0
 ------------------------------------------------------------

@@ -22,6 +22,11 @@ pymodbus/server/__pycache__/
 test/__pycache__/
 **/pymodbus.db
 /.eggs/
+/test/bin/
+/test/include/
+/test/lib/
+/test/pip-selfcheck.json
+/test/.Python
 /.cache/
 /doc/sphinx/doctrees/
 /doc_new/

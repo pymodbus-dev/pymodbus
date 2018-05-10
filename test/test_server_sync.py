@@ -17,13 +17,21 @@ from pymodbus.server.sync import ModbusTcpServer, ModbusUdpServer, ModbusSerialS
 from pymodbus.server.sync import StartTcpServer, StartUdpServer, StartSerialServer
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.datastore import  ModbusServerContext
-import sys
+from pymodbus.datastore import ModbusServerContext
+
 from pymodbus.compat import socketserver
 
-SERIAL_PORT = "/dev/ptmx"
-if sys.platform == "darwin":
-    SERIAL_PORT = "/dev/ptyp0"
+import platform
+from distutils.version import LooseVersion
+
+IS_DARWIN = platform.system().lower() == "darwin"
+OSX_SIERRA = LooseVersion("10.12")
+if IS_DARWIN:
+    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
+else:
+    IS_HIGH_SIERRA_OR_ABOVE = False
+    SERIAL_PORT = "/dev/ptmx"
 #---------------------------------------------------------------------------#
 # Mock Classes
 #---------------------------------------------------------------------------#

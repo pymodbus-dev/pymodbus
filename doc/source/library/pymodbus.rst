@@ -1,5 +1,10 @@
-Pymodbus package
+pymodbus package
 ================
+
+.. automodule:: pymodbus
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Subpackages
 -----------
@@ -177,10 +182,3 @@ pymodbus\.version module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pymodbus
-    :members:
-    :undoc-members:
-    :show-inheritance:

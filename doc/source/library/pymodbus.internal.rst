@@ -1,6 +1,11 @@
 pymodbus\.internal package
 ==========================
 
+.. automodule:: pymodbus.internal
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -13,10 +18,3 @@ pymodbus\.internal\.ptwisted module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pymodbus.internal
-    :members:
-    :undoc-members:
-    :show-inheritance:

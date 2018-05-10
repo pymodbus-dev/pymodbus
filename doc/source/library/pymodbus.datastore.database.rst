@@ -1,6 +1,11 @@
 pymodbus\.datastore\.database package
 =====================================
 
+.. automodule:: pymodbus.datastore.database
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -21,10 +26,3 @@ pymodbus\.datastore\.database\.sql\_datastore module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pymodbus.datastore.database
-    :members:
-    :undoc-members:
-    :show-inheritance:

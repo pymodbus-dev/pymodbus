@@ -12,13 +12,13 @@ free to use it as a skeleton guide in implementing your own.
 from twisted.internet import serialport, reactor
 from twisted.internet.protocol import ClientFactory
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async import ModbusClientProtocol
+from pymodbus.client.async.twisted import ModbusClientProtocol
 
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use
 # --------------------------------------------------------------------------- #
-#from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
-#from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
+# from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
+# from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 # from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
@@ -35,11 +35,13 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 # state a few constants
 # --------------------------------------------------------------------------- #
+
 SERIAL_PORT = "/dev/ptyp0"
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
 UNIT = 0x01
+
 
 # --------------------------------------------------------------------------- #
 # an example custom protocol

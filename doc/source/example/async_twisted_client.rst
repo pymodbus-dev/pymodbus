@@ -1,4 +1,4 @@
 ==================================================
-Asynchronous Client Example
+Async Twisted Client Example
 ==================================================
-.. literalinclude:: ../../../examples/common/asynchronous_client.py
+.. literalinclude:: ../../../examples/common/async_twisted_client.py

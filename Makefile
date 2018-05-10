@@ -39,7 +39,7 @@ check: install
 
 test: install
 	@pip install --quiet --requirement=requirements-tests.txt
-	@py.test
+	@py.test --cov=pymodbus/ --cov-report term-missing
 	@coverage report --fail-under=90
 
 tox: install

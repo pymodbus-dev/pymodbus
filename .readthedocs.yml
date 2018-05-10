@@ -7,3 +7,4 @@ python:
     extra_requirements:
         - twisted
         - documents
+    version: 3.5

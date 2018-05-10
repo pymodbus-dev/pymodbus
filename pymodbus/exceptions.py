@@ -103,4 +103,5 @@ __all__ = [
     "ModbusException", "ModbusIOException",
     "ParameterException", "NotImplementedException",
     "ConnectionException", "NoSuchSlaveException",
+    "InvalidMessageReceivedException"
 ]

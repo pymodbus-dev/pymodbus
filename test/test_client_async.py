@@ -39,23 +39,8 @@ else:
 # ---------------------------------------------------------------------------#
 
 
-def mock_create_serial_connection(a, b, port):
-    ser = MagicMock()
-    ser.port = port
-    protocol = b()
-    transport = SerialTransport(a, protocol, ser)
-    protocol.transport = transport
-    return transport, protocol
-
-
 def mock_asyncio_gather(coro):
     return coro
-
-
-def mock_asyncio_run_untill_complete(val):
-    transport, protocol = val
-    protocol._connected = True
-    return ([transport, protocol], )
 
 
 class TestAsynchronousClient(object):
@@ -237,36 +222,27 @@ class TestAsynchronousClient(object):
         assert pytest_wrapped_e.value.code == 1
 
     @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4), reason="requires python3.4 or above")
-    @patch("serial_asyncio.create_serial_connection", side_effect=mock_create_serial_connection)
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                         ("socket", ModbusSocketFramer),
                                         ("binary",  ModbusBinaryFramer),
                                         ("ascii", ModbusAsciiFramer)])
-    def testSerialAsyncioClient(self,  mock_gather, mock_event_loop, mock_serial_connection, method, framer):
+    def testSerialAsyncioClient(self,  mock_gather, mock_event_loop, method, framer):
         """
-        Test Serial async asyncio client exits on python2
+        Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler.
         :return:
         """
         loop = asyncio.get_event_loop()
-        loop.run_until_complete.side_effect = mock_asyncio_run_untill_complete
-        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop)
+        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
+                                               baudrate=19200, parity='E', stopbits=2, bytesize=7)
         assert(isinstance(client, AsyncioModbusSerialClient))
-        assert(len(list(client.protocol.transaction)) == 0)
         assert(isinstance(client.framer, framer))
-        assert(client.protocol._connected)
-
-        d = client.protocol._buildResponse(0x00)
-
-        def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
-
-        d.add_done_callback(handle_failure)
-        assert(client.protocol._connected)
-        client.protocol.close()
-        assert(not client.protocol._connected)
-        pass
+        assert(client.port == SERIAL_PORT)
+        assert(client.baudrate == 19200)
+        assert(client.parity == 'E')
+        assert(client.stopbits == 2)
+        assert(client.bytesize == 7)
 
 
 # ---------------------------------------------------------------------------#

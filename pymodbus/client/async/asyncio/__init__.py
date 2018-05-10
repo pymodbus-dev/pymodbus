@@ -659,7 +659,8 @@ class AsyncioModbusSerialClient(object):
     transport = None
     framer = None
 
-    def __init__(self, port, protocol_class=None, framer=None,  loop=None):
+    def __init__(self, port, protocol_class=None, framer=None,  loop=None,
+                 baudrate=9600, bytesize=8, parity='N', stopbits=1):
         """
         Initializes Asyncio Modbus Serial Client
         :param port: Port to connect
@@ -674,30 +675,31 @@ class AsyncioModbusSerialClient(object):
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
         self.port = port
+        self.baudrate = baudrate
+        self.bytesize = bytesize
+        self.parity = parity
+        self.stopbits = stopbits
         self.framer = framer
-        self._connected = False
+        self._connected_event = asyncio.Event()
 
     def stop(self):
         """
         Stops connection
         :return:
         """
-        if self._connected:
+        if self._connected.is_set():
             if self.protocol:
                 if self.protocol.transport:
                     self.protocol.transport.close()
 
     def _create_protocol(self):
-        """
-        Factory function to create initialized protocol instance.
-        """
-        from serial_asyncio import create_serial_connection
+        protocol = self.protocol_class(framer=self.framer)
+        protocol.factory = self
+        return protocol
 
-        def factory():
-            return self.protocol_class(framer=self.framer)
-
-        cor = create_serial_connection(self.loop, factory, self.port)
-        return cor
+    @property
+    def _connected(self):
+        return self._connected_event.is_set()
 
     @asyncio.coroutine
     def connect(self):
@@ -707,11 +709,16 @@ class AsyncioModbusSerialClient(object):
         """
         _logger.debug('Connecting.')
         try:
-            yield from self.loop.create_connection(self._create_protocol)
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+            from serial_asyncio import create_serial_connection
+
+            yield from create_serial_connection(
+                self.loop, self._create_protocol, self.port, baudrate=self.baudrate,
+                bytesize=self.bytesize, stopbits=self.stopbits
+            )
+            yield from self._connected_event.wait()
+            _logger.info('Connected to %s', self.port)
         except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
-            # asyncio.async(self._reconnect(), loop=self.loop)
+            _logger.warning('Failed to connect: %s', ex)
 
     def protocol_made_connection(self, protocol):
         """
@@ -719,7 +726,7 @@ class AsyncioModbusSerialClient(object):
         """
         _logger.info('Protocol made connection.')
         if not self._connected:
-            self._connected = True
+            self._connected_event.set()
             self.protocol = protocol
         else:
             _logger.error('Factory protocol connect '
@@ -735,7 +742,7 @@ class AsyncioModbusSerialClient(object):
                 _logger.error('Factory protocol callback called'
                               ' from unexpected protocol instance.')
 
-            self._connected = False
+            self._connected_event.clear()
             self.protocol = None
             # if self.host:
             #     asyncio.async(self._reconnect(), loop=self.loop)

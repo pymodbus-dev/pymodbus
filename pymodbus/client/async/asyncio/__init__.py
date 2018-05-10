@@ -687,7 +687,7 @@ class AsyncioModbusSerialClient(object):
         Stops connection
         :return:
         """
-        if self._connected.is_set():
+        if self._connected:
             if self.protocol:
                 if self.protocol.transport:
                     self.protocol.transport.close()

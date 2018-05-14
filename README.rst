@@ -18,8 +18,9 @@ Summary
 Pymodbus is a full Modbus protocol implementation using twisted for its
 asynchronous communications core.  It can also be used without any third
 party dependencies (aside from pyserial) if a more lightweight project is
-needed.  Furthermore, it should work fine under any python version > 2.3
-with a python 3.0 branch currently being maintained as well.
+needed.  Furthermore, it should work fine under any python version > 2.7
+(including python 3+)
+
 
 ============================================================
 Features
@@ -43,7 +44,7 @@ Server Features
   * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
   * asynchronous(powered by twisted) and synchronous versions
   * Full server control context (device information, counters, etc)
-  * A number of backing contexts (database, redis, a slave device)
+  * A number of backing contexts (database, redis, sqlite, a slave device)
 
 ============================================================
 Use Cases
@@ -133,6 +134,7 @@ I get time doing such tasks as:
   * Architecture documentation
   * Functional testing against any reference I can find
   * The remaining edges of the protocol (that I think no one uses)
+  * Asynchronous clients with support to tornado , asyncio  
 
 ------------------------------------------------------------
 Development Instructions

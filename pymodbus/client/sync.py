@@ -529,7 +529,10 @@ class ModbusSerialClient(BaseModbusClient):
 
     def is_socket_open(self):
         if self.socket:
-            return self.socket.is_open()
+            if hasattr(self.socket, "is_open"):
+                return self.socket.is_open
+            else:
+                return self.socket.isOpen()
         return False
 
     def __str__(self):

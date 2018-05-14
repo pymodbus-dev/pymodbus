@@ -1,3 +1,7 @@
+Version 1.5.2
+------------------------------------------------------------
+* Fix serial client `is_socket_open` method
+
 Version 1.5.1
 ------------------------------------------------------------
 * Fix device information selectors

@@ -66,7 +66,8 @@ setup(
     include_package_data=True,
     zip_safe=True,
     install_requires=[
-        'pyserial >= 2.6'
+        'pyserial >= 2.6',
+        'six'
     ],
     extras_require={
         'quality': [

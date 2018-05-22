@@ -37,6 +37,7 @@ class BaseModbusClient(ModbusClientMixin):
 
         :param framer: The modbus framer implementation to use
         """
+	_logger.debug("Initializing...")
         self.framer = framer
         if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self, **kwargs)
@@ -398,6 +399,8 @@ class ModbusSerialClient(BaseModbusClient):
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout between serial requests (default 3s)
         """
+
+	_logger.debug("Serial client intialising")
         self.method = method
         self.socket = None
         BaseModbusClient.__init__(self, self.__implementation(method, self),
@@ -509,7 +512,9 @@ class ModbusSerialClient(BaseModbusClient):
         start = time.time()
         while condition(start):
             size = self._in_waiting()
+	    _logger.debug("In waiting....")
             if size:
+                _logger.debug("Size is non zero")
                 break
             time.sleep(0.01)
         return size
@@ -523,8 +528,10 @@ class ModbusSerialClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         if size is None:
+            _logger.debug("Shall wait for data")
             size = self._wait_for_data()
         result = self.socket.read(size)
+        _logger.debug("Finished reading socket....")
         return result
 
     def is_socket_open(self):

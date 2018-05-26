@@ -1,23 +1,18 @@
-"""
-Implementation of a Threaded Modbus Server
-------------------------------------------
-
-"""
-from binascii import b2a_hex
-import serial
 import socket
-import traceback
-
+import serial
+import time
+import sys
+from functools import partial
 from pymodbus.constants import Defaults
-from pymodbus.utilities import hexlify_packets
-from pymodbus.factory import ServerDecoder
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.device import ModbusControlBlock
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import *
-from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
-from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import socketserver, byte2int
+from pymodbus.utilities import hexlify_packets, ModbusTransactionState
+from pymodbus.factory import ClientDecoder
+from pymodbus.exceptions import NotImplementedException, ParameterException
+from pymodbus.exceptions import ConnectionException
+from pymodbus.transaction import FifoTransactionManager
+from pymodbus.transaction import DictTransactionManager
+from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
+from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
+from pymodbus.client.common import ModbusClientMixin
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -25,430 +20,430 @@ from pymodbus.compat import socketserver, byte2int
 import logging
 _logger = logging.getLogger(__name__)
 
-
 # --------------------------------------------------------------------------- #
-# Protocol Handlers
+# The Synchronous Clients
 # --------------------------------------------------------------------------- #
 
-class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
-    """ Implements the modbus server protocol
 
-    This uses the socketserver.BaseRequestHandler to implement
-    the client handler.
+class BaseModbusClient(ModbusClientMixin):
     """
-    running = False
-    framer = None
+        Inteface for a modbus synchronous client. Defined here are all the
+        methods for performing the related request methods.  Derived classes
+        simply need to implement the transport methods and set the correct
+        framer.
+        """
+    def __init__(self, framer, **kwargs):
+        """ Initialize a client instance
+            
+            :param framer: The modbus framer implementation to use
+            """
+        self.framer = framer
+        if isinstance(self.framer, ModbusSocketFramer):
+            self.transaction = DictTransactionManager(self, **kwargs)
+        else:
+            self.transaction = FifoTransactionManager(self, **kwargs)
+        self._debug = False
+        self._debugfd = None
     
-    def setup(self):
-        """ Callback for when a client connects
+    # ----------------------------------------------------------------------- #
+    # Client interface
+    # ----------------------------------------------------------------------- #
+    def connect(self):
+        """ Connect to the modbus remote host
+            
+            :returns: True if connection succeeded, False otherwise
+            """
+        raise NotImplementedException("Method not implemented by derived class")
+    
+    def close(self):
+        """ Closes the underlying socket connection
+            """
+        pass
+    
+    def is_socket_open(self):
         """
-        _logger.debug("Client Connected [%s:%s]" % self.client_address)
-        self.running = True
-        self.framer = self.server.framer(self.server.decoder, client=None)
-        self.server.threads.append(self)
-
-    def finish(self):
-        """ Callback for when a client disconnects
+            Check whether the underlying socket/serial is open or not.
+            
+            :returns: True if socket/serial is open, False otherwise
+            """
+        raise NotImplementedException(
+                                      "is_socket_open() not implemented by {}".format(self.__str__())
+                                      )
+    
+    def send(self, request):
+        _logger.debug("New Transaction state 'SENDING'")
+        self.state = ModbusTransactionState.SENDING
+        return self._send(request)
+    
+    def _send(self, request):
+        """ Sends data on the underlying socket
+            
+            :param request: The encoded request to send
+            :return: The number of bytes written
+            """
+        raise NotImplementedException("Method not implemented by derived class")
+    
+    def recv(self, size):
+        return self._recv(size)
+    
+    def _recv(self, size):
+        """ Reads data from the underlying descriptor
+            
+            :param size: The number of bytes to read
+            :return: The bytes read
+            """
+        raise NotImplementedException("Method not implemented by derived class")
+    
+    # ----------------------------------------------------------------------- #
+    # Modbus client methods
+    # ----------------------------------------------------------------------- #
+    def execute(self, request=None):
         """
-        _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
-        self.server.threads.remove(self)
-
-    def execute(self, request):
-        """ The callback to call with the resulting message
-
-        :param request: The decoded request message
+            :param request: The request to process
+            :returns: The result of the request execution
+            """
+        if not self.connect():
+            raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
+        return self.transaction.execute(request)
+    
+    # ----------------------------------------------------------------------- #
+    # The magic methods
+    # ----------------------------------------------------------------------- #
+    def __enter__(self):
+        """ Implement the client with enter block
+            
+            :returns: The current instance of the client
+            """
+        if not self.connect():
+            raise ConnectionException("Failed to connect[%s]" % (self.__str__()))
+        return self
+    
+    def __exit__(self, klass, value, traceback):
+        """ Implement the client with exit block """
+        self.close()
+    
+    def idle_time(self):
+        if self.last_frame_end is None or self.silent_interval is None:
+            return 0
+        return self.last_frame_end + self.silent_interval
+    
+    def debug_enabled(self):
         """
+            Returns a boolean indicating if debug is enabled.
+            """
+        return self._debug
+    
+    def set_debug(self, debug):
+        """
+            Sets the current debug flag.
+            """
+        self._debug = debug
+    
+    def trace(self, writeable):
+        if writeable:
+            self.set_debug(True)
+        self._debugfd = writeable
+    
+    def _dump(self, data, direction):
+        fd = self._debugfd if self._debugfd else sys.stdout
         try:
-            context = self.server.context[request.unit_id]
-            response = request.execute(context)
-        except NoSuchSlaveException as ex:
-            _logger.debug("requested slave does not exist: %s" % request.unit_id )
-            if self.server.ignore_missing_slaves:
-                return  # the client will simply timeout waiting for a response
-            response = request.doException(merror.GatewayNoResponse)
-        except Exception as ex:
-            _logger.debug("Datastore unable to fulfill request: %s; %s", ex, traceback.format_exc() )
-            response = request.doException(merror.SlaveFailure)
-        response.transaction_id = request.transaction_id
-        response.unit_id = request.unit_id
-        self.send(response)
+            fd.write(hexlify_packets(data))
+        except Exception as e:
+            self._logger.debug(hexlify_packets(data))
+            self._logger.exception(e)
 
-    # ----------------------------------------------------------------------- #
-    # Base class implementations
-    # ----------------------------------------------------------------------- #
-    def handle(self):
-        """ Callback when we receive any data
+def __str__(self):
+    """ Builds a string representation of the connection
+        
+        :returns: The string representation
         """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def send(self, message):
-        """ Send a request (string) to the network
-
-        :param message: The unencoded modbus response
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-
-class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
-    """ Implements the modbus server protocol
-
-    This uses the socketserver.BaseRequestHandler to implement
-    the client handler for a single client(serial clients)
-    """
-    def handle(self):
-        """ Callback when we receive any data
-        """
-        while self.running:
-            try:
-                data = self.request.recv(1024)
-                if data:
-                    units = self.server.context.slaves()
-                    single = self.server.context.single
-                    self.framer.processIncomingPacket(data, self.execute,
-                                                      units, single=single)
-            except Exception as msg:
-                # Since we only have a single socket, we cannot exit
-                # Clear frame buffer
-                self.framer.resetFrame()
-                _logger.debug("Error: Socket error occurred %s" % msg)
-
-    def send(self, message):
-        """ Send a request (string) to the network
-
-        :param message: The unencoded modbus response
-        """
-        if message.should_respond:
-            # self.server.control.Counter.BusMessage += 1
-            pdu = self.framer.buildPacket(message)
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.request.send(pdu)
-
-
-class CustomSingleRequestHandler(ModbusSingleRequestHandler):
-
-    def __init__(self, request, client_address, server):
-        self.request = request
-        self.client_address = client_address
-        self.server = server
-        self.running = True
-        self.setup()
-
-
-class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
-    """ Implements the modbus server protocol
-
-    This uses the socketserver.BaseRequestHandler to implement
-    the client handler for a connected protocol (TCP).
-    """
-
-    def handle(self):
-        """Callback when we receive any data, until self.running becomes False.
-        Blocks indefinitely awaiting data.  If shutdown is required, then the
-        global socket.settimeout(<seconds>) may be used, to allow timely
-        checking of self.running.  However, since this also affects socket
-        connects, if there are outgoing socket connections used in the same
-        program, then these will be prevented, if the specfied timeout is too
-        short.  Hence, this is unreliable.
-
-        To respond to Modbus...Server.server_close() (which clears each
-        handler's self.running), derive from this class to provide an
-        alternative handler that awakens from time to time when no input is
-        available and checks self.running.
-        Use Modbus...Server( handler=... ) keyword to supply the alternative
-        request handler class.
-
-        """
-        reset_frame = False
-        while self.running:
-            try:
-                data = self.request.recv(1024)
-                if not data:
-                    self.running = False
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug('Handling data: ' + hexlify_packets(data))
-                # if not self.server.control.ListenOnly:
-
-                units = self.server.context.slaves()
-                single = self.server.context.single
-                self.framer.processIncomingPacket(data, self.execute, units,
-                                                  single=single)
-            except socket.timeout as msg:
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("Socket timeout occurred %s", msg)
-                reset_frame = True
-            except socket.error as msg:
-                _logger.error("Socket error occurred %s" % msg)
-                self.running = False
-            except:
-                _logger.error("Socket exception occurred %s" % traceback.format_exc() )
-                self.running = False
-                reset_frame = True
-            finally:
-                if reset_frame:
-                    self.framer.resetFrame()
-                    reset_frame = False
-
-    def send(self, message):
-        """ Send a request (string) to the network
-
-        :param message: The unencoded modbus response
-        """
-        if message.should_respond:
-            # self.server.control.Counter.BusMessage += 1
-            pdu = self.framer.buildPacket(message)
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.request.send(pdu)
-
-
-class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
-    """ Implements the modbus server protocol
-
-    This uses the socketserver.BaseRequestHandler to implement
-    the client handler for a disconnected protocol (UDP). The
-    only difference is that we have to specify who to send the
-    resulting packet data to.
-    """
-    socket = None
-
-    def handle(self):
-        """ Callback when we receive any data
-        """
-        reset_frame = False
-        while self.running:
-            try:
-                data, self.socket = self.request
-                if not data:
-                    self.running = False
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug('Handling data: ' + hexlify_packets(data))
-                # if not self.server.control.ListenOnly:
-                units = self.server.context.slaves()
-                single = self.server.context.single
-                self.framer.processIncomingPacket(data, self.execute,
-                                                  units, single=single)
-            except socket.timeout: pass
-            except socket.error as msg:
-                _logger.error("Socket error occurred %s" % msg)
-                self.running = False
-                reset_frame = True
-            except Exception as msg:
-                _logger.error(msg)
-                self.running = False
-                reset_frame = True
-            finally:
-                # Reset data after processing
-                self.request = (None, self.socket)
-                if reset_frame:
-                    self.framer.resetFrame()
-                    reset_frame = False
-
-    def send(self, message):
-        """ Send a request (string) to the network
-
-        :param message: The unencoded modbus response
-        """
-        if message.should_respond:
-            #self.server.control.Counter.BusMessage += 1
-            pdu = self.framer.buildPacket(message)
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
-            return self.socket.sendto(pdu, self.client_address)
+            return "Null Transport"
 
 
 # --------------------------------------------------------------------------- #
-# Server Implementations
+# Modbus TCP Client Transport Implementation
 # --------------------------------------------------------------------------- #
-class ModbusTcpServer(socketserver.ThreadingTCPServer):
-    """
-    A modbus threaded tcp socket server
-
-    We inherit and overload the socket server so that we
-    can control the client threads as well as have a single
-    server context instance.
-    """
-
-    def __init__(self, context, framer=None, identity=None,
-                 address=None, handler=None, **kwargs):
-        """ Overloaded initializer for the socket server
-
-        If the identify structure is not passed in, the ModbusControlBlock
-        uses its own empty structure.
-
-        :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use
-        :param identity: An optional identify structure
-        :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler
-        :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
+class ModbusTcpClient(BaseModbusClient):
+    """ Implementation of a modbus tcp client
         """
-        self.threads = []
-        self.decoder = ServerDecoder()
-        self.framer = framer or ModbusSocketFramer
-        self.context = context or ModbusServerContext()
-        self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.Port)
-        self.handler = handler or ModbusConnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
-                                                Defaults.IgnoreMissingSlaves)
-
-        if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity.update(identity)
-
-        socketserver.ThreadingTCPServer.__init__(self,
-            self.address, self.handler)
-        # self._BaseServer__shutdown_request = True
-
-    def process_request(self, request, client):
-        """ Callback for connecting a new client thread
-
-        :param request: The request to handle
-        :param client: The address of the client
-        """
-        _logger.debug("Started thread to serve client at " + str(client))
-        socketserver.ThreadingTCPServer.process_request(self, request, client)
-
-    def shutdown(self):
-        """ Stops the serve_forever loop.
-
-        Overridden to signal handlers to stop.
-        """
-        for thread in self.threads:
-            thread.running = False
-        socketserver.ThreadingTCPServer.shutdown(self)
-
-    def server_close(self):
-        """ Callback for stopping the running server
-        """
-        _logger.debug("Modbus server stopped")
-        self.socket.close()
-        for thread in self.threads:
-            thread.running = False
-
-
-class ModbusUdpServer(socketserver.ThreadingUDPServer):
-    """
-    A modbus threaded udp socket server
-
-    We inherit and overload the socket server so that we
-    can control the client threads as well as have a single
-    server context instance.
-    """
-
-    def __init__(self, context, framer=None, identity=None, address=None,
-                 handler=None, **kwargs):
-        """ Overloaded initializer for the socket server
-
-        If the identify structure is not passed in, the ModbusControlBlock
-        uses its own empty structure.
-
-        :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use
-        :param identity: An optional identify structure
-        :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                            ModbusDisonnectedRequestHandler
-        :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
-        """
-        self.threads = []
-        self.decoder = ServerDecoder()
-        self.framer = framer  or ModbusSocketFramer
-        self.context = context or ModbusServerContext()
-        self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.Port)
-        self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
-                                                Defaults.IgnoreMissingSlaves)
-
-        if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity.update(identity)
-
-        socketserver.ThreadingUDPServer.__init__(self,
-            self.address, self.handler)
-        # self._BaseServer__shutdown_request = True
-
-    def process_request(self, request, client):
-        """ Callback for connecting a new client thread
-
-        :param request: The request to handle
-        :param client: The address of the client
-        """
-        packet, socket = request # TODO I might have to rewrite
-        _logger.debug("Started thread to serve client at " + str(client))
-        socketserver.ThreadingUDPServer.process_request(self, request, client)
-
-    def server_close(self):
-        """ Callback for stopping the running server
-        """
-        _logger.debug("Modbus server stopped")
-        self.socket.close()
-        for thread in self.threads:
-            thread.running = False
-
-
-class ModbusSerialServer(object):
-    """
-    A modbus threaded serial socket server
-
-    We inherit and overload the socket server so that we
-    can control the client threads as well as have a single
-    server context instance.
-    """
-
-    handler = None
-
-    def __init__(self, context, framer=None, identity=None, **kwargs):
-        """ Overloaded initializer for the socket server
-
-        If the identify structure is not passed in, the ModbusControlBlock
-        uses its own empty structure.
-
-        :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use
-        :param identity: An optional identify structure
-        :param port: The serial port to attach to
-        :param stopbits: The number of stop bits to use
-        :param bytesize: The bytesize of the serial messages
-        :param parity: Which kind of parity to use
-        :param baudrate: The baud rate to use for the serial device
-        :param timeout: The timeout to use for the serial device
-        :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
-        """
-        self.threads = []
-        self.decoder = ServerDecoder()
-        self.framer = framer or ModbusAsciiFramer
-        self.context = context or ModbusServerContext()
-        self.control = ModbusControlBlock()
-
-        if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity.update(identity)
-
-        self.device = kwargs.get('port', 0)
-        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
-        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        self.parity = kwargs.get('parity',   Defaults.Parity)
-        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-        self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
-                                                Defaults.IgnoreMissingSlaves)
+    
+    def __init__(self, host='127.0.0.1', port=Defaults.Port,
+                 framer=ModbusSocketFramer, **kwargs):
+        """ Initialize a client instance
+            
+            :param host: The host to connect to (default 127.0.0.1)
+            :param port: The modbus port to connect to (default 502)
+            :param source_address: The source address tuple to bind to (default ('', 0))
+            :param timeout: The timeout to use for this socket (default Defaults.Timeout)
+            :param framer: The modbus framer to use (default ModbusSocketFramer)
+            
+            .. note:: The host argument will accept ipv4 and ipv6 hosts
+            """
+        self.host = host
+        self.port = port
+        self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
-        if self._connect():
-            self.is_running = True
-            self._build_handler()
-
-    def _connect(self):
-        """ Connect to the serial server
-
-        :returns: True if connection succeeded, False otherwise
-        """
+        self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
+    
+    def connect(self):
+        """ Connect to the modbus tcp server
+            
+            :returns: True if connection succeeded, False otherwise
+            """
         if self.socket: return True
         try:
-            self.socket = serial.Serial(port=self.device,
+            self.socket = socket.create_connection(
+                                                   (self.host, self.port),
+                                                   timeout=self.timeout,
+                                                   source_address=self.source_address)
+        except socket.error as msg:
+            _logger.error('Connection to (%s, %s) '
+                          'failed: %s' % (self.host, self.port, msg))
+            self.close()
+        return self.socket is not None
+    
+    def close(self):
+        """ Closes the underlying socket connection
+            """
+        if self.socket:
+            self.socket.close()
+        self.socket = None
+    
+    def _send(self, request):
+        """ Sends data on the underlying socket
+            
+            :param request: The encoded request to send
+            :return: The number of bytes written
+            """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+        if request:
+            return self.socket.send(request)
+        return 0
+    
+    def _recv(self, size):
+        """ Reads data from the underlying descriptor
+            
+            :param size: The number of bytes to read
+            :return: The bytes read
+            """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+        # socket.recv(size) waits until it gets some data from the host but
+        # not necessarily the entire response that can be fragmented in
+        # many packets.
+        # To avoid the splitted responses to be recognized as invalid
+        # messages and to be discarded, loops socket.recv until full data
+        # is received or timeout is expired.
+        # If timeout expires returns the read data, also if its length is
+        # less than the expected size.
+        self.socket.setblocking(0)
+        begin = time.time()
+        
+        data = b''
+        if size is not None:
+            while len(data) < size:
+                try:
+                    data += self.socket.recv(size - len(data))
+                except socket.error:
+                    pass
+                if not self.timeout or (time.time() - begin > self.timeout):
+                    break
+else:
+    while True:
+        try:
+            data += self.socket.recv(1)
+                except socket.error:
+                    pass
+            if not self.timeout or (time.time() - begin > self.timeout):
+                break
+    return data
+
+def is_socket_open(self):
+    return True if self.socket is not None else False
+    
+    def __str__(self):
+        """ Builds a string representation of the connection
+            
+            :returns: The string representation
+            """
+        return "ModbusTcpClient(%s:%s)" % (self.host, self.port)
+    
+    def __repr__(self):
+        return (
+                "<{} at {} socket={self.socket}, ipaddr={self.host}, "
+                "port={self.port}, timeout={self.timeout}>"
+                ).format(self.__class__.__name__, hex(id(self)), self=self)
+
+
+
+# --------------------------------------------------------------------------- #
+# Modbus UDP Client Transport Implementation
+# --------------------------------------------------------------------------- #
+class ModbusUdpClient(BaseModbusClient):
+    """ Implementation of a modbus udp client
+        """
+    
+    def __init__(self, host='127.0.0.1', port=Defaults.Port,
+                 framer=ModbusSocketFramer, **kwargs):
+        """ Initialize a client instance
+            
+            :param host: The host to connect to (default 127.0.0.1)
+            :param port: The modbus port to connect to (default 502)
+            :param framer: The modbus framer to use (default ModbusSocketFramer)
+            :param timeout: The timeout to use for this socket (default None)
+            """
+        self.host = host
+        self.port = port
+        self.socket = None
+        self.timeout = kwargs.get('timeout', None)
+        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
+    
+    @classmethod
+    def _get_address_family(cls, address):
+        """ A helper method to get the correct address family
+            for a given address.
+            
+            :param address: The address to get the af for
+            :returns: AF_INET for ipv4 and AF_INET6 for ipv6
+            """
+        try:
+            _ = socket.inet_pton(socket.AF_INET6, address)
+        except socket.error: # not a valid ipv6 address
+            return socket.AF_INET
+        return socket.AF_INET6
+    
+    def connect(self):
+        """ Connect to the modbus tcp server
+            
+            :returns: True if connection succeeded, False otherwise
+            """
+        if self.socket:
+            return True
+        try:
+            family = ModbusUdpClient._get_address_family(self.host)
+            self.socket = socket.socket(family, socket.SOCK_DGRAM)
+            self.socket.settimeout(self.timeout)
+        except socket.error as ex:
+            _logger.error('Unable to create udp socket %s' % ex)
+            self.close()
+        return self.socket is not None
+    
+    def close(self):
+        """ Closes the underlying socket connection
+            """
+        self.socket = None
+    
+    def _send(self, request):
+        """ Sends data on the underlying socket
+            
+            :param request: The encoded request to send
+            :return: The number of bytes written
+            """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+        if request:
+            return self.socket.sendto(request, (self.host, self.port))
+        return 0
+    
+    def _recv(self, size):
+        """ Reads data from the underlying descriptor
+            
+            :param size: The number of bytes to read
+            :return: The bytes read
+            """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+        return self.socket.recvfrom(size)[0]
+    
+    def is_socket_open(self):
+        return True if self.socket is not None else False
+    
+    def __str__(self):
+        """ Builds a string representation of the connection
+            
+            :returns: The string representation
+            """
+        return "ModbusUdpClient(%s:%s)" % (self.host, self.port)
+    
+    def __repr__(self):
+        return (
+                "<{} at {} socket={self.socket}, ipaddr={self.host}, "
+                "port={self.port}, timeout={self.timeout}>"
+                ).format(self.__class__.__name__, hex(id(self)), self=self)
+
+# --------------------------------------------------------------------------- #
+# Modbus Serial Client Transport Implementation
+# --------------------------------------------------------------------------- #
+class ModbusSerialClient(BaseModbusClient):
+    """ Implementation of a modbus serial client
+        """
+    state = ModbusTransactionState.IDLE
+    
+    def __init__(self, method='ascii', **kwargs):
+        """ Initialize a serial client instance
+            
+            The methods to connect are::
+            
+            - ascii
+            - rtu
+            - binary
+            
+            :param method: The method to use for connection
+            :param port: The serial port to attach to
+            :param stopbits: The number of stop bits to use
+            :param bytesize: The bytesize of the serial messages
+            :param parity: Which kind of parity to use
+            :param baudrate: The baud rate to use for the serial device
+            :param timeout: The timeout between serial requests (default 3s)
+            """
+        self.method = method
+        self.socket = None
+        BaseModbusClient.__init__(self, self.__implementation(method, self),
+                                  **kwargs)
+            
+                                  self.port = kwargs.get('port', 0)
+                                  self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+                                  self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
+                                  self.parity = kwargs.get('parity',   Defaults.Parity)
+                                  self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+                                  self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+                                  self.last_frame_end = None
+                                  if self.method == "rtu":
+                                      if self.baudrate > 19200:
+                                          self.silent_interval = 1.75 / 1000  # ms
+                                              else:
+                                                  self.silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
+                                                      self.silent_interval = round(self.silent_interval, 6)
+
+@staticmethod
+    def __implementation(method, client):
+        """ Returns the requested framer
+            
+            :method: The serial framer to instantiate
+            :returns: The requested serial framer
+            """
+        method = method.lower()
+        if method == 'ascii':
+            return ModbusAsciiFramer(ClientDecoder(), client)
+        elif method == 'rtu':
+            return ModbusRtuFramer(ClientDecoder(), client)
+        elif method == 'binary':
+            return ModbusBinaryFramer(ClientDecoder(), client)
+        elif method == 'socket':
+            return ModbusSocketFramer(ClientDecoder(), client)
+        raise ParameterException("Invalid framer method requested")
+    
+    def connect(self):
+        """ Connect to the modbus serial server
+            
+            :returns: True if connection succeeded, False otherwise
+            """
+        if self.socket:
+            return True
+        try:
+            self.socket = serial.Serial(port=self.port,
                                         timeout=self.timeout,
                                         bytesize=self.bytesize,
                                         stopbits=self.stopbits,
@@ -456,98 +451,102 @@ class ModbusSerialServer(object):
                                         parity=self.parity)
         except serial.SerialException as msg:
             _logger.error(msg)
+            self.close()
+        if self.method == "rtu":
+            self.last_frame_end = None
         return self.socket is not None
+    
+    def close(self):
+        """ Closes the underlying socket connection
+            """
+        if self.socket:
+            self.socket.close()
+        self.socket = None
+    
+    def _in_waiting(self):
+        in_waiting = ("in_waiting" if hasattr(
+                                              self.socket, "in_waiting") else "inWaiting")
+            
+                                              if in_waiting == "in_waiting":
+                                                  waitingbytes = getattr(self.socket, in_waiting)
+                                              else:
+                                                  waitingbytes = getattr(self.socket, in_waiting)()
+                                                      return waitingbytes
 
-    def _build_handler(self):
-        """ A helper method to create and monkeypatch
-            a serial handler.
-
-        :returns: A patched handler
+def _send(self, request):
+    """ Sends data on the underlying socket
+        
+        If receive buffer still holds some data then flush it.
+        
+        Sleep if last send finished less than 3.5 character
+        times ago.
+        
+        :param request: The encoded request to send
+        :return: The number of bytes written
         """
+            if not self.socket:
+            raise ConnectionException(self.__str__())
+                if request:
+                    try:
+                        waitingbytes = self._in_waiting()
+                        if waitingbytes:
+                            result = self.socket.read(waitingbytes)
+                            if _logger.isEnabledFor(logging.WARNING):
+                                _logger.warning("Cleanup recv buffer before "
+                                                "send: " + hexlify_packets(result))
+                                    except NotImplementedError:
+                                        pass
+                                            
+                                            size = self.socket.write(request)
+                                            return size
+                                                return 0
 
-        request = self.socket
-        request.send = request.write
-        request.recv = request.read
-        self.handler = CustomSingleRequestHandler(request,
-                                                  (self.device, self.device),
-                                                  self)
-
-    def serve_forever(self):
-        """ Callback for connecting a new client thread
-
-        :param request: The request to handle
-        :param client: The address of the client
-        """
-        if self._connect():
-            _logger.debug("Started thread to serve client")
-            if not self.handler:
-                self._build_handler()
-            while self.is_running:
-                self.handler.handle()
+def _wait_for_data(self):
+    if self.timeout is not None and self.timeout != 0:
+        condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self.timeout)
         else:
-            _logger.error("Error opening serial port , "
-                          "Unable to start server!!")
-
-    def server_close(self):
-        """ Callback for stopping the running server
-        """
-        _logger.debug("Modbus server stopped")
-        self.is_running = False
-        self.handler.finish()
-        self.handler.running = False
-        self.handler = None
-        self.socket.close()
-
-
-# --------------------------------------------------------------------------- #
-# Creation Factories
-# --------------------------------------------------------------------------- #
-def StartTcpServer(context=None, identity=None, address=None, **kwargs):
-    """ A factory to start and run a tcp modbus server
-
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param ignore_missing_slaves: True to not send errors on a request to a missing slave
-    """
-    framer = kwargs.pop("framer", ModbusSocketFramer)
-    server = ModbusTcpServer(context, framer, identity, address, **kwargs)
-    server.serve_forever()
-
-
-def StartUdpServer(context=None, identity=None, address=None, **kwargs):
-    """ A factory to start and run a udp modbus server
-
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param address: An optional (interface, port) to bind to.
-    :param framer: The framer to operate with (default ModbusSocketFramer)
-    :param ignore_missing_slaves: True to not send errors on a request
-                                    to a missing slave
-    """
-    framer = kwargs.pop('framer', ModbusSocketFramer)
-    server = ModbusUdpServer(context, framer, identity, address, **kwargs)
-    server.serve_forever()
-
-
-def StartSerialServer(context=None, identity=None, **kwargs):
-    """ A factory to start and run a serial modbus server
-
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param framer: The framer to operate with (default ModbusAsciiFramer)
-    :param port: The serial port to attach to
-    :param stopbits: The number of stop bits to use
-    :param bytesize: The bytesize of the serial messages
-    :param parity: Which kind of parity to use
-    :param baudrate: The baud rate to use for the serial device
-    :param timeout: The timeout to use for the serial device
-    :param ignore_missing_slaves: True to not send errors on a request
-                                    to a missing slave
-    """
-    framer = kwargs.pop('framer', ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity, **kwargs)
-    server.serve_forever()
+            condition = partial(lambda dummy1, dummy2: True, dummy2=None)
+    start = time.time()
+        while condition(start):
+            size = self._in_waiting()
+            if size:
+                break
+            time.sleep(0.01)
+return size
+    
+    def _recv(self, size):
+        """ Reads data from the underlying descriptor
+            
+            :param size: The number of bytes to read
+            :return: The bytes read
+            """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+        if size is None:
+            size = self._wait_for_data()
+        result = self.socket.read(size)
+        return result
+    
+    def is_socket_open(self):
+        if self.socket:
+            if hasattr(self.socket, "is_open"):
+                return self.socket.is_open
+            else:
+                return self.socket.isOpen()
+        return False
+    
+    def __str__(self):
+        """ Builds a string representation of the connection
+            
+            :returns: The string representation
+            """
+        return "ModbusSerialClient(%s baud[%s])" % (self.method, self.baudrate)
+    
+    def __repr__(self):
+        return (
+                "<{} at {} socket={self.socket}, method={self.method}, "
+                "timeout={self.timeout}>"
+                ).format(self.__class__.__name__, hex(id(self)), self=self)
 
 # --------------------------------------------------------------------------- #
 # Exported symbols
@@ -555,6 +554,5 @@ def StartSerialServer(context=None, identity=None, **kwargs):
 
 
 __all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer"
-]
-
+           "ModbusTcpClient", "ModbusUdpClient", "ModbusSerialClient"
+           ]

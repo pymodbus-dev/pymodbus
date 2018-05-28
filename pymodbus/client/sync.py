@@ -508,10 +508,10 @@ class ModbusSerialClient(BaseModbusClient):
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
         while condition(start):
+            time.sleep(0.2)
             size = self._in_waiting()
             if size:
                 break
-            time.sleep(0.01)
         return size
 
     def _recv(self, size):

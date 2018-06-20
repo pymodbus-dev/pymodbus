@@ -6,11 +6,11 @@ Pymodbus Synchronous Server Example
 The synchronous server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
 pyserial). This is helpful in constrained or old environments where using
-twisted just is not feasable. What follows is an examle of its use:
+twisted is just not feasible. What follows is an example of its use:
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the various server implementations
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.server.sync import StartUdpServer
 from pymodbus.server.sync import StartSerialServer
@@ -20,9 +20,9 @@ from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the service logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -32,9 +32,9 @@ log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # initialize your data store
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # The datastores only respond to the addresses that they are initialized to
     # Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
     # request to 0x100 will respond with an invalid address exception. This is
@@ -58,7 +58,7 @@ def run_server():
     #     store = ModbusSlaveContext()
     #
     # Finally, you are allowed to use the same DataBlock reference for every
-    # table or you you may use a seperate DataBlock for each table.
+    # table or you may use a separate DataBlock for each table.
     # This depends if you would like functions to be able to access and modify
     # the same data or not::
     #
@@ -85,7 +85,7 @@ def run_server():
     # will map to (1-8)::
     #
     #     store = ModbusSlaveContext(..., zero_mode=True)
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
         di=ModbusSequentialDataBlock(0, [17]*100),
         co=ModbusSequentialDataBlock(0, [17]*100),
@@ -93,12 +93,12 @@ def run_server():
         ir=ModbusSequentialDataBlock(0, [17]*100))
 
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
     identity.ProductCode = 'PM'
@@ -109,7 +109,7 @@ def run_server():
 
     # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # Tcp:
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
@@ -119,11 +119,11 @@ def run_server():
 
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
-    
+
     # Ascii:
     # StartSerialServer(context, identity=identity,
     #                    port='/dev/ttyp0', timeout=1)
-    
+
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
     #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)

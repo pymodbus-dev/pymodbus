@@ -5,7 +5,7 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging;
+import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -55,7 +55,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         return self._val_callbacks[self.decode(fx)](address, count)
 
     def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+        ''' Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -94,28 +94,28 @@ class RedisSlaveContext(IModbusSlaveContext):
         code mapper.
         '''
         self._val_callbacks = {
-            'd' : lambda o, c: self._val_bit('d', o, c),
-            'c' : lambda o, c: self._val_bit('c', o, c),
-            'h' : lambda o, c: self._val_reg('h', o, c),
-            'i' : lambda o, c: self._val_reg('i', o, c),
+            'd': lambda o, c: self._val_bit('d', o, c),
+            'c': lambda o, c: self._val_bit('c', o, c),
+            'h': lambda o, c: self._val_reg('h', o, c),
+            'i': lambda o, c: self._val_reg('i', o, c),
         }
         self._get_callbacks = {
-            'd' : lambda o, c: self._get_bit('d', o, c),
-            'c' : lambda o, c: self._get_bit('c', o, c),
-            'h' : lambda o, c: self._get_reg('h', o, c),
-            'i' : lambda o, c: self._get_reg('i', o, c),
+            'd': lambda o, c: self._get_bit('d', o, c),
+            'c': lambda o, c: self._get_bit('c', o, c),
+            'h': lambda o, c: self._get_reg('h', o, c),
+            'i': lambda o, c: self._get_reg('i', o, c),
         }
         self._set_callbacks = {
-            'd' : lambda o, v: self._set_bit('d', o, v),
-            'c' : lambda o, v: self._set_bit('c', o, v),
-            'h' : lambda o, v: self._set_reg('h', o, v),
-            'i' : lambda o, v: self._set_reg('i', o, v),
+            'd': lambda o, v: self._set_bit('d', o, v),
+            'c': lambda o, v: self._set_bit('c', o, v),
+            'h': lambda o, v: self._set_reg('h', o, v),
+            'i': lambda o, v: self._set_reg('i', o, v),
         }
 
     #--------------------------------------------------------------------------#
     # Redis discrete implementation
     #--------------------------------------------------------------------------#
-    _bit_size    = 16
+    _bit_size = 16
     _bit_default = '\x00' * (_bit_size % 8)
 
     def _get_bit_values(self, key, offset, count):
@@ -129,7 +129,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         s = divmod(offset, self._bit_size)[0]
         e = divmod(offset + count, self._bit_size)[0]
 
-        request  = ('%s:%s' % (key, v) for v in range(s, e + 1))
+        request = ('%s:%s' % (key, v) for v in range(s, e + 1))
         response = self.client.mget(request)
         return response
 
@@ -173,7 +173,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         current = (r or self._bit_default for r in current)
         current = ''.join(current)
         current = current[0:offset] + value.decode('utf-8') + current[offset + count:]
-        final   = (current[s:s + self._bit_size] for s in range(0, count, self._bit_size))
+        final = (current[s:s + self._bit_size] for s in range(0, count, self._bit_size))
 
         key = self._get_prefix(key)
         request = ('%s:%s' % (key, v) for v in range(s, e + 1))
@@ -183,7 +183,7 @@ class RedisSlaveContext(IModbusSlaveContext):
     #--------------------------------------------------------------------------#
     # Redis register implementation
     #--------------------------------------------------------------------------#
-    _reg_size    = 16
+    _reg_size = 16
     _reg_default = '\x00' * (_reg_size % 8)
 
     def _get_reg_values(self, key, offset, count):
@@ -198,7 +198,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         #e = divmod(offset+count, self.__reg_size)[0]
 
         #request  = ('%s:%s' % (key, v) for v in range(s, e + 1))
-        request  = ('%s:%s' % (key, v) for v in range(offset, count + 1))
+        request = ('%s:%s' % (key, v) for v in range(offset, count + 1))
         response = self.client.mget(request)
         return response
 

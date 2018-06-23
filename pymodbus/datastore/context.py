@@ -36,7 +36,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
         self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
-        self.zero_mode  = kwargs.get('zero_mode', Defaults.ZeroMode)
+        self.zero_mode = kwargs.get('zero_mode', Defaults.ZeroMode)
 
     def __str__(self):
         ''' Returns a string representation of the context
@@ -58,19 +58,21 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        if not self.zero_mode: address = address + 1
+        if not self.zero_mode:
+            address = address + 1
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].validate(address, count)
 
     def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+        ''' Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        if not self.zero_mode: address = address + 1
+        if not self.zero_mode:
+            address = address + 1
         _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
         return self.store[self.decode(fx)].getValues(address, count)
 
@@ -81,7 +83,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         '''
-        if not self.zero_mode: address = address + 1
+        if not self.zero_mode:
+            address = address + 1
         _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
 

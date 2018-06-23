@@ -73,7 +73,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         return not result.isError()
 
     def getValues(self, fx, address, count=1):
-        """ Validates the request to make sure it is in range
+        """ Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -118,7 +118,8 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
                 return result.bits
             if fx in ['h', 'i']:
                 return result.registers
-        else: return result
+        else:
+            return result
 
 # -------------------------------------------------------------------------- #
 # Server Context
@@ -152,7 +153,7 @@ class RemoteServerContext(object):
             'i': lambda a, v, s: client.write_registers(a, v, s),
         }
         self._client = client
-        self.slaves = {} # simply a cache
+        self.slaves = {}  # simply a cache
 
     def __str__(self):
         """ Returns a string representation of the context
@@ -187,14 +188,14 @@ class RemoteServerContext(object):
         :param slave: The slave context to set
         :param context: The new context to set for this slave
         """
-        raise NotImplementedException() # doesn't make sense here
+        raise NotImplementedException()  # doesn't make sense here
 
     def __delitem__(self, slave):
         """ Wrapper used to access the slave context
 
         :param slave: The slave context to remove
         """
-        raise NotImplementedException() # doesn't make sense here
+        raise NotImplementedException()  # doesn't make sense here
 
     def __getitem__(self, slave):
         """ Used to get access to a slave context

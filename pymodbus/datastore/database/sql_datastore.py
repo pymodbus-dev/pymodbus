@@ -10,7 +10,7 @@ from pymodbus.interfaces import IModbusSlaveContext
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging;
+import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -57,7 +57,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         return self._validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+        ''' Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -91,10 +91,10 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._engine = sqlalchemy.create_engine(database, echo=False)
         self._metadata = sqlalchemy.MetaData(self._engine)
         self._table = sqlalchemy.Table(table, self._metadata,
-            sqlalchemy.Column('type', sqltypes.String(1)),
-            sqlalchemy.Column('index', sqltypes.Integer),
-            sqlalchemy.Column('value', sqltypes.Integer),
-            UniqueConstraint('type', 'index', name='key'))
+                                       sqlalchemy.Column('type', sqltypes.String(1)),
+                                       sqlalchemy.Column('index', sqltypes.Integer),
+                                       sqlalchemy.Column('value', sqltypes.Integer),
+                                       UniqueConstraint('type', 'index', name='key'))
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
 
@@ -105,7 +105,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         :returns: The resulting values
         '''
-        query  = self._table.select(and_(
+        query = self._table.select(and_(
             self._table.c.type == type,
             self._table.c.index >= offset,
             self._table.c.index <= offset + count)
@@ -125,9 +125,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = []
         for index, value in enumerate(values):
             result.append({
-                prefix + 'type'  : type,
-                prefix + 'index' : offset + index,
-                    'value' : value
+                prefix + 'type': type,
+                prefix + 'index': offset + index,
+                'value': value
             })
         return result
 
@@ -144,8 +144,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         '''
         if self._check(type, offset, values):
             context = self._build_set(type, offset, values)
-            query   = self._table.insert()
-            result  = self._connection.execute(query, context)
+            query = self._table.insert()
+            result = self._connection.execute(query, context)
             return result.rowcount == len(values)
         else:
             return False
@@ -158,11 +158,11 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param values: The values to set
         '''
         context = self._build_set(type, offset, values, prefix='x_')
-        query   = self._table.update().values(name='value')
-        query   = query.where(and_(
-            self._table.c.type  == bindparam('x_type'),
+        query = self._table.update().values(name='value')
+        query = query.where(and_(
+            self._table.c.type == bindparam('x_type'),
             self._table.c.index == bindparam('x_index')))
-        result  = self._connection.execute(query, context)
+        result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
     def _validate(self, type, offset, count):
@@ -172,7 +172,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         :returns: The result of the validation
         '''
-        query  = self._table.select(and_(
+        query = self._table.select(and_(
             self._table.c.type == type,
             self._table.c.index >= offset,
             self._table.c.index <= offset + count))

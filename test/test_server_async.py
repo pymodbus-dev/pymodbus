@@ -6,9 +6,9 @@ if IS_PYTHON3: # Python 3
 else: # Python 2
     from mock import patch, Mock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.async import ModbusServerFactory
-from pymodbus.server.async import StartTcpServer, StartUdpServer, StartSerialServer, StopServer
+from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
+from pymodbus.server.asynchronous import ModbusServerFactory
+from pymodbus.server.asynchronous import StartTcpServer, StartUdpServer, StartSerialServer, StopServer
 
 
 import sys

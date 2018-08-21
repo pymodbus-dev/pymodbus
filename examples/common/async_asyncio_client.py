@@ -15,10 +15,10 @@ if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     # ----------------------------------------------------------------------- #
     # Import the required async client
     # ----------------------------------------------------------------------- #
-    from pymodbus.client.async.tcp import AsyncModbusTCPClient as ModbusClient
-    # from pymodbus.client.async.udp import (
+    from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
+    # from pymodbus.client.asynchronous.udp import (
     #     AsyncModbusUDPClient as ModbusClient)
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous import schedulers
 
 else:
     import sys
@@ -66,7 +66,7 @@ async def start_async_test(client):
     # are not known to these tests. Furthermore, some use the same memory
     # blocks for the two sets, so a change to one is a change to the other.
     # Keep both of these cases in mind when testing as the following will
-    # _only_ pass with the supplied async modbus server (script supplied).
+    # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
     log.debug("Write to a Coil and read back")
     rq = await client.write_coil(0, True, unit=UNIT)

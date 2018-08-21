@@ -30,7 +30,7 @@ else:
 
 class AsynchronousServerTest(unittest.TestCase):
     '''
-    This is the unittest for the pymodbus.server.async module
+    This is the unittest for the pymodbus.server.asynchronous module
     '''
 
     #-----------------------------------------------------------------------#

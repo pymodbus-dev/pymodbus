@@ -289,7 +289,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
             _logger.info('Connected to %s:%s.' % (self.host, self.port))
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
-            asyncio.async(self._reconnect(), loop=self.loop)
+            asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
         """
@@ -316,7 +316,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
             self.connected = False
             self.protocol = None
             if self.host:
-                asyncio.async(self._reconnect(), loop=self.loop)
+                asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
             _logger.error('Factory protocol disconnect callback called while not connected.')
 
@@ -384,7 +384,7 @@ class AsyncioModbusTcpClient(object):
             _logger.info('Connected to %s:%s.' % (self.host, self.port))
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
-            # asyncio.async(self._reconnect(), loop=self.loop)
+            # asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
         """
@@ -411,7 +411,7 @@ class AsyncioModbusTcpClient(object):
             self.connected = False
             self.protocol = None
             # if self.host:
-            #     asyncio.async(self._reconnect(), loop=self.loop)
+            #     asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
             _logger.error('Factory protocol disconnect'
                           ' callback called while not connected.')
@@ -513,7 +513,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
             _logger.info('Connected to %s:%s.' % (self.host, self.port))
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
-            asyncio.async(self._reconnect(), loop=self.loop)
+            asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
         """
@@ -540,7 +540,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
             self.connected = False
             self.protocol = None
             if self.host:
-                asyncio.async(self._reconnect(), loop=self.loop)
+                asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
             _logger.error('Factory protocol disconnect '
                           'callback called while not connected.')
@@ -619,7 +619,7 @@ class AsyncioModbusUdpClient(object):
             _logger.info('Connected to %s:%s.' % (self.host, self.port))
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
-            # asyncio.async(self._reconnect(), loop=self.loop)
+            # asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
         """
@@ -646,7 +646,7 @@ class AsyncioModbusUdpClient(object):
             self.connected = False
             self.protocol = None
             # if self.host:
-            #    asyncio.async(self._reconnect(), loop=self.loop)
+            #    asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
             _logger.error('Factory protocol disconnect '
                           'callback called while not connected.')
@@ -711,7 +711,7 @@ class AsyncioModbusSerialClient(object):
             _logger.info('Connected to %s:%s.' % (self.host, self.port))
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
-            # asyncio.async(self._reconnect(), loop=self.loop)
+            # asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
         """
@@ -738,7 +738,7 @@ class AsyncioModbusSerialClient(object):
             self._connected = False
             self.protocol = None
             # if self.host:
-            #     asyncio.async(self._reconnect(), loop=self.loop)
+            #     asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
             _logger.error('Factory protocol disconnect callback '
                           'called while not connected.')

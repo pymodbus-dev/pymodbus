@@ -92,7 +92,7 @@ class TestAsyncioClient(object):
         assert client.connected
         assert client.protocol is mock.sentinel.PROTOCOL
 
-    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.asynchronous')
+    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.ensure_future')
     def test_factory_protocol_lost_connection(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
@@ -116,7 +116,7 @@ class TestAsyncioClient(object):
         assert not client.connected
         assert client.protocol is None
 
-    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.asynchronous')
+    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.ensure_future')
     def test_factory_start_success(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
@@ -126,7 +126,7 @@ class TestAsyncioClient(object):
         mock_loop.create_connection.assert_called_once_with(mock.ANY, mock.sentinel.HOST, mock.sentinel.PORT)
         assert mock_async.call_count == 0
 
-    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.asynchronous')
+    @mock.patch('pymodbus.client.asynchronous.asyncio.asyncio.ensure_future')
     def test_factory_start_failing_and_retried(self, mock_async):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()

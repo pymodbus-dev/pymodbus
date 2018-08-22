@@ -5,7 +5,7 @@ Implementation of a Modbus Client Using Twisted
 Example run::
 
     from twisted.internet import reactor, protocol
-    from pymodbus.client.async import ModbusClientProtocol
+    from pymodbus.client.asynchronous import ModbusClientProtocol
 
     def printResult(result):
         print "Result: %d" % result.bits[0]
@@ -22,7 +22,7 @@ Example run::
 Another example::
 
     from twisted.internet import reactor
-    from pymodbus.client.async import ModbusClientFactory
+    from pymodbus.client.asynchronous import ModbusClientFactory
 
     def process():
         factory = reactor.connectTCP("localhost", 502, ModbusClientFactory())
@@ -37,7 +37,7 @@ from twisted.internet import defer, protocol
 
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async import AsyncModbusClientMixin
+from pymodbus.client.asynchronous import AsyncModbusClientMixin
 from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.compat import  byte2int

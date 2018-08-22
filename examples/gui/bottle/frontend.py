@@ -260,7 +260,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------
     # an example server configuration
     # ------------------------------------------------------------
-    from pymodbus.server.async import ModbusServerFactory
+    from pymodbus.server.asynchronous import ModbusServerFactory
     from pymodbus.constants import Defaults
     from pymodbus.device import ModbusDeviceIdentification
     from pymodbus.datastore import ModbusSequentialDataBlock

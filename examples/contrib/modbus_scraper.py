@@ -11,7 +11,7 @@ from twisted.internet.protocol import ClientFactory
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async import ModbusClientProtocol
+from pymodbus.client.asynchronous import ModbusClientProtocol
 
 #--------------------------------------------------------------------------#
 # Configure the client logging

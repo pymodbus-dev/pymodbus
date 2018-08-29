@@ -44,7 +44,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         return not result.isError()
 
     def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+        ''' Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -100,6 +100,9 @@ class RemoteSlaveContext(IModbusSlaveContext):
         a response.  TODO make this consistent (values?)
         '''
         if not result.isError():
-            if fx in ['d', 'c']: return result.bits
-            if fx in ['h', 'i']: return result.registers
-        else: return result
+            if fx in ['d', 'c']:
+                return result.bits
+            if fx in ['h', 'i']:
+                return result.registers
+        else:
+            return result

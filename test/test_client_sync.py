@@ -166,10 +166,12 @@ class SynchronousClientTest(unittest.TestCase):
         client = ModbusTcpClient()
         self.assertNotEqual(client, None)
 
-    def testBasicSyncTcpClient(self):
+    @patch('pymodbus.client.sync.select')
+    def testBasicSyncTcpClient(self, mock_select):
         ''' Test the basic methods for the tcp sync client'''
 
         # receive/send
+        mock_select.select.return_value = [True]
         client = ModbusTcpClient()
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))
@@ -207,8 +209,11 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(0, client._send(None))
         self.assertEqual(4, client._send('1234'))
 
-    def testTcpClientRecv(self):
+    @patch('pymodbus.client.sync.select')
+    def testTcpClientRecv(self, mock_select):
         ''' Test the tcp client receive method'''
+
+        mock_select.select.return_value = [True]
         client = ModbusTcpClient()
         self.assertRaises(ConnectionException, lambda: client._recv(1024))
 
@@ -223,10 +228,10 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(b'\x00\x01\x02', client._recv(3))
         mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
         self.assertEqual(b'\x00\x01', client._recv(2))
-        mock_socket.recv.side_effect = socket.error('No data')
+        mock_select.select.return_value = [False]
         self.assertEqual(b'', client._recv(2))
         client.socket = mockSocket()
-        client.socket.timeout = 0.1
+        mock_select.select.return_value = [True]
         self.assertIn(b'\x00', client._recv(None))
 
     def testSerialClientRpr(self):

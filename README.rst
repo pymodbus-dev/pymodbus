@@ -1,13 +1,14 @@
 .. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
    :target: https://travis-ci.org/riptideio/pymodbus 
-
 .. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pymodbus_dev/Lobby
-
+   :target: https://gitter.im/pymodbus_dev/Lobby 
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
-   :target: http://pymodbus.readthedocs.io/en/async/?badge=latest
+   :target: http://pymodbus.readthedocs.io/en/async/?badge=latest 
    :alt: Documentation Status
-
+.. image:: http://pepy.tech/badge/pymodbus
+   :target: http://pepy.tech/project/pymodbus 
+   :alt: Downloads
+   
 .. important::
    **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
 

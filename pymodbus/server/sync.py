@@ -273,7 +273,8 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
     """
 
     def __init__(self, context, framer=None, identity=None,
-                 address=None, handler=None, **kwargs):
+                 address=None, handler=None, allow_reuse_address=False,
+                 **kwargs):
         """ Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -285,10 +286,13 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         :param address: An optional (interface, port) to bind to.
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler
+        :param allow_reuse_address: Whether the server will allow the
+                        reuse of an address.
         :param ignore_missing_slaves: True to not send errors on a request
                                         to a missing slave
         """
         self.threads = []
+        self.allow_reuse_address = allow_reuse_address
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()

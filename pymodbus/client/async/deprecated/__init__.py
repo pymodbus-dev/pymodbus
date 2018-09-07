@@ -1,5 +1,10 @@
-"""
-Async Modbus Client implementation based on Twisted, tornado and asyncio
+import warnings
+warnings.simplefilter('always', DeprecationWarning)
+
+WARNING = """
+Usage of '{}' is deprecated from 2.0.0 and will be removed in future releases.
+Use the new Async Modbus Client implementation based on Twisted, tornado 
+and asyncio
 ------------------------------------------------------------------------
 
 Example run::
@@ -30,5 +35,13 @@ Example run::
 
     # For asyncio the actual client is returned and event loop is asyncio loop
 
+Refer:
+https://pymodbus.readthedocs.io/en/dev/source/example/async_twisted_client.html
+https://pymodbus.readthedocs.io/en/dev/source/example/async_tornado_client.html
+https://pymodbus.readthedocs.io/en/dev/source/example/async_asyncio_client.html
+
 """
-from pymodbus.client.async.deprecated.async import *
+
+
+def deprecated(name): # pragma: no cover
+    warnings.warn(WARNING.format(name), DeprecationWarning)

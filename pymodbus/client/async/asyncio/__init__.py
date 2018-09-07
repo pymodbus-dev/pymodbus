@@ -5,7 +5,7 @@ import socket
 import asyncio
 import functools
 from pymodbus.exceptions import ConnectionException
-from pymodbus.client.async import AsyncModbusClientMixin
+from pymodbus.client.async.mixins import AsyncModbusClientMixin
 from pymodbus.compat import byte2int
 import logging
 

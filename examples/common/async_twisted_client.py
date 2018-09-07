@@ -20,14 +20,7 @@ from pymodbus.client.async import schedulers
 # choose the requested modbus protocol
 # --------------------------------------------------------------------------- #
 
-#from pymodbus.client.async import ModbusUdpClientProtocol
-
 from twisted.internet import reactor, protocol
-from pymodbus.constants import Defaults
-
-# --------------------------------------------------------------------------- #
-# choose the requested modbus protocol
-# --------------------------------------------------------------------------- #
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
@@ -65,6 +58,7 @@ def dassert(deferred, callback):
 
 UNIT = 0x01
 
+
 def processResponse(result):
     log.debug(result)
 
@@ -90,6 +84,7 @@ def exampleRequests(client):
 # the result of the operation.  We are handling the result using the
 # deferred assert helper(dassert).
 # --------------------------------------------------------------------------- #
+
 
 def stopAsynchronousTest(client):
     # ----------------------------------------------------------------------- #

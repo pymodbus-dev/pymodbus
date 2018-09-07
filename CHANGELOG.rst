@@ -46,7 +46,6 @@ Version 1.5.0
 * Modbus read retries works only when empty/no message is received
 * Change test runner from nosetest to pytest
 * Fix Misc examples
->>>>>>> master
 
 Version 1.4.0
 ------------------------------------------------------------

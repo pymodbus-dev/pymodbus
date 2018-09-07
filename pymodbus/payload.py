@@ -124,6 +124,17 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         _logger.debug(payload)
         return payload
 
+    def to_coils(self):
+        """Convert the payload buffer into a coil
+        layout that can be used as a context block.
+
+        :returns: The coil layout to use as a block
+        """
+        payload = self.to_registers()
+        coils = [bool(int(bit)) for reg
+                 in payload[1:] for bit in format(reg, '016b')]
+        return coils
+
     def build(self):
         """ Return the payload buffer as a list
 

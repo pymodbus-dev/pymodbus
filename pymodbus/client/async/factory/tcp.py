@@ -91,10 +91,17 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     """
     import asyncio
     from pymodbus.client.async.asyncio import init_tcp_client
-    loop = kwargs.get("loop") or asyncio.get_event_loop()
+    loop = kwargs.get("loop") or asyncio.new_event_loop()
     proto_cls = kwargs.get("proto_cls", None)
-    cor = init_tcp_client(proto_cls, loop, host, port)
-    client = loop.run_until_complete(asyncio.gather(cor))[0]
+    if not loop.is_running():
+        asyncio.set_event_loop(loop)
+        cor = init_tcp_client(proto_cls, loop, host, port)
+        client = loop.run_until_complete(asyncio.gather(cor))[0]
+    else:
+        cor = init_tcp_client(proto_cls, loop, host, port)
+        future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
+        client = future.result()
+
     return loop, client
 
 

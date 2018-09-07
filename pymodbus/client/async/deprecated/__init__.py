@@ -21,7 +21,7 @@ Example run::
     event_loop, future = Client(schedulers.IO_LOOP, port=5020)
 
     # For twisted based async client use
-    event_loop, future = Client(schedulers.REACTOR, port=5020)
+    event_loop, deferred = Client(schedulers.REACTOR, port=5020)
 
     # For asyncio based async client use
     event_loop, client = Client(schedulers.ASYNC_IO, port=5020)

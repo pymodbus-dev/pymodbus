@@ -87,6 +87,9 @@ setup(
             'pyasn1 >= 0.1.4',
             'pycrypto >= 2.6'
         ],
+        'tornado': [
+            'tornado >= 4.5.3'
+        ]
     },
     test_suite='nose.collector',
     cmdclass=command_classes,

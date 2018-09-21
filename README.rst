@@ -104,6 +104,15 @@ permissions or a virtualenv currently running)::
     easy_install -U pymodbus
     pip install  -U pymodbus
 
+To Install pymodbus with twisted support run
+.. code-block:: python
+    pip install -U pymodbus[twisted]
+
+To Install pymodbus with tornado support run
+
+.. code-block:: python
+    pip install -U pymodbus[tornado]
+
 Otherwise you can pull the trunk source and install from there::
 
     git clone git://github.com/bashwork/pymodbus.git

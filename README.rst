@@ -34,8 +34,9 @@ Client Features
   * Full read/write protocol on discrete and register
   * Most of the extended protocol (diagnostic/file/pipe/setting/information)
   * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by twisted) and synchronous versions
+  * asynchronous(powered by twisted/tornado/asyncio) and synchronous versions
   * Payload builder/decoder utilities
+  * Pymodbus REPL for quick tests 
 
 ------------------------------------------------------------
 Server Features
@@ -94,6 +95,18 @@ get lost in the noise: http://groups.google.com/group/pymodbus or
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 ------------------------------------------------------------
+Pymodbus REPL (Read Evaluate Procee Loop)
+------------------------------------------------------------
+Starting with Pymodbus 2.x, pymodbus library comes with handy
+Pymodbus REPL to quickly run the modbus clients in tcp/rtu modes.
+
+Pymodbus REPL comes with many handy features such as payload decoder 
+to directly retrieve the values in desired format and supports all
+the diagnostic function codes directly .
+
+For more info on REPL refer  `Pymodbus REPL <pymodbus/repl/README.md>`_
+
+------------------------------------------------------------
 Installing
 ------------------------------------------------------------
 
@@ -104,14 +117,17 @@ permissions or a virtualenv currently running)::
     easy_install -U pymodbus
     pip install  -U pymodbus
 
-To Install pymodbus with twisted support run
-.. code-block:: python
+To Install pymodbus with twisted support run::
+
     pip install -U pymodbus[twisted]
 
-To Install pymodbus with tornado support run
+To Install pymodbus with tornado support run::
 
-.. code-block:: python
     pip install -U pymodbus[tornado]
+
+To Install pymodbus REPL::
+
+    pip install -U pymodbus[repl]
 
 Otherwise you can pull the trunk source and install from there::
 

@@ -6,6 +6,6 @@ requirements_file: requirements-docs.txt
 python:
     extra_requirements:
         - twisted
-        - torndo
+        - tornado
         - documents
     version: 3.5

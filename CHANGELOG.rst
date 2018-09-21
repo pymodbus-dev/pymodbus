@@ -1,4 +1,4 @@
-Version 2.0.0rc2
+Version 2.0.0
 -----------------------------------------------------------
 **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
 

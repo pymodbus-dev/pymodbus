@@ -94,9 +94,9 @@ trace them. I get a lot of email and sometimes these requests
 get lost in the noise: http://groups.google.com/group/pymodbus or 
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
-------------------------------------------------------------
+============================================================
 Pymodbus REPL (Read Evaluate Procee Loop)
-------------------------------------------------------------
+============================================================
 Starting with Pymodbus 2.x, pymodbus library comes with handy
 Pymodbus REPL to quickly run the modbus clients in tcp/rtu modes.
 
@@ -106,9 +106,9 @@ the diagnostic function codes directly .
 
 For more info on REPL refer  `Pymodbus REPL <pymodbus/repl/README.md>`_
 
-------------------------------------------------------------
+============================================================
 Installing
-------------------------------------------------------------
+============================================================
 
 You can install using pip or easy install by issuing the following
 commands in a terminal window (make sure you have correct
@@ -144,9 +144,9 @@ out all mentions of twisted.  It should be noted that without twisted,
 one will only be able to run the synchronized version as the
 asynchronous versions uses twisted for its event loop.
 
-------------------------------------------------------------
+============================================================
 Current Work In Progress
-------------------------------------------------------------
+============================================================
 
 Since I don't have access to any live modbus devices anymore
 it is a bit hard to test on live hardware. However, if you would
@@ -182,14 +182,14 @@ Use make to perform a range of activities
      make tox        run the tests on all Python versions
      make clean      cleanup all temporary files 
 
-------------------------------------------------------------
+============================================================
 Contributing
-------------------------------------------------------------
+============================================================
 Just fork the repo and raise your PR against `dev` branch.
 
-------------------------------------------------------------
+============================================================
 License Information
-------------------------------------------------------------
+============================================================
 
 Pymodbus is built on top of code developed from/by:
   * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.

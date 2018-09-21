@@ -12,6 +12,7 @@ Welcome to PyModbus's documentation!
 
    readme.rst
    changelog.rst
+   repl.rst
    source/example/modules.rst
    source/library/modules.rst
 

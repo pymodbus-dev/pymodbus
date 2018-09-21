@@ -89,7 +89,14 @@ setup(
         ],
         'tornado': [
             'tornado >= 4.5.3'
+        ],
+        'repl': [
+            'click>=6.7',
+            'prompt-toolkit==2.0.4'
         ]
+    },
+    entry_points={
+        'console_scripts': ['pymodbus.console=pymodbus.repl.main:main'],
     },
     test_suite='nose.collector',
     cmdclass=command_classes,

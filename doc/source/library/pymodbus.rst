@@ -16,6 +16,7 @@ Subpackages
     pymodbus.framer
     pymodbus.internal
     pymodbus.server
+    pymodbus.repl
 
 
 Submodules

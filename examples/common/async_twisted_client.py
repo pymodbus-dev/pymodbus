@@ -9,15 +9,18 @@ client implementation from pymodbus.
 # --------------------------------------------------------------------------- #
 # import needed libraries
 # --------------------------------------------------------------------------- #
-from twisted.internet import reactor, protocol
-from pymodbus.constants import Defaults
+
+from twisted.internet import reactor
+
+from pymodbus.client.async.tcp import AsyncModbusTCPClient
+# from pymodbus.client.async.udp import AsyncModbusUDPClient
+from pymodbus.client.async import schedulers
 
 # --------------------------------------------------------------------------- #
 # choose the requested modbus protocol
 # --------------------------------------------------------------------------- #
-from pymodbus.client.async import ModbusClientProtocol
-from pymodbus.client.async import ModbusUdpClientProtocol
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
+
+from twisted.internet import reactor, protocol
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
@@ -34,11 +37,15 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
+def err(*args, **kwargs):
+    logging.error("Err-{}-{}".format(args, kwargs))
+
+
 def dassert(deferred, callback):
     def _assertor(value):
         assert value
     deferred.addCallback(lambda r: _assertor(callback(r)))
-    deferred.addErrback(lambda _: _assertor(False))
+    deferred.addErrback(err)
 
 # --------------------------------------------------------------------------- #
 # specify slave to query
@@ -47,6 +54,9 @@ def dassert(deferred, callback):
 # individual request. This can be done by specifying the `unit` parameter
 # which defaults to `0x00`
 # --------------------------------------------------------------------------- #
+
+
+UNIT = 0x01
 
 
 def processResponse(result):
@@ -76,15 +86,13 @@ def exampleRequests(client):
 # --------------------------------------------------------------------------- #
 
 
-UNIT = 0x00
-
-
 def stopAsynchronousTest(client):
     # ----------------------------------------------------------------------- #
     # close the client at some time later
     # ----------------------------------------------------------------------- #
     reactor.callLater(1, client.transport.loseConnection)
     reactor.callLater(2, reactor.stop)
+
 
 def beginAsynchronousTest(client):
     rq = client.write_coil(1, True, unit=UNIT)
@@ -124,6 +132,11 @@ def beginAsynchronousTest(client):
     dassert(rr, lambda r: r.registers == [17]*8)      # test the expected value
     stopAsynchronousTest(client)
 
+    # ----------------------------------------------------------------------- #
+    # close the client at some time later
+    # ----------------------------------------------------------------------- #
+    # reactor.callLater(1, client.transport.loseConnection)
+    reactor.callLater(2, reactor.stop)
 
 # --------------------------------------------------------------------------- #
 # extra requests
@@ -151,13 +164,9 @@ def beginAsynchronousTest(client):
 
 
 if __name__ == "__main__":
-    defer = protocol.ClientCreator(
-        reactor, ModbusClientProtocol).connectTCP("localhost", 5020)
-
-    # TCP server with a different framer
-
-    # defer = protocol.ClientCreator(
-    #     reactor, ModbusClientProtocol, framer=ModbusRtuFramer).connectTCP(
-    #     "localhost", 5020)
-    defer.addCallback(beginAsynchronousTest)
-    reactor.run()
+    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
+    # protocol, deferred = AsyncModbusUDPClient(schedulers.REACTOR, port=5020)
+                             # callback=beginAsynchronousTest,
+                             # errback=err)
+    deferred.addCallback(beginAsynchronousTest)
+    deferred.addErrback(err)

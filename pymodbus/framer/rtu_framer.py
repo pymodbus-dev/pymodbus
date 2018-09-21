@@ -54,7 +54,7 @@ class ModbusRtuFramer(ModbusFramer):
         (1/Baud)(bits) = delay seconds
     """
 
-    def __init__(self, decoder, client):
+    def __init__(self, decoder, client=None):
         """ Initializes a new instance of the framer
 
         :param decoder: The decoder factory implementation to use

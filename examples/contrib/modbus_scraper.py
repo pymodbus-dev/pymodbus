@@ -11,11 +11,11 @@ from twisted.internet.protocol import ClientFactory
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async import ModbusClientProtocol
+from pymodbus.client.async.twisted import ModbusClientProtocol
 
-#--------------------------------------------------------------------------#
+# -------------------------------------------------------------------------- #
 # Configure the client logging
-#--------------------------------------------------------------------------#
+# -------------------------------------------------------------------------- #
 import logging
 log = logging.getLogger("pymodbus")
 
@@ -32,14 +32,16 @@ from pymodbus.transaction import ModbusSocketFramer
 # --------------------------------------------------------------------------- # 
 COUNT = 8    # The number of bits/registers to read at once
 DELAY = 0    # The delay between subsequent reads
-SLAVE = 0x01 # The slave unit id to read from
+SLAVE = 0x01  # The slave unit id to read from
 
 # --------------------------------------------------------------------------- # 
 # A simple scraper protocol
 # --------------------------------------------------------------------------- # 
 # I tried to spread the load across the device, but feel free to modify the
 # logic to suit your own purpose.
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
+
+
 class ScraperProtocol(ModbusClientProtocol):
 
     address = None
@@ -114,7 +116,8 @@ class ScraperProtocol(ModbusClientProtocol):
         if self.address >= self.factory.ending:
             self.endpoint.finalize()
             self.transport.loseConnection()
-        else: reactor.callLater(DELAY, self.scrape_holding_registers)
+        else:
+            reactor.callLater(DELAY, self.scrape_holding_registers)
 
     def error_handler(self, failure):
         """ Handle any twisted errors

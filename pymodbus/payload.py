@@ -14,7 +14,7 @@ from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.utilities import make_byte_string
 from pymodbus.exceptions import ParameterException
-
+from pymodbus.compat import unicode_string
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
@@ -123,6 +123,17 @@ class BinaryPayloadBuilder(IPayloadBuilder):
             payload = [unpack(fstring, value)[0] for value in payload]
         _logger.debug(payload)
         return payload
+
+    def to_coils(self):
+        """Convert the payload buffer into a coil
+        layout that can be used as a context block.
+
+        :returns: The coil layout to use as a block
+        """
+        payload = self.to_registers()
+        coils = [bool(int(bit)) for reg
+                 in payload[1:] for bit in format(reg, '016b')]
+        return coils
 
     def build(self):
         """ Return the payload buffer as a list
@@ -330,7 +341,7 @@ class BinaryPayloadDecoder(object):
         pk = self._byteorder + 'H'
         handle = [pack(pk, p) for p in handle]
         handle = b''.join(handle)
-        _logger.debug(handle)
+        _logger.debug(unicode_string(handle))
         return handle
 
     def reset(self):

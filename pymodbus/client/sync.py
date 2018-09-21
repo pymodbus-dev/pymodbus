@@ -1,4 +1,5 @@
 import socket
+import select
 import serial
 import time
 import sys
@@ -230,34 +231,43 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
-            # socket.recv(size) waits until it gets some data from the host but
-            # not necessarily the entire response that can be fragmented in
-            # many packets.
-            # To avoid the splitted responses to be recognized as invalid
-            # messages and to be discarded, loops socket.recv until full data
-            # is received or timeout is expired.
-            # If timeout expires returns the read data, also if its length is
-            # less than the expected size.
+
+        # socket.recv(size) waits until it gets some data from the host but
+        # not necessarily the entire response that can be fragmented in
+        # many packets.
+        # To avoid the splitted responses to be recognized as invalid
+        # messages and to be discarded, loops socket.recv until full data
+        # is received or timeout is expired.
+        # If timeout expires returns the read data, also if its length is
+        # less than the expected size.
         self.socket.setblocking(0)
-        begin = time.time()
+
+        timeout = self.timeout
+
+        # If size isn't specified read 1 byte at a time.
+        if size is None:
+            recv_size = 1
+        else:
+            recv_size = size
 
         data = b''
-        if size is not None:
-            while len(data) < size:
-                try:
-                    data += self.socket.recv(size - len(data))
-                except socket.error:
-                    pass
-                if not self.timeout or (time.time() - begin > self.timeout):
-                    break
-        else:
-            while True:
-                try:
-                    data += self.socket.recv(1)
-                except socket.error:
-                    pass
-                if not self.timeout or (time.time() - begin > self.timeout):
-                    break
+        begin = time.time()
+        while recv_size > 0:
+            ready = select.select([self.socket], [], [], timeout)
+            if ready[0]:
+                data += self.socket.recv(recv_size)
+
+            # If size isn't specified continue to read until timeout expires.
+            if size:
+                recv_size = size - len(data)
+
+            # Timeout is reduced also if some data has been received in order
+            # to avoid infinite loops when there isn't an expected response size
+            # and the slave sends noisy data continuosly.
+            timeout -= time.time() - begin
+            if timeout <= 0:
+                break
+
         return data
 
     def is_socket_open(self):

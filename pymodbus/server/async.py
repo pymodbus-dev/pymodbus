@@ -219,13 +219,13 @@ def _is_main_thread():
 
     if IS_PYTHON3:
         if threading.current_thread() != threading.main_thread():
-            _logger.debug("Starting in spawned thread")
+            _logger.debug("Running in spawned thread")
             return False
     else:
         if not isinstance(threading.current_thread(), threading._MainThread):
-            _logger.debug("Starting in spawned thread")
+            _logger.debug("Running in spawned thread")
             return False
-    _logger.debug("Starting in Main thread")
+    _logger.debug("Running in Main thread")
     return True
 
 
@@ -282,7 +282,7 @@ def StartUdpServer(context, identity=None, address=None,
 
 def StartSerialServer(context, identity=None,
                       framer=ModbusAsciiFramer,
-                      defer_reactor_run=False, 
+                      defer_reactor_run=False,
                       **kwargs):
     """ Helper method to start the Modbus Async Serial server
 
@@ -323,10 +323,10 @@ def StopServer():
     from twisted.internet import reactor
     if _is_main_thread():
         reactor.stop()
-        _logger.debug("Stopping main thread")
+        _logger.debug("Stopping server from main thread")
     else:
         reactor.callFromThread(reactor.stop)
-        _logger.debug("Stopping current thread")
+        _logger.debug("Stopping Server from another thread")
 
 
 # --------------------------------------------------------------------------- #

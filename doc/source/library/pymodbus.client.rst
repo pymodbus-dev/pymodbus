@@ -1,16 +1,20 @@
 pymodbus\.client package
 ========================
 
-Submodules
-----------
-
-pymodbus\.client\.async module
-------------------------------
-
-.. automodule:: pymodbus.client.async
+.. automodule:: pymodbus.client
     :members:
     :undoc-members:
     :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pymodbus.client.async
+
+Submodules
+----------
 
 pymodbus\.client\.common module
 -------------------------------
@@ -29,10 +33,3 @@ pymodbus\.client\.sync module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: pymodbus.client
-    :members:
-    :undoc-members:
-    :show-inheritance:

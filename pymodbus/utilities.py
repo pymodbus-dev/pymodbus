@@ -30,7 +30,7 @@ class ModbusTransactionState(object):
             ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
             ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
             ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
-            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSCATION_COMPLETE"
+            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSACTION_COMPLETE"
         }
         return states.get(state, None)
 

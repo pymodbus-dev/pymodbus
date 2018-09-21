@@ -190,7 +190,7 @@ class IModbusSlaveContext(object):
         raise NotImplementedException("validate context values")
 
     def getValues(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+        ''' Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -226,6 +226,7 @@ class IPayloadBuilder(object):
         :returns: The payload buffer as a list
         '''
         raise NotImplementedException("set context values")
+
 
 #---------------------------------------------------------------------------#
 # Exported symbols

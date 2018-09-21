@@ -1,3 +1,23 @@
+Version 2.0.0
+-----------------------------------------------------------
+**Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
+
+* Async client implementation based on Tornado, Twisted and asyncio with backward compatibility support for twisted client.
+* Allow reusing existing[running] asyncio loop when creating async client based on asyncio.
+* Allow reusing address for Modbus TCP sync server.
+* Add support to install tornado as extra requirement while installing pymodbus.
+* Support Pymodbus REPL
+* Add support to python 3.7.
+* Bug fix and enhancements in examples.
+
+
+Version 2.0.0rc1
+-----------------------------------------------------------
+**Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
+
+* Async client implementation based on Tornado, Twisted and asyncio
+
+
 Version 1.5.2
 ------------------------------------------------------------
 * Fix serial client `is_socket_open` method

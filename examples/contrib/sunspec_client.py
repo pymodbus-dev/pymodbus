@@ -4,9 +4,9 @@ from pymodbus.payload import BinaryPayloadDecoder
 from twisted.internet.defer import Deferred
 
 
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Logging
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 import logging
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)

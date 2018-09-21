@@ -6,7 +6,12 @@ Examples
 .. toctree::
    :maxdepth: 4
 
-   asynchronous_client
+   async_asyncio_client
+   async_asyncio_serial_client
+   async_tornado_client
+   async_tornado_client_serial
+   async_twisted_client
+   async_twisted_client_serial
    asynchronous_processor
    asynchronous_server
    callback_server
@@ -22,6 +27,7 @@ Examples
    synchronous_client_ext
    synchronous_server
    updating_server
+   asynchronous_asyncio_serial_client
    bcd_payload
    concurrent_client
    libmodbus_client

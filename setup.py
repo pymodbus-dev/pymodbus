@@ -26,18 +26,24 @@ except ImportError:
     command_classes={}
 from pymodbus import __version__, __author__, __maintainer__
 
+with open('requirements.txt') as reqs:
+    install_requires = [
+        line for line in reqs.read().split('\n')
+        if (line and not line.startswith('--'))
+    ]
+    install_requires.append("pyserial >= 3.4")
 # --------------------------------------------------------------------------- #
 # configuration
 # --------------------------------------------------------------------------- #
 setup(
-    name='pymodbus',
+    name="pymodbus",
     version=__version__,
-    description='A fully featured modbus protocol stack in python',
+    description="A fully featured modbus protocol stack in python",
     long_description="""
         Pymodbus aims to be a fully implemented modbus protocol stack 
-        implemented using twisted.  Its orignal goal was to allow simulation 
-        of thousands of modbus devices on a single machine for monitoring 
-        software testing.
+        implemented using twisted/asyncio/tornado.  
+        Its orignal goal was to allow simulation of thousands of modbus devices
+        on a single machine for monitoring software testing.
     """,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -65,9 +71,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
-    install_requires=[
-        'pyserial >= 2.6'
-    ],
+    install_requires=install_requires,
     extras_require={
         'quality': [
             'coverage >= 3.5.3',
@@ -83,6 +87,16 @@ setup(
             'pyasn1 >= 0.1.4',
             'pycrypto >= 2.6'
         ],
+        'tornado': [
+            'tornado >= 4.5.3'
+        ],
+        'repl': [
+            'click>=6.7',
+            'prompt-toolkit==2.0.4'
+        ]
+    },
+    entry_points={
+        'console_scripts': ['pymodbus.console=pymodbus.repl.main:main'],
     },
     test_suite='nose.collector',
     cmdclass=command_classes,

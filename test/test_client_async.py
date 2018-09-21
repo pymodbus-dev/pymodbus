@@ -1,195 +1,254 @@
 #!/usr/bin/env python
 import unittest
-from pymodbus.compat import IS_PYTHON3
-if IS_PYTHON3: # Python 3
-    from unittest.mock import patch, Mock
-else: # Python 2
-    from mock import patch, Mock
-from pymodbus.client.async import ModbusClientProtocol, ModbusUdpClientProtocol
-from pymodbus.client.async import ModbusClientFactory
+import pytest
+from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
+    from unittest.mock import patch, Mock, MagicMock
+    import asyncio
+    from pymodbus.client.async.asyncio import AsyncioModbusSerialClient
+    from serial_asyncio import SerialTransport
+else:
+    from mock import patch, Mock, MagicMock
+import platform
+from distutils.version import LooseVersion
+
+from pymodbus.client.async.serial import AsyncModbusSerialClient
+from pymodbus.client.async.tcp import AsyncModbusTCPClient
+from pymodbus.client.async.udp import AsyncModbusUDPClient
+
+from pymodbus.client.async.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
+from pymodbus.client.async.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
+from pymodbus.client.async.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
+from pymodbus.client.async import schedulers
+from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer
+from pymodbus.client.async.twisted import ModbusSerClientProtocol
 
-#---------------------------------------------------------------------------#
+IS_DARWIN = platform.system().lower() == "darwin"
+OSX_SIERRA = LooseVersion("10.12")
+if IS_DARWIN:
+    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ttyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ptyp0'
+else:
+    IS_HIGH_SIERRA_OR_ABOVE = False
+    SERIAL_PORT = "/dev/ptmx"
+
+# ---------------------------------------------------------------------------#
 # Fixture
-#---------------------------------------------------------------------------#
-class AsynchronousClientTest(unittest.TestCase):
-    '''
+# ---------------------------------------------------------------------------#
+
+
+def mock_asyncio_gather(coro):
+    return coro
+
+
+class TestAsynchronousClient(object):
+    """
     This is the unittest for the pymodbus.client.async module
-    '''
+    """
 
-    #-----------------------------------------------------------------------#
-    # Test Client Protocol
-    #-----------------------------------------------------------------------#
+    # -----------------------------------------------------------------------#
+    # Test TCP Client client
+    # -----------------------------------------------------------------------#
+    def testTcpTwistedClient(self):
+        """
+        Test the TCP Twisted client
+        :return:
+        """
+        from twisted.internet import reactor
+        with patch("twisted.internet.reactor") as mock_reactor:
+            def test_callback(client):
+                pass
 
-    def testClientProtocolInit(self):
-        ''' Test the client protocol initialize '''
-        protocol = ModbusClientProtocol()
-        self.assertEqual(0, len(list(protocol.transaction)))
-        self.assertFalse(protocol._connected)
-        self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
+            def test_errback(client):
+                pass
+            AsyncModbusTCPClient(schedulers.REACTOR,
+                                 framer=ModbusSocketFramer(ClientDecoder()),
+                                 callback=test_callback,
+                                 errback=test_errback)
 
-        framer = object()
-        protocol = ModbusClientProtocol(framer=framer)
-        self.assertEqual(0, len(list(protocol.transaction)))
-        self.assertFalse(protocol._connected)
-        self.assertTrue(framer is protocol.framer)
-
-    def testClientProtocolConnect(self):
-        ''' Test the client protocol connect '''
-        protocol = ModbusClientProtocol()
-        self.assertFalse(protocol._connected)
-        protocol.connectionMade()
-        self.assertTrue(protocol._connected)
-
-    def testClientProtocolDisconnect(self):
-        ''' Test the client protocol disconnect '''
-        protocol = ModbusClientProtocol()
-        protocol.connectionMade()
-        def handle_failure(failure):
-            self.assertTrue(isinstance(failure.value, ConnectionException))
-        d = protocol._buildResponse(0x00)
-        d.addErrback(handle_failure)
-
-        self.assertTrue(protocol._connected)
-        protocol.connectionLost('because')
-        self.assertFalse(protocol._connected)
-
-    def testClientProtocolDataReceived(self):
-        ''' Test the client protocol data received '''
-        protocol = ModbusClientProtocol()
-        protocol.connectionMade()
-        out = []
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
-
-        # setup existing request
-        d = protocol._buildResponse(0x00)
-        d.addCallback(lambda v: out.append(v))
-
-        protocol.dataReceived(data)
-        self.assertTrue(isinstance(out[0], ReadCoilsResponse))
-
-    def testClientProtocolExecute(self):
-        ''' Test the client protocol execute method '''
-        protocol = ModbusClientProtocol()
-        protocol.connectionMade()
-        protocol.transport = Mock()
-        protocol.transport.write = Mock()
-
-        request = ReadCoilsRequest(1, 1)
-        d = protocol.execute(request)
-        tid = request.transaction_id
-        self.assertEqual(d, protocol.transaction.getTransaction(tid))
-
-    def testClientProtocolHandleResponse(self):
-        ''' Test the client protocol handles responses '''
-        protocol = ModbusClientProtocol()
-        protocol.connectionMade()
-        out = []
-        reply = ReadCoilsRequest(1, 1)
-        reply.transaction_id = 0x00
-
-        # handle skipped cases
-        protocol._handleResponse(None)
-        protocol._handleResponse(reply)
-
-        # handle existing cases
-        d = protocol._buildResponse(0x00)
-        d.addCallback(lambda v: out.append(v))
-        protocol._handleResponse(reply)
-        self.assertEqual(out[0], reply)
-
-    def testClientProtocolBuildResponse(self):
-        ''' Test the udp client protocol builds responses '''
-        protocol = ModbusClientProtocol()
-        self.assertEqual(0, len(list(protocol.transaction)))
+    @patch("pymodbus.client.async.tornado.IOLoop")
+    @patch("pymodbus.client.async.tornado.IOStream")
+    def testTcpTornadoClient(self, mock_iostream, mock_ioloop):
+        """ Test the TCP tornado client client initialize """
+        protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
+        client = future.result()
+        assert(isinstance(client, AsyncTornadoModbusTcpClient))
+        assert(0 == len(list(client.transaction)))
+        assert(isinstance(client.framer, ModbusSocketFramer))
+        assert(client.port == 502)
+        assert client._connected
+        assert(client.stream.connect.call_count == 1)
+        assert(client.stream.read_until_close.call_count == 1)
 
         def handle_failure(failure):
-            self.assertTrue(isinstance(failure.value, ConnectionException))
-        d = protocol._buildResponse(0x00)
-        d.addErrback(handle_failure)
-        self.assertEqual(0, len(list(protocol.transaction)))
+            assert(isinstance(failure.exception(), ConnectionException))
 
-        protocol._connected = True
-        d = protocol._buildResponse(0x00)
-        self.assertEqual(1, len(list(protocol.transaction)))
+        d = client._build_response(0x00)
+        d.add_done_callback(handle_failure)
 
-    #-----------------------------------------------------------------------#
-    # Test Udp Client Protocol
-    #-----------------------------------------------------------------------#
+        assert(client._connected)
+        client.close()
+        protocol.stop()
+        assert(not client._connected)
 
-    def testUdpClientProtocolInit(self):
-        ''' Test the udp client protocol initialize '''
-        protocol = ModbusUdpClientProtocol()
-        self.assertEqual(0, len(list(protocol.transaction)))
-        self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
+    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
+                        reason="requires python3.4 or above")
+    @patch("asyncio.get_event_loop")
+    @patch("asyncio.gather")
+    def testTcpAsyncioClient(self, mock_gather, mock_loop):
+        """
+        Test the TCP Twisted client
+        :return:
+        """
+        pytest.skip("TBD")
 
-        framer = object()
-        protocol = ModbusClientProtocol(framer=framer)
-        self.assertTrue(framer is protocol.framer)
+    # -----------------------------------------------------------------------#
+    # Test UDP client
+    # -----------------------------------------------------------------------#
 
-    def testUdpClientProtocolDataReceived(self):
-        ''' Test the udp client protocol data received '''
-        protocol = ModbusUdpClientProtocol()
-        out = []
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
-        server = ('127.0.0.1', 12345)
+    @patch("pymodbus.client.async.tornado.IOLoop")
+    @patch("pymodbus.client.async.tornado.IOStream")
+    def testUdpTornadoClient(self, mock_iostream, mock_ioloop):
+        """ Test the udp tornado client client initialize """
+        protocol, future = AsyncModbusUDPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
+        client = future.result()
+        assert(isinstance(client, AsyncTornadoModbusUdoClient))
+        assert(0 == len(list(client.transaction)))
+        assert(isinstance(client.framer, ModbusSocketFramer))
+        assert(client.port == 502)
+        assert(client._connected)
 
-        # setup existing request
-        d = protocol._buildResponse(0x00)
-        d.addCallback(lambda v: out.append(v))
+        def handle_failure(failure):
+            assert(isinstance(failure.exception(), ConnectionException))
 
-        protocol.datagramReceived(data, server)
-        self.assertTrue(isinstance(out[0], ReadCoilsResponse))
+        d = client._build_response(0x00)
+        d.add_done_callback(handle_failure)
 
-    def testUdpClientProtocolExecute(self):
-        ''' Test the udp client protocol execute method '''
-        protocol = ModbusUdpClientProtocol()
-        protocol.transport = Mock()
-        protocol.transport.write = Mock()
+        assert(client._connected)
+        client.close()
+        protocol.stop()
+        assert(not client._connected)
 
-        request = ReadCoilsRequest(1, 1)
-        d = protocol.execute(request)
-        tid = request.transaction_id
-        self.assertEqual(d, protocol.transaction.getTransaction(tid))
+    def testUdpTwistedClient(self):
+        """ Test the udp twisted client client initialize """
+        with pytest.raises(NotImplementedError):
+            AsyncModbusUDPClient(schedulers.REACTOR,
+                                 framer=ModbusSocketFramer(ClientDecoder()))
 
-    def testUdpClientProtocolHandleResponse(self):
-        ''' Test the udp client protocol handles responses '''
-        protocol = ModbusUdpClientProtocol()
-        out = []
-        reply = ReadCoilsRequest(1, 1)
-        reply.transaction_id = 0x00
+    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
+                        reason="requires python3.4 or above")
+    @patch("asyncio.get_event_loop")
+    @patch("asyncio.gather", side_effect=mock_asyncio_gather)
+    def testUdpAsycioClient(self, mock_gather, mock_event_loop):
+        """Test the udp asyncio client"""
+        pytest.skip("TBD")
+        pass
 
-        # handle skipped cases
-        protocol._handleResponse(None)
-        protocol._handleResponse(reply)
+    # -----------------------------------------------------------------------#
+    # Test Serial client
+    # -----------------------------------------------------------------------#
 
-        # handle existing cases
-        d = protocol._buildResponse(0x00)
-        d.addCallback(lambda v: out.append(v))
-        protocol._handleResponse(reply)
-        self.assertEqual(out[0], reply)
+    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
+                                                ("socket", ModbusSocketFramer),
+                                                ("binary", ModbusBinaryFramer),
+                                                ("ascii", ModbusAsciiFramer)])
+    def testSerialTwistedClient(self, method, framer):
+        """ Test the serial tornado client client initialize """
+        from serial import Serial
+        with patch("serial.Serial") as mock_sp:
+            from twisted.internet import reactor
+            from twisted.internet.serialport import SerialPort
 
-    def testUdpClientProtocolBuildResponse(self):
-        ''' Test the udp client protocol builds responses '''
-        protocol = ModbusUdpClientProtocol()
-        self.assertEqual(0, len(list(protocol.transaction)))
+            with patch('twisted.internet.reactor') as mock_reactor:
 
-        d = protocol._buildResponse(0x00)
-        self.assertEqual(1, len(list(protocol.transaction)))
+                protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
+                                                           method=method,
+                                                           port=SERIAL_PORT,
+                                                           proto_cls=ModbusSerClientProtocol)
 
-    #-----------------------------------------------------------------------#
-    # Test Client Factories
-    #-----------------------------------------------------------------------#
+                assert (isinstance(client, SerialPort))
+                assert (isinstance(client.protocol, ModbusSerClientProtocol))
+                assert (0 == len(list(client.protocol.transaction)))
+                assert (isinstance(client.protocol.framer, framer))
+                assert (client.protocol._connected)
 
-    def testModbusClientFactory(self):
-        ''' Test the base class for all the clients '''
-        factory = ModbusClientFactory()
-        self.assertTrue(factory is not None)
+                def handle_failure(failure):
+                    assert (isinstance(failure.exception(), ConnectionException))
 
-#---------------------------------------------------------------------------#
+                d = client.protocol._buildResponse(0x00)
+                d.addCallback(handle_failure)
+
+                assert (client.protocol._connected)
+                client.protocol.close()
+                protocol.stop()
+                assert (not client.protocol._connected)
+
+    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
+                                        ("socket", ModbusSocketFramer),
+                                        ("binary",  ModbusBinaryFramer),
+                                        ("ascii", ModbusAsciiFramer)])
+    def testSerialTornadoClient(self, method, framer):
+        """ Test the serial tornado client client initialize """
+        protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
+        client = future.result()
+        assert(isinstance(client, AsyncTornadoModbusSerialClient))
+        assert(0 == len(list(client.transaction)))
+        assert(isinstance(client.framer, framer))
+        assert(client.port == SERIAL_PORT)
+        assert(client._connected)
+
+        def handle_failure(failure):
+            assert(isinstance(failure.exception(), ConnectionException))
+
+        d = client._build_response(0x00)
+        d.add_done_callback(handle_failure)
+
+        assert(client._connected)
+        client.close()
+        protocol.stop()
+        assert(not client._connected)
+
+    @pytest.mark.skipif(IS_PYTHON3 , reason="requires python2.7")
+    def testSerialAsyncioClientPython2(self):
+        """
+        Test Serial async asyncio client exits on python2
+        :return:
+        """
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            AsyncModbusSerialClient(schedulers.ASYNC_IO, method="rtu", port=SERIAL_PORT)
+        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.value.code == 1
+
+    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4), reason="requires python3.4 or above")
+    @patch("asyncio.get_event_loop")
+    @patch("asyncio.gather", side_effect=mock_asyncio_gather)
+    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
+                                        ("socket", ModbusSocketFramer),
+                                        ("binary",  ModbusBinaryFramer),
+                                        ("ascii", ModbusAsciiFramer)])
+    def testSerialAsyncioClient(self,  mock_gather, mock_event_loop, method, framer):
+        """
+        Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler.
+        :return:
+        """
+        loop = asyncio.get_event_loop()
+        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
+                                               baudrate=19200, parity='E', stopbits=2, bytesize=7)
+        assert(isinstance(client, AsyncioModbusSerialClient))
+        assert(isinstance(client.framer, framer))
+        assert(client.port == SERIAL_PORT)
+        assert(client.baudrate == 19200)
+        assert(client.parity == 'E')
+        assert(client.stopbits == 2)
+        assert(client.bytesize == 7)
+
+
+# ---------------------------------------------------------------------------#
 # Main
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+
+
 if __name__ == "__main__":
     unittest.main()

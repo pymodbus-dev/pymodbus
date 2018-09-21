@@ -1,5 +1,5 @@
 # Python packages required to run `make docs'.
-cryptography==2.1.4 # Required to parse some files
+cryptography>= 2.3 # Required to parse some files
 humanfriendly==4.4.1
 pyasn1==0.4.2       # Required to parse some files
 pyserial-asyncio==0.4.0;python_version>="3.4"

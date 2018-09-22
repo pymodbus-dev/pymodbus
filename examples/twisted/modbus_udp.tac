@@ -8,7 +8,7 @@ from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
 
 from pymodbus.constants import Defaults
-from pymodbus.server.async import ModbusUdpProtocol
+from pymodbus.server.asynchronous import ModbusUdpProtocol
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.internal.ptwisted import InstallManagementConsole
 

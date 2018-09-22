@@ -6,9 +6,9 @@ if IS_PYTHON3: # Python 3
 else: # Python 2
     from mock import patch, Mock, MagicMock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.async import ModbusServerFactory
-from pymodbus.server.async import (
+from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
+from pymodbus.server.asynchronous import ModbusServerFactory
+from pymodbus.server.asynchronous import (
     StartTcpServer, StartUdpServer, StartSerialServer, StopServer,
     _is_main_thread
 )
@@ -35,7 +35,7 @@ else:
 
 class AsynchronousServerTest(unittest.TestCase):
     '''
-    This is the unittest for the pymodbus.server.async module
+    This is the unittest for the pymodbus.server.asynchronous module
     '''
 
     #-----------------------------------------------------------------------#

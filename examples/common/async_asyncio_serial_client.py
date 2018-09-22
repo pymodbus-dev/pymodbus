@@ -12,9 +12,9 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     import logging
     import asyncio
-    from pymodbus.client.async.serial import (
+    from pymodbus.client.asynchronous.serial import (
         AsyncModbusSerialClient as ModbusClient)
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous  import schedulers
 else:
     import sys
     sys.stderr("This example needs to be run only on python 3.4 and above")

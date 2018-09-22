@@ -8,9 +8,9 @@ client implementation from pymodbus with twisted.
 """
 
 from twisted.internet import reactor
-from pymodbus.client.async import schedulers
-from pymodbus.client.async.serial import AsyncModbusSerialClient
-from pymodbus.client.async.twisted import ModbusClientProtocol
+from pymodbus.client.asynchronous  import schedulers
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 
 import logging
 logging.basicConfig()

@@ -12,9 +12,9 @@ client implementation from pymodbus.
 
 from twisted.internet import reactor
 
-from pymodbus.client.async.tcp import AsyncModbusTCPClient
-# from pymodbus.client.async.udp import AsyncModbusUDPClient
-from pymodbus.client.async import schedulers
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+# from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous  import schedulers
 
 # --------------------------------------------------------------------------- #
 # choose the requested modbus protocol

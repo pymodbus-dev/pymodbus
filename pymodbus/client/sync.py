@@ -466,6 +466,10 @@ class ModbusSerialClient(BaseModbusClient):
             self.last_frame_end = None
         return self.socket is not None
 
+    @property
+    def _connected(self):
+        return True if self.socket else False
+
     def close(self):
         """ Closes the underlying socket connection
         """

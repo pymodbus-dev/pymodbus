@@ -12,13 +12,13 @@ client implementation from pymodbus using tornado.
 import functools
 
 from tornado.ioloop import IOLoop
-from pymodbus.client.async import schedulers
+from pymodbus.client.asynchronous  import schedulers
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-from pymodbus.client.async.serial import AsyncModbusSerialClient
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging

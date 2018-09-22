@@ -1,7 +1,7 @@
-pymodbus\.client\.async package
+pymodbus\.client\.asynchronouspackage
 ===============================
 
-.. automodule:: pymodbus.client.async
+.. automodule:: pymodbus.client.asynchronous
     :members:
     :undoc-members:
     :show-inheritance:

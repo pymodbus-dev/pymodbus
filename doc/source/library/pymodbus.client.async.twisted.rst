@@ -1,7 +1,7 @@
-pymodbus\.client\.async\.twisted package
+pymodbus\.client\.asynchronous\.twisted package
 ========================================
 
-.. automodule:: pymodbus.client.async.twisted
+.. automodule:: pymodbus.client.asynchronous.twisted
     :members:
     :undoc-members:
     :show-inheritance:

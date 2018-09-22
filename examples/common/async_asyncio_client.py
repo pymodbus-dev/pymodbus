@@ -15,10 +15,10 @@ if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     # ----------------------------------------------------------------------- #
     # Import the required async client
     # ----------------------------------------------------------------------- #
-    from pymodbus.client.async.tcp import AsyncModbusTCPClient as ModbusClient
-    # from pymodbus.client.async.udp import (
+    from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
+    # from pymodbus.client.asynchronous.udp import (
     #     AsyncModbusUDPClient as ModbusClient)
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous  import schedulers
 
 else:
     import sys

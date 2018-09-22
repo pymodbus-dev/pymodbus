@@ -11,43 +11,43 @@ Subpackages
 
 .. toctree::
 
-    pymodbus.client.async.asyncio
-    pymodbus.client.async.factory
-    pymodbus.client.async.schedulers
-    pymodbus.client.async.tornado
-    pymodbus.client.async.twisted
+    pymodbus.client.asynchronous.asyncio
+    pymodbus.client.asynchronous.factory
+    pymodbus.client.asynchronous.schedulers
+    pymodbus.client.asynchronous.tornado
+    pymodbus.client.asynchronous.twisted
 
 Submodules
 ----------
 
-pymodbus\.client\.async\.serial module
+pymodbus\.client\.asynchronous\.serial module
 --------------------------------------
 
-.. automodule:: pymodbus.client.async.serial
+.. automodule:: pymodbus.client.asynchronous.serial
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.tcp module
+pymodbus\.client\.asynchronous\.tcp module
 -----------------------------------
 
-.. automodule:: pymodbus.client.async.tcp
+.. automodule:: pymodbus.client.asynchronous.tcp
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.thread module
+pymodbus\.client\.asynchronous\.thread module
 --------------------------------------
 
-.. automodule:: pymodbus.client.async.thread
+.. automodule:: pymodbus.client.asynchronous.thread
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.udp module
+pymodbus\.client\.asynchronous\.udp module
 -----------------------------------
 
-.. automodule:: pymodbus.client.async.udp
+.. automodule:: pymodbus.client.asynchronous.udp
     :members:
     :undoc-members:
     :show-inheritance:

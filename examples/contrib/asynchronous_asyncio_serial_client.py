@@ -2,7 +2,7 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     import asyncio
     from serial_asyncio import create_serial_connection
-    from pymodbus.client.async.asyncio import ModbusClientProtocol
+    from pymodbus.client.asynchronous.asyncio import ModbusClientProtocol
     from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
     from pymodbus.factory import ClientDecoder
 else:

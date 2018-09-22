@@ -5,11 +5,11 @@ if IS_PYTHON3:
     from unittest.mock import patch, Mock
 else: # Python 2
     from mock import patch, Mock
-from pymodbus.client.async.twisted import (
+from pymodbus.client.asynchronous.twisted import (
     ModbusClientProtocol, ModbusUdpClientProtocol, ModbusSerClientProtocol, ModbusTcpClientProtocol
 )
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async.twisted import ModbusClientFactory
+from pymodbus.client.asynchronous.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
@@ -20,7 +20,7 @@ from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
 class AsynchronousClientTest(unittest.TestCase):
     '''
-    This is the unittest for the pymodbus.client.async module
+    This is the unittest for the pymodbus.client.asynchronous  module
     '''
 
     #-----------------------------------------------------------------------#

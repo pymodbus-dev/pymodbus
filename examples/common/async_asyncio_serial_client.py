@@ -12,9 +12,9 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     import logging
     import asyncio
-    from pymodbus.client.async.serial import (
+    from pymodbus.client.asynchronous.serial import (
         AsyncModbusSerialClient as ModbusClient)
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous import schedulers
 else:
     import sys
     sys.stderr("This example needs to be run only on python 3.4 and above")
@@ -63,7 +63,7 @@ async def start_async_test(client):
         # Furthermore, some use the same memory blocks for the two sets,
         # so a change to one is a change to the other.
         # Keep both of these cases in mind when testing as the following will
-        # _only_ pass with the supplied async modbus server (script supplied).
+        # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
         log.debug("Write to a Coil and read back")
         rq = await client.write_coil(0, True, unit=UNIT)

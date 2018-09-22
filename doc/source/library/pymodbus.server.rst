@@ -9,10 +9,10 @@ pymodbus\.server package
 Submodules
 ----------
 
-pymodbus\.server\.async module
+pymodbus\.server\.asynchronous module
 ------------------------------
 
-.. automodule:: pymodbus.server.async
+.. automodule:: pymodbus.server.asynchronous
     :members:
     :undoc-members:
     :show-inheritance:

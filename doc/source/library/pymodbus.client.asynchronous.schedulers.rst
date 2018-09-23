@@ -1,5 +1,5 @@
-pymodbus\.client\.async\.schedulers package
-===========================================
+pymodbus\.client\.asynchronous\.schedulers package
+==================================================
 
 .. automodule:: pymodbus.client.asynchronous.schedulers
     :members:

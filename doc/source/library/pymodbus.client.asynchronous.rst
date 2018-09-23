@@ -1,5 +1,5 @@
 pymodbus\.client\.asynchronous package
-===============================
+======================================
 
 .. automodule:: pymodbus.client.asynchronous
     :members:
@@ -20,32 +20,32 @@ Subpackages
 Submodules
 ----------
 
-pymodbus\.client\.async\.serial module
---------------------------------------
+pymodbus\.client\.asynchronous\.serial module
+---------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.serial
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.tcp module
------------------------------------
+pymodbus\.client\.asynchronous\.tcp module
+------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.tcp
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.thread module
---------------------------------------
+pymodbus\.client\.asynchronous\.thread module
+---------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.thread
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.udp module
------------------------------------
+pymodbus\.client\.asynchronous\.udp module
+------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.udp
     :members:

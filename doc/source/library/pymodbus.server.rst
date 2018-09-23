@@ -10,7 +10,7 @@ Submodules
 ----------
 
 pymodbus\.server\.asynchronous module
-------------------------------
+-------------------------------------
 
 .. automodule:: pymodbus.server.asynchronous
     :members:

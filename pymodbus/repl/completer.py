@@ -49,14 +49,18 @@ class CmdCompleter(Completer):
         return self._commands.keys()
 
     def completing_command(self, words, word_before_cursor):
-        """Determine if we are currently completing the hn command.
+        """
+        Determine if we are currently completing the hn command.
+        
         :type words: list
         :param words: The input text broken into word tokens.
         :type word_before_cursor: str
         :param word_before_cursor: The current word before the cursor,
             which might be one or more blank spaces.
         :rtype: bool
+        
         :return: Specifies whether we are currently completing the hn command.
+        
         """
         if len(words) == 1 and word_before_cursor != '':
             return True
@@ -64,14 +68,18 @@ class CmdCompleter(Completer):
             return False
 
     def completing_arg(self, words, word_before_cursor):
-        """Determine if we are currently completing an arg.
+        """
+        Determine if we are currently completing an arg.
+        
         :type words: list
         :param words: The input text broken into word tokens.
         :type word_before_cursor: str
         :param word_before_cursor: The current word before the cursor,
             which might be one or more blank spaces.
         :rtype: bool
+        
         :return: Specifies whether we are currently completing an arg.
+        
         """
         if len(words) > 1 and word_before_cursor != '':
             return True
@@ -79,14 +87,18 @@ class CmdCompleter(Completer):
             return False
 
     def arg_completions(self, words, word_before_cursor):
-        """Generates arguments completions based on the input.
+        """
+        Generates arguments completions based on the input.
+        
         :type words: list
         :param words: The input text broken into word tokens.
         :type word_before_cursor: str
         :param word_before_cursor: The current word before the cursor,
             which might be one or more blank spaces.
         :rtype: list
+        
         :return: A list of completions.
+        
         """
         cmd = words[0].strip()
         cmd = self._commands.get(cmd, None)

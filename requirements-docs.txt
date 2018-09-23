@@ -11,3 +11,6 @@ SQLAlchemy==1.1.15  # Required to parse some files
 tornado==4.5.2      # Required to parse some files
 twisted>= 12.2.0    # Required to parse some files
 prompt_toolkit>=2.0.4
+click>=6.7
+m2r>=0.2.0
+

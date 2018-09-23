@@ -231,16 +231,18 @@ def _is_main_thread():
 
 def StartTcpServer(context, identity=None, address=None,
                    console=False, defer_reactor_run=False, **kwargs):
-    """ Helper method to start the Modbus Async TCP server
+    """
+    Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param console: A flag indicating if you want the debug console
     :param ignore_missing_slaves: True to not send errors on a request
-    to a missing slave
+           to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
-    of starting server, to be explictly started by the user
+           of starting server, to be explictly started by the user
+
     """
     from twisted.internet import reactor
 
@@ -258,15 +260,16 @@ def StartTcpServer(context, identity=None, address=None,
 
 def StartUdpServer(context, identity=None, address=None,
                    defer_reactor_run=False, **kwargs):
-    """ Helper method to start the Modbus Async Udp server
+    """
+    Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param ignore_missing_slaves: True to not send errors on a request
-    to a missing slave
+           to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
-    of starting server, to be explictly started by the user
+           of starting server, to be explictly started by the user
     """
     from twisted.internet import reactor
 
@@ -284,7 +287,8 @@ def StartSerialServer(context, identity=None,
                       framer=ModbusAsciiFramer,
                       defer_reactor_run=False,
                       **kwargs):
-    """ Helper method to start the Modbus Async Serial server
+    """
+    Helper method to start the Modbus Async Serial server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -293,9 +297,10 @@ def StartSerialServer(context, identity=None,
     :param baudrate: The baud rate to use for the serial device
     :param console: A flag indicating if you want the debug console
     :param ignore_missing_slaves: True to not send errors on a request to a
-    missing slave
+           missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
-    of starting server, to be explictly started by the user
+           of starting server, to be explictly started by the user
+
     """
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort

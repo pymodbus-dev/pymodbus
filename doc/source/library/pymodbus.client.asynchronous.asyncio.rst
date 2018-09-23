@@ -1,5 +1,5 @@
-pymodbus\.client\.async\.asyncio package
-========================================
+pymodbus\.client\.asynchronous\.asyncio package
+===============================================
 
 .. automodule:: pymodbus.client.asynchronous.asyncio
     :members:

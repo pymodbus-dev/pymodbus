@@ -31,13 +31,18 @@ Version 1.5.1
 * Added REPR statements for all syncchronous clients
 * Added `isError` method to exceptions, Any response received can be tested for success before proceeding.
 
-    ```
+    """
+
     res = client.read_holding_registers(...)
     if not res.isError():
+
         # proceed
+ 
     else:
         # handle error or raise
-    ```
+
+    """
+
 * Add examples for MEI read device information request
 
 Version 1.5.0

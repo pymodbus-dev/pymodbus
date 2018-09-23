@@ -294,8 +294,11 @@ class ExtendedRequestSupport(object):
     def read_exception_status(self, **kwargs):
         """
          Read the contents of eight Exception Status outputs in a remote device.
+
         :param unit: The slave unit this request is targeting
+        
         :return:
+
         """
         request = ReadExceptionStatusRequest(**kwargs)
         resp = self.execute(request)
@@ -311,8 +314,11 @@ class ExtendedRequestSupport(object):
         """
         Read  status word and an event count from the remote device's communication
         event counter
+
         :param unit: The slave unit this request is targeting
+
         :return:
+
         """
         request = GetCommEventCounterRequest(**kwargs)
         resp = self.execute(request)

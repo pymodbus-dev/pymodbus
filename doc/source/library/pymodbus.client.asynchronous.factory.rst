@@ -1,5 +1,5 @@
-pymodbus\.client\.async\.factory package
-========================================
+pymodbus\.client\.asynchronous\.factory package
+===============================================
 
 .. automodule:: pymodbus.client.asynchronous.factory
     :members:
@@ -9,24 +9,24 @@ pymodbus\.client\.async\.factory package
 Submodules
 ----------
 
-pymodbus\.client\.async\.factory\.serial module
------------------------------------------------
+pymodbus\.client\.asynchronous\.factory\.serial module
+------------------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.factory.serial
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.factory\.tcp module
---------------------------------------------
+pymodbus\.client\.asynchronous\.factory\.tcp module
+---------------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.factory.tcp
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymodbus\.client\.async\.factory\.udp module
---------------------------------------------
+pymodbus\.client\.asynchronous\.factory\.udp module
+---------------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.factory.udp
     :members:

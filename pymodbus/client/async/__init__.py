@@ -31,4 +31,14 @@ Example run::
     # For asyncio the actual client is returned and event loop is asyncio loop
 
 """
-from pymodbus.client.async.deprecated.async import *
+from pymodbus.compat import is_installed
+
+installed = is_installed('twisted')
+if installed:
+    # Import deprecated async client only if twisted is installed #338
+    from pymodbus.client.async.deprecated.async import *
+else:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning("Not Importing deprecated clients. "
+                   "Dependency Twisted is not Installed")

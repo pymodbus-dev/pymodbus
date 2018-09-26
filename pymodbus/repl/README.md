@@ -28,7 +28,7 @@ Options:
   --help          Show this message and exit.
 
 Commands:
-  rtu
+  serial
   tcp
 
 
@@ -50,8 +50,8 @@ Options:
 
 RTU Options
 ```
-bash-3.2$ pymodbus.console rtu --help
-Usage: pymodbus.console rtu [OPTIONS]
+bash-3.2$ pymodbus.console serial --help
+Usage: pymodbus.console serial [OPTIONS]
 
 Options:
   --method TEXT          Modbus Serial Mode (rtu/ascii)
@@ -84,40 +84,49 @@ $ pymodbus.console tcp --host 192.168.128.126 --port 5020
 
 > help
 Available commands:
-client.change_ascii_input_delimiter          Diagnostic sub command, Change message delimiter for future requests
-client.clear_counters                        Diagnostic sub command, Clear all counters and diag registers
-client.clear_overrun_count                   Diagnostic sub command, Clear over run counter
-client.force_listen_only_mode                Diagnostic sub command, Forces the addressed remote device to its Listen Only Mode
-client.get_clear_modbus_plus                 Diagnostic sub command, Get or clear stats of remote modbus plus device
-client.get_com_event_counter                 Read  status word and an event count from the remote device's communication event counter
+client.change_ascii_input_delimiter          Diagnostic sub command, Change message delimiter for future requests.
+client.clear_counters                        Diagnostic sub command, Clear all counters and diag registers.
+client.clear_overrun_count                   Diagnostic sub command, Clear over run counter.
+client.close                                 Closes the underlying socket connection
+client.connect                               Connect to the modbus tcp server
+client.debug_enabled                         Returns a boolean indicating if debug is enabled.
+client.force_listen_only_mode                Diagnostic sub command, Forces the addressed remote device to         its Listen Only Mode.
+client.get_clear_modbus_plus                 Diagnostic sub command, Get or clear stats of remote          modbus plus device.
+client.get_com_event_counter                 Read  status word and an event count from the remote device's         communication event counter.
 client.get_com_event_log                     Read  status word, event count, message count, and a field of event bytes from the remote device.
-client.mask_write_register                   Mask content of holding register at `address` with `and_mask` and `or_mask`
-client.read_coils                            Reads `count` coils from a given slave starting at `address`
-client.read_device_information               Read the identification and additional information of remote slave
-client.read_discrete_inputs                  Reads `count` number of discrete inputs starting at offset `address`
-client.read_exception_status                 Read the contents of eight Exception Status outputs in a remote device.
-client.read_holding_registers                Read `count` number of holding registers starting at `address`
-client.read_input_registers                  Read `count` number of input registers starting at `address`
-client.readwrite_registers                   Read `read_count` number of holding registers starting at `read_address`  and write `write_registers` starting at `write_address`
-client.report_slave_id                       Report information about remote slave ID
-client.restart_comm_option                   Diagnostic sub command, initialize and restart remote devices serial interface and clear all of its communications event counters .
-client.return_bus_com_error_count            Diagnostic sub command, Return count of CRC errors received by remote slave
-client.return_bus_exception_error_count      Diagnostic sub command, Return count of Modbus exceptions returned by remote slave
-client.return_bus_message_count              Diagnostic sub command, Return count of message detected on bus  by remote slave
-client.return_diagnostic_register            Diagnostic sub command, Read 16-bit diagnostic register
-client.return_iop_overrun_count              Diagnostic sub command, Return count of iop overrun errors by remote slave
-client.return_query_data                     Diagnostic sub command , Loop back data sent in response
-client.return_slave_bus_char_overrun_count   Diagnostic sub command, Return count of messages not handled  by remote slave due to character overrun condition
-client.return_slave_busy_count               Diagnostic sub command, Return count of server busy exceptions sent  by remote slave
-client.return_slave_message_count            Diagnostic sub command, Return count of messages addressed to remote slave
-client.return_slave_no_ack_count             Diagnostic sub command, Return count of NO ACK exceptions sent  by remote slave
-client.return_slave_no_response_count        Diagnostic sub command, Return count of No responses  by remote slave
-client.write_coil                            Write `value` to coil at `address`
-client.write_coils                           Write `value` to coil at `address`
-client.write_register                        Write `value` to register at `address`
-client.write_registers                       Write list of `values` to registers starting at `address`
-result.decode                                Decode the register response to known formatters
-result.raw                                   Return raw result dict
+client.host                                  Read Only!
+client.idle_time                             Bus Idle Time to initiate next transaction
+client.is_socket_open                        Check whether the underlying socket/serial is open or not.
+client.last_frame_end                        Read Only!
+client.mask_write_register                   Mask content of holding register at `address`          with `and_mask` and `or_mask`.
+client.port                                  Read Only!
+client.read_coils                            Reads `count` coils from a given slave starting at `address`.
+client.read_device_information               Read the identification and additional information of remote slave.
+client.read_discrete_inputs                  Reads `count` number of discrete inputs starting at offset `address`.
+client.read_exception_status                 Read the contents of eight Exception Status outputs in a remote          device.
+client.read_holding_registers                Read `count` number of holding registers starting at `address`.
+client.read_input_registers                  Read `count` number of input registers starting at `address`.
+client.readwrite_registers                   Read `read_count` number of holding registers starting at         `read_address`  and write `write_registers`         starting at `write_address`.
+client.report_slave_id                       Report information about remote slave ID.
+client.restart_comm_option                   Diagnostic sub command, initialize and restart remote devices serial         interface and clear all of its communications event counters .
+client.return_bus_com_error_count            Diagnostic sub command, Return count of CRC errors         received by remote slave.
+client.return_bus_exception_error_count      Diagnostic sub command, Return count of Modbus exceptions         returned by remote slave.
+client.return_bus_message_count              Diagnostic sub command, Return count of message detected on bus          by remote slave.
+client.return_diagnostic_register            Diagnostic sub command, Read 16-bit diagnostic register.
+client.return_iop_overrun_count              Diagnostic sub command, Return count of iop overrun errors         by remote slave.
+client.return_query_data                     Diagnostic sub command , Loop back data sent in response.
+client.return_slave_bus_char_overrun_count   Diagnostic sub command, Return count of messages not handled          by remote slave due to character overrun condition.
+client.return_slave_busy_count               Diagnostic sub command, Return count of server busy exceptions sent          by remote slave.
+client.return_slave_message_count            Diagnostic sub command, Return count of messages addressed to         remote slave.
+client.return_slave_no_ack_count             Diagnostic sub command, Return count of NO ACK exceptions sent          by remote slave.
+client.return_slave_no_response_count        Diagnostic sub command, Return count of No responses  by remote slave.
+client.silent_interval                       Read Only!
+client.state                                 Read Only!
+client.timeout                               Read Only!
+client.write_coil                            Write `value` to coil at `address`.
+client.write_coils                           Write `value` to coil at `address`.
+client.write_register                        Write `value` to register at `address`.
+client.write_registers                       Write list of `values` to registers starting at `address`.
 ```
 
 Every command has auto suggetion on the arguments supported , supply arg and value are to be supplied in `arg=val` format.
@@ -153,6 +162,40 @@ For Holding and Input register reads, the decoded value could be viewed with `re
 28.17
 
 >
+```
+
+Client settings could be retrived and altered as well.
+```
+> # For serial settings
+> client.get_serial_settings
+{
+    "t1.5": 0.00171875,
+    "baudrate": 9600,
+    "read timeout": 0.5,
+    "port": "/dev/ptyp0",
+    "t3.5": 0.00401,
+    "bytesize": 8,
+    "parity": "N",
+    "stopbits": 1.0
+}
+> client.set_timeout value=1
+null
+
+> client.get_timeout
+1.0
+
+> client.get_serial_settings
+{
+    "t1.5": 0.00171875,
+    "baudrate": 9600,
+    "read timeout": 1.0,
+    "port": "/dev/ptyp0",
+    "t3.5": 0.00401,
+    "bytesize": 8,
+    "parity": "N",
+    "stopbits": 1.0
+}
+
 ```
 
 #DEMO

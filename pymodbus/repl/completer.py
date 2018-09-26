@@ -81,11 +81,13 @@ class CmdCompleter(Completer):
         else:
             return False
 
-    def arg_completions(self, words):
+    def arg_completions(self, words, word_before_cursor):
         """
         Generates arguments completions based on the input.
 
         :param words: The input text broken into word tokens.
+        :param word_before_cursor: The current word  before the cursor, \
+            which might be one or more blank spaces.
         :return: A list of completions.
         """
         cmd = words[0].strip()

@@ -255,7 +255,7 @@ def tcp(ctx, host, port):
     cli(client)
 
 
-@main.command("rtu")
+@main.command("serial")
 @click.pass_context
 @click.option(
     "--method",
@@ -333,8 +333,8 @@ def tcp(ctx, host, port):
     default=2,
     type=float
 )
-def rtu(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
-        rtscts, dsrdtr, timeout, write_timeout):
+def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
+           rtscts, dsrdtr, timeout, write_timeout):
     from pymodbus.repl.client import ModbusSerialClient
     client = ModbusSerialClient(method=method,
                                 port=port,

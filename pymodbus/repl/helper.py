@@ -48,7 +48,11 @@ OTHER_COMMANDS = {
 }
 EXCLUDE = ['execute', 'recv', 'send', 'trace', 'set_debug']
 CLIENT_METHODS = [
-    'connect', 'close', 'idle_time', 'is_socket_open'
+    'connect', 'close', 'idle_time', 'is_socket_open', 'get_port', 'set_port',
+    'get_stopbits', 'set_stopbits', 'get_bytesize', 'set_bytesize',
+    'get_parity', 'set_parity', 'get_baudrate', 'set_baudrate', 'get_timeout',
+    'set_timeout', 'get_serial_settings'
+
 ]
 CLIENT_ATTRIBUTES = []
 

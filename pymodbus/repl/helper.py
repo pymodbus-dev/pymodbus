@@ -1,4 +1,6 @@
 """
+Helper Module for REPL actions.
+
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
@@ -52,8 +54,17 @@ CLIENT_ATTRIBUTES = []
 
 
 class Command(object):
-
+    """
+    Class representing Commands to be consumed by Completer.
+    """
     def __init__(self, name, signature, doc, unit=False):
+        """
+
+        :param name: Name of the command
+        :param signature: inspect object
+        :param doc: Doc string for the command
+        :param unit: Use unit as additional argument in the command .
+        """
         self.name = name
         self.doc = doc.split("\n") if doc else " ".join(name.split("_"))
         self.help_text = self._create_help()
@@ -87,6 +98,11 @@ class Command(object):
         return param_dict
 
     def create_completion(self):
+        """
+        Create command completion meta data.
+
+        :return:
+        """
         words = {}
 
         def _create(entry, default):
@@ -119,9 +135,20 @@ class Command(object):
         return words
 
     def get_completion(self):
+        """
+        Gets a list of completions.
+
+        :return:
+        """
         return self.args.keys()
 
     def get_meta(self, cmd):
+        """
+        Get Meta info of a given command.
+
+        :param cmd: Name of command.
+        :return: Dict containing meta info.
+        """
         cmd = cmd.strip()
         cmd = cmd.split("=")[0].strip()
         return cmd, self.param_help.get(cmd, '')
@@ -173,6 +200,13 @@ def _get_client_properties(members):
 
 
 def get_commands(client):
+    """
+    Helper method to retrieve all required methods and attributes of a client \
+    object and convert it to commands.
+
+    :param client: Modbus Client object.
+    :return:
+    """
     commands = dict()
     members = inspect.getmembers(client)
     requests = _get_requests(members)
@@ -195,10 +229,16 @@ def get_commands(client):
 
 
 class Result(object):
+    """
+    Represent result command.
+    """
     function_code = None
     data = None
 
     def __init__(self, result):
+        """
+        :param result: Response of a modbus command.
+        """
         if isinstance(result, dict):  # Modbus response
             self.function_code = result.pop('function_code', None)
             self.data = dict(result)
@@ -207,7 +247,8 @@ class Result(object):
 
     def decode(self, formatters, byte_order='big', word_order='big'):
         """
-        Decode the register response to known formatters
+        Decode the register response to known formatters.
+
         :param formatters: int8/16/32/64, uint8/16/32/64, float32/64
         :param byte_order: little/big
         :param word_order: little/big
@@ -242,7 +283,8 @@ class Result(object):
 
     def raw(self):
         """
-        Return raw result dict
+        Return raw result dict.
+
         :return:
         """
         self.print_result()
@@ -261,6 +303,12 @@ class Result(object):
         return new_dict
 
     def print_result(self, data=None):
+        """
+        Prettu print result object.
+
+        :param data: Data to be printed.
+        :return:
+        """
         data = data or self.data
         if isinstance(data, dict):
             data = self._process_dict(data)

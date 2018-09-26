@@ -1,4 +1,6 @@
 """
+Pymodbus REPL Entry point.
+
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
@@ -52,12 +54,23 @@ style = Style.from_dict({
 
 
 def bottom_toolbar():
+    """
+    Console toolbar.
+    :return:
+    """
     return HTML('Press <b><style bg="ansired">CTRL+D or exit </style></b>'
                 ' to exit! Type "help" for list of available commands')
 
 
 class CaseInsenstiveChoice(click.Choice):
+    """
+    Case Insensitive choice for click commands and options
+    """
     def convert(self, value, param, ctx):
+        """
+        Convert args to uppercase for evaluation.
+
+        """
         if value is None:
             return None
         return super(CaseInsenstiveChoice, self).convert(
@@ -65,6 +78,9 @@ class CaseInsenstiveChoice(click.Choice):
 
 
 class NumericChoice(click.Choice):
+    """
+    Numeric choice for click arguments and options.
+    """
     def __init__(self, choices, typ):
         self.typ = typ
         super(NumericChoice, self).__init__(choices)
@@ -85,11 +101,13 @@ class NumericChoice(click.Choice):
 
 
 def cli(client):
-
     kb = KeyBindings()
+
     @kb.add('c-space')
     def _(event):
-        """Initialize autocompletion, or select the next completion. """
+        """
+        Initialize autocompletion, or select the next completion.
+        """
         buff = event.app.current_buffer
         if buff.complete_state:
             buff.complete_next()
@@ -235,7 +253,6 @@ def tcp(ctx, host, port):
     from pymodbus.repl.client import ModbusTcpClient
     client = ModbusTcpClient(host=host, port=port)
     cli(client)
-
 
 
 @main.command("rtu")

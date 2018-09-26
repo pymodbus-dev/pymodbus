@@ -243,9 +243,6 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: Message to be sent over the bus
         :return:
         """
-        # _logger.debug("Current transaction state - {}".format(
-        #     ModbusTransactionState.to_string(self.client.state))
-        # )
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 ts = round(time.time(), 6)
@@ -269,6 +266,7 @@ class ModbusRtuFramer(ModbusFramer):
             else:
                 _logger.debug("Sleeping")
                 time.sleep(self.client.silent_interval)
+                self.client.state = ModbusTransactionState.IDLE
         size = self.client.send(message)
         # if size:
         #     _logger.debug("Changing transaction state from 'SENDING' "

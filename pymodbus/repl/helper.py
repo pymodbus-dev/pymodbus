@@ -7,7 +7,6 @@ import json
 import pygments
 import inspect
 from collections import OrderedDict
-from pymodbus.repl.client import ExtendedRequestSupport
 from pygments.lexers.data import JsonLexer
 from prompt_toolkit.formatted_text import PygmentsTokens, HTML
 from prompt_toolkit import print_formatted_text
@@ -15,11 +14,11 @@ from prompt_toolkit import print_formatted_text
 from pymodbus.payload import BinaryPayloadDecoder, Endian
 from pymodbus.compat import PYTHON_VERSION, IS_PYTHON2, string_types, izip
 
+predicate = inspect.ismethod
 if IS_PYTHON2 or PYTHON_VERSION < (3, 3):
-    predicate = inspect.ismethod
     argspec = inspect.getargspec
 else:
-    predicate = inspect.isfunction
+    predicate = inspect.ismethod
     argspec = inspect.signature
 
 
@@ -45,21 +44,30 @@ OTHER_COMMANDS = {
     "result.raw": "Show RAW Result",
     "result.decode": "Decode register response to known formats",
 }
+EXCLUDE = ['execute', 'recv', 'send', 'trace', 'set_debug']
+CLIENT_METHODS = [
+    'connect', 'close', 'idle_time', 'is_socket_open'
+]
+CLIENT_ATTRIBUTES = []
 
 
 class Command(object):
 
-    def __init__(self, name, signature, doc):
+    def __init__(self, name, signature, doc, unit=False):
         self.name = name
         self.doc = doc.split("\n") if doc else " ".join(name.split("_"))
         self.help_text = self._create_help()
         self.param_help = self._create_arg_help()
-        if IS_PYTHON2:
-            self._params = signature
+        if signature:
+            if IS_PYTHON2:
+                self._params = signature
+            else:
+                self._params = signature.parameters
+            self.args = self.create_completion()
         else:
-            self._params = signature.parameters
-        self.args = self.create_completion()
-        if self.name.startswith("client."):
+            self._params = ''
+
+        if self.name.startswith("client.") and unit:
             self.args.update(**DEFAULT_KWARGS)
 
     def _create_help(self):
@@ -124,14 +132,53 @@ class Command(object):
         return "Command {}".format(self.name)
 
 
-def get_commands():
-    commands = inspect.getmembers(ExtendedRequestSupport, predicate=predicate)
+def _get_requests(members):
+    commands = list(filter(lambda x: (x[0] not in EXCLUDE
+                                      and x[0] not in CLIENT_METHODS
+                                      and callable(x[1])),
+                           members))
     commands = {
         "client.{}".format(c[0]):
             Command("client.{}".format(c[0]),
-                    argspec(c[1]), inspect.getdoc(c[1]))
+                    argspec(c[1]), inspect.getdoc(c[1]), unit=True)
         for c in commands if not c[0].startswith("_")
     }
+    return commands
+
+
+def _get_client_methods(members):
+    commands = list(filter(lambda x: (x[0] not in EXCLUDE
+                                      and x[0] in CLIENT_METHODS),
+                           members))
+    commands = {
+        "client.{}".format(c[0]):
+            Command("client.{}".format(c[0]),
+                    argspec(c[1]), inspect.getdoc(c[1]), unit=False)
+        for c in commands if not c[0].startswith("_")
+    }
+    return commands
+
+
+def _get_client_properties(members):
+    global CLIENT_ATTRIBUTES
+    commands = list(filter(lambda x: not callable(x[1]), members))
+    commands = {
+        "client.{}".format(c[0]):
+            Command("client.{}".format(c[0]), None, "Read Only!", unit=False)
+        for c in commands if (not c[0].startswith("_")
+                              and isinstance(c[1], (string_types, int, float)))
+    }
+    CLIENT_ATTRIBUTES.extend(list(commands.keys()))
+    return commands
+
+
+def get_commands(client):
+    commands = dict()
+    members = inspect.getmembers(client)
+    requests = _get_requests(members)
+    client_methods = _get_client_methods(members)
+    client_attr = _get_client_properties(members)
+
     result_commands = inspect.getmembers(Result, predicate=predicate)
     result_commands = {
         "result.{}".format(c[0]):
@@ -140,14 +187,23 @@ def get_commands():
         for c in result_commands if (not c[0].startswith("_")
                                      and c[0] != "print_result")
     }
+    commands.update(requests)
+    commands.update(client_methods)
+    commands.update(client_attr)
     commands.update(result_commands)
     return commands
 
 
 class Result(object):
+    function_code = None
+    data = None
+
     def __init__(self, result):
-        self.function_code = result.pop('function_code', None)
-        self.data = dict(result)
+        if isinstance(result, dict):  # Modbus response
+            self.function_code = result.pop('function_code', None)
+            self.data = dict(result)
+        else:
+            self.data = result
 
     def decode(self, formatters, byte_order='big', word_order='big'):
         """

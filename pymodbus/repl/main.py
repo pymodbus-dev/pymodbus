@@ -25,7 +25,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from pymodbus.version import version
 from pymodbus.repl.completer import CmdCompleter, has_selected_completion
-from pymodbus.repl.helper import Result
+from pymodbus.repl.helper import Result, CLIENT_ATTRIBUTES
 
 click.disable_unicode_literals_warning = True
 
@@ -147,7 +147,7 @@ def cli(client):
         return kwargs, execute
 
     session = PromptSession(lexer=PygmentsLexer(PythonLexer),
-                            completer=CmdCompleter(), style=style,
+                            completer=CmdCompleter(client), style=style,
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
                             key_bindings=kb,
@@ -172,17 +172,19 @@ def cli(client):
             elif text.strip().lower() == 'exit':
                 raise EOFError()
             elif text.strip().lower().startswith("client."):
-                with client:
-                    try:
-                        text = text.strip().split()
-                        cmd = text[0].split(".")[1]
-                        args = text[1:]
-                        kwargs, execute = _process_args(args, string=False)
-                        if execute:
+                try:
+                    text = text.strip().split()
+                    cmd = text[0].split(".")[1]
+                    args = text[1:]
+                    kwargs, execute = _process_args(args, string=False)
+                    if execute:
+                        if text[0] in CLIENT_ATTRIBUTES:
+                            result = Result(getattr(client, cmd))
+                        else:
                             result = Result(getattr(client, cmd)(**kwargs))
-                            result.print_result()
-                    except Exception as e:
-                        click.secho(repr(e), fg='red')
+                        result.print_result()
+                except Exception as e:
+                    click.secho(repr(e), fg='red')
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()

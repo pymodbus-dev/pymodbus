@@ -34,8 +34,8 @@ class CmdCompleter(Completer):
     :param fuzzy_match: Determines whether to use fuzzy matching.
     """
 
-    def __init__(self, commands=None, ignore_case=True, **kwargs):
-        self._commands = commands or get_commands()
+    def __init__(self, client, commands=None, ignore_case=True, **kwargs):
+        self._commands = commands or get_commands(client)
         self._commands['help'] = ""
         self._command_names = self._commands.keys()
         self.ignore_case = ignore_case

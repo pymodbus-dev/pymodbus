@@ -421,19 +421,18 @@ class ModbusSerialClient(BaseModbusClient):
         BaseModbusClient.__init__(self, self.__implementation(method, self),
                                   **kwargs)
 
-        self._port = kwargs.get('port', 0)
-        self._stopbits = kwargs.get('stopbits', Defaults.Stopbits)
-        self._bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        self._parity = kwargs.get('parity', Defaults.Parity)
-        self._baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-        self._timeout = kwargs.get('timeout', Defaults.Timeout)
-        self.last_frame_end = 0
+        self.port = kwargs.get('port', 0)
+        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
+        self.parity = kwargs.get('parity',   Defaults.Parity)
+        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+        self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        self.last_frame_end = None
         if self.method == "rtu":
-            if self._baudrate > 19200:
-                self._t0 = self.inter_char_timeout = 750.0/1000000  #Micro
+            if self.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
             else:
-                self._t0 = float((1 + 8 + 2)) / self._baudrate
+                self._t0 = float((1 + 8 + 2)) / self.baudrate
                 self.inter_char_timeout = 1.5 * self._t0
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
@@ -464,12 +463,12 @@ class ModbusSerialClient(BaseModbusClient):
         if self.socket:
             return True
         try:
-            self.socket = serial.Serial(port=self._port,
-                                        timeout=self._timeout,
-                                        bytesize=self._bytesize,
-                                        stopbits=self._stopbits,
-                                        baudrate=self._baudrate,
-                                        parity=self._parity)
+            self.socket = serial.Serial(port=self.port,
+                                        timeout=self.timeout,
+                                        bytesize=self.bytesize,
+                                        stopbits=self.stopbits,
+                                        baudrate=self.baudrate,
+                                        parity=self.parity)
         except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
@@ -524,8 +523,8 @@ class ModbusSerialClient(BaseModbusClient):
         return 0
 
     def _wait_for_data(self):
-        if self._timeout is not None and self._timeout != 0:
-            condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self._timeout)
+        if self.timeout is not None and self.timeout != 0:
+            condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self.timeout)
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
@@ -562,7 +561,7 @@ class ModbusSerialClient(BaseModbusClient):
 
         :returns: The string representation
         """
-        return "ModbusSerialClient(%s baud[%s])" % (self.method, self._baudrate)
+        return "ModbusSerialClient(%s baud[%s])" % (self.method, self.baudrate)
 
     def __repr__(self):
         return (

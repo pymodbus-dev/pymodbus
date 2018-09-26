@@ -349,7 +349,7 @@ class SynchronousClientTest(unittest.TestCase):
         client = ModbusSerialClient()
         rep = "<{} at {} socket={}, method={}, timeout={}>".format(
             client.__class__.__name__, hex(id(client)), client.socket,
-            client.method, client._timeout
+            client.method, client.timeout
         )
         self.assertEqual(repr(client), rep)
 # ---------------------------------------------------------------------------#

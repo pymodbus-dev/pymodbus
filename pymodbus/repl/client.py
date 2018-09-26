@@ -306,7 +306,7 @@ class ExtendedRequestSupport(object):
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
-                'identifier': resp.identifier,
+                'identifier': resp.identifier.decode('cp1252'),
                 'status': resp.status,
                 'byte count': resp.byte_count
             }

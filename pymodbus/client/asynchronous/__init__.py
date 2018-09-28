@@ -4,21 +4,21 @@ Async Modbus Client implementation based on Twisted, tornado and asyncio
 
 Example run::
 
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous import schedulers
 
     # Import The clients
 
-    from pymodbus.client.async.tcp import AsyncModbusTCPClient as Client
-    from pymodbus.client.async.serial import AsyncModbusSerialClient as Client
-    from pymodbus.client.async.udp import AsyncModbusUDPClient as Client
+    from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as Client
+    from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as Client
+    from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as Client
 
-    # For tornado based async client use
+    # For tornado based asynchronous client use
     event_loop, future = Client(schedulers.IO_LOOP, port=5020)
 
-    # For twisted based async client use
+    # For twisted based asynchronous client use
     event_loop, future = Client(schedulers.REACTOR, port=5020)
 
-    # For asyncio based async client use
+    # For asyncio based asynchronous client use
     event_loop, client = Client(schedulers.ASYNC_IO, port=5020)
 
     # Here event_loop is a thread which would control the backend and future is
@@ -31,6 +31,9 @@ Example run::
     # For asyncio the actual client is returned and event loop is asyncio loop
 
 """
+<<<<<<< HEAD:pymodbus/client/asynchronous/__init__.py
+from pymodbus.client.asynchronous.deprecated.asynchronous import *
+=======
 from pymodbus.compat import is_installed
 
 installed = is_installed('twisted')
@@ -42,3 +45,4 @@ else:
     logger = logging.getLogger(__name__)
     logger.warning("Not Importing deprecated clients. "
                    "Dependency Twisted is not Installed")
+>>>>>>> 7980f087a0ecbf24ca049849799b365892082029:pymodbus/client/async/__init__.py

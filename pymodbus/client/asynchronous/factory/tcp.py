@@ -1,13 +1,13 @@
 """
-Factory to create async tcp clients based on twisted/tornado/asyncio
+Factory to create asynchronous tcp clients based on twisted/tornado/asyncio
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
 
-from pymodbus.client.async import schedulers
-from pymodbus.client.async.thread import EventLoopThread
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.thread import EventLoopThread
 from pymodbus.constants import Defaults
 
 LOGGER = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
     """
-    Factory to create twisted tcp async client
+    Factory to create twisted tcp asynchronous client
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -26,7 +26,7 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and twisted_deferred
     """
     from twisted.internet import reactor, protocol
-    from pymodbus.client.async.twisted import ModbusTcpClientProtocol
+    from pymodbus.client.asynchronous.twisted import ModbusTcpClientProtocol
 
     deferred = protocol.ClientCreator(
         reactor, ModbusTcpClientProtocol
@@ -51,7 +51,7 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
     """
-    Factory to create Tornado based async tcp clients
+    Factory to create Tornado based asynchronous tcp clients
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -61,7 +61,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop
-    from pymodbus.client.async.tornado import AsyncModbusTCPClient as \
+    from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as \
         Client
 
     ioloop = IOLoop()
@@ -80,7 +80,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                      source_address=None, timeout=None, **kwargs):
     """
-    Factory to create asyncio based async tcp clients
+    Factory to create asyncio based asynchronous tcp clients
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -90,7 +90,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: asyncio event loop and tcp client
     """
     import asyncio
-    from pymodbus.client.async.asyncio import init_tcp_client
+    from pymodbus.client.asynchronous.asyncio import init_tcp_client
     loop = kwargs.get("loop") or asyncio.new_event_loop()
     proto_cls = kwargs.get("proto_cls", None)
     if not loop.is_running():

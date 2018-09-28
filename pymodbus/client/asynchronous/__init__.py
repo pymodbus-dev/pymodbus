@@ -36,7 +36,7 @@ from pymodbus.compat import is_installed
 installed = is_installed('twisted')
 if installed:
     # Import deprecated async client only if twisted is installed #338
-    from pymodbus.client.asynchronous.deprecated.async import *
+    from pymodbus.client.asynchronous.deprecated.asynchronous import *
 else:
     import logging
     logger = logging.getLogger(__name__)

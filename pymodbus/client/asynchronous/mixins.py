@@ -37,7 +37,7 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
     def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None,
                  source_address=None, timeout=None, **kwargs):
         """
-        Initializes a Modbus TCP/UDP async client
+        Initializes a Modbus TCP/UDP asynchronous client
         :param host: Host IP address
         :param port: Port
         :param framer: Framer to use

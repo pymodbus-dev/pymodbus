@@ -5,25 +5,25 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     from unittest.mock import patch, Mock, MagicMock
     import asyncio
-    from pymodbus.client.async.asyncio import AsyncioModbusSerialClient
+    from pymodbus.client.asynchronous.asyncio import AsyncioModbusSerialClient
     from serial_asyncio import SerialTransport
 else:
     from mock import patch, Mock, MagicMock
 import platform
 from distutils.version import LooseVersion
 
-from pymodbus.client.async.serial import AsyncModbusSerialClient
-from pymodbus.client.async.tcp import AsyncModbusTCPClient
-from pymodbus.client.async.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 
-from pymodbus.client.async.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
-from pymodbus.client.async.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
-from pymodbus.client.async.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
-from pymodbus.client.async import schedulers
+from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
+from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
+from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
+from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer
-from pymodbus.client.async.twisted import ModbusSerClientProtocol
+from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
 
 IS_DARWIN = platform.system().lower() == "darwin"
 OSX_SIERRA = LooseVersion("10.12")
@@ -45,7 +45,7 @@ def mock_asyncio_gather(coro):
 
 class TestAsynchronousClient(object):
     """
-    This is the unittest for the pymodbus.client.async module
+    This is the unittest for the pymodbus.client.asynchronous module
     """
 
     # -----------------------------------------------------------------------#
@@ -68,8 +68,8 @@ class TestAsynchronousClient(object):
                                  callback=test_callback,
                                  errback=test_errback)
 
-    @patch("pymodbus.client.async.tornado.IOLoop")
-    @patch("pymodbus.client.async.tornado.IOStream")
+    @patch("pymodbus.client.asynchronous.tornado.IOLoop")
+    @patch("pymodbus.client.asynchronous.tornado.IOStream")
     def testTcpTornadoClient(self, mock_iostream, mock_ioloop):
         """ Test the TCP tornado client client initialize """
         protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
@@ -108,8 +108,8 @@ class TestAsynchronousClient(object):
     # Test UDP client
     # -----------------------------------------------------------------------#
 
-    @patch("pymodbus.client.async.tornado.IOLoop")
-    @patch("pymodbus.client.async.tornado.IOStream")
+    @patch("pymodbus.client.asynchronous.tornado.IOLoop")
+    @patch("pymodbus.client.asynchronous.tornado.IOStream")
     def testUdpTornadoClient(self, mock_iostream, mock_ioloop):
         """ Test the udp tornado client client initialize """
         protocol, future = AsyncModbusUDPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
@@ -213,7 +213,7 @@ class TestAsynchronousClient(object):
     @pytest.mark.skipif(IS_PYTHON3 , reason="requires python2.7")
     def testSerialAsyncioClientPython2(self):
         """
-        Test Serial async asyncio client exits on python2
+        Test Serial asynchronous asyncio client exits on python2
         :return:
         """
         with pytest.raises(SystemExit) as pytest_wrapped_e:

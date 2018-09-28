@@ -1,7 +1,7 @@
-pymodbus\.client\.async\.tornado package
+pymodbus\.client\.async\.asyncio package
 ========================================
 
-.. automodule:: pymodbus.client.async.tornado
+.. automodule:: pymodbus.client.asynchronous.asyncio
     :members:
     :undoc-members:
     :show-inheritance:

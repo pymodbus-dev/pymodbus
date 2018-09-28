@@ -92,7 +92,7 @@ def run_sync_client():
     # are not known to these tests. Furthermore, some use the same memory
     # blocks for the two sets, so a change to one is a change to the other.
     # Keep both of these cases in mind when testing as the following will
-    # _only_ pass with the supplied async modbus server (script supplied).
+    # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
     log.debug("Write to a Coil and read back")
     rq = client.write_coil(0, True, unit=UNIT)

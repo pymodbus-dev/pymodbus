@@ -1,3 +1,8 @@
+Version 2.0.1
+-----------------------------------------------------------
+* Fix unicode decoder error with BinaryPayloadDecoder in some platforms
+* Avoid unnecessary import of deprecated modules with dependencies on twisted
+
 Version 2.0.0
 -----------------------------------------------------------
 **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**

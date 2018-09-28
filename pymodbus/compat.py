@@ -58,6 +58,16 @@ if not IS_PYTHON2:
     implements_to_string = lambda x: x
 
     byte2int = lambda b: b
+    if PYTHON_VERSION >= (3, 4):
+        def is_installed(module):
+            import importlib.util
+            found = importlib.util.find_spec(module)
+            return found
+    else:
+        def is_installed(module):
+            import importlib
+            found = importlib.find_loader(module)
+            return found
 # --------------------------------------------------------------------------- #
 # python > 2.5 compatability layer
 # --------------------------------------------------------------------------- #
@@ -76,3 +86,11 @@ else:
         klass.__unicode__ = klass.__str__
         klass.__str__ = lambda x: x.__unicode__().encode('utf-8')
         return klass
+
+    def is_installed(module):
+        import imp
+        try:
+            imp.find_module(module)
+            return True
+        except ImportError:
+            return False

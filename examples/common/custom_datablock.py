@@ -10,7 +10,7 @@ written to the datastore.
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from __future__ import print_function
-from pymodbus.server.async import StartTcpServer
+from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext

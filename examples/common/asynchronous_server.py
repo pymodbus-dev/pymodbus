@@ -10,9 +10,9 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- # 
 # import the various server implementations
 # --------------------------------------------------------------------------- # 
-from pymodbus.server.async import StartTcpServer
-from pymodbus.server.async import StartUdpServer
-from pymodbus.server.async import StartSerialServer
+from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.server.asynchronous import StartUdpServer
+from pymodbus.server.asynchronous import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock

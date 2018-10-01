@@ -92,7 +92,7 @@ class ModbusRtuFramer(ModbusFramer):
             crc = self._buffer[frame_size - 2:frame_size]
             crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
             return checkCRC(data, crc_val)
-        except (IndexError, KeyError):
+        except (IndexError, KeyError, struct.error):
             return False
 
     def advanceFrame(self):
@@ -243,9 +243,8 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: Message to be sent over the bus
         :return:
         """
-        # _logger.debug("Current transaction state - {}".format(
-        #     ModbusTransactionState.to_string(self.client.state))
-        # )
+        start = time.time()
+        timeout = start + self.client.timeout
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 ts = round(time.time(), 6)
@@ -267,8 +266,13 @@ class ModbusRtuFramer(ModbusFramer):
                     time.sleep(self.client.silent_interval)
                 self.client.state = ModbusTransactionState.IDLE
             else:
-                _logger.debug("Sleeping")
-                time.sleep(self.client.silent_interval)
+                if time.time() > timeout:
+                    _logger.debug("Spent more time than the read time out, "
+                                  "resetting the transaction to IDLE")
+                    self.client.state = ModbusTransactionState.IDLE
+                else:
+                    _logger.debug("Sleeping")
+                    time.sleep(self.client.silent_interval)
         size = self.client.send(message)
         # if size:
         #     _logger.debug("Changing transaction state from 'SENDING' "

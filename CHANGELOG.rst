@@ -1,3 +1,9 @@
+Version 2.0.2
+-----------------------------------------------------------
+* Fix Infinite sleep loop in RTU Framer
+* Add pygments as extra requirement for repl
+* More verbose logs for repl
+
 Version 2.0.1
 -----------------------------------------------------------
 * Fix unicode decoder error with BinaryPayloadDecoder in some platforms

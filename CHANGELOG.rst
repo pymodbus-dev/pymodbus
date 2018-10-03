@@ -1,8 +1,10 @@
-Version 2.0.2
+Version 2.1.0
 -----------------------------------------------------------
 * Fix Issues with Serial client where in partial data was read when the response size is unknown.
 * Fix Infinite sleep loop in RTU Framer.
 * Add pygments as extra requirement for repl.
+* Add support to modify modbus client attributes via repl.
+* Update modbus repl documentation.
 * More verbose logs for repl.
 
 Version 2.0.1

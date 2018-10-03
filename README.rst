@@ -1,3 +1,7 @@
+================================
+PyModbus - A Python Modbus Stack
+================================
+
 .. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
    :target: https://travis-ci.org/riptideio/pymodbus 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
@@ -12,9 +16,9 @@
 .. important::
    **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
 
-============================================================
+------------------------------------------------------------
 Summary
-============================================================
+------------------------------------------------------------
 
 Pymodbus is a full Modbus protocol implementation using twisted for its
 asynchronous communications core.  It can also be used without any third
@@ -23,13 +27,13 @@ needed.  Furthermore, it should work fine under any python version > 2.7
 (including python 3+)
 
 
-============================================================
+------------------------------------------------------------
 Features
-============================================================
+------------------------------------------------------------
 
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~
 Client Features
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~
 
   * Full read/write protocol on discrete and register
   * Most of the extended protocol (diagnostic/file/pipe/setting/information)
@@ -38,9 +42,9 @@ Client Features
   * Payload builder/decoder utilities
   * Pymodbus REPL for quick tests 
 
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~
 Server Features
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~
 
   * Can function as a fully implemented modbus server
   * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
@@ -48,9 +52,9 @@ Server Features
   * Full server control context (device information, counters, etc)
   * A number of backing contexts (database, redis, sqlite, a slave device)
 
-============================================================
+------------------------------------------------------------
 Use Cases
-============================================================
+------------------------------------------------------------
 
 Although most system administrators will find little need for a Modbus
 server on any modern hardware, they may find the need to query devices on
@@ -94,9 +98,9 @@ trace them. I get a lot of email and sometimes these requests
 get lost in the noise: http://groups.google.com/group/pymodbus or 
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
-============================================================
+------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Procee Loop)
-============================================================
+------------------------------------------------------------
 Starting with Pymodbus 2.x, pymodbus library comes with handy
 Pymodbus REPL to quickly run the modbus clients in tcp/rtu modes.
 
@@ -104,11 +108,14 @@ Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
-For more info on REPL refer  `Pymodbus REPL <pymodbus/repl/README.md>`_
+For more info on REPL refer  `Pymodbus REPL <https://github.com/riptideio/pymodbus/tree/master/pymodbus/repl>`_
 
-============================================================
+.. image:: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png
+   :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
+
+------------------------------------------------------------
 Installing
-============================================================
+------------------------------------------------------------
 
 You can install using pip or easy install by issuing the following
 commands in a terminal window (make sure you have correct
@@ -144,9 +151,9 @@ out all mentions of twisted.  It should be noted that without twisted,
 one will only be able to run the synchronized version as the
 asynchronous versions uses twisted for its event loop.
 
-============================================================
+------------------------------------------------------------
 Current Work In Progress
-============================================================
+------------------------------------------------------------
 
 Since I don't have access to any live modbus devices anymore
 it is a bit hard to test on live hardware. However, if you would
@@ -182,14 +189,14 @@ Use make to perform a range of activities
      make tox        run the tests on all Python versions
      make clean      cleanup all temporary files 
 
-============================================================
+------------------------------------------------------------
 Contributing
-============================================================
+------------------------------------------------------------
 Just fork the repo and raise your PR against `dev` branch.
 
-============================================================
+------------------------------------------------------------
 License Information
-============================================================
+------------------------------------------------------------
 
 Pymodbus is built on top of code developed from/by:
   * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.

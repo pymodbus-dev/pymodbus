@@ -124,6 +124,10 @@ class BaseModbusClient(ModbusClientMixin):
         self.close()
 
     def idle_time(self):
+        """
+        Bus Idle Time to initiate next transaction
+        :return: time stamp
+        """
         if self.last_frame_end is None or self.silent_interval is None:
             return 0
         return self.last_frame_end + self.silent_interval
@@ -286,11 +290,11 @@ class ModbusTcpClient(BaseModbusClient):
             "port={self.port}, timeout={self.timeout}>"
         ).format(self.__class__.__name__, hex(id(self)), self=self)
 
-
-
 # --------------------------------------------------------------------------- #
 # Modbus UDP Client Transport Implementation
 # --------------------------------------------------------------------------- #
+
+
 class ModbusUdpClient(BaseModbusClient):
     """ Implementation of a modbus udp client
     """
@@ -386,10 +390,14 @@ class ModbusUdpClient(BaseModbusClient):
 # --------------------------------------------------------------------------- #
 # Modbus Serial Client Transport Implementation
 # --------------------------------------------------------------------------- #
+
+
 class ModbusSerialClient(BaseModbusClient):
     """ Implementation of a modbus serial client
     """
     state = ModbusTransactionState.IDLE
+    inter_char_timeout = 0
+    silent_interval = 0
 
     def __init__(self, method='ascii', **kwargs):
         """ Initialize a serial client instance
@@ -424,7 +432,9 @@ class ModbusSerialClient(BaseModbusClient):
             if self.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
             else:
-                self.silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
+                self._t0 = float((1 + 8 + 2)) / self.baudrate
+                self.inter_char_timeout = 1.5 * self._t0
+                self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
 
     @staticmethod
@@ -463,6 +473,7 @@ class ModbusSerialClient(BaseModbusClient):
             _logger.error(msg)
             self.close()
         if self.method == "rtu":
+            self.socket.interCharTimeout = self.inter_char_timeout
             self.last_frame_end = None
         return self.socket is not None
 
@@ -512,15 +523,22 @@ class ModbusSerialClient(BaseModbusClient):
         return 0
 
     def _wait_for_data(self):
+        size = 0
+        more_data = False
         if self.timeout is not None and self.timeout != 0:
-            condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self.timeout)
+            condition = partial(lambda start, timeout:
+                                (time.time() - start) <= timeout,
+                                timeout=self.timeout)
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
         while condition(start):
-            size = self._in_waiting()
-            if size:
+            avaialble = self._in_waiting()
+            if (more_data and not avaialble) or (more_data and avaialble == size):
                 break
+            if avaialble and avaialble != size:
+                more_data = True
+                size = avaialble
             time.sleep(0.01)
         return size
 

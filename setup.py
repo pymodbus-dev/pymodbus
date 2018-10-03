@@ -92,7 +92,8 @@ setup(
         ],
         'repl': [
             'click>=6.7',
-            'prompt-toolkit==2.0.4'
+            'prompt-toolkit==2.0.4',
+            'pygments==2.2.0'
         ]
     },
     entry_points={

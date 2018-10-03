@@ -18,6 +18,9 @@
 #
 import os
 import sys
+import recommonmark
+from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
 parent_dir = os.path.abspath(os.pardir)
 # examples = os.path.join(parent_dir, "examples")
 example_contrib = os.path.join(parent_dir, "examples/contrib")
@@ -31,7 +34,7 @@ sys.path.append(example_gui)
 # sys.path.extend([examples, example_common, example_contrib, example_gui])
 # sys.path.insert(0, os.path.abspath('../'))
 
-
+github_doc_root = 'https://github.com/riptideio/pymodbus/tree/master/doc/'
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -41,7 +44,7 @@ sys.path.append(example_gui)
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'recommonmark']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,8 +52,12 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+
+source_suffix = ['.rst', '.md']
+# source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -176,4 +183,10 @@ texinfo_documents = [
 ]
 
 
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            'url_resolver': lambda url: github_doc_root + url,
+            'auto_toc_tree_section': 'Contents',
+            }, True)
+    app.add_transform(AutoStructify)
 

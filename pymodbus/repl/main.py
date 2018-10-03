@@ -1,4 +1,6 @@
 """
+Pymodbus REPL Entry point.
+
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
@@ -25,7 +27,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from pymodbus.version import version
 from pymodbus.repl.completer import CmdCompleter, has_selected_completion
-from pymodbus.repl.helper import Result
+from pymodbus.repl.helper import Result, CLIENT_ATTRIBUTES
 
 click.disable_unicode_literals_warning = True
 
@@ -52,12 +54,23 @@ style = Style.from_dict({
 
 
 def bottom_toolbar():
+    """
+    Console toolbar.
+    :return:
+    """
     return HTML('Press <b><style bg="ansired">CTRL+D or exit </style></b>'
                 ' to exit! Type "help" for list of available commands')
 
 
 class CaseInsenstiveChoice(click.Choice):
+    """
+    Case Insensitive choice for click commands and options
+    """
     def convert(self, value, param, ctx):
+        """
+        Convert args to uppercase for evaluation.
+
+        """
         if value is None:
             return None
         return super(CaseInsenstiveChoice, self).convert(
@@ -65,6 +78,9 @@ class CaseInsenstiveChoice(click.Choice):
 
 
 class NumericChoice(click.Choice):
+    """
+    Numeric choice for click arguments and options.
+    """
     def __init__(self, choices, typ):
         self.typ = typ
         super(NumericChoice, self).__init__(choices)
@@ -85,11 +101,13 @@ class NumericChoice(click.Choice):
 
 
 def cli(client):
-
     kb = KeyBindings()
+
     @kb.add('c-space')
     def _(event):
-        """Initialize autocompletion, or select the next completion. """
+        """
+        Initialize autocompletion, or select the next completion.
+        """
         buff = event.app.current_buffer
         if buff.complete_state:
             buff.complete_next()
@@ -147,7 +165,7 @@ def cli(client):
         return kwargs, execute
 
     session = PromptSession(lexer=PygmentsLexer(PythonLexer),
-                            completer=CmdCompleter(), style=style,
+                            completer=CmdCompleter(client), style=style,
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
                             key_bindings=kb,
@@ -172,17 +190,19 @@ def cli(client):
             elif text.strip().lower() == 'exit':
                 raise EOFError()
             elif text.strip().lower().startswith("client."):
-                with client:
-                    try:
-                        text = text.strip().split()
-                        cmd = text[0].split(".")[1]
-                        args = text[1:]
-                        kwargs, execute = _process_args(args, string=False)
-                        if execute:
+                try:
+                    text = text.strip().split()
+                    cmd = text[0].split(".")[1]
+                    args = text[1:]
+                    kwargs, execute = _process_args(args, string=False)
+                    if execute:
+                        if text[0] in CLIENT_ATTRIBUTES:
+                            result = Result(getattr(client, cmd))
+                        else:
                             result = Result(getattr(client, cmd)(**kwargs))
-                            result.print_result()
-                    except Exception as e:
-                        click.secho(repr(e), fg='red')
+                        result.print_result()
+                except Exception as e:
+                    click.secho(repr(e), fg='red')
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()
@@ -236,8 +256,7 @@ def tcp(ctx, host, port):
     cli(client)
 
 
-
-@main.command("rtu")
+@main.command("serial")
 @click.pass_context
 @click.option(
     "--method",
@@ -315,8 +334,8 @@ def tcp(ctx, host, port):
     default=2,
     type=float
 )
-def rtu(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
-        rtscts, dsrdtr, timeout, write_timeout):
+def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
+           rtscts, dsrdtr, timeout, write_timeout):
     from pymodbus.repl.client import ModbusSerialClient
     client = ModbusSerialClient(method=method,
                                 port=port,

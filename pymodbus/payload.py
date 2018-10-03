@@ -331,7 +331,7 @@ class BinaryPayloadDecoder(object):
         :return:
         """
         handle = make_byte_string(handle)
-        wc = WC.get(fstring.lower())//2
+        wc = WC.get(fstring.lower()) // 2
         up = "!{}H".format(wc)
         handle = unpack(up, handle)
         if self._wordorder == Endian.Little:
@@ -340,8 +340,8 @@ class BinaryPayloadDecoder(object):
         # Repack as unsigned Integer
         pk = self._byteorder + 'H'
         handle = [pack(pk, p) for p in handle]
+        _logger.debug(handle)
         handle = b''.join(handle)
-        _logger.debug(unicode_string(handle))
         return handle
 
     def reset(self):

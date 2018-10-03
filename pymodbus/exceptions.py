@@ -26,12 +26,13 @@ class ModbusException(Exception):
 class ModbusIOException(ModbusException):
     ''' Error resulting from data i/o '''
 
-    def __init__(self, string=""):
+    def __init__(self, string="", function_code=None):
         ''' Initialize the exception
         :param string: The message to append to the error
         '''
-        message = "[Input/Output] %s" % string
-        ModbusException.__init__(self, message)
+        self.fcode = function_code
+        self.message = "[Input/Output] %s" % string
+        ModbusException.__init__(self, self.message)
 
 
 class ParameterException(ModbusException):

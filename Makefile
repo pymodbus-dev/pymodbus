@@ -47,7 +47,7 @@ tox: install
 
 docs: install
 	@pip install --quiet --requirement=requirements-docs.txt
-	@cd doc && make html
+	@cd doc && make clean && make html
 
 publish: install
 	git push origin && git push --tags origin

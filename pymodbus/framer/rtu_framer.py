@@ -274,11 +274,6 @@ class ModbusRtuFramer(ModbusFramer):
                     _logger.debug("Sleeping")
                     time.sleep(self.client.silent_interval)
         size = self.client.send(message)
-        # if size:
-        #     _logger.debug("Changing transaction state from 'SENDING' "
-        #                   "to 'WAITING FOR REPLY'")
-        #     self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-
         self.client.last_frame_end = round(time.time(), 6)
         return size
 

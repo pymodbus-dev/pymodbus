@@ -512,15 +512,22 @@ class ModbusSerialClient(BaseModbusClient):
         return 0
 
     def _wait_for_data(self):
+        size = 0
+        more_data = False
         if self.timeout is not None and self.timeout != 0:
-            condition = partial(lambda start, timeout: (time.time() - start) <= timeout, timeout=self.timeout)
+            condition = partial(lambda start, timeout:
+                                (time.time() - start) <= timeout,
+                                timeout=self.timeout)
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
         while condition(start):
-            size = self._in_waiting()
-            if size:
+            avaialble = self._in_waiting()
+            if (more_data and not avaialble) or (more_data and avaialble == size):
                 break
+            if avaialble and avaialble != size:
+                more_data = True
+                size = avaialble
             time.sleep(0.01)
         return size
 

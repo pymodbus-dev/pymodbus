@@ -125,7 +125,7 @@ def run_binary_payload_ex():
     print(result.registers)
     print("\n")
     decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                 byteorder=Endian.Little,
+                                                 byteorder=Endian.Big,
                                                  wordorder=Endian.Little)
 
     assert decoder._byteorder == builder._byteorder, \

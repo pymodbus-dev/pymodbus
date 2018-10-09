@@ -108,7 +108,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         query = self._table.select(and_(
             self._table.c.type == type,
             self._table.c.index >= offset,
-            self._table.c.index <= offset + count)
+            self._table.c.index <= offset + count - 1)
         )
         query = query.order_by(self._table.c.index.asc())
         result = self._connection.execute(query).fetchall()
@@ -175,6 +175,6 @@ class SqlSlaveContext(IModbusSlaveContext):
         query = self._table.select(and_(
             self._table.c.type == type,
             self._table.c.index >= offset,
-            self._table.c.index <= offset + count))
-        result = self._connection.execute(query)
-        return result.rowcount == count
+            self._table.c.index <= offset + count - 1))
+        result = self._connection.execute(query).fetchall()
+        return len(result) == count

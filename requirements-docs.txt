@@ -5,6 +5,7 @@ pyasn1==0.4.2       # Required to parse some files
 pyserial-asyncio==0.4.0;python_version>="3.4"
 pyserial==3.4       # Required to parse some files
 redis==2.10.6       # Required to parse some files
+recommonmark==0.4.0
 Sphinx==1.6.5
 sphinx-rtd-theme==0.2.4
 SQLAlchemy==1.1.15  # Required to parse some files

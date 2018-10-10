@@ -132,9 +132,12 @@ def test_send_packet(rtu_framer):
     client.state = ModbusTransactionState.TRANSACTION_COMPLETE
     client.silent_interval = 1
     client.last_frame_end = 1
+    client.timeout = 0.25
     client.idle_time.return_value = 1
     client.send.return_value = len(message)
     rtu_framer.client = client
+    assert rtu_framer.sendPacket(message) == len(message)
+    client.state = ModbusTransactionState.PROCESSING_REPLY
     assert rtu_framer.sendPacket(message) == len(message)
 
 

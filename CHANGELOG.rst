@@ -1,3 +1,12 @@
+Version 2.1.0
+-----------------------------------------------------------
+* Fix Issues with Serial client where in partial data was read when the response size is unknown.
+* Fix Infinite sleep loop in RTU Framer.
+* Add pygments as extra requirement for repl.
+* Add support to modify modbus client attributes via repl.
+* Update modbus repl documentation.
+* More verbose logs for repl.
+
 Version 2.0.1
 -----------------------------------------------------------
 * Fix unicode decoder error with BinaryPayloadDecoder in some platforms
@@ -36,7 +45,7 @@ Version 1.5.1
 * Added REPR statements for all syncchronous clients
 * Added `isError` method to exceptions, Any response received can be tested for success before proceeding.
 
-    """
+.. code-block:: python
 
     res = client.read_holding_registers(...)
     if not res.isError():

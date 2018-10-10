@@ -103,9 +103,9 @@ class ModbusRequest(ModbusPDU):
         :param exception: The exception to return
         :raises: An exception response
         """
-        _logger.error("Exception Response F(%d) E(%d)" %
-                (self.function_code, exception))
-        return ExceptionResponse(self.function_code, exception)
+        exc = ExceptionResponse(self.function_code, exception)
+        _logger.error(exc)
+        return exc
 
 
 class ModbusResponse(ModbusPDU):

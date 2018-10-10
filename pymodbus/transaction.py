@@ -101,7 +101,6 @@ class ModbusTransactionManager(object):
 
         return None
 
-
     def execute(self, request):
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -175,7 +174,8 @@ class ModbusTransactionManager(object):
                         last_exception = last_exception or (
                             "No Response received from the remote unit"
                             "/Unable to decode response")
-                        response = ModbusIOException(last_exception)
+                        response = ModbusIOException(last_exception,
+                                                     request.function_code)
                 if hasattr(self.client, "state"):
                     _logger.debug("Changing transaction state from "
                                   "'PROCESSING REPLY' to "

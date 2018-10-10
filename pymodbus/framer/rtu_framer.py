@@ -92,7 +92,7 @@ class ModbusRtuFramer(ModbusFramer):
             crc = self._buffer[frame_size - 2:frame_size]
             crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
             return checkCRC(data, crc_val)
-        except (IndexError, KeyError):
+        except (IndexError, KeyError, struct.error):
             return False
 
     def advanceFrame(self):
@@ -197,7 +197,7 @@ class ModbusRtuFramer(ModbusFramer):
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
         for complete messages, and once found, will process all that
-        exist.  This handles the case when we read N + 1 or 1 / N
+        exist.  This handles the case when we read N + 1 or 1 // N
         messages at a time instead of 1.
 
         The processed and decoded messages are pushed to the callback
@@ -244,9 +244,8 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: Message to be sent over the bus
         :return:
         """
-        # _logger.debug("Current transaction state - {}".format(
-        #     ModbusTransactionState.to_string(self.client.state))
-        # )
+        start = time.time()
+        timeout = start + self.client.timeout
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 ts = round(time.time(), 6)
@@ -254,7 +253,7 @@ class ModbusRtuFramer(ModbusFramer):
                               "Current Time stamp - {}".format(
                     self.client.last_frame_end, ts)
                 )
-                
+
                 if self.client.last_frame_end:
                     idle_time = self.client.idle_time()
                     if round(ts - idle_time, 6) <= self.client.silent_interval:
@@ -268,14 +267,14 @@ class ModbusRtuFramer(ModbusFramer):
                     time.sleep(self.client.silent_interval)
                 self.client.state = ModbusTransactionState.IDLE
             else:
-                _logger.debug("Sleeping")
-                time.sleep(self.client.silent_interval)
+                if time.time() > timeout:
+                    _logger.debug("Spent more time than the read time out, "
+                                  "resetting the transaction to IDLE")
+                    self.client.state = ModbusTransactionState.IDLE
+                else:
+                    _logger.debug("Sleeping")
+                    time.sleep(self.client.silent_interval)
         size = self.client.send(message)
-        # if size:
-        #     _logger.debug("Changing transaction state from 'SENDING' "
-        #                   "to 'WAITING FOR REPLY'")
-        #     self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-
         self.client.last_frame_end = round(time.time(), 6)
         return size
 

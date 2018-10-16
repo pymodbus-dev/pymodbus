@@ -534,6 +534,7 @@ class ModbusSerialClient(BaseModbusClient):
         start = time.time()
         while condition(start):
             avaialble = self._in_waiting()
+            _logger.debug("Available in read buffer - {}".format(avaialble))
             if (more_data and not avaialble) or (more_data and avaialble == size):
                 break
             if avaialble and avaialble != size:

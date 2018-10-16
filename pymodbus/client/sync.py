@@ -473,7 +473,8 @@ class ModbusSerialClient(BaseModbusClient):
             _logger.error(msg)
             self.close()
         if self.method == "rtu":
-            self.socket.interCharTimeout = self.inter_char_timeout
+            if(self.socket):
+                self.socket.interCharTimeout = self.inter_char_timeout
             self.last_frame_end = None
         return self.socket is not None
 

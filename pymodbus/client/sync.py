@@ -415,6 +415,8 @@ class ModbusSerialClient(BaseModbusClient):
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout between serial requests (default 3s)
+        :param strict:  Use Inter char timeout for baudrates <= 19200 (adhere
+        to modbus standards)
         """
         self.method = method
         self.socket = None
@@ -427,6 +429,7 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        self._strict = kwargs.get("strict", True)
         self.last_frame_end = None
         if self.method == "rtu":
             if self.baudrate > 19200:
@@ -473,7 +476,8 @@ class ModbusSerialClient(BaseModbusClient):
             _logger.error(msg)
             self.close()
         if self.method == "rtu":
-            self.socket.interCharTimeout = self.inter_char_timeout
+            if self._strict:
+                self.socket.interCharTimeout = self.inter_char_timeout
             self.last_frame_end = None
         return self.socket is not None
 

@@ -56,6 +56,12 @@ def run_sync_client():
     # * retries - Specify how many retries to allow per transaction (default=3)
     # * retry_on_empty - Is an empty response a retry (default = False)
     # * source_address - Specifies the TCP source address to bind to
+    # * strict - Applicable only for Modbus RTU clients.
+    #            Adheres to modbus protocol for timing restrictions
+    #            (default = True).
+    #            Setting this to False would disable the inter char timeout
+    #            restriction (t1.5) for Modbus RTU
+    #
     #
     # Here is an example of using these options::
     #

@@ -1,3 +1,7 @@
+Version 2.1.1
+-----------------------------------------------------------
+* Provide an option to disable inter char timeouts with Modbus RTU.
+
 Version 2.1.0
 -----------------------------------------------------------
 * Fix Issues with Serial client where in partial data was read when the response size is unknown.

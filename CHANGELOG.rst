@@ -49,9 +49,13 @@ Version 1.5.1
 
     res = client.read_holding_registers(...)
     if not res.isError():
+
         # proceed
+ 
     else:
         # handle error or raise
+
+    """
 
 * Add examples for MEI read device information request
 

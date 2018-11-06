@@ -1,105 +1,172 @@
-[![Build Status](https://travis-ci.org/riptideio/pymodbus.svg?branch=master)](https://travis-ci.org/riptideio/pymodbus)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pymodbus_dev/Lobby)
-[![Documentation Status](https://readthedocs.org/projects/pymodbus-n/badge/?version=latest)](http://pymodbus-n.readthedocs.io/en/latest/?badge=latest)
+PyModbus - A Python Modbus Stack
+================================
 
-### Summary
+[![image](https://travis-ci.org/riptideio/pymodbus.svg?branch=master)](https://travis-ci.org/riptideio/pymodbus)
+
+[![image](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pymodbus_dev/Lobby)
+
+[![Documentation Status](https://readthedocs.org/projects/pymodbus/badge/?version=latest)](http://pymodbus.readthedocs.io/en/async/?badge=latest)
+
+[![Downloads](http://pepy.tech/badge/pymodbus)](http://pepy.tech/project/pymodbus)
+
+> **important**
+>
+> **Note This is a Major release and might affect your existing Async
+> client implementation. Refer examples on how to use the latest async
+> clients.**
+
+Summary
+-------
 
 Pymodbus is a full Modbus protocol implementation using twisted for its
-asynchronous communications core.  It can also be used without any third
-party dependencies (aside from pyserial) if a more lightweight project is
-needed.  Furthermore, it should work fine under any python version > 2.7
+asynchronous communications core. It can also be used without any third
+party dependencies (aside from pyserial) if a more lightweight project
+is needed. Furthermore, it should work fine under any python version \>
+2.7 (including python 3+)
+
+Features
+--------
 
 ### Client Features
 
-  * Full read/write protocol on discrete and register
-  * Most of the extended protocol (diagnostic/file/pipe/setting/information)
-  * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by twisted) and synchronous versions
-  * Payload builder/decoder utilities
-
+> -   Full read/write protocol on discrete and register
+> -   Most of the extended protocol
+>     (diagnostic/file/pipe/setting/information)
+> -   TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
+> -   asynchronous(powered by twisted/tornado/asyncio) and synchronous
+>     versions
+> -   Payload builder/decoder utilities
+> -   Pymodbus REPL for quick tests
 
 ### Server Features
 
-  * Can function as a fully implemented modbus server
-  * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by twisted) and synchronous versions
-  * Full server control context (device information, counters, etc)
-  * A number of backing contexts (database, redis, a slave device)
+> -   Can function as a fully implemented modbus server
+> -   TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
+> -   asynchronous(powered by twisted) and synchronous versions
+> -   Full server control context (device information, counters, etc)
+> -   A number of backing contexts (database, redis, sqlite, a slave
+>     device)
 
-### Use Cases
+Use Cases
+---------
 
 Although most system administrators will find little need for a Modbus
-server on any modern hardware, they may find the need to query devices on
-their network for status (PDU, PDR, UPS, etc).  Since the library is written
-in python, it allows for easy scripting and/or integration into their existing
-solutions.
+server on any modern hardware, they may find the need to query devices
+on their network for status (PDU, PDR, UPS, etc). Since the library is
+written in python, it allows for easy scripting and/or integration into
+their existing solutions.
 
 Continuing, most monitoring software needs to be stress tested against
-hundreds or even thousands of devices (why this was originally written), but
-getting access to that many is unwieldy at best.  The pymodbus server will allow
-a user to test as many devices as their base operating system will allow (*allow*
-in this case means how many Virtual IP addresses are allowed).
+hundreds or even thousands of devices (why this was originally written),
+but getting access to that many is unwieldy at best. The pymodbus server
+will allow a user to test as many devices as their base operating system
+will allow (*allow* in this case means how many Virtual IP addresses are
+allowed).
 
 For more information please browse the project documentation:
-[read the docs](http://readthedocs.org/docs/pymodbus/en/latest/index.html)
 
-### Example Code
+<http://riptideio.github.io/pymodbus/> or
+<http://readthedocs.org/docs/pymodbus/en/latest/index.html>
 
-For those of you that just want to get started fast, here you go::
+Example Code
+------------
 
-```
+For those of you that just want to get started fast, here you go:
+
     from pymodbus.client.sync import ModbusTcpClient
-    
-    client = ModbusClient('127.0.0.1')
+
+    client = ModbusTcpClient('127.0.0.1')
     client.write_coil(1, True)
     result = client.read_coils(1,1)
-    print result.bits[0]
+    print(result.bits[0])
     client.close()
-```
 
 For more advanced examples, check out the examples included in the
 respository. If you have created any utilities that meet a specific
 need, feel free to submit them so others can benefit.
 
-Also, if you have questions, please ask them on the mailing list
-so that others can benefit from the results and so that I can
-trace them. I get a lot of email and sometimes these requests
-get lost in the noise: [google groups](http://groups.google.com/group/pymodbus) or
-[gitter](https://gitter.im/pymodbus_dev/Lobby)
+Also, if you have questions, please ask them on the mailing list so that
+others can benefit from the results and so that I can trace them. I get
+a lot of email and sometimes these requests get lost in the noise:
+<http://groups.google.com/group/pymodbus> or at gitter:
+<https://gitter.im/pymodbus_dev/Lobby>
 
-### Installing
+Pymodbus REPL (Read Evaluate Procee Loop)
+-----------------------------------------
+
+Starting with Pymodbus 2.x, pymodbus library comes with handy Pymodbus
+REPL to quickly run the modbus clients in tcp/rtu modes.
+
+Pymodbus REPL comes with many handy features such as payload decoder to
+directly retrieve the values in desired format and supports all the
+diagnostic function codes directly .
+
+For more info on REPL refer [Pymodbus
+REPL](https://github.com/riptideio/pymodbus/tree/master/pymodbus/repl)
+
+[![image](https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png)](https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o)
+
+Installing
+----------
 
 You can install using pip or easy install by issuing the following
-commands in a terminal window (make sure you have correct
-permissions or a virtualenv currently running)::
+commands in a terminal window (make sure you have correct permissions or
+a virtualenv currently running):
 
     easy_install -U pymodbus
     pip install  -U pymodbus
 
-Otherwise you can pull the trunk source and install from there::
+To Install pymodbus with twisted support run:
+
+    pip install -U pymodbus[twisted]
+
+To Install pymodbus with tornado support run:
+
+    pip install -U pymodbus[tornado]
+
+To Install pymodbus REPL:
+
+    pip install -U pymodbus[repl]
+
+Otherwise you can pull the trunk source and install from there:
 
     git clone git://github.com/bashwork/pymodbus.git
     cd pymodbus
     python setup.py install
 
-Either method will install all the required dependencies
-(at their appropriate versions) for your current python distribution.
+Either method will install all the required dependencies (at their
+appropriate versions) for your current python distribution.
 
-### Current Work In Progress
+If you would like to install pymodbus without the twisted dependency,
+simply edit the setup.py file before running easy\_install and comment
+out all mentions of twisted. It should be noted that without twisted,
+one will only be able to run the synchronized version as the
+asynchronous versions uses twisted for its event loop.
 
-* Add CI support
-* Make PEP-8 compatible and flake8 ready
-* Fixing bugs/feature requests
-* Architecture documentation
-* Functional testing against any reference I can find
-* The remaining edges of the protocol (that I think no one uses)
+Current Work In Progress
+------------------------
 
-### Development Instructions
+Since I don't have access to any live modbus devices anymore it is a bit
+hard to test on live hardware. However, if you would like your device
+tested, I accept devices via mail or by IP address.
 
-The current code base is compatible with both py2 and py3.
-Use make to perform a range of activities
-```
-$ make
+That said, the current work mainly involves polishing the library as I
+get time doing such tasks as:
+
+> -   Make PEP-8 compatible and flake8 ready
+> -   Fixing bugs/feature requests
+> -   Architecture documentation
+> -   Functional testing against any reference I can find
+> -   The remaining edges of the protocol (that I think no one uses)
+> -   Asynchronous clients with support to tornado , asyncio
+
+Development Instructions
+------------------------
+
+The current code base is compatible with both py2 and py3. Use make to
+perform a range of activities
+
+    $ make
        Makefile for pymodbus
 
     Usage:
@@ -110,13 +177,19 @@ $ make
      make test       run the test suite, report coverage
      make tox        run the tests on all Python versions
      make clean      cleanup all temporary files 
-```
-### License Information
+
+Contributing
+------------
+
+Just fork the repo and raise your PR against dev branch.
+
+License Information
+-------------------
 
 Pymodbus is built on top of code developed from/by:
-  * Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
-  * Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
-  * Hynek Petrak <hynek@swac.cz>
-  * Twisted Matrix
+:   -   Copyright (c) 2001-2005 S.W.A.C. GmbH, Germany.
+    -   Copyright (c) 2001-2005 S.W.A.C. Bohemia s.r.o., Czech Republic.
+    -   Hynek Petrak, <https://github.com/HynekPetrak>
+    -   Twisted Matrix
 
 Released under the BSD License

@@ -11,6 +11,7 @@ from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import FifoTransactionManager
 from pymodbus.transaction import DictTransactionManager
+from pymodbus.transaction import LatestTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.client.common import ModbusClientMixin
@@ -42,7 +43,8 @@ class BaseModbusClient(ModbusClientMixin):
         if isinstance(self.framer, ModbusSocketFramer):
             self.transaction = DictTransactionManager(self, **kwargs)
         else:
-            self.transaction = FifoTransactionManager(self, **kwargs)
+            # self.transaction = FifoTransactionManager(self, **kwargs)
+            self.transaction = LatestTransactionManager(self, **kwargs)
         self._debug = False
         self._debugfd = None
 

@@ -18,18 +18,17 @@ from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.compat import iterkeys, byte2int
 
-
 # Python 2 compatibility.
 try:
     TimeoutError
 except NameError:
     TimeoutError = socket.timeout
 
-
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -95,7 +94,7 @@ class ModbusTransactionManager(object):
             return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
         elif isinstance(self.client.framer, ModbusAsciiFramer):
             return self.base_adu_size + 4  # Fcode(2), ExcecptionCode(2)
-        elif isinstance(self.client.framer, (ModbusRtuFramer, 
+        elif isinstance(self.client.framer, (ModbusRtuFramer,
                                              ModbusBinaryFramer)):
             return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
 
@@ -256,7 +255,7 @@ class ModbusTransactionManager(object):
                 else:
                     func_code = -1
 
-                if func_code < 0x80:    # Not an error
+                if func_code < 0x80:  # Not an error
                     if isinstance(self.client.framer, ModbusSocketFramer):
                         # Ommit UID, which is included in header size
                         h_size = self.client.framer._hsize
@@ -436,6 +435,61 @@ class FifoTransactionManager(ModbusTransactionManager):
         _logger.debug("Deleting transaction %d" % tid)
         if self.transactions: self.transactions.pop(0)
 
+
+class LatestTransactionManager(ModbusTransactionManager):
+    """ Implements a transaction for a manager where the
+    results is the latest transaction only.
+    """
+
+    def __init__(self, client, **kwargs):
+        """ Initializes an instance of the ModbusTransactionManager
+
+        :param client: The client socket wrapper
+        """
+        super(LatestTransactionManager, self).__init__(client, **kwargs)
+        self.transactions = []
+
+    def __iter__(self):
+        """ Iterater over the current managed transactions
+
+        :returns: An iterator of the managed transactions
+        """
+        return iter(self.transactions)
+
+    def addTransaction(self, request, tid=None):
+        """ Adds a transaction to the handler
+
+        This holds the requets in case it needs to be resent.
+        After being sent, the request is removed.
+
+        :param request: The request to hold on to
+        :param tid: The overloaded transaction id to use
+        """
+        tid = tid if tid is not None else request.transaction_id
+        _logger.debug("Adding transaction %d" % tid)
+
+        self.transactions.append(request)
+        if len(self.transactions) > 1:
+            self.transactions.pop(0)
+
+    def getTransaction(self, tid):
+        """ Returns a transaction matching the referenced tid
+
+        If the transaction does not exist, None is returned
+
+        :param tid: The transaction to retrieve
+        """
+        return self.transactions.pop(0) if self.transactions else None
+
+    def delTransaction(self, tid):
+        """ Removes a transaction matching the referenced tid
+
+        :param tid: The transaction to remove
+        """
+        _logger.debug("Deleting transaction %d" % tid)
+        if self.transactions: self.transactions.pop(0)
+
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
@@ -443,6 +497,7 @@ class FifoTransactionManager(ModbusTransactionManager):
 __all__ = [
     "FifoTransactionManager",
     "DictTransactionManager",
+    "LatestTransactionManager",
     "ModbusSocketFramer", "ModbusRtuFramer",
     "ModbusAsciiFramer", "ModbusBinaryFramer",
 ]

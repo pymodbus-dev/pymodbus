@@ -6,7 +6,7 @@ from pymodbus.pdu import *
 from pymodbus.transaction import *
 from pymodbus.transaction import (
     ModbusTransactionManager, ModbusSocketFramer, ModbusAsciiFramer,
-    ModbusRtuFramer, ModbusBinaryFramer
+    ModbusRtuFramer, ModbusBinaryFramer, LatestTransactionManager
 )
 from pymodbus.factory import ServerDecoder
 from pymodbus.compat import byte2int
@@ -34,6 +34,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self._binary  = ModbusBinaryFramer(decoder=self.decoder, client=None)
         self._manager = DictTransactionManager(self.client)
         self._queue_manager = FifoTransactionManager(self.client)
+        self._latest_manager = LatestTransactionManager(self.client)
         self._tm = ModbusTransactionManager(self.client)
 
     def tearDown(self):
@@ -169,17 +170,61 @@ class ModbusTransactionTest(unittest.TestCase):
         self.assertEqual(1, self._queue_manager.getNextTID())
 
     def testGetFifoTransactionManagerTransaction(self):
+        """ Test the fifo transaction manager Add two messages into the FIFO, they should be read out in the order
+        added regardless of the transaction id provided"""
+        class Request: pass
+        self._queue_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._queue_manager.getNextTID()
+        handle.message = b"testing1"
+        self._queue_manager.addTransaction(handle)
+        handle2 = Request()
+        handle2.transaction_id = self._queue_manager.getNextTID()
+        handle2.message = b"testing2"
+        self._queue_manager.addTransaction(handle2)
+        result = self._queue_manager.getTransaction(None)
+        self.assertEqual(handle.message, result.message)
+        result = self._queue_manager.getTransaction(None)
+        self.assertEqual(handle2.message, result.message)
+
+    def testDeleteFifoTransactionManagerTransaction(self):
         """ Test the fifo transaction manager """
         class Request: pass
         self._queue_manager.reset()
         handle = Request()
         handle.transaction_id = self._queue_manager.getNextTID()
         handle.message = b"testing"
+
         self._queue_manager.addTransaction(handle)
-        result = self._queue_manager.getTransaction(handle.transaction_id)
+        self._queue_manager.delTransaction(handle.transaction_id)
+        self.assertEqual(None, self._queue_manager.getTransaction(handle.transaction_id))
+
+    # ----------------------------------------------------------------------- #
+    # Latest based transaction manager
+    # ----------------------------------------------------------------------- #
+    def testLatestTransactionManagerTID(self):
+        """ Test the fifo transaction manager TID """
+        for tid in range(1, self._queue_manager.getNextTID() + 10):
+            self.assertEqual(tid+1, self._queue_manager.getNextTID())
+        self._queue_manager.reset()
+        self.assertEqual(1, self._queue_manager.getNextTID())
+
+    def testGetLatestTransactionManagerTransaction(self):
+        """ Test the fifo transaction manager """
+        class Request: pass
+        self._latest_manager.reset()
+        handle = Request()
+        handle.transaction_id = self._latest_manager.getNextTID()
+        handle.message = b"testing1"
+        self._latest_manager.addTransaction(handle)
+        handle = Request()
+        handle.transaction_id = self._latest_manager.getNextTID()
+        handle.message = b"testing2"
+        self._latest_manager.addTransaction(handle)
+        result = self._latest_manager.getTransaction(handle.transaction_id)
         self.assertEqual(handle.message, result.message)
 
-    def testDeleteFifoTransactionManagerTransaction(self):
+    def testDeleteLatestTransactionManagerTransaction(self):
         """ Test the fifo transaction manager """
         class Request: pass
         self._queue_manager.reset()

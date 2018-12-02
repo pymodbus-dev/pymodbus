@@ -36,7 +36,7 @@ _logger = logging.getLogger(__name__)
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
 class ModbusTransactionManager(object):
-    """ Impelements a transaction for a manager
+    """ Implements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::
 
@@ -330,7 +330,7 @@ class ModbusTransactionManager(object):
 
 
 class DictTransactionManager(ModbusTransactionManager):
-    """ Impelements a transaction for a manager where the
+    """ Implements a transaction for a manager where the
     results are keyed based on the supplied transaction id.
     """
 
@@ -385,7 +385,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
 
 class FifoTransactionManager(ModbusTransactionManager):
-    """ Impelements a transaction for a manager where the
+    """ Implements a transaction for a manager where the
     results are returned in a FIFO manner.
     """
 
@@ -438,7 +438,8 @@ class FifoTransactionManager(ModbusTransactionManager):
 
 class LatestTransactionManager(ModbusTransactionManager):
     """ Implements a transaction for a manager where the
-    results is the latest transaction only.
+    results is the latest transaction only. This can be used where only the
+    latest transaction matters.
     """
 
     def __init__(self, client, **kwargs):
@@ -459,7 +460,7 @@ class LatestTransactionManager(ModbusTransactionManager):
     def addTransaction(self, request, tid=None):
         """ Adds a transaction to the handler
 
-        This holds the requets in case it needs to be resent.
+        This holds the requests in case it needs to be resent.
         After being sent, the request is removed.
 
         :param request: The request to hold on to
@@ -467,27 +468,25 @@ class LatestTransactionManager(ModbusTransactionManager):
         """
         tid = tid if tid is not None else request.transaction_id
         _logger.debug("Adding transaction %d" % tid)
-
         self.transactions.append(request)
-        if len(self.transactions) > 1:
-            self.transactions.pop(0)
 
     def getTransaction(self, tid):
         """ Returns a transaction matching the referenced tid
 
         If the transaction does not exist, None is returned
 
-        :param tid: The transaction to retrieve
+        As no tids are stored, retrieve the latest transaction
+        :param tid: The transaction to retrieve: Not used
         """
-        return self.transactions.pop(0) if self.transactions else None
+        return self.transactions.pop() if self.transactions else None
 
     def delTransaction(self, tid):
         """ Removes a transaction matching the referenced tid
-
+        As there is no tid stored, clear the entire list
         :param tid: The transaction to remove
         """
         _logger.debug("Deleting transaction %d" % tid)
-        if self.transactions: self.transactions.pop(0)
+        self.transactions.clear()
 
 
 # --------------------------------------------------------------------------- #

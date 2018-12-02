@@ -6,7 +6,7 @@ from pymodbus.pdu import *
 from pymodbus.transaction import *
 from pymodbus.transaction import (
     ModbusTransactionManager, ModbusSocketFramer, ModbusAsciiFramer,
-    ModbusRtuFramer, ModbusBinaryFramer, LatestTransactionManager
+    ModbusRtuFramer, ModbusBinaryFramer
 )
 from pymodbus.factory import ServerDecoder
 from pymodbus.compat import byte2int

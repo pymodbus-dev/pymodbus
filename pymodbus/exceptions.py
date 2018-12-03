@@ -1,18 +1,18 @@
-'''
+"""
 Pymodbus Exceptions
 --------------------
 
 Custom exceptions to be used in the Modbus code.
-'''
+"""
 
 
 class ModbusException(Exception):
-    ''' Base modbus exception '''
+    """ Base modbus exception """
 
     def __init__(self, string):
-        ''' Initialize the exception
+        """ Initialize the exception
         :param string: The message to append to the error
-        '''
+        """
         self.string = string
 
     def __str__(self):
@@ -24,61 +24,61 @@ class ModbusException(Exception):
 
 
 class ModbusIOException(ModbusException):
-    ''' Error resulting from data i/o '''
+    """ Error resulting from data i/o """
 
     def __init__(self, string="", function_code=None):
-        ''' Initialize the exception
+        """ Initialize the exception
         :param string: The message to append to the error
-        '''
+        """
         self.fcode = function_code
         self.message = "[Input/Output] %s" % string
         ModbusException.__init__(self, self.message)
 
 
 class ParameterException(ModbusException):
-    ''' Error resulting from invalid parameter '''
+    """ Error resulting from invalid parameter """
 
     def __init__(self, string=""):
-        ''' Initialize the exception
+        """ Initialize the exception
 
         :param string: The message to append to the error
-        '''
+        """
         message = "[Invalid Parameter] %s" % string
         ModbusException.__init__(self, message)
 
 
 class NoSuchSlaveException(ModbusException):
-    ''' Error resulting from making a request to a slave
-    that does not exist '''
+    """ Error resulting from making a request to a slave
+    that does not exist """
 
     def __init__(self, string=""):
-        ''' Initialize the exception
+        """ Initialize the exception
 
         :param string: The message to append to the error
-        '''
+        """
         message = "[No Such Slave] %s" % string
         ModbusException.__init__(self, message)
 
 
 class NotImplementedException(ModbusException):
-    ''' Error resulting from not implemented function '''
+    """ Error resulting from not implemented function """
 
     def __init__(self, string=""):
-        ''' Initialize the exception
+        """ Initialize the exception
         :param string: The message to append to the error
-        '''
+        """
         message = "[Not Implemented] %s" % string
         ModbusException.__init__(self, message)
 
 
 class ConnectionException(ModbusException):
-    ''' Error resulting from a bad connection '''
+    """ Error resulting from a bad connection """
 
     def __init__(self, string=""):
-        ''' Initialize the exception
+        """ Initialize the exception
 
         :param string: The message to append to the error
-        '''
+        """
         message = "[Connection] %s" % string
         ModbusException.__init__(self, message)
 
@@ -89,20 +89,30 @@ class InvalidMessageReceivedException(ModbusException):
     """
 
     def __init__(self, string=""):
-        ''' Initialize the exception
+        """ Initialize the exception
 
         :param string: The message to append to the error
-        '''
+        """
         message = "[Invalid Message] %s" % string
         ModbusException.__init__(self, message)
 
 
-#---------------------------------------------------------------------------#
+class MessageRegisterException(ModbusException):
+    """
+    Error resulting from failing to register a custom message request/response
+    """
+    def __init__(self, string=""):
+        message = '[Error registering message] %s' % string
+        ModbusException.__init__(self, message)
+
+
+# --------------------------------------------------------------------------- #
 # Exported symbols
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 __all__ = [
     "ModbusException", "ModbusIOException",
     "ParameterException", "NotImplementedException",
     "ConnectionException", "NoSuchSlaveException",
-    "InvalidMessageReceivedException"
+    "InvalidMessageReceivedException",
+    "MessageRegisterException"
 ]

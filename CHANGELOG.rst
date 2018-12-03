@@ -1,6 +1,7 @@
 Version 2.1.1
 -----------------------------------------------------------
 * Provide an option to disable inter char timeouts with Modbus RTU.
+* Add support to register custom requests in clients and server instances.
 
 Version 2.1.0
 -----------------------------------------------------------

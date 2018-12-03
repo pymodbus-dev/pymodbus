@@ -157,6 +157,14 @@ class BaseModbusClient(ModbusClientMixin):
             self._logger.debug(hexlify_packets(data))
             self._logger.exception(e)
 
+    def register(self, function):
+        """
+        Registers a function and sub function class with the decoder
+        :param function: Custom function class to register
+        :return:
+        """
+        self.framer.decoder.register(function)
+
     def __str__(self):
         """ Builds a string representation of the connection
 

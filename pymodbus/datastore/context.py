@@ -88,6 +88,17 @@ class ModbusSlaveContext(IModbusSlaveContext):
         _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
 
+    def register(self, fc, fx, datablock=None):
+        """
+        Registers a datablock with the slave context
+        :param fc: function code (int)
+        :param fx: string representation of function code (e.g 'cf' )
+        :param datablock: datablock to associate with this function code
+        :return:
+        """
+        self.store[fx] = datablock or ModbusSequentialDataBlock.create()
+        self._IModbusSlaveContext__fx_mapper[fc] = fx
+
 
 class ModbusServerContext(object):
     ''' This represents a master collection of slave contexts.

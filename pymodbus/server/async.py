@@ -154,7 +154,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         a missing slave
         """
         framer = framer or ModbusSocketFramer
-        self.framer = framer(decoder=ServerDecoder())
+        self.decoder = ServerDecoder()
+        self.framer = framer(self.decoder)
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
@@ -230,7 +231,8 @@ def _is_main_thread():
 
 
 def StartTcpServer(context, identity=None, address=None,
-                   console=False, defer_reactor_run=False, **kwargs):
+                   console=False, defer_reactor_run=False, custom_functions=[],
+                   **kwargs):
     """
     Helper method to start the Modbus Async TCP server
 
@@ -242,12 +244,16 @@ def StartTcpServer(context, identity=None, address=None,
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
     of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     """
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        factory.decoder.register(f)
     if console:
         InstallManagementConsole({'factory': factory})
 
@@ -258,7 +264,7 @@ def StartTcpServer(context, identity=None, address=None,
 
 
 def StartUdpServer(context, identity=None, address=None,
-                   defer_reactor_run=False, **kwargs):
+                   defer_reactor_run=False, custom_functions=[], **kwargs):
     """
     Helper method to start the Modbus Async Udp server
 
@@ -269,12 +275,16 @@ def StartUdpServer(context, identity=None, address=None,
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
     of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     """
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server  = ModbusUdpProtocol(context, framer, identity, **kwargs)
+    server = ModbusUdpProtocol(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        server.decoder.register(f)
 
     _logger.info("Starting Modbus UDP Server on %s:%s" % address)
     reactor.listenUDP(address[1], server, interface=address[0])
@@ -282,10 +292,8 @@ def StartUdpServer(context, identity=None, address=None,
         reactor.run(installSignalHandlers=_is_main_thread())
 
 
-def StartSerialServer(context, identity=None,
-                      framer=ModbusAsciiFramer,
-                      defer_reactor_run=False,
-                      **kwargs):
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
+                      defer_reactor_run=False, custom_functions=[], **kwargs):
     """
     Helper method to start the Modbus Async Serial server
 
@@ -299,6 +307,9 @@ def StartSerialServer(context, identity=None,
     missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
     of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
+
     """
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
@@ -309,6 +320,10 @@ def StartSerialServer(context, identity=None,
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        factory.decoder.register(f)
+    if console:
+        InstallManagementConsole({'factory': factory})
     if console:
         InstallManagementConsole({'factory': factory})
 

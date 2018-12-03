@@ -436,39 +436,11 @@ class FifoTransactionManager(ModbusTransactionManager):
         if self.transactions: self.transactions.pop(0)
 
 
-class LatestTransactionManager(ModbusTransactionManager):
+class LatestTransactionManager(FifoTransactionManager):
     """ Implements a transaction for a manager where the
     results is the latest transaction only. This can be used where only the
     latest transaction matters.
     """
-
-    def __init__(self, client, **kwargs):
-        """ Initializes an instance of the ModbusTransactionManager
-
-        :param client: The client socket wrapper
-        """
-        super(LatestTransactionManager, self).__init__(client, **kwargs)
-        self.transactions = []
-
-    def __iter__(self):
-        """ Iterater over the current managed transactions
-
-        :returns: An iterator of the managed transactions
-        """
-        return iter(self.transactions)
-
-    def addTransaction(self, request, tid=None):
-        """ Adds a transaction to the handler
-
-        This holds the requests in case it needs to be resent.
-        After being sent, the request is removed.
-
-        :param request: The request to hold on to
-        :param tid: The overloaded transaction id to use
-        """
-        tid = tid if tid is not None else request.transaction_id
-        _logger.debug("Adding transaction %d" % tid)
-        self.transactions.append(request)
 
     def getTransaction(self, tid):
         """ Returns a transaction matching the referenced tid
@@ -486,7 +458,7 @@ class LatestTransactionManager(ModbusTransactionManager):
         :param tid: The transaction to remove
         """
         _logger.debug("Deleting transaction %d" % tid)
-        self.transactions.clear()
+        self.transactions[:] = []
 
 
 # --------------------------------------------------------------------------- #

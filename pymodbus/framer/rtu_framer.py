@@ -221,6 +221,7 @@ class ModbusRtuFramer(ModbusFramer):
                 else:
                     _logger.debug("Not a valid unit id - {}, "
                                   "ignoring!!".format(self._header['uid']))
+            else:
                 self.resetFrame()
         else:
             _logger.debug("Frame - [{}] not ready".format(data))

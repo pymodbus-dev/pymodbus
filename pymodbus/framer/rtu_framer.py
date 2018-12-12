@@ -186,6 +186,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param result: The response packet
         """
         result.unit_id = self._header['uid']
+        result.transaction_id = self._header['uid']
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -221,6 +222,9 @@ class ModbusRtuFramer(ModbusFramer):
                     _logger.debug("Not a valid unit id - {}, "
                                   "ignoring!!".format(self._header['uid']))
                     self.resetFrame()
+            else:
+                _logger.debug("Frame check failed, ignoring!!")
+                self.resetFrame()
         else:
             _logger.debug("Frame - [{}] not ready".format(data))
 
@@ -235,6 +239,7 @@ class ModbusRtuFramer(ModbusFramer):
                              message.unit_id,
                              message.function_code) + data
         packet += struct.pack(">H", computeCRC(packet))
+        message.transaction_id = message.unit_id  # Ensure that transaction is actually the unit id for serial comms
         return packet
 
     def sendPacket(self, message):

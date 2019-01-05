@@ -255,8 +255,8 @@ class ModbusTcpClient(BaseModbusClient):
             recv_size = size
 
         data = b''
-        begin = time.time()
         while recv_size > 0:
+            begin = time.time()
             ready = select.select([self.socket], [], [], timeout)
             if ready[0]:
                 data += self.socket.recv(recv_size)

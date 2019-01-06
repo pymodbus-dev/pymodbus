@@ -37,3 +37,4 @@ test/__pycache__/
 /doc/_build/
 .pytest_cache/
 **/.pymodhis
+.history

@@ -38,3 +38,4 @@ test/__pycache__/
 .pytest_cache/
 **/.pymodhis
 .history
+.reviewboardrc

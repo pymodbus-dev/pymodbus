@@ -126,7 +126,10 @@ class ModbusTransactionManager(object):
                             response_pdu_size = response_pdu_size * 2
                         if response_pdu_size:
                             expected_response_length = self._calculate_response_length(response_pdu_size)
-                if request.unit_id in self._no_response_devices:
+                if request.unit_id == 0:
+                    full = True
+                    expected_response_length = 0
+                elif request.unit_id in self._no_response_devices:
                     full = True
                 else:
                     full = False
@@ -161,21 +164,24 @@ class ModbusTransactionManager(object):
                         # Remove entry
                         self._no_response_devices.remove(request.unit_id)
                         break
-                addTransaction = partial(self.addTransaction,
-                                         tid=request.transaction_id)
-                self.client.framer.processIncomingPacket(response,
-                                                         addTransaction,
-                                                         request.unit_id)
-                response = self.getTransaction(request.transaction_id)
-                if not response:
-                    if len(self.transactions):
-                        response = self.getTransaction(tid=0)
-                    else:
-                        last_exception = last_exception or (
-                            "No Response received from the remote unit"
-                            "/Unable to decode response")
-                        response = ModbusIOException(last_exception,
-                                                     request.function_code)
+                if expected_response_length > 0:
+                    addTransaction = partial(self.addTransaction,
+                                             tid=request.transaction_id)
+                    self.client.framer.processIncomingPacket(response,
+                                                             addTransaction,
+                                                             request.unit_id)
+                    response = self.getTransaction(request.transaction_id)
+                    if not response:
+                        if len(self.transactions):
+                            response = self.getTransaction(tid=0)
+                        else:
+                            last_exception = last_exception or (
+                                "No Response received from the remote unit"
+                                "/Unable to decode response")
+                            response = ModbusIOException(last_exception,
+                                                         request.function_code)
+                else:
+                    _logger.debug("No response expected when sending to broadcast address 0")
                 if hasattr(self.client, "state"):
                     _logger.debug("Changing transaction state from "
                                   "'PROCESSING REPLY' to "

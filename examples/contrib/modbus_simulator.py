@@ -8,7 +8,7 @@ import pickle
 from optparse import OptionParser
 from twisted.internet import reactor
 
-from pymodbus.server.async import StartTcpServer
+from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 
 # -------------------------------------------------------------------------- #

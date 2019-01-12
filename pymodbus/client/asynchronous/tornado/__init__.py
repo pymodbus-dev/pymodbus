@@ -15,8 +15,8 @@ from tornado.ioloop import IOLoop
 from tornado.iostream import IOStream
 from tornado.iostream import BaseIOStream
 
-from pymodbus.client.async.mixins import (AsyncModbusClientMixin,
-                                          AsyncModbusSerialClientMixin)
+from pymodbus.client.asynchronous.mixins import (AsyncModbusClientMixin,
+                                                 AsyncModbusSerialClientMixin)
 from pymodbus.exceptions import ConnectionException
 from pymodbus.compat import byte2int
 
@@ -287,7 +287,7 @@ class SerialIOStream(BaseIOStream):
 
 class AsyncModbusSerialClient(BaseTornadoSerialClient):
     """
-    Tornado based async serial client
+    Tornado based asynchronous serial client
     """
     def get_socket(self):
         """

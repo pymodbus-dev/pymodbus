@@ -10,7 +10,7 @@ a device-mapping file.
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
-from pymodbus.server.async import StartTcpServer
+from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext

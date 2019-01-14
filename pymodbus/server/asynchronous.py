@@ -238,10 +238,11 @@ def StartTcpServer(context, identity=None, address=None,
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param console: A flag indicating if you want the debug console
-    :param ignore_missing_slaves: True to not send errors on a request \
-    to a missing slave
-    :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    :param ignore_missing_slaves: True to not send errors on a request
+           to a missing slave
+    :param defer_reactor_run: True/False defer running reactor.run() as part
+           of starting server, to be explictly started by the user
+
     """
     from twisted.internet import reactor
 
@@ -265,10 +266,10 @@ def StartUdpServer(context, identity=None, address=None,
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
-    :param ignore_missing_slaves: True to not send errors on a request \
-    to a missing slave
-    :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    :param ignore_missing_slaves: True to not send errors on a request
+           to a missing slave
+    :param defer_reactor_run: True/False defer running reactor.run() as part
+           of starting server, to be explictly started by the user
     """
     from twisted.internet import reactor
 
@@ -295,10 +296,11 @@ def StartSerialServer(context, identity=None,
     :param port: The serial port to attach to
     :param baudrate: The baud rate to use for the serial device
     :param console: A flag indicating if you want the debug console
-    :param ignore_missing_slaves: True to not send errors on a request to a \
-    missing slave
-    :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    :param ignore_missing_slaves: True to not send errors on a request to a
+           missing slave
+    :param defer_reactor_run: True/False defer running reactor.run() as part
+           of starting server, to be explictly started by the user
+
     """
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort

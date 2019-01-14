@@ -1,20 +1,20 @@
 """
-Factory to create async serial clients based on twisted/tornado/asyncio
+Factory to create asynchronous serial clients based on twisted/tornado/asyncio
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
 
-from pymodbus.client.async import schedulers
-from pymodbus.client.async.thread import EventLoopThread
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.thread import EventLoopThread
 
 LOGGER = logging.getLogger(__name__)
 
 
 def reactor_factory(port, framer, **kwargs):
     """
-    Factory to create twisted serial async client
+    Factory to create twisted serial asynchronous client
     :param port: Serial port
     :param framer: Modbus Framer
     :param kwargs:
@@ -58,7 +58,7 @@ def reactor_factory(port, framer, **kwargs):
 
 def io_loop_factory(port=None, framer=None, **kwargs):
     """
-    Factory to create Tornado based async serial clients
+    Factory to create Tornado based asynchronous serial clients
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs:
@@ -66,7 +66,7 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     """
 
     from tornado.ioloop import IOLoop
-    from pymodbus.client.async.tornado import (AsyncModbusSerialClient as
+    from pymodbus.client.asynchronous.tornado import (AsyncModbusSerialClient as
                                                Client)
 
     ioloop = IOLoop()
@@ -81,15 +81,15 @@ def io_loop_factory(port=None, framer=None, **kwargs):
 
 def async_io_factory(port=None, framer=None, **kwargs):
     """
-    Factory to create asyncio based async serial clients
+    Factory to create asyncio based asynchronous serial clients
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs: Serial port options
     :return: asyncio event loop and serial client
     """
     import asyncio
-    from pymodbus.client.async.asyncio import (ModbusClientProtocol,
-                                               AsyncioModbusSerialClient)
+    from pymodbus.client.asynchronous.asyncio import (ModbusClientProtocol,
+                                                      AsyncioModbusSerialClient)
     loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
 

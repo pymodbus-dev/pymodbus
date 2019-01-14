@@ -2,7 +2,7 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     import asyncio
     from serial_asyncio import create_serial_connection
-    from pymodbus.client.async.asyncio import ModbusClientProtocol
+    from pymodbus.client.asynchronous.asyncio import ModbusClientProtocol
     from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
     from pymodbus.factory import ClientDecoder
 else:
@@ -43,7 +43,7 @@ async def start_async_test(client):
     # are not known to these tests. Furthermore, some use the same memory
     # blocks for the two sets, so a change to one is a change to the other.
     # Keep both of these cases in mind when testing as the following will
-    # _only_ pass with the supplied async modbus server (script supplied).
+    # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
     log.debug("Write to a Coil and read back")
     rq = await client.write_coil(0, True, unit=UNIT)

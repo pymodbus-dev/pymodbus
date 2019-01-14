@@ -20,7 +20,7 @@ predicate = inspect.ismethod
 if IS_PYTHON2 or PYTHON_VERSION < (3, 3):
     argspec = inspect.getargspec
 else:
-    predicate = inspect.ismethod
+    predicate = inspect.isfunction
     argspec = inspect.signature
 
 

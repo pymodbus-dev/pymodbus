@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.factory import ServerDecoder, ClientDecoder
-from pymodbus.exceptions import ModbusException
+from pymodbus.exceptions import ModbusException, MessageRegisterException
+from pymodbus.pdu import ModbusResponse, ModbusRequest
 
 def _raise_exception(_):
     raise ModbusException('something')
@@ -142,6 +143,23 @@ class SimpleFactoryTest(unittest.TestCase):
         actual = self.server.decode(None)
         self.assertEqual(actual, None)
 
+    def testServerRegisterCustomRequest(self):
+        class CustomRequest(ModbusRequest):
+            function_code = 0xff
+        self.server.register(CustomRequest)
+        assert self.client.lookupPduClass(CustomRequest.function_code)
+        CustomRequest.sub_function_code = 0xff
+        self.server.register(CustomRequest)
+        assert self.server.lookupPduClass(CustomRequest.function_code)
+
+    def testClientRegisterCustomResponse(self):
+        class CustomResponse(ModbusResponse):
+            function_code = 0xff
+        self.client.register(CustomResponse)
+        assert self.client.lookupPduClass(CustomResponse.function_code)
+        CustomResponse.sub_function_code = 0xff
+        self.client.register(CustomResponse)
+        assert self.client.lookupPduClass(CustomResponse.function_code)
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that
 # since the high bit is set, it will simply echo the resulting message

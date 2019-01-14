@@ -11,6 +11,8 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix SQLDbcontext always returning InvalidAddress error.
 * Fix SQLDbcontext update failure
 * Fix Binary payload example for endianess.
+* Add support to register custom requests in clients and server instances.
+
 
 Version 2.1.0
 -----------------------------------------------------------

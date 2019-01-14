@@ -48,6 +48,14 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         actual = self.context[0x00]
         self.assertEqual(slave, actual)
 
+    def testSingleContestRegister(self):
+        db = [1, 2, 3]
+        slave = ModbusSlaveContext()
+        slave.register(0xff, 'custom_request', db)
+        assert slave.store["custom_request"] == db
+        assert slave.decode(0xff) == 'custom_request'
+
+
 class ModbusServerMultipleContextTest(unittest.TestCase):
     ''' This is the unittest for the pymodbus.datastore.ModbusServerContext
     using multiple slave contexts.

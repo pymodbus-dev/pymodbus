@@ -105,7 +105,7 @@ def run_async_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.5'
+    identity.MajorMinorRevision = '2.2.0'
     
     # ----------------------------------------------------------------------- # 
     # run the server you want

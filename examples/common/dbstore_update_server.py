@@ -61,7 +61,8 @@ def updating_writer(a):
     rand_addr = random.randint(0, 65000)
     log.debug("Writing to datastore: {}, {}".format(rand_addr, rand_value))
     # import pdb; pdb.set_trace()
-    context[slave_id].setValues(writefunction, rand_addr, [rand_value])
+    context[slave_id].setValues(writefunction, rand_addr, [rand_value],
+                                update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
     log.debug("Values from datastore: " + str(values))
 
@@ -85,7 +86,7 @@ def run_dbstore_update_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'pymodbus Server'
     identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = '1.0'
+    identity.MajorMinorRevision = '2.2.0'
 
     # ----------------------------------------------------------------------- #
     # run the server you want
@@ -93,6 +94,7 @@ def run_dbstore_update_server():
     time = 5  # 5 seconds delay
     loop = LoopingCall(f=updating_writer, a=(context,))
     loop.start(time, now=False)  # initially delay by time
+    loop.stop()
     StartTcpServer(context, identity=identity, address=("", 5020))
 
 

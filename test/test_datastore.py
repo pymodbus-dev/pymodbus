@@ -330,7 +330,8 @@ class SqlDataStoreTest(unittest.TestCase):
         self.slave._set = MagicMock()
 
         for key, value in self.function_map.items():
-            self.slave.setValues(key, self.mock_addr, self.mock_values)
+            self.slave.setValues(key, self.mock_addr,
+                                 self.mock_values, update=False)
             self.slave._set.assert_called_with(
                 value, self.mock_addr + 1, self.mock_values
             )
@@ -365,8 +366,9 @@ class SqlDataStoreTest(unittest.TestCase):
             self.slave._update(self.mock_type, self.mock_offset, self.mock_values)
         )
 
-#---------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------- #
 # Main
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     unittest.main()

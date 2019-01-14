@@ -1,6 +1,16 @@
-Version 2.1.1
+Version 2.2.0
 -----------------------------------------------------------
+**NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asychronous**
+```
+from pymodbus.client.asynchronous import ModbusTcpClient
+```
+
+* Support Python 3.7
+* Fix `AttributeError` when setting `interCharTimeout` for serial clients.
 * Provide an option to disable inter char timeouts with Modbus RTU.
+* Fix SQLDbcontext always returning InvalidAddress error.
+* Fix SQLDbcontext update failure
+* Fix Binary payload example for endianess.
 
 Version 2.1.0
 -----------------------------------------------------------

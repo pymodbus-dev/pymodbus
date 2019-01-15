@@ -124,10 +124,17 @@ class ServerDecoder(IModbusDecoder):
         :returns: The decoded request or illegal function request object
         """
         function_code = byte2int(data[0])
-        _logger.debug("Factory Request[%d]" % function_code)
         request = self.__lookup.get(function_code, lambda: None)()
         if not request:
+            _logger.debug("Factory Request[%d]" % function_code)
             request = IllegalFunctionRequest(function_code)
+        else:
+            fc_string = "%s: %s" % (
+                str(self.__lookup[function_code]).split('.')[-1].rstrip(
+                    "'>"),
+                function_code
+            )
+            _logger.debug("Factory Request[%s]" % fc_string)
         request.decode(data[1:])
 
         if hasattr(request, 'sub_function_code'):

@@ -8,10 +8,21 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Support Python 3.7
 * Fix `AttributeError` when setting `interCharTimeout` for serial clients.
 * Provide an option to disable inter char timeouts with Modbus RTU.
+* Add support to register custom requests in clients and server instances.
+* Fix read timeout calculation in ModbusTCP.
 * Fix SQLDbcontext always returning InvalidAddress error.
 * Fix SQLDbcontext update failure
 * Fix Binary payload example for endianess.
-* Add support to register custom requests in clients and server instances.
+* Fix tornado async serial client `TypeError` while processing incoming packet.
+* Fix asyncio examples.
+* Minor update in factory.py, now server logs prints received request instead of only function code
+```
+# Now
+DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]
+# Before
+DEBUG:pymodbus.factory:Factory Request[4]
+
+```
 
 
 Version 2.1.0

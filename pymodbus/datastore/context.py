@@ -60,7 +60,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("validate[%d] %d:%d" % (fx, address, count))
+        _logger.debug("validate: fc-[%d] address-%d: count-%d" % (fx, address,
+                                                                  count))
         return self.store[self.decode(fx)].validate(address, count)
 
     def getValues(self, fx, address, count=1):
@@ -73,7 +74,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
+        _logger.debug("getValues fc-[%d] address-%d: count-%d" % (fx, address,
+                                                                  count))
         return self.store[self.decode(fx)].getValues(address, count)
 
     def setValues(self, fx, address, values):

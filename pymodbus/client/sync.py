@@ -481,13 +481,13 @@ class ModbusSerialClient(BaseModbusClient):
                                         stopbits=self.stopbits,
                                         baudrate=self.baudrate,
                                         parity=self.parity)
+            if self.method == "rtu":
+                if self._strict:
+                    self.socket.interCharTimeout = self.inter_char_timeout
+                self.last_frame_end = None
         except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
-        if self.method == "rtu":
-            if self._strict:
-                self.socket.interCharTimeout = self.inter_char_timeout
-            self.last_frame_end = None
         return self.socket is not None
 
     def close(self):

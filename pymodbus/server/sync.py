@@ -125,7 +125,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
             # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.request.send(pdu)
 
 
@@ -203,7 +203,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
             # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.request.send(pdu)
 
 
@@ -226,6 +226,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
                 data, self.socket = self.request
                 if not data:
                     self.running = False
+                    data = b''
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug('Handling data: ' + hexlify_packets(data))
                 # if not self.server.control.ListenOnly:
@@ -258,7 +259,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.socket.sendto(pdu, self.client_address)
 
 

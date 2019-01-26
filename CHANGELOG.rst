@@ -15,6 +15,7 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix Binary payload example for endianess.
 * Fix tornado async serial client `TypeError` while processing incoming packet.
 * Fix asyncio examples.
+* Improved logging in Modbus Server .
 * Minor update in factory.py, now server logs prints received request instead of only function code
 ```
 # Now

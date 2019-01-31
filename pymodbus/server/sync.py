@@ -59,8 +59,15 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         :param request: The decoded request message
         """
         try:
-            context = self.server.context[request.unit_id]
-            response = request.execute(context)
+            if self.server.broadcast_enable and request.unit_id == 0:
+                broadcast = True
+                # if broadcasting then execute on all slave contexts, note response will be ignored
+                for unit_id in self.server.context.slaves():
+                    response = request.execute(self.server.context[unit_id])
+            else:
+                broadcast = False
+                context = self.server.context[request.unit_id]
+                response = request.execute(context)
         except NoSuchSlaveException as ex:
             _logger.debug("requested slave does "
                           "not exist: %s" % request.unit_id )
@@ -71,9 +78,11 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
             _logger.debug("Datastore unable to fulfill request: "
                           "%s; %s", ex, traceback.format_exc())
             response = request.doException(merror.SlaveFailure)
-        response.transaction_id = request.transaction_id
-        response.unit_id = request.unit_id
-        self.send(response)
+        # no response when broadcasting
+        if not broadcast:
+            response.transaction_id = request.transaction_id
+            response.unit_id = request.unit_id
+            self.send(response)
 
     # ----------------------------------------------------------------------- #
     # Base class implementations
@@ -105,6 +114,12 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                 data = self.request.recv(1024)
                 if data:
                     units = self.server.context.slaves()
+                    if not isinstance(units, (list, tuple)):
+                        units = [units]
+                    # if broadcast is enabled make sure to process requests to address 0
+                    if self.server.broadcast_enable:
+                        if 0 not in units:
+                            units.append(0)
                     single = self.server.context.single
                     self.framer.processIncomingPacket(data, self.execute,
                                                       units, single=single)
@@ -288,8 +303,10 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
                         ModbusConnectedRequestHandler
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
-        :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
+        :param ignore_missing_slaves: True to not send errors on a request 
+                        to a missing slave
+        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
+                        False to treat 0 as any other unit_id
         """
         self.threads = []
         self.allow_reuse_address = allow_reuse_address
@@ -301,6 +318,8 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.handler = handler or ModbusConnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
                                                 Defaults.IgnoreMissingSlaves)
+        self.broadcast_enable = kwargs.get('broadcast_enable', 
+                                           Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -358,7 +377,9 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         :param handler: A handler for each client session; default is
                             ModbusDisonnectedRequestHandler
         :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
+                            to a missing slave
+        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
+                            False to treat 0 as any other unit_id
         """
         self.threads = []
         self.decoder = ServerDecoder()
@@ -369,6 +390,8 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.handler = handler or ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
                                                 Defaults.IgnoreMissingSlaves)
+        self.broadcast_enable = kwargs.get('broadcast_enable', 
+                                           Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -423,7 +446,9 @@ class ModbusSerialServer(object):
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
         :param ignore_missing_slaves: True to not send errors on a request
-                                        to a missing slave
+                            to a missing slave
+        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
+                            False to treat 0 as any other unit_id
         """
         self.threads = []
         self.decoder = ServerDecoder()
@@ -442,6 +467,8 @@ class ModbusSerialServer(object):
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
         self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
                                                 Defaults.IgnoreMissingSlaves)
+        self.broadcast_enable = kwargs.get('broadcast_enable',
+                                           Defaults.broadcast_enable)
         self.socket = None
         if self._connect():
             self.is_running = True

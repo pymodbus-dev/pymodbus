@@ -45,6 +45,7 @@ class BaseModbusClient(ModbusClientMixin):
             self.transaction = FifoTransactionManager(self, **kwargs)
         self._debug = False
         self._debugfd = None
+        self.broadcast_enable = kwargs.get('broadcast_enable', Defaults.broadcast_enable)
 
     # ----------------------------------------------------------------------- #
     # Client interface

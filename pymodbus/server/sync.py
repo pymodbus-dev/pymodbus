@@ -58,6 +58,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
 
         :param request: The decoded request message
         """
+        broadcast = False
         try:
             if self.server.broadcast_enable and request.unit_id == 0:
                 broadcast = True
@@ -65,7 +66,6 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
                 for unit_id in self.server.context.slaves():
                     response = request.execute(self.server.context[unit_id])
             else:
-                broadcast = False
                 context = self.server.context[request.unit_id]
                 response = request.execute(context)
         except NoSuchSlaveException as ex:

@@ -8,7 +8,7 @@ from twisted.application.service import IServiceMaker
 from twisted.application import internet
 
 from pymodbus.constants import Defaults
-from pymodbus.server.async import ModbusServerFactory
+from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.internal.ptwisted import InstallManagementConsole
 

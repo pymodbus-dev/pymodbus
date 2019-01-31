@@ -4,8 +4,8 @@ from __future__ import absolute_import
 import logging
 from pymodbus.constants import Defaults
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-from pymodbus.client.async.schedulers import ASYNC_IO
-from pymodbus.client.async.factory.udp import get_factory
+from pymodbus.client.asynchronous.schedulers import ASYNC_IO
+from pymodbus.client.asynchronous.factory.udp import get_factory
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class AsyncModbusUDPClient(object):
 
     To use do::
 
-        from pymodbus.client.async.tcp import AsyncModbusUDPClient
+        from pymodbus.client.asynchronous.tcp import AsyncModbusUDPClient
     """
     def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
                 framer=None, source_address=None, timeout=None, **kwargs):

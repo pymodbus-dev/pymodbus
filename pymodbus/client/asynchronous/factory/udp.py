@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 import logging
 
-from pymodbus.client.async import schedulers
-from pymodbus.client.async.thread import EventLoopThread
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.thread import EventLoopThread
 from pymodbus.constants import Defaults
 
 LOGGER = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                     source_address=None, timeout=None, **kwargs):
     """
-    Factory to create twisted udp async client
+    Factory to create twisted udp asynchronous client
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -28,7 +28,7 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                    source_address=None, timeout=None, **kwargs):
     """
-    Factory to create Tornado based async udp clients
+    Factory to create Tornado based asynchronous udp clients
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -38,7 +38,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop
-    from pymodbus.client.async.tornado import AsyncModbusUDPClient as \
+    from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as \
         Client
 
     client = Client(host=host, port=port, framer=framer,
@@ -55,7 +55,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
                      source_address=None, timeout=None, **kwargs):
     """
-    Factory to create asyncio based async udp clients
+    Factory to create asyncio based asynchronous udp clients
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -65,7 +65,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: asyncio event loop and udp client
     """
     import asyncio
-    from pymodbus.client.async.asyncio import init_udp_client
+    from pymodbus.client.asynchronous.asyncio import init_udp_client
     loop = kwargs.get("loop") or asyncio.get_event_loop()
     proto_cls = kwargs.get("proto_cls", None)
     cor = init_udp_client(proto_cls, loop, host, port)

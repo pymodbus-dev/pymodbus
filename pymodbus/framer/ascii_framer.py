@@ -1,16 +1,10 @@
 import struct
-import socket
 from binascii import b2a_hex, a2b_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.utilities import checkLRC, computeLRC
 from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 
-# Python 2 compatibility.
-try:
-    TimeoutError
-except NameError:
-    TimeoutError = socket.timeout
 
 ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 

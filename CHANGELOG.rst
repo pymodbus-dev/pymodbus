@@ -14,9 +14,12 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix SQLDbcontext update failure
 * Fix Binary payload example for endianess.
 * Fix tornado async serial client `TypeError` while processing incoming packet.
+* Fix erroneous CRC handling in Modbus RTU framer.
+* Support broadcasting in Modbus Client and Servers (sync).
 * Fix asyncio examples.
 * Improved logging in Modbus Server .
 * Minor update in factory.py, now server logs prints received request instead of only function code
+
 ```
 # Now
 DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]

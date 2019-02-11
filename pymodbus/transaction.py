@@ -118,70 +118,74 @@ class ModbusTransactionManager(object):
                     _logger.debug("Clearing current Frame : - {}".format(_buffer))
                     self.client.framer.resetFrame()
 
-                expected_response_length = None
-                if not isinstance(self.client.framer, ModbusSocketFramer):
-                    if hasattr(request, "get_response_pdu_size"):
-                        response_pdu_size = request.get_response_pdu_size()
-                        if isinstance(self.client.framer, ModbusAsciiFramer):
-                            response_pdu_size = response_pdu_size * 2
-                        if response_pdu_size:
-                            expected_response_length = self._calculate_response_length(response_pdu_size)
-                if request.unit_id in self._no_response_devices:
-                    full = True
+                if request.unit_id == 0 and self.client.broadcast_enable:
+                    response, last_exception = self._transact(request, None)
+                    response = b'Broadcast write sent - no response expected'
                 else:
-                    full = False
-                c_str = str(self.client)
-                if "modbusudpclient" in c_str.lower().strip():
-                    full = True
-                    if not expected_response_length:
-                        expected_response_length = Defaults.ReadSize
-                response, last_exception = self._transact(request,
-                                                          expected_response_length,
-                                                          full=full
-                                                          )
-                if not response and (
-                        request.unit_id not in self._no_response_devices):
-                    self._no_response_devices.append(request.unit_id)
-                elif request.unit_id in self._no_response_devices and response:
-                    self._no_response_devices.remove(request.unit_id)
-                if not response and self.retry_on_empty and retries:
-                    while retries > 0:
-                        if hasattr(self.client, "state"):
-                            _logger.debug("RESETTING Transaction state to "
-                                          "'IDLE' for retry")
-                            self.client.state = ModbusTransactionState.IDLE
-                        _logger.debug("Retry on empty - {}".format(retries))
-                        response, last_exception = self._transact(
-                            request,
-                            expected_response_length
-                        )
-                        if not response:
-                            retries -= 1
-                            continue
-                        # Remove entry
-                        self._no_response_devices.remove(request.unit_id)
-                        break
-                addTransaction = partial(self.addTransaction,
-                                         tid=request.transaction_id)
-                self.client.framer.processIncomingPacket(response,
-                                                         addTransaction,
-                                                         request.unit_id)
-                response = self.getTransaction(request.transaction_id)
-                if not response:
-                    if len(self.transactions):
-                        response = self.getTransaction(tid=0)
+                    expected_response_length = None
+                    if not isinstance(self.client.framer, ModbusSocketFramer):
+                        if hasattr(request, "get_response_pdu_size"):
+                            response_pdu_size = request.get_response_pdu_size()
+                            if isinstance(self.client.framer, ModbusAsciiFramer):
+                                response_pdu_size = response_pdu_size * 2
+                            if response_pdu_size:
+                                expected_response_length = self._calculate_response_length(response_pdu_size)
+                    if request.unit_id in self._no_response_devices:
+                        full = True
                     else:
-                        last_exception = last_exception or (
-                            "No Response received from the remote unit"
-                            "/Unable to decode response")
-                        response = ModbusIOException(last_exception,
-                                                     request.function_code)
-                if hasattr(self.client, "state"):
-                    _logger.debug("Changing transaction state from "
-                                  "'PROCESSING REPLY' to "
-                                  "'TRANSACTION_COMPLETE'")
-                    self.client.state = (
-                        ModbusTransactionState.TRANSACTION_COMPLETE)
+                        full = False
+                    c_str = str(self.client)
+                    if "modbusudpclient" in c_str.lower().strip():
+                        full = True
+                        if not expected_response_length:
+                            expected_response_length = Defaults.ReadSize
+                    response, last_exception = self._transact(request,
+                                                              expected_response_length,
+                                                              full=full
+                                                              )
+                    if not response and (
+                            request.unit_id not in self._no_response_devices):
+                        self._no_response_devices.append(request.unit_id)
+                    elif request.unit_id in self._no_response_devices and response:
+                        self._no_response_devices.remove(request.unit_id)
+                    if not response and self.retry_on_empty and retries:
+                        while retries > 0:
+                            if hasattr(self.client, "state"):
+                                _logger.debug("RESETTING Transaction state to "
+                                              "'IDLE' for retry")
+                                self.client.state = ModbusTransactionState.IDLE
+                            _logger.debug("Retry on empty - {}".format(retries))
+                            response, last_exception = self._transact(
+                                request,
+                                expected_response_length
+                            )
+                            if not response:
+                                retries -= 1
+                                continue
+                            # Remove entry
+                            self._no_response_devices.remove(request.unit_id)
+                            break
+                    addTransaction = partial(self.addTransaction,
+                                             tid=request.transaction_id)
+                    self.client.framer.processIncomingPacket(response,
+                                                             addTransaction,
+                                                             request.unit_id)
+                    response = self.getTransaction(request.transaction_id)
+                    if not response:
+                        if len(self.transactions):
+                            response = self.getTransaction(tid=0)
+                        else:
+                            last_exception = last_exception or (
+                                "No Response received from the remote unit"
+                                "/Unable to decode response")
+                            response = ModbusIOException(last_exception,
+                                                         request.function_code)
+                    if hasattr(self.client, "state"):
+                        _logger.debug("Changing transaction state from "
+                                      "'PROCESSING REPLY' to "
+                                      "'TRANSACTION_COMPLETE'")
+                        self.client.state = (
+                            ModbusTransactionState.TRANSACTION_COMPLETE)
                 return response
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
@@ -205,13 +209,20 @@ class ModbusTransactionManager(object):
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug("SEND: " + hexlify_packets(packet))
             size = self._send(packet)
-            if size:
-                _logger.debug("Changing transaction state from 'SENDING' "
-                              "to 'WAITING FOR REPLY'")
-                self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-            result = self._recv(response_length, full)
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug("RECV: " + hexlify_packets(result))
+            if response_length is not None:
+                if size:
+                    _logger.debug("Changing transaction state from 'SENDING' "
+                                  "to 'WAITING FOR REPLY'")
+                    self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
+                result = self._recv(response_length, full)
+                if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("RECV: " + hexlify_packets(result))
+            else:
+                if size:
+                    _logger.debug("Changing transaction state from 'SENDING' "
+                                  "to 'TRANSACTION_COMPLETE'")
+                    self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
+                result = b''
         except (socket.error, ModbusIOException,
                 InvalidMessageReceivedException) as msg:
             self.client.close()

@@ -181,14 +181,21 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         reset_frame = False
         while self.running:
             try:
+                units = self.server.context.slaves()
                 data = self.request.recv(1024)
                 if not data:
                     self.running = False
+                else:
+                    if not isinstance(units, (list, tuple)):
+                        units = [units]
+                    # if broadcast is enabled make sure to
+                    # process requests to address 0
+                    if self.server.broadcast_enable:
+                        if 0 not in units:
+                            units.append(0)
+
                 if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug('Handling data: ' + hexlify_packets(data))
-                # if not self.server.control.ListenOnly:
-
-                units = self.server.context.slaves()
                 single = self.server.context.single
                 self.framer.processIncomingPacket(data, self.execute, units,
                                                   single=single)

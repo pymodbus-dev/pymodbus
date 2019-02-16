@@ -18,6 +18,7 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Support broadcasting in Modbus Client and Servers (sync).
 * Fix asyncio examples.
 * Improved logging in Modbus Server .
+* Fix regression introduced in 2.2.0rc2 (Modbus sync client transaction failing)
 * Minor update in factory.py, now server logs prints received request instead of only function code
 
 ```

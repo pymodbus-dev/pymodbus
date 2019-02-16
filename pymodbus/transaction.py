@@ -112,14 +112,17 @@ class ModbusTransactionManager(object):
                 )
                 retries = self.retries
                 request.transaction_id = self.getNextTID()
-                _logger.debug("Running transaction %d" % request.transaction_id)
+                _logger.debug("Running transaction "
+                              "{}".format(request.transaction_id))
                 _buffer = hexlify_packets(self.client.framer._buffer)
                 if _buffer:
-                    _logger.debug("Clearing current Frame : - {}".format(_buffer))
+                    _logger.debug("Clearing current Frame "
+                                  ": - {}".format(_buffer))
                     self.client.framer.resetFrame()
-
-                if request.unit_id == 0 and self.client.broadcast_enable:
-                    response, last_exception = self._transact(request, None)
+                broadcast = (self.client.broadcast_enable
+                             and request.unit_id == 0)
+                if broadcast:
+                    self._transact(request, None, broadcast=True)
                     response = b'Broadcast write sent - no response expected'
                 else:
                     expected_response_length = None
@@ -139,10 +142,12 @@ class ModbusTransactionManager(object):
                         full = True
                         if not expected_response_length:
                             expected_response_length = Defaults.ReadSize
-                    response, last_exception = self._transact(request,
-                                                              expected_response_length,
-                                                              full=full
-                                                              )
+                    response, last_exception = self._transact(
+                        request,
+                        expected_response_length,
+                        full=full,
+                        broadcast=broadcast
+                    )
                     if not response and (
                             request.unit_id not in self._no_response_devices):
                         self._no_response_devices.append(request.unit_id)
@@ -193,7 +198,7 @@ class ModbusTransactionManager(object):
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return ex
 
-    def _transact(self, packet, response_length, full=False):
+    def _transact(self, packet, response_length, full=False, broadcast=False):
         """
         Does a Write and Read transaction
         :param packet: packet to be sent
@@ -209,20 +214,20 @@ class ModbusTransactionManager(object):
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug("SEND: " + hexlify_packets(packet))
             size = self._send(packet)
-            if response_length is not None:
-                if size:
-                    _logger.debug("Changing transaction state from 'SENDING' "
-                                  "to 'WAITING FOR REPLY'")
-                    self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
-                result = self._recv(response_length, full)
-                if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("RECV: " + hexlify_packets(result))
-            else:
+            if broadcast:
                 if size:
                     _logger.debug("Changing transaction state from 'SENDING' "
                                   "to 'TRANSACTION_COMPLETE'")
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                result = b''
+                return b'', None
+            if size:
+                _logger.debug("Changing transaction state from 'SENDING' "
+                              "to 'WAITING FOR REPLY'")
+                self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
+            result = self._recv(response_length, full)
+            if _logger.isEnabledFor(logging.DEBUG):
+                    _logger.debug("RECV: " + hexlify_packets(result))
+
         except (socket.error, ModbusIOException,
                 InvalidMessageReceivedException) as msg:
             self.client.close()

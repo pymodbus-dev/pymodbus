@@ -119,9 +119,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertRaises(
-            NoSuchSlaveException, protocol._execute(request)
-        )
+        protocol._execute(request)
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -131,9 +129,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        self.assertRaises(
-            ModbusIOException, protocol._execute(request)
-        )
+        protocol._execute(request)
         self.assertTrue(protocol._send.called)
 
     def testSendTcp(self):
@@ -273,9 +269,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertRaises(
-            NoSuchSlaveException, protocol._execute(request, mock_addr)
-        )
+        protocol._execute(request, mock_addr)
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -285,9 +279,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        self.assertRaises(
-            ModbusIOException, protocol._execute(request, mock_addr)
-        )
+        protocol._execute(request, mock_addr)
         self.assertTrue(protocol._send.called)
 
     def testStopServer(self):

@@ -7,6 +7,7 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 
 * Support Python 3.7
 * Fix to task cancellations and CRC errors for async serial clients.
+* Fix passing serial settings to asynchronous serial server.
 * Fix `AttributeError` when setting `interCharTimeout` for serial clients.
 * Provide an option to disable inter char timeouts with Modbus RTU.
 * Add support to register custom requests in clients and server instances.

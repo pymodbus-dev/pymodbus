@@ -400,6 +400,10 @@ class ModbusTransactionManager:
                 f"{actual} bytes !!!!"
             )
             _logger.debug(txt)
+            raise InvalidMessageReceivedException(
+                "Incomplete message received, expected %d bytes Recieved "
+                "%d bytes !!!!" % (total, actual)
+            )
         elif not actual:
             # If actual == 0 and total is not None then the above
             # should be triggered, so total must be None here

@@ -6,9 +6,9 @@ if IS_PYTHON3: # Python 3
 else: # Python 2
     from mock import patch, Mock, MagicMock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.async import ModbusServerFactory
-from pymodbus.server.async import (
+from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
+from pymodbus.server.asynchronous import ModbusServerFactory
+from pymodbus.server.asynchronous import (
     StartTcpServer, StartUdpServer, StartSerialServer, StopServer,
     _is_main_thread
 )
@@ -35,7 +35,7 @@ else:
 
 class AsynchronousServerTest(unittest.TestCase):
     '''
-    This is the unittest for the pymodbus.server.async module
+    This is the unittest for the pymodbus.server.asynchronous module
     '''
 
     #-----------------------------------------------------------------------#
@@ -56,7 +56,7 @@ class AsynchronousServerTest(unittest.TestCase):
     # Test ModbusTcpProtocol
     #-----------------------------------------------------------------------#
     def testTcpServerStartup(self):
-        ''' Test that the modbus tcp async server starts correctly '''
+        ''' Test that the modbus tcp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             if IS_PYTHON3:
                 console = False
@@ -119,9 +119,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertRaises(
-            NoSuchSlaveException, protocol._execute(request)
-        )
+        protocol._execute(request)
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -131,9 +129,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        self.assertRaises(
-            ModbusIOException, protocol._execute(request)
-        )
+        protocol._execute(request)
         self.assertTrue(protocol._send.called)
 
     def testSendTcp(self):
@@ -186,7 +182,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
 
     def testUdpServerStartup(self):
-        ''' Test that the modbus udp async server starts correctly '''
+        ''' Test that the modbus udp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             StartUdpServer(context=None)
             self.assertEqual(mock_reactor.listenUDP.call_count, 1)
@@ -194,7 +190,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
     @patch("twisted.internet.serialport.SerialPort")
     def testSerialServerStartup(self, mock_sp):
-        ''' Test that the modbus serial async server starts correctly '''
+        ''' Test that the modbus serial asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
@@ -202,7 +198,7 @@ class AsynchronousServerTest(unittest.TestCase):
     @patch("twisted.internet.serialport.SerialPort")
     def testStopServerFromMainThread(self, mock_sp):
         """
-        Stop async server
+        Stop asynchronous server
         :return:
         """
         with patch('twisted.internet.reactor') as mock_reactor:
@@ -214,7 +210,7 @@ class AsynchronousServerTest(unittest.TestCase):
     @patch("twisted.internet.serialport.SerialPort")
     def testStopServerFromThread(self, mock_sp):
         """
-        Stop async server from child thread
+        Stop asynchronous server from child thread
         :return:
         """
         from threading import Thread
@@ -273,9 +269,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertRaises(
-            NoSuchSlaveException, protocol._execute(request, mock_addr)
-        )
+        protocol._execute(request, mock_addr)
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
@@ -285,9 +279,7 @@ class AsynchronousServerTest(unittest.TestCase):
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        self.assertRaises(
-            ModbusIOException, protocol._execute(request, mock_addr)
-        )
+        protocol._execute(request, mock_addr)
         self.assertTrue(protocol._send.called)
 
     def testStopServer(self):

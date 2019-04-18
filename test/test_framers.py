@@ -12,17 +12,21 @@ if IS_PYTHON3:
 else:  # Python 2
     from mock import Mock
 
+
 @pytest.fixture
 def rtu_framer():
     return ModbusRtuFramer(ClientDecoder())
+
 
 @pytest.fixture
 def ascii_framer():
     return ModbusAsciiFramer(ClientDecoder())
 
+
 @pytest.fixture
 def binary_framer():
     return ModbusBinaryFramer(ClientDecoder())
+
 
 @pytest.mark.parametrize("framer",  [ModbusRtuFramer,
                                      ModbusAsciiFramer,
@@ -116,9 +120,12 @@ def test_populate_result(rtu_framer):
     assert result.unit_id == 255
 
 
-def test_process_incoming_packet(rtu_framer):
+@pytest.mark.parametrize('framer', [ascii_framer, rtu_framer, binary_framer])
+def test_process_incoming_packet(framer):
     def cb(res):
         return res
+    # data = b''
+    # framer.processIncomingPacket(data, cb, unit=1, single=False)
 
 
 def test_build_packet(rtu_framer):
@@ -161,3 +168,21 @@ def test_process(rtu_framer):
 def test_get_raw_frame(rtu_framer):
     rtu_framer._buffer = b'\x00\x01\x00\x01\x00\n\xec\x1c'
     assert rtu_framer.getRawFrame() == rtu_framer._buffer
+
+
+def test_validate_unit_id(rtu_framer):
+    rtu_framer.populateHeader( b'\x00\x01\x00\x01\x00\n\xec\x1c')
+    assert rtu_framer._validate_unit_id([0], False)
+    assert rtu_framer._validate_unit_id([1], True)
+
+
+@pytest.mark.parametrize('data', [b':010100010001FC\r\n',
+                         b''])
+def test_decode_ascii_data(ascii_framer, data):
+    data = ascii_framer.decode_data(data)
+    assert isinstance(data, dict)
+    if data:
+        assert data.get("unit") == 1
+        assert data.get("fcode") == 1
+    else:
+        assert not data

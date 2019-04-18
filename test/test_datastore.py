@@ -278,19 +278,16 @@ class SqlDataStoreTest(unittest.TestCase):
         self.slave._db_create.assert_called_once_with(
             self.slave.table, self.slave.database
         )
+
     def testValidateSuccess(self):
-        mock_result = MockSqlResult(
-            rowcount=len(self.mock_values)
-        )
-        self.slave._connection.execute = MagicMock(return_value=mock_result)
+        self.slave._connection.execute.return_value.fetchall.return_value = self.mock_values
         self.assertTrue(self.slave.validate(
             self.mock_function, self.mock_addr, len(self.mock_values))
         )
 
     def testValidateFailure(self):
         wrong_count = 9
-        mock_result = MockSqlResult(rowcount=len(self.mock_values))
-        self.slave._connection.execute = MagicMock(return_value=mock_result)
+        self.slave._connection.execute.return_value.fetchall.return_value = self.mock_values
         self.assertFalse(self.slave.validate(
             self.mock_function, self.mock_addr, wrong_count)
         )
@@ -333,7 +330,8 @@ class SqlDataStoreTest(unittest.TestCase):
         self.slave._set = MagicMock()
 
         for key, value in self.function_map.items():
-            self.slave.setValues(key, self.mock_addr, self.mock_values)
+            self.slave.setValues(key, self.mock_addr,
+                                 self.mock_values, update=False)
             self.slave._set.assert_called_with(
                 value, self.mock_addr + 1, self.mock_values
             )
@@ -368,8 +366,9 @@ class SqlDataStoreTest(unittest.TestCase):
             self.slave._update(self.mock_type, self.mock_offset, self.mock_values)
         )
 
-#---------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------- #
 # Main
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     unittest.main()

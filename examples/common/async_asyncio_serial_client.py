@@ -12,9 +12,9 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     import logging
     import asyncio
-    from pymodbus.client.async.serial import (
+    from pymodbus.client.asynchronous.serial import (
         AsyncModbusSerialClient as ModbusClient)
-    from pymodbus.client.async import schedulers
+    from pymodbus.client.asynchronous import schedulers
 else:
     import sys
     sys.stderr("This example needs to be run only on python 3.4 and above")
@@ -49,9 +49,6 @@ async def start_async_test(client):
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
     try:
-        log.debug("Reading Coils")
-        rr = client.read_coils(1, 1, unit=UNIT)
-
     # ----------------------------------------------------------------------- #
         # example requests
     # ----------------------------------------------------------------------- #
@@ -63,7 +60,7 @@ async def start_async_test(client):
         # Furthermore, some use the same memory blocks for the two sets,
         # so a change to one is a change to the other.
         # Keep both of these cases in mind when testing as the following will
-        # _only_ pass with the supplied async modbus server (script supplied).
+        # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
         log.debug("Write to a Coil and read back")
         rq = await client.write_coil(0, True, unit=UNIT)
@@ -137,7 +134,7 @@ if __name__ == '__main__':
     # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
     # link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     loop, client = ModbusClient(schedulers.ASYNC_IO, port='/tmp/ptyp0',
-                                baudrate=9600, timeout=2, method="rtu")
+                                baudrate=9600, method="rtu")
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
 

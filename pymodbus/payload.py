@@ -132,7 +132,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         """
         payload = self.to_registers()
         coils = [bool(int(bit)) for reg
-                 in payload[1:] for bit in format(reg, '016b')]
+                 in payload for bit in format(reg, '016b')]
         return coils
 
     def build(self):
@@ -303,7 +303,12 @@ class BinaryPayloadDecoder(object):
         raise ParameterException('Invalid collection of registers supplied')
 
     @classmethod
-    def fromCoils(klass, coils, byteorder=Endian.Little):
+    def bit_chunks(cls, coils, size=8):
+        chunks = [coils[i: i + size] for i in range(0, len(coils), size)]
+        return chunks
+
+    @classmethod
+    def fromCoils(klass, coils, byteorder=Endian.Little, wordorder=Endian.Big):
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 
@@ -314,7 +319,14 @@ class BinaryPayloadDecoder(object):
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):
-            payload = pack_bitstring(coils)
+            payload = b''
+            padding = len(coils) % 8
+            if padding:    # Pad zero's
+                extra = [False] * padding
+                coils = extra + coils
+            chunks = klass.bit_chunks(coils)
+            for chunk in chunks:
+                payload += pack_bitstring(chunk[::-1])
             return klass(payload, byteorder)
         raise ParameterException('Invalid collection of coils supplied')
 

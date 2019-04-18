@@ -9,14 +9,14 @@ client implementation from pymodbus using Tornado.
 
 import functools
 from tornado.ioloop import IOLoop
-from pymodbus.client.async import schedulers
+from pymodbus.client.asynchronous import schedulers
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-# from pymodbus.client.async.udp import AsyncModbusUDPClient as ModbusClient
-from pymodbus.client.async.tcp import AsyncModbusTCPClient as ModbusClient
+# from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as ModbusClient
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging

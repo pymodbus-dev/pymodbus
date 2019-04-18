@@ -143,7 +143,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         self.address = address
         if hasattr(values, '__iter__'):
             self.values = list(values)
-        else: self.values = [values]
+        else:
+            self.values = [values]
         self.default_value = self.values[0].__class__()
 
     @classmethod
@@ -224,7 +225,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        if count == 0: return False
+        if count == 0:
+            return False
         handle = set(range(address, address + count))
         return handle.issubset(set(iterkeys(self.values)))
 

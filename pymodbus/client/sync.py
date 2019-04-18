@@ -39,12 +39,10 @@ class BaseModbusClient(ModbusClientMixin):
         :param framer: The modbus framer implementation to use
         """
         self.framer = framer
-        if isinstance(self.framer, ModbusSocketFramer):
-            self.transaction = DictTransactionManager(self, **kwargs)
-        else:
-            self.transaction = FifoTransactionManager(self, **kwargs)
+        self.transaction = DictTransactionManager(self, **kwargs)
         self._debug = False
         self._debugfd = None
+        self.broadcast_enable = kwargs.get('broadcast_enable', Defaults.broadcast_enable)
 
     # ----------------------------------------------------------------------- #
     # Client interface
@@ -157,6 +155,14 @@ class BaseModbusClient(ModbusClientMixin):
             self._logger.debug(hexlify_packets(data))
             self._logger.exception(e)
 
+    def register(self, function):
+        """
+        Registers a function and sub function class with the decoder
+        :param function: Custom function class to register
+        :return:
+        """
+        self.framer.decoder.register(function)
+
     def __str__(self):
         """ Builds a string representation of the connection
 
@@ -255,21 +261,22 @@ class ModbusTcpClient(BaseModbusClient):
             recv_size = size
 
         data = b''
-        begin = time.time()
+        time_ = time.time()
+        end = time_ + timeout
         while recv_size > 0:
-            ready = select.select([self.socket], [], [], timeout)
+            ready = select.select([self.socket], [], [], end - time_)
             if ready[0]:
                 data += self.socket.recv(recv_size)
+            time_ = time.time()
 
             # If size isn't specified continue to read until timeout expires.
             if size:
                 recv_size = size - len(data)
 
             # Timeout is reduced also if some data has been received in order
-            # to avoid infinite loops when there isn't an expected response size
-            # and the slave sends noisy data continuosly.
-            timeout -= time.time() - begin
-            if timeout <= 0:
+            # to avoid infinite loops when there isn't an expected response
+            # size and the slave sends noisy data continuosly.
+            if time_ > end:
                 break
 
         return data
@@ -472,13 +479,13 @@ class ModbusSerialClient(BaseModbusClient):
                                         stopbits=self.stopbits,
                                         baudrate=self.baudrate,
                                         parity=self.parity)
+            if self.method == "rtu":
+                if self._strict:
+                    self.socket.interCharTimeout = self.inter_char_timeout
+                self.last_frame_end = None
         except serial.SerialException as msg:
             _logger.error(msg)
             self.close()
-        if self.method == "rtu":
-            if self._strict and self.socket:
-                self.socket.interCharTimeout = self.inter_char_timeout
-            self.last_frame_end = None
         return self.socket is not None
 
     def close(self):

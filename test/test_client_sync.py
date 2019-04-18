@@ -241,6 +241,14 @@ class SynchronousClientTest(unittest.TestCase):
             client.host, client.port, client.timeout
         )
         self.assertEqual(repr(client), rep)
+
+    def testTcpClientRegister(self):
+        class CustomeRequest:
+            function_code = 79
+        client = ModbusTcpClient()
+        client.framer = Mock()
+        client.register(CustomeRequest)
+        assert client.framer.decoder.register.called_once_with(CustomeRequest)
     # -----------------------------------------------------------------------#
     # Test Serial Client
     # -----------------------------------------------------------------------#
@@ -352,6 +360,8 @@ class SynchronousClientTest(unittest.TestCase):
             client.method, client.timeout
         )
         self.assertEqual(repr(client), rep)
+
+
 # ---------------------------------------------------------------------------#
 # Main
 # ---------------------------------------------------------------------------#

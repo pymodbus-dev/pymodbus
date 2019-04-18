@@ -88,6 +88,15 @@ class Defaults(Singleton):
        should be returned or simply ignored. This is useful for the case of a
        serial server emulater where a request to a non-existant slave on a bus
        will never respond. The client in this case will simply timeout.
+
+    .. attribute:: broadcast_enable
+
+      When False unit_id 0 will be treated as any other unit_id. When True and
+      the unit_id is 0 the server will execute all requests on all server
+      contexts and not respond and the client will skip trying to receive a
+      response. Default value False does not conform to Modbus spec but maintains
+      legacy behavior for existing pymodbus users.
+
     '''
     Port                = 502
     Retries             = 3
@@ -104,6 +113,7 @@ class Defaults(Singleton):
     ZeroMode            = False
     IgnoreMissingSlaves = False
     ReadSize            = 1024
+    broadcast_enable    = False
 
 class ModbusStatus(Singleton):
     '''

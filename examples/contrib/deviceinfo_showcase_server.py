@@ -55,7 +55,7 @@ def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.5'
+    identity.MajorMinorRevision = '2.2.0'
 
     # ----------------------------------------------------------------------- #
     # Add an example which is long enough to force the ReadDeviceInformation

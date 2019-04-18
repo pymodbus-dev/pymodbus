@@ -154,7 +154,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         a missing slave
         """
         framer = framer or ModbusSocketFramer
-        self.framer = framer(decoder=ServerDecoder())
+        self.decoder = ServerDecoder()
+        self.framer = framer(self.decoder)
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
@@ -230,7 +231,8 @@ def _is_main_thread():
 
 
 def StartTcpServer(context, identity=None, address=None,
-                   console=False, defer_reactor_run=False, **kwargs):
+                   console=False, defer_reactor_run=False, custom_functions=[],
+                   **kwargs):
     """
     Helper method to start the Modbus Async TCP server
 
@@ -238,17 +240,20 @@ def StartTcpServer(context, identity=None, address=None,
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param console: A flag indicating if you want the debug console
-    :param ignore_missing_slaves: True to not send errors on a request
-           to a missing slave
-    :param defer_reactor_run: True/False defer running reactor.run() as part
-           of starting server, to be explictly started by the user
-
+    :param ignore_missing_slaves: True to not send errors on a request \
+    to a missing slave
+    :param defer_reactor_run: True/False defer running reactor.run() as part \
+    of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     """
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        factory.decoder.register(f)
     if console:
         InstallManagementConsole({'factory': factory})
 
@@ -259,23 +264,27 @@ def StartTcpServer(context, identity=None, address=None,
 
 
 def StartUdpServer(context, identity=None, address=None,
-                   defer_reactor_run=False, **kwargs):
+                   defer_reactor_run=False, custom_functions=[], **kwargs):
     """
     Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
-    :param ignore_missing_slaves: True to not send errors on a request
-           to a missing slave
-    :param defer_reactor_run: True/False defer running reactor.run() as part
-           of starting server, to be explictly started by the user
+    :param ignore_missing_slaves: True to not send errors on a request \
+    to a missing slave
+    :param defer_reactor_run: True/False defer running reactor.run() as part \
+    of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
     """
     from twisted.internet import reactor
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server  = ModbusUdpProtocol(context, framer, identity, **kwargs)
+    server = ModbusUdpProtocol(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        server.decoder.register(f)
 
     _logger.info("Starting Modbus UDP Server on %s:%s" % address)
     reactor.listenUDP(address[1], server, interface=address[0])
@@ -283,10 +292,8 @@ def StartUdpServer(context, identity=None, address=None,
         reactor.run(installSignalHandlers=_is_main_thread())
 
 
-def StartSerialServer(context, identity=None,
-                      framer=ModbusAsciiFramer,
-                      defer_reactor_run=False,
-                      **kwargs):
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
+                      defer_reactor_run=False, custom_functions=[], **kwargs):
     """
     Helper method to start the Modbus Async Serial server
 
@@ -300,6 +307,8 @@ def StartSerialServer(context, identity=None,
            missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
            of starting server, to be explictly started by the user
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
 
     """
     from twisted.internet import reactor
@@ -308,15 +317,27 @@ def StartSerialServer(context, identity=None,
     port = kwargs.get('port', '/dev/ttyS0')
     baudrate = kwargs.get('baudrate', Defaults.Baudrate)
     console = kwargs.get('console', False)
+    bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+    stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+    parity = kwargs.get("parity", Defaults.Parity)
+    timeout = kwargs.get("timeout", 0)
+    xonxoff = kwargs.get("xonxoff", 0)
+    rtscts = kwargs.get("rtscts", 0)
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
+    for f in custom_functions:
+        factory.decoder.register(f)
+    if console:
+        InstallManagementConsole({'factory': factory})
     if console:
         InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging
-    SerialPort(protocol, port, reactor, baudrate)
+    SerialPort(protocol, port, reactor, baudrate=baudrate, parity=parity,
+               stopbits=stopbits, timeout=timeout, xonxoff=xonxoff,
+               rtscts=rtscts, bytesize=bytesize)
     if not defer_reactor_run:
         reactor.run(installSignalHandlers=_is_main_thread())
 

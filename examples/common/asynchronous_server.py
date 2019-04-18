@@ -20,6 +20,7 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import (ModbusRtuFramer,
                                   ModbusAsciiFramer,
                                   ModbusBinaryFramer)
+from custom_message import CustomModbusRequest
 
 # --------------------------------------------------------------------------- # 
 # configure the service logging
@@ -92,6 +93,8 @@ def run_async_server():
         co=ModbusSequentialDataBlock(0, [17]*100),
         hr=ModbusSequentialDataBlock(0, [17]*100),
         ir=ModbusSequentialDataBlock(0, [17]*100))
+    store.register(CustomModbusRequest.function_code, 'cm',
+                   ModbusSequentialDataBlock(0, [17] * 100))
     context = ModbusServerContext(slaves=store, single=True)
     
     # ----------------------------------------------------------------------- # 
@@ -105,7 +108,7 @@ def run_async_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '1.5'
+    identity.MajorMinorRevision = '2.2.0'
     
     # ----------------------------------------------------------------------- # 
     # run the server you want
@@ -113,7 +116,8 @@ def run_async_server():
 
     # TCP Server
 
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
+    StartTcpServer(context, identity=identity, address=("localhost", 5020),
+                   custom_functions=[CustomModbusRequest])
 
     # TCP Server with deferred reactor run
 

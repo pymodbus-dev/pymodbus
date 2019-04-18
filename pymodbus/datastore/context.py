@@ -60,7 +60,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("validate[%d] %d:%d" % (fx, address, count))
+        _logger.debug("validate: fc-[%d] address-%d: count-%d" % (fx, address,
+                                                                  count))
         return self.store[self.decode(fx)].validate(address, count)
 
     def getValues(self, fx, address, count=1):
@@ -73,7 +74,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
         '''
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("getValues[%d] %d:%d" % (fx, address, count))
+        _logger.debug("getValues fc-[%d] address-%d: count-%d" % (fx, address,
+                                                                  count))
         return self.store[self.decode(fx)].getValues(address, count)
 
     def setValues(self, fx, address, values):
@@ -87,6 +89,17 @@ class ModbusSlaveContext(IModbusSlaveContext):
             address = address + 1
         _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
         self.store[self.decode(fx)].setValues(address, values)
+
+    def register(self, fc, fx, datablock=None):
+        """
+        Registers a datablock with the slave context
+        :param fc: function code (int)
+        :param fx: string representation of function code (e.g 'cf' )
+        :param datablock: datablock to associate with this function code
+        :return:
+        """
+        self.store[fx] = datablock or ModbusSequentialDataBlock.create()
+        self._IModbusSlaveContext__fx_mapper[fc] = fx
 
 
 class ModbusServerContext(object):

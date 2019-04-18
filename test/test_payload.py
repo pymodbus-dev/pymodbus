@@ -103,24 +103,29 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testPayloadBuilderWithRawPayload(self):
         """ Test basic bit message encoding/decoding """
-        _coils1 = [False, True, True, True, True, False, False, False, False,
-                   True, False, True, False, True, True, False]
-        _coils2 = [False, True, False, True, False, True, True, False,
-                   False, True, True, True, True, False, False, False]
+        _coils1 = [False, False, True, True, False, True, False, False, False,
+                   False, False, True, False, False, True, False, False, True,
+                   True, True, True, False, False, False, False, True, False,
+                   True, False, True, True, False]
+        _coils2 = [False, False, False, True, False, False, True, False, False,
+                   False, True, True, False, True, False, False, False, True,
+                   False, True, False, True, True, False, False, True, True,
+                   True, True, False, False, False]
 
         builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'],
                                        repack=True)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([13330, 30806], builder.to_registers())
-
-        self.assertEqual(_coils1, builder.to_coils())
+        c = builder.to_coils()
+        self.assertEqual(_coils1, c)
 
         builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'],
                                        byteorder=Endian.Big)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([4660, 22136], builder.to_registers())
         self.assertEqual('\x12\x34\x56\x78', str(builder))
-        self.assertEqual(_coils2, builder.to_coils())
+        c = builder.to_coils()
+        self.assertEqual(_coils2, c)
 
     # ----------------------------------------------------------------------- #
     # Payload Decoder Tests
@@ -187,13 +192,13 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def testPayloadDecoderCoilFactory(self):
         """ Test the payload decoder reset functionality """
-        payload = [1,0,0,0, 1,0,0,0, 0,0,0,1, 0,0,0,1]
+        payload = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1]
         decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.Little)
-        encoded = b'\x11\x88'
+        encoded = b'\x88\x11'
         self.assertEqual(encoded, decoder.decode_string(2))
 
         decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.Big)
-        encoded = b'\x11\x88'
+        encoded = b'\x88\x11'
         self.assertEqual(encoded, decoder.decode_string(2))
 
         self.assertRaises(ParameterException,

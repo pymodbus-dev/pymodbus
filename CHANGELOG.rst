@@ -15,11 +15,13 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix SQLDbcontext always returning InvalidAddress error.
 * Fix SQLDbcontext update failure
 * Fix Binary payload example for endianess.
+* Fix BinaryPayloadDecoder.to_coils and BinaryPayloadBuilder.fromCoils methods.
 * Fix tornado async serial client `TypeError` while processing incoming packet.
 * Fix erroneous CRC handling in Modbus RTU framer.
 * Support broadcasting in Modbus Client and Servers (sync).
 * Fix asyncio examples.
 * Improved logging in Modbus Server .
+* ReportSlaveIdRequest would fetch information from Device identity instead of hardcoded `Pymodbus`.
 * Fix regression introduced in 2.2.0rc2 (Modbus sync client transaction failing)
 * Minor update in factory.py, now server logs prints received request instead of only function code
 

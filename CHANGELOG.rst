@@ -1,9 +1,12 @@
 Version 2.2.0
 -----------------------------------------------------------
 **NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asychronous**
-```
-from pymodbus.client.asynchronous import ModbusTcpClient
-```
+
+
+.. code-block:: python
+
+    from pymodbus.client.asynchronous import ModbusTcpClient
+
 
 * Support Python 3.7
 * Fix to task cancellations and CRC errors for async serial clients.
@@ -25,13 +28,13 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix regression introduced in 2.2.0rc2 (Modbus sync client transaction failing)
 * Minor update in factory.py, now server logs prints received request instead of only function code
 
-```
-# Now
-DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]
-# Before
-DEBUG:pymodbus.factory:Factory Request[4]
+.. code-block:: bash
 
-```
+   # Now
+   # DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]
+   # Before
+   # DEBUG:pymodbus.factory:Factory Request[4]
+
 
 
 Version 2.1.0

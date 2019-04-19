@@ -45,6 +45,7 @@ github_doc_root = 'https://github.com/riptideio/pymodbus/tree/master/doc/'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 #extensions = ['sphinx.ext.autodoc', 'm2r', 'recommonmark']
 extensions = ['sphinx.ext.autodoc', 'm2r']
 

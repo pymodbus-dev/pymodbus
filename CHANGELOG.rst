@@ -2,6 +2,7 @@ Version 2.2.0
 -----------------------------------------------------------
 **NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asychronous**
 
+
 .. code-block:: python
 
     from pymodbus.client.asynchronous import ModbusTcpClient

@@ -20,6 +20,10 @@ class Defaults(Singleton):
        The default number of times a client should retry the given
        request before failing (3)
 
+    .. attribute:: Backoff
+
+       The default exponential backoff delay (0.3 seconds)
+
     .. attribute:: RetryOnEmpty
 
        A flag indicating if a transaction should be retried in the
@@ -91,6 +95,7 @@ class Defaults(Singleton):
     '''
     Port                = 502
     Retries             = 3
+    Backoff             = 0.3
     RetryOnEmpty        = False
     Timeout             = 3
     Reconnects          = 0

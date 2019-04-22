@@ -85,7 +85,6 @@ setup(
         'twisted': [
             'twisted >= 12.2.0',
             'pyasn1 >= 0.1.4',
-            'pycrypto >= 2.6'
         ],
         'tornado': [
             'tornado >= 4.5.3'

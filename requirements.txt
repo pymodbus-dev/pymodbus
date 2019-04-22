@@ -16,7 +16,6 @@ six==1.11.0
 #Twisted==17.1.0
 #zope.interface==4.4.0
 #pyasn1==0.2.3
-#pycrypto==2.6.1
 #wsgiref==0.1.2
 #cryptography==1.8.1
 

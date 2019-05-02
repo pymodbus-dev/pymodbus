@@ -1,6 +1,5 @@
 import socket
 import select
-import serial
 import time
 import sys
 from functools import partial
@@ -425,6 +424,7 @@ class ModbusSerialClient(BaseModbusClient):
         :param strict:  Use Inter char timeout for baudrates <= 19200 (adhere
         to modbus standards)
         """
+        import serial
         self.method = method
         self.socket = None
         BaseModbusClient.__init__(self, self.__implementation(method, self),

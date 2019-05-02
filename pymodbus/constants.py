@@ -11,6 +11,10 @@ from pymodbus.interfaces import Singleton
 class Defaults(Singleton):
     ''' A collection of modbus default values
 
+    .. attribute:: Backoff
+
+       The default exponential backoff delay (0.3 seconds)
+
     .. attribute:: Port
 
        The default modbus tcp server port (502)
@@ -98,6 +102,7 @@ class Defaults(Singleton):
       legacy behavior for existing pymodbus users.
 
     '''
+    Backoff             = 0.3
     Port                = 502
     Retries             = 3
     RetryOnEmpty        = False

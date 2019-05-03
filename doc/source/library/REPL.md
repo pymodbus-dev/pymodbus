@@ -6,7 +6,7 @@ Depends on [prompt_toolkit](https://python-prompt-toolkit.readthedocs.io/en/stab
 
 Install dependencies
 ```
-$ pip install click prompt_toolkit --upgarde
+$ pip install click prompt_toolkit --upgrade
 ```
 
 Or

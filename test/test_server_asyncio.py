@@ -286,38 +286,78 @@ class AsyncioServerTest(asynctest.TestCase):
         server.server_close()
 
 
-    # async def testTcpServerGarbage(self):
-    #     ''' Test sending garbage data on a TCP socket should drop the connection '''
-    #     garbage = b'\x01\x02\x03\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
-    #     server = await StartTcpServer(address=("127.0.0.1", 0),loop=self.loop)
-    #     server_task = asyncio.create_task(server.serve_forever())
-    #     await server.serving
-    #     connect, receive, eof = self.loop.create_future(),self.loop.create_future(),self.loop.create_future()
-    #     received_data = None
-    #     random_port = server.server.sockets[0].getsockname()[1] # get the random server port
-    #
-    #     class BasicClient(asyncio.BaseProtocol):
-    #         def connection_made(self, transport):
-    #             _logger.debug("Client connected")
-    #             self.transport = transport
-    #             transport.write(garbage)
-    #             connect.set_result(True)
-    #
-    #         def data_received(self, data):
-    #             _logger.debug("Client received data")
-    #             receive.set_result(True)
-    #             received_data = data
-    #
-    #         def eof_received(self):
-    #             _logger.debug("Client stream eof")
-    #             eof.set_result(True)
-    #
-    #     transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1',port=random_port)
-    #     await asyncio.wait_for(connect, timeout=0.1)
-    #     await asyncio.wait_for(eof, timeout=0.1)
-    #     self.assertFalse(receive.done())
-    #
-    #     server.server_close()
+    async def testTcpServerModbusError(self):
+        ''' Test sending garbage data on a TCP socket should drop the connection '''
+        data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"  # get slave 5 function 3 (holding register)
+        server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
+        server_task = asyncio.create_task(server.serve_forever())
+        await server.serving
+        with patch("pymodbus.register_read_message.ReadHoldingRegistersRequest.execute",
+                   side_effect=NoSuchSlaveException):
+            connect, receive, eof = self.loop.create_future(),self.loop.create_future(),self.loop.create_future()
+            received_data = None
+            random_port = server.server.sockets[0].getsockname()[1] # get the random server port
+
+            class BasicClient(asyncio.BaseProtocol):
+                def connection_made(self, transport):
+                    _logger.debug("Client connected")
+                    self.transport = transport
+                    transport.write(data)
+                    connect.set_result(True)
+
+                def data_received(self, data):
+                    _logger.debug("Client received data")
+                    receive.set_result(True)
+                    received_data = data
+
+                def eof_received(self):
+                    _logger.debug("Client stream eof")
+                    eof.set_result(True)
+
+            transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1',port=random_port)
+            await asyncio.wait_for(connect, timeout=0.1)
+            await asyncio.wait_for(receive, timeout=0.1)
+            self.assertFalse(eof.done())
+            transport.close()
+            server.server_close()
+
+    async def testTcpServerInternalException(self):
+        ''' Test sending garbage data on a TCP socket should drop the connection '''
+        data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"  # get slave 5 function 3 (holding register)
+        server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
+        server_task = asyncio.create_task(server.serve_forever())
+        await server.serving
+        with patch("pymodbus.register_read_message.ReadHoldingRegistersRequest.execute",
+                   side_effect=Exception):
+            connect, receive, eof = self.loop.create_future(),self.loop.create_future(),self.loop.create_future()
+            received_data = None
+            random_port = server.server.sockets[0].getsockname()[1] # get the random server port
+
+            class BasicClient(asyncio.BaseProtocol):
+                def connection_made(self, transport):
+                    _logger.debug("Client connected")
+                    self.transport = transport
+                    transport.write(data)
+                    connect.set_result(True)
+
+                def data_received(self, data):
+                    _logger.debug("Client received data")
+                    receive.set_result(True)
+                    received_data = data
+
+                def eof_received(self):
+                    _logger.debug("Client stream eof")
+                    eof.set_result(True)
+
+            transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1',port=random_port)
+            await asyncio.wait_for(connect, timeout=0.1)
+            await asyncio.wait_for(receive, timeout=0.1)
+            self.assertFalse(eof.done())
+
+            transport.close()
+            server.server_close()
+
+
 
     #-----------------------------------------------------------------------#
     # Test ModbusUdpProtocol
@@ -488,41 +528,6 @@ class AsyncioServerTest(asynctest.TestCase):
             self.assertFalse(receive.done())
             self.assertFalse(server.protocol._sock._closed)
             server.server_close()
-
-
-    # async def testUdpServerGarbage(self):
-    #     ''' Test sending garbage data on a socket following by good data - this should reset
-    #     the framer but not drop the connection '''
-    #     garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
-    #     server = await StartUdpServer(address=("127.0.0.1", 0),loop=self.loop)
-    #     server_task = asyncio.create_task(server.serve_forever())
-    #     await server.serving
-    #     connect, receive, eof = self.loop.create_future(),self.loop.create_future(),self.loop.create_future()
-    #     received_data = None
-    #     random_port = server.protocol._sock.getsockname()[1] # get the random server port
-    #
-    #     class BasicClient(asyncio.DatagramProtocol):
-    #         def connection_made(self, transport):
-    #             _logger.debug("Client connected")
-    #             self.transport = transport
-    #             transport.sendto(garbage)
-    #             connect.set_result(True)
-    #
-    #         def datagram_received(self, data, addr):
-    #             nonlocal receive
-    #             _logger.debug("Client received data")
-    #             receive.set_result(True)
-    #             received_data = data
-    #
-    #     transport, protocol = await self.loop.create_datagram_endpoint(BasicClient,
-    #                                                                    remote_addr=('127.0.0.1', random_port))
-    #     await connect
-    #     self.assertFalse( receive.done() )
-    #     self.assertFalse(server.protocol._sock._closed)
-    #
-    #     server.server_close()
-
-
 
     # -----------------------------------------------------------------------#
     # Test ModbusServerFactory

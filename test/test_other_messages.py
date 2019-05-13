@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import unittest
 from pymodbus.other_message import *
+import mock
+
 
 class ModbusOtherMessageTest(unittest.TestCase):
     '''
@@ -86,20 +88,22 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.events, [0x12,0x34,0x56])
 
     def testReportSlaveId(self):
-        request = ReportSlaveIdRequest()
-        request.decode(b'\x12')
-        self.assertEqual(request.encode(), b'')
-        self.assertEqual(request.execute().function_code, 0x11)
+        with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
+            dif.get.return_value = dict()
+            request = ReportSlaveIdRequest()
+            request.decode(b'\x12')
+            self.assertEqual(request.encode(), b'')
+            self.assertEqual(request.execute().function_code, 0x11)
 
-        response = ReportSlaveIdResponse(request.execute().identifier, True)
+            response = ReportSlaveIdResponse(request.execute().identifier, True)
 
-        self.assertEqual(response.encode(), b'\tPymodbus\xff')
-        response.decode(b'\x03\x12\x00')
-        self.assertEqual(response.status, False)
-        self.assertEqual(response.identifier, b'\x12\x00')
+            self.assertEqual(response.encode(), b'\tPymodbus\xff')
+            response.decode(b'\x03\x12\x00')
+            self.assertEqual(response.status, False)
+            self.assertEqual(response.identifier, b'\x12\x00')
 
-        response.status = False
-        self.assertEqual(response.encode(), b'\x03\x12\x00\x00')
+            response.status = False
+            self.assertEqual(response.encode(), b'\x03\x12\x00\x00')
 
 #---------------------------------------------------------------------------#
 # Main

@@ -7,7 +7,7 @@ import struct
 from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
-from pymodbus.device import ModbusControlBlock
+from pymodbus.device import ModbusControlBlock, DeviceInformationFactory
 from pymodbus.compat import byte2int, int2byte
 
 _MCB = ModbusControlBlock()
@@ -364,7 +364,9 @@ class ReportSlaveIdRequest(ModbusRequest):
 
         :returns: The populated response
         '''
-        identifier = b'Pymodbus'
+        information = DeviceInformationFactory.get(_MCB)
+        identifier = "-".join(information.values()).encode()
+        identifier = identifier or b'Pymodbus'
         return ReportSlaveIdResponse(identifier)
 
     def __str__(self):

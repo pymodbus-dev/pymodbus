@@ -1,12 +1,16 @@
 Version 2.2.0
 -----------------------------------------------------------
 **NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asychronous**
-```
-from pymodbus.client.asynchronous import ModbusTcpClient
-```
+
+
+.. code-block:: python
+
+    from pymodbus.client.asynchronous import ModbusTcpClient
+
 
 * Support Python 3.7
 * Fix to task cancellations and CRC errors for async serial clients.
+* Fix passing serial settings to asynchronous serial server.
 * Fix `AttributeError` when setting `interCharTimeout` for serial clients.
 * Provide an option to disable inter char timeouts with Modbus RTU.
 * Add support to register custom requests in clients and server instances.
@@ -14,21 +18,23 @@ from pymodbus.client.asynchronous import ModbusTcpClient
 * Fix SQLDbcontext always returning InvalidAddress error.
 * Fix SQLDbcontext update failure
 * Fix Binary payload example for endianess.
+* Fix BinaryPayloadDecoder.to_coils and BinaryPayloadBuilder.fromCoils methods.
 * Fix tornado async serial client `TypeError` while processing incoming packet.
 * Fix erroneous CRC handling in Modbus RTU framer.
 * Support broadcasting in Modbus Client and Servers (sync).
 * Fix asyncio examples.
 * Improved logging in Modbus Server .
+* ReportSlaveIdRequest would fetch information from Device identity instead of hardcoded `Pymodbus`.
 * Fix regression introduced in 2.2.0rc2 (Modbus sync client transaction failing)
 * Minor update in factory.py, now server logs prints received request instead of only function code
 
-```
-# Now
-DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]
-# Before
-DEBUG:pymodbus.factory:Factory Request[4]
+.. code-block:: bash
 
-```
+   # Now
+   # DEBUG:pymodbus.factory:Factory Request[ReadInputRegistersRequest: 4]
+   # Before
+   # DEBUG:pymodbus.factory:Factory Request[4]
+
 
 
 Version 2.1.0

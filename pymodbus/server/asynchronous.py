@@ -317,6 +317,12 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     port = kwargs.get('port', '/dev/ttyS0')
     baudrate = kwargs.get('baudrate', Defaults.Baudrate)
     console = kwargs.get('console', False)
+    bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+    stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+    parity = kwargs.get("parity", Defaults.Parity)
+    timeout = kwargs.get("timeout", 0)
+    xonxoff = kwargs.get("xonxoff", 0)
+    rtscts = kwargs.get("rtscts", 0)
 
     _logger.info("Starting Modbus Serial Server on %s" % port)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
@@ -329,7 +335,9 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging
-    SerialPort(protocol, port, reactor, baudrate)
+    SerialPort(protocol, port, reactor, baudrate=baudrate, parity=parity,
+               stopbits=stopbits, timeout=timeout, xonxoff=xonxoff,
+               rtscts=rtscts, bytesize=bytesize)
     if not defer_reactor_run:
         reactor.run(installSignalHandlers=_is_main_thread())
 

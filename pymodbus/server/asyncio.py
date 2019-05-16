@@ -4,7 +4,6 @@ Implementation of a Threaded Modbus Server
 
 """
 from binascii import b2a_hex
-import serial
 import socket
 import traceback
 
@@ -603,6 +602,7 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[],
                                   missing slave
     """
     raise NotImplementedException
+    import serial
     framer = kwargs.pop('framer', ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity, **kwargs)
     for f in custom_functions:

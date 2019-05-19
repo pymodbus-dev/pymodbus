@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 from pymodbus.compat import IS_PYTHON3
+import pytest
 import asynctest
 import asyncio
 import logging
 _logger = logging.getLogger()
 if IS_PYTHON3: # Python 3
     from asynctest.mock import patch, Mock, MagicMock
-else:
-    assert(False, "asyncio is not available pre-python 3.6")
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.factory import ServerDecoder
@@ -36,7 +35,7 @@ else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     SERIAL_PORT = "/dev/ptmx"
 
-
+@pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
 class AsyncioServerTest(asynctest.TestCase):
     '''
     This is the unittest for the pymodbus.server.asyncio module

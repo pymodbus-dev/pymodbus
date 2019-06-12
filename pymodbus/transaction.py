@@ -162,8 +162,7 @@ class ModbusTransactionManager(object):
                             break
                         if response:
                             mbap = self.client.framer.decode_data(response)
-                            if (mbap['unit'] == request.unit_id and 
-                                mbap['fcode'] == request.function_code):
+                            if (mbap['unit'] == request.unit_id):
                                 break
                             if ('lenght' in mbap and expected_response_length and 
                                 mbap['lenght'] == expected_response_length):

@@ -713,7 +713,7 @@ class AsyncioModbusSerialClient(object):
 
             yield from create_serial_connection(
                 self.loop, self._create_protocol, self.port, baudrate=self.baudrate,
-                bytesize=self.bytesize, stopbits=self.stopbits
+                bytesize=self.bytesize, stopbits=self.stopbits, parity=self.parity
             )
             yield from self._connected_event.wait()
             _logger.info('Connected to %s', self.port)

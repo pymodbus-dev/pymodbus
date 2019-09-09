@@ -16,3 +16,4 @@ verboselogs >= 1.5
 tornado==4.5.3
 Twisted>=17.1.0
 zope.interface>=4.4.0
+asynctest>=0.10.0

@@ -5,8 +5,6 @@ matrix:
   - os: linux
     python: "2.7"
   - os: linux
-    python: "3.4"
-  - os: linux
     python: "3.5"
   - os: linux
     python: "3.6"

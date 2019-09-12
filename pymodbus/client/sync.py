@@ -1,5 +1,6 @@
 import socket
 import select
+import serial
 import time
 import sys
 from functools import partial

@@ -62,7 +62,10 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             self.framer = self.server.framer(self.server.decoder, client=None)
 
             # schedule the connection handler on the event loop
-            self.handler_task = asyncio.create_task(self.handle())
+            if PYTHON_VERSION >= (3, 7):
+                self.handler_task = asyncio.create_task(self.handle())
+            else:
+                self.handler_task = asyncio.ensure_future(self.handle())
         except Exception as ex: # pragma: no cover
             _logger.debug("Datastore unable to fulfill request: "
                           "%s; %s", ex, traceback.format_exc())

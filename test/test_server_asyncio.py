@@ -75,6 +75,7 @@ class AsyncioServerTest(asynctest.TestCase):
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
         self.loop.create_server.assert_called_once()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testTcpServerServeNoDefer(self):
         ''' Test StartTcpServer without deferred start (immediate execution of server) '''
@@ -82,6 +83,7 @@ class AsyncioServerTest(asynctest.TestCase):
             server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
             serve.assert_awaited()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testTcpServerServeForever(self):
         ''' Test StartTcpServer serve_forever() method '''
@@ -416,6 +418,7 @@ class AsyncioServerTest(asynctest.TestCase):
     #     server = yield from StartUdpServer(address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
     #     server.server.serve_forever.assert_awaited()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testUdpServerServeForeverStart(self):
         ''' Test StartUdpServer serve_forever() method '''

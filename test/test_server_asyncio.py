@@ -73,7 +73,8 @@ class AsyncioServerTest(asynctest.TestCase):
         self.loop = asynctest.Mock(self.loop)
         server = yield from StartTcpServer(context=self.context,loop=self.loop,identity=identity)
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-        self.loop.create_server.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            self.loop.create_server.assert_called_once()
 
     @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
@@ -134,7 +135,8 @@ class AsyncioServerTest(asynctest.TestCase):
             # if this unit test fails on a machine, see if increasing the sleep time makes a difference, if it does
             # blame author for a fix
 
-            process.assert_called_once()
+            if PYTHON_VERSION >= (3, 6):
+                process.assert_called_once()
             self.assertTrue( process.call_args[1]["data"] == data )
             server.server_close()
 
@@ -409,7 +411,8 @@ class AsyncioServerTest(asynctest.TestCase):
         self.loop = asynctest.Mock(self.loop)
         server = yield from StartUdpServer(context=self.context,loop=self.loop,identity=identity)
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-        self.loop.create_datagram_endpoint.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            self.loop.create_datagram_endpoint.assert_called_once()
 
     # async def testUdpServerServeNoDefer(self):
     #     ''' Test StartUdpServer without deferred start - NOT IMPLEMENTED - this test is hard to do without additional
@@ -473,7 +476,8 @@ class AsyncioServerTest(asynctest.TestCase):
             yield from asyncio.sleep(0.1)
             process.seal()
 
-            process.assert_called_once()
+            if PYTHON_VERSION >= (3, 6):
+                process.assert_called_once()
             self.assertTrue( process.call_args[1]["data"] == b"12345" )
 
             server.server_close()
@@ -511,7 +515,8 @@ class AsyncioServerTest(asynctest.TestCase):
 
         yield from asyncio.sleep(0.1)
 
-        received.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            received.assert_called_once()
         self.assertEqual(received.call_args[0][0], data)
 
         server.server_close()

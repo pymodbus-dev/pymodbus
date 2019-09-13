@@ -421,7 +421,7 @@ class ModbusTcpServer:
 
     def server_close(self):
         for k,v in self.active_connections.items():
-            _logger.warning(f"aborting active session {k}")
+            _logger.warning("aborting active session {}".format(k))
             v.handler_task.cancel()
         self.active_connections = {}
         self.server.close()

@@ -250,9 +250,19 @@ def main(ctx, verbose):
     type=int,
     help="Modbus TCP port",
 )
-def tcp(ctx, host, port):
+@click.option(
+    "--framer",
+    default='tcp',
+    type=str,
+    help="Override the default packet framer tcp|rtu",
+)
+def tcp(ctx, host, port, framer):
     from pymodbus.repl.client import ModbusTcpClient
-    client = ModbusTcpClient(host=host, port=port)
+    kwargs = dict(host=host, port=port)
+    if framer == 'rtu':
+        from pymodbus.framer.rtu_framer import ModbusRtuFramer
+        kwargs['framer'] = ModbusRtuFramer
+    client = ModbusTcpClient(**kwargs)
     cli(client)
 
 

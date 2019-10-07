@@ -470,6 +470,7 @@ class ModbusSerialClient(BaseModbusClient):
 
         :returns: True if connection succeeded, False otherwise
         """
+        import serial
         if self.socket:
             return True
         try:

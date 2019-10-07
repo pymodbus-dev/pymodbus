@@ -2,3 +2,4 @@
 omit =
     pymodbus/repl/*
     pymodbus/internal/*
+    pymodbus/server/asyncio.py

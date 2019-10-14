@@ -8,9 +8,11 @@ else:  # Python 2
     from mock import patch, Mock, MagicMock
 import socket
 import serial
+import ssl
 
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
+from pymodbus.client.sync import ModbusTlsClient
 from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
@@ -157,7 +159,6 @@ class SynchronousClientTest(unittest.TestCase):
         )
         self.assertEqual(repr(client), rep)
 
-
     # -----------------------------------------------------------------------#
     # Test TCP Client
     # -----------------------------------------------------------------------#
@@ -249,6 +250,97 @@ class SynchronousClientTest(unittest.TestCase):
         client.framer = Mock()
         client.register(CustomeRequest)
         assert client.framer.decoder.register.called_once_with(CustomeRequest)
+
+    # -----------------------------------------------------------------------#
+    # Test TLS Client
+    # -----------------------------------------------------------------------#
+
+    def testSyncTlsClientInstantiation(self):
+        # default SSLContext
+        client = ModbusTlsClient()
+        self.assertNotEqual(client, None)
+        self.assertTrue(client.sslctx)
+
+        # user defined SSLContext
+        context = ssl.create_default_context()
+        client = ModbusTlsClient(sslctx=context)
+        self.assertNotEqual(client, None)
+        self.assertEqual(client.sslctx, context)
+
+    def testBasicSyncTlsClient(self):
+        ''' Test the basic methods for the tls sync client'''
+
+        # receive/send
+        client = ModbusTlsClient()
+        client.socket = mockSocket()
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(1, client._send(b'\x00'))
+        self.assertEqual(b'\x00', client._recv(1))
+
+        # connect/disconnect
+        self.assertTrue(client.connect())
+        client.close()
+
+        # already closed socket
+        client.socket = False
+        client.close()
+
+        self.assertEqual("ModbusTlsClient(localhost:802)", str(client))
+
+    def testTlsClientConnect(self):
+        ''' Test the tls client connection method'''
+        with patch.object(ssl.SSLSocket, 'connect') as mock_method:
+            client = ModbusTlsClient()
+            self.assertTrue(client.connect())
+
+        with patch.object(socket, 'create_connection') as mock_method:
+            mock_method.side_effect = socket.error()
+            client = ModbusTlsClient()
+            self.assertFalse(client.connect())
+
+    def testTlsClientSend(self):
+        ''' Test the tls client send method'''
+        client = ModbusTlsClient()
+        self.assertRaises(ConnectionException, lambda: client._send(None))
+
+        client.socket = mockSocket()
+        self.assertEqual(0, client._send(None))
+        self.assertEqual(4, client._send('1234'))
+
+    def testTlsClientRecv(self):
+        ''' Test the tls client receive method'''
+        client = ModbusTlsClient()
+        self.assertRaises(ConnectionException, lambda: client._recv(1024))
+
+        client.socket = mockSocket()
+        self.assertEqual(b'', client._recv(0))
+        self.assertEqual(b'\x00' * 4, client._recv(4))
+
+        mock_socket = MagicMock()
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        client.socket = mock_socket
+        client.timeout = 1
+        self.assertEqual(b'\x00\x01\x02', client._recv(3))
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        self.assertEqual(b'\x00\x01', client._recv(2))
+
+    def testTlsClientRpr(self):
+        client = ModbusTlsClient()
+        rep = "<{} at {} socket={}, ipaddr={}, port={}, sslctx={}, " \
+            "timeout={}>".format(
+            client.__class__.__name__, hex(id(client)), client.socket,
+            client.host, client.port, client.sslctx, client.timeout
+        )
+        self.assertEqual(repr(client), rep)
+
+    def testTlsClientRegister(self):
+        class CustomeRequest:
+            function_code = 79
+        client = ModbusTlsClient()
+        client.framer = Mock()
+        client.register(CustomeRequest)
+        assert client.framer.decoder.register.called_once_with(CustomeRequest)
+
     # -----------------------------------------------------------------------#
     # Test Serial Client
     # -----------------------------------------------------------------------#

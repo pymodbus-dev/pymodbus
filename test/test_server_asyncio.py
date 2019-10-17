@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from pymodbus.compat import IS_PYTHON3
+from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 import pytest
 import asynctest
 import asyncio
@@ -73,8 +73,10 @@ class AsyncioServerTest(asynctest.TestCase):
         self.loop = asynctest.Mock(self.loop)
         server = yield from StartTcpServer(context=self.context,loop=self.loop,identity=identity)
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-        self.loop.create_server.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            self.loop.create_server.assert_called_once()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testTcpServerServeNoDefer(self):
         ''' Test StartTcpServer without deferred start (immediate execution of server) '''
@@ -82,6 +84,7 @@ class AsyncioServerTest(asynctest.TestCase):
             server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
             serve.assert_awaited()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testTcpServerServeForever(self):
         ''' Test StartTcpServer serve_forever() method '''
@@ -94,7 +97,10 @@ class AsyncioServerTest(asynctest.TestCase):
     def testTcpServerServeForeverTwice(self):
         ''' Call on serve_forever() twice should result in a runtime error '''
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with self.assertRaises(RuntimeError):
             yield from server.serve_forever()
@@ -105,7 +111,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test data sent on socket is received by internals - doesn't not process data '''
         data = b'\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket', new_callable=Mock) as process:
         # process = server.framer.processIncomingPacket = Mock()
@@ -126,7 +135,8 @@ class AsyncioServerTest(asynctest.TestCase):
             # if this unit test fails on a machine, see if increasing the sleep time makes a difference, if it does
             # blame author for a fix
 
-            process.assert_called_once()
+            if PYTHON_VERSION >= (3, 6):
+                process.assert_called_once()
             self.assertTrue( process.call_args[1]["data"] == data )
             server.server_close()
 
@@ -136,7 +146,10 @@ class AsyncioServerTest(asynctest.TestCase):
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
         expected_response = b'\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11' # value of 17 as per context
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
 
         random_port = server.server.sockets[0].getsockname()[1] # get the random server port
@@ -172,7 +185,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test tcp stream interruption '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x01\x00\x00\x00\x01"
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
 
         random_port = server.server.sockets[0].getsockname()[1] # get the random server port
@@ -202,7 +218,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test server_close() while there are active TCP connections '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x01\x00\x00\x00\x01"
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
 
         random_port = server.server.sockets[0].getsockname()[1] # get the random server port
@@ -231,7 +250,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Sending garbage data on a TCP socket should drop the connection '''
         garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
                    new_callable=lambda : Mock(side_effect=Exception)) as process:
@@ -267,7 +289,10 @@ class AsyncioServerTest(asynctest.TestCase):
         context = ModbusServerContext(slaves={0x01: self.store, 0x02: self.store  }, single=False)
         data = b"\x01\x00\x00\x00\x00\x06\x05\x03\x00\x00\x00\x01" # get slave 5 function 3 (holding register)
         server = yield from StartTcpServer(context=context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         connect, receive, eof = self.loop.create_future(),self.loop.create_future(),self.loop.create_future()
         received_data = None
@@ -299,7 +324,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test sending garbage data on a TCP socket should drop the connection '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"  # get slave 5 function 3 (holding register)
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch("pymodbus.register_read_message.ReadHoldingRegistersRequest.execute",
                    side_effect=NoSuchSlaveException):
@@ -335,7 +363,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test sending garbage data on a TCP socket should drop the connection '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"  # get slave 5 function 3 (holding register)
         server = yield from StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch("pymodbus.register_read_message.ReadHoldingRegistersRequest.execute",
                    side_effect=Exception):
@@ -380,7 +411,8 @@ class AsyncioServerTest(asynctest.TestCase):
         self.loop = asynctest.Mock(self.loop)
         server = yield from StartUdpServer(context=self.context,loop=self.loop,identity=identity)
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
-        self.loop.create_datagram_endpoint.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            self.loop.create_datagram_endpoint.assert_called_once()
 
     # async def testUdpServerServeNoDefer(self):
     #     ''' Test StartUdpServer without deferred start - NOT IMPLEMENTED - this test is hard to do without additional
@@ -389,6 +421,7 @@ class AsyncioServerTest(asynctest.TestCase):
     #     server = yield from StartUdpServer(address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
     #     server.server.serve_forever.assert_awaited()
 
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
     @asyncio.coroutine
     def testUdpServerServeForeverStart(self):
         ''' Test StartUdpServer serve_forever() method '''
@@ -401,7 +434,10 @@ class AsyncioServerTest(asynctest.TestCase):
     def testUdpServerServeForeverClose(self):
         ''' Test StartUdpServer serve_forever() method '''
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
 
         self.assertTrue(asyncio.isfuture(server.on_connection_terminated))
@@ -416,7 +452,10 @@ class AsyncioServerTest(asynctest.TestCase):
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0),
                                       loop=self.loop,identity=identity)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with self.assertRaises(RuntimeError):
             yield from server.serve_forever()
@@ -426,7 +465,10 @@ class AsyncioServerTest(asynctest.TestCase):
     def testUdpServerReceiveData(self):
         ''' Test that the sending data on datagram socket gets data pushed to framer '''
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',new_callable=Mock) as process:
 
@@ -434,7 +476,8 @@ class AsyncioServerTest(asynctest.TestCase):
             yield from asyncio.sleep(0.1)
             process.seal()
 
-            process.assert_called_once()
+            if PYTHON_VERSION >= (3, 6):
+                process.assert_called_once()
             self.assertTrue( process.call_args[1]["data"] == b"12345" )
 
             server.server_close()
@@ -445,7 +488,10 @@ class AsyncioServerTest(asynctest.TestCase):
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         data = b'x\01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0))
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         random_port = server.protocol._sock.getsockname()[1]
         received = server.endpoint.datagram_received = Mock(wraps=server.endpoint.datagram_received)
@@ -469,7 +515,8 @@ class AsyncioServerTest(asynctest.TestCase):
 
         yield from asyncio.sleep(0.1)
 
-        received.assert_called_once()
+        if PYTHON_VERSION >= (3, 6):
+            received.assert_called_once()
         self.assertEqual(received.call_args[0][0], data)
 
         server.server_close()
@@ -483,7 +530,10 @@ class AsyncioServerTest(asynctest.TestCase):
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
         expected_response = b'\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11' # value of 17 as per context
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
 
         random_port = server.protocol._sock.getsockname()[1]
@@ -517,7 +567,10 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test sending garbage data on a TCP socket should drop the connection '''
         garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
         server = yield from StartUdpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
         yield from server.serving
         with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
                    new_callable=lambda: Mock(side_effect=Exception)) as process:

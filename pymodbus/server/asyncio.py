@@ -8,6 +8,7 @@ import socket
 import traceback
 
 import asyncio
+from pymodbus.compat import PYTHON_VERSION
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets
 from pymodbus.factory import ServerDecoder
@@ -61,7 +62,10 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             self.framer = self.server.framer(self.server.decoder, client=None)
 
             # schedule the connection handler on the event loop
-            self.handler_task = asyncio.create_task(self.handle())
+            if PYTHON_VERSION >= (3, 7):
+                self.handler_task = asyncio.create_task(self.handle())
+            else:
+                self.handler_task = asyncio.ensure_future(self.handle())
         except Exception as ex: # pragma: no cover
             _logger.debug("Datastore unable to fulfill request: "
                           "%s; %s", ex, traceback.format_exc())
@@ -392,12 +396,20 @@ class ModbusTcpServer:
 
         self.serving = self.loop.create_future()  # asyncio future that will be done once server has started
         self.server = None # constructors cannot be declared async, so we have to defer the initialization of the server
-        self.server_factory = self.loop.create_server(lambda : self.handler(self),
+        if PYTHON_VERSION >= (3, 7):
+            # start_serving is new in version 3.7
+            self.server_factory = self.loop.create_server(lambda : self.handler(self),
                                                    *self.address,
                                                    reuse_address=allow_reuse_address,
                                                    reuse_port=allow_reuse_port,
                                                    backlog=backlog,
                                                    start_serving=not defer_start)
+        else:
+            self.server_factory = self.loop.create_server(lambda : self.handler(self),
+                                                   *self.address,
+                                                   reuse_address=allow_reuse_address,
+                                                   reuse_port=allow_reuse_port,
+                                                   backlog=backlog)
 
     async def serve_forever(self):
         if self.server is None:
@@ -409,7 +421,7 @@ class ModbusTcpServer:
 
     def server_close(self):
         for k,v in self.active_connections.items():
-            _logger.warning(f"aborting active session {k}")
+            _logger.warning("aborting active session {}".format(k))
             v.handler_task.cancel()
         self.active_connections = {}
         self.server.close()

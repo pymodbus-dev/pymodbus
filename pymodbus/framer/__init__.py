@@ -8,6 +8,8 @@ FRAME_HEADER = 'BB'
 # Transaction Id, Protocol ID, Length, Unit ID, Function Code
 SOCKET_FRAME_HEADER = BYTE_ORDER + 'HHH' + FRAME_HEADER
 
+# Function Code
+TLS_FRAME_HEADER = BYTE_ORDER + 'B'
 
 class ModbusFramer(IModbusFramer):
     """

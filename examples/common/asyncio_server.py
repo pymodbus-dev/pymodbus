@@ -113,14 +113,14 @@ async def run_server():
     # ----------------------------------------------------------------------- #
     # Tcp:
     # immediately start serving:
-    # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
-    #                               allow_reuse_address=True)
+    await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), allow_reuse_address=True,
+                         defer_start=False)
 
     # 	deferred start:
     # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
-    # 							  allow_reuse_address=True, defer_start=True)
-
-    # asyncio.get_event_loop().call_later(20, lambda : server.)
+    #                               allow_reuse_address=True, defer_start=True)
+    #
+    # asyncio.get_event_loop().call_later(20, lambda : server.serve_forever)
     # await server.serve_forever()
 
     # TCP with different framer
@@ -128,10 +128,10 @@ async def run_server():
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
 
     # Udp:
-    server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),
-                                  allow_reuse_address=True, defer_start=True)
-    #
-    await server.serve_forever()
+    # server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),
+    #                               allow_reuse_address=True, defer_start=True)
+    # #
+    # await server.serve_forever()
 
     # !!! SERIAL SERVER NOT IMPLEMENTED !!!
     # Ascii:

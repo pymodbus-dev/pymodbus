@@ -262,18 +262,21 @@ class ModbusTcpClient(BaseModbusClient):
         else:
             recv_size = size
 
-        data = b''
+        data = []
+        data_length = 0
         time_ = time.time()
         end = time_ + timeout
         while recv_size > 0:
             ready = select.select([self.socket], [], [], end - time_)
             if ready[0]:
-                data += self.socket.recv(recv_size)
+                recv_data = self.socket.recv(recv_size)
+                data.append(recv_data)
+                data_length += len(recv_data)
             time_ = time.time()
 
             # If size isn't specified continue to read until timeout expires.
             if size:
-                recv_size = size - len(data)
+                recv_size = size - data_length
 
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
@@ -281,7 +284,7 @@ class ModbusTcpClient(BaseModbusClient):
             if time_ > end:
                 break
 
-        return data
+        return b"".join(data)
 
     def is_socket_open(self):
         return True if self.socket is not None else False

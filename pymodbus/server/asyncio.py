@@ -535,11 +535,12 @@ class ModbusSerialServer(object):
         """
         raise NotImplementedException
 
+
 # --------------------------------------------------------------------------- #
 # Creation Factories
 # --------------------------------------------------------------------------- #
 async def StartTcpServer(context=None, identity=None, address=None,
-                   custom_functions=[], defer_start=True, **kwargs):
+                         custom_functions=[], defer_start=True, **kwargs):
     """ A factory to start and run a tcp modbus server
 
     :param context: The ModbusServerContext datastore

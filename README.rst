@@ -205,4 +205,4 @@ Pymodbus is built on top of code developed from/by:
   * Hynek Petrak, https://github.com/HynekPetrak
   * Twisted Matrix
 
-Released under the BSD License
+Released under the `BSD License <LICENSE>`_

@@ -38,7 +38,7 @@ _logger = logging.getLogger(__name__)
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
 class ModbusTransactionManager(object):
-    """ Impelements a transaction for a manager
+    """ Implements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::
 

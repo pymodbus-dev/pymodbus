@@ -115,6 +115,9 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         return self._connected
 
+    def write_transport(self, packet):
+        return self.transport.write(packet)
+
     def execute(self, request, **kwargs):
         """
         Starts the producer to send the next request to
@@ -123,7 +126,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
-        self.transport.write(packet)
+        self.write_transport(packet)
         return self._buildResponse(request.transaction_id)
 
     def _dataReceived(self, data):
@@ -205,6 +208,9 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
 
     def datagram_received(self, data, addr):
         self._dataReceived(data)
+
+    def write_transport(self, packet):
+        return self.transport.sendto(packet)
 
 
 class ReconnectingAsyncioModbusTcpClient(object):

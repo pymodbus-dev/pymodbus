@@ -11,6 +11,7 @@ twisted is just not feasible. What follows is an example of its use:
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
+import asyncio
 from pymodbus.server.asyncio import StartTcpServer
 from pymodbus.server.asyncio import StartUdpServer
 from pymodbus.server.asyncio import StartSerialServer
@@ -105,15 +106,15 @@ async def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.2.0'
+    identity.MajorMinorRevision = '2.3.0'
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
     # immediately start serving:
-    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
-                                  allow_reuse_address=True)
+    # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
+    #                               allow_reuse_address=True)
 
     # 	deferred start:
     # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
@@ -122,19 +123,15 @@ async def run_server():
     # asyncio.get_event_loop().call_later(20, lambda : server.)
     # await server.serve_forever()
 
-
-
-
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
 
     # Udp:
-    # server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),
-    # 							  allow_reuse_address=True, defer_start=True)
+    server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),
+                                  allow_reuse_address=True, defer_start=True)
     #
-    # await server.serve_forever()
-
+    await server.serve_forever()
 
     # !!! SERIAL SERVER NOT IMPLEMENTED !!!
     # Ascii:

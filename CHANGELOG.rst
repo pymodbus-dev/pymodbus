@@ -1,3 +1,11 @@
+Version 2.3.0
+-----------------------------------------------------------
+* Support Modbus TLS (client / server)
+* Distribute license with source
+* BinaryPayloadDecoder/Encoder now supports float16 on python3.6 and above
+* Fix asyncio UDP client/server
+* Minor cosmetic updates
+
 Version 2.3.0rc1
 -----------------------------------------------------------
 * Asyncio Server implementation (Python 3.7 and above only)

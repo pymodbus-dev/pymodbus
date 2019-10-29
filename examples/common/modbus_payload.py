@@ -81,6 +81,8 @@ def run_binary_payload_ex():
     builder.add_16bit_uint(0x1234)
     builder.add_32bit_int(-0x1234)
     builder.add_32bit_uint(0x12345678)
+    builder.add_16bit_float(12.34)
+    builder.add_16bit_float(-12.34)
     builder.add_32bit_float(22.34)
     builder.add_32bit_float(-22.34)
     builder.add_64bit_int(-0xDEADBEEF)
@@ -144,6 +146,8 @@ def run_binary_payload_ex():
         ('16uint', decoder.decode_16bit_uint()),
         ('32int', decoder.decode_32bit_int()),
         ('32uint', decoder.decode_32bit_uint()),
+        ('16float', decoder.decode_16bit_float()),
+        ('16float2', decoder.decode_16bit_float()),
         ('32float', decoder.decode_32bit_float()),
         ('32float2', decoder.decode_32bit_float()),
         ('64int', decoder.decode_64bit_int()),

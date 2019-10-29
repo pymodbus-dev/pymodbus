@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 """
-Pymodbus Synchronous Server Example
+Pymodbus Asyncio Server Example
 --------------------------------------------------------------------------
 
-The synchronous server is implemented in pure python without any third
+The asyncio server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
-pyserial). This is helpful in constrained or old environments where using
+asyncio-pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.server.sync import StartTcpServer
-from pymodbus.server.sync import StartTlsServer
-from pymodbus.server.sync import StartUdpServer
-from pymodbus.server.sync import StartSerialServer
+import asyncio
+from pymodbus.server.asyncio import StartTcpServer
+from pymodbus.server.asyncio import StartUdpServer
+from pymodbus.server.asyncio import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
@@ -32,7 +32,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
-def run_server():
+async def run_server():
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -112,19 +112,28 @@ def run_server():
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
+    # immediately start serving:
+    await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), allow_reuse_address=True,
+                         defer_start=False)
+
+    # 	deferred start:
+    # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
+    #                               allow_reuse_address=True, defer_start=True)
+    #
+    # asyncio.get_event_loop().call_later(20, lambda : server.serve_forever)
+    # await server.serve_forever()
 
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
 
-    # TLS
-    # StartTlsServer(context, identity=identity, certfile="server.crt",
-    #                keyfile="server.key", address=("0.0.0.0", 8020))
-
     # Udp:
-    # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
+    # server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),
+    #                               allow_reuse_address=True, defer_start=True)
+    # #
+    # await server.serve_forever()
 
+    # !!! SERIAL SERVER NOT IMPLEMENTED !!!
     # Ascii:
     # StartSerialServer(context, identity=identity,
     #                    port='/dev/ttyp0', timeout=1)
@@ -142,5 +151,5 @@ def run_server():
 
 
 if __name__ == "__main__":
-    run_server()
+    asyncio.run(run_server())
 

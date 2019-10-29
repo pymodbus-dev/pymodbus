@@ -14,6 +14,7 @@ from pymodbus.constants import Defaults
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.compat import iterkeys, byte2int
@@ -37,7 +38,7 @@ _logger = logging.getLogger(__name__)
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
 class ModbusTransactionManager(object):
-    """ Impelements a transaction for a manager
+    """ Implements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::
 
@@ -78,6 +79,8 @@ class ModbusTransactionManager(object):
             self.base_adu_size = 7  # start(1)+ Address(2), LRC(2) + end(2)
         elif isinstance(self.client.framer, ModbusBinaryFramer):
             self.base_adu_size = 5  # start(1) + Address(1), CRC(2) + end(1)
+        elif isinstance(self.client.framer, ModbusTlsFramer):
+            self.base_adu_size = 0  # no header and footer
         else:
             self.base_adu_size = -1
 
@@ -91,7 +94,8 @@ class ModbusTransactionManager(object):
         """ Returns the length of the Modbus Exception Response according to
         the type of Framer.
         """
-        if isinstance(self.client.framer, ModbusSocketFramer):
+        if isinstance(self.client.framer, (ModbusSocketFramer,
+                                           ModbusTlsFramer)):
             return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
         elif isinstance(self.client.framer, ModbusAsciiFramer):
             return self.base_adu_size + 4  # Fcode(2), ExcecptionCode(2)
@@ -459,6 +463,6 @@ class FifoTransactionManager(ModbusTransactionManager):
 __all__ = [
     "FifoTransactionManager",
     "DictTransactionManager",
-    "ModbusSocketFramer", "ModbusRtuFramer",
+    "ModbusSocketFramer", "ModbusTlsFramer", "ModbusRtuFramer",
     "ModbusAsciiFramer", "ModbusBinaryFramer",
 ]

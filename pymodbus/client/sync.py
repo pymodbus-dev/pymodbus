@@ -2,6 +2,7 @@ import socket
 import select
 import serial
 import time
+import ssl
 import sys
 from functools import partial
 from pymodbus.constants import Defaults
@@ -13,6 +14,7 @@ from pymodbus.transaction import FifoTransactionManager
 from pymodbus.transaction import DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
+from pymodbus.transaction import ModbusTlsFramer
 from pymodbus.client.common import ModbusClientMixin
 
 # --------------------------------------------------------------------------- #
@@ -260,18 +262,21 @@ class ModbusTcpClient(BaseModbusClient):
         else:
             recv_size = size
 
-        data = b''
+        data = []
+        data_length = 0
         time_ = time.time()
         end = time_ + timeout
         while recv_size > 0:
             ready = select.select([self.socket], [], [], end - time_)
             if ready[0]:
-                data += self.socket.recv(recv_size)
+                recv_data = self.socket.recv(recv_size)
+                data.append(recv_data)
+                data_length += len(recv_data)
             time_ = time.time()
 
             # If size isn't specified continue to read until timeout expires.
             if size:
-                recv_size = size - len(data)
+                recv_size = size - data_length
 
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
@@ -279,7 +284,7 @@ class ModbusTcpClient(BaseModbusClient):
             if time_ > end:
                 break
 
-        return data
+        return b"".join(data)
 
     def is_socket_open(self):
         return True if self.socket is not None else False
@@ -296,6 +301,116 @@ class ModbusTcpClient(BaseModbusClient):
             "<{} at {} socket={self.socket}, ipaddr={self.host}, "
             "port={self.port}, timeout={self.timeout}>"
         ).format(self.__class__.__name__, hex(id(self)), self=self)
+
+# --------------------------------------------------------------------------- #
+# Modbus TLS Client Transport Implementation
+# --------------------------------------------------------------------------- #
+
+
+class ModbusTlsClient(ModbusTcpClient):
+    """ Implementation of a modbus tls client
+    """
+
+    def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None,
+        framer=ModbusTlsFramer, **kwargs):
+        """ Initialize a client instance
+
+        :param host: The host to connect to (default localhost)
+        :param port: The modbus port to connect to (default 802)
+        :param sslctx: The SSLContext to use for TLS (default None and auto create)
+        :param source_address: The source address tuple to bind to (default ('', 0))
+        :param timeout: The timeout to use for this socket (default Defaults.Timeout)
+        :param framer: The modbus framer to use (default ModbusSocketFramer)
+
+        .. note:: The host argument will accept ipv4 and ipv6 hosts
+        """
+        self.sslctx = sslctx
+        if self.sslctx is None:
+            self.sslctx = ssl.create_default_context()
+            # According to MODBUS/TCP Security Protocol Specification, it is
+            # TLSv2 at least
+            self.sslctx.options |= ssl.OP_NO_TLSv1_1
+            self.sslctx.options |= ssl.OP_NO_TLSv1
+            self.sslctx.options |= ssl.OP_NO_SSLv3
+            self.sslctx.options |= ssl.OP_NO_SSLv2
+        ModbusTcpClient.__init__(self, host, port, framer, **kwargs)
+
+    def connect(self):
+        """ Connect to the modbus tls server
+
+        :returns: True if connection succeeded, False otherwise
+        """
+        if self.socket: return True
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(self.source_address)
+            self.socket = self.sslctx.wrap_socket(sock, server_side=False,
+                                                  server_hostname=self.host)
+            self.socket.settimeout(self.timeout)
+            self.socket.connect((self.host, self.port))
+        except socket.error as msg:
+            _logger.error('Connection to (%s, %s) '
+                          'failed: %s' % (self.host, self.port, msg))
+            self.close()
+        return self.socket is not None
+
+    def _recv(self, size):
+        """ Reads data from the underlying descriptor
+
+        :param size: The number of bytes to read
+        :return: The bytes read
+        """
+        if not self.socket:
+            raise ConnectionException(self.__str__())
+
+        # socket.recv(size) waits until it gets some data from the host but
+        # not necessarily the entire response that can be fragmented in
+        # many packets.
+        # To avoid the splitted responses to be recognized as invalid
+        # messages and to be discarded, loops socket.recv until full data
+        # is received or timeout is expired.
+        # If timeout expires returns the read data, also if its length is
+        # less than the expected size.
+        timeout = self.timeout
+
+        # If size isn't specified read 1 byte at a time.
+        if size is None:
+            recv_size = 1
+        else:
+            recv_size = size
+
+        data = b''
+        time_ = time.time()
+        end = time_ + timeout
+        while recv_size > 0:
+            data += self.socket.recv(recv_size)
+            time_ = time.time()
+
+            # If size isn't specified continue to read until timeout expires.
+            if size:
+                recv_size = size - len(data)
+
+            # Timeout is reduced also if some data has been received in order
+            # to avoid infinite loops when there isn't an expected response
+            # size and the slave sends noisy data continuosly.
+            if time_ > end:
+                break
+
+        return data
+
+    def __str__(self):
+        """ Builds a string representation of the connection
+
+        :returns: The string representation
+        """
+        return "ModbusTlsClient(%s:%s)" % (self.host, self.port)
+
+    def __repr__(self):
+        return (
+            "<{} at {} socket={self.socket}, ipaddr={self.host}, "
+            "port={self.port}, sslctx={self.sslctx}, timeout={self.timeout}>"
+        ).format(self.__class__.__name__, hex(id(self)), self=self)
+
 
 # --------------------------------------------------------------------------- #
 # Modbus UDP Client Transport Implementation
@@ -470,6 +585,7 @@ class ModbusSerialClient(BaseModbusClient):
 
         :returns: True if connection succeeded, False otherwise
         """
+        import serial
         if self.socket:
             return True
         try:
@@ -593,5 +709,5 @@ class ModbusSerialClient(BaseModbusClient):
 
 
 __all__ = [
-    "ModbusTcpClient", "ModbusUdpClient", "ModbusSerialClient"
+    "ModbusTcpClient", "ModbusTlsClient", "ModbusUdpClient", "ModbusSerialClient"
 ]

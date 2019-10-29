@@ -33,6 +33,7 @@ FORMATTERS = {
     'uint16': 'decode_16bit_uint',
     'uint32': 'decode_32bit_uint',
     'uint64': 'decode_64bit_int',
+    'float16': 'decode_16bit_float',
     'float32': 'decode_32bit_float',
     'float64': 'decode_64bit_float',
 }

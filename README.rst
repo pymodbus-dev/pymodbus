@@ -99,7 +99,7 @@ get lost in the noise: http://groups.google.com/group/pymodbus or
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 ------------------------------------------------------------
-Pymodbus REPL (Read Evaluate Procee Loop)
+Pymodbus REPL (Read Evaluate Print Loop)
 ------------------------------------------------------------
 Starting with Pymodbus 2.x, pymodbus library comes with handy
 Pymodbus REPL to quickly run the modbus clients in tcp/rtu modes.
@@ -205,4 +205,4 @@ Pymodbus is built on top of code developed from/by:
   * Hynek Petrak, https://github.com/HynekPetrak
   * Twisted Matrix
 
-Released under the BSD License
+Released under the `BSD License <LICENSE>`_

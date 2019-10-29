@@ -40,8 +40,8 @@ setup(
     version=__version__,
     description="A fully featured modbus protocol stack in python",
     long_description="""
-        Pymodbus aims to be a fully implemented modbus protocol stack 
-        implemented using twisted/asyncio/tornado.  
+        Pymodbus aims to be a fully implemented modbus protocol stack
+        implemented using twisted/asyncio/tornado.
         Its orignal goal was to allow simulation of thousands of modbus devices
         on a single machine for monitoring software testing.
     """,
@@ -64,7 +64,7 @@ setup(
     maintainer=__maintainer__,
     maintainer_email='otlasanju@gmail.com',
     url='https://github.com/riptideio/pymodbus/',
-    license='BSD',
+    license='BSD-3-Clause',
     packages=find_packages(exclude=['examples', 'test']),
     exclude_package_data={'': ['examples', 'test', 'tools', 'doc']},
     py_modules=['ez_setup'],
@@ -85,7 +85,6 @@ setup(
         'twisted': [
             'twisted >= 12.2.0',
             'pyasn1 >= 0.1.4',
-            'pycrypto >= 2.6'
         ],
         'tornado': [
             'tornado >= 4.5.3'

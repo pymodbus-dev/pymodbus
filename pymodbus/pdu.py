@@ -19,7 +19,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 class ModbusPDU(object):
     """
-    Base class for all Modbus mesages
+    Base class for all Modbus messages
 
     .. attribute:: transaction_id
 

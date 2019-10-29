@@ -16,9 +16,9 @@ the guard construct that is available in python 2.5 and up::
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-# from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+# from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

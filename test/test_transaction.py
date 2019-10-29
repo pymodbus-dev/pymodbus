@@ -5,8 +5,8 @@ from binascii import a2b_hex
 from pymodbus.pdu import *
 from pymodbus.transaction import *
 from pymodbus.transaction import (
-    ModbusTransactionManager, ModbusSocketFramer, ModbusAsciiFramer,
-    ModbusRtuFramer, ModbusBinaryFramer
+    ModbusTransactionManager, ModbusSocketFramer, ModbusTlsFramer,
+    ModbusAsciiFramer, ModbusRtuFramer, ModbusBinaryFramer
 )
 from pymodbus.factory import ServerDecoder
 from pymodbus.compat import byte2int
@@ -29,6 +29,7 @@ class ModbusTransactionTest(unittest.TestCase):
         self.client   = None
         self.decoder  = ServerDecoder()
         self._tcp     = ModbusSocketFramer(decoder=self.decoder, client=None)
+        self._tls     = ModbusTlsFramer(decoder=self.decoder, client=None)
         self._rtu     = ModbusRtuFramer(decoder=self.decoder, client=None)
         self._ascii   = ModbusAsciiFramer(decoder=self.decoder, client=None)
         self._binary  = ModbusBinaryFramer(decoder=self.decoder, client=None)
@@ -40,6 +41,7 @@ class ModbusTransactionTest(unittest.TestCase):
         """ Cleans up the test environment """
         del self._manager
         del self._tcp
+        del self._tls
         del self._rtu
         del self._ascii
 
@@ -60,6 +62,7 @@ class ModbusTransactionTest(unittest.TestCase):
                                          ('binary', 7),
                                          ('rtu', 5),
                                          ('tcp', 9),
+                                         ('tls', 2),
                                          ('dummy', None)]:
             self._tm.client = MagicMock()
             if framer == "ascii":
@@ -70,6 +73,8 @@ class ModbusTransactionTest(unittest.TestCase):
                 self._tm.client.framer = self._rtu
             elif framer == "tcp":
                 self._tm.client.framer = self._tcp
+            elif framer == "tls":
+                self._tm.client.framer = self._tls
             else:
                 self._tm.client.framer = MagicMock()
 
@@ -300,6 +305,137 @@ class ModbusTransactionTest(unittest.TestCase):
         message.function_code  = 0x01
         expected = b"\x00\x01\x12\x34\x00\x02\xff\x01"
         actual = self._tcp.buildPacket(message)
+        self.assertEqual(expected, actual)
+        ModbusRequest.encode = old_encode
+
+    # ----------------------------------------------------------------------- #
+    # TLS tests
+    # ----------------------------------------------------------------------- #
+    def testTLSFramerTransactionReady(self):
+        """ Test a tls frame transaction """
+        msg = b"\x01\x12\x34\x00\x08"
+        self.assertFalse(self._tls.isFrameReady())
+        self.assertFalse(self._tls.checkFrame())
+        self._tls.addToFrame(msg)
+        self.assertTrue(self._tls.isFrameReady())
+        self.assertTrue(self._tls.checkFrame())
+        self._tls.advanceFrame()
+        self.assertFalse(self._tls.isFrameReady())
+        self.assertFalse(self._tls.checkFrame())
+        self.assertEqual(b'', self._tls.getFrame())
+
+    def testTLSFramerTransactionFull(self):
+        """ Test a full tls frame transaction """
+        msg = b"\x01\x12\x34\x00\x08"
+        self._tls.addToFrame(msg)
+        self.assertTrue(self._tls.checkFrame())
+        result = self._tls.getFrame()
+        self.assertEqual(msg[0:], result)
+        self._tls.advanceFrame()
+
+    def testTLSFramerTransactionHalf(self):
+        """ Test a half completed tls frame transaction """
+        msg1 = b""
+        msg2 = b"\x01\x12\x34\x00\x08"
+        self._tls.addToFrame(msg1)
+        self.assertFalse(self._tls.checkFrame())
+        result = self._tls.getFrame()
+        self.assertEqual(b'', result)
+        self._tls.addToFrame(msg2)
+        self.assertTrue(self._tls.checkFrame())
+        result = self._tls.getFrame()
+        self.assertEqual(msg2[0:], result)
+        self._tls.advanceFrame()
+
+    def testTLSFramerTransactionShort(self):
+        """ Test that we can get back on track after an invalid message """
+        msg1 = b""
+        msg2 = b"\x01\x12\x34\x00\x08"
+        self._tls.addToFrame(msg1)
+        self.assertFalse(self._tls.checkFrame())
+        result = self._tls.getFrame()
+        self.assertEqual(b'', result)
+        self._tls.advanceFrame()
+        self._tls.addToFrame(msg2)
+        self.assertEqual(5, len(self._tls._buffer))
+        self.assertTrue(self._tls.checkFrame())
+        result = self._tls.getFrame()
+        self.assertEqual(msg2[0:], result)
+        self._tls.advanceFrame()
+
+    def testTLSFramerDecode(self):
+        """ Testmessage decoding """
+        msg1 = b""
+        msg2 = b"\x01\x12\x34\x00\x08"
+        result = self._tls.decode_data(msg1)
+        self.assertEqual(dict(), result);
+        result = self._tls.decode_data(msg2)
+        self.assertEqual(dict(fcode=1), result);
+        self._tls.advanceFrame()
+
+    def testTLSIncomingPacket(self):
+        msg = b"\x01\x12\x34\x00\x08"
+
+        unit = 0x01
+        def mock_callback(self):
+            pass
+
+        self._tls._process = MagicMock()
+        self._tls.isFrameReady = MagicMock(return_value=False)
+        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self.assertEqual(msg, self._tls.getRawFrame())
+        self._tls.advanceFrame()
+
+        self._tls.isFrameReady = MagicMock(return_value=True)
+        self._tls._validate_unit_id = MagicMock(return_value=False)
+        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self.assertEqual(b'', self._tls.getRawFrame())
+        self._tls.advanceFrame()
+
+        self._tls._validate_unit_id = MagicMock(return_value=True)
+        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self.assertEqual(msg, self._tls.getRawFrame())
+        self._tls.advanceFrame()
+
+    def testTLSProcess(self):
+        class MockResult(object):
+            def __init__(self, code):
+                self.function_code = code
+
+        def mock_callback(self):
+            pass
+
+        self._tls.decoder.decode = MagicMock(return_value=None)
+        self.assertRaises(ModbusIOException,
+                          lambda: self._tls._process(mock_callback))
+
+        result = MockResult(0x01)
+        self._tls.decoder.decode = MagicMock(return_value=result)
+        self.assertRaises(InvalidMessageReceivedException,
+                          lambda: self._tls._process(mock_callback, error=True))
+
+        self._tls._process(mock_callback)
+        self.assertEqual(b'', self._tls.getRawFrame())
+
+    def testTLSFramerPopulate(self):
+        """ Test a tls frame packet build """
+        expected = ModbusRequest()
+        msg = b"\x01\x12\x34\x00\x08"
+        self._tls.addToFrame(msg)
+        self.assertTrue(self._tls.checkFrame())
+        actual = ModbusRequest()
+        result = self._tls.populateResult(actual)
+        self.assertEqual(None, result)
+        self._tls.advanceFrame()
+
+    def testTLSFramerPacket(self):
+        """ Test a tls frame packet build """
+        old_encode = ModbusRequest.encode
+        ModbusRequest.encode = lambda self: b''
+        message = ModbusRequest()
+        message.function_code  = 0x01
+        expected = b"\x01"
+        actual = self._tls.buildPacket(message)
         self.assertEqual(expected, actual)
         ModbusRequest.encode = old_encode
 

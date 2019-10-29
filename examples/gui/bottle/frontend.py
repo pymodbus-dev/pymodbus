@@ -277,7 +277,7 @@ if __name__ == '__main__':
     identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName   = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.2.0'
+    identity.MajorMinorRevision = '2.3.0'
 
     # ------------------------------------------------------------
     # initialize the datastore

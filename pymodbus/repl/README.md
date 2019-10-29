@@ -41,6 +41,7 @@ Usage: pymodbus.console tcp [OPTIONS]
 Options:
   --host TEXT     Modbus TCP IP
   --port INTEGER  Modbus TCP port
+  --framer TEXT   Override the default packet framer tcp|rtu
   --help          Show this message and exit.
 
 

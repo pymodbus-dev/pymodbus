@@ -16,8 +16,8 @@ if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     # Import the required asynchronous client
     # ----------------------------------------------------------------------- #
     from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
-    # from pymodbus.client.asynchronous.udp import (
-    #     AsyncModbusUDPClient as ModbusClient)
+    from pymodbus.client.asynchronous.udp import (
+        AsyncModbusUDPClient as ModbusClient)
     from pymodbus.client.asynchronous import schedulers
 
 else:
@@ -141,6 +141,7 @@ def run_with_not_running_loop():
     log.debug("------------------------------------------------------")
     loop = asyncio.new_event_loop()
     assert not loop.is_running()
+    asyncio.set_event_loop(loop)
     new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
@@ -191,9 +192,12 @@ def run_with_no_loop():
     ModbusClient Factory creates a loop.
     :return:
     """
+    log.debug("---------------------RUN_WITH_NO_LOOP-----------------")
     loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020)
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
+    log.debug("--------DONE RUN_WITH_NO_LOOP-------------")
+    log.debug("")
 
 
 if __name__ == '__main__':
@@ -207,5 +211,5 @@ if __name__ == '__main__':
 
     # Run with already running loop
     run_with_already_running_loop()
-    log.debug("---------------------RUN_WITH_NO_LOOP-----------------")
+
     log.debug("")

@@ -15,6 +15,10 @@ class Defaults(Singleton):
 
        The default modbus tcp server port (502)
 
+    .. attribute:: TLSPort
+
+       The default modbus tcp over tls server port (802)
+
     .. attribute:: Retries
 
        The default number of times a client should retry the given
@@ -99,6 +103,7 @@ class Defaults(Singleton):
 
     '''
     Port                = 502
+    TLSPort             = 802
     Retries             = 3
     RetryOnEmpty        = False
     Timeout             = 3

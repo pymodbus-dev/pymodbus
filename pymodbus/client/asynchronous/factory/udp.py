@@ -69,7 +69,11 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     loop = kwargs.get("loop") or asyncio.get_event_loop()
     proto_cls = kwargs.get("proto_cls", None)
     cor = init_udp_client(proto_cls, loop, host, port)
-    client = loop.run_until_complete(asyncio.gather(cor))[0]
+    if not loop.is_running():
+        client = loop.run_until_complete(asyncio.gather(cor))[0]
+    else:
+        client = asyncio.run_coroutine_threadsafe(cor, loop=loop)
+        client = client.result()
     return loop, client
 
 

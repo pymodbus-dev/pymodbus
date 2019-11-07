@@ -88,7 +88,13 @@ def test_reset_framer(rtu_framer, data):
     assert rtu_framer._buffer == b''
 
 
-@pytest.mark.parametrize("data", [(b'', False), (b'abcd', True)])
+@pytest.mark.parametrize("data", [
+    (b'', False),
+    (b'\x11\x03\x06', False),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49', False),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', True),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD', True)
+])
 def test_is_frame_ready(rtu_framer, data):
     data, expected = data
     rtu_framer._buffer = data

@@ -137,7 +137,13 @@ class ModbusRtuFramer(ModbusFramer):
 
         :returns: True if ready, False otherwise
         """
-        return len(self._buffer) > self._hsize
+        if len(self._buffer) > self._hsize:
+            if not self._header:
+                self.populateHeader()
+
+            return self._header and len(self._buffer) >= self._header['len']
+        else:
+            return False
 
     def populateHeader(self, data=None):
         """

@@ -539,6 +539,7 @@ class ModbusSerialClient(BaseModbusClient):
         :param timeout: The timeout between serial requests (default 3s)
         :param strict:  Use Inter char timeout for baudrates <= 19200 (adhere
         to modbus standards)
+        :param handle_local_echo: Handle local echo of the USB-to-RS485 adaptor
         """
         self.method = method
         self.socket = None
@@ -553,6 +554,7 @@ class ModbusSerialClient(BaseModbusClient):
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
         self._strict = kwargs.get("strict", True)
         self.last_frame_end = None
+        self.handle_local_echo = kwargs.get("handle_local_echo", False)
         if self.method == "rtu":
             if self.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms

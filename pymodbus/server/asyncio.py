@@ -244,12 +244,12 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
 
         self.client_address = transport.get_extra_info('peername')
         self.server.active_connections[self.client_address] = self
-        _logger.debug("TCP client connection established [%s:%s]" % self.client_address)
+        _logger.debug("TCP client connection established [%s]" % self.client_address)
 
     def connection_lost(self, exc):
         """ asyncio.BaseProtocol: Called when the connection is lost or closed."""
         super().connection_lost(exc)
-        _logger.debug("TCP client disconnected [%s:%s]" % self.client_address)
+        _logger.debug("TCP client disconnected [%s]" % self.client_address)
         if self.client_address in self.server.active_connections:
             self.server.active_connections.pop(self.client_address)
 

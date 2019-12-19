@@ -5,6 +5,7 @@ Collection of transaction based abstractions
 
 import struct
 import socket
+import time
 from threading import RLock
 from functools import partial
 
@@ -62,7 +63,9 @@ class ModbusTransactionManager(object):
         """
         self.tid = Defaults.TransactionId
         self.client = client
+        self.backoff = kwargs.get('backoff', Defaults.Backoff) or 0.3
         self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
+        self.retry_on_invalid = kwargs.get('retry_on_invalid', Defaults.RetryOnInvalid)
         self.retries = kwargs.get('retries', Defaults.Retries) or 1
         self._transaction_lock = RLock()
         self._no_response_devices = []
@@ -146,34 +149,42 @@ class ModbusTransactionManager(object):
                         full = True
                         if not expected_response_length:
                             expected_response_length = Defaults.ReadSize
-                    response, last_exception = self._transact(
-                        request,
-                        expected_response_length,
-                        full=full,
-                        broadcast=broadcast
-                    )
-                    if not response and (
-                            request.unit_id not in self._no_response_devices):
-                        self._no_response_devices.append(request.unit_id)
-                    elif request.unit_id in self._no_response_devices and response:
-                        self._no_response_devices.remove(request.unit_id)
-                    if not response and self.retry_on_empty and retries:
-                        while retries > 0:
-                            if hasattr(self.client, "state"):
-                                _logger.debug("RESETTING Transaction state to "
-                                              "'IDLE' for retry")
-                                self.client.state = ModbusTransactionState.IDLE
-                            _logger.debug("Retry on empty - {}".format(retries))
-                            response, last_exception = self._transact(
-                                request,
-                                expected_response_length
-                            )
-                            if not response:
-                                retries -= 1
-                                continue
-                            # Remove entry
+                    retries += 1
+                    while retries > 0:
+                        response, last_exception = self._transact(
+                            request,
+                            expected_response_length,
+                            full=full,
+                            broadcast=broadcast
+                        )
+                        if not response and (
+                                request.unit_id not in self._no_response_devices):
+                            self._no_response_devices.append(request.unit_id)
+                        elif request.unit_id in self._no_response_devices and response:
                             self._no_response_devices.remove(request.unit_id)
+                        if not response and self.retry_on_empty:
+                            _logger.debug("Retry on empty - {}".format(retries))
+                        elif not response:
                             break
+                        if not self.retry_on_invalid:
+                            break
+                        mbap = self.client.framer.decode_data(response)
+                        if (mbap.get('unit') == request.unit_id):
+                            break
+                        if ('lenght' in mbap and expected_response_length and
+                            mbap.get('lenght') == expected_response_length):
+                            break
+                        _logger.debug("Retry on invalid - {}".format(retries))
+                        if hasattr(self.client, "state"):
+                            _logger.debug("RESETTING Transaction state to 'IDLE' for retry")
+                            self.client.state = ModbusTransactionState.IDLE
+                        if self.backoff:
+                            delay = 2 ** (self.retries - retries) * self.backoff
+                            time.sleep(delay)
+                            _logger.debug("Sleeping {}".format(delay))
+                        full = False
+                        broadcast = False
+                        retries -= 1
                     addTransaction = partial(self.addTransaction,
                                              tid=request.transaction_id)
                     self.client.framer.processIncomingPacket(response,

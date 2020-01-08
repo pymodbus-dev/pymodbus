@@ -55,6 +55,7 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Operating System :: Unix',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: System :: Networking',
         'Topic :: Utilities'
     ],

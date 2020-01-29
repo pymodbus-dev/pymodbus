@@ -1,3 +1,9 @@
+Version 2.4.0
+----------------------------------------------------------
+* Support async moduls tls server/client
+* Add local echo option
+* Add exponential backoffs on retries.
+
 Version 2.3.0
 -----------------------------------------------------------
 * Support Modbus TLS (client / server)

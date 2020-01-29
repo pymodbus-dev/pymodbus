@@ -19,6 +19,10 @@ class Defaults(Singleton):
 
        The default modbus tcp over tls server port (802)
 
+    .. attribute:: Backoff
+
+       The default exponential backoff delay (0.3 seconds)
+
     .. attribute:: Retries
 
        The default number of times a client should retry the given
@@ -28,7 +32,12 @@ class Defaults(Singleton):
 
        A flag indicating if a transaction should be retried in the
        case that an empty response is received. This is useful for
-       slow clients that may need more time to process a requst.
+       slow clients that may need more time to process a request.
+
+    .. attribute:: RetryOnInvalid
+
+       A flag indicating if a transaction should be retried in the
+       case that an invalid response is received.
 
     .. attribute:: Timeout
 
@@ -104,8 +113,10 @@ class Defaults(Singleton):
     '''
     Port                = 502
     TLSPort             = 802
+    Backoff             = 0.3
     Retries             = 3
     RetryOnEmpty        = False
+    RetryOnInvalid      = False
     Timeout             = 3
     Reconnects          = 0
     TransactionId       = 0

@@ -11,7 +11,7 @@ if IS_PYTHON3: # Python 3
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.factory import ServerDecoder
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.asyncio import StartTcpServer, StartUdpServer, StartSerialServer, StopServer, ModbusServerFactory
+from pymodbus.server.asyncio import StartTcpServer, StartTlsServer, StartUdpServer, StartSerialServer, StopServer, ModbusServerFactory
 from pymodbus.server.asyncio import ModbusConnectedRequestHandler, ModbusBaseRequestHandler
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -20,6 +20,7 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
 import sys
+import ssl
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
@@ -398,6 +399,54 @@ class AsyncioServerTest(asynctest.TestCase):
             transport.close()
             server.server_close()
 
+
+    #-----------------------------------------------------------------------#
+    # Test ModbusTlsProtocol
+    #-----------------------------------------------------------------------#
+    @asyncio.coroutine
+    def testStartTlsServer(self):
+        ''' Test that the modbus tls asyncio server starts correctly '''
+        with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+            self.loop = asynctest.Mock(self.loop)
+            server = yield from StartTlsServer(context=self.context,loop=self.loop,identity=identity)
+            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+            self.assertIsNotNone(server.sslctx)
+            if PYTHON_VERSION >= (3, 6):
+                self.loop.create_server.assert_called_once()
+
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
+    @asyncio.coroutine
+    def testTlsServerServeNoDefer(self):
+        ''' Test StartTcpServer without deferred start (immediate execution of server) '''
+        with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+                server = yield from StartTlsServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
+                serve.assert_awaited()
+
+    @pytest.mark.skipif(PYTHON_VERSION < (3, 7), reason="requires python3.7 or above")
+    @asyncio.coroutine
+    def testTlsServerServeForever(self):
+        ''' Test StartTcpServer serve_forever() method '''
+        with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+                server = yield from StartTlsServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
+                yield from server.serve_forever()
+                serve.assert_awaited()
+
+    @asyncio.coroutine
+    def testTlsServerServeForeverTwice(self):
+        ''' Call on serve_forever() twice should result in a runtime error '''
+        with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+            server = yield from StartTlsServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
+            if PYTHON_VERSION >= (3, 7):
+                server_task = asyncio.create_task(server.serve_forever())
+            else:
+                server_task = asyncio.ensure_future(server.serve_forever())
+            yield from server.serving
+            with self.assertRaises(RuntimeError):
+                yield from server.serve_forever()
+            server.server_close()
 
 
     #-----------------------------------------------------------------------#

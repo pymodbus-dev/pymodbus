@@ -13,6 +13,7 @@ twisted is just not feasible. What follows is an example of its use:
 # --------------------------------------------------------------------------- #
 import asyncio
 from pymodbus.server.asyncio import StartTcpServer
+from pymodbus.server.asyncio import StartTlsServer
 from pymodbus.server.asyncio import StartUdpServer
 from pymodbus.server.asyncio import StartSerialServer
 
@@ -126,6 +127,12 @@ async def run_server():
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
+
+    # Tls:
+    # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
+    #                      certfile="server.crt", keyfile="server.key",
+    #                      allow_reuse_address=True, allow_reuse_port=True,
+    #                      defer_start=False)
 
     # Udp:
     # server = await StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020),

@@ -228,6 +228,10 @@ class ModbusTransactionManager(object):
                 _logger.debug("Changing transaction state from 'SENDING' "
                               "to 'WAITING FOR REPLY'")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
+            if self.client.handle_local_echo is True:
+                local_echo_packet = self._recv(size, full)
+                if local_echo_packet != packet:
+                    return b'', "Wrong local echo"
             result = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("RECV: " + hexlify_packets(result))

@@ -171,8 +171,8 @@ class ModbusTransactionManager(object):
                         mbap = self.client.framer.decode_data(response)
                         if (mbap.get('unit') == request.unit_id):
                             break
-                        if ('lenght' in mbap and expected_response_length and
-                            mbap.get('lenght') == expected_response_length):
+                        if ('length' in mbap and expected_response_length and
+                            mbap.get('length') == expected_response_length):
                             break
                         _logger.debug("Retry on invalid - {}".format(retries))
                         if hasattr(self.client, "state"):

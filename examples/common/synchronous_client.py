@@ -14,7 +14,7 @@ the guard construct that is available in python 2.5 and up::
         print result
 """
 # --------------------------------------------------------------------------- #
-# import the various server implementations
+# import the various client implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient

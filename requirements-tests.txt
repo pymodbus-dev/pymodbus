@@ -1,19 +1,19 @@
 bcrypt>=3.1.6
 capturer >= 2.2
 coverage >= 4.2
-cryptography>=1.8.1
+cryptography>= 2.3
 mock >= 1.0.1
-pyserial-asyncio==0.4.0;python_version>="3.4"
+pyserial-asyncio>=0.4.0;python_version>="3.4"
 pep8>=1.7.0
-pyasn1>=0.2.3
+pyasn1>=0.4.2
 pyserial>=3.4
 pytest-cov>=2.5.1
 pytest>=3.5.0
-redis>=2.10.5
+redis>=2.10.6
 sqlalchemy>=1.1.15
 #wsgiref>=0.1.2
 verboselogs >= 1.5
-tornado==4.5.3
+tornado>=4.5.3
 Twisted>=17.1.0
 zope.interface>=4.4.0
 asynctest>=0.10.0

@@ -131,18 +131,17 @@ class ModbusRtuFramer(ModbusFramer):
 
         :returns: True if ready, False otherwise
         """
-        if len(self._buffer) <= self._hsize:
-            return False
+        size = self._header.get('len', 0)
+        if size == 0 and len(self._buffer) > self._hsize:
+            try:
+                # Frame is ready only if populateHeader() successfully
+                # populates crc field which finishes RTU frame otherwise,
+                # if buffer is not yet long enough, populateHeader() raises IndexError
+                size = self.populateHeader()
+            except IndexError:
+                return False
 
-        try:
-            # Frame is ready only if populateHeader() successfully
-            # populates crc field which finishes RTU frame otherwise,
-            # if buffer is not yet long enough, populateHeader() raises IndexError
-            self.populateHeader()
-        except IndexError:
-            return False
-
-        return True
+        return len(self._buffer) >= size if size > 0 else False
 
     def populateHeader(self, data=None):  # pylint: disable=invalid-name
         """Try to set the headers `uid`, `len` and `crc`.
@@ -164,6 +163,7 @@ class ModbusRtuFramer(ModbusFramer):
             # crc yet not available
             raise IndexError
         self._header["crc"] = data[size - 2 : size]
+        return size
 
     def addToFrame(self, message):
         """Add the received data to the buffer handle.

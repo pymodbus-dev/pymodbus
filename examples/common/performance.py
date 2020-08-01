@@ -12,7 +12,7 @@ modbus client.
 from __future__ import print_function
 import logging, os
 from time import time
-# from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.client.sync import ModbusSerialClient
 
 try:
@@ -59,21 +59,55 @@ def single_client_test(host, cycles):
     :param cycles: The number of iterations to perform
     """
     logger = log_to_stderr()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.WARNING)
     logger.debug("starting worker: %d" % os.getpid())
 
     try:
         count = 0
-        # client = ModbusTcpClient(host, port=5020)
-        client = ModbusSerialClient(method="rtu",
-                                    port="/dev/ttyp0", baudrate=9600)
+        client = ModbusTcpClient(host, port=5020)
+        # client = ModbusSerialClient(method="rtu",
+        #                             port="/dev/ttyp0", baudrate=9600)
         while count < cycles:
-            with _thread_lock:
-                client.read_holding_registers(10, 1, unit=1).registers[0]
-                count += 1
+            # print(count)
+            # with _thread_lock:
+            client.read_holding_registers(10, 123, unit=1)
+            count += 1
     except:
         logger.exception("failed to run test successfully")
     logger.debug("finished worker: %d" % os.getpid())
+
+
+def multiprocessing_test(fn, args):
+    from multiprocessing import Process as Worker
+    start = time()
+    procs = [Worker(target=fn, args=args)
+             for _ in range(workers)]
+
+    any(p.start() for p in procs)   # start the workers
+    any(p.join() for p in procs)   # wait for the workers to finish
+    return start
+
+
+def thread_test(fn, args):
+    from threading import Thread as Worker
+    start = time()
+    procs = [Worker(target=fn, args=args)
+             for _ in range(workers)]
+
+    any(p.start() for p in procs)  # start the workers
+    any(p.join() for p in procs)  # wait for the workers to finish
+    return start
+
+
+def thread_pool_exe_test(fn, args):
+    from concurrent.futures import ThreadPoolExecutor as Worker
+    from concurrent.futures import as_completed
+    start = time()
+    with Worker(max_workers=workers, thread_name_prefix="Perform") as exe:
+        futures = {exe.submit(fn, *args): job for job in range(workers)}
+        for future in as_completed(futures):
+            future.result()
+    return start
 
 # --------------------------------------------------------------------------- # 
 # run our test and check results
@@ -91,12 +125,24 @@ def single_client_test(host, cycles):
 
 if __name__ == "__main__":
     args = (host, int(cycles * 1.0 / workers))
-    procs = [Worker(target=single_client_test, args=args)
-             for _ in range(workers)]
-    start = time()
-    any(p.start() for p in procs)   # start the workers
-    any(p.join() for p in procs)   # wait for the workers to finish
-    stop = time()
-    print("%d requests/second" % ((1.0 * cycles) / (stop - start)))
-    print("time taken to complete %s cycle by "
-          "%s workers is %s seconds" % (cycles, workers, stop-start))
+    # with Worker(max_workers=workers, thread_name_prefix="Perform") as exe:
+    #     futures = {exe.submit(single_client_test, *args): job for job in range(workers)}
+    #     for future in as_completed(futures):
+    #         data = future.result()
+    # for _ in range(workers):
+    #    futures.append(Worker.submit(single_client_test, args=args))
+    # procs = [Worker(target=single_client_test, args=args)
+    #          for _ in range(workers)]
+
+    # any(p.start() for p in procs)   # start the workers
+    # any(p.join() for p in procs)   # wait for the workers to finish
+    # start = multiprocessing_test(single_client_test, args)
+    # start = thread_pool_exe_test(single_client_test, args)
+    for tester in [multiprocessing_test, thread_test, thread_pool_exe_test]:
+        print(tester.__name__)
+        start = tester(single_client_test, args)
+        stop = time()
+        print("%d requests/second" % ((1.0 * cycles) / (stop - start)))
+        print("time taken to complete %s cycle by "
+              "%s workers is %s seconds" % (cycles, workers, stop-start))
+        print()

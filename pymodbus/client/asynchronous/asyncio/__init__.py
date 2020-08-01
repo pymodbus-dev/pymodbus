@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 
 DGRAM_TYPE = socket.SocketKind.SOCK_DGRAM
 
+
 class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     """
     Asyncio specific implementation of asynchronous modbus client protocol.
@@ -119,7 +120,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     def write_transport(self, packet):
         return self.transport.write(packet)
 
-    def execute(self, request, **kwargs):
+    def _execute(self, request, **kwargs):
         """
         Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -727,7 +728,7 @@ class AsyncioModbusSerialClient(object):
     framer = None
 
     def __init__(self, port, protocol_class=None, framer=None,  loop=None,
-                 baudrate=9600, bytesize=8, parity='N', stopbits=1):
+                 baudrate=9600, bytesize=8, parity='N', stopbits=1, **serial_kwargs):
         """
         Initializes Asyncio Modbus Serial Client
         :param port: Port to connect
@@ -747,6 +748,7 @@ class AsyncioModbusSerialClient(object):
         self.parity = parity
         self.stopbits = stopbits
         self.framer = framer
+        self._extra_serial_kwargs = serial_kwargs
         self._connected_event = asyncio.Event()
 
     def stop(self):
@@ -780,7 +782,7 @@ class AsyncioModbusSerialClient(object):
 
             yield from create_serial_connection(
                 self.loop, self._create_protocol, self.port, baudrate=self.baudrate,
-                bytesize=self.bytesize, stopbits=self.stopbits, parity=self.parity
+                bytesize=self.bytesize, stopbits=self.stopbits, parity=self.parity, **self._extra_serial_kwargs
             )
             yield from self._connected_event.wait()
             _logger.info('Connected to %s', self.port)

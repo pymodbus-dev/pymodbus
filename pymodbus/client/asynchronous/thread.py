@@ -28,6 +28,7 @@ class EventLoopThread(object):
         self._args = args
         self._kwargs = kwargs
         self._event_loop = Thread(name=self._name, target=self._start)
+        self._event_loop.daemon = True
 
     def _start(self):
         """

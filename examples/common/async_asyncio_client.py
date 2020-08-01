@@ -16,8 +16,8 @@ if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     # Import the required asynchronous client
     # ----------------------------------------------------------------------- #
     from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
-    from pymodbus.client.asynchronous.udp import (
-        AsyncModbusUDPClient as ModbusClient)
+    # from pymodbus.client.asynchronous.udp import (
+    #     AsyncModbusUDPClient as ModbusClient)
     from pymodbus.client.asynchronous import schedulers
 
 else:
@@ -207,9 +207,9 @@ if __name__ == '__main__':
     run_with_no_loop()
 
     # Run with loop not yet started
-    run_with_not_running_loop()
+    # run_with_not_running_loop()
 
     # Run with already running loop
-    run_with_already_running_loop()
+    # run_with_already_running_loop()
 
     log.debug("")

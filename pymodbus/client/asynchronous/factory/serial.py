@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
-
+import time
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.thread import EventLoopThread
 
@@ -103,7 +103,11 @@ def async_io_factory(port=None, framer=None, **kwargs):
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
     coro = client.connect()
-    loop.run_until_complete(coro)
+    if loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
+        future.result()
+    else:
+        loop.run_until_complete(coro)
     return loop, client
 
 

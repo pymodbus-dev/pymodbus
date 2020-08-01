@@ -23,6 +23,11 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
+ORDER_DICT = {
+    "<": "LITTLE",
+    ">": "BIG"
+}
+
 
 def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
@@ -71,97 +76,104 @@ def run_binary_payload_ex():
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(byteorder=Endian.Big,
-                                   wordorder=Endian.Little)
-    builder.add_string('abcdefgh')
-    builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
-    builder.add_8bit_int(-0x12)
-    builder.add_8bit_uint(0x12)
-    builder.add_16bit_int(-0x5678)
-    builder.add_16bit_uint(0x1234)
-    builder.add_32bit_int(-0x1234)
-    builder.add_32bit_uint(0x12345678)
-    builder.add_16bit_float(12.34)
-    builder.add_16bit_float(-12.34)
-    builder.add_32bit_float(22.34)
-    builder.add_32bit_float(-22.34)
-    builder.add_64bit_int(-0xDEADBEEF)
-    builder.add_64bit_uint(0x12345678DEADBEEF)
-    builder.add_64bit_uint(0x12345678DEADBEEF)
-    builder.add_64bit_float(123.45)
-    builder.add_64bit_float(-123.45)
-    payload = builder.to_registers()
-    print("-" * 60)
-    print("Writing Registers")
-    print("-" * 60)
-    print(payload)
-    print("\n")
-    payload = builder.build()
-    address = 0
-    # Can write registers
-    # registers = builder.to_registers()
-    # client.write_registers(address, registers, unit=1)
+    combos = [(wo, bo) for wo in [Endian.Big, Endian.Little] for bo in [Endian.Big, Endian.Little]]
+    for wo, bo in combos:
+        print("-" * 60)
+        print("Word Order: {}".format(ORDER_DICT[wo]))
+        print("Byte Order: {}".format(ORDER_DICT[bo]))
+        print()
+        builder = BinaryPayloadBuilder(byteorder=bo,
+                                       wordorder=wo)
+        strng = "abcdefgh"
+        builder.add_string(strng)
+        builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
+        builder.add_8bit_int(-0x12)
+        builder.add_8bit_uint(0x12)
+        builder.add_16bit_int(-0x5678)
+        builder.add_16bit_uint(0x1234)
+        builder.add_32bit_int(-0x1234)
+        builder.add_32bit_uint(0x12345678)
+        builder.add_16bit_float(12.34)
+        builder.add_16bit_float(-12.34)
+        builder.add_32bit_float(22.34)
+        builder.add_32bit_float(-22.34)
+        builder.add_64bit_int(-0xDEADBEEF)
+        builder.add_64bit_uint(0x12345678DEADBEEF)
+        builder.add_64bit_uint(0x12345678DEADBEEF)
+        builder.add_64bit_float(123.45)
+        builder.add_64bit_float(-123.45)
+        payload = builder.to_registers()
+        print("-" * 60)
+        print("Writing Registers")
+        print("-" * 60)
+        print(payload)
+        print("\n")
+        payload = builder.build()
+        address = 0
+        # Can write registers
+        # registers = builder.to_registers()
+        # client.write_registers(address, registers, unit=1)
 
-    # Or can write encoded binary string
-    client.write_registers(address, payload, skip_encode=True, unit=1)
-    # ----------------------------------------------------------------------- #
-    # If you need to decode a collection of registers in a weird layout, the
-    # payload decoder can help you as well.
-    #
-    # Here we demonstrate decoding a random register layout, unpacked it looks
-    # like the following:
-    #
-    # - a 8 byte string 'abcdefgh'
-    # - a 32 bit float 22.34
-    # - a 16 bit unsigned int 0x1234
-    # - another 16 bit unsigned int which we will ignore
-    # - an 8 bit int 0x12
-    # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
-    # ----------------------------------------------------------------------- #
-    address = 0x0
-    count = len(payload)
-    result = client.read_holding_registers(address, count,  unit=1)
-    print("-" * 60)
-    print("Registers")
-    print("-" * 60)
-    print(result.registers)
-    print("\n")
-    decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                 byteorder=Endian.Big,
-                                                 wordorder=Endian.Little)
+        # Or can write encoded binary string
+        client.write_registers(address, payload, skip_encode=True, unit=1)
+        # ----------------------------------------------------------------------- #
+        # If you need to decode a collection of registers in a weird layout, the
+        # payload decoder can help you as well.
+        #
+        # Here we demonstrate decoding a random register layout, unpacked it looks
+        # like the following:
+        #
+        # - a 8 byte string 'abcdefgh'
+        # - a 32 bit float 22.34
+        # - a 16 bit unsigned int 0x1234
+        # - another 16 bit unsigned int which we will ignore
+        # - an 8 bit int 0x12
+        # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
+        # ----------------------------------------------------------------------- #
+        address = 0x0
+        count = len(payload)
+        result = client.read_holding_registers(address, count,  unit=1)
+        print("-" * 60)
+        print("Registers")
+        print("-" * 60)
+        print(result.registers)
+        print("\n")
+        decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
+                                                     byteorder=bo,
+                                                     wordorder=wo)
 
-    assert decoder._byteorder == builder._byteorder, \
-            "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
+        assert decoder._byteorder == builder._byteorder, \
+                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
-    assert decoder._wordorder == builder._wordorder, \
-            "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
+        assert decoder._wordorder == builder._wordorder, \
+                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
 
-    decoded = OrderedDict([
-        ('string', decoder.decode_string(8)),
-        ('bits', decoder.decode_bits()),
-        ('8int', decoder.decode_8bit_int()),
-        ('8uint', decoder.decode_8bit_uint()),
-        ('16int', decoder.decode_16bit_int()),
-        ('16uint', decoder.decode_16bit_uint()),
-        ('32int', decoder.decode_32bit_int()),
-        ('32uint', decoder.decode_32bit_uint()),
-        ('16float', decoder.decode_16bit_float()),
-        ('16float2', decoder.decode_16bit_float()),
-        ('32float', decoder.decode_32bit_float()),
-        ('32float2', decoder.decode_32bit_float()),
-        ('64int', decoder.decode_64bit_int()),
-        ('64uint', decoder.decode_64bit_uint()),
-        ('ignore', decoder.skip_bytes(8)),
-        ('64float', decoder.decode_64bit_float()),
-        ('64float2', decoder.decode_64bit_float()),
-    ])
+        decoded = OrderedDict([
+            ('string', decoder.decode_string(len(strng))),
+            ('bits', decoder.decode_bits()),
+            ('8int', decoder.decode_8bit_int()),
+            ('8uint', decoder.decode_8bit_uint()),
+            ('16int', decoder.decode_16bit_int()),
+            ('16uint', decoder.decode_16bit_uint()),
+            ('32int', decoder.decode_32bit_int()),
+            ('32uint', decoder.decode_32bit_uint()),
+            ('16float', decoder.decode_16bit_float()),
+            ('16float2', decoder.decode_16bit_float()),
+            ('32float', decoder.decode_32bit_float()),
+            ('32float2', decoder.decode_32bit_float()),
+            ('64int', decoder.decode_64bit_int()),
+            ('64uint', decoder.decode_64bit_uint()),
+            ('ignore', decoder.skip_bytes(8)),
+            ('64float', decoder.decode_64bit_float()),
+            ('64float2', decoder.decode_64bit_float()),
+        ])
 
-    print("-" * 60)
-    print("Decoded Data")
-    print("-" * 60)
-    for name, value in iteritems(decoded):
-        print("%s\t" % name, hex(value) if isinstance(value, int) else value)
+        print("-" * 60)
+        print("Decoded Data")
+        print("-" * 60)
+        for name, value in iteritems(decoded):
+            print("%s\t" % name, hex(value) if isinstance(value, int) else value)
     
     # ----------------------------------------------------------------------- #
     # close the client

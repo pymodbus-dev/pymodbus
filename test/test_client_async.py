@@ -180,7 +180,7 @@ class TestAsynchronousClient(object):
                                                 ("binary", ModbusBinaryFramer),
                                                 ("ascii", ModbusAsciiFramer)])
     def testSerialTwistedClient(self, method, framer):
-        """ Test the serial tornado client client initialize """
+        """ Test the serial twisted client client initialize """
         from serial import Serial
         with patch("serial.Serial") as mock_sp:
             from twisted.internet import reactor
@@ -259,6 +259,7 @@ class TestAsynchronousClient(object):
         :return:
         """
         loop = asyncio.get_event_loop()
+        loop.is_running.side_effect = lambda: False
         loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
                                                baudrate=19200, parity='E', stopbits=2, bytesize=7)
         assert(isinstance(client, AsyncioModbusSerialClient))
@@ -268,7 +269,8 @@ class TestAsynchronousClient(object):
         assert(client.parity == 'E')
         assert(client.stopbits == 2)
         assert(client.bytesize == 7)
-
+        client.stop()
+        loop.stop()
 
 # ---------------------------------------------------------------------------#
 # Main

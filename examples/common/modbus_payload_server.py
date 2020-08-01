@@ -48,6 +48,8 @@ def run_payload_server():
     builder.add_16bit_uint(0x1234)
     builder.add_32bit_int(-0x1234)
     builder.add_32bit_uint(0x12345678)
+    builder.add_16bit_float(12.34)
+    builder.add_16bit_float(-12.34)
     builder.add_32bit_float(22.34)
     builder.add_32bit_float(-22.34)
     builder.add_64bit_int(-0xDEADBEEF)

@@ -88,7 +88,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     _logger.debug("Disconnected from client [%s]" % self.transport.get_extra_info("peername"))
             else:  # pragma: no cover
-                __logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
+                _logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
 
             self.running = False
 

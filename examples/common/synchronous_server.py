@@ -112,8 +112,8 @@ def run_server():
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
-
+    StartTcpServer(context, identity=identity, address=("", 5020))
+    #
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
@@ -131,7 +131,7 @@ def run_server():
 
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+    #                   port='/tmp/ttyp0', timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,

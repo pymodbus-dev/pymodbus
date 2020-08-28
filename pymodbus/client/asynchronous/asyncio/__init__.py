@@ -120,7 +120,9 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     def write_transport(self, packet):
         return self.transport.write(packet)
 
+
     def _execute(self, request, **kwargs):
+
         """
         Starts the producer to send the next request to
         consumer.write(Frame(request))

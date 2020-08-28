@@ -174,6 +174,7 @@ def run_binary_payload_ex():
         print("-" * 60)
         for name, value in iteritems(decoded):
             print("%s\t" % name, hex(value) if isinstance(value, int) else value)
+
     
     # ----------------------------------------------------------------------- #
     # close the client

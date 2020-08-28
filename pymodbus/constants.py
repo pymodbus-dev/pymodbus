@@ -19,6 +19,7 @@ class Defaults(Singleton):
 
        The default modbus tcp over tls server port (802)
 
+
     .. attribute:: Backoff
 
        The default exponential backoff delay (0.3 seconds)

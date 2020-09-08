@@ -5,6 +5,7 @@ Version 2.4.0
 * Add exponential backoffs on retries.
 * REPL - Support broadcasts.
 * Fix framers using wrong unit address.
+* Update documentation for serial_forwarder example
 
 Version 2.3.0
 -----------------------------------------------------------

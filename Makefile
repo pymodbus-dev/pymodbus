@@ -40,7 +40,7 @@ check: install
 test: install
 	@pip install --upgrade --quiet --requirement=requirements-tests.txt
 	@pytest --cov=pymodbus/ --cov-report term-missing
-	@coverage report --fail-under=90
+	@coverage report --fail-under=90 -i
 
 tox: install
 	@pip install --upgrade --quiet tox && tox

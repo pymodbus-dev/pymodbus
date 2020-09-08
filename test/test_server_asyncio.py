@@ -21,7 +21,9 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
 import sys
+
 import ssl
+
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
@@ -188,6 +190,7 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test tcp stream interruption '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x01\x00\x00\x00\x01"
         server = yield from StartTcpServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop)
+
         if PYTHON_VERSION >= (3, 7):
             server_task = asyncio.create_task(server.serve_forever())
         else:
@@ -200,6 +203,7 @@ class AsyncioServerTest(asynctest.TestCase):
         # done = self.loop.create_future()
         # received_value = None
         time.sleep(1)
+
         class BasicClient(asyncio.BaseProtocol):
             def connection_made(self, transport):
                 self.transport = transport
@@ -661,6 +665,47 @@ class AsyncioServerTest(asynctest.TestCase):
             yield from asyncio.wait_for(eof, timeout=0.1)
             # neither of these should timeout if the test is successful
             server.server_close()
+
+
+    @asyncio.coroutine
+    def testTcpServerException(self):
+        ''' Sending garbage data on a TCP socket should drop the connection '''
+        garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
+        server = yield from StartTcpServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop)
+        if PYTHON_VERSION >= (3, 7):
+            server_task = asyncio.create_task(server.serve_forever())
+        else:
+            server_task = asyncio.ensure_future(server.serve_forever())
+        yield from server.serving
+        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
+                   new_callable=lambda: Mock(side_effect=Exception)) as process:
+            connect, receive, eof = self.loop.create_future(), self.loop.create_future(), self.loop.create_future()
+            received_data = None
+            random_port = server.server.sockets[0].getsockname()[1]  # get the random server port
+
+            class BasicClient(asyncio.BaseProtocol):
+                def connection_made(self, transport):
+                    _logger.debug("Client connected")
+                    self.transport = transport
+                    transport.write(garbage)
+                    connect.set_result(True)
+
+                def data_received(self, data):
+                    _logger.debug("Client received data")
+                    receive.set_result(True)
+                    received_data = data
+
+                def eof_received(self):
+                    _logger.debug("Client stream eof")
+                    eof.set_result(True)
+
+            transport, protocol = yield from self.loop.create_connection(BasicClient, host='127.0.0.1',
+                                                                         port=random_port)
+            yield from asyncio.wait_for(connect, timeout=0.1)
+            yield from asyncio.wait_for(eof, timeout=0.1)
+            # neither of these should timeout if the test is successful
+            server.server_close()
+
 
 
 # --------------------------------------------------------------------------- #

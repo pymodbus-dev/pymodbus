@@ -1,3 +1,4 @@
+
 Version 2.4.0
 ----------------------------------------------------------
 * Support async moduls tls server/client
@@ -6,6 +7,11 @@ Version 2.4.0
 * REPL - Support broadcasts.
 * Fix framers using wrong unit address.
 * Update documentation for serial_forwarder example
+* Fix error with rtu client for `local_echo`
+* Fix asyncio client not working with already running loop
+* Fix passing serial arguments to async clients
+* Support timeouts to break out of responspe await when server goes offline
+* Misc updates and bugfixes.
 
 Version 2.3.0
 -----------------------------------------------------------

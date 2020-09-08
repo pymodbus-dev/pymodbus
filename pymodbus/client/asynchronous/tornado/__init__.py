@@ -75,7 +75,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         if not data:
             return
         LOGGER.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
-        unit = self.framer.decode_data(data).get("uid", 0)
+        unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
     def execute(self, request=None):

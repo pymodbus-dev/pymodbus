@@ -4,6 +4,7 @@ Version 2.4.0
 * Add local echo option
 * Add exponential backoffs on retries.
 * REPL - Support broadcasts.
+* Fix framers using wrong unit address.
 
 Version 2.3.0
 -----------------------------------------------------------

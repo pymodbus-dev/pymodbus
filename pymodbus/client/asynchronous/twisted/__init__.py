@@ -98,7 +98,7 @@ class ModbusClientProtocol(protocol.Protocol,
 
         :param data: The data returned from the server
         """
-        unit = self.framer.decode_data(data).get("uid", 0)
+        unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handleResponse,
                                           unit=unit)
 

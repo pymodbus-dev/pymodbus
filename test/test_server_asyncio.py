@@ -12,8 +12,8 @@ if IS_PYTHON3: # Python 3
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.factory import ServerDecoder
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.asyncio import StartTcpServer, StartTlsServer, StartUdpServer, StartSerialServer, StopServer, ModbusServerFactory
-from pymodbus.server.asyncio import ModbusConnectedRequestHandler, ModbusBaseRequestHandler
+from pymodbus.server.async_io import StartTcpServer, StartTlsServer, StartUdpServer, StartSerialServer, StopServer, ModbusServerFactory
+from pymodbus.server.async_io import ModbusConnectedRequestHandler, ModbusBaseRequestHandler
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.compat import byte2int
@@ -218,6 +218,7 @@ class AsyncioServerTest(asynctest.TestCase):
         # so we have to wait a bit
         yield from asyncio.sleep(0.1)
         self.assertTrue(len(server.active_connections) == 0)
+
         server.server_close()
 
     @asyncio.coroutine

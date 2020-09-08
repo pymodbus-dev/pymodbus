@@ -40,7 +40,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
-from pymodbus.compat import  byte2int
+from pymodbus.compat import byte2int
 from twisted.python.failure import Failure
 
 

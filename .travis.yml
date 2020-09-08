@@ -5,14 +5,14 @@ matrix:
   - os: linux
     python: "2.7"
   - os: linux
-    python: "3.5"
-  - os: linux
     python: "3.6"
   - os: linux
     python: "3.7"
+  - os: linux
+    python: "3.8"
   - os: osx
-    osx_image: xcode8.3
-    language: generic
+    osx_image: xcode11.2
+    language: shell
 before_install:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi
   - if [ $TRAVIS_OS_NAME = osx ]; then brew install openssl; fi

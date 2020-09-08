@@ -12,10 +12,10 @@ twisted is just not feasible. What follows is an example of its use:
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 import asyncio
-from pymodbus.server.asyncio import StartTcpServer
-from pymodbus.server.asyncio import StartTlsServer
-from pymodbus.server.asyncio import StartUdpServer
-from pymodbus.server.asyncio import StartSerialServer
+from pymodbus.server.async_io import StartTcpServer
+from pymodbus.server.async_io import StartTlsServer
+from pymodbus.server.async_io import StartUdpServer
+from pymodbus.server.async_io import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock

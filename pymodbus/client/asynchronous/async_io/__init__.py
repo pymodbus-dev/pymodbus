@@ -25,6 +25,16 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     factory = None
     transport = None
 
+    async def execute(self, request=None):
+        """
+        Executes requests asynchronously
+        :param request:
+        :return:
+        """
+        req = self._execute(request)
+        resp = await asyncio.wait_for(req, timeout=self._timeout)
+        return resp
+
     def connection_made(self, transport):
         """
         Called when a connection is made.

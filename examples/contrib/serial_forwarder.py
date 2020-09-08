@@ -39,7 +39,6 @@ def run_serial_forwarder():
     store = RemoteSlaveContext(client)
     context = ModbusServerContext(slaves=store, single=True)
 
-
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #

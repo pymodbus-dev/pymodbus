@@ -88,8 +88,8 @@ def async_io_factory(port=None, framer=None, **kwargs):
     :return: asyncio event loop and serial client
     """
     import asyncio
-    from pymodbus.client.asynchronous.asyncio import (ModbusClientProtocol,
-                                                      AsyncioModbusSerialClient)
+    from pymodbus.client.asynchronous.async_io import (ModbusClientProtocol,
+                                                       AsyncioModbusSerialClient)
     loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
 

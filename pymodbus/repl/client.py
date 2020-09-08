@@ -35,29 +35,54 @@ from pymodbus.diag_message import (
                                    GetClearModbusPlusRequest)
 
 
+def handle_brodcast(func):
+    def _wrapper(*args, **kwargs):
+        self = args[0]
+        resp = func(*args, **kwargs)
+        if kwargs.get("unit") == 0 and self.broadcast_enable:
+            return {
+                'broadcasted': True
+            }
+        if not resp.isError():
+            return {
+                'function_code': resp.function_code,
+                'address': resp.address,
+                'count': resp.count
+            }
+        else:
+            return ExtendedRequestSupport._process_exception(resp, **kwargs)
+    return _wrapper
+
+
 class ExtendedRequestSupport(object):
 
     @staticmethod
-    def _process_exception(resp):
-        if isinstance(resp, ExceptionResponse):
+    def _process_exception(resp, **kwargs):
+        unit = kwargs.get("unit")
+        if unit == 0:
             err = {
-                'original_function_code': "{} ({})".format(
-                    resp.original_code, hex(resp.original_code)),
-                'error_function_code': "{} ({})".format(
-                    resp.function_code, hex(resp.function_code)),
-                'exception code': resp.exception_code,
-                'message': ModbusExceptions.decode(resp.exception_code)
-            }
-        elif isinstance(resp, ModbusIOException):
-            err = {
-                'original_function_code': "{} ({})".format(
-                    resp.fcode, hex(resp.fcode)),
-                'error': resp.message
+                "message": "Broadcast message, ignoring errors!!!"
             }
         else:
-            err = {
-                'error': str(resp)
-            }
+            if isinstance(resp, ExceptionResponse):
+                err = {
+                    'original_function_code': "{} ({})".format(
+                        resp.original_code, hex(resp.original_code)),
+                    'error_function_code': "{} ({})".format(
+                        resp.function_code, hex(resp.function_code)),
+                    'exception code': resp.exception_code,
+                    'message': ModbusExceptions.decode(resp.exception_code)
+                }
+            elif isinstance(resp, ModbusIOException):
+                err = {
+                    'original_function_code': "{} ({})".format(
+                        resp.fcode, hex(resp.fcode)),
+                    'error': resp.message
+                }
+            else:
+                err = {
+                    'error': str(resp)
+                }
         return err
 
     def read_coils(self, address, count=1, **kwargs):
@@ -98,6 +123,7 @@ class ExtendedRequestSupport(object):
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
+    @handle_brodcast
     def write_coil(self, address, value, **kwargs):
         """
         Write `value` to coil at `address`.
@@ -109,15 +135,9 @@ class ExtendedRequestSupport(object):
         """
         resp = super(ExtendedRequestSupport, self).write_coil(
             address, value, **kwargs)
-        if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'value': resp.value
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return resp
 
+    @handle_brodcast
     def write_coils(self, address, values, **kwargs):
         """
         Write `value` to coil at `address`.
@@ -129,15 +149,9 @@ class ExtendedRequestSupport(object):
         """
         resp = super(ExtendedRequestSupport, self).write_coils(
             address, values, **kwargs)
-        if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'count': resp.count
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return resp
 
+    @handle_brodcast
     def write_register(self, address, value, **kwargs):
         """
         Write `value` to register at `address`.
@@ -149,15 +163,9 @@ class ExtendedRequestSupport(object):
         """
         resp = super(ExtendedRequestSupport, self).write_register(
             address, value, **kwargs)
-        if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'value': resp.value
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return resp
 
+    @handle_brodcast
     def write_registers(self, address, values, **kwargs):
         """
         Write list of `values` to registers starting at `address`.
@@ -169,14 +177,7 @@ class ExtendedRequestSupport(object):
         """
         resp = super(ExtendedRequestSupport, self).write_registers(
             address, values, **kwargs)
-        if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'count': resp.count
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return resp
 
     def read_holding_registers(self, address, count=1, **kwargs):
         """

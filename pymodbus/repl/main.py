@@ -41,7 +41,7 @@ __________          _____             .___  __________              .__
            \/            \/            \/ \/        \/     \/|__|
                                         v{} - {}         
 ----------------------------------------------------------------------------
-""".format("1.1.0", version)
+""".format("1.2.0", version)
 log = None
 
 
@@ -226,8 +226,9 @@ def cli(client):
 @click.group('pymodbus-repl')
 @click.version_option(version, message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
+@click.option("--broadcast-support", is_flag=True, default=False, help="Support broadcast messages")
 @click.pass_context
-def main(ctx, verbose):
+def main(ctx, verbose, broadcast_support):
     if verbose:
         global log
         import logging
@@ -236,6 +237,7 @@ def main(ctx, verbose):
         log = logging.getLogger('pymodbus')
         logging.basicConfig(format=format)
         log.setLevel(logging.DEBUG)
+    ctx.obj = {"broadcast": broadcast_support}
 
 
 @main.command("tcp")
@@ -258,7 +260,8 @@ def main(ctx, verbose):
 )
 def tcp(ctx, host, port, framer):
     from pymodbus.repl.client import ModbusTcpClient
-    kwargs = dict(host=host, port=port)
+    broadcast = ctx.obj.get("broadcast")
+    kwargs = dict(host=host, port=port, broadcast_enable=broadcast)
     if framer == 'rtu':
         from pymodbus.framer.rtu_framer import ModbusRtuFramer
         kwargs['framer'] = ModbusRtuFramer

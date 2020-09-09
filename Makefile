@@ -39,7 +39,7 @@ check: install
 
 test: install
 	@pip install --upgrade --quiet --requirement=requirements-tests.txt
-	@pytest pytest --cov=pymodbus/ --cov-report term-missing  test/test_server_asyncio.py test
+	@pytest --cov=pymodbus/ --cov-report term-missing  test/test_server_asyncio.py test
 	@coverage report --fail-under=90 -i
 
 tox: install

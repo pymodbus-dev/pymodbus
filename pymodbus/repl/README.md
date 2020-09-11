@@ -17,15 +17,16 @@ $ pip install pymodbus[repl] --upgrade
 
 ## Usage Instructions
 RTU and TCP are supported as of now
+
 ```
-bash-3.2$ pymodbus.console
+✗ pymodbus.console --help
 Usage: pymodbus.console [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --version       Show the version and exit.
-  --verbose       Verbose logs
-  --support-diag  Support Diagnostic messages
-  --help          Show this message and exit.
+  --version            Show the version and exit.
+  --verbose            Verbose logs
+  --broadcast-support  Support broadcast messages
+  --help               Show this message and exit.
 
 Commands:
   serial
@@ -34,8 +35,9 @@ Commands:
 
 ```
 TCP Options
+
 ```
-bash-3.2$ pymodbus.console tcp --help
+✗ pymodbus.console tcp --help
 Usage: pymodbus.console tcp [OPTIONS]
 
 Options:
@@ -44,14 +46,11 @@ Options:
   --framer TEXT   Override the default packet framer tcp|rtu
   --help          Show this message and exit.
 
-
-
-
 ```
 
 SERIAL Options
 ```
-bash-3.2$ pymodbus.console serial --help
+✗ pymodbus.console serial --help
 Usage: pymodbus.console serial [OPTIONS]
 
 Options:
@@ -61,18 +60,24 @@ Options:
   --bytesize [5|6|7|8]   Modbus RTU serial Number of data bits. Possible
                          values: FIVEBITS, SIXBITS, SEVENBITS, EIGHTBITS.
                          Defaults to 8
+
   --parity [N|E|O|M|S]   Modbus RTU serial parity.  Enable parity checking.
                          Possible values: PARITY_NONE, PARITY_EVEN, PARITY_ODD
                          PARITY_MARK, PARITY_SPACE. Default to 'N'
+
   --stopbits [1|1.5|2]   Modbus RTU serial stop bits. Number of stop bits.
                          Possible values: STOPBITS_ONE,
                          STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to '1'
+
   --xonxoff INTEGER      Modbus RTU serial xonxoff.  Enable software flow
                          control.Defaults to 0
+
   --rtscts INTEGER       Modbus RTU serial rtscts. Enable hardware (RTS/CTS)
                          flow control. Defaults to 0
+
   --dsrdtr INTEGER       Modbus RTU serial dsrdtr. Enable hardware (DSR/DTR)
                          flow control. Defaults to 0
+
   --timeout FLOAT        Modbus RTU serial read timeout. Defaults to 0.025 sec
   --write-timeout FLOAT  Modbus RTU serial write timeout. Defaults to 2 sec
   --help                 Show this message and exit.
@@ -273,6 +278,34 @@ null
     "stopbits": 1.0
 }
 
+```
+
+To Send broadcast requests, use `--broadcast-support` and send requests with unit id as `0`.
+`write_coil`, `write_coils`, `write_register`, `write_registers` are supported.
+
+```
+✗ pymodbus.console --broadcast-support tcp --host 192.168.1.8 --port 5020
+
+----------------------------------------------------------------------------
+__________          _____             .___  __________              .__
+\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |
+ |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\____ \|  |
+ |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
+ |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
+           \/            \/            \/ \/        \/     \/|__|
+                                        v1.2.0 - [pymodbus, version 2.4.0]
+----------------------------------------------------------------------------
+
+> client.write_registers address=0 values=10,20,30,40 unit=0
+{
+    "broadcasted": true
+}
+
+> client.write_registers address=0 values=10,20,30,40 unit=1
+{
+    "address": 0,
+    "count": 4
+}
 ```
 
 ## DEMO

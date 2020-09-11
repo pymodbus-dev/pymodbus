@@ -5,6 +5,7 @@ VIRTUAL_ENV ?= $(WORKON_HOME)/pymodbus
 PATH := $(VIRTUAL_ENV)/bin:$(PATH)
 MAKE := $(MAKE) --no-print-directory
 SHELL = bash
+PYVER=$(shell python -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));print(t)")
 
 default:
 	@echo 'Makefile for pymodbus'
@@ -24,7 +25,7 @@ install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
-	@pip install --quiet --requirement=requirements.txt
+	@pip install --upgrade --quiet --requirement=requirements.txt
 	@pip uninstall --yes pymodbus &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
@@ -37,16 +38,22 @@ check: install
 	@pip install --upgrade --quiet --requirement=requirements-checks.txt
 	@flake8
 
+
 test: install
-	@pip install --quiet --requirement=requirements-tests.txt
+	@pip install --upgrade --quiet --requirement=requirements-tests.txt
+ifeq ($(PYVER),3.6)
+	@pytest --cov=pymodbus/ --cov-report term-missing  test/test_server_asyncio.py test
+	@coverage report --fail-under=90 -i
+else
 	@pytest --cov=pymodbus/ --cov-report term-missing
-	@coverage report --fail-under=90
+	@coverage report --fail-under=90 -i
+endif
 
 tox: install
-	@pip install --quiet tox && tox
+	@pip install --upgrade --quiet tox && tox
 
 docs: install
-	@pip install --quiet --requirement=requirements-docs.txt
+	@pip install --upgrade --quiet --requirement=requirements-docs.txt
 	@cd doc && make clean && make html
 
 publish: install
@@ -56,6 +63,7 @@ publish: install
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
 	$(MAKE) clean
+
 
 clean:
 	@rm -Rf *.egg .eggs *.egg-info *.db .cache .coverage .tox build dist docs/build htmlcov doc/_build test/.Python test/pip-selfcheck.json test/lib/ test/include/ test/bin/

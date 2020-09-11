@@ -41,7 +41,7 @@ class CustomDataBlock(ModbusSparseDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         """
-        super(ModbusSparseDataBlock, self).setValues(address, value)
+        super(CustomDataBlock, self).setValues(address, value)
 
         # whatever you want to do with the written value is done here,
         # however make sure not to do too much work here or it will

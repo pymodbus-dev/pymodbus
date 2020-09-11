@@ -71,7 +71,7 @@ class AsynchronousClientTest(unittest.TestCase):
         d.add_done_callback(lambda v: out.append(v))
 
         client.on_receive(data)
-        self.assertTrue(isinstance(out[0].result(), ReadCoilsResponse))
+        self.assertTrue(isinstance(d.result(), ReadCoilsResponse))
         data = b''
         out = []
         d = client._build_response(0x01)
@@ -111,7 +111,7 @@ class AsynchronousClientTest(unittest.TestCase):
         d = client._build_response(0x00)
         d.add_done_callback(lambda v: out.append(v))
         client._handle_response(reply)
-        self.assertEqual(out[0].result(), reply)
+        self.assertEqual(d.result(), reply)
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
@@ -260,7 +260,7 @@ class AsynchronousClientTest(unittest.TestCase):
         d = client._build_response(0x00)
         d.add_done_callback(lambda v: out.append(v))
         client._handle_response(reply)
-        self.assertEqual(out[0].result(), reply)
+        self.assertEqual(d.result(), reply)
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")

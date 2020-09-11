@@ -158,7 +158,7 @@ if __name__ == "__main__":
     # Rtu
     protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP,
                                                method="rtu",
-                                               port="/dev/ptyp0",
+                                               port="/tmp/ptyp0",
                                                baudrate=9600,
                                                timeout=2)
 

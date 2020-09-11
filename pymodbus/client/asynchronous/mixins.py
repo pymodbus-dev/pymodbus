@@ -1,7 +1,12 @@
 import logging
-
 from pymodbus.client.sync import BaseModbusClient
-
+# from pymodbus.bit_read_message import *
+# from pymodbus.bit_write_message import *
+# from pymodbus.register_read_message import *
+# from pymodbus.register_write_message import *
+# from pymodbus.diag_message import *
+# from pymodbus.file_message import *
+# from pymodbus.other_message import *
 from pymodbus.constants import Defaults
 
 from pymodbus.factory import ClientDecoder
@@ -16,7 +21,7 @@ class BaseAsyncModbusClient(BaseModbusClient):
     This represents the base ModbusAsyncClient.
     """
 
-    def __init__(self, framer=None, **kwargs):
+    def __init__(self, framer=None, timeout=2, **kwargs):
         """ Initializes the framer module
 
         :param framer: The framer to use for the protocol. Default:
@@ -24,6 +29,7 @@ class BaseAsyncModbusClient(BaseModbusClient):
         :type framer: pymodbus.transaction.ModbusSocketFramer
         """
         self._connected = False
+        self._timeout = timeout
 
         super(BaseAsyncModbusClient, self).__init__(
             framer or ModbusSocketFramer(ClientDecoder()), **kwargs

@@ -5,7 +5,8 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     from unittest.mock import patch, Mock, MagicMock
     import asyncio
-    from pymodbus.client.asynchronous.asyncio import AsyncioModbusSerialClient
+    from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient
+    from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
     from serial_asyncio import SerialTransport
 else:
     from mock import patch, Mock, MagicMock
@@ -14,6 +15,7 @@ from distutils.version import LooseVersion
 
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 
 from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
@@ -22,8 +24,10 @@ from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTo
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer
 from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
+
+import ssl
 
 IS_DARWIN = platform.system().lower() == "darwin"
 OSX_SIERRA = LooseVersion("10.12")
@@ -105,6 +109,27 @@ class TestAsynchronousClient(object):
         pytest.skip("TBD")
 
     # -----------------------------------------------------------------------#
+    # Test TLS Client client
+    # -----------------------------------------------------------------------#
+    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
+                        reason="requires python3.4 or above")
+    def testTlsAsyncioClient(self):
+        """
+        Test the TLS AsyncIO client
+        """
+        loop, client = AsyncModbusTLSClient(schedulers.ASYNC_IO)
+        assert(isinstance(client, ReconnectingAsyncioModbusTlsClient))
+        assert(isinstance(client.framer, ModbusTlsFramer))
+        assert(isinstance(client.sslctx, ssl.SSLContext))
+        assert(client.port == 802)
+
+        def handle_failure(failure):
+            assert(isinstance(failure.exception(), ConnectionException))
+
+        client.stop()
+        assert(client.host is None)
+
+    # -----------------------------------------------------------------------#
     # Test UDP client
     # -----------------------------------------------------------------------#
 
@@ -155,7 +180,7 @@ class TestAsynchronousClient(object):
                                                 ("binary", ModbusBinaryFramer),
                                                 ("ascii", ModbusAsciiFramer)])
     def testSerialTwistedClient(self, method, framer):
-        """ Test the serial tornado client client initialize """
+        """ Test the serial twisted client client initialize """
         from serial import Serial
         with patch("serial.Serial") as mock_sp:
             from twisted.internet import reactor
@@ -234,6 +259,7 @@ class TestAsynchronousClient(object):
         :return:
         """
         loop = asyncio.get_event_loop()
+        loop.is_running.side_effect = lambda: False
         loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
                                                baudrate=19200, parity='E', stopbits=2, bytesize=7)
         assert(isinstance(client, AsyncioModbusSerialClient))
@@ -243,7 +269,8 @@ class TestAsynchronousClient(object):
         assert(client.parity == 'E')
         assert(client.stopbits == 2)
         assert(client.bytesize == 7)
-
+        client.stop()
+        loop.stop()
 
 # ---------------------------------------------------------------------------#
 # Main

@@ -21,7 +21,7 @@ log.setLevel(logging.DEBUG)
 # state a few constants
 # ---------------------------------------------------------------------------#
 
-SERIAL_PORT = "/dev/ptyp0"
+SERIAL_PORT = "/tmp/ptyp0"
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -75,12 +75,14 @@ class ExampleProtocol(ModbusClientProtocol):
 
 
 if __name__ == "__main__":
+    import time
     proto, client = AsyncModbusSerialClient(schedulers.REACTOR,
                                             method="rtu", 
                                             port=SERIAL_PORT, 
                                             timeout=2, 
                                             proto_cls=ExampleProtocol)
     proto.start()
+    time.sleep(10)  # Wait for operation to complete
     # proto.stop()
 
 

@@ -123,6 +123,13 @@ class ModbusTransactionTest(unittest.TestCase):
         response = tm.execute(request)
         self.assertIsInstance(response, ModbusIOException)
 
+        # retry on invalid response
+        tm.retry_on_invalid = True
+        tm._recv = MagicMock(side_effect=iter([b'', b'abcdef', b'deadbe', b'123456']))
+        # tm._transact.side_effect = [(b'', None), (b'abcdef', None)]
+        response = tm.execute(request)
+        self.assertIsInstance(response, ModbusIOException)
+
         # Unable to decode response
         tm._recv = MagicMock(side_effect=ModbusIOException())
         # tm._transact.side_effect = [(b'abcdef', None)]

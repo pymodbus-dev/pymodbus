@@ -5,6 +5,7 @@ Implementation of a Threaded Modbus Server
 """
 from binascii import b2a_hex
 import socket
+import ssl
 import traceback
 
 import asyncio
@@ -45,7 +46,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.server = owner
         self.running = False
         self.receive_queue = asyncio.Queue()
-        self.handler_task = None # coroutine to be run on asyncio loop
+        self.handler_task = None  # coroutine to be run on asyncio loop
 
     def connection_made(self, transport):
         """
@@ -87,7 +88,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     _logger.debug("Disconnected from client [%s]" % self.transport.get_extra_info("peername"))
             else:  # pragma: no cover
-                __logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
+                _logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
 
             self.running = False
 
@@ -124,9 +125,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         while self.running:
             try:
                 units = self.server.context.slaves()
-                data = await self._recv_() # this is an asyncio.Queue await, it will never fail
+                data = await self._recv_()  # this is an asyncio.Queue await, it will never fail
                 if isinstance(data, tuple):
-                    data, *addr = data # addr is populated when talking over UDP
+                    data, *addr = data  # addr is populated when talking over UDP
                 else:
                     addr = (None,) # empty tuple
 
@@ -394,8 +395,8 @@ class ModbusTcpServer:
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.serving = self.loop.create_future()  # asyncio future that will be done once server has started
-        self.server = None # constructors cannot be declared async, so we have to defer the initialization of the server
+        self.serving = self.loop.create_future()   # asyncio future that will be done once server has started
+        self.server = None  # constructors cannot be declared async, so we have to defer the initialization of the server
         if PYTHON_VERSION >= (3, 7):
             # start_serving is new in version 3.7
             self.server_factory = self.loop.create_server(lambda : self.handler(self),
@@ -425,6 +426,112 @@ class ModbusTcpServer:
             v.handler_task.cancel()
         self.active_connections = {}
         self.server.close()
+
+
+class ModbusTlsServer(ModbusTcpServer):
+    """
+    A modbus threaded tls socket server
+
+    We inherit and overload the socket server so that we
+    can control the client threads as well as have a single
+    server context instance.
+    """
+
+    def __init__(self,
+                 context,
+                 framer=None,
+                 identity=None,
+                 address=None,
+                 sslctx=None,
+                 certfile=None,
+                 keyfile=None,
+                 handler=None,
+                 allow_reuse_address=False,
+                 allow_reuse_port=False,
+                 defer_start=False,
+                 backlog=20,
+                 loop=None,
+                 **kwargs):
+        """ Overloaded initializer for the socket server
+
+        If the identify structure is not passed in, the ModbusControlBlock
+        uses its own empty structure.
+
+        :param context: The ModbusServerContext datastore
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
+        :param address: An optional (interface, port) to bind to.
+        :param sslctx: The SSLContext to use for TLS (default None and auto
+                       create)
+        :param certfile: The cert file path for TLS (used if sslctx is None)
+        :param keyfile: The key file path for TLS (used if sslctx is None)
+        :param handler: A handler for each client session; default is
+                        ModbusConnectedRequestHandler. The handler class
+                        receives connection create/teardown events
+        :param allow_reuse_address: Whether the server will allow the
+                        reuse of an address.
+        :param allow_reuse_port: Whether the server will allow the
+                        reuse of a port.
+        :param backlog:  is the maximum number of queued connections
+                    passed to listen(). Defaults to 20, increase if many
+                    connections are being made and broken to your Modbus slave
+        :param loop: optional asyncio event loop to run in. Will default to
+                        asyncio.get_event_loop() supplied value if None.
+        :param ignore_missing_slaves: True to not send errors on a request
+                        to a missing slave
+        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
+                        False to treat 0 as any other unit_id
+        """
+        self.active_connections = {}
+        self.loop = loop or asyncio.get_event_loop()
+        self.allow_reuse_address = allow_reuse_address
+        self.decoder = ServerDecoder()
+        self.framer = framer or ModbusTlsFramer
+        self.context = context or ModbusServerContext()
+        self.control = ModbusControlBlock()
+        self.address = address or ("", Defaults.Port)
+        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler.server = self
+        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+                                                Defaults.IgnoreMissingSlaves)
+        self.broadcast_enable = kwargs.get('broadcast_enable',
+                                           Defaults.broadcast_enable)
+
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity.update(identity)
+
+        self.sslctx = sslctx
+        if self.sslctx is None:
+            self.sslctx = ssl.create_default_context()
+            self.sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
+            # According to MODBUS/TCP Security Protocol Specification, it is
+            # TLSv2 at least
+            self.sslctx.options |= ssl.OP_NO_TLSv1_1
+            self.sslctx.options |= ssl.OP_NO_TLSv1
+            self.sslctx.options |= ssl.OP_NO_SSLv3
+            self.sslctx.options |= ssl.OP_NO_SSLv2
+        self.sslctx.verify_mode = ssl.CERT_OPTIONAL
+        self.sslctx.check_hostname = False
+
+        self.serving = self.loop.create_future()  # asyncio future that will be done once server has started
+        self.server = None # constructors cannot be declared async, so we have to defer the initialization of the server
+        if PYTHON_VERSION >= (3, 7):
+            # start_serving is new in version 3.7
+            self.server_factory = self.loop.create_server(lambda : self.handler(self),
+                                                   *self.address,
+                                                   ssl=self.sslctx,
+                                                   reuse_address=allow_reuse_address,
+                                                   reuse_port=allow_reuse_port,
+                                                   backlog=backlog,
+                                                   start_serving=not defer_start)
+        else:
+            self.server_factory = self.loop.create_server(lambda : self.handler(self),
+                                                   *self.address,
+                                                   ssl=self.sslctx,
+                                                   reuse_address=allow_reuse_address,
+                                                   reuse_port=allow_reuse_port,
+                                                   backlog=backlog)
+
 
 
 class ModbusUdpServer:
@@ -567,6 +674,43 @@ async def StartTcpServer(context=None, identity=None, address=None,
     return server
 
 
+async def StartTlsServer(context=None, identity=None, address=None, sslctx=None,
+                         certfile=None, keyfile=None, allow_reuse_address=False,
+                         allow_reuse_port=False, custom_functions=[],
+                         defer_start=True, **kwargs):
+    """ A factory to start and run a tls modbus server
+
+    :param context: The ModbusServerContext datastore
+    :param identity: An optional identify structure
+    :param address: An optional (interface, port) to bind to.
+    :param sslctx: The SSLContext to use for TLS (default None and auto create)
+    :param certfile: The cert file path for TLS (used if sslctx is None)
+    :param keyfile: The key file path for TLS (used if sslctx is None)
+    :param allow_reuse_address: Whether the server will allow the reuse of an
+                                address.
+    :param allow_reuse_port: Whether the server will allow the reuse of a port.
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
+    :param defer_start: if set, a coroutine which can be started and stopped
+            will be returned. Otherwise, the server will be immediately spun
+            up without the ability to shut it off from within the asyncio loop
+    :param ignore_missing_slaves: True to not send errors on a request to a
+                                      missing slave
+    :return: an initialized but inactive server object coroutine
+    """
+    framer = kwargs.pop("framer", ModbusTlsFramer)
+    server = ModbusTlsServer(context, framer, identity, address, sslctx,
+                             certfile, keyfile,
+                             allow_reuse_address=allow_reuse_address,
+                             allow_reuse_port=allow_reuse_port, **kwargs)
+
+    for f in custom_functions:
+        server.decoder.register(f) # pragma: no cover
+
+    if not defer_start:
+        await server.serve_forever()
+
+    return server
 
 
 async def StartUdpServer(context=None, identity=None, address=None,
@@ -637,6 +781,8 @@ def StopServer():
 
 
 __all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer"
+
+    "StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"
+
 ]
 

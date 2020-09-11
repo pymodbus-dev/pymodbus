@@ -25,6 +25,16 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     factory = None
     transport = None
 
+    async def execute(self, request=None):
+        """
+        Executes requests asynchronously
+        :param request:
+        :return:
+        """
+        req = self._execute(request)
+        resp = await asyncio.wait_for(req, timeout=self._timeout)
+        return resp
+
     def connection_made(self, transport):
         """
         Called when a connection is made.
@@ -120,9 +130,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     def write_transport(self, packet):
         return self.transport.write(packet)
 
-
     def _execute(self, request, **kwargs):
-
         """
         Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -139,7 +147,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :param data: The data returned from the server
         '''
         _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
-        unit = self.framer.decode_data(data).get("uid", 0)
+        unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def _handleResponse(self, reply, **kwargs):

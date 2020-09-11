@@ -46,7 +46,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.server = owner
         self.running = False
         self.receive_queue = asyncio.Queue()
-        self.handler_task = None # coroutine to be run on asyncio loop
+        self.handler_task = None  # coroutine to be run on asyncio loop
 
     def connection_made(self, transport):
         """
@@ -90,7 +90,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             else:  # pragma: no cover
                 _logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
 
-
             self.running = False
 
         except Exception as ex: # pragma: no cover
@@ -126,9 +125,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         while self.running:
             try:
                 units = self.server.context.slaves()
-                data = await self._recv_() # this is an asyncio.Queue await, it will never fail
+                data = await self._recv_()  # this is an asyncio.Queue await, it will never fail
                 if isinstance(data, tuple):
-                    data, *addr = data # addr is populated when talking over UDP
+                    data, *addr = data  # addr is populated when talking over UDP
                 else:
                     addr = (None,) # empty tuple
 
@@ -396,8 +395,8 @@ class ModbusTcpServer:
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.serving = self.loop.create_future()  # asyncio future that will be done once server has started
-        self.server = None # constructors cannot be declared async, so we have to defer the initialization of the server
+        self.serving = self.loop.create_future()   # asyncio future that will be done once server has started
+        self.server = None  # constructors cannot be declared async, so we have to defer the initialization of the server
         if PYTHON_VERSION >= (3, 7):
             # start_serving is new in version 3.7
             self.server_factory = self.loop.create_server(lambda : self.handler(self),

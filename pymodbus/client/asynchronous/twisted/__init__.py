@@ -40,7 +40,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
-from pymodbus.compat import  byte2int
+from pymodbus.compat import byte2int
 from twisted.python.failure import Failure
 
 
@@ -98,7 +98,7 @@ class ModbusClientProtocol(protocol.Protocol,
 
         :param data: The data returned from the server
         """
-        unit = self.framer.decode_data(data).get("uid", 0)
+        unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handleResponse,
                                           unit=unit)
 

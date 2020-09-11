@@ -5,8 +5,8 @@ from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
     from unittest.mock import patch, Mock, MagicMock
     import asyncio
-    from pymodbus.client.asynchronous.asyncio import ReconnectingAsyncioModbusTlsClient
-    from pymodbus.client.asynchronous.asyncio import AsyncioModbusSerialClient
+    from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient
+    from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
     from serial_asyncio import SerialTransport
 else:
     from mock import patch, Mock, MagicMock

@@ -41,9 +41,7 @@ class Version(object):
         return '[%s, version %s]' % (self.package, self.short())
 
 
-version = Version('pymodbus', 2, 4, 0, 'rc2')
-
-
+version = Version('pymodbus', 2, 4, 0)
 
 version.__name__ = 'pymodbus'  # fix epydoc error
 

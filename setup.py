@@ -84,14 +84,14 @@ setup(
                       'sphinx_rtd_theme',
                       'humanfriendly'],
         'twisted': [
-            'twisted >= 12.2.0',
+            'twisted >= 20.3.0',
             'pyasn1 >= 0.1.4',
         ],
         'tornado': [
-            'tornado >= 4.5.3'
+            'tornado == 4.5.3'
         ],
         'repl': [
-            'click>=6.7',
+            'click>=7.0',
             'prompt-toolkit==2.0.4',
             'pygments==2.2.0'
         ]

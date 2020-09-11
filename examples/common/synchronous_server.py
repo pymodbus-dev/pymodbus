@@ -125,6 +125,7 @@ def run_server():
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
 
+    # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     # Ascii:
     # StartSerialServer(context, identity=identity,
     #                    port='/dev/ttyp0', timeout=1)

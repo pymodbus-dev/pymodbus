@@ -228,10 +228,12 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=SERIAL_PORT,
+                                         timeout=0)
         client.connect()
         client.stream = Mock()
         client.stream.write = Mock()
+        client.stream.connection.read.return_value = b''
 
         request = ReadCoilsRequest(1, 1)
         d = client.execute(request)

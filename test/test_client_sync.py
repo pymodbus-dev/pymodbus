@@ -265,6 +265,15 @@ class SynchronousClientTest(unittest.TestCase):
         mock_select.select.return_value = [True]
         self.assertIn(b'\x00', client._recv(None))
 
+        mock_socket = MagicMock()
+        mock_socket.recv.return_value = b''
+        client.socket = mock_socket
+        self.assertRaises(ConnectionException, lambda: client._recv(1024))
+
+        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02', b''])
+        client.socket = mock_socket
+        self.assertEqual(b'\x00\x01\x02', client._recv(1024))
+
     def testTcpClientRpr(self):
         client = ModbusTcpClient()
         rep = "<{} at {} socket={}, ipaddr={}, port={}, timeout={}>".format(

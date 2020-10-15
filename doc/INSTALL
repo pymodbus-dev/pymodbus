@@ -14,7 +14,7 @@ The Windows IOCP reactor requires pywin32 build 205 or later.
 
 
 Installation
--------------
+------------------------
 
 To install the package from pypi, use either easy_install or pip::
 

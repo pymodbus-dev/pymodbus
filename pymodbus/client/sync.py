@@ -261,9 +261,9 @@ class ModbusTcpClient(BaseModbusClient):
 
         timeout = self.timeout
 
-        # If size isn't specified read 1 byte at a time.
+        # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
-            recv_size = 1
+            recv_size = 4096
         else:
             recv_size = size
 

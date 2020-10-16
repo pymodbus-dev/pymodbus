@@ -32,7 +32,7 @@ import ssl
 IS_DARWIN = platform.system().lower() == "darwin"
 OSX_SIERRA = LooseVersion("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < LooseVersion(platform.mac_ver()[0])
     SERIAL_PORT = '/dev/ttyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ptyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False

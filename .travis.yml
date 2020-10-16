@@ -18,7 +18,7 @@ matrix:
     osx_image: xcode12.2
     language: generic
     before_install:
-        - brew upgrade python@3.9
+        - brew install python@3.9
         - pip3 install virtualenv
 install:
 #  - scripts/travis.sh pip install pip-accel

@@ -11,12 +11,14 @@ matrix:
   - os: linux
     dist: bionic
     python: "3.8"
+  - os: linux
+    dist: bionic
+    python: "3.9"
   - os: osx
     osx_image: xcode12.2
     language: generic
     before_install:
-        - brew update
-        - brew upgrade python@3.8 # set Python to Python3.8 version
+        - brew upgrade python@3.9
         - pip3 install virtualenv
 install:
 #  - scripts/travis.sh pip install pip-accel

@@ -16,8 +16,8 @@ matrix:
     language: generic
     before_install:
         - brew update
-        - brew install python
-        - pip install virtualenv
+        - brew upgrade python@3.8 # set Python to Python3.8 version
+        - pip3 install virtualenv
 install:
 #  - scripts/travis.sh pip install pip-accel
   - pip3 install -U setuptools --upgrade

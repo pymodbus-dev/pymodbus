@@ -13,14 +13,14 @@ matrix:
     python: "3.8"
   - os: osx
     osx_image: xcode12.2
-    python: "3.7"
+    language: generic
 install:
 #  - scripts/travis.sh pip install pip-accel
   - pip3 install -U setuptools --upgrade
-  - scripts/travis.sh pip install coveralls
-  - scripts/travis.sh pip install --requirement=requirements-checks.txt
-  - scripts/travis.sh pip install --requirement=requirements-tests.txt
-  - scripts/travis.sh LC_ALL=C pip install .
+  - scripts/travis.sh pip3 install coveralls
+  - scripts/travis.sh pip3 install --requirement=requirements-checks.txt
+  - scripts/travis.sh pip3 install --requirement=requirements-tests.txt
+  - scripts/travis.sh LC_ALL=C pip3 install .
 script:
 #  - scripts/travis.sh make check
   - scripts/travis.sh make test

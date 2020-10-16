@@ -13,7 +13,7 @@ matrix:
     python: "3.8"
   - os: linux
     dist: bionic
-    python: "3.9"
+    python: "3.9-dev"
   - os: osx
     osx_image: xcode12.2
     language: generic

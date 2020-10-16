@@ -13,15 +13,10 @@ matrix:
     python: "3.8"
   - os: osx
     osx_image: xcode12.2
-    language: generic
-before_install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install openssl; fi
-#  - if [$TRAVIS_OS_NAME = osx ]; then  python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"; fi
-
+    python: "3.7"
 install:
 #  - scripts/travis.sh pip install pip-accel
-  - if [ $TRAVIS_OS_NAME = osx ]; then scripts/travis.sh pip install -U "\"setuptools<45"\"; else pip install -U setuptools --upgrade ; fi
+  - pip3 install -U setuptools --upgrade
   - scripts/travis.sh pip install coveralls
   - scripts/travis.sh pip install --requirement=requirements-checks.txt
   - scripts/travis.sh pip install --requirement=requirements-tests.txt

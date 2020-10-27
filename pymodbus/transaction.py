@@ -275,9 +275,10 @@ class ModbusTransactionManager(object):
 
             read_min = self.client.framer.recvPacket(min_size)
             if len(read_min) != min_size:
+                msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
-                    "Incomplete message received, expected at least %d bytes "
-                    "(%d received)" % (min_size, len(read_min))
+                    "%s received, expected at least %d bytes "
+                    "(%d received)" % (msg_start, min_size, len(read_min))
                 )
             if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
@@ -312,9 +313,10 @@ class ModbusTransactionManager(object):
         result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
-            _logger.debug("Incomplete message received, "
+            msg_start = "Incomplete message" if actual else "No response"
+            _logger.debug("{} received, "
                           "Expected {} bytes Recieved "
-                          "{} bytes !!!!".format(total, actual))
+                          "{} bytes !!!!".format(msg_start, total, actual))
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
                           "'WAITING FOR REPLY' to 'PROCESSING REPLY'")

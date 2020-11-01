@@ -140,17 +140,16 @@ async def run_server():
     # #
     # await server.serve_forever()
 
-    # !!! SERIAL SERVER NOT IMPLEMENTED !!!
     # Ascii:
-    # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
+    # await StartSerialServer(context, identity=identity,
+    #                    port='/dev/ttyp0', timeout=1, autoreconnect=True)
 
     # RTU:
-    # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+    # await StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
+    #                    port='/dev/ttyp0', timeout=.005, baudrate=9600, autoreconnect=True)
 
     # Binary
-    # StartSerialServer(context,
+    # await StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
     #                   port='/dev/ttyp0',

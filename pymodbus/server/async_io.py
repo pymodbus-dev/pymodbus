@@ -4,6 +4,8 @@ Implementation of a Threaded Modbus Server
 
 """
 from binascii import b2a_hex
+import serial
+from serial_asyncio import create_serial_connection
 import socket
 import ssl
 import traceback
@@ -57,7 +59,15 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            _logger.debug("Socket [%s:%s] opened" % transport.get_extra_info('sockname'))
+            sockname = transport.get_extra_info('sockname')
+            if sockname is not None:
+                _logger.debug("Socket [%s:%s] opened" % transport.get_extra_info('sockname'))
+            else:
+                if hasattr(transport, 'serial'):
+                    _logger.debug(
+                        "Serial connection opened on port: {}".format(transport.serial.port)
+                    )
+
             self.transport = transport
             self.running = True
             self.framer = self.server.framer(self.server.decoder, client=None)
@@ -88,7 +98,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     _logger.debug("Disconnected from client [%s]" % self.transport.get_extra_info("peername"))
             else:  # pragma: no cover
-                _logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
+                if hasattr(self, "client_address"): # TCP connection
+                    _logger.debug("Client Disconnection [%s:%s] due to %s" % (*self.client_address, exc))
 
             self.running = False
 
@@ -325,6 +336,34 @@ class ModbusServerFactory:
         import warnings
         warnings.warn("deprecated API for asyncio. ServerFactory's are a twisted construct and don't have an equivalent in asyncio",
                       DeprecationWarning)
+
+
+class ModbusSingleRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
+    """ Implements the modbus server protocol
+
+    This uses asyncio.Protocol to implement
+    the client handler for a serial connection.
+    """
+    def connection_made(self, transport):
+        super().connection_made(transport)
+
+        _logger.debug("Serial connection established")
+
+    def connection_lost(self, exc):
+        super().connection_lost(exc)
+        _logger.debug("Serial conection lost")
+        if hasattr(self.server, 'on_connection_lost'):
+            self.server.on_connection_lost()
+
+    def data_received(self,data):
+        self.receive_queue.put_nowait(data)
+
+    async def _recv_(self):
+        return await self.receive_queue.get()
+
+    def _send_(self, data):
+        if self.transport is not None:
+            self.transport.write(data)
 
 
 # --------------------------------------------------------------------------- #
@@ -620,7 +659,7 @@ class ModbusSerialServer(object):
 
     handler = None
 
-    def __init__(self, context, framer=None, identity=None, **kwargs): # pragma: no cover
+    def __init__(self, context, framer=None, **kwargs): # pragma: no cover
         """ Overloaded initializer for the socket server
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -628,7 +667,6 @@ class ModbusSerialServer(object):
 
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
-        :param identity: An optional identify structure
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use
         :param bytesize: The bytesize of the serial messages
@@ -639,9 +677,84 @@ class ModbusSerialServer(object):
                             to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                             False to treat 0 as any other unit_id
+        :param autoreonnect: True to enable automatic reconnection, False otherwise
+        :param reconnect_delay: reconnect delay in seconds
         """
-        raise NotImplementedException
+        self.device = kwargs.get('port', 0)
+        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
+        self.parity = kwargs.get('parity', Defaults.Parity)
+        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+        self.timeout = kwargs.get('timeout', Defaults.Timeout)
+        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+                                                Defaults.IgnoreMissingSlaves)
+        self.broadcast_enable = kwargs.get('broadcast_enable',
+                                           Defaults.broadcast_enable)
+        self.autoreconnect = kwargs.get('autoreconnect', False)
+        self.reconnect_delay = kwargs.get('reconnect_delay', 2)
+        self.reconnecting_task = None
 
+        self.handler = ModbusSingleRequestHandler
+        self.framer = kwargs.get('framer', ModbusRtuFramer)
+        self.decoder = ServerDecoder()
+        self.context = context or ModbusServerContext()
+
+        self.protocol = None
+        self.transport = None
+
+    async def start(self):
+        await self._connect()
+    
+    def _protocol_factory(self):
+        return self.handler(self)
+
+    async def _delayed_connect(self):
+        await asyncio.sleep(self.reconnect_delay)
+        await self._connect()
+
+    async def _connect(self):
+        if self.reconnecting_task is not None:
+            self.reconnecting_task = None
+
+        try:
+            self.transport, self.protocol = await create_serial_connection(
+                asyncio.get_event_loop(),
+                self._protocol_factory,
+                self.device,
+                baudrate=self.baudrate,
+                bytesize=self.bytesize,
+                parity=self.parity,
+                stopbits=self.stopbits,
+                timeout=self.timeout
+            )
+        except serial.serialutil.SerialException as e:
+            _logger.debug("Failed to open serial port: {}".format(self.device))
+            if not self.autoreconnect:
+                raise e
+
+            self._check_reconnect()
+
+        except Exception as e:
+            _logger.debug("Exception while create")
+
+    def on_connection_lost(self):
+        if self.transport is not None:
+            self.transport.close()
+            self.transport = None
+            self.protocol = None
+
+        self._check_reconnect()
+
+    def _check_reconnect(self):
+        _logger.debug("checkking autoreconnect {} {}".format(self.autoreconnect, self.reconnecting_task))
+        if self.autoreconnect and (self.reconnecting_task is None):
+            _logger.debug("Scheduling serial connection reconnect")
+            loop = asyncio.get_event_loop()
+            self.reconnecting_task = loop.create_task(self._delayed_connect())
+
+    async def serve_forever(self):
+        while True:
+            await asyncio.sleep(360)
 
 # --------------------------------------------------------------------------- #
 # Creation Factories
@@ -739,12 +852,10 @@ async def StartUdpServer(context=None, identity=None, address=None,
 
 
 
-def StartSerialServer(context=None, identity=None,  custom_functions=[],
-                      **kwargs):# pragma: no cover
+async def StartSerialServer(context=None,  custom_functions=[], **kwargs):# pragma: no cover
     """ A factory to start and run a serial modbus server
 
     :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     :param framer: The framer to operate with (default ModbusAsciiFramer)
@@ -757,13 +868,13 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[],
     :param ignore_missing_slaves: True to not send errors on a request to a
                                   missing slave
     """
-    raise NotImplementedException
-    import serial
-    framer = kwargs.pop('framer', ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity, **kwargs)
+    framer = kwargs.pop('framer', ModbusRtuFramer)
+    server = ModbusSerialServer(context, framer, **kwargs)
     for f in custom_functions:
         server.decoder.register(f)
-    server.serve_forever()
+    await server.start()
+    await server.serve_forever()
+
 
 def StopServer():
     """

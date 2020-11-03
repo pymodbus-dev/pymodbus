@@ -317,6 +317,10 @@ class ModbusTransactionManager(object):
             _logger.debug("{} received, "
                           "Expected {} bytes Recieved "
                           "{} bytes !!!!".format(msg_start, total, actual))
+        elif actual == 0:
+            # If actual == 0 and total is not None then the above
+            # should be triggered, so total must be None here
+            _logger.debug("No response received to unbounded read !!!!")
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
                           "'WAITING FOR REPLY' to 'PROCESSING REPLY'")

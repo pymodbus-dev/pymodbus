@@ -18,6 +18,7 @@ from tornado.iostream import BaseIOStream
 
 from pymodbus.client.asynchronous.mixins import (AsyncModbusClientMixin,
                                                  AsyncModbusSerialClientMixin)
+
 from pymodbus.compat import byte2int
 from pymodbus.exceptions import (ConnectionException,
                                  ModbusIOException,
@@ -25,6 +26,7 @@ from pymodbus.exceptions import (ConnectionException,
 from pymodbus.utilities import (hexlify_packets,
                                 ModbusTransactionState)
 from pymodbus.constants import Defaults
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
 
         if not data:
             return
-        LOGGER.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
+        LOGGER.debug("recv: " + hexlify_packets(data))
         unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
@@ -92,7 +94,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        LOGGER.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
+        LOGGER.debug("send: " + hexlify_packets(packet))
         self.stream.write(packet)
         return self._build_response(request.transaction_id)
 
@@ -180,7 +182,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
                 if waiting:
                     data = self.stream.connection.read(waiting)
                     LOGGER.debug(
-                        "recv: " + " ".join([hex(byte2int(x)) for x in data]))
+                        "recv: " + hexlify_packets(data))
                     unit = self.framer.decode_data(data).get("uid", 0)
                     self.framer.processIncomingPacket(
                         data,
@@ -191,7 +193,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
                     break
 
         packet = self.framer.buildPacket(request)
-        LOGGER.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
+        LOGGER.debug("send: " + hexlify_packets(packet))
         self.stream.write(packet, callback=callback)
         f = self._build_response(request.transaction_id)
         return f

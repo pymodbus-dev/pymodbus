@@ -105,6 +105,17 @@ class MessageRegisterException(ModbusException):
         message = '[Error registering message] %s' % string
         ModbusException.__init__(self, message)
 
+class TimeOutException(ModbusException):
+    """ Error resulting from modbus response timeout """
+
+    def __init__(self, string=""):
+        """ Initialize the exception
+
+        :param string: The message to append to the error
+        """
+        message = "[Timeout] %s" % string
+        ModbusException.__init__(self, message)
+
 
 # --------------------------------------------------------------------------- #
 # Exported symbols
@@ -114,5 +125,5 @@ __all__ = [
     "ParameterException", "NotImplementedException",
     "ConnectionException", "NoSuchSlaveException",
     "InvalidMessageReceivedException",
-    "MessageRegisterException"
+    "MessageRegisterException", "TimeOutException"
 ]

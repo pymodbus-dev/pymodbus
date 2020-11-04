@@ -68,7 +68,6 @@ setup(
     license='BSD-3-Clause',
     packages=find_packages(exclude=['examples', 'test']),
     exclude_package_data={'': ['examples', 'test', 'tools', 'doc']},
-    py_modules=['ez_setup'],
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,

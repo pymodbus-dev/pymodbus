@@ -59,8 +59,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            sockname = transport.get_extra_info('sockname')
-            if sockname is not None:
+            if hasattr(transport, 'get_extra_info') and transport.get_extra_info('sockname') is not None:
                 _logger.debug("Socket [%s:%s] opened" % transport.get_extra_info('sockname'))
             else:
                 if hasattr(transport, 'serial'):
@@ -346,7 +345,6 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
     """
     def connection_made(self, transport):
         super().connection_made(transport)
-
         _logger.debug("Serial connection established")
 
     def connection_lost(self, exc):

@@ -364,10 +364,15 @@ class ReportSlaveIdRequest(ModbusRequest):
 
         :returns: The populated response
         '''
-        information = DeviceInformationFactory.get(_MCB)
-        identifier = "-".join(information.values()).encode()
-        identifier = identifier or b'Pymodbus'
-        return ReportSlaveIdResponse(identifier)
+        reportSlaveIdData = None
+        if context:
+            reportSlaveIdData = getattr(context, 'reportSlaveIdData', None)
+        if not reportSlaveIdData:
+            information = DeviceInformationFactory.get(_MCB)
+            identifier = "-".join(information.values()).encode()
+            identifier = identifier or b'Pymodbus'
+            reportSlaveIdData = identifier
+        return ReportSlaveIdResponse(reportSlaveIdData)
 
     def __str__(self):
         ''' Builds a representation of the request

@@ -192,11 +192,9 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
 class ModbusSparseDataBlock(BaseModbusDataBlock):
     ''' Creates a sparse modbus datastore '''
 
-    def __init__(self, values):
-        ''' Initializes the datastore
-
-        Using the input values we create the default
-        datastore value and the starting address
+    def __init__(self, values=None):
+        ''' Initializes a sparse datastore. Will only answer to addresses
+        registered, either initially here, or later via setValues()
 
         :param values: Either a list or a dictionary of values
         '''
@@ -204,19 +202,14 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             self.values = values
         elif hasattr(values, '__iter__'):
             self.values = dict(enumerate(values))
-        else: raise ParameterException(
-            "Values for datastore must be a list or dictionary")
-        self.default_value = get_next(itervalues(self.values)).__class__()
-        self.address = get_next(iterkeys(self.values))
+        else:
+            self.values = {}  # Must make a new dict here per instance
+        # We only need this to support .reset()
+        self.default_value = self.values.copy()
 
-    @classmethod
-    def create(klass):
-        ''' Factory method to create a datastore with the
-        full address space initialized to 0x00
-
-        :returns: An initialized datastore
-        '''
-        return klass([0x00] * 65536)
+    def reset(self):
+        ''' Reset the store to the intially provided defaults'''
+        self.values = self.default_value.copy()
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range

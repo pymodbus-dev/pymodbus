@@ -571,7 +571,7 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self._strict = kwargs.get("strict", True)
+        self._strict = kwargs.get("strict", False)
         self.last_frame_end = None
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
         if self.method == "rtu":

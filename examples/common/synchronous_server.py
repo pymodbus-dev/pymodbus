@@ -11,6 +11,7 @@ twisted is just not feasible. What follows is an example of its use:
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
+from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.server.sync import StartTlsServer
 from pymodbus.server.sync import StartUdpServer
@@ -106,13 +107,13 @@ def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    StartTcpServer(context, identity=identity, address=("", 5020))
+    # StartTcpServer(context, identity=identity, address=("", 5020))
     #
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
@@ -131,8 +132,8 @@ def run_server():
     #                    port='/dev/ttyp0', timeout=1)
 
     # RTU:
-    # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/tmp/ttyp0', timeout=.005, baudrate=9600)
+    StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
+                      port='/tmp/ttyp0', timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,

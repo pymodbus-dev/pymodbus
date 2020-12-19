@@ -9,7 +9,8 @@ of nodes which can be helpful for testing monitoring software.
 """
 # --------------------------------------------------------------------------- # 
 # import the various server implementations
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
+from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.server.asynchronous import StartUdpServer
 from pymodbus.server.asynchronous import StartSerialServer
@@ -105,10 +106,10 @@ def run_async_server():
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
     identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
     
     # ----------------------------------------------------------------------- # 
     # run the server you want

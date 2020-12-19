@@ -315,7 +315,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
         self.last_frame_end = 0.0
-        super().__init__(*args, **kwargs)
+        super(AsyncModbusSerialClient, self).__init__(*args, **kwargs)
 
     def get_socket(self):
         """

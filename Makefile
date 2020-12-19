@@ -42,10 +42,16 @@ check: install
 test: install
 	@pip install --upgrade --quiet --requirement=requirements-tests.txt
 ifeq ($(PYVER),3.6)
+	$(info Running tests on $(PYVER))
 	@pytest --cov=pymodbus/ --cov-report term-missing  test/test_server_asyncio.py test
 	@coverage report --fail-under=90 -i
-else
+else ifeq ($(PYVER),2.7)
+	$(info Running tests on $(PYVER))
 	@pytest --cov-config=.coveragerc --cov=pymodbus/ --cov-report term-missing --ignore test/test_server_asyncio.py test
+	@coverage report --fail-under=90 -i
+else
+	$(info Running tests on $(PYVER))
+	@pytest --cov=pymodbus/ --cov-report term-missing  test
 	@coverage report --fail-under=90 -i
 endif
 

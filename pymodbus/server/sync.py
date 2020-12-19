@@ -581,7 +581,7 @@ class ModbusSerialServer(object):
             if not self.handler:
                 self._build_handler()
             while self.is_running:
-                self.handler.handle()
+                self.handler.response_manipulator()
         else:
             _logger.error("Error opening serial port , "
                           "Unable to start server!!")

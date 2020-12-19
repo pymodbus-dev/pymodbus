@@ -45,7 +45,7 @@ ifeq ($(PYVER),3.6)
 	@pytest --cov=pymodbus/ --cov-report term-missing  test/test_server_asyncio.py test
 	@coverage report --fail-under=90 -i
 else
-	@pytest --cov=pymodbus/ --cov-report term-missing
+	@pytest --cov-config=.coveragerc --cov=pymodbus/ --cov-report term-missing --ignore test/test_server_asyncio.py test
 	@coverage report --fail-under=90 -i
 endif
 

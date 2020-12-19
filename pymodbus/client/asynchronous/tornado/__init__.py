@@ -459,7 +459,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 LOGGER.info(
                     "Cleanup recv buffer before send: " + hexlify_packets(result))
         except OSError as e:
-            self.transaction.getTransaction(request.transaction_id).set_exception(ModbusIOException(e))
+            self.transaction.getTransaction(
+                message.transaction_id).set_exception(ModbusIOException(e))
             return
 
         start = time.time()

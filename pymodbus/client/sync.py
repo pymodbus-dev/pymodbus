@@ -72,8 +72,9 @@ class BaseModbusClient(ModbusClientMixin):
         )
 
     def send(self, request):
-        _logger.debug("New Transaction state 'SENDING'")
-        self.state = ModbusTransactionState.SENDING
+        if self.state != ModbusTransactionState.RETRYING:
+            _logger.debug("New Transaction state 'SENDING'")
+            self.state = ModbusTransactionState.SENDING
         return self._send(request)
 
     def _send(self, request):
@@ -204,12 +205,15 @@ class ModbusTcpClient(BaseModbusClient):
 
         :returns: True if connection succeeded, False otherwise
         """
-        if self.socket: return True
+        if self.socket:
+            return True
         try:
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
                 source_address=self.source_address)
+            _logger.debug("Connection to Modbus server established. "
+                          "Socket {}".format(self.socket.getsockname()))
         except socket.error as msg:
             _logger.error('Connection to (%s, %s) '
                           'failed: %s' % (self.host, self.port, msg))
@@ -223,6 +227,16 @@ class ModbusTcpClient(BaseModbusClient):
             self.socket.close()
         self.socket = None
 
+    def _check_read_buffer(self, recv_size=None):
+        time_ = time.time()
+        end = time_ + self.timeout
+        data = None
+        data_length = 0
+        ready = select.select([self.socket], [], [], end - time_)
+        if ready[0]:
+            data = self.socket.recv(1024)
+        return data
+
     def _send(self, request):
         """ Sends data on the underlying socket
 
@@ -231,6 +245,11 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
+        if self.state == ModbusTransactionState.RETRYING:
+            data = self._check_read_buffer()
+            if data:
+                return data
+
         if request:
             return self.socket.send(request)
         return 0
@@ -641,12 +660,19 @@ class ModbusSerialClient(BaseModbusClient):
                 waitingbytes = self._in_waiting()
                 if waitingbytes:
                     result = self.socket.read(waitingbytes)
+                    if self.state == ModbusTransactionState.RETRYING:
+                        _logger.debug("Sending available data in recv "
+                                      "buffer {}".format(
+                            hexlify_packets(result)))
+                        return result
                     if _logger.isEnabledFor(logging.WARNING):
                         _logger.warning("Cleanup recv buffer before "
                                         "send: " + hexlify_packets(result))
             except NotImplementedError:
                 pass
-
+            if self.state != ModbusTransactionState.SENDING:
+                _logger.debug("New Transaction state 'SENDING'")
+                self.state = ModbusTransactionState.SENDING
             size = self.socket.write(request)
             return size
         return 0

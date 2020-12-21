@@ -40,7 +40,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
-from pymodbus.compat import byte2int
+from pymodbus.utilities import hexlify_packets
 from twisted.python.failure import Failure
 
 
@@ -109,7 +109,7 @@ class ModbusClientProtocol(protocol.Protocol,
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
+        _logger.debug("send: " + hexlify_packets(packet))
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
 

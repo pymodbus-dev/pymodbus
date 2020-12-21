@@ -24,8 +24,8 @@ from distutils.version import LooseVersion
 IS_DARWIN = platform.system().lower() == "darwin"
 OSX_SIERRA = LooseVersion("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ttyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ptyp0'
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < LooseVersion(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     SERIAL_PORT = "/dev/ptmx"
@@ -228,10 +228,12 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=SERIAL_PORT,
+                                         timeout=0)
         client.connect()
         client.stream = Mock()
         client.stream.write = Mock()
+        client.stream.connection.read.return_value = b''
 
         request = ReadCoilsRequest(1, 1)
         d = client.execute(request)

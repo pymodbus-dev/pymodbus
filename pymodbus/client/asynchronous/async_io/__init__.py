@@ -7,7 +7,7 @@ import functools
 import ssl
 from pymodbus.exceptions import ConnectionException
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
-from pymodbus.compat import byte2int
+from pymodbus.utilities import hexlify_packets
 from pymodbus.transaction import FifoTransactionManager
 import logging
 
@@ -137,7 +137,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        _logger.debug("send: " + " ".join([hex(byte2int(x)) for x in packet]))
+        _logger.debug("send: " + hexlify_packets(packet))
         self.write_transport(packet)
         return self._buildResponse(request.transaction_id)
 
@@ -146,7 +146,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        _logger.debug("recv: " + " ".join([hex(byte2int(x)) for x in data]))
+        _logger.debug("recv: " + hexlify_packets(data))
         unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 

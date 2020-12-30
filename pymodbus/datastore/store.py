@@ -207,6 +207,16 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         # We only need this to support .reset()
         self.default_value = self.values.copy()
 
+    @classmethod
+    def create(klass, values=None):
+        ''' Factory method to create sparse datastore.
+        Use setValues to initialize registers.
+
+        :param values: Either a list or a dictionary of values
+        :returns: An initialized datastore
+        '''
+        return klass(values)
+
     def reset(self):
         ''' Reset the store to the intially provided defaults'''
         self.values = self.default_value.copy()

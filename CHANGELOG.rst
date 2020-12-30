@@ -1,3 +1,10 @@
+version 2.5.0rc2
+----------------------------------------------------------
+* Documentation updates
+* Disable `strict` mode by default.
+* Fix `ReportSlaveIdRequest` request
+* Sparse datablock initialization updates.
+
 version 2.5.0rc1
 ----------------------------------------------------------
 * Support REPL for modbus server (only python3 and asyncio)

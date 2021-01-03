@@ -105,6 +105,25 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     return loop, client
 
 
+def trio_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
+                 source_address=None, timeout=None, **kwargs):
+    """
+    Factory to create Trio based asynchronous tcp clients
+    :param host: Host IP address
+    :param port: Port
+    :param framer: Modbus Framer
+    :param source_address: Bind address
+    :param timeout: Timeout in seconds
+    :param kwargs:
+    :return: tcp client
+    """
+    from pymodbus.client.asynchronous.trio import init_tcp_client
+    proto_cls = kwargs.get("proto_cls", None)
+    client = init_tcp_client(proto_cls, host, port)
+
+    return client
+
+
 def get_factory(scheduler):
     """
     Gets protocol factory based on the backend scheduler being used
@@ -117,6 +136,8 @@ def get_factory(scheduler):
         return io_loop_factory
     elif scheduler == schedulers.ASYNC_IO:
         return async_io_factory
+    elif scheduler == schedulers.TRIO:
+        return trio_factory
     else:
         LOGGER.warning("Allowed Schedulers: {}, {}, {}".format(
             schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO

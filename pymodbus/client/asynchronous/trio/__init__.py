@@ -204,7 +204,10 @@ class TrioModbusTcpClient(object):
     async def receiver(self, stream):
         async for data in stream:
             self.protocol.data_received(data)
-            # await channel.send(data)
+
+            # seems like this should work due to the framer but it doesn't
+            # for d in data:
+            #     self.protocol.data_received(bytes([d]))
 
     def stop(self):
         """

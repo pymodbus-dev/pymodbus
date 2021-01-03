@@ -21,6 +21,7 @@ from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
+from pymodbus.client.asynchronous.trio import TrioModbusTcpClient as AsyncTrioModbusTcpClient
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
@@ -107,6 +108,28 @@ class TestAsynchronousClient(object):
         :return:
         """
         pytest.skip("TBD")
+
+    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 6),
+                        reason="requires python3.6 or above")
+    def testTcpTrioClient(self):
+        """
+        Test the TCP Trio client
+        :return:
+        """
+
+        def test_callback(client):
+            pass
+
+        def test_errback(client):
+            pass
+
+        client = AsyncModbusTCPClient(schedulers.TRIO,
+                             framer=ModbusSocketFramer(ClientDecoder()),
+                             callback=test_callback,
+                             errback=test_errback)
+
+        assert(isinstance(client, AsyncTrioModbusTcpClient))
+        assert(client.port == 502)
 
     # -----------------------------------------------------------------------#
     # Test TLS Client client

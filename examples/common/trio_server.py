@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import functools
 import logging
 
 FORMAT = (
@@ -10,6 +9,8 @@ FORMAT = (
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
+
+import functools
 
 from pymodbus.server.trio import tcp_server
 from pymodbus.device import ModbusDeviceIdentification

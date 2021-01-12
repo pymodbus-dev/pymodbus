@@ -74,6 +74,8 @@ async def tcp_server(server_stream, context, identity):
     # if server.broadcast_enable:  # pragma: no cover
     #     if 0 not in units:
     #         units.append(0)
+    if not context.single:
+        raise Exception("non-single context not yet supported")
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=0)
     framer = ModbusSocketFramer(decoder=ServerDecoder(), client=None)
 

@@ -2,6 +2,7 @@ import contextlib
 import functools
 import logging
 
+import async_generator
 import trio
 
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
@@ -155,7 +156,7 @@ class TrioModbusTcpClient:
 
         self.connected = False
 
-    @contextlib.asynccontextmanager
+    @async_generator.asynccontextmanager
     async def manage_connection(self):
         async with trio.open_nursery() as nursery:
             self.protocol = self._create_protocol()

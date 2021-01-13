@@ -30,6 +30,11 @@ six>=1.15.0
 # pyserial-asyncio==0.4.0;python_version>="3.4"
 
 # -------------------------------------------------------------------
+# if you want to use the Trio asynchronous version, uncomment these
+# -------------------------------------------------------------------
+# async_generator ~= 1.10
+
+# -------------------------------------------------------------------
 # if you want to build the documentation, uncomment these
 # -------------------------------------------------------------------
 #Jinja2==2.9.6

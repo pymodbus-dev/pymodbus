@@ -1,11 +1,14 @@
 from binascii import b2a_hex
 import functools
 import logging
+import traceback
 
 import trio
 
-from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
+from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.pdu import ModbusExceptions as merror
 
 _logger = logging.getLogger(__name__)
 

@@ -89,6 +89,9 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
+        'trio': [
+            'async_generator ~= 1.10',
+        ],
         'repl': [
             'click>=7.0',
             'prompt-toolkit==2.0.4',

@@ -20,7 +20,7 @@ before_install:
 
 install:
 #  - scripts/travis.sh pip install pip-accel
-  - if [ $TRAVIS_OS_NAME = osx ]; then scripts/travis.sh pip install -U "\"setuptools<45"\"; else pip install -U setuptools --upgrade ; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then scripts/travis.sh pip install -U pip "\"setuptools<45"\"; else pip install -U pip setuptools --upgrade ; fi
   - scripts/travis.sh pip install coveralls
   - scripts/travis.sh pip install --requirement=requirements-checks.txt
   - scripts/travis.sh pip install --requirement=requirements-tests.txt

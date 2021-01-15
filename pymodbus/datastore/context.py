@@ -29,7 +29,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'di' - Discrete Inputs initializer
             'co' - Coils initializer
             'hr' - Holding Register initializer
-            'ir' - Input Registers iniatializer
+            'ir' - Input Registers initializer
         '''
         self.store = dict()
         self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock.create())

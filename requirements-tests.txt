@@ -9,6 +9,7 @@ pyasn1>=0.4.2
 pyserial>=3.4
 pytest-cov>=2.5.1
 pytest>=3.5.0
+pytest-trio~=0.7.0
 redis>=2.10.6
 sqlalchemy>=1.1.15
 #wsgiref>=0.1.2

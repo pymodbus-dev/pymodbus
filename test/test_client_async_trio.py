@@ -10,6 +10,7 @@ if TRIO_AVAILABLE:
     from pymodbus.exceptions import ConnectionException
     from pymodbus.transaction import ModbusSocketFramer
     from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+    from pymodbus.register_read_message import ReadHoldingRegistersResponse
     # protocols = [ModbusUdpClientProtocol, ModbusClientProtocol]
     protocols = [ModbusClientProtocol]
 else:

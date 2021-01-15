@@ -179,6 +179,16 @@ class TrioModbusTcpClient:
             # for d in data:
             #     self.protocol.data_received(bytes([d]))
 
+    def stop(self):
+        """
+        Stops the client
+        :return:
+        """
+        if self.connected:
+            if self.protocol:
+                if self.protocol.transport:
+                    self.protocol.transport.close()
+
     def _create_protocol(self):
         """
         Factory function to create initialized protocol instance.

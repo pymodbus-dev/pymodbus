@@ -1,3 +1,11 @@
+version 2.5.0rc3
+----------------------------------------------------------
+* Minor fix in documentations
+* Travis fix for Mac OSX
+* Disable unnecessary deprecation warning while using async clients.
+* Use Github actions for builds in favor of travis.
+
+
 version 2.5.0rc2
 ----------------------------------------------------------
 * Documentation updates

@@ -40,14 +40,14 @@ jobs:
               3.9: docker://python:3.9-buster
               pypy2: docker://pypy:2-jessie
               pypy3: docker://pypy:3-stretch
-          - name: Windows
-            runs-on: windows-latest
-            python_platform: win32
-            matrix: windows
-          - name: macOS
-            runs-on: macos-latest
-            python_platform: darwin
-            matrix: macos
+#          - name: Windows
+#            runs-on: windows-latest
+#            python_platform: win32
+#            matrix: windows
+#          - name: macOS
+#            runs-on: macos-latest
+#            python_platform: darwin
+#            matrix: macos
         python:
           - name: CPython 2.7
             tox: py27

@@ -24,7 +24,7 @@ install:
   - scripts/travis.sh pip install coveralls
   - scripts/travis.sh pip install --requirement=requirements-checks.txt
   - scripts/travis.sh pip install --requirement=requirements-tests.txt
-  - scripts/travis.sh LC_ALL=C pip install .
+  - scripts/travis.sh LC_ALL=C pip install --upgrade .
   - scripts/travis.sh pip freeze --all
 script:
 #  - scripts/travis.sh make check

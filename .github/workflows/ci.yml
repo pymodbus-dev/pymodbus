@@ -44,10 +44,10 @@ jobs:
 #            runs-on: windows-latest
 #            python_platform: win32
 #            matrix: windows
-#          - name: macOS
-#            runs-on: macos-latest
-#            python_platform: darwin
-#            matrix: macos
+          - name: macOS
+            runs-on: macos-latest
+            python_platform: darwin
+            matrix: macos
         python:
           - name: CPython 2.7
             tox: py27

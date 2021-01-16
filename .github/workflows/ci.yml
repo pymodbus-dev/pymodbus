@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    # Daily at 05:14
+    - cron: '14 5 * * *'
+
+jobs:
+  all:
+    name: All
+    runs-on: ubuntu-latest
+    steps:
+      - name: This
+        shell: python
+        run: |
+          import this

@@ -110,8 +110,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self._log_exception()
             else:  # pragma: no cover
                 if hasattr(self, "client_address"):  # TCP connection
-                    _logger.debug("Client Disconnection [%s:%s] due "
-                                  "to %s" % (*self.client_address, exc))
+                    _logger.debug("Client Disconnection {} due "
+                                  "to {}".format(*self.client_address, exc))
 
             self.running = False
 

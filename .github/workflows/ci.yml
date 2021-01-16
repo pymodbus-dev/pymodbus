@@ -15,9 +15,111 @@ on:
     - cron: '14 5 * * *'
 
 jobs:
+  test:
+    # Should match JOB_NAME below
+    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.qt_library.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ${{ matrix.os.container[matrix.python.docker] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - name: Test
+            tox: test
+            coverage: true
+        os:
+          - name: Linux
+            runs-on: ubuntu-latest
+            python_platform: linux
+            matrix: linux
+            container:
+              2.7: docker://python:2.7-buster
+              3.6: docker://python:3.6-buster
+              3.7: docker://python:3.7-buster
+              3.8: docker://python:3.8-buster
+              3.9: docker://python:3.9-buster
+              pypy2: docker://pypy:2-jessie
+              pypy3: docker://pypy:3-stretch
+          - name: Windows
+            runs-on: windows-latest
+            python_platform: win32
+            matrix: windows
+          - name: macOS
+            runs-on: macos-latest
+            python_platform: darwin
+            matrix: macos
+        python:
+          - name: CPython 3.6
+            tox: py36
+            action: 3.6
+            docker: 3.6
+          - name: CPython 3.7
+            tox: py37
+            action: 3.7
+            docker: 3.7
+          - name: CPython 3.8
+            tox: py38
+            action: 3.8
+            docker: 3.8
+#          - name: CPython 3.9
+#            tox: py39
+#            action: 3.9
+#            docker: 3.9
+        arch:
+          - name: x86
+            action: x86
+            matrix: x86
+          - name: x64
+            action: x64
+            matrix: x64
+        exclude:
+          - os:
+              matrix: linux
+            arch:
+              matrix: x86
+          - os:
+              matrix: macos
+            arch:
+              matrix: x86
+    env:
+      # Should match name above
+      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.qt_library.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up ${{ matrix.python.name }}
+        if: job.container == ''
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
+          architecture: '${{ matrix.arch.action }}'
+      - name: Install
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade tox coveralls
+      - uses: twisted/python-info-action@v1.0.1
+      - name: Test
+        run: |
+          tox -vv -e ${{ matrix.python.tox }}
+      - name: Coverage Processing
+        if: matrix.task.coverage
+        run: |
+          mkdir coverage_reports
+          cp .coverage "coverage_reports/coverage.${{ env.JOB_NAME }}"
+          cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
+          coveralls
+      - name: Publish Coverage
+        if: matrix.task.coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: coverage_reports/*
   all:
     name: All
     runs-on: ubuntu-latest
+    needs:
+      - test
     steps:
       - name: This
         shell: python

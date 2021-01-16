@@ -14,6 +14,6 @@ sqlalchemy>=1.1.15
 #wsgiref>=0.1.2
 verboselogs >= 1.5
 tornado==4.5.3
-Twisted>=20.3.0
+Twisted[serial]>=20.3.0
 zope.interface>=4.4.0
 asynctest>=0.10.0

@@ -124,7 +124,8 @@ jobs:
           mkdir coverage_reports
           cp .coverage "coverage_reports/coverage.${{ env.JOB_NAME }}"
           cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
-          coveralls
+# TODO: deal with the classic secrets and forked PRs issue...
+#          coveralls
       - name: Publish Coverage
         if: matrix.task.coverage
         uses: actions/upload-artifact@v2

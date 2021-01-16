@@ -376,7 +376,7 @@ class ModbusTransactionManager(object):
     def addTransaction(self, request, tid=None):
         """ Adds a transaction to the handler
 
-        This holds the requets in case it needs to be resent.
+        This holds the request in case it needs to be resent.
         After being sent, the request is removed.
 
         :param request: The request to hold on to

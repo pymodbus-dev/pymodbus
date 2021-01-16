@@ -4,7 +4,7 @@ TRIO_AVAILABLE = IS_PYTHON3 and PYTHON_VERSION >= (3, 6)
 if TRIO_AVAILABLE:
     from unittest import mock
     from pymodbus.client.asynchronous.trio import (
-        ModbusClientProtocol, TrioModbusTcpClient)#, ModbusUdpClientProtocol)
+        ModbusTcpClientProtocol, TrioModbusTcpClient)#, ModbusUdpClientProtocol)
     # from test.trio_test_helper import return_as_coroutine, run_coroutine
     from pymodbus.factory import ClientDecoder
     from pymodbus.exceptions import ConnectionException
@@ -12,7 +12,7 @@ if TRIO_AVAILABLE:
     from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
     from pymodbus.register_read_message import ReadHoldingRegistersResponse
     # protocols = [ModbusUdpClientProtocol, ModbusClientProtocol]
-    protocols = [ModbusClientProtocol]
+    protocols = [ModbusTcpClientProtocol]
 else:
     import mock
     protocols = [None, None]

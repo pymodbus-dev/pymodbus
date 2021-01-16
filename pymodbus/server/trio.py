@@ -5,7 +5,7 @@ import traceback
 
 import trio
 
-from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.pdu import ModbusExceptions as merror
@@ -24,14 +24,15 @@ def execute(request, addr, context, response_send):
         else:
             context = context[request.unit_id]
             response = request.execute(context)
-    except NoSuchSlaveException as ex:
-        _logger.debug("requested slave does " "not exist: %s" % request.unit_id)
-        if False:  # self.server.ignore_missing_slaves:
-            return  # the client will simply timeout waiting for a response
-        response = request.doException(merror.GatewayNoResponse)
+    # TODO: can't be covered until non-single server contexts are supported
+    # except NoSuchSlaveException as ex:
+    #     _logger.debug("requested slave does not exist: %s" % request.unit_id)
+    #     if False:  # self.server.ignore_missing_slaves:
+    #         return  # the client will simply timeout waiting for a response
+    #     response = request.doException(merror.GatewayNoResponse)
     except Exception as ex:
         _logger.debug(
-            "Datastore unable to fulfill request: " "%s; %s", ex, traceback.format_exc()
+            "Datastore unable to fulfill request: %s; %s", ex, traceback.format_exc()
         )
         response = request.doException(merror.SlaveFailure)
     # no response when broadcasting
@@ -39,12 +40,6 @@ def execute(request, addr, context, response_send):
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id
         response_send.send_nowait((response, addr))
-
-
-class EventAndValue:
-    def __init__(self):
-        self.event = trio.Event()
-        self.value = self
 
 
 async def incoming(server_stream, framer, context, response_send):
@@ -78,7 +73,7 @@ async def tcp_server(server_stream, context, identity):
     #     if 0 not in units:
     #         units.append(0)
     if not context.single:
-        raise Exception("non-single context not yet supported")
+        raise NotImplementedException("non-single context not yet supported")
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=0)
     framer = ModbusSocketFramer(decoder=ServerDecoder(), client=None)
 

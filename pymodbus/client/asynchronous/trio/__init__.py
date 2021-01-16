@@ -1,4 +1,3 @@
-import contextlib
 import functools
 import logging
 
@@ -12,6 +11,16 @@ from pymodbus.utilities import hexlify_packets
 _logger = logging.getLogger(__name__)
 
 
+class EventAndValue:
+    def __init__(self):
+        self.event = trio.Event()
+        self.value = self
+
+    def __call__(self, value):
+        self.value = value
+        self.event.set()
+
+
 class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     """
     Trio specific implementation of asynchronous modbus client protocol.
@@ -20,13 +29,15 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     #: Factory that created this instance.
     factory = None
     transport = None
+    data = b''
 
     async def execute(self, request=None):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         _logger.debug("send: " + hexlify_packets(packet))
+        # TODO: should we retry on trio.BusyResourceError?
         await self.transport.send_all(packet)
-        response = await self._buildResponse(request.transaction_id)
+        response = await self._build_response(request.transaction_id)
         return response
 
     def connection_made(self, transport):
@@ -38,28 +49,33 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :return:
         """
         self.transport = transport
-        self._connection_made()
+        _logger.debug("Client connected to modbus server")
+        self._connected = True
 
         if self.factory:
             self.factory.protocol_made_connection(self)
 
-    def _connection_made(self):
-        """
-        Called upon a successful client connection.
-        """
-        _logger.debug("Client connected to modbus server")
-        self._connected = True
+    # TODO: _connectionLost looks like functionality to have somewhere
 
-    def _dataReceived(self, data):
+    def _data_received(self, data):
         ''' Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         '''
         _logger.debug("recv: " + hexlify_packets(data))
-        unit = self.framer.decode_data(data).get("unit", 0)
-        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
-    def _handleResponse(self, reply, **kwargs):
+        # TODO: trying to help out the framer here by buffering up a bit but it
+        #       is insufficient and still fails down below.
+        self.data += data
+        decoded = self.framer.decode_data(self.data)
+        if decoded == {}:
+            return
+
+        unit = decoded.get("unit", 0)
+        self.framer.processIncomingPacket(self.data, self._handle_response, unit=unit)
+        self.data = b''
+
+    def _handle_response(self, reply, **kwargs):
         """
         Handle the processed response and link to correct deferred
 
@@ -69,12 +85,11 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             tid = reply.transaction_id
             handler = self.transaction.getTransaction(tid)
             if handler:
-                handler.value = reply
-                handler.event.set()
+                handler(reply)
             else:
                 _logger.debug("Unrequested message: " + str(reply))
 
-    async def _buildResponse(self, tid):
+    async def _build_response(self, tid):
         """
         Helper method to return a deferred response
         for the current request.
@@ -85,20 +100,15 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         if not self._connected:
             raise ConnectionException('Client is not connected')
 
-        class EventAndValue:
-            def __init__(self):
-                self.event = trio.Event()
-                self.value = self
-
         event_and_value = EventAndValue()
         self.transaction.addTransaction(event_and_value, tid)
         await event_and_value.event.wait()
         return event_and_value.value
 
 
-class ModbusClientProtocol(BaseModbusAsyncClientProtocol):
+class ModbusTcpClientProtocol(BaseModbusAsyncClientProtocol):
     """
-    Asyncio specific implementation of asynchronous modbus client protocol.
+    Trio specific implementation of asynchronous modbus client protocol.
     """
 
     #: Factory that created this instance.
@@ -112,27 +122,10 @@ class ModbusClientProtocol(BaseModbusAsyncClientProtocol):
         :param data:
         :return:
         """
-        self._dataReceived(data)
+        self._data_received(data)
 
 
-# class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol):
-#     """
-#     Asyncio specific implementation of asynchronous modbus udp client protocol.
-#     """
-#
-#     #: Factory that created this instance.
-#     factory = None
-#
-#     def __init__(self, host=None, port=0, **kwargs):
-#         self.host = host
-#         self.port = port
-#         super(self.__class__, self).__init__(**kwargs)
-#
-#     def datagram_received(self, data, addr):
-#         self._dataReceived(data)
-#
-#     def write_transport(self, packet):
-#         return self.transport.sendto(packet)
+# TODO: implement UDP
 
 
 class TrioModbusTcpClient:
@@ -146,7 +139,7 @@ class TrioModbusTcpClient:
         :param protocol_class: Protocol used to talk to modbus device.
         """
         #: Protocol used to talk to modbus device.
-        self.protocol_class = protocol_class or ModbusClientProtocol
+        self.protocol_class = protocol_class or ModbusTcpClientProtocol
         #: Current protocol instance.
         self.protocol = None
         #: Event loop to use.

@@ -164,13 +164,20 @@ jobs:
             python_platform: linux
             matrix: linux
             container:
+              3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
         python:
+          # Using 3.7 for now since flake8 is super noisy with 3.8
           - name: CPython 3.7
             tox: py37
             action: 3.7
             docker: 3.7
             implementation: cpython
+#          - name: CPython 3.8
+#            tox: py38
+#            action: 3.8
+#            docker: 3.8
+#            implementation: cpython
         arch:
           - name: x64
             action: x64

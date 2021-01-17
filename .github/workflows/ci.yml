@@ -166,10 +166,10 @@ jobs:
             container:
               3.8: docker://python:3.8-buster
         python:
-          - name: CPython 3.8
-            tox: py38
-            action: 3.8
-            docker: 3.8
+          - name: CPython 3.7
+            tox: py37
+            action: 3.7
+            docker: 3.7
             implementation: cpython
         arch:
           - name: x64

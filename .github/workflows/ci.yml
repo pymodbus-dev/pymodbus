@@ -189,7 +189,7 @@ jobs:
           pip install --upgrade tox
       - uses: twisted/python-info-action@v1.0.1
       - name: Test
-        continue-on-error: matrix.task.continue_on_error
+        continue-on-error: ${{ matrix.task.continue_on_error }}
         run: |
           tox -vv -e ${{ matrix.task.tox }}
   all:

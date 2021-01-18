@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import unittest
 import pytest
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
@@ -186,16 +187,17 @@ class TestAsynchronousClient(object):
         from twisted.internet.serialport import SerialPort
 
         with patch('twisted.internet.reactor') as mock_reactor:
-            import os.path
-            import tempfile
-            directory = tempfile.mkdtemp()
-            path = os.path.join(directory, "fake_serial")
+            if sys.platform == "win32":
+                import os.path
+                import tempfile
+                directory = tempfile.mkdtemp()
+                path = os.path.join(directory, "fake_serial")
 
-            data = b"1234"
-            with open(path, "wb") as f:
-                f.write(data)
+                data = b"1234"
+                with open(path, "wb") as f:
+                    f.write(data)
 
-            SERIAL_PORT = path
+                SERIAL_PORT = path
 
             protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
                                                        method=method,

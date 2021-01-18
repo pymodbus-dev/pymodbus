@@ -182,33 +182,42 @@ class TestAsynchronousClient(object):
     def testSerialTwistedClient(self, method, framer):
         """ Test the serial twisted client client initialize """
         from serial import Serial
-        with patch("serial.Serial") as mock_sp:
-            from twisted.internet import reactor
-            from twisted.internet.serialport import SerialPort
+        from twisted.internet import reactor
+        from twisted.internet.serialport import SerialPort
 
-            with patch('twisted.internet.reactor') as mock_reactor:
+        with patch('twisted.internet.reactor') as mock_reactor:
+            import os.path
+            import tempfile
+            directory = tempfile.mkdtemp()
+            path = os.path.join(directory, "fake_serial")
 
-                protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
-                                                           method=method,
-                                                           port=SERIAL_PORT,
-                                                           proto_cls=ModbusSerClientProtocol)
+            data = b"1234"
+            with open(path, "wb") as f:
+                f.write(data)
 
-                assert (isinstance(client, SerialPort))
-                assert (isinstance(client.protocol, ModbusSerClientProtocol))
-                assert (0 == len(list(client.protocol.transaction)))
-                assert (isinstance(client.protocol.framer, framer))
-                assert (client.protocol._connected)
+            SERIAL_PORT = path
 
-                def handle_failure(failure):
-                    assert (isinstance(failure.exception(), ConnectionException))
+            protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
+                                                       method=method,
+                                                       port=SERIAL_PORT,
+                                                       proto_cls=ModbusSerClientProtocol)
 
-                d = client.protocol._buildResponse(0x00)
-                d.addCallback(handle_failure)
+            assert (isinstance(client, SerialPort))
+            assert (isinstance(client.protocol, ModbusSerClientProtocol))
+            assert (0 == len(list(client.protocol.transaction)))
+            assert (isinstance(client.protocol.framer, framer))
+            assert (client.protocol._connected)
 
-                assert (client.protocol._connected)
-                client.protocol.close()
-                protocol.stop()
-                assert (not client.protocol._connected)
+            def handle_failure(failure):
+                assert (isinstance(failure.exception(), ConnectionException))
+
+            d = client.protocol._buildResponse(0x00)
+            d.addCallback(handle_failure)
+
+            assert (client.protocol._connected)
+            client.protocol.close()
+            protocol.stop()
+            assert (not client.protocol._connected)
 
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                         ("socket", ModbusSocketFramer),

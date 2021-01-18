@@ -327,16 +327,17 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusConnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.pop('ignore_missing_slaves',
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable', 
+        self.broadcast_enable = kwargs.pop('broadcast_enable',
                                            Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingTCPServer.__init__(self, self.address,
-                                                 self.handler)
+                                                 self.handler,
+                                                 **kwargs)
 
     def process_request(self, request, client):
         """ Callback for connecting a new client thread
@@ -456,16 +457,16 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.pop('ignore_missing_slaves',
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable', 
+        self.broadcast_enable = kwargs.pop('broadcast_enable',
                                            Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
         socketserver.ThreadingUDPServer.__init__(self,
-            self.address, self.handler)
+            self.address, self.handler, **kwargs)
         # self._BaseServer__shutdown_request = True
 
     def process_request(self, request, client):

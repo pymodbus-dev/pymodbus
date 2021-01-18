@@ -29,7 +29,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     #: Factory that created this instance.
     factory = None
     transport = None
-    data = b''
 
     async def execute(self, request=None):
         request.transaction_id = self.transaction.getNextTID()
@@ -37,7 +36,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         _logger.debug("send: " + hexlify_packets(packet))
         # TODO: should we retry on trio.BusyResourceError?
         await self.transport.send_all(packet)
-        response = await self._build_response(request.transaction_id)
+        with trio.fail_after(seconds=1):
+            response = await self._build_response(request.transaction_id)
         return response
 
     def connection_made(self, transport):
@@ -64,15 +64,10 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         '''
         _logger.debug("recv: " + hexlify_packets(data))
 
-        # TODO: trying to help out the framer here by buffering up a bit but it
-        #       is insufficient and still fails down below.
-        self.data += data
-        decoded = self.framer.decode_data(self.data)
-        if decoded == {}:
-            return
+        decoded = self.framer.decode_data(data)
 
         unit = decoded.get("unit", 0)
-        self.framer.processIncomingPacket(self.data, self._handle_response, unit=unit)
+        self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
         self.data = b''
 
     def _handle_response(self, reply, **kwargs):

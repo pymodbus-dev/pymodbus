@@ -90,6 +90,7 @@ setup(
             'tornado == 4.5.3'
         ],
         'trio': [
+            'trio ~= 0.17.0',
             'async_generator ~= 1.10',
         ],
         'repl': [

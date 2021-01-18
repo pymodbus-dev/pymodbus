@@ -196,7 +196,7 @@ class TestAsynchronousClient(object):
                 data = b"1234"
                 with open(path, "wb") as f:
                     f.write(data)
-
+                global SERIAL_PORT
                 SERIAL_PORT = path
 
             protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,

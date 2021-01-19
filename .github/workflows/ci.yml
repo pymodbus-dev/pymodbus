@@ -143,12 +143,13 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox coveralls requests urllib3
       - uses: twisted/python-info-action@v1.0.1
-      - name: Install OpenSSL
+      - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         run: |
-          choco install --no-progress openssl
-          echo "INCLUDE=C:/Program Files/OpenSSL-Win64/include;$INCLUDE" >> $GITHUB_ENV
-          echo "LIB=C:/Program Files/OpenSSL-Win64/lib;$LIB" >> $GITHUB_ENV
+          hg clone https://foss.heptapod.net/pypy/externals/ $GITHUB_WORKSPACE/pypy_externals
+          cd pypy_externals && hg update win32_14x
+          echo "INCLUDE=$GITHUB_WORKSPACE/pypy_externals/include;$INCLUDE" >> $GITHUB_ENV
+          echo "LIB=$GITHUB_WORKSPACE/pypy_externals/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - name: Test
         run: |

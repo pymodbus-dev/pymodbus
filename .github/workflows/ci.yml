@@ -145,11 +145,13 @@ jobs:
       - uses: twisted/python-info-action@v1.0.1
       - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        env:
+          PYPY_EXTERNALS_PATH: $GITHUB_WORKSPACE/pypy_externals
         run: |
-          hg clone https://foss.heptapod.net/pypy/externals/ $GITHUB_WORKSPACE/pypy_externals
-          cd pypy_externals && hg update win32_14x
-          echo "INCLUDE=$GITHUB_WORKSPACE/pypy_externals/include;$INCLUDE" >> $GITHUB_ENV
-          echo "LIB=$GITHUB_WORKSPACE/pypy_externals/lib;$LIB" >> $GITHUB_ENV
+          hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
+          cd $PYPY_EXTERNALS_PATH && hg update win32_14x
+          echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
+          echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - name: Test
         run: |

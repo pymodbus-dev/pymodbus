@@ -14,7 +14,7 @@ sqlalchemy>=1.1.15
 #wsgiref>=0.1.2
 verboselogs >= 1.5
 tornado==4.5.3
-Twisted[serial]>=20.3.0; implementation_name == "cpython"
-Twisted>=20.3.0; implementation_name == "pypy"
+Twisted[serial]>=20.3.0; platform_python_implementation == "CPython"
+Twisted>=20.3.0; platform_python_implementation == "PyPy"
 zope.interface>=4.4.0
 asynctest>=0.10.0

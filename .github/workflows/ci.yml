@@ -148,7 +148,10 @@ jobs:
         env:
           PYPY_EXTERNALS_PATH: $GITHUB_WORKSPACE/pypy_externals
         run: |
+          echo $PYPY_EXTERNALS_PATH
+          mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)
           hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
+          dir $PYPY_EXTERNALS_PATH
           cd $PYPY_EXTERNALS_PATH && hg update win32_14x
           echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
           echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV

@@ -46,6 +46,9 @@ jobs:
             runs-on: windows-latest
             python_platform: win32
             matrix: windows
+            openssl:
+              x86: win32
+              x64: win64
 #          - name: macOS
 #            runs-on: macos-latest
 #            python_platform: darwin
@@ -61,6 +64,7 @@ jobs:
             action: pypy-2.7
             docker: pypy2.7
             implementation: pypy
+            openssl_msvc_version: 2019
           - name: CPython 3.6
             tox: py36
             action: 3.6
@@ -86,11 +90,13 @@ jobs:
             action: pypy-3.6
             docker: pypy3.6
             implementation: pypy
+            openssl_msvc_version: 2019
           - name: PyPy 3.7
             tox: pypy37
             action: pypy-3.7
             docker: pypy3.7
             implementation: pypy
+            openssl_msvc_version: 2019
         arch:
           - name: x86
             action: x86
@@ -126,6 +132,14 @@ jobs:
         with:
           python-version: '${{ matrix.python.action }}'
           architecture: '${{ matrix.arch.action }}'
+      #https://github.com/pyca/cryptography/blob/d6535b68455767be37402ad7ce185d2e459daec8/.github/workflows/ci.yml#L237-L242
+      - name: Download OpenSSL
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        run: |
+            python .github/workflows/download_openssl.py windows openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}
+            echo "INCLUDE=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/include;$INCLUDE" >> $GITHUB_ENV
+            echo "LIB=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/lib;$LIB" >> $GITHUB_ENV
+#            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - name: Install
         run: |
           pip install --upgrade pip setuptools wheel

@@ -282,7 +282,8 @@ class SynchronousServerTest(unittest.TestCase):
         with patch.object(socketserver.TCPServer, 'server_activate'):
             with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-                server = ModbusTlsServer(context=None, identity=identity)
+                server = ModbusTlsServer(context=None, identity=identity, bind_and_activate=False)
+                server.server_activate()
                 self.assertIsNotNone(server.sslctx)
                 self.assertEqual(type(server.socket), ssl.SSLSocket)
                 server.server_close()

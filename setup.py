@@ -85,10 +85,10 @@ setup(
         'twisted': [
             # using platform_python_implementation rather than
             # implementation_name for Python 2 support
-            'Twisted[conch,serial]>=20.3.0; platform_python_implementation == "CPython"',
+            'Twisted[conch,serial]>=20.3.0; platform_python_implementation == "CPython" or sys_platform != "win32"',
             # pywin32 isn't supported on pypy
             # https://github.com/mhammond/pywin32/issues/1289
-            'Twisted[conch]>=20.3.0; platform_python_implementation == "PyPy"',
+            'Twisted[conch]>=20.3.0; platform_python_implementation == "PyPy" and sys_platform == "win32"',
         ],
         'tornado': [
             'tornado == 4.5.3'

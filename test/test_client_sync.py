@@ -47,7 +47,7 @@ class mockSocket(object):
 
 
 inet_pton_skipif = pytest.mark.skipif(
-    sys.platform == "win32" and sys.version < (3, 4),
+    sys.platform == "win32" and sys.version_info < (3, 4),
     reason=(
         "Uses socket.inet_pton() which wasn't available on Windows until"
         " 3.4.",

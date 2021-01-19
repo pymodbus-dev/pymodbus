@@ -221,6 +221,7 @@ class TestAsynchronousClient(object):
             protocol.stop()
             assert (not client.protocol._connected)
 
+    @pytest.mark.skipif(sys.platform == 'win32', reason="needs work on Windows")
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                         ("socket", ModbusSocketFramer),
                                         ("binary",  ModbusBinaryFramer),

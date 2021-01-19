@@ -147,6 +147,7 @@ jobs:
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         env:
           PYPY_EXTERNALS_PATH: $GITHUB_WORKSPACE/pypy_externals
+        shell: bash
         run: |
           echo $PYPY_EXTERNALS_PATH
           mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)

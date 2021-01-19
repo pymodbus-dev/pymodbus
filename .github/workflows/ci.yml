@@ -132,6 +132,10 @@ jobs:
         with:
           python-version: '${{ matrix.python.action }}'
           architecture: '${{ matrix.arch.action }}'
+      - name: Install
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade tox coveralls requests urllib3
       #https://github.com/pyca/cryptography/blob/d6535b68455767be37402ad7ce185d2e459daec8/.github/workflows/ci.yml#L237-L242
       - name: Download OpenSSL
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
@@ -140,10 +144,6 @@ jobs:
             echo "INCLUDE=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/include;$INCLUDE" >> $GITHUB_ENV
             echo "LIB=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/lib;$LIB" >> $GITHUB_ENV
 #            echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
-      - name: Install
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox coveralls
       - uses: twisted/python-info-action@v1.0.1
       - name: Test
         run: |

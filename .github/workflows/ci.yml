@@ -58,43 +58,51 @@ jobs:
             tox: py27
             action: 2.7
             docker: 2.7
+            matrix: 2.7
             implementation: cpython
           - name: PyPy 2.7
             tox: pypy27
             action: pypy-2.7
             docker: pypy2.7
+            matrix: 2.7
             implementation: pypy
             openssl_msvc_version: 2019
           - name: CPython 3.6
             tox: py36
             action: 3.6
             docker: 3.6
+            matrix: 3.6
             implementation: cpython
           - name: CPython 3.7
             tox: py37
             action: 3.7
             docker: 3.7
+            matrix: 3.7
             implementation: cpython
           - name: CPython 3.8
             tox: py38
             action: 3.8
             docker: 3.8
+            matrix: 3.8
             implementation: cpython
           - name: CPython 3.9
             tox: py39
             action: 3.9
             docker: 3.9
+            matrix: 3.9
             implementation: cpython
           - name: PyPy 3.6
             tox: pypy36
             action: pypy-3.6
             docker: pypy3.6
+            matrix: 3.6
             implementation: pypy
             openssl_msvc_version: 2019
           - name: PyPy 3.7
             tox: pypy37
             action: pypy-3.7
             docker: pypy3.7
+            matrix: 3.7
             implementation: pypy
             openssl_msvc_version: 2019
         arch:
@@ -119,6 +127,11 @@ jobs:
               implementation: pypy
             arch:
               matrix: x64
+          # Twisted doesn't support Python 3.9 on Windows as of 20.3.0
+          - os:
+              matrix: windows
+            python:
+              matrix: 3.9
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.qt_library.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}

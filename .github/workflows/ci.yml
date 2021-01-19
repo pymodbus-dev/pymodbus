@@ -113,6 +113,12 @@ jobs:
               matrix: macos
             arch:
               matrix: x86
+          - os:
+              matrix: windows
+            python:
+              implementation: pypy
+            arch:
+              matrix: x64
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.qt_library.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}

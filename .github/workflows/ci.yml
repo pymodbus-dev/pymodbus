@@ -136,6 +136,7 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox coveralls requests urllib3
+      - uses: twisted/python-info-action@v1.0.1
       - name: Install OpenSSL
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         run: |
@@ -143,7 +144,6 @@ jobs:
           echo "INCLUDE=C:/Program Files/OpenSSL-Win64/include;$INCLUDE" >> $GITHUB_ENV
           echo "LIB=C:/Program Files/OpenSSL-Win64/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
-      - uses: twisted/python-info-action@v1.0.1
       - name: Test
         run: |
           tox -vv -e ${{ matrix.python.tox }}

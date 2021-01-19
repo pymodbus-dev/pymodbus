@@ -146,7 +146,7 @@ jobs:
       - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         env:
-          PYPY_EXTERNALS_PATH: ${{ env.workspace }}/pypy_externals
+          PYPY_EXTERNALS_PATH: ${{ github.workspace }}/pypy_externals
         shell: bash
         run: |
           echo $PYPY_EXTERNALS_PATH

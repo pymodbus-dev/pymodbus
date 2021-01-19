@@ -139,9 +139,9 @@ jobs:
       - name: Install OpenSSL
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         run: |
-          choco install openssl
-          echo "INCLUDE=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/include;$INCLUDE" >> $GITHUB_ENV
-          echo "LIB=C:/openssl-${{ matrix.os.openssl[matrix.arch.matrix] }}-${{ matrix.python.openssl_msvc_version }}/lib;$LIB" >> $GITHUB_ENV
+          choco install --no-progress openssl
+          echo "INCLUDE=C:/Program Files/OpenSSL-Win64/include;$INCLUDE" >> $GITHUB_ENV
+          echo "LIB=C:/Program Files/OpenSSL-Win64/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - uses: twisted/python-info-action@v1.0.1
       - name: Test

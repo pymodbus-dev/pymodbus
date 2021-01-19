@@ -289,7 +289,8 @@ class SynchronousServerTest(unittest.TestCase):
                 server.server_close()
                 sslctx = ssl.create_default_context()
                 server = ModbusTlsServer(context=None, identity=identity,
-                                         sslctx=sslctx)
+                                         sslctx=sslctx, bind_and_activate=False)
+                server.server_activate()
                 self.assertEqual(server.sslctx, sslctx)
                 self.assertEqual(type(server.socket), ssl.SSLSocket)
                 server.server_close()

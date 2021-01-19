@@ -279,20 +279,19 @@ class SynchronousServerTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
     def testTlsServerInit(self):
         ''' test that the synchronous TLS server intial correctly '''
-        with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
-            server = ModbusTlsServer(context=None, identity=identity, bind_and_activate=False)
-            server.server_activate()
-            self.assertIsNotNone(server.sslctx)
-            self.assertEqual(type(server.socket), ssl.SSLSocket)
-            server.server_close()
-            sslctx = ssl.create_default_context()
-            server = ModbusTlsServer(context=None, identity=identity,
-                                     sslctx=sslctx, bind_and_activate=False)
-            server.server_activate()
-            self.assertEqual(server.sslctx, sslctx)
-            self.assertEqual(type(server.socket), ssl.SSLSocket)
-            server.server_close()
+        with patch.object(socketserver.TCPServer, 'server_activate'):
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+                identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+                server = ModbusTlsServer(context=None, identity=identity)
+                self.assertIsNotNone(server.sslctx)
+                self.assertEqual(type(server.socket), ssl.SSLSocket)
+                server.server_close()
+                sslctx = ssl.create_default_context()
+                server = ModbusTlsServer(context=None, identity=identity,
+                                         sslctx=sslctx)
+                self.assertEqual(server.sslctx, sslctx)
+                self.assertEqual(type(server.socket), ssl.SSLSocket)
+                server.server_close()
 
     def testTlsServerClose(self):
         ''' test that the synchronous TLS server closes correctly '''

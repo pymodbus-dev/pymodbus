@@ -246,6 +246,9 @@ class AsyncioServerTest(asynctest.TestCase):
         transport, protocol = yield from self.loop.create_connection(BasicClient, host='127.0.0.1',port=random_port)
         yield from step1
 
+        # On Windows we seem to need to give this an extra chance to finish,
+        # otherwise there ends up being an active connection at the assert.
+        yield from asyncio.sleep(0.0)
         server.server_close()
 
         # close isn't synchronous and there's no notification that it's done

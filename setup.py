@@ -83,7 +83,7 @@ setup(
                       'sphinx_rtd_theme',
                       'humanfriendly'],
         'twisted': [
-            'Twisted[conch,serial]>=20.3.0',
+            'Twisted[conch,serial] >= 20.3.0',
         ],
         'tornado': [
             'tornado == 4.5.3'

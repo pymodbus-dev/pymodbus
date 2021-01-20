@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
-import sys
 import time
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.thread import EventLoopThread
@@ -38,62 +37,17 @@ def reactor_factory(port, framer, **kwargs):
             proto.factory = self
             return proto
 
-    if sys.platform == "win32":
-        import serial
-        import serial.win32
+    class SerialModbusClient(SerialPort):
 
-        class RegularFileSerial(serial.Serial):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.captured_args = args
-                self.captured_kwargs = kwargs
+        def __init__(self, framer, *args, **kwargs):
+            ''' Setup the client and start listening on the serial port
 
-            def _reconfigurePort(self):
-                pass
-
-            def _reconfigure_port(self):
-                pass
-
-        class RegularFileSerialPort(SerialPort):
-            _serialFactory = RegularFileSerial
-
-            def __init__(self, *args, **kwargs):
-                cbInQue = kwargs.get("cbInQue")
-
-                if "cbInQue" in kwargs:
-                    del kwargs["cbInQue"]
-
-                self.comstat = serial.win32.COMSTAT
-                self.comstat.cbInQue = cbInQue
-
-                super().__init__(*args, **kwargs)
-
-            def _clearCommError(self):
-                return True, self.comstat
-
-        class SerialModbusClient(RegularFileSerialPort):
-
-            def __init__(self, framer, *args, **kwargs):
-                ''' Setup the client and start listening on the serial port
-
-                :param factory: The factory to build clients with
-                '''
-                self.decoder = ClientDecoder()
-                proto_cls = kwargs.pop("proto_cls", None)
-                proto = SerialClientFactory(framer, proto_cls).buildProtocol()
-                super(SerialModbusClient, self).__init__(proto, *args, **kwargs)
-    else:
-        class SerialModbusClient(SerialPort):
-
-            def __init__(self, framer, *args, **kwargs):
-                ''' Setup the client and start listening on the serial port
-
-                :param factory: The factory to build clients with
-                '''
-                self.decoder = ClientDecoder()
-                proto_cls = kwargs.pop("proto_cls", None)
-                proto = SerialClientFactory(framer, proto_cls).buildProtocol()
-                super(SerialModbusClient, self).__init__(proto, *args, **kwargs)
+            :param factory: The factory to build clients with
+            '''
+            self.decoder = ClientDecoder()
+            proto_cls = kwargs.pop("proto_cls", None)
+            proto = SerialClientFactory(framer, proto_cls).buildProtocol()
+            SerialPort.__init__(self, proto, *args, **kwargs)
 
     proto = EventLoopThread("reactor", reactor.run, reactor.stop,
                             installSignalHandlers=0)

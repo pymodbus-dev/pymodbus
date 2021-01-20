@@ -136,7 +136,7 @@ jobs:
         if: matrix.task.coverage
         run: |
           mkdir coverage_reports
-          cp .coverage "coverage_reports/coverage.${{ env.JOB_NAME }}"
+          cp .coverage "coverage_reports/.coverage.${{ env.JOB_NAME }}"
           cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
       - name: Upload Coverage
         if: matrix.task.coverage

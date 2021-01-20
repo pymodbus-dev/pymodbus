@@ -176,10 +176,6 @@ class TestAsynchronousClient(object):
     # Test Serial client
     # -----------------------------------------------------------------------#
 
-    @pytest.mark.skipif(
-        sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
-        reason='Twisted serial requires pywin32 which is not compatible with PyPy',
-    )
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                                 ("socket", ModbusSocketFramer),
                                                 ("binary", ModbusBinaryFramer),

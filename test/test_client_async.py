@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import contextlib
+import sys
 import unittest
 import pytest
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
@@ -45,6 +47,15 @@ else:
 
 def mock_asyncio_gather(coro):
     return coro
+
+
+@contextlib.contextmanager
+def maybe_manage(condition, manager):
+    if condition:
+        with manager as value:
+            yield value
+    else:
+        yield None
 
 
 class TestAsynchronousClient(object):
@@ -216,24 +227,26 @@ class TestAsynchronousClient(object):
                                         ("ascii", ModbusAsciiFramer)])
     def testSerialTornadoClient(self, method, framer):
         """ Test the serial tornado client client initialize """
-        protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
-        client = future.result()
-        assert(isinstance(client, AsyncTornadoModbusSerialClient))
-        assert(0 == len(list(client.transaction)))
-        assert(isinstance(client.framer, framer))
-        assert(client.port == SERIAL_PORT)
-        assert(client._connected)
+        from serial import Serial
+        with maybe_manage(sys.platform == 'darwin', patch.object(Serial, "open")):
+            protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
+            client = future.result()
+            assert(isinstance(client, AsyncTornadoModbusSerialClient))
+            assert(0 == len(list(client.transaction)))
+            assert(isinstance(client.framer, framer))
+            assert(client.port == SERIAL_PORT)
+            assert(client._connected)
 
-        def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
+            def handle_failure(failure):
+                assert(isinstance(failure.exception(), ConnectionException))
 
-        d = client._build_response(0x00)
-        d.add_done_callback(handle_failure)
+            d = client._build_response(0x00)
+            d.add_done_callback(handle_failure)
 
-        assert(client._connected)
-        client.close()
-        protocol.stop()
-        assert(not client._connected)
+            assert(client._connected)
+            client.close()
+            protocol.stop()
+            assert(not client._connected)
 
     @pytest.mark.skipif(IS_PYTHON3 , reason="requires python2.7")
     def testSerialAsyncioClientPython2(self):

@@ -126,7 +126,7 @@ jobs:
       - name: Install
         run: |
           pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox coveralls
+          pip install --upgrade tox
       - uses: twisted/python-info-action@v1.0.1
       - name: Test
         run: |
@@ -137,8 +137,6 @@ jobs:
           mkdir coverage_reports
           cp .coverage "coverage_reports/coverage.${{ env.JOB_NAME }}"
           cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
-# TODO: deal with the classic secrets and forked PRs issue...
-#          coveralls
       - name: Publish Coverage
         if: matrix.task.coverage
         uses: actions/upload-artifact@v2

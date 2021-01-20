@@ -26,6 +26,7 @@ jobs:
         task:
           - name: Test
             tox: test
+            coverage: true
         os:
           - name: Linux
             runs-on: ubuntu-latest

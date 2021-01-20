@@ -38,8 +38,6 @@ jobs:
               3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
-              pypy2: docker://pypy:2-jessie
-              pypy3: docker://pypy:3-stretch
 #          - name: Windows
 #            runs-on: windows-latest
 #            python_platform: win32
@@ -54,11 +52,6 @@ jobs:
             action: 2.7
             docker: 2.7
             implementation: cpython
-          - name: PyPy 2.7
-            tox: pypy27
-            action: pypy-2.7
-            docker: pypy2.7
-            implementation: pypy
           - name: CPython 3.6
             tox: py36
             action: 3.6
@@ -79,16 +72,6 @@ jobs:
             action: 3.9
             docker: 3.9
             implementation: cpython
-          - name: PyPy 3.6
-            tox: pypy36
-            action: pypy-3.6
-            docker: pypy3.6
-            implementation: pypy
-          - name: PyPy 3.7
-            tox: pypy37
-            action: pypy-3.7
-            docker: pypy3.7
-            implementation: pypy
         arch:
           - name: x86
             action: x86
@@ -112,17 +95,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up ${{ matrix.python.name }} (if CPython)
-        if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
+      - name: Set up ${{ matrix.python.name }}
+        if: ${{ job.container == ''}}
         uses: actions/setup-python@v2
         with:
           python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
-          architecture: '${{ matrix.arch.action }}'
-      - name: Set up ${{ matrix.python.name }} (if PyPy)
-        if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
-        uses: actions/setup-python@v2
-        with:
-          python-version: '${{ matrix.python.action }}'
           architecture: '${{ matrix.arch.action }}'
       - name: Install
         run: |

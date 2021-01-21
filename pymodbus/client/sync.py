@@ -49,7 +49,7 @@ class BaseModbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
     # Client interface
     # ----------------------------------------------------------------------- #
-    def connect(self):
+    def connect(self, retires=1):
         """ Connect to the modbus remote host
 
         :returns: True if connection succeeded, False otherwise
@@ -197,38 +197,44 @@ class ModbusTcpClient(BaseModbusClient):
         self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self.connection_status = False
+        self.connection_status = False  # TODO
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
-    def _connect(self):
-        """ Connect to the modbus tcp server
+    def connect(self, retries=1):
+        """ Connect to the modbus tcp server and retry if the previous connection
+        has been missed.
 
+        :param retries: The number of retires.
         :returns: True if connection succeeded, False otherwise
         """
-        if self.socket: return True
-        try:
-            self.socket = socket.create_connection(
-                (self.host, self.port),
-                timeout=self.timeout,
-                source_address=self.source_address)
-        except socket.error as msg:
-            _logger.error('Connection to (%s, %s) '
-                          'failed: %s' % (self.host, self.port, msg))
-            self.close()
-        return self.socket is not None
+        if self.socket:
+            return True
+        assert(isinstance(retries, int) and retries > 0)
+        for _ in range(retries):
+            try:
+                self.socket = socket.create_connection(
+                    (self.host, self.port),
+                    timeout=self.timeout,
+                    source_address=self.source_address)
+            except socket.error as msg:
+                _logger.error('Connection to (%s, %s) '
+                              'failed: %s' % (self.host, self.port, msg))
+                self.close()
+            if self.socket is not None:
+                return True
+        return False
 
-    def connect(self, retries=1):
-        """ Retry to connect if the previous connection was missed.
+    def _connect(self, retries=1):  # TODO
+        """ Retry to connect if the previous connection has been missed.
+
         :retries: The number of retires.
         :returns: True if connection succeeded, False otherwise
         """
         assert(isinstance(retries, int) and retries > 0)
         for _ in range(retries):
-            self.connection_status = self._connect()
+            self.connection_status = self.connect()
             if self.connection_status:
                 break
-            else:
-                continue
         return self.connection_status
 
     def close(self):
@@ -350,7 +356,7 @@ class ModbusTlsClient(ModbusTcpClient):
             self.sslctx.options |= ssl.OP_NO_SSLv2
         ModbusTcpClient.__init__(self, host, port, framer, **kwargs)
 
-    def connect(self):
+    def connect(self, retries=1):
         """ Connect to the modbus tls server
 
         :returns: True if connection succeeded, False otherwise
@@ -465,7 +471,7 @@ class ModbusUdpClient(BaseModbusClient):
             return socket.AF_INET
         return socket.AF_INET6
 
-    def connect(self):
+    def connect(self, retries=1):
         """ Connect to the modbus tcp server
 
         :returns: True if connection succeeded, False otherwise
@@ -597,7 +603,7 @@ class ModbusSerialClient(BaseModbusClient):
             return ModbusSocketFramer(ClientDecoder(), client)
         raise ParameterException("Invalid framer method requested")
 
-    def connect(self):
+    def connect(self, retries=1):
         """ Connect to the modbus serial server
 
         :returns: True if connection succeeded, False otherwise

@@ -197,7 +197,7 @@ class ModbusTcpClient(BaseModbusClient):
         self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self.status = False
+        self.connection_status = False
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     def _connect(self):
@@ -224,12 +224,12 @@ class ModbusTcpClient(BaseModbusClient):
         """
         assert(isinstance(retries, int) and retries > 0)
         for _ in range(retries):
-            self.status = self._connect()
-            if self.status:
+            self.connection_status = self._connect()
+            if self.connection_status:
                 break
             else:
                 continue
-        return self.status
+        return self.connection_status
 
     def close(self):
         """ Closes the underlying socket connection

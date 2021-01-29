@@ -60,7 +60,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': '0000'}
+        self._header = {}
         self._hsize = 0x01
         self._end = b'\x0d\x0a'
         self._min_frame_size = 4

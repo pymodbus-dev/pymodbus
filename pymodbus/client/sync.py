@@ -224,19 +224,6 @@ class ModbusTcpClient(BaseModbusClient):
                 return True
         return False
 
-    def _connect(self, retries=1):  # TODO
-        """ Retry to connect if the previous connection has been missed.
-
-        :retries: The number of retires.
-        :returns: True if connection succeeded, False otherwise
-        """
-        assert(isinstance(retries, int) and retries > 0)
-        for _ in range(retries):
-            self.connection_status = self.connect()
-            if self.connection_status:
-                break
-        return self.connection_status
-
     def close(self):
         """ Closes the underlying socket connection
         """

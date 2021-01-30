@@ -209,7 +209,7 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if self.socket:
             return True
-        assert(isinstance(retries, int) and retries > 0)
+        assert isinstance(retries, int) and retries > 0, "Input an unsigned integer as retries."
         for _ in range(retries):
             try:
                 self.socket = socket.create_connection(

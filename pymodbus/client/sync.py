@@ -197,7 +197,7 @@ class ModbusTcpClient(BaseModbusClient):
         self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self.connection_status = False  # TODO
+        self.connection_status = False
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     def connect(self, retries=1):

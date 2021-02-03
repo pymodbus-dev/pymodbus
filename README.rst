@@ -7,7 +7,7 @@ PyModbus - A Python Modbus Stack
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby 
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
-   :target: http://pymodbus.readthedocs.io/en/latest/?badge=latest 
+   :target: http://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: http://pepy.tech/badge/pymodbus
    :target: http://pepy.tech/project/pymodbus 

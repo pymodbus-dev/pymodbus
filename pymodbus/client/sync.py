@@ -513,7 +513,9 @@ class ModbusUdpClient(BaseModbusClient):
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):
-        return True if self.socket is not None else False
+        if self.socket:
+            return True
+        return self.connect()
 
     def __str__(self):
         """ Builds a string representation of the connection

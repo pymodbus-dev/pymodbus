@@ -105,7 +105,8 @@ setup(
             'click>=7.0',
             'prompt-toolkit>=3.0.8',
             'pygments>=2.2.0',
-            'aiohttp>=3.7.3'
+            'aiohttp>=3.7.3',
+            'pyserial-asyncio>=0.5'
         ]
     },
     entry_points={

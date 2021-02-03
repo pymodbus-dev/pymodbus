@@ -64,8 +64,10 @@ class ModbusTransactionManager(object):
         self.tid = Defaults.TransactionId
         self.client = client
         self.backoff = kwargs.get('backoff', Defaults.Backoff) or 0.3
-        self.retry_on_empty = kwargs.get('retry_on_empty', Defaults.RetryOnEmpty)
-        self.retry_on_invalid = kwargs.get('retry_on_invalid', Defaults.RetryOnInvalid)
+        self.retry_on_empty = kwargs.get('retry_on_empty',
+                                         Defaults.RetryOnEmpty)
+        self.retry_on_invalid = kwargs.get('retry_on_invalid',
+                                           Defaults.RetryOnInvalid)
         self.retries = kwargs.get('retries', Defaults.Retries) or 1
         self._transaction_lock = RLock()
         self._no_response_devices = []
@@ -108,6 +110,25 @@ class ModbusTransactionManager(object):
 
         return None
 
+    def _validate_response(self, request, response, exp_resp_len):
+        """
+        Validate Incoming response against request
+        :param request: Request sent
+        :param response: Response received
+        :param exp_resp_len: Expected response length
+        :return: New transactions state
+        """
+        if not response:
+            return False
+
+        mbap = self.client.framer.decode_data(response)
+        if mbap.get('unit') != request.unit_id or mbap.get('fcode') != request.function_code:
+            return False
+
+        if 'length' in mbap and exp_resp_len:
+            return mbap.get('length') == exp_resp_len
+        return True
+
     def execute(self, request):
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
@@ -132,6 +153,7 @@ class ModbusTransactionManager(object):
                     self._transact(request, None, broadcast=True)
                     response = b'Broadcast write sent - no response expected'
                 else:
+                    invalid_response = False
                     expected_response_length = None
                     if not isinstance(self.client.framer, ModbusSocketFramer):
                         if hasattr(request, "get_response_pdu_size"):
@@ -149,7 +171,7 @@ class ModbusTransactionManager(object):
                         full = True
                         if not expected_response_length:
                             expected_response_length = Defaults.ReadSize
-                    retries += 1
+                    # retries += 1
                     while retries > 0:
                         response, last_exception = self._transact(
                             request,
@@ -157,27 +179,39 @@ class ModbusTransactionManager(object):
                             full=full,
                             broadcast=broadcast
                         )
-                        if not response and (
-                                request.unit_id not in self._no_response_devices):
+                        valid_response = self._validate_response(
+                            request, response, expected_response_length
+                        )
+                        if not response and request.unit_id \
+                                not in self._no_response_devices:
                             self._no_response_devices.append(request.unit_id)
                         elif request.unit_id in self._no_response_devices and response:
                             self._no_response_devices.remove(request.unit_id)
                         if not response and self.retry_on_empty:
                             _logger.debug("Retry on empty - {}".format(retries))
+                            retries -= 1
+                            _logger.debug("Changing transaction state from "
+                                          "'WAITING_FOR_REPLY' to 'RETRYING'")
+                            self.client.state = ModbusTransactionState.RETRYING
+                            continue
                         elif not response:
                             break
-                        if not self.retry_on_invalid:
-                            break
                         mbap = self.client.framer.decode_data(response)
-                        if (mbap.get('unit') == request.unit_id):
+                        if mbap.get('unit') == request.unit_id:
                             break
                         if ('length' in mbap and expected_response_length and
-                            mbap.get('length') == expected_response_length):
+                            mbap.get('length') == expected_response_length and
+                            mbap.get('fcode') == request.function_code):
+                            break
+                        else:
+                            invalid_response = True
+                        if invalid_response and not self.retry_on_invalid:
                             break
                         _logger.debug("Retry on invalid - {}".format(retries))
                         if hasattr(self.client, "state"):
-                            _logger.debug("RESETTING Transaction state to 'IDLE' for retry")
-                            self.client.state = ModbusTransactionState.IDLE
+                            _logger.debug("RESETTING Transaction "
+                                          "state to 'RETRY' for retry")
+                            self.client.state = ModbusTransactionState.RETRYING
                         if self.backoff:
                             delay = 2 ** (self.retries - retries) * self.backoff
                             time.sleep(delay)
@@ -206,14 +240,26 @@ class ModbusTransactionManager(object):
                                       "'TRANSACTION_COMPLETE'")
                         self.client.state = (
                             ModbusTransactionState.TRANSACTION_COMPLETE)
+                self.client.close()
                 return response
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
                 _logger.exception(ex)
+                self.client.close()
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return ex
 
-    def _transact(self, packet, response_length, full=False, broadcast=False):
+    def _retry(self, packet, response_length, full=False):
+        self.client.connect()
+        in_waiting = self.client._in_waiting()
+        if in_waiting:
+            if response_length == in_waiting:
+                result = self._recv(response_length, full)
+                return result, None
+        return self._transact(packet, response_length, full=full)
+
+    def _transact(self, packet, response_length,
+                  full=False, broadcast=False):
         """
         Does a Write and Read transaction
         :param packet: packet to be sent
@@ -229,6 +275,11 @@ class ModbusTransactionManager(object):
             if _logger.isEnabledFor(logging.DEBUG):
                 _logger.debug("SEND: " + hexlify_packets(packet))
             size = self._send(packet)
+            if isinstance(size, bytes) and self.client.state == ModbusTransactionState.RETRYING:
+                _logger.debug("Changing transaction state from "
+                              "'RETRYING' to 'PROCESSING REPLY'")
+                self.client.state = ModbusTransactionState.PROCESSING_REPLY
+                return size, None
             if broadcast:
                 if size:
                     _logger.debug("Changing transaction state from 'SENDING' "
@@ -244,6 +295,7 @@ class ModbusTransactionManager(object):
                 if local_echo_packet != packet:
                     return b'', "Wrong local echo"
             result = self._recv(response_length, full)
+            # result2 = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("RECV: " + hexlify_packets(result))
 
@@ -255,7 +307,7 @@ class ModbusTransactionManager(object):
             result = b''
         return result, last_exception
 
-    def _send(self, packet):
+    def _send(self, packet, retrying=False):
         return self.client.framer.sendPacket(packet)
 
     def _recv(self, expected_response_length, full):
@@ -324,7 +376,7 @@ class ModbusTransactionManager(object):
     def addTransaction(self, request, tid=None):
         """ Adds a transaction to the handler
 
-        This holds the requets in case it needs to be resent.
+        This holds the request in case it needs to be resent.
         After being sent, the request is removed.
 
         :param request: The request to hold on to

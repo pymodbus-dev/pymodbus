@@ -37,8 +37,7 @@ installed = is_installed('twisted')
 if installed:
     # Import deprecated async client only if twisted is installed #338
     from pymodbus.client.asynchronous.deprecated.asynchronous import *
-else:
     import logging
     logger = logging.getLogger(__name__)
-    logger.warning("Not Importing deprecated clients. "
-                   "Dependency Twisted is not Installed")
+    logger.warning("Importing deprecated clients. "
+                   "Dependency Twisted is Installed")

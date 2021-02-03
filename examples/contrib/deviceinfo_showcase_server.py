@@ -10,7 +10,8 @@ empty server.
 """
 # --------------------------------------------------------------------------- # 
 # import the various server implementations
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
+from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.server.sync import StartUdpServer
 from pymodbus.server.sync import StartSerialServer
@@ -55,7 +56,7 @@ def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # Add an example which is long enough to force the ReadDeviceInformation

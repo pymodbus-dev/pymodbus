@@ -315,7 +315,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
         self.last_frame_end = 0.0
-        super().__init__(*args, **kwargs)
+        super(AsyncModbusSerialClient, self).__init__(*args, **kwargs)
 
     def get_socket(self):
         """
@@ -459,7 +459,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 LOGGER.info(
                     "Cleanup recv buffer before send: " + hexlify_packets(result))
         except OSError as e:
-            self.transaction.getTransaction(request.transaction_id).set_exception(ModbusIOException(e))
+            self.transaction.getTransaction(
+                message.transaction_id).set_exception(ModbusIOException(e))
             return
 
         start = time.time()

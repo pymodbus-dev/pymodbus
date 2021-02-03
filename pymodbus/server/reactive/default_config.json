@@ -1,0 +1,32 @@
+{
+  "tcp": {
+    "handler": "ModbusConnectedRequestHandler",
+    "allow_reuse_address": true,
+    "allow_reuse_port": true,
+    "backlog": 20,
+    "ignore_missing_slaves": false
+  },
+  "rtu": {
+    "handler": "ModbusSingleRequestHandler",
+    "stopbits": 1,
+    "bytesize": 8,
+    "parity": "N",
+    "baudrate": 9600,
+    "timeout": 3,
+    "auto_reconnect": false,
+    "reconnect_delay": 2
+  },
+  "tls": {
+    "handler": "ModbusConnectedRequestHandler",
+    "certfile": null,
+    "keyfile": null,
+    "allow_reuse_address": true,
+    "allow_reuse_port": true,
+    "backlog": 20,
+    "ignore_missing_slaves": false
+  },
+  "udp": {
+    "handler": "ModbusDisonnectedRequestHandler",
+    "ignore_missing_slaves": false
+  }
+}

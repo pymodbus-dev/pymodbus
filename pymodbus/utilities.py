@@ -20,6 +20,8 @@ class ModbusTransactionState(object):
     PROCESSING_REPLY = 4
     PROCESSING_ERROR = 5
     TRANSACTION_COMPLETE = 6
+    RETRYING = 7
+    NO_RESPONSE_STATE = 8
 
     @classmethod
     def to_string(cls, state):
@@ -30,7 +32,8 @@ class ModbusTransactionState(object):
             ModbusTransactionState.WAITING_TURNAROUND_DELAY: "WAITING_TURNAROUND_DELAY",
             ModbusTransactionState.PROCESSING_REPLY: "PROCESSING_REPLY",
             ModbusTransactionState.PROCESSING_ERROR: "PROCESSING_ERROR",
-            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSACTION_COMPLETE"
+            ModbusTransactionState.TRANSACTION_COMPLETE: "TRANSACTION_COMPLETE",
+            ModbusTransactionState.RETRYING: "RETRYING TRANSACTION",
         }
         return states.get(state, None)
 

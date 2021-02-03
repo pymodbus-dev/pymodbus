@@ -10,6 +10,7 @@ written to the datastore.
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from __future__ import print_function
+from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
@@ -65,10 +66,10 @@ def run_custom_db_server():
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'pymodbus'
     identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'pymodbus Server'
     identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want

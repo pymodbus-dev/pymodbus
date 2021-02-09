@@ -1,8 +1,8 @@
 Requirements
 -------------
 
-* Python 2.3 or later.
-* Python Twisted
+* Python 2.7 or later.
+* Python Twisted, Tornado or asyncio (For async client and server)
 * Pyserial
 
 On Windows pywin32 is recommended (this is built in to ActivePython,
@@ -35,7 +35,7 @@ much easier to run with the nose package.  With that installed, you can
 use either of the following::
 
     python setup.py test
-    nosetests
+    pytest
 
 
 Building Documentation

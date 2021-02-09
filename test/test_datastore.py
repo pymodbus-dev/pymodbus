@@ -98,9 +98,44 @@ class ModbusDataStoreTest(unittest.TestCase):
         block.setValues(0x00, dict(enumerate([False]*10)))
         self.assertEqual(block.getValues(0x00, 10), [False]*10)
 
+        block = ModbusSparseDataBlock({3: [10, 11, 12], 10: 1, 15: [0] * 4})
+        self.assertEqual(block.values, {3: 10, 4: 11, 5: 12, 10: 1,
+                                        15:0 , 16:0, 17:0, 18:0 })
+        self.assertEqual(block.default_value, {3: 10, 4: 11, 5: 12, 10: 1,
+                                        15:0 , 16:0, 17:0, 18:0 })
+        self.assertEqual(block.mutable, True)
+        block.setValues(3, [20, 21, 22, 23], use_as_default=True)
+        self.assertEqual(block.getValues(3, 4), [20, 21, 22, 23])
+        self.assertEqual(block.default_value, {3: 20, 4: 21, 5: 22, 6:23, 10: 1,
+                                        15:0 , 16:0, 17:0, 18:0 })
+        # check when values is a dict, address is ignored
+        block.setValues(0, {5: 32, 7: 43})
+        self.assertEqual(block.getValues(5, 3), [32, 23, 43])
+
+        # assert value is empty dict when initialized without params
+        block = ModbusSparseDataBlock()
+        self.assertEqual(block.values, {})
+
+        # mark block as unmutable and see if parameter exeception
+        # is raised for invalid offset writes
+        block = ModbusSparseDataBlock({1: 100}, mutable=False)
+        self.assertRaises(ParameterException, block.setValues, 0, 1)
+        self.assertRaises(ParameterException, block.setValues, 0, {2: 100})
+        self.assertRaises(ParameterException, block.setValues, 0, [1] * 10)
+
+        # Reset datablock
+        block = ModbusSparseDataBlock({3: [10, 11, 12], 10: 1, 15: [0] * 4})
+        block.setValues(0, {3: [20, 21, 22], 10: 11, 15: [10] * 4})
+        self.assertEqual(block.values, {3: 20, 4: 21, 5: 22, 10: 11,
+                                        15: 10 ,16:10, 17:10, 18:10 })
+        block.reset()
+        self.assertEqual(block.values, {3: 10, 4: 11, 5: 12, 10: 1,
+                                        15: 0, 16: 0, 17: 0, 18: 0})
+
+
     def testModbusSparseDataBlockFactory(self):
         ''' Test the sparse data block store factory '''
-        block = ModbusSparseDataBlock.create()
+        block = ModbusSparseDataBlock.create([0x00]*65536)
         self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
 
     def testModbusSparseDataBlockOther(self):
@@ -108,6 +143,7 @@ class ModbusDataStoreTest(unittest.TestCase):
         self.assertEqual(block.getValues(0x00, 10), [True]*10)
         self.assertRaises(ParameterException,
             lambda: ModbusSparseDataBlock(True))
+
 
     def testModbusSlaveContext(self):
         ''' Test a modbus slave context '''

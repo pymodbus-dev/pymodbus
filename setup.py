@@ -23,9 +23,15 @@ except ImportError:
 try:
     from setup_commands import command_classes
 except ImportError:
-    command_classes={}
+    command_classes = {}
 from pymodbus import __version__, __author__, __maintainer__
+from pymodbus.utilities import IS_PYTHON3
 
+CONSOLE_SCRIPTS = [
+            'pymodbus.console=pymodbus.repl.client.main:main'
+        ]
+if IS_PYTHON3:
+    CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
 with open('requirements.txt') as reqs:
     install_requires = [
         line for line in reqs.read().split('\n')
@@ -89,14 +95,22 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
-        'repl': [
+
+        'repl:python_version <= "2.7"': [
             'click>=7.0',
             'prompt-toolkit==2.0.4',
-            'pygments==2.2.0'
+            'pygments>=2.2.0'
+        ],
+        'repl:python_version >= "3.6"': [
+            'click>=7.0',
+            'prompt-toolkit>=3.0.8',
+            'pygments>=2.2.0',
+            'aiohttp>=3.7.3',
+            'pyserial-asyncio>=0.5'
         ]
     },
     entry_points={
-        'console_scripts': ['pymodbus.console=pymodbus.repl.main:main'],
+        'console_scripts': CONSOLE_SCRIPTS,
     },
     test_suite='nose.collector',
     cmdclass=command_classes,

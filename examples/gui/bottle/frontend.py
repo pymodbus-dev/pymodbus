@@ -6,6 +6,7 @@ This is a simple web frontend using bottle as the web framework.
 This can be hosted using any wsgi adapter.
 """
 from __future__ import print_function
+from pymodbus.version import version
 import json, inspect
 from bottle import route, request, Bottle
 from bottle import static_file
@@ -274,10 +275,10 @@ if __name__ == '__main__':
     identity = ModbusDeviceIdentification()
     identity.VendorName  = 'Pymodbus'
     identity.ProductCode = 'PM'
-    identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
+    identity.VendorUrl   = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName   = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ------------------------------------------------------------
     # initialize the datastore

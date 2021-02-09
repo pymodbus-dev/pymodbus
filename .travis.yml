@@ -1,0 +1,36 @@
+sudo: false
+language: python
+matrix:
+  include:
+  - os: linux
+    python: "2.7"
+  - os: linux
+    python: "3.6"
+  - os: linux
+    python: "3.7"
+  - os: linux
+    python: "3.8"
+  - os: osx
+    osx_image: xcode8.3
+    language: generic
+before_install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew update; fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install openssl; fi
+#  - if [$TRAVIS_OS_NAME = osx ]; then  python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"; fi
+
+install:
+#  - scripts/travis.sh pip install pip-accel
+  - if [ $TRAVIS_OS_NAME = osx ]; then scripts/travis.sh pip install -U pip "\"setuptools<45"\"; else pip install -U pip setuptools --upgrade ; fi
+  - scripts/travis.sh pip install coveralls
+  - scripts/travis.sh pip install --requirement=requirements-checks.txt
+  - scripts/travis.sh pip install --requirement=requirements-tests.txt
+  - scripts/travis.sh LC_ALL=C pip install --upgrade .
+#  - scripts/travis.sh pip freeze --all
+script:
+#  - scripts/travis.sh make check
+  - scripts/travis.sh make test
+after_success:
+  - scripts/travis.sh coveralls
+branches:
+  except:
+    - /^[0-9]/

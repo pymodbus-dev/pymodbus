@@ -2,10 +2,12 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
+import os
 import asyncio
 import time
 import random
 import logging
+from pymodbus.version import version as pymodbus_version
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.datastore.store import (ModbusSparseDataBlock,
@@ -15,7 +17,7 @@ from pymodbus.device import ModbusDeviceIdentification
 
 if not IS_PYTHON3 or PYTHON_VERSION < (3, 6):
     print(f"You are running {PYTHON_VERSION}."
-          "Reactive server requires python3.6 or above".PYTHON_VERSION)
+          "Reactive server requires python3.6 or above")
     exit()
 
 
@@ -102,6 +104,7 @@ class ReactiveServer:
         self._modbus_server = modbus_server
         self._loop = loop
         self._add_routes()
+        self._counter = 0
         self._modbus_server.response_manipulator = self.manipulate_response
         self._manipulator_config = dict(**DEFAULT_MANIPULATOR)
         self._web_app.on_startup.append(self.start_modbus_server)
@@ -132,9 +135,18 @@ class ReactiveServer:
         """
         try:
             if isinstance(self._modbus_server, ModbusSerialServer):
-                app["modbus_serial_server"] = asyncio.create_task(
-                    self._modbus_server.start())
-            app["modbus_server"] = asyncio.create_task(self._modbus_server.serve_forever())
+                if hasattr(asyncio, "create_task"):
+                    app["modbus_serial_server"] = asyncio.create_task(
+                        self._modbus_server.start())
+                    app["modbus_server"] = asyncio.create_task(
+                        self._modbus_server.serve_forever())
+                else:
+                    app["modbus_serial_server"] = asyncio.ensure_future(
+                        self._modbus_server.start()
+                    )
+                    app["modbus_server"] = asyncio.ensure_future(
+                        self._modbus_server.serve_forever())
+
             logger.info("Modbus server started")
         except Exception as e:
             logger.error("Error starting modbus server")
@@ -157,7 +169,7 @@ class ReactiveServer:
         """
         POST request Handler for response manipulation end point
         Payload is a dict with following fields
-            :response_type : One among (normal, delayed, error, empty)
+            :response_type : One among (normal, delayed, error, empty, stray)
             :error_code: Modbus error code for error response
             :delay_by: Delay sending response by <n> seconds
 
@@ -168,15 +180,31 @@ class ReactiveServer:
         self._manipulator_config.update(data)
         return web.json_response(data=data)
 
+    def update_manipulator_config(self, config):
+        """
+        Updates manipulator config. Resets previous counters
+        :param config: Manipulator config (dict)
+        :return:
+        """
+        self._counter = 0
+        self._manipulator_config = config
+
     def manipulate_response(self, response):
         """
         Manipulates the actual response according to the required error state.
         :param response: Modbus response object
         :return: Modbus response
         """
+        skip_encoding = False
         if not self._manipulator_config:
             return response
         else:
+            clear_after = self._manipulator_config.get("clear_after")
+            if clear_after and self._counter > clear_after:
+                logger.info("Resetting manipulator"
+                            " after {} responses".format(clear_after))
+                self.update_manipulator_config(dict(DEFAULT_MANIPULATOR))
+                return response
             response_type = self._manipulator_config.get("response_type")
             if response_type == "error":
                 error_code = self._manipulator_config.get("error_code")
@@ -186,15 +214,28 @@ class ReactiveServer:
                 err_response.transaction_id = response.transaction_id
                 err_response.unit_id = response.unit_id
                 response = err_response
+                self._counter += 1
             elif response_type == "delayed":
                 delay_by = self._manipulator_config.get("delay_by")
                 logger.warning(
                     "Delaying response by {}s for "
                     "all incoming requests".format(delay_by))
                 time.sleep(delay_by)
+                self._counter += 1
             elif response_type == "empty":
                 logger.warning("Sending empty response")
-            return response
+                self._counter += 1
+                response.should_respond = False
+            elif response_type == "stray":
+                data_len = self._manipulator_config.get("data_len", 10)
+                if data_len <= 0:
+                    logger.warning(f"Invalid data_len {data_len}. "
+                                   f"Using default lenght 10")
+                    data_len = 10
+                response = os.urandom(data_len)
+                self._counter += 1
+                skip_encoding = True
+            return response, skip_encoding
 
     def run(self):
         """
@@ -225,7 +266,7 @@ class ReactiveServer:
                         vendor_url='http://github.com/riptideio/pymodbus/',
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
-                        version="2.5.0"):
+                        version=pymodbus_version.short()):
         """
         Create modbus identity
         :param vendor:
@@ -324,3 +365,4 @@ class ReactiveServer:
                             **kwargs)
         return ReactiveServer(host, web_port, server, loop)
 
+# __END__

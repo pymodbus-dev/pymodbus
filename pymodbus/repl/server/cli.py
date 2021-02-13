@@ -31,8 +31,9 @@ SMALL_TITLE = "Pymodbus server..."
 BOTTOM_TOOLBAR = HTML('(MODBUS SERVER) <b><style bg="ansired">Press Ctrl+C or '
                       'type "exit" to quit</style></b> Type "help" '
                       'for list of available commands')
-COMMAND_ARGS = ["response_type", "error_code", "delay_by", "clear_after"]
-RESPONSE_TYPES = ["normal", "error", "delayed"]
+COMMAND_ARGS = ["response_type", "error_code", "delay_by",
+                "clear_after", "data_len"]
+RESPONSE_TYPES = ["normal", "error", "delayed", "empty", "stray"]
 COMMANDS = {
     "manipulator": {
         "response_type": None,
@@ -155,7 +156,8 @@ async def interactive_shell(server):
                                         "type request - {}".format(value))
                                 warning("Choose from {}".format(RESPONSE_TYPES))
                                 valid = False
-                        elif arg in ["error_code", "delay_by"]:
+                        elif arg in ["error_code", "delay_by",
+                                     "clear_after", "data_len"]:
                             try:
                                 value = int(value)
                             except ValueError:
@@ -166,7 +168,8 @@ async def interactive_shell(server):
                         if valid:
                             val_dict[arg] = value
                     if val_dict:
-                        server.manipulator_config = val_dict
+                        server.update_manipulator_config(val_dict)
+                        # server.manipulator_config = val_dict
                 # result = await run_command(tester, *command)
 
         except (EOFError, KeyboardInterrupt):

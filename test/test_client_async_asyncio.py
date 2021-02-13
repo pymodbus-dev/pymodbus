@@ -50,10 +50,10 @@ class TestAsyncioClient(object):
         request = mock.MagicMock()
         protocol.transaction.addTransaction(request, 1)
         protocol.connection_lost(mock.sentinel.REASON)
-        if PYTHON_VERSION.major == 3 and PYTHON_VERSION.minor == 6:
-            call_args = protocol.raise_future.call_args[0]
-        else:
+        if PYTHON_VERSION.major == 3 and PYTHON_VERSION.minor >= 8:
             call_args = protocol.raise_future.call_args.args
+        else:
+            call_args = protocol.raise_future.call_args[0]
         protocol.raise_future.assert_called_once()
         assert call_args[0] == request
         assert isinstance(call_args[1], ConnectionException)

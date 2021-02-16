@@ -180,7 +180,7 @@ jobs:
           pip install --upgrade tox
       - uses: twisted/python-info-action@v1.0.1
       - name: Test
-        continue-on-error: ${{ matrix.task.continue_on_error }}
+        continue-on-error: ${{ matrix.task.continue_on_error == true }}
         run: |
           tox -vv -e ${{ matrix.task.tox }}
   coverage:
@@ -225,6 +225,7 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
+          pip install --upgrade six
       - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage
@@ -233,7 +234,7 @@ jobs:
           name: coverage
           path: coverage_reports
       - name: Test
-        continue-on-error: ${{ matrix.task.continue_on_error }}
+        continue-on-error: ${{ matrix.task.continue_on_error == true }}
         run: |
           tox -vv -e ${{ matrix.task.tox }}
   all:

@@ -102,7 +102,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "ReadRegisterResponse (%d)" % len(self.registers)
+        return "%s (%d)" % (self.__class__.__name__, len(self.registers))
 
 
 class ReadHoldingRegistersRequest(ReadRegistersRequestBase):

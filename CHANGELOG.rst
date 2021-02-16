@@ -1,3 +1,42 @@
+version 2.5.0
+----------------------------------------------------------
+* Support response types `stray` and `empty` in repl server.
+* Minor updates in asyncio server.
+* Update reactive server to send stray response of given length.
+* Transaction manager updates on retries for empty and invalid packets.
+* Test fixes for asyncio client and transaction manager.
+
+version 2.5.0rc3
+----------------------------------------------------------
+* Minor fix in documentations
+* Travis fix for Mac OSX
+* Disable unnecessary deprecation warning while using async clients.
+* Use Github actions for builds in favor of travis.
+
+
+version 2.5.0rc2
+----------------------------------------------------------
+* Documentation updates
+* Disable `strict` mode by default.
+* Fix `ReportSlaveIdRequest` request
+* Sparse datablock initialization updates.
+
+version 2.5.0rc1
+----------------------------------------------------------
+* Support REPL for modbus server (only python3 and asyncio)
+* Fix REPL client for write requests
+* Fix examples
+  * Asyncio server
+  * Asynchronous server (with custom datablock)
+  * Fix version info for servers
+* Fix and enhancements to Tornado clients (seril and tcp)
+* Fix and enhancements to Asyncio client and server
+* Update Install instructions
+* Synchronous client retry on empty and error enhancments
+* Add new modbus state `RETRYING`
+* Support runtime response manipulations for Servers
+* Bug fixes with logging module in servers
+* Asyncio modbus serial server support
 
 Version 2.4.0
 ----------------------------------------------------------

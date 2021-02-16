@@ -9,7 +9,7 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.application.current import get_app
-from pymodbus.repl.helper import get_commands
+from pymodbus.repl.client.helper import get_commands
 from pymodbus.compat import string_types
 
 
@@ -33,7 +33,7 @@ class CmdCompleter(Completer):
     Completer for Pymodbus REPL.
     """
 
-    def __init__(self, client, commands=None, ignore_case=True):
+    def __init__(self, client=None, commands=None, ignore_case=True):
         """
 
         :param client: Modbus Client

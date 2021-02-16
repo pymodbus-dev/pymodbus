@@ -105,6 +105,7 @@ class MessageRegisterException(ModbusException):
         message = '[Error registering message] %s' % string
         ModbusException.__init__(self, message)
 
+
 class TimeOutException(ModbusException):
     """ Error resulting from modbus response timeout """
 

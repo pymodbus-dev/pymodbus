@@ -92,10 +92,16 @@ class ModbusTransactionTest(unittest.TestCase):
         client.framer.buildPacket.return_value = b'deadbeef'
         client.framer.sendPacket = MagicMock()
         client.framer.sendPacket.return_value = len(b'deadbeef')
-
+        client.framer.decode_data = MagicMock()
+        client.framer.decode_data.return_value = {
+            "unit": 1,
+            "fcode": 222,
+            "length": 27
+        }
         request = MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.unit_id = 1
+        request.function_code = 222
         tm = ModbusTransactionManager(client)
         tm._recv = MagicMock(return_value=b'abcdef')
         self.assertEqual(tm.retries, 3)
@@ -103,6 +109,7 @@ class ModbusTransactionTest(unittest.TestCase):
         # tm._transact = MagicMock()
         # some response
         # tm._transact.return_value = (b'abcdef', None)
+
         tm.getTransaction = MagicMock()
         tm.getTransaction.return_value = 'response'
         response = tm.execute(request)
@@ -135,6 +142,13 @@ class ModbusTransactionTest(unittest.TestCase):
         # tm._transact.side_effect = [(b'abcdef', None)]
         client.framer.processIncomingPacket.side_effect = MagicMock(side_effect=ModbusIOException())
         self.assertIsInstance(tm.execute(request), ModbusIOException)
+
+        # Broadcast
+        client.broadcast_enable = True
+        request.unit_id = 0
+        response = tm.execute(request)
+        self.assertEqual(response, b'Broadcast write sent - '
+                                   b'no response expected')
 
     # ----------------------------------------------------------------------- #
     # Dictionary based transaction manager

@@ -282,6 +282,11 @@ class ModbusRtuFramer(ModbusFramer):
                     # Recovering from last error ??
                     time.sleep(self.client.silent_interval)
                 self.client.state = ModbusTransactionState.IDLE
+            elif self.client.state == ModbusTransactionState.RETRYING:
+                # Simple lets settle down!!!
+                # To check for higher baudrates
+                time.sleep(self.client.timeout)
+                break
             else:
                 if time.time() > timeout:
                     _logger.debug("Spent more time than the read time out, "

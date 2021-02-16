@@ -365,9 +365,9 @@ class SynchronousServerTest(unittest.TestCase):
             with patch('pymodbus.server.sync.CustomSingleRequestHandler') as mock_handler:
                 server = ModbusSerialServer(None)
                 instance = mock_handler.return_value
-                instance.handle.side_effect = server.server_close
+                instance.response_manipulator.side_effect = server.server_close
                 server.serve_forever()
-                instance.handle.assert_any_call()
+                instance.response_manipulator.assert_any_call()
 
     def testSerialServerClose(self):
         ''' test that the synchronous serial server closes correctly '''

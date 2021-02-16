@@ -206,8 +206,10 @@ class SynchronousClientTest(unittest.TestCase):
     def testTcpClientConnect(self):
         ''' Test the tcp client connection method'''
         with patch.object(socket, 'create_connection') as mock_method:
-            mock_method.return_value = object()
+            _socket = MagicMock()
+            mock_method.return_value = _socket
             client = ModbusTcpClient()
+            _socket.getsockname.return_value = ('dmmy', 1234)
             self.assertTrue(client.connect())
 
         with patch.object(socket, 'create_connection') as mock_method:

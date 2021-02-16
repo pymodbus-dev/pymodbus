@@ -1,10 +1,8 @@
 from pymodbus.compat import PYTHON_VERSION
-
 if PYTHON_VERSION < (3,):
+    # These files use syntax introduced between Python 2 and our lowest
+    # supported Python 3 version.  We just won't run these tests in Python 2.
     collect_ignore = [
-        # TODO: do these really need to be ignored on py2 or can they just get
-        #       super() etc fixed?
-        "test_client_async.py",
-        "test_client_async_tornado.py",
+        "test_client_async_asyncio.py",
         "test_server_asyncio.py",
     ]

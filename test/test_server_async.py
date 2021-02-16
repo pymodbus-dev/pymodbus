@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from pymodbus.compat import IS_PYTHON3
 import unittest
-import pytest
 if IS_PYTHON3: # Python 3
     from unittest.mock import patch, Mock, MagicMock
 else: # Python 2

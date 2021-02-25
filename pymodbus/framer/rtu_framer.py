@@ -60,7 +60,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param decoder: The decoder factory implementation to use
         """
         self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': '0000'}
+        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
         self._hsize = 0x01
         self._end = b'\x0d\x0a'
         self._min_frame_size = 4
@@ -89,14 +89,9 @@ class ModbusRtuFramer(ModbusFramer):
             self.populateHeader()
             frame_size = self._header['len']
             data = self._buffer[:frame_size - 2]
-            crc = self._buffer[frame_size - 2:frame_size]
+            crc = self._header['crc']
             crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
-            if checkCRC(data, crc_val):
-                return True
-            else:
-                _logger.debug("CRC invalid, discarding header!!")
-                self.resetFrame()
-                return False
+            return checkCRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
             return False
 
@@ -107,13 +102,10 @@ class ModbusRtuFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        try:
-            self._buffer = self._buffer[self._header['len']:]
-        except KeyError:
-            #   Error response, no header len found
-            self.resetFrame()
+
+        self._buffer = self._buffer[self._header['len']:]
         _logger.debug("Frame advanced, resetting header!!")
-        self._header = {}
+        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
 
     def resetFrame(self):
         """
@@ -127,7 +119,7 @@ class ModbusRtuFramer(ModbusFramer):
         _logger.debug("Resetting frame - Current Frame in "
                       "buffer - {}".format(hexlify_packets(self._buffer)))
         self._buffer = b''
-        self._header = {}
+        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
 
     def isFrameReady(self):
         """
@@ -137,31 +129,38 @@ class ModbusRtuFramer(ModbusFramer):
 
         :returns: True if ready, False otherwise
         """
-        if len(self._buffer) > self._hsize:
-            if not self._header:
-                self.populateHeader()
-
-            return self._header and len(self._buffer) >= self._header['len']
-        else:
+        if len(self._buffer) <= self._hsize:
             return False
+
+        try:
+            # Frame is ready only if populateHeader() successfully populates crc field which finishes RTU frame
+            # Otherwise, if buffer is not yet long enough, populateHeader() raises IndexError
+            self.populateHeader()
+        except IndexError:
+            return False
+
+        return True
 
     def populateHeader(self, data=None):
         """
         Try to set the headers `uid`, `len` and `crc`.
 
         This method examines `self._buffer` and writes meta
-        information into `self._header`. It calculates only the
-        values for headers that are not already in the dictionary.
+        information into `self._header`.
 
         Beware that this method will raise an IndexError if
         `self._buffer` is not yet long enough.
         """
-        data = data if data else self._buffer
+        data = data if data is not None else self._buffer
         self._header['uid'] = byte2int(data[0])
         func_code = byte2int(data[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         size = pdu_class.calculateRtuFrameSize(data)
         self._header['len'] = size
+
+        if len(data) < size:
+            # crc yet not available
+            raise IndexError
         self._header['crc'] = data[size - 2:size]
 
     def addToFrame(self, message):

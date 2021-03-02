@@ -217,6 +217,7 @@ class ModbusTransactionManager(object):
                                 "/Unable to decode response")
                             response = ModbusIOException(last_exception,
                                                          request.function_code)
+                        self.client.close()
                     if hasattr(self.client, "state"):
                         _logger.debug("Changing transaction state from "
                                       "'PROCESSING REPLY' to "
@@ -227,6 +228,7 @@ class ModbusTransactionManager(object):
                 return response
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
+                self.client.close()
                 _logger.exception(ex)
                 self.client.close()
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
@@ -319,9 +321,10 @@ class ModbusTransactionManager(object):
 
             read_min = self.client.framer.recvPacket(min_size)
             if len(read_min) != min_size:
+                msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
-                    "Incomplete message received, expected at least %d bytes "
-                    "(%d received)" % (min_size, len(read_min))
+                    "%s received, expected at least %d bytes "
+                    "(%d received)" % (msg_start, min_size, len(read_min))
                 )
             if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
@@ -356,9 +359,14 @@ class ModbusTransactionManager(object):
         result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
-            _logger.debug("Incomplete message received, "
+            msg_start = "Incomplete message" if actual else "No response"
+            _logger.debug("{} received, "
                           "Expected {} bytes Recieved "
-                          "{} bytes !!!!".format(total, actual))
+                          "{} bytes !!!!".format(msg_start, total, actual))
+        elif actual == 0:
+            # If actual == 0 and total is not None then the above
+            # should be triggered, so total must be None here
+            _logger.debug("No response received to unbounded read !!!!")
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
                           "'WAITING FOR REPLY' to 'PROCESSING REPLY'")

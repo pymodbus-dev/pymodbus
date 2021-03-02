@@ -258,7 +258,12 @@ class ModbusTcpClient(BaseModbusClient):
         """ Reads data from the underlying descriptor
 
         :param size: The number of bytes to read
-        :return: The bytes read
+        :return: The bytes read if the peer sent a response, or a zero-length
+                 response if no data packets were received from the client at
+                 all.
+        :raises: ConnectionException if the socket is not initialized, or the
+                 peer either has closed the connection before this method is
+                 invoked or closes it before sending any data before timeout.
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -275,9 +280,9 @@ class ModbusTcpClient(BaseModbusClient):
 
         timeout = self.timeout
 
-        # If size isn't specified read 1 byte at a time.
+        # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
-            recv_size = 1
+            recv_size = 4096
         else:
             recv_size = size
 
@@ -289,6 +294,9 @@ class ModbusTcpClient(BaseModbusClient):
             ready = select.select([self.socket], [], [], end - time_)
             if ready[0]:
                 recv_data = self.socket.recv(recv_size)
+                if recv_data == b'':
+                    return self._handle_abrupt_socket_close(
+                        size, data, time.time() - time_)
                 data.append(recv_data)
                 data_length += len(recv_data)
             time_ = time.time()
@@ -304,6 +312,35 @@ class ModbusTcpClient(BaseModbusClient):
                 break
 
         return b"".join(data)
+
+    def _handle_abrupt_socket_close(self, size, data, duration):
+        """ Handle unexpected socket close by remote end
+
+        Intended to be invoked after determining that the remote end
+        has unexpectedly closed the connection, to clean up and handle
+        the situation appropriately.
+
+        :param size: The number of bytes that was attempted to read
+        :param data: The actual data returned
+        :param duration: Duration from the read was first attempted
+               until it was determined that the remote closed the
+               socket
+        :return: The more than zero bytes read from the remote end
+        :raises: ConnectionException If the remote end didn't send any
+                 data at all before closing the connection.
+        """
+        self.close()
+        readsize = ("read of %s bytes" % size if size
+                    else "unbounded read")
+        msg = ("%s: Connection unexpectedly closed "
+               "%.6f seconds into %s" % (self, duration, readsize))
+        if data:
+            result = b"".join(data)
+            msg += " after returning %s bytes" % len(result)
+            _logger.warning(msg)
+            return result
+        msg += " without response from unit before it closed connection"
+        raise ConnectionException(msg)
 
     def is_socket_open(self):
         return True if self.socket is not None else False

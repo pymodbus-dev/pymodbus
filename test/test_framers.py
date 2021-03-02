@@ -8,7 +8,7 @@ from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.compat import IS_PYTHON3
 if IS_PYTHON3:
-    from unittest.mock import Mock
+    from unittest.mock import Mock, patch
 else:  # Python 2
     from mock import Mock
 
@@ -44,7 +44,7 @@ def test_framer_initialization(framer):
         assert framer._start == b':'
         assert framer._end == b"\r\n"
     elif isinstance(framer, ModbusRtuFramer):
-        assert framer._header == {'uid': 0x00, 'len': 0, 'crc': '0000'}
+        assert framer._header == {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
         assert framer._hsize == 0x01
         assert framer._end == b'\x0d\x0a'
         assert framer._min_frame_size == 4
@@ -64,47 +64,78 @@ def test_decode_data(rtu_framer, data):
     assert decoded == expected
 
 
-@pytest.mark.parametrize("data", [(b'', False),
-                                  (b'\x02\x01\x01\x00Q\xcc', True)])
+@pytest.mark.parametrize("data", [
+    (b'', False),
+    (b'\x02\x01\x01\x00Q\xcc', True),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', True),  # valid frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC', False),  # invalid frame CRC
+])
 def test_check_frame(rtu_framer, data):
     data, expected = data
     rtu_framer._buffer = data
     assert expected == rtu_framer.checkFrame()
 
 
-@pytest.mark.parametrize("data", [b'', b'abcd'])
-def test_advance_framer(rtu_framer, data):
-    rtu_framer._buffer = data
+@pytest.mark.parametrize("data", [
+    (b'', {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}, b''),
+    (b'abcd', {'uid': 0x00, 'len': 2, 'crc': b'\x00\x00'}, b'cd'),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x12\x03',  # real case, frame size is 11
+     {'uid': 0x00, 'len': 11, 'crc': b'\x00\x00'}, b'\x12\x03'),
+])
+def test_rtu_advance_framer(rtu_framer, data):
+    before_buf, before_header, after_buf = data
+
+    rtu_framer._buffer = before_buf
+    rtu_framer._header = before_header
     rtu_framer.advanceFrame()
-    assert rtu_framer._header == {}
-    assert rtu_framer._buffer == data
+    assert rtu_framer._header == {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+    assert rtu_framer._buffer == after_buf
 
 
 @pytest.mark.parametrize("data", [b'', b'abcd'])
-def test_reset_framer(rtu_framer, data):
+def test_rtu_reset_framer(rtu_framer, data):
     rtu_framer._buffer = data
     rtu_framer.resetFrame()
-    assert rtu_framer._header == {}
+    assert rtu_framer._header == {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
     assert rtu_framer._buffer == b''
 
 
 @pytest.mark.parametrize("data", [
     (b'', False),
+    (b'\x11', False),
+    (b'\x11\x03', False),
     (b'\x11\x03\x06', False),
     (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49', False),
     (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', True),
-    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD', True)
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD', True),
 ])
 def test_is_frame_ready(rtu_framer, data):
     data, expected = data
     rtu_framer._buffer = data
-    rtu_framer.advanceFrame()
+    # rtu_framer.advanceFrame()
     assert rtu_framer.isFrameReady() == expected
 
 
-def test_populate_header(rtu_framer):
-    rtu_framer.populateHeader(b'abcd')
-    assert rtu_framer._header == {'crc': b'd', 'uid': 97, 'len': 5}
+@pytest.mark.parametrize("data", [
+    b'',
+    b'\x11',
+    b'\x11\x03',
+    b'\x11\x03\x06',
+    b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x43',
+])
+def test_rtu_populate_header_fail(rtu_framer, data):
+    with pytest.raises(IndexError):
+        rtu_framer.populateHeader(data)
+
+
+@pytest.mark.parametrize("data", [
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', {'crc': b'\x49\xAD', 'uid': 17, 'len': 11}),
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03', {'crc': b'\x49\xAD', 'uid': 17, 'len': 11})
+])
+def test_rtu_populate_header(rtu_framer, data):
+    buffer, expected = data
+    rtu_framer.populateHeader(buffer)
+    assert rtu_framer._header == expected
 
 
 def test_add_to_frame(rtu_framer):
@@ -126,12 +157,26 @@ def test_populate_result(rtu_framer):
     assert result.unit_id == 255
 
 
-@pytest.mark.parametrize('framer', [ascii_framer, rtu_framer, binary_framer])
-def test_process_incoming_packet(framer):
-    def cb(res):
-        return res
-    # data = b''
-    # framer.processIncomingPacket(data, cb, unit=1, single=False)
+@pytest.mark.parametrize("data", [
+    (b'\x11', 17, False, False),  # not complete frame
+    (b'\x11\x03', 17, False, False),  # not complete frame
+    (b'\x11\x03\x06', 17, False, False),  # not complete frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43', 17, False, False),  # not complete frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40', 17, False, False),  # not complete frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49', 17, False, False),  # not complete frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC', 17, True, False),  # bad crc
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', 17, False, True),  # good frame
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD', 16, True, False),  # incorrect unit id
+    (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03', 17, False, True),  # good frame + part of next frame
+])
+def test_rtu_process_incoming_packet(rtu_framer, data):
+    buffer, units, reset_called, process_called = data
+
+    with patch.object(rtu_framer, '_process') as mock_process, \
+            patch.object(rtu_framer, 'resetFrame') as mock_reset:
+        rtu_framer.processIncomingPacket(buffer, Mock(), units)
+        assert mock_process.call_count == (1 if process_called else 0)
+        assert mock_reset.call_count == (1 if reset_called else 0)
 
 
 def test_build_packet(rtu_framer):

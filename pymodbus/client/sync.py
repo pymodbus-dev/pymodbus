@@ -155,8 +155,8 @@ class BaseModbusClient(ModbusClientMixin):
         try:
             fd.write(hexlify_packets(data))
         except Exception as e:
-            self._logger.debug(hexlify_packets(data))
-            self._logger.exception(e)
+            _logger.debug(hexlify_packets(data))
+            _logger.exception(e)
 
     def register(self, function):
         """

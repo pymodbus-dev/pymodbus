@@ -144,7 +144,10 @@ class ModbusTransactionTest(unittest.TestCase):
         # wrong handle_local_echo
         tm._recv = MagicMock(side_effect=iter([b'abcdef', b'deadbe', b'123456']))
         client.handle_local_echo = True
-        self.assertEqual(tm.execute(request).message, '[Input/Output] Wrong local echo')
+        tm.retry_on_empty = False
+        tm.retry_on_invalid = False
+        self.assertEqual(tm.execute(request).message,
+                         '[Input/Output] Wrong local echo')
         client.handle_local_echo = False
 
         # retry on invalid response

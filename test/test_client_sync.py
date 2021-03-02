@@ -86,8 +86,8 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(False, client.debug_enabled())
         writable = StringIO()
         client.trace(writable)
-        client._dump([0, 1, 2], None)
-        self.assertEqual(hexlify_packets([0, 1, 2]), writable.getvalue())
+        client._dump(b'\x00\x01\x02', None)
+        self.assertEqual(hexlify_packets(b'\x00\x01\x02'), writable.getvalue())
 
         # a successful execute
         client.connect = lambda: True
@@ -154,7 +154,7 @@ class SynchronousClientTest(unittest.TestCase):
     def testUdpClientIsSocketOpen(self):
         ''' Test the udp client is_socket_open method'''
         client = ModbusUdpClient()
-        self.assertFalse(client.is_socket_open())
+        self.assertTrue(client.is_socket_open())
 
     def testUdpClientSend(self):
         ''' Test the udp client send method'''
@@ -434,7 +434,7 @@ class SynchronousClientTest(unittest.TestCase):
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient(method='rtu')
+        rtu_client = ModbusSerialClient(method='rtu', strict=True)
         self.assertTrue(rtu_client.connect())
         self.assertEqual(rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout)
         rtu_client.close()

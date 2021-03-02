@@ -74,7 +74,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         """
         self.warn_delay_limit = kwargs.get('warn_delay_limit', True)
-        super().__init__(host, port, framer, **kwargs)
+        super(ModbusTcpDiagClient, self).__init__(host, port, framer, **kwargs)
         if self.warn_delay_limit is True:
             self.warn_delay_limit = self.timeout / 2
 
@@ -112,7 +112,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         try:
             start = time.time()
 
-            result = super()._recv(size)
+            result = super(ModbusTcpDiagClient, self)._recv(size)
 
             delay = time.time() - start
             if self.warn_delay_limit is not None and delay >= self.warn_delay_limit:

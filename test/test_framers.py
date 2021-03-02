@@ -10,7 +10,7 @@ from pymodbus.compat import IS_PYTHON3
 if IS_PYTHON3:
     from unittest.mock import Mock, patch
 else:  # Python 2
-    from mock import Mock
+    from mock import Mock, patch
 
 
 @pytest.fixture

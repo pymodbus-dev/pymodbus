@@ -25,5 +25,5 @@ jobs:
         exempt-issue-labels: 'Bug, Enhancements, Investigating, in progress, Documentation Update Required'
         stale-pr-label: 'no-pr-activity'
         exempt-pr-labels: 'IN REVIEW, Reviewing, Draft, in progress, 3.x, 2.5.0'
-        only-labels: "More Information Required, Not an Issue, question, Won't Do"
+#         only-labels: "More Information Required, Not an Issue, question, Won't Do"
 

@@ -20,6 +20,8 @@ jobs:
     name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.python.docker] }}
+    # present runtime seems to be about 1 minute 30 seconds
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -38,10 +40,15 @@ jobs:
               3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
-#          - name: Windows
-#            runs-on: windows-latest
-#            python_platform: win32
-#            matrix: windows
+              pypy2: docker://pypy:2-jessie
+              pypy3: docker://pypy:3-stretch
+          - name: Windows
+            runs-on: windows-latest
+            python_platform: win32
+            matrix: windows
+            openssl:
+              x86: win32
+              x64: win64
           - name: macOS
             runs-on: macos-latest
             python_platform: darwin
@@ -51,27 +58,53 @@ jobs:
             tox: py27
             action: 2.7
             docker: 2.7
+            matrix: 2.7
             implementation: cpython
+          - name: PyPy 2.7
+            tox: pypy27
+            action: pypy-2.7
+            docker: pypy2.7
+            matrix: 2.7
+            implementation: pypy
+            openssl_msvc_version: 2019
           - name: CPython 3.6
             tox: py36
             action: 3.6
             docker: 3.6
+            matrix: 3.6
             implementation: cpython
           - name: CPython 3.7
             tox: py37
             action: 3.7
             docker: 3.7
+            matrix: 3.7
             implementation: cpython
           - name: CPython 3.8
             tox: py38
             action: 3.8
             docker: 3.8
+            matrix: 3.8
             implementation: cpython
           - name: CPython 3.9
             tox: py39
             action: 3.9
             docker: 3.9
+            matrix: 3.9
             implementation: cpython
+          - name: PyPy 3.6
+            tox: pypy36
+            action: pypy-3.6
+            docker: pypy3.6
+            matrix: 3.6
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: PyPy 3.7
+            tox: pypy37
+            action: pypy-3.7
+            docker: pypy3.7
+            matrix: 3.7
+            implementation: pypy
+            openssl_msvc_version: 2019
         arch:
           - name: x86
             action: x86
@@ -88,6 +121,12 @@ jobs:
               matrix: macos
             arch:
               matrix: x86
+          - os:
+              matrix: windows
+            python:
+              implementation: pypy
+            arch:
+              matrix: x64
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
@@ -106,7 +145,30 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
       - uses: twisted/python-info-action@v1.0.1
+      - name: Add PyPy Externals
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        env:
+          PYPY_EXTERNALS_PATH: ${{ github.workspace }}/pypy_externals
+        shell: bash
+        run: |
+          echo $PYPY_EXTERNALS_PATH
+          mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)
+          hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
+          dir $PYPY_EXTERNALS_PATH
+          cd $PYPY_EXTERNALS_PATH && hg update win32_14x
+          echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
+          echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
+#          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
+      - name: rustup
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        shell: bash
+        run: |
+          rustup target add i686-pc-windows-msvc
       - name: Test
+        env:
+          # When compiling Cryptography for PyPy on Windows there is a cleanup
+          # failure.  This is CI, it doesn't matter.
+          PIP_NO_CLEAN: 1
         run: |
           tox -vv -e ${{ matrix.python.tox }}
       - name: Coverage Processing

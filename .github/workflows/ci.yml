@@ -149,7 +149,7 @@ jobs:
       - name: Install
         run: |
           pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox requests urllib3
+          pip install --upgrade tox
       - uses: twisted/python-info-action@v1.0.1
       - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}

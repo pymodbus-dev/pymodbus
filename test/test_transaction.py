@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 import pytest
 import unittest
+from itertools import count
+from pymodbus.compat import IS_PYTHON3
+
+if IS_PYTHON3:  # Python 3
+    from unittest.mock import patch, Mock, MagicMock
+else:  # Python 2
+    from mock import patch, Mock, MagicMock
+
 from binascii import a2b_hex
 from pymodbus.pdu import *
 from pymodbus.transaction import *
@@ -82,7 +90,10 @@ class ModbusTransactionTest(unittest.TestCase):
             self.assertEqual(self._tm._calculate_exception_length(),
                              exception_length)
 
-    def testExecute(self):
+    @patch('pymodbus.transaction.time')
+    def testExecute(self, mock_time):
+        mock_time.time.side_effect = count()
+
         client = MagicMock()
         client.framer = self._ascii
         client.framer._buffer = b'deadbeef'
@@ -130,6 +141,15 @@ class ModbusTransactionTest(unittest.TestCase):
         response = tm.execute(request)
         self.assertIsInstance(response, ModbusIOException)
 
+        # wrong handle_local_echo
+        tm._recv = MagicMock(side_effect=iter([b'abcdef', b'deadbe', b'123456']))
+        client.handle_local_echo = True
+        tm.retry_on_empty = False
+        tm.retry_on_invalid = False
+        self.assertEqual(tm.execute(request).message,
+                         '[Input/Output] Wrong local echo')
+        client.handle_local_echo = False
+
         # retry on invalid response
         tm.retry_on_invalid = True
         tm._recv = MagicMock(side_effect=iter([b'', b'abcdef', b'deadbe', b'123456']))
@@ -149,6 +169,7 @@ class ModbusTransactionTest(unittest.TestCase):
         response = tm.execute(request)
         self.assertEqual(response, b'Broadcast write sent - '
                                    b'no response expected')
+
 
     # ----------------------------------------------------------------------- #
     # Dictionary based transaction manager
@@ -469,7 +490,7 @@ class ModbusTransactionTest(unittest.TestCase):
 
         msg_parts = [b"\x00\x01\x00", b"\x00\x00\x01\xfc\x1b"]
         self._rtu.addToFrame(msg_parts[0])
-        self.assertTrue(self._rtu.isFrameReady())
+        self.assertFalse(self._rtu.isFrameReady())
         self.assertFalse(self._rtu.checkFrame())
 
         self._rtu.addToFrame(msg_parts[1])

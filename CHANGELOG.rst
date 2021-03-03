@@ -5,6 +5,10 @@ version 2.5.0
 * Update reactive server to send stray response of given length.
 * Transaction manager updates on retries for empty and invalid packets.
 * Test fixes for asyncio client and transaction manager.
+* Fix sync client and processing of incomplete frames with rtu framers
+* Support synchronous diagnostic client (TCP)
+* Server updates (REPL and async)
+* Handle Memory leak in sync servers due to socketserver memory leak
 
 version 2.5.0rc3
 ----------------------------------------------------------

@@ -45,10 +45,24 @@ COMMANDS = {
     "help": None,
     "clear": None
 }
-USAGE = "manipulate response_type=|normal|error|delayed| " \
-        "error_code=&lt;int&gt; delay_by=&lt;in seconds&gt;"
+USAGE = "manipulator response_type=|normal|error|delayed|empty|stray \n" \
+        "\tAdditional parameters\n" \
+        "\t\terror_code=&lt;int&gt; \n\t\tdelay_by=&lt;in seconds&gt; \n\t\t" \
+        "clear_after=&lt;clear after n messages int&gt;" \
+        "\n\t\tdata_len=&lt;length of stray data (int)&gt;\n" \
+        "\n\tExample usage: \n\t" \
+        "1. Send error response 3 for 4 requests\n\t" \
+        "   <ansiblue>manipulator response_type=error error_code=3 clear_after=4</ansiblue>\n\t" \
+        "2. Delay outgoing response by 5 seconds indefinitely\n\t" \
+        "   <ansiblue>manipulator response_type=delayed delay_by=5</ansiblue>\n\t" \
+        "3. Send empty response\n\t" \
+        "   <ansiblue>manipulator response_type=empty</ansiblue>\n\t" \
+        "4. Send stray response of lenght 12 and revert to normal after 2 responses\n\t" \
+        "   <ansiblue>manipulator response_type=stray data_len=11 clear_after=2</ansiblue>\n\t" \
+        "5. To disable response manipulation\n\t" \
+        "   <ansiblue>manipulator response_type=normal</ansiblue>"
 COMMAND_HELPS = {
-   "manipulator": "Manipulate response from server.\nUsage: '{}'".format(USAGE),
+   "manipulator": "Manipulate response from server.\nUsage: {}".format(USAGE),
     "clear": "Clears screen"
 
 }

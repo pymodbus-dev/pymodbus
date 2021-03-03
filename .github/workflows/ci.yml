@@ -171,6 +171,10 @@ jobs:
         run: |
           rustup target add i686-pc-windows-msvc
       - name: Test
+        env:
+          # When compiling Cryptography for PyPy on Windows there is a cleanup
+          # failure.  This is CI, it doesn't matter.
+          PIP_NO_CLEAN: 1
         run: |
           tox -vv -e ${{ matrix.python.tox }}
       - name: Coverage Processing

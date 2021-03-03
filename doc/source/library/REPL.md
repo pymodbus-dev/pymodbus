@@ -200,7 +200,7 @@ result.raw                                   Return raw result dict.
 
 ```
 
-Every command has auto suggetion on the arguments supported , supply arg and value are to be supplied in `arg=val` format.
+Every command has auto suggestion on the arguments supported, arg and value are to be supplied in `arg=val` format.
 ```
 
 > client.read_holding_registers count=4 address=9 unit=1

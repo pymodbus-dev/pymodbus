@@ -11,6 +11,7 @@ twisted is just not feasible. What follows is an example of its use:
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
+from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.server.sync import StartTlsServer
 from pymodbus.server.sync import StartUdpServer
@@ -106,7 +107,7 @@ def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want

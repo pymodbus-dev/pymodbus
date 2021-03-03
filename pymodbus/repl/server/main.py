@@ -5,12 +5,17 @@ All rights reserved.
 import asyncio
 import json
 import click
-from pymodbus.utilities import IS_PYTHON3
+from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
     ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
+
+if IS_PYTHON3 and PYTHON_VERSION > (3, 7):
+    CANCELLED_ERROR = asyncio.exceptions.CancelledError
+else:
+    CANCELLED_ERROR = asyncio.CancelledError
 
 
 @click.group("ReactiveModbusServer")
@@ -38,7 +43,7 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
         pymodbus_logger.setLevel(logging.ERROR)
         logger.setLevel(logging.ERROR)
 
-    ctx.obj = {"repl": repl, "host": host, "port": web_port,
+    ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
                "broadcast": broadcast_support}
 
 
@@ -52,11 +57,17 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
                                 case_sensitive=False),
               help="Modbus framer to use")
 @click.option("--modbus-port", default="5020", help="Modbus port")
-@click.option("--modbus-unit-id", default=1, help="Modbus unit id")
+@click.option("--modbus-unit-id", default=[1], multiple=True, help="Modbus unit id")
 @click.option("--modbus-config", type=click.Path(exists=True),
               help="Path to additional modbus server config")
+@click.option("-r", "--randomize", default=0, help="Randomize every `r` reads."
+                                                   " 0=never, 1=always, "
+                                                   "2=every-second-read, "
+                                                   "and so on. "
+                                                   "Applicable IR and DI.")
 @click.pass_context
-def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, modbus_config):
+def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
+        modbus_config, randomize):
     """
     Run Reactive Modbus server exposing REST endpoint
     for response manipulation.
@@ -82,6 +93,7 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, modbus_c
     handler = DEFUALT_HANDLERS.get(handler.strip())
 
     modbus_config["handler"] = handler
+    modbus_config["randomize"] = randomize
     app = ReactiveServer.factory(modbus_server, framer,
                                  modbus_port=modbus_port,
                                  unit=modbus_unit_id,
@@ -96,7 +108,7 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, modbus_c
         else:
             app.run()
 
-    except asyncio.exceptions.CancelledError:
+    except CANCELLED_ERROR:
         print("Done!!!!!")
 
 

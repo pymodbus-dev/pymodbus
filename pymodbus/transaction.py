@@ -217,7 +217,6 @@ class ModbusTransactionManager(object):
                                 "/Unable to decode response")
                             response = ModbusIOException(last_exception,
                                                          request.function_code)
-                        self.client.close()
                     if hasattr(self.client, "state"):
                         _logger.debug("Changing transaction state from "
                                       "'PROCESSING REPLY' to "
@@ -228,7 +227,6 @@ class ModbusTransactionManager(object):
                 return response
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
-                self.client.close()
                 _logger.exception(ex)
                 self.client.close()
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE

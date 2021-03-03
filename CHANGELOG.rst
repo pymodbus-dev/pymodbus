@@ -8,6 +8,7 @@ version 2.5.0
 * Fix sync client and processing of incomplete frames with rtu framers
 * Support synchronous diagnostic client (TCP)
 * Server updates (REPL and async)
+* Handle Memory leak in sync servers due to socketserver memory leak
 
 version 2.5.0rc3
 ----------------------------------------------------------

@@ -32,7 +32,6 @@ jobs:
         os:
           - name: Linux
             runs-on: ubuntu-latest
-            python_platform: linux
             matrix: linux
             container:
               2.7: docker://python:2.7-buster
@@ -44,11 +43,9 @@ jobs:
               pypy3: docker://pypy:3-stretch
           - name: macOS
             runs-on: macos-latest
-            python_platform: darwin
             matrix: macos
           - name: Windows
             runs-on: windows-latest
-            python_platform: win32
             matrix: windows
             openssl:
               x86: win32
@@ -213,7 +210,6 @@ jobs:
         os:
           - name: Linux
             runs-on: ubuntu-latest
-            python_platform: linux
             matrix: linux
             container:
               3.8: docker://python:3.8-buster
@@ -261,7 +257,6 @@ jobs:
         os:
           - name: Linux
             runs-on: ubuntu-latest
-            python_platform: linux
             matrix: linux
             container:
               3.8: docker://python:3.8-buster

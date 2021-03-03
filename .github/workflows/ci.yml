@@ -165,6 +165,13 @@ jobs:
           echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
           echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
+      - name: Add Brew
+        if: ${{ matrix.os.matrix == 'darwin' && matrix.python.implementation == 'pypy'}}
+        shell: bash
+        run: |
+          brew install openssl@1.1 rust
+          echo "LDFLAGS=-L$(brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-I$(brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
       - name: rustup
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         shell: bash

@@ -32,6 +32,11 @@ else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     SERIAL_PORT = "/dev/ptmx"
 
+no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
+    sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
+    reason='Twisted serial requires pywin32 which is not compatible with PyPy',
+)
+
 
 class AsynchronousServerTest(unittest.TestCase):
     '''
@@ -188,6 +193,7 @@ class AsynchronousServerTest(unittest.TestCase):
             self.assertEqual(mock_reactor.listenUDP.call_count, 1)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
+    @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
     def testSerialServerStartup(self, mock_sp):
         ''' Test that the modbus serial asynchronous server starts correctly '''
@@ -195,6 +201,7 @@ class AsynchronousServerTest(unittest.TestCase):
             StartSerialServer(context=None, port=SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
+    @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
     def testStopServerFromMainThread(self, mock_sp):
         """
@@ -207,6 +214,7 @@ class AsynchronousServerTest(unittest.TestCase):
             StopServer()
             self.assertEqual(mock_reactor.stop.call_count, 1)
 
+    @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
     def testStopServerFromThread(self, mock_sp):
         """

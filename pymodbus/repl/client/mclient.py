@@ -5,7 +5,7 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
 from __future__ import absolute_import, unicode_literals
-
+import functools
 from pymodbus.pdu import ModbusExceptions, ExceptionResponse
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.client.sync import ModbusSerialClient as _ModbusSerialClient
@@ -35,7 +35,23 @@ from pymodbus.diag_message import (
                                    GetClearModbusPlusRequest)
 
 
+def make_response_dict(resp):
+    rd = {
+        'function_code': resp.function_code,
+        'address': resp.address
+    }
+    if hasattr(resp, "value"):
+        rd['value'] = resp.value
+    elif hasattr(resp, 'values'):
+        rd['values'] = resp.values
+    elif hasattr(resp, 'count'):
+        rd['count'] = resp.count
+
+    return rd
+
+
 def handle_brodcast(func):
+    @functools.wraps(func)
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
@@ -44,11 +60,7 @@ def handle_brodcast(func):
                 'broadcasted': True
             }
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'count': resp.count
-            }
+            return make_response_dict(resp)
         else:
             return ExtendedRequestSupport._process_exception(resp, **kwargs)
     return _wrapper
@@ -143,7 +155,7 @@ class ExtendedRequestSupport(object):
         Write `value` to coil at `address`.
 
         :param address: coil offset to write to
-        :param value: list of bit values to write (comma seperated)
+        :param values: list of bit values to write (comma seperated)
         :param unit: The slave unit this request is targeting
         :return:
         """
@@ -171,7 +183,7 @@ class ExtendedRequestSupport(object):
         Write list of `values` to registers starting at `address`.
 
         :param address: register offset to write to
-        :param value: list of register value to write (comma seperated)
+        :param values: list of register value to write (comma seperated)
         :param unit: The slave unit this request is targeting
         :return:
         """

@@ -26,8 +26,8 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from pymodbus.version import version
-from pymodbus.repl.completer import CmdCompleter, has_selected_completion
-from pymodbus.repl.helper import Result, CLIENT_ATTRIBUTES
+from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
+from pymodbus.repl.client.helper import Result, CLIENT_ATTRIBUTES
 
 click.disable_unicode_literals_warning = True
 
@@ -41,9 +41,9 @@ __________          _____             .___  __________              .__
            \/            \/            \/ \/        \/     \/|__|
                                         v{} - {}         
 ----------------------------------------------------------------------------
-""".format("1.2.0", version)
-log = None
+""".format("1.3.0", version)
 
+log = None
 
 style = Style.from_dict({
     'completion-menu.completion': 'bg:#008888 #ffffff',
@@ -169,7 +169,7 @@ def cli(client):
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
                             key_bindings=kb,
-                            history=FileHistory('.pymodhis'),
+                            history=FileHistory('../.pymodhis'),
                             auto_suggest=AutoSuggestFromHistory())
     click.secho("{}".format(TITLE), fg='green')
     result = None
@@ -226,9 +226,16 @@ def cli(client):
 @click.group('pymodbus-repl')
 @click.version_option(version, message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
-@click.option("--broadcast-support", is_flag=True, default=False, help="Support broadcast messages")
+@click.option("--broadcast-support", is_flag=True, default=False,
+              help="Support broadcast messages")
+@click.option("--retry-on-empty", is_flag=True, default=False,
+              help="Retry on empty response")
+@click.option("--retry-on-error", is_flag=True, default=False,
+              help="Retry on error response")
+@click.option("--retries", default=3, help="Retry count")
 @click.pass_context
-def main(ctx, verbose, broadcast_support):
+def main(ctx, verbose, broadcast_support, retry_on_empty,
+         retry_on_error, retries):
     if verbose:
         global log
         import logging
@@ -237,13 +244,19 @@ def main(ctx, verbose, broadcast_support):
         log = logging.getLogger('pymodbus')
         logging.basicConfig(format=format)
         log.setLevel(logging.DEBUG)
-    ctx.obj = {"broadcast": broadcast_support}
+    ctx.obj = {
+        "broadcast": broadcast_support,
+        "retry_on_empty": retry_on_empty,
+        "retry_on_invalid": retry_on_error,
+        "retries": retries
+    }
 
 
 @main.command("tcp")
 @click.pass_context
 @click.option(
     "--host",
+    default='localhost',
     help="Modbus TCP IP "
 )
 @click.option(
@@ -259,9 +272,9 @@ def main(ctx, verbose, broadcast_support):
     help="Override the default packet framer tcp|rtu",
 )
 def tcp(ctx, host, port, framer):
-    from pymodbus.repl.client import ModbusTcpClient
-    broadcast = ctx.obj.get("broadcast")
-    kwargs = dict(host=host, port=port, broadcast_enable=broadcast)
+    from pymodbus.repl.client.mclient import ModbusTcpClient
+    kwargs = dict(host=host, port=port)
+    kwargs.update(**ctx.obj)
     if framer == 'rtu':
         from pymodbus.framer.rtu_framer import ModbusRtuFramer
         kwargs['framer'] = ModbusRtuFramer
@@ -349,7 +362,7 @@ def tcp(ctx, host, port, framer):
 )
 def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
            rtscts, dsrdtr, timeout, write_timeout):
-    from pymodbus.repl.client import ModbusSerialClient
+    from pymodbus.repl.client.mclient import ModbusSerialClient
     client = ModbusSerialClient(method=method,
                                 port=port,
                                 baudrate=baudrate,
@@ -360,7 +373,8 @@ def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
                                 rtscts=rtscts,
                                 dsrdtr=dsrdtr,
                                 timeout=timeout,
-                                write_timeout=write_timeout)
+                                write_timeout=write_timeout,
+                                **ctx.obj)
     cli(client)
 
 

@@ -366,7 +366,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         '''
         reportSlaveIdData = None
         if context:
-            reportSlaveIdData = context.reportSlaveIdData
+            reportSlaveIdData = getattr(context, 'reportSlaveIdData', None)
         if not reportSlaveIdData:
             information = DeviceInformationFactory.get(_MCB)
             identifier = "-".join(information.values()).encode()

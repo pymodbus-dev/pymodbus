@@ -223,20 +223,28 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         if not broadcast:
             response.transaction_id = request.transaction_id
             response.unit_id = request.unit_id
+            skip_encoding = False
             if self.server.response_manipulator:
-                response = self.server.response_manipulator(response)
-            self.send(response, *addr)
+                response, skip_encoding = self.server.response_manipulator(response)
+            self.send(response, *addr, skip_encoding=skip_encoding)
 
-    def send(self, message, *addr):
-        if message.should_respond:
+    def send(self, message, *addr, **kwargs):
+        def __send(msg, *addr):
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(msg)))
+            if addr == (None,):
+                self._send_(msg)
+            else:
+                self._send_(msg, *addr)
+        skip_encoding = kwargs.get("skip_encoding", False)
+        if skip_encoding:
+            __send(message, *addr)
+        elif message.should_respond:
             # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
-            if addr == (None,):
-                self._send_(pdu)
-            else:
-                self._send_(pdu, *addr)
+            __send(pdu, *addr)
+        else:
+            _logger.debug("Skipping sending response!!")
 
     # ----------------------------------------------------------------------- #
     # Derived class implementations

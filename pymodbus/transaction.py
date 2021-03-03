@@ -153,7 +153,6 @@ class ModbusTransactionManager(object):
                     self._transact(request, None, broadcast=True)
                     response = b'Broadcast write sent - no response expected'
                 else:
-                    invalid_response = False
                     expected_response_length = None
                     if not isinstance(self.client.framer, ModbusSocketFramer):
                         if hasattr(request, "get_response_pdu_size"):
@@ -171,54 +170,38 @@ class ModbusTransactionManager(object):
                         full = True
                         if not expected_response_length:
                             expected_response_length = Defaults.ReadSize
-                    # retries += 1
+                    response, last_exception = self._transact(
+                        request,
+                        expected_response_length,
+                        full=full,
+                        broadcast=broadcast
+                    )
                     while retries > 0:
-                        response, last_exception = self._transact(
-                            request,
-                            expected_response_length,
-                            full=full,
-                            broadcast=broadcast
-                        )
                         valid_response = self._validate_response(
                             request, response, expected_response_length
                         )
-                        if not response and request.unit_id \
-                                not in self._no_response_devices:
-                            self._no_response_devices.append(request.unit_id)
-                        elif request.unit_id in self._no_response_devices and response:
-                            self._no_response_devices.remove(request.unit_id)
-                        if not response and self.retry_on_empty:
-                            _logger.debug("Retry on empty - {}".format(retries))
-                            retries -= 1
-                            _logger.debug("Changing transaction state from "
-                                          "'WAITING_FOR_REPLY' to 'RETRYING'")
-                            self.client.state = ModbusTransactionState.RETRYING
-                            continue
-                        elif not response:
-                            break
-                        mbap = self.client.framer.decode_data(response)
-                        if mbap.get('unit') == request.unit_id:
-                            break
-                        if ('length' in mbap and expected_response_length and
-                            mbap.get('length') == expected_response_length and
-                            mbap.get('fcode') == request.function_code):
+                        if valid_response:
+                            if request.unit_id in self._no_response_devices and response:
+                                self._no_response_devices.remove(request.unit_id)
+                                _logger.debug("Got response!!!")
                             break
                         else:
-                            invalid_response = True
-                        if invalid_response and not self.retry_on_invalid:
-                            break
-                        _logger.debug("Retry on invalid - {}".format(retries))
-                        if hasattr(self.client, "state"):
-                            _logger.debug("RESETTING Transaction "
-                                          "state to 'RETRY' for retry")
-                            self.client.state = ModbusTransactionState.RETRYING
-                        if self.backoff:
-                            delay = 2 ** (self.retries - retries) * self.backoff
-                            time.sleep(delay)
-                            _logger.debug("Sleeping {}".format(delay))
-                        full = False
-                        broadcast = False
-                        retries -= 1
+                            if not response:
+                                if request.unit_id not in self._no_response_devices:
+                                    self._no_response_devices.append(request.unit_id)
+                                if self.retry_on_empty:
+                                    response, last_exception = self._retry_transaction(retries, "empty", request, expected_response_length, full=full)
+                                    retries -= 1
+                                else:
+                                    # No response received and retries not enabled
+                                    break
+                            else:
+                                if self.retry_on_invalid:
+                                    response, last_exception = self._retry_transaction(retries, "invalid", request, expected_response_length, full=full)
+                                    retries -= 1
+                                else:
+                                    break
+                            # full = False
                     addTransaction = partial(self.addTransaction,
                                              tid=request.transaction_id)
                     self.client.framer.processIncomingPacket(response,
@@ -234,6 +217,7 @@ class ModbusTransactionManager(object):
                                 "/Unable to decode response")
                             response = ModbusIOException(last_exception,
                                                          request.function_code)
+                        self.client.close()
                     if hasattr(self.client, "state"):
                         _logger.debug("Changing transaction state from "
                                       "'PROCESSING REPLY' to "
@@ -244,12 +228,22 @@ class ModbusTransactionManager(object):
                 return response
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
+                self.client.close()
                 _logger.exception(ex)
                 self.client.close()
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return ex
 
-    def _retry(self, packet, response_length, full=False):
+    def _retry_transaction(self, retries, reason,
+                           packet, response_length, full=False):
+        _logger.debug("Retry on {} response - {}".format(reason, retries))
+        _logger.debug("Changing transaction state from "
+                      "'WAITING_FOR_REPLY' to 'RETRYING'")
+        self.client.state = ModbusTransactionState.RETRYING
+        if self.backoff:
+            delay = 2 ** (self.retries - retries) * self.backoff
+            time.sleep(delay)
+            _logger.debug("Sleeping {}".format(delay))
         self.client.connect()
         in_waiting = self.client._in_waiting()
         if in_waiting:
@@ -327,9 +321,10 @@ class ModbusTransactionManager(object):
 
             read_min = self.client.framer.recvPacket(min_size)
             if len(read_min) != min_size:
+                msg_start = "Incomplete message" if read_min else "No response"
                 raise InvalidMessageReceivedException(
-                    "Incomplete message received, expected at least %d bytes "
-                    "(%d received)" % (min_size, len(read_min))
+                    "%s received, expected at least %d bytes "
+                    "(%d received)" % (msg_start, min_size, len(read_min))
                 )
             if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
@@ -364,9 +359,14 @@ class ModbusTransactionManager(object):
         result = read_min + result
         actual = len(result)
         if total is not None and actual != total:
-            _logger.debug("Incomplete message received, "
+            msg_start = "Incomplete message" if actual else "No response"
+            _logger.debug("{} received, "
                           "Expected {} bytes Recieved "
-                          "{} bytes !!!!".format(total, actual))
+                          "{} bytes !!!!".format(msg_start, total, actual))
+        elif actual == 0:
+            # If actual == 0 and total is not None then the above
+            # should be triggered, so total must be None here
+            _logger.debug("No response received to unbounded read !!!!")
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
                           "'WAITING FOR REPLY' to 'PROCESSING REPLY'")

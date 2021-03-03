@@ -160,7 +160,7 @@ class Command(object):
 
     def __str__(self):
         if self.doc:
-            return "Command {0:>50}{:<20}".format(self.name, self.doc)
+            return "Command {:>50}{:<20}".format(self.name, self.doc)
         return "Command {}".format(self.name)
 
 

@@ -1,3 +1,14 @@
+version 2.5.0
+----------------------------------------------------------
+* Support response types `stray` and `empty` in repl server.
+* Minor updates in asyncio server.
+* Update reactive server to send stray response of given length.
+* Transaction manager updates on retries for empty and invalid packets.
+* Test fixes for asyncio client and transaction manager.
+* Fix sync client and processing of incomplete frames with rtu framers
+* Support synchronous diagnostic client (TCP)
+* Server updates (REPL and async)
+
 version 2.5.0rc3
 ----------------------------------------------------------
 * Minor fix in documentations

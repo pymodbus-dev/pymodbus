@@ -53,6 +53,13 @@ setup(
     """,
     classifiers=[
         'Development Status :: 4 - Beta',
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         'Environment :: Console',
         'Environment :: X11 Applications :: GTK',
         'Framework :: Twisted',
@@ -77,6 +84,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
+    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*',
     install_requires=install_requires,
     extras_require={
         'quality': [
@@ -89,7 +97,7 @@ setup(
                       'sphinx_rtd_theme',
                       'humanfriendly'],
         'twisted': [
-            'twisted >= 20.3.0',
+            'twisted[serial] >= 20.3.0',
             'pyasn1 >= 0.1.4',
         ],
         'tornado': [

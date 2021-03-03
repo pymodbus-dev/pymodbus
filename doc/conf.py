@@ -47,7 +47,7 @@ github_doc_root = 'https://github.com/riptideio/pymodbus/tree/master/doc/'
 # ones.
 
 #extensions = ['sphinx.ext.autodoc', 'm2r', 'recommonmark']
-extensions = ['sphinx.ext.autodoc', 'm2r']
+extensions = ['sphinx.ext.autodoc', 'm2r2']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

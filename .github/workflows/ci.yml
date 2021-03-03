@@ -166,7 +166,7 @@ jobs:
           echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - name: Add Brew
-        if: ${{ matrix.os.matrix == 'darwin' && matrix.python.implementation == 'pypy'}}
+        if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
         shell: bash
         run: |
           brew install openssl@1.1 rust

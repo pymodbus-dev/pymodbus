@@ -71,7 +71,8 @@ DEFUALT_HANDLERS = {
     "ModbusDisconnectedRequestHandler": ModbusDisconnectedRequestHandler
 }
 DEFAULT_MODBUS_MAP = {"start_offset": 0,
-                      "count": 10, "value": 0, "sparse": False}
+                      "count": 100,
+                      "value": 0, "sparse": False}
 DEFAULT_DATA_BLOCK = {
     "co": DEFAULT_MODBUS_MAP,
     "di": DEFAULT_MODBUS_MAP,
@@ -318,7 +319,9 @@ class ReactiveServer:
 
         slave_context = ModbusSlaveContext(**block, zero_mode=True)
         if not single:
-            slaves = {unit: slave_context}
+            slaves = {}
+            for i in unit:
+                slaves[i] = slave_context
         else:
             slaves = slave_context
         server_context = ModbusServerContext(slaves, single=single)

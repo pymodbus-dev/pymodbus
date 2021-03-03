@@ -51,7 +51,9 @@ if not IS_PYTHON2:
     # module renames
     # ----------------------------------------------------------------------- #
     import socketserver
-
+    # #609 monkey patch for socket server memory leaks
+    # Refer https://bugs.python.org/issue37193
+    socketserver.ThreadingMixIn.daemon_threads = True
     # ----------------------------------------------------------------------- #
     # decorators
     # ----------------------------------------------------------------------- #

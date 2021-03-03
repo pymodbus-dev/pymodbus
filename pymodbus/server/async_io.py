@@ -56,8 +56,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 "been canceled" % self.client_address[:2])
         elif isinstance(self, ModbusSingleRequestHandler):
             _logger.error(
-                "Handler for serial port [%s] has been "
-                "cancelled" % self.transport.serial.port)
+                "Handler for serial port has been cancelled")
         else:
             sock_name = self.protocol._sock.getsockname()
             _logger.error("Handler for UDP socket [%s] has "

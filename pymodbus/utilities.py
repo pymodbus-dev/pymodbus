@@ -245,7 +245,10 @@ def hexlify_packets(packet):
     """
     if not packet:
         return ''
-    return " ".join([hex(byte2int(x)) for x in packet])
+    if IS_PYTHON3:
+        return " ".join([hex(byte2int(x)) for x in packet])
+    else:
+        return u" ".join([hex(byte2int(x)) for x in packet])
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #

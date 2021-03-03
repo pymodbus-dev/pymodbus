@@ -165,6 +165,11 @@ jobs:
           echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
           echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
 #          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
+      - name: rustup
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        shell: bash
+        run: |
+          rustup target add i686-pc-windows-msvc
       - name: Test
         run: |
           tox -vv -e ${{ matrix.python.tox }}

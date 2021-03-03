@@ -134,11 +134,17 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up ${{ matrix.python.name }}
-        if: ${{ job.container == ''}}
+      - name: Set up ${{ matrix.python.name }} (if CPython)
+        if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
         uses: actions/setup-python@v2
         with:
           python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
+          architecture: '${{ matrix.arch.action }}'
+      - name: Set up ${{ matrix.python.name }} (if PyPy)
+        if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python.action }}'
           architecture: '${{ matrix.arch.action }}'
       - name: Install
         run: |

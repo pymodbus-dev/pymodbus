@@ -165,6 +165,7 @@ class SynchronousClientTest(unittest.TestCase):
             client = ModbusUdpClient()
             self.assertFalse(client.connect())
 
+    @inet_pton_skipif
     def testUdpClientIsSocketOpen(self):
         ''' Test the udp client is_socket_open method'''
         client = ModbusUdpClient()

@@ -60,6 +60,8 @@ class ModbusBitMessageTests(unittest.TestCase):
         self.assertEqual(request.byte_count, 1)
         self.assertEqual(request.address, 1)
         self.assertEqual(request.values, [True]*5)
+        self.assertEqual(request.get_response_pdu_size(), 5)
+
 
     def testInvalidWriteMultipleCoilsRequest(self):
         request = WriteMultipleCoilsRequest(1, None)

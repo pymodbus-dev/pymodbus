@@ -92,11 +92,13 @@ the tools/nullmodem/linux directory::
 
     sudo ./run
 
+The third method is Generic Unix method below.
+
 ------------------------------------------------------------
 Windows
 ------------------------------------------------------------
 
-For Windows, simply use the com2com application that is in
+For Windows, simply use the com0com application that is in
 the directory tools/nullmodem/windows. Instructions are
 included in the Readme.txt.
 

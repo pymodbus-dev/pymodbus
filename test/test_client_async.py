@@ -237,7 +237,7 @@ class TestAsynchronousClient(object):
     def testSerialTornadoClient(self, method, framer):
         """ Test the serial tornado client client initialize """
         from serial import Serial
-        with maybe_manage(sys.platform == 'win32', patch.object(Serial, "open")):
+        with maybe_manage(sys.platform in ('darwin', 'win32'), patch.object(Serial, "open")):
             protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
             client = future.result()
             assert(isinstance(client, AsyncTornadoModbusSerialClient))

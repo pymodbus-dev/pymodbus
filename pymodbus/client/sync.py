@@ -649,7 +649,7 @@ class ModbusSerialClient(BaseModbusClient):
         if self.socket:
             return True
         try:
-            self.socket = serial.Serial(port=self.port,
+            self.socket = serial.serial_for_url(self.port,
                                         timeout=self.timeout,
                                         bytesize=self.bytesize,
                                         stopbits=self.stopbits,

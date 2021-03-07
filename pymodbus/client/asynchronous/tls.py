@@ -21,17 +21,19 @@ class AsyncModbusTLSClient(object):
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
     def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort,
-                framer=None, sslctx=None, server_hostname=None,
-                source_address=None, timeout=None, **kwargs):
+                framer=None, sslctx=None, certfile=None, keyfile=None,
+                password=None, source_address=None, timeout=None, **kwargs):
         """
         Scheduler to use:
             - async_io (asyncio)
         :param scheduler: Backend to use
-        :param host: Host IP address
+        :param host: Target server's name, also matched for certificate
         :param port: Port
         :param framer: Modbus Framer to use
         :param sslctx: The SSLContext to use for TLS (default None and auto create)
-        :param server_hostname: Target server's name matched for certificate
+        :param certfile: The optional client's cert file path for TLS server request
+        :param keyfile: The optional client's key file path for TLS server request
+        :param password: The password for for decrypting client's private key file
         :param source_address: source address specific to underlying backend
         :param timeout: Time out in seconds
         :param kwargs: Other extra args specific to Backend being used
@@ -45,8 +47,9 @@ class AsyncModbusTLSClient(object):
         framer = framer or ModbusTlsFramer(ClientDecoder())
         factory_class = get_factory(scheduler)
         yieldable = factory_class(host=host, port=port, sslctx=sslctx,
-                                  server_hostname=server_hostname,
-                                  framer=framer, source_address=source_address,
+                                  certfile=certfile, keyfile=keyfile,
+                                  password=password, framer=framer,
+                                  source_address=source_address,
                                   timeout=timeout, **kwargs)
         return yieldable
 

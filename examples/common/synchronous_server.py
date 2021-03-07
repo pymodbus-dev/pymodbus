@@ -120,8 +120,14 @@ def run_server():
     #                framer=ModbusRtuFramer, address=("0.0.0.0", 5020))
 
     # TLS
-    # StartTlsServer(context, identity=identity, certfile="server.crt",
-    #                keyfile="server.key", address=("0.0.0.0", 8020))
+    # StartTlsServer(context, identity=identity,
+    #                certfile="server.crt", keyfile="server.key", password="pwd",
+    #                address=("0.0.0.0", 8020))
+
+    # Tls and force require client's certificate for TLS full handshake:
+    # StartTlsServer(context, identity=identity,
+    #                certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
+    #                address=("0.0.0.0", 8020))
 
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))

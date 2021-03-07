@@ -7,6 +7,7 @@ import functools
 import ssl
 from pymodbus.exceptions import ConnectionException
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
+from pymodbus.client.tls_helper import sslctx_provider
 from pymodbus.utilities import hexlify_packets
 from pymodbus.transaction import FifoTransactionManager
 import logging
@@ -449,25 +450,18 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop)
 
     @asyncio.coroutine
-    def start(self, host, port=802, sslctx=None, server_hostname=None):
+    def start(self, host='localhost', port=802, sslctx=None,
+              certfile=None, keyfile=None, password=None):
         """
         Initiates connection to start client
-        :param host:
-        :param port:
-        :param sslctx:
-        :param server_hostname:
-        :return:
+        :param host: The host to connect to (default localhost)
+        :param port: Port to connect
+        :param sslctx:The SSLContext to use for TLS (default None and auto create)
+        :param certfile: The optional client's cert file path for TLS server request
+        :param keyfile: The optional client's key file path for TLS server request
+        :param password: The password for for decrypting client's private key file
         """
-        self.sslctx = sslctx
-        if self.sslctx is None:
-            self.sslctx = ssl.create_default_context()
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            self.sslctx.options |= ssl.OP_NO_TLSv1_1
-            self.sslctx.options |= ssl.OP_NO_TLSv1
-            self.sslctx.options |= ssl.OP_NO_SSLv3
-            self.sslctx.options |= ssl.OP_NO_SSLv2
-        self.server_hostname = server_hostname
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         yield from ReconnectingAsyncioModbusTcpClient.start(self, host, port)
 
     @asyncio.coroutine
@@ -478,7 +472,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
                                                    self.host,
                                                    self.port,
                                                    ssl=self.sslctx,
-                                                   server_hostname=self.server_hostname)
+                                                   server_hostname=self.host)
         except Exception as ex:
             _logger.warning('Failed to connect: %s' % ex)
             asyncio.ensure_future(self._reconnect(), loop=self.loop)
@@ -849,7 +843,8 @@ def init_tcp_client(proto_cls, loop, host, port, **kwargs):
 
 @asyncio.coroutine
 def init_tls_client(proto_cls, loop, host, port, sslctx=None,
-                    server_hostname=None, framer=None, **kwargs):
+                    certfile=None, keyfile=None, password=None,
+                    framer=None,**kwargs):
     """
     Helper function to initialize tcp client
     :param proto_cls:
@@ -857,14 +852,16 @@ def init_tls_client(proto_cls, loop, host, port, sslctx=None,
     :param host:
     :param port:
     :param sslctx:
-    :param server_hostname:
+    :param certfile: The optional client's cert file path for TLS server request
+    :param keyfile: The optional client's key file path for TLS server request
+    :param password: The password for for decrypting client's private key file
     :param framer:
     :param kwargs:
     :return:
     """
     client = ReconnectingAsyncioModbusTlsClient(protocol_class=proto_cls,
                                                 loop=loop, framer=framer)
-    yield from client.start(host, port, sslctx, server_hostname)
+    yield from client.start(host, port, sslctx, certfile, keyfile, password)
     return client
 
 

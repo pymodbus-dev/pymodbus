@@ -16,16 +16,18 @@ from pymodbus.client.sync import ModbusTlsClient
 # -------------------------------------------------------------------------- #
 # the TLS detail security can be set in SSLContext which is the context here
 # -------------------------------------------------------------------------- #
-context = ssl.create_default_context()
-context.options |= ssl.OP_NO_SSLv2
-context.options |= ssl.OP_NO_SSLv3
-context.options |= ssl.OP_NO_TLSv1
-context.options |= ssl.OP_NO_TLSv1_1
+sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+sslctx.verify_mode = ssl.CERT_REQUIRED
+sslctx.check_hostname = True
+
+# Prepare client's certificate which the server requires for TLS full handshake
+# sslctx.load_cert_chain(certfile="client.crt", keyfile="client.key",
+#                        password="pwd")
 
 # -------------------------------------------------------------------------- #
 # pass SSLContext which is the context here to ModbusTcpClient()
 # -------------------------------------------------------------------------- #
-client = ModbusTlsClient('test.host.com', 8020, sslctx=context)
+client = ModbusTlsClient('test.host.com', 8020, sslctx=sslctx)
 client.connect()
 
 result = client.read_coils(1, 8)

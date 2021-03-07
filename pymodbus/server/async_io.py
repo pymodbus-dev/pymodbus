@@ -21,6 +21,7 @@ from pymodbus.transaction import *
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.compat import socketserver, byte2int
+from pymodbus.server.tls_helper import sslctx_provider
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -524,6 +525,8 @@ class ModbusTlsServer(ModbusTcpServer):
                  sslctx=None,
                  certfile=None,
                  keyfile=None,
+                 password=None,
+                 reqclicert=False,
                  handler=None,
                  allow_reuse_address=False,
                  allow_reuse_port=False,
@@ -544,6 +547,8 @@ class ModbusTlsServer(ModbusTcpServer):
                        create)
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
+        :param password: The password for for decrypting the private key file
+        :param reqclicert: Force the sever request client's certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler. The handler class
                         receives connection create/teardown events
@@ -582,18 +587,9 @@ class ModbusTlsServer(ModbusTcpServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.sslctx = sslctx
-        if self.sslctx is None:
-            self.sslctx = ssl.create_default_context()
-            self.sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            self.sslctx.options |= ssl.OP_NO_TLSv1_1
-            self.sslctx.options |= ssl.OP_NO_TLSv1
-            self.sslctx.options |= ssl.OP_NO_SSLv3
-            self.sslctx.options |= ssl.OP_NO_SSLv2
-        self.sslctx.verify_mode = ssl.CERT_OPTIONAL
-        self.sslctx.check_hostname = False
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
+                                      reqclicert)
+
         # asyncio future that will be done once server has started
         self.serving = self.loop.create_future()
         # constructors cannot be declared async, so we have to
@@ -845,7 +841,8 @@ async def StartTcpServer(context=None, identity=None, address=None,
 
 async def StartTlsServer(context=None, identity=None, address=None,
                          sslctx=None,
-                         certfile=None, keyfile=None,
+                         certfile=None, keyfile=None, password=None,
+                         reqclicert=False,
                          allow_reuse_address=False,
                          allow_reuse_port=False,
                          custom_functions=[],
@@ -858,6 +855,8 @@ async def StartTlsServer(context=None, identity=None, address=None,
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
+    :param password: The password for for decrypting the private key file
+    :param reqclicert: Force the sever request client's certificate
     :param allow_reuse_address: Whether the server will allow the reuse of an
                                 address.
     :param allow_reuse_port: Whether the server will allow the reuse of a port.
@@ -872,7 +871,7 @@ async def StartTlsServer(context=None, identity=None, address=None,
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
     server = ModbusTlsServer(context, framer, identity, address, sslctx,
-                             certfile, keyfile,
+                             certfile, keyfile, password, reqclicert,
                              allow_reuse_address=allow_reuse_address,
                              allow_reuse_port=allow_reuse_port, **kwargs)
 

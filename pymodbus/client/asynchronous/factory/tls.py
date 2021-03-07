@@ -13,14 +13,17 @@ from pymodbus.constants import Defaults
 LOGGER = logging.getLogger(__name__)
 
 def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
-                     server_hostname=None, framer=None, source_address=None,
+                     certfile=None, keyfile=None, password=None,
+                     framer=None, source_address=None,
                      timeout=None, **kwargs):
     """
     Factory to create asyncio based asynchronous tls clients
-    :param host: Host IP address
+    :param host: Target server's name, also matched for certificate
     :param port: Port
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
-    :param server_hostname: Target server's name matched for certificate
+    :param certfile: The optional client's cert file path for TLS server request
+    :param keyfile: The optional client's key file path for TLS server request
+    :param password: The password for for decrypting client's private key file
     :param framer: Modbus Framer
     :param source_address: Bind address
     :param timeout: Timeout in seconds
@@ -33,12 +36,12 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
     proto_cls = kwargs.get("proto_cls", None)
     if not loop.is_running():
         asyncio.set_event_loop(loop)
-        cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
-                              framer)
+        cor = init_tls_client(proto_cls, loop, host, port,
+                              sslctx, certfile, keyfile, password, framer)
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     else:
-        cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
-                              framer)
+        cor = init_tls_client(proto_cls, loop, host, port,
+                              sslctx, certfile, keyfile, password, framer)
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         client = future.result()
 

@@ -22,8 +22,9 @@ jobs:
         days-before-issue-close: 5
         days-before-pr-close: 10
         stale-issue-label: 'no-issue-activity'
-        exempt-issue-labels: 'Bug, Enhancements, Investigating, in progress, Documentation Update Required'
+        exempt-issue-labels: 'Bug,Enhancements,Investigating,in progress,Documentation Update Required,3.x'
         stale-pr-label: 'no-pr-activity'
-        exempt-pr-labels: 'IN REVIEW, Reviewing, Draft, in progress, 3.x, 2.5.0'
+        exempt-pr-labels: 'IN REVIEW,Reviewing,Draft,in progress,3.x,2.5.0'
+        remove-stale-when-updated: true
 #         only-labels: "More Information Required, Not an Issue, question, Won't Do"
 

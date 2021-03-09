@@ -12,6 +12,7 @@ twisted is just not feasible. What follows is an example of its use:
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 import asyncio
+from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
 from pymodbus.server.async_io import StartTlsServer
 from pymodbus.server.async_io import StartUdpServer
@@ -107,22 +108,22 @@ async def run_server():
     identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = '2.3.0'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
     # immediately start serving:
-    await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), allow_reuse_address=True,
-                         defer_start=False)
+    # await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), allow_reuse_address=True,
+    #                      defer_start=False)
 
     # 	deferred start:
-    # server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
-    #                               allow_reuse_address=True, defer_start=True)
-    #
-    # asyncio.get_event_loop().call_later(20, lambda : server.serve_forever)
-    # await server.serve_forever()
+    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
+                                  allow_reuse_address=True, defer_start=True)
+
+    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
+    await server.serve_forever()
 
     # TCP with different framer
     # StartTcpServer(context, identity=identity,

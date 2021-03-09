@@ -3,7 +3,7 @@
 Pymodbus Payload Building/Decoding Example
 --------------------------------------------------------------------------
 
-# Run modbus-payload-server.py or synchronous-server.py to check the behavior
+# Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder

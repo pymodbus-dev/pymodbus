@@ -591,11 +591,13 @@ class AsyncioServerTest(asynctest.TestCase):
     # -----------------------------------------------------------------------#
     # Test ModbusServerFactory
     # -----------------------------------------------------------------------#
+    @pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
     def testModbusServerFactory(self):
         """ Test the base class for all the clients """
         with pytest.warns(DeprecationWarning):
             factory = ModbusServerFactory(store=None)
 
+    @pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
     def testStopServer(self):
         with pytest.warns(DeprecationWarning):
             StopServer()

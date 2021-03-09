@@ -1,7 +1,7 @@
 attrs>=20.2.0
 bcrypt>=3.1.6
 capturer >= 2.2
-coverage >= 4.2
+-r requirements-coverage.txt
 cryptography>= 2.3
 mock >= 1.0.1
 pyserial-asyncio>=0.4.0;python_version>="3.4"
@@ -15,6 +15,6 @@ sqlalchemy>=1.1.15
 #wsgiref>=0.1.2
 verboselogs >= 1.5
 tornado==4.5.3
-Twisted>=20.3.0
+Twisted[serial]>=20.3.0
 zope.interface>=4.4.0
 asynctest>=0.10.0

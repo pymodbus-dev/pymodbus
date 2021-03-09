@@ -190,33 +190,59 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
 
 
 class ModbusSparseDataBlock(BaseModbusDataBlock):
-    ''' Creates a sparse modbus datastore '''
+    """
+    Creates a sparse modbus datastore
 
-    def __init__(self, values):
-        ''' Initializes the datastore
+    E.g Usage.
+    sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
 
-        Using the input values we create the default
-        datastore value and the starting address
+    This would create a datablock with 3 blocks starting at
+    offset 10 with length 4 , 30 with length 1 and 40 with length 20
+
+    sparse = ModbusSparseDataBlock([10]*100)
+    Creates a sparse datablock of length 100 starting at offset 0 and default value of 10
+
+    sparse = ModbusSparseDataBlock() --> Create Empty datablock
+    sparse.setValues(0, [10]*10)  --> Add block 1 at offset 0 with length 10 (default value 10)
+    sparse.setValues(30, [20]*5)  --> Add block 2 at offset 30 with length 5 (default value 20)
+
+    if mutable is set to True during initialization, the datablock can not be altered with
+    setValues (new datablocks can not be added)
+    """
+
+    def __init__(self, values=None, mutable=True):
+        """
+        Initializes a sparse datastore. Will only answer to addresses
+        registered, either initially here, or later via setValues()
 
         :param values: Either a list or a dictionary of values
-        '''
-        if isinstance(values, dict):
-            self.values = values
-        elif hasattr(values, '__iter__'):
-            self.values = dict(enumerate(values))
-        else: raise ParameterException(
-            "Values for datastore must be a list or dictionary")
-        self.default_value = get_next(itervalues(self.values)).__class__()
-        self.address = get_next(iterkeys(self.values))
+        :param mutable: The data-block can be altered later with setValues(i.e add more blocks)
+
+        If values are list , This is as good as sequential datablock.
+        Values as dictionary should be in {offset: <values>} format, if values
+        is a list, a sparse datablock is created starting at offset with the length of values.
+        If values is a integer, then the value is set for the corresponding offset.
+
+        """
+        self.values = {}
+        self._process_values(values)
+        self.mutable = mutable
+        self.default_value = self.values.copy()
+        self.address = get_next(iterkeys(self.values), None)
 
     @classmethod
-    def create(klass):
-        ''' Factory method to create a datastore with the
-        full address space initialized to 0x00
+    def create(klass, values=None):
+        ''' Factory method to create sparse datastore.
+        Use setValues to initialize registers.
 
+        :param values: Either a list or a dictionary of values
         :returns: An initialized datastore
         '''
-        return klass([0x00] * 65536)
+        return klass(values)
+
+    def reset(self):
+        ''' Reset the store to the intially provided defaults'''
+        self.values = self.default_value.copy()
 
     def validate(self, address, count=1):
         ''' Checks to see if the request is in range
@@ -239,17 +265,49 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         '''
         return [self.values[i] for i in range(address, address + count)]
 
-    def setValues(self, address, values):
+    def _process_values(self, values):
+        def _process_as_dict(values):
+            for idx, val in iteritems(values):
+                if isinstance(val, (list, tuple)):
+                    for i, v in enumerate(val):
+                        self.values[idx + i] = v
+                else:
+                    self.values[idx] = int(val)
+        if isinstance(values, dict):
+            _process_as_dict(values)
+            return
+        if hasattr(values, '__iter__'):
+            values = dict(enumerate(values))
+        elif values is None:
+            values = {}  # Must make a new dict here per instance
+        else:
+            raise ParameterException("Values for datastore must "
+                                     "be a list or dictionary")
+        _process_as_dict(values)
+
+    def setValues(self, address, values, use_as_default=False):
         ''' Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
+        :param use_as_default: Use the values as default
         '''
         if isinstance(values, dict):
-            for idx, val in iteritems(values):
-                self.values[idx] = val
+            new_offsets = list(set(list(values.keys())) - set(list(self.values.keys())))
+            if new_offsets and not self.mutable:
+                raise ParameterException("Offsets {} not "
+                                         "in range".format(new_offsets))
+            self._process_values(values)
         else:
             if not isinstance(values, list):
                 values = [values]
             for idx, val in enumerate(values):
+                if address+idx not in self.values and not self.mutable:
+                    raise ParameterException("Offset {} not "
+                                             "in range".format(address+idx))
                 self.values[address + idx] = val
+        if not self.address:
+            self.address = get_next(iterkeys(self.values), None)
+        if use_as_default:
+            for idx, val in iteritems(self.values):
+                self.default_value[idx] = val

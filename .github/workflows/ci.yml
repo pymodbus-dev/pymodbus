@@ -1,0 +1,307 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    # Daily at 05:14
+    - cron: '14 5 * * *'
+
+jobs:
+  test:
+    # Should match JOB_NAME below
+    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ${{ matrix.os.container[matrix.python.docker] }}
+    # present runtime seems to be about 1 minute 30 seconds
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - name: Test
+            tox: test
+            coverage: true
+        os:
+          - name: Linux
+            runs-on: ubuntu-latest
+            matrix: linux
+            container:
+              2.7: docker://python:2.7-buster
+              3.6: docker://python:3.6-buster
+              3.7: docker://python:3.7-buster
+              3.8: docker://python:3.8-buster
+              3.9: docker://python:3.9-buster
+              pypy2: docker://pypy:2-jessie
+              pypy3: docker://pypy:3-stretch
+          - name: macOS
+            runs-on: macos-latest
+            matrix: macos
+          - name: Windows
+            runs-on: windows-latest
+            matrix: windows
+            openssl:
+              x86: win32
+              x64: win64
+        python:
+          - name: CPython 2.7
+            tox: py27
+            action: 2.7
+            docker: 2.7
+            matrix: 2.7
+            implementation: cpython
+          - name: PyPy 2.7
+            tox: pypy27
+            action: pypy-2.7
+            docker: pypy2.7
+            matrix: 2.7
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: CPython 3.6
+            tox: py36
+            action: 3.6
+            docker: 3.6
+            matrix: 3.6
+            implementation: cpython
+          - name: CPython 3.7
+            tox: py37
+            action: 3.7
+            docker: 3.7
+            matrix: 3.7
+            implementation: cpython
+          - name: CPython 3.8
+            tox: py38
+            action: 3.8
+            docker: 3.8
+            matrix: 3.8
+            implementation: cpython
+          - name: CPython 3.9
+            tox: py39
+            action: 3.9
+            docker: 3.9
+            matrix: 3.9
+            implementation: cpython
+          - name: PyPy 3.6
+            tox: pypy36
+            action: pypy-3.6
+            docker: pypy3.6
+            matrix: 3.6
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: PyPy 3.7
+            tox: pypy37
+            action: pypy-3.7
+            docker: pypy3.7
+            matrix: 3.7
+            implementation: pypy
+            openssl_msvc_version: 2019
+        arch:
+          - name: x86
+            action: x86
+            matrix: x86
+          - name: x64
+            action: x64
+            matrix: x64
+        exclude:
+          - os:
+              matrix: linux
+            arch:
+              matrix: x86
+          - os:
+              matrix: macos
+            arch:
+              matrix: x86
+          - os:
+              matrix: windows
+            python:
+              implementation: pypy
+            arch:
+              matrix: x64
+    env:
+      # Should match name above
+      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up ${{ matrix.python.name }} (if CPython)
+        if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
+          architecture: '${{ matrix.arch.action }}'
+      - name: Set up ${{ matrix.python.name }} (if PyPy)
+        if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python.action }}'
+          architecture: '${{ matrix.arch.action }}'
+      - name: Install
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade tox
+      - uses: twisted/python-info-action@v1.0.1
+      - name: Add PyPy Externals
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        env:
+          PYPY_EXTERNALS_PATH: ${{ github.workspace }}/pypy_externals
+        shell: bash
+        run: |
+          echo $PYPY_EXTERNALS_PATH
+          mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)
+          hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
+          dir $PYPY_EXTERNALS_PATH
+          cd $PYPY_EXTERNALS_PATH && hg update win32_14x
+          echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
+          echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
+#          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
+      - name: Add Brew
+        if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
+        shell: bash
+        run: |
+          brew install openssl@1.1 rust
+          echo "LDFLAGS=-L$(brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-I$(brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
+      - name: rustup
+        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
+        shell: bash
+        run: |
+          rustup target add i686-pc-windows-msvc
+      - name: Test
+        env:
+          # When compiling Cryptography for PyPy on Windows there is a cleanup
+          # failure.  This is CI, it doesn't matter.
+          PIP_NO_CLEAN: 1
+        run: |
+          tox -vv -e ${{ matrix.python.tox }}
+      - name: Coverage Processing
+        if: matrix.task.coverage
+        run: |
+          mkdir coverage_reports
+          cp .coverage "coverage_reports/.coverage.${{ env.JOB_NAME }}"
+          cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
+      - name: Upload Coverage
+        if: matrix.task.coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: coverage_reports/*
+  check:
+    # Should match JOB_NAME below
+    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ${{ matrix.os.container[matrix.python.docker] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - name: flake8
+            tox: flake8
+            continue_on_error: true
+          - name: Docs
+            tox: docs
+        os:
+          - name: Linux
+            runs-on: ubuntu-latest
+            matrix: linux
+            container:
+              3.8: docker://python:3.8-buster
+        python:
+          - name: CPython 3.8
+            tox: py38
+            action: 3.8
+            docker: 3.8
+            implementation: cpython
+        arch:
+          - name: x64
+            action: x64
+            matrix: x64
+    env:
+      # Should match name above
+      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade tox
+      - uses: twisted/python-info-action@v1.0.1
+      - name: Test
+        continue-on-error: ${{ matrix.task.continue_on_error == true }}
+        run: |
+          tox -vv -e ${{ matrix.task.tox }}
+  coverage:
+    # Should match JOB_NAME below
+    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.os.runs-on }}
+    if: always()
+    needs:
+      - test
+    container: ${{ matrix.os.container[matrix.python.docker] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - name: Coverage
+            tox: combined-coverage
+            download_coverage: true
+        os:
+          - name: Linux
+            runs-on: ubuntu-latest
+            matrix: linux
+            container:
+              3.8: docker://python:3.8-buster
+        python:
+          - name: CPython 3.8
+            tox: py38
+            action: 3.8
+            docker: 3.8
+            implementation: cpython
+        arch:
+          - name: x64
+            action: x64
+            matrix: x64
+    env:
+      # Should match name above
+      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade tox
+          pip install --upgrade six
+      - uses: twisted/python-info-action@v1.0.1
+      - name: Download Coverage
+        if: matrix.task.download_coverage
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage
+          path: coverage_reports
+      - name: Test
+        continue-on-error: ${{ matrix.task.continue_on_error == true }}
+        run: |
+          tox -vv -e ${{ matrix.task.tox }}
+  all:
+    name: All
+    runs-on: ubuntu-latest
+    needs:
+      - check
+      - coverage
+      - test
+    steps:
+      - name: This
+        shell: python
+        run: |
+          import this

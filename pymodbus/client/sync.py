@@ -72,8 +72,9 @@ class BaseModbusClient(ModbusClientMixin):
         )
 
     def send(self, request):
-        _logger.debug("New Transaction state 'SENDING'")
-        self.state = ModbusTransactionState.SENDING
+        if self.state != ModbusTransactionState.RETRYING:
+            _logger.debug("New Transaction state 'SENDING'")
+            self.state = ModbusTransactionState.SENDING
         return self._send(request)
 
     def _send(self, request):
@@ -154,8 +155,8 @@ class BaseModbusClient(ModbusClientMixin):
         try:
             fd.write(hexlify_packets(data))
         except Exception as e:
-            self._logger.debug(hexlify_packets(data))
-            self._logger.exception(e)
+            _logger.debug(hexlify_packets(data))
+            _logger.exception(e)
 
     def register(self, function):
         """
@@ -204,12 +205,15 @@ class ModbusTcpClient(BaseModbusClient):
 
         :returns: True if connection succeeded, False otherwise
         """
-        if self.socket: return True
+        if self.socket:
+            return True
         try:
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
                 source_address=self.source_address)
+            _logger.debug("Connection to Modbus server established. "
+                          "Socket {}".format(self.socket.getsockname()))
         except socket.error as msg:
             _logger.error('Connection to (%s, %s) '
                           'failed: %s' % (self.host, self.port, msg))
@@ -223,6 +227,16 @@ class ModbusTcpClient(BaseModbusClient):
             self.socket.close()
         self.socket = None
 
+    def _check_read_buffer(self, recv_size=None):
+        time_ = time.time()
+        end = time_ + self.timeout
+        data = None
+        data_length = 0
+        ready = select.select([self.socket], [], [], end - time_)
+        if ready[0]:
+            data = self.socket.recv(1024)
+        return data
+
     def _send(self, request):
         """ Sends data on the underlying socket
 
@@ -231,6 +245,11 @@ class ModbusTcpClient(BaseModbusClient):
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
+        if self.state == ModbusTransactionState.RETRYING:
+            data = self._check_read_buffer()
+            if data:
+                return data
+
         if request:
             return self.socket.send(request)
         return 0
@@ -239,7 +258,12 @@ class ModbusTcpClient(BaseModbusClient):
         """ Reads data from the underlying descriptor
 
         :param size: The number of bytes to read
-        :return: The bytes read
+        :return: The bytes read if the peer sent a response, or a zero-length
+                 response if no data packets were received from the client at
+                 all.
+        :raises: ConnectionException if the socket is not initialized, or the
+                 peer either has closed the connection before this method is
+                 invoked or closes it before sending any data before timeout.
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -256,9 +280,9 @@ class ModbusTcpClient(BaseModbusClient):
 
         timeout = self.timeout
 
-        # If size isn't specified read 1 byte at a time.
+        # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
-            recv_size = 1
+            recv_size = 4096
         else:
             recv_size = size
 
@@ -270,6 +294,9 @@ class ModbusTcpClient(BaseModbusClient):
             ready = select.select([self.socket], [], [], end - time_)
             if ready[0]:
                 recv_data = self.socket.recv(recv_size)
+                if recv_data == b'':
+                    return self._handle_abrupt_socket_close(
+                        size, data, time.time() - time_)
                 data.append(recv_data)
                 data_length += len(recv_data)
             time_ = time.time()
@@ -285,6 +312,35 @@ class ModbusTcpClient(BaseModbusClient):
                 break
 
         return b"".join(data)
+
+    def _handle_abrupt_socket_close(self, size, data, duration):
+        """ Handle unexpected socket close by remote end
+
+        Intended to be invoked after determining that the remote end
+        has unexpectedly closed the connection, to clean up and handle
+        the situation appropriately.
+
+        :param size: The number of bytes that was attempted to read
+        :param data: The actual data returned
+        :param duration: Duration from the read was first attempted
+               until it was determined that the remote closed the
+               socket
+        :return: The more than zero bytes read from the remote end
+        :raises: ConnectionException If the remote end didn't send any
+                 data at all before closing the connection.
+        """
+        self.close()
+        readsize = ("read of %s bytes" % size if size
+                    else "unbounded read")
+        msg = ("%s: Connection unexpectedly closed "
+               "%.6f seconds into %s" % (self, duration, readsize))
+        if data:
+            result = b"".join(data)
+            msg += " after returning %s bytes" % len(result)
+            _logger.warning(msg)
+            return result
+        msg += " without response from unit before it closed connection"
+        raise ConnectionException(msg)
 
     def is_socket_open(self):
         return True if self.socket is not None else False
@@ -494,7 +550,9 @@ class ModbusUdpClient(BaseModbusClient):
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):
-        return True if self.socket is not None else False
+        if self.socket:
+            return True
+        return self.connect()
 
     def __str__(self):
         """ Builds a string representation of the connection
@@ -552,7 +610,7 @@ class ModbusSerialClient(BaseModbusClient):
         self.parity = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout)
-        self._strict = kwargs.get("strict", True)
+        self._strict = kwargs.get("strict", False)
         self.last_frame_end = None
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
         if self.method == "rtu":
@@ -591,7 +649,7 @@ class ModbusSerialClient(BaseModbusClient):
         if self.socket:
             return True
         try:
-            self.socket = serial.Serial(port=self.port,
+            self.socket = serial.serial_for_url(self.port,
                                         timeout=self.timeout,
                                         bytesize=self.bytesize,
                                         stopbits=self.stopbits,
@@ -641,12 +699,19 @@ class ModbusSerialClient(BaseModbusClient):
                 waitingbytes = self._in_waiting()
                 if waitingbytes:
                     result = self.socket.read(waitingbytes)
+                    if self.state == ModbusTransactionState.RETRYING:
+                        _logger.debug("Sending available data in recv "
+                                      "buffer {}".format(
+                            hexlify_packets(result)))
+                        return result
                     if _logger.isEnabledFor(logging.WARNING):
                         _logger.warning("Cleanup recv buffer before "
                                         "send: " + hexlify_packets(result))
             except NotImplementedError:
                 pass
-
+            if self.state != ModbusTransactionState.SENDING:
+                _logger.debug("New Transaction state 'SENDING'")
+                self.state = ModbusTransactionState.SENDING
             size = self.socket.write(request)
             return size
         return 0

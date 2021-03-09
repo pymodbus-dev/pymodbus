@@ -1,3 +1,9 @@
+version 2.5.1
+----------------------------------------------------------
+* Bug fix TCP Repl server.
+* Support multiple UID's with REPL server.
+* Support serial for URL (sync serial client)
+
 version 2.5.0
 ----------------------------------------------------------
 * Support response types `stray` and `empty` in repl server.

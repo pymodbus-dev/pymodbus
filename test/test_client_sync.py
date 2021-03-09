@@ -448,7 +448,7 @@ class SynchronousClientTest(unittest.TestCase):
     def testSerialClientConnect(self):
         ''' Test the serial client connection method'''
         with patch.object(serial, 'Serial') as mock_method:
-            mock_method.return_value = object()
+            mock_method.return_value = MagicMock()
             client = ModbusSerialClient()
             self.assertTrue(client.connect())
 

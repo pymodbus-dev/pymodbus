@@ -135,18 +135,19 @@ class ReactiveServer:
         :return:
         """
         try:
-            if isinstance(self._modbus_server, ModbusSerialServer):
-                if hasattr(asyncio, "create_task"):
+            if hasattr(asyncio, "create_task"):
+                if isinstance(self._modbus_server, ModbusSerialServer):
                     app["modbus_serial_server"] = asyncio.create_task(
                         self._modbus_server.start())
-                    app["modbus_server"] = asyncio.create_task(
-                        self._modbus_server.serve_forever())
-                else:
+                app["modbus_server"] = asyncio.create_task(
+                    self._modbus_server.serve_forever())
+            else:
+                if isinstance(self._modbus_server, ModbusSerialServer):
                     app["modbus_serial_server"] = asyncio.ensure_future(
                         self._modbus_server.start()
                     )
-                    app["modbus_server"] = asyncio.ensure_future(
-                        self._modbus_server.serve_forever())
+                app["modbus_server"] = asyncio.ensure_future(
+                    self._modbus_server.serve_forever())
 
             logger.info("Modbus server started")
         except Exception as e:

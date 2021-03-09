@@ -57,7 +57,8 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
                                 case_sensitive=False),
               help="Modbus framer to use")
 @click.option("--modbus-port", default="5020", help="Modbus port")
-@click.option("--modbus-unit-id", default=[1], multiple=True, help="Modbus unit id")
+@click.option("--modbus-unit-id", default=[1], type=int,
+              multiple=True, help="Modbus unit id")
 @click.option("--modbus-config", type=click.Path(exists=True),
               help="Path to additional modbus server config")
 @click.option("-r", "--randomize", default=0, help="Randomize every `r` reads."

@@ -7,6 +7,11 @@ if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
         ReconnectingAsyncioModbusTcpClient,
         ModbusClientProtocol, ModbusUdpClientProtocol)
     from test.asyncio_test_helper import return_as_coroutine, run_coroutine
+    from pymodbus.client.asynchronous import schedulers
+    from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+    from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+    from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+    from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
     from pymodbus.factory import ClientDecoder
     from pymodbus.exceptions import ConnectionException
     from pymodbus.transaction import ModbusSocketFramer
@@ -67,6 +72,40 @@ class TestAsyncioClient(object):
 
         assert client.loop is mock_loop
         assert client.protocol_class is mock_protocol_class
+
+    @pytest.mark.asyncio
+    async def test_initialization_tcp_in_loop(self):
+        _, client = AsyncModbusTCPClient(schedulers.ASYNC_IO, port=5020)
+        client = await client
+
+        assert not client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    async def test_initialization_udp_in_loop(self):
+        _, client = AsyncModbusUDPClient(schedulers.ASYNC_IO, port=5020)
+        client = await client
+
+        assert client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    async def test_initialization_tls_in_loop(self):
+        _, client = AsyncModbusTLSClient(schedulers.ASYNC_IO, port=5020)
+        client = await client
+
+        assert not client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    async def test_initialization_serial_in_loop(self):
+        _, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu')
+
+        assert client.port == '/tmp/ptyp0'
+        assert client.baudrate == 9600
 
     def test_factory_reset_wait_before_reconnect(self):
         mock_protocol_class = mock.MagicMock()

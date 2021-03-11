@@ -1,8 +1,13 @@
 version 3.0.0dev0
 ----------------------------------------------------------
 * Support python3.7 and above
+* Support creating asyncio clients from with in coroutines.
+
+version 2.5.1
+----------------------------------------------------------
 * Bug fix TCP Repl server.
 * Support multiple UID's with REPL server.
+* Support serial for URL (sync serial client)
 
 version 2.5.0
 ----------------------------------------------------------

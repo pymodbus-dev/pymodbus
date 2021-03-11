@@ -23,6 +23,7 @@ context.options |= ssl.OP_NO_SSLv3
 context.options |= ssl.OP_NO_TLSv1
 context.options |= ssl.OP_NO_TLSv1_1
 
+
 async def start_async_test(client):
     result = await client.read_coils(1, 8)
     print(result.bits)
@@ -31,9 +32,9 @@ async def start_async_test(client):
     print(result.bits)
 
 if __name__ == '__main__':
-# -------------------------------------------------------------------------- #
-# pass SSLContext which is the context here to ModbusTcpClient()
-# -------------------------------------------------------------------------- #
+    # ----------------------------------------------------------------------- #
+    # pass SSLContext which is the context here to ModbusTcpClient()
+    # ----------------------------------------------------------------------- #
     loop, client = AsyncModbusTLSClient(ASYNC_IO, 'test.host.com', 8020,
                                         sslctx=context)
     loop.run_until_complete(start_async_test(client.protocol))

@@ -6,9 +6,9 @@ if IS_PYTHON3:
     def _yielded_return(return_value, *args):
         """Generator factory function with return value."""
 
-        def _():
+        async def _():
             """Actual generator producing value."""
-            yield
+            # yield
             return return_value
 
         # return new generator each time this function is called:

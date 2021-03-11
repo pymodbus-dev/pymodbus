@@ -55,6 +55,7 @@ async def start_async_test(client):
     # individual request. This can be done by specifying the `unit` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
+    # client = await client
     log.debug("Reading Coils")
     rr = await client.read_coils(1, 1, unit=0x01)
 
@@ -149,7 +150,7 @@ def run_with_not_running_loop():
     log.debug("")
 
 
-def run_with_already_running_loop():
+async def run_with_already_running_loop():
     """
     An already running loop is passed to ModbusClient Factory
     :return:
@@ -174,9 +175,11 @@ def run_with_already_running_loop():
     t.daemon = True
     # Start the loop
     t.start()
+    time.sleep(1)
     assert loop.is_running()
     asyncio.set_event_loop(loop)
     loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)
+    # client = await client
     future = asyncio.run_coroutine_threadsafe(
         start_async_test(client.protocol), loop=loop)
     future.add_done_callback(done)
@@ -204,12 +207,12 @@ if __name__ == '__main__':
     # Run with No loop
     log.debug("Running Async client")
     log.debug("------------------------------------------------------")
-    run_with_no_loop()
+    # run_with_no_loop()
 
     # Run with loop not yet started
     # run_with_not_running_loop()
 
     # Run with already running loop
-    # run_with_already_running_loop()
+    asyncio.run(run_with_already_running_loop())
 
     log.debug("")

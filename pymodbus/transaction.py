@@ -229,7 +229,6 @@ class ModbusTransactionManager(object):
             except ModbusIOException as ex:
                 # Handle decode errors in processIncomingPacket method
                 _logger.exception(ex)
-                self.client.close()
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 self.client.close()
                 return ex

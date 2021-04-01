@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import contextlib
+import sys
 import unittest
 import pytest
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
@@ -30,13 +32,18 @@ from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
 import ssl
 
 IS_DARWIN = platform.system().lower() == "darwin"
+IS_WINDOWS = platform.system().lower() == "windows"
 OSX_SIERRA = LooseVersion("10.12")
 if IS_DARWIN:
     IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < LooseVersion(platform.mac_ver()[0])
     SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
-    SERIAL_PORT = "/dev/ptmx"
+    if IS_WINDOWS:
+        # the use is mocked out
+        SERIAL_PORT = ""
+    else:
+        SERIAL_PORT = "/dev/ptmx"
 
 # ---------------------------------------------------------------------------#
 # Fixture
@@ -45,6 +52,15 @@ else:
 
 def mock_asyncio_gather(coro):
     return coro
+
+
+@contextlib.contextmanager
+def maybe_manage(condition, manager):
+    if condition:
+        with manager as value:
+            yield value
+    else:
+        yield None
 
 
 class TestAsynchronousClient(object):
@@ -175,6 +191,10 @@ class TestAsynchronousClient(object):
     # Test Serial client
     # -----------------------------------------------------------------------#
 
+    @pytest.mark.skipif(
+        sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
+        reason='Twisted serial requires pywin32 which is not compatible with PyPy',
+    )
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                                 ("socket", ModbusSocketFramer),
                                                 ("binary", ModbusBinaryFramer),
@@ -185,30 +205,30 @@ class TestAsynchronousClient(object):
         with patch("serial.Serial") as mock_sp:
             from twisted.internet import reactor
             from twisted.internet.serialport import SerialPort
+            with maybe_manage(sys.platform == 'win32', patch.object(SerialPort, "_finishPortSetup")):
+                with patch('twisted.internet.reactor') as mock_reactor:
 
-            with patch('twisted.internet.reactor') as mock_reactor:
+                    protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
+                                                               method=method,
+                                                               port=SERIAL_PORT,
+                                                               proto_cls=ModbusSerClientProtocol)
 
-                protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
-                                                           method=method,
-                                                           port=SERIAL_PORT,
-                                                           proto_cls=ModbusSerClientProtocol)
+                    assert (isinstance(client, SerialPort))
+                    assert (isinstance(client.protocol, ModbusSerClientProtocol))
+                    assert (0 == len(list(client.protocol.transaction)))
+                    assert (isinstance(client.protocol.framer, framer))
+                    assert (client.protocol._connected)
 
-                assert (isinstance(client, SerialPort))
-                assert (isinstance(client.protocol, ModbusSerClientProtocol))
-                assert (0 == len(list(client.protocol.transaction)))
-                assert (isinstance(client.protocol.framer, framer))
-                assert (client.protocol._connected)
+                    def handle_failure(failure):
+                        assert (isinstance(failure.exception(), ConnectionException))
 
-                def handle_failure(failure):
-                    assert (isinstance(failure.exception(), ConnectionException))
+                    d = client.protocol._buildResponse(0x00)
+                    d.addCallback(handle_failure)
 
-                d = client.protocol._buildResponse(0x00)
-                d.addCallback(handle_failure)
-
-                assert (client.protocol._connected)
-                client.protocol.close()
-                protocol.stop()
-                assert (not client.protocol._connected)
+                    assert (client.protocol._connected)
+                    client.protocol.close()
+                    protocol.stop()
+                    assert (not client.protocol._connected)
 
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                         ("socket", ModbusSocketFramer),
@@ -216,24 +236,26 @@ class TestAsynchronousClient(object):
                                         ("ascii", ModbusAsciiFramer)])
     def testSerialTornadoClient(self, method, framer):
         """ Test the serial tornado client client initialize """
-        protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
-        client = future.result()
-        assert(isinstance(client, AsyncTornadoModbusSerialClient))
-        assert(0 == len(list(client.transaction)))
-        assert(isinstance(client.framer, framer))
-        assert(client.port == SERIAL_PORT)
-        assert(client._connected)
+        from serial import Serial
+        with maybe_manage(sys.platform in ('darwin', 'win32'), patch.object(Serial, "open")):
+            protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
+            client = future.result()
+            assert(isinstance(client, AsyncTornadoModbusSerialClient))
+            assert(0 == len(list(client.transaction)))
+            assert(isinstance(client.framer, framer))
+            assert(client.port == SERIAL_PORT)
+            assert(client._connected)
 
-        def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
+            def handle_failure(failure):
+                assert(isinstance(failure.exception(), ConnectionException))
 
-        d = client._build_response(0x00)
-        d.add_done_callback(handle_failure)
+            d = client._build_response(0x00)
+            d.add_done_callback(handle_failure)
 
-        assert(client._connected)
-        client.close()
-        protocol.stop()
-        assert(not client._connected)
+            assert(client._connected)
+            client.close()
+            protocol.stop()
+            assert(not client._connected)
 
     @pytest.mark.skipif(IS_PYTHON3 , reason="requires python2.7")
     def testSerialAsyncioClientPython2(self):

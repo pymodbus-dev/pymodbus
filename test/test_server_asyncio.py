@@ -198,10 +198,19 @@ class AsyncioServerTest(asynctest.TestCase):
                 self.transport = transport
                 step1.set_result(True)
 
+<<<<<<< HEAD
         transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1', port=random_port)
         await step1
         await asyncio.sleep(0.2)
         assert len(server.active_connections) == 1
+=======
+        transport, protocol = yield from self.loop.create_connection(BasicClient, host='127.0.0.1', port=random_port)
+        yield from step1
+        # On Windows we seem to need to give this an extra chance to finish,
+        # otherwise there ends up being an active connection at the assert.
+        yield from asyncio.sleep(0.0)
+        self.assertTrue(len(server.active_connections) == 1)
+>>>>>>> dev
 
         protocol.transport.close()  # close isn't synchronous and there's no notification that it's done
         # so we have to wait a bit
@@ -234,6 +243,9 @@ class AsyncioServerTest(asynctest.TestCase):
         transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1', port=random_port)
         await step1
 
+        # On Windows we seem to need to give this an extra chance to finish,
+        # otherwise there ends up being an active connection at the assert.
+        yield from asyncio.sleep(0.0)
         server.server_close()
 
         # close isn't synchronous and there's no notification that it's done

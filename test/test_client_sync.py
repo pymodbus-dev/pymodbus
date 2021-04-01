@@ -11,6 +11,9 @@ else:  # Python 2
 import socket
 import serial
 import ssl
+import sys
+
+import pytest
 
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
@@ -45,6 +48,15 @@ class mockSocket(object):
     def setblocking(self, flag): return None
 
     def in_waiting(self): return None
+
+
+inet_pton_skipif = pytest.mark.skipif(
+    sys.platform == "win32" and sys.version_info < (3, 4),
+    reason=(
+        "Uses socket.inet_pton() which wasn't available on Windows until"
+        " 3.4.",
+    )
+)
 
 
 
@@ -128,6 +140,7 @@ class SynchronousClientTest(unittest.TestCase):
 
         self.assertEqual("ModbusUdpClient(127.0.0.1:502)", str(client))
 
+    @inet_pton_skipif
     def testUdpClientAddressFamily(self):
         ''' Test the Udp client get address family method'''
         client = ModbusUdpClient()
@@ -135,6 +148,7 @@ class SynchronousClientTest(unittest.TestCase):
                          client._get_address_family('127.0.0.1'))
         self.assertEqual(socket.AF_INET6, client._get_address_family('::1'))
 
+    @inet_pton_skipif
     def testUdpClientConnect(self):
         ''' Test the Udp client connection method'''
         with patch.object(socket, 'socket') as mock_method:
@@ -151,6 +165,7 @@ class SynchronousClientTest(unittest.TestCase):
             client = ModbusUdpClient()
             self.assertFalse(client.connect())
 
+    @inet_pton_skipif
     def testUdpClientIsSocketOpen(self):
         ''' Test the udp client is_socket_open method'''
         client = ModbusUdpClient()
@@ -448,7 +463,7 @@ class SynchronousClientTest(unittest.TestCase):
     def testSerialClientConnect(self):
         ''' Test the serial client connection method'''
         with patch.object(serial, 'Serial') as mock_method:
-            mock_method.return_value = object()
+            mock_method.return_value = MagicMock()
             client = ModbusSerialClient()
             self.assertTrue(client.connect())
 

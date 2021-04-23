@@ -186,4 +186,4 @@ async def test_logs_server_response_send(trio_tcp_client, caplog):
     with caplog.at_level(logging.DEBUG):
         await trio_tcp_client.read_holding_registers(address=0, count=1)
 
-    assert "send: [ReadRegisterResponse (1)]- b'0001000000050003020000'" in caplog.text
+    assert "send: [ReadHoldingRegistersResponse (1)]- b'0001000000050003020000'" in caplog.text

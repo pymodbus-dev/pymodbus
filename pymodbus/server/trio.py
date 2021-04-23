@@ -19,8 +19,8 @@ def execute(request, addr, context, response_send, ignore_missing_slaves, broadc
         if broadcast_enable and request.unit_id == 0:
             broadcast = True
             # if broadcasting then execute on all slave contexts, note response will be ignored
-            for unit_id in context.slaves():
-                response = request.execute(context[unit_id])
+            for unit_id, unit_context in context:
+                response = request.execute(unit_context)
         else:
             context = context[request.unit_id]
             response = request.execute(context)

@@ -5,4 +5,5 @@ if PYTHON_VERSION < (3,):
     collect_ignore = [
         "test_client_async_asyncio.py",
         "test_server_asyncio.py",
+        "test_server_trio.py",
     ]

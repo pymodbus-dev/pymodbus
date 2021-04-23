@@ -23,7 +23,8 @@ from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
 from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
-from pymodbus.client.asynchronous.trio import TrioModbusTcpClient as AsyncTrioModbusTcpClient
+if not (not IS_PYTHON3 or PYTHON_VERSION < (3, 6)):
+    from pymodbus.client.asynchronous.trio import TrioModbusTcpClient as AsyncTrioModbusTcpClient
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException

@@ -1,3 +1,7 @@
+"""
+Implementation of a Modbus Client using Trio
+--------------------------------------------
+"""
 import functools
 import logging
 

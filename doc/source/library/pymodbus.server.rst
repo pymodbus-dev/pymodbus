@@ -25,4 +25,11 @@ pymodbus\.server\.sync module
     :undoc-members:
     :show-inheritance:
 
+pymodbus\.server\.trio module
+-----------------------------
+
+.. automodule:: pymodbus.server.trio
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

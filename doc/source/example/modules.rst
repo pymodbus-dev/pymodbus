@@ -10,6 +10,8 @@ Examples
    async_asyncio_serial_client
    async_tornado_client
    async_tornado_client_serial
+   async_trio_client
+   async_trio_server
    async_twisted_client
    async_twisted_client_serial
    asynchronous_processor

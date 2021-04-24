@@ -1,6 +1,6 @@
 """
-Async Modbus Client implementation based on Twisted, tornado and asyncio
-------------------------------------------------------------------------
+Async Modbus Client implementation based on Twisted, tornado, asyncio, and Trio
+-------------------------------------------------------------------------------
 
 Example run::
 
@@ -20,6 +20,9 @@ Example run::
 
     # For asyncio based asynchronous client use
     event_loop, client = Client(schedulers.ASYNC_IO, port=5020)
+
+    # For asyncio based asynchronous client use
+    client = Client(schedulers.TRIO, port=5020)
 
     # Here event_loop is a thread which would control the backend and future is
     # a Future/deffered object which would be used to

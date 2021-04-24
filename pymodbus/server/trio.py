@@ -1,3 +1,8 @@
+"""
+Implementation of a Trio Modbus Server
+------------------------------------------
+
+"""
 from binascii import b2a_hex
 import functools
 import logging

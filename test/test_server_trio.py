@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import logging
 
@@ -8,9 +9,11 @@ from pymodbus.client.asynchronous.schedulers import TRIO
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.datastore.context import ModbusServerContext, ModbusSlaveContext
 from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.factory import ServerDecoder
+from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.server.trio import execute, tcp_server
+from pymodbus.server.trio import execute, incoming, tcp_server
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
 
 
@@ -319,3 +322,64 @@ def test_execute_handles_slave_failure(trio_server_multiunit_context):
     )
 
     assert test_request.exception_codes == [ModbusExceptions.SlaveFailure]
+
+
+@pytest.mark.trio
+async def test_incoming_closes_response_send_channel(trio_server_context):
+    server_send, server_receive = trio.open_memory_channel(max_buffer_size=1)
+    response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
+
+    server_send.close()
+
+    await incoming(
+        server_stream=server_receive,
+        framer=None,
+        context=trio_server_context,
+        response_send=response_send,
+        ignore_missing_slaves=None,
+        broadcast_enable=None,
+    )
+
+    with pytest.raises(trio.ClosedResourceError):
+        response_send.send_nowait(None)
+
+
+sample_read_data = b'\x00\x01\x00\x00\x00\x06\x00\x03\x00\r\x00\x01'
+
+
+@pytest.mark.trio
+@pytest.mark.parametrize(
+    argnames=['data_blocks'],
+    argvalues=[
+        [[sample_read_data]],
+        # TODO: can the framer actually handle this?
+        # [[sample_read_data[:5], sample_read_data[5:]]],
+        # [[bytes([byte]) for byte in sample_read_data]],
+    ],
+)
+async def test_incoming_processes(trio_server_context, data_blocks):
+    server_send, server_receive = trio.open_memory_channel(
+        max_buffer_size=len(data_blocks),
+    )
+    response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
+    framer = ModbusSocketFramer(decoder=ServerDecoder(), client=None)
+
+    with response_receive:
+        with server_send:
+            for block in data_blocks:
+                server_send.send_nowait(block)
+
+        await incoming(
+            server_stream=server_receive,
+            framer=framer,
+            context=trio_server_context,
+            response_send=response_send,
+            ignore_missing_slaves=None,
+            broadcast_enable=None,
+        )
+
+        responses = [response async for response in response_receive]
+
+    assert len(responses) == 1
+    [[response, address]] = responses
+    assert isinstance(response, ReadHoldingRegistersResponse)

@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+"""
+Pymodbus Asynchronous Client Examples
+--------------------------------------------------------------------------
+
+The following is an example of how to use the asynchronous modbus
+client implementation from pymodbus with Trio.
+
+The example is only valid on Python3.6 and above
+"""
 import contextlib
 import logging
 import sys
@@ -12,7 +22,7 @@ async def main():
     root_logger = logging.getLogger()
     handler = logging.StreamHandler(stream=sys.stdout)
     root_logger.addHandler(hdlr=handler)
-    # root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.DEBUG)
 
     client = ModbusClient(scheduler=schedulers.TRIO, host="127.0.0.1", port=5020)
 

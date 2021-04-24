@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+"""
+Pymodbus Trio Server Example
+--------------------------------------------------------------------------
 
+"""
 import logging
 
 FORMAT = (

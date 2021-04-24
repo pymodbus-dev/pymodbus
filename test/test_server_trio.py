@@ -13,7 +13,7 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.server.trio import execute, incoming, tcp_server
+from pymodbus.server.trio import Executor, incoming, tcp_server
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
 
 
@@ -230,14 +230,14 @@ def test_execute_broadcasts(trio_server_multiunit_context):
     context = trio_server_multiunit_context
 
     test_request = Request(unit_id=0)
-    execute(
-        request=test_request,
+    executor = Executor(
         addr=None,
         context=context,
         response_send=None,
         ignore_missing_slaves=False,
         broadcast_enable=True,
     )
+    executor.execute(request=test_request)
 
     assert len(test_request.executed_contexts) == len(context.slaves())
     assert test_request.exception_codes == []
@@ -256,14 +256,14 @@ def test_execute_does_not_broadcast(
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
 
     test_request = Request(unit_id=unit_id)
-    execute(
-        request=test_request,
+    executor = Executor(
         addr=None,
         context=context,
         response_send=response_send,
         ignore_missing_slaves=False,
         broadcast_enable=broadcast_enabled,
     )
+    executor.execute(request=test_request)
 
     assert len(test_request.executed_contexts) == 1
     assert test_request.exception_codes == []
@@ -275,14 +275,14 @@ def test_execute_does_ignore_missing_slaves(trio_server_multiunit_context):
     missing_unit_id = max(context.slaves()) + 1
 
     test_request = Request(unit_id=missing_unit_id)
-    execute(
-        request=test_request,
+    executor = Executor(
         addr=None,
         context=context,
         response_send=None,
         ignore_missing_slaves=True,
         broadcast_enable=True,
     )
+    executor.execute(request=test_request)
 
     assert len(test_request.executed_contexts) == 0
     assert test_request.exception_codes == []
@@ -295,14 +295,14 @@ def test_execute_does_not_ignore_missing_slaves(trio_server_multiunit_context):
     missing_unit_id = max(context.slaves()) + 1
 
     test_request = Request(unit_id=missing_unit_id)
-    execute(
-        request=test_request,
+    executor = Executor(
         addr=None,
         context=context,
         response_send=response_send,
         ignore_missing_slaves=False,
         broadcast_enable=True,
     )
+    executor.execute(request=test_request)
 
     assert test_request.exception_codes == [ModbusExceptions.GatewayNoResponse]
 
@@ -312,14 +312,14 @@ def test_execute_handles_slave_failure(trio_server_multiunit_context):
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
 
     test_request = Request(unit_id=0, fail_to_execute=True)
-    execute(
-        request=test_request,
+    executor = Executor(
         addr=None,
         context=context,
         response_send=response_send,
         ignore_missing_slaves=False,
         broadcast_enable=True,
     )
+    executor.execute(request=test_request)
 
     assert test_request.exception_codes == [ModbusExceptions.SlaveFailure]
 

@@ -25,6 +25,7 @@ class AsyncModbusTCPClient(object):
             - reactor (Twisted)
             - io_loop (Tornado)
             - async_io (asyncio)
+            - trio (Trio)
         :param scheduler: Backend to use
         :param host: Host IP address
         :param port: Port
@@ -36,11 +37,11 @@ class AsyncModbusTCPClient(object):
         """
         if not IS_PYTHON3:
             if scheduler == ASYNC_IO and PYTHON_VERSION < (3, 4):
-                logger.critical("ASYNCIO is supported only on python3")
+                logger.critical("ASYNCIO is supported only on Python >= 3.4")
                 import sys
                 sys.exit(1)
             elif scheduler == TRIO and PYTHON_VERSION < (3, 6):
-                logger.critical("TRIO is supported only on python3")
+                logger.critical("TRIO is supported only on Python >= 3.6")
                 import sys
                 sys.exit(1)
         factory_class = get_factory(scheduler)

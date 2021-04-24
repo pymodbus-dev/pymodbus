@@ -15,19 +15,24 @@ from pymodbus.utilities import hexlify_packets
 _logger = logging.getLogger(__name__)
 
 
-class EventAndValue:
+class _EventAndValue:
+    """
+    A helper class for translating between the existing callback idioms and
+    those of Trio.
+    """
     def __init__(self):
         self.event = trio.Event()
         self.value = self
 
-    def __call__(self, value):
+    def set(self, value):
+        """Assign a value and set the underlying trio event."""
         self.value = value
         self.event.set()
 
 
 class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     """
-    Trio specific implementation of asynchronous modbus client protocol.
+    Trio specific implementation of the asynchronous modbus client protocol.
     """
 
     #: Factory that created this instance.
@@ -35,6 +40,11 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     transport = None
 
     async def execute(self, request=None):
+        """
+        Executes requests asynchronously
+        :param request:
+        :return:
+        """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         _logger.debug("send: " + hexlify_packets(packet))
@@ -62,10 +72,11 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     # TODO: _connectionLost looks like functionality to have somewhere
 
     def _data_received(self, data):
-        ''' Get response, check for valid message, decode result
+        """
+        Get a response, check for a valid message, decode the result.
 
         :param data: The data returned from the server
-        '''
+        """
         _logger.debug("recv: " + hexlify_packets(data))
 
         decoded = self.framer.decode_data(data)
@@ -76,7 +87,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
     def _handle_response(self, reply, **kwargs):
         """
-        Handle the processed response and link to correct deferred
+        Handle the processed response and link to correct deferred.
 
         :param reply: The reply to process
         """
@@ -90,24 +101,24 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
     async def _build_response(self, tid):
         """
-        Helper method to return a deferred response
-        for the current request.
+        Helper method to wait for and collect the result of the passed
+        transaction ID.
 
         :param tid: The transaction identifier for this response
-        :returns: A defer linked to the latest request
+        :returns: The decoded response.
         """
         if not self._connected:
             raise ConnectionException('Client is not connected')
 
-        event_and_value = EventAndValue()
-        self.transaction.addTransaction(event_and_value, tid)
+        event_and_value = _EventAndValue()
+        self.transaction.addTransaction(event_and_value.set, tid)
         await event_and_value.event.wait()
         return event_and_value.value
 
 
 class ModbusTcpClientProtocol(BaseModbusAsyncClientProtocol):
     """
-    Trio specific implementation of asynchronous modbus client protocol.
+    Trio specific implementation of the asynchronous modbus client protocol.
     """
 
     #: Factory that created this instance.
@@ -128,11 +139,11 @@ class ModbusTcpClientProtocol(BaseModbusAsyncClientProtocol):
 
 
 class TrioModbusTcpClient:
-    """Client to connect to modbus device over TCP/IP."""
+    """Client to connect to a modbus device over TCP/IP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None):
+    def __init__(self, host=None, port=502, protocol_class=None):
         """
-        Initializes Asyncio Modbus Tcp Client
+        Initializes a Trio Modbus Tcp Client
         :param host: Host IP address
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
@@ -141,7 +152,6 @@ class TrioModbusTcpClient:
         self.protocol_class = protocol_class or ModbusTcpClientProtocol
         #: Current protocol instance.
         self.protocol = None
-        #: Event loop to use.
 
         self.host = host
         self.port = port
@@ -150,30 +160,35 @@ class TrioModbusTcpClient:
 
     @async_generator.asynccontextmanager
     async def manage_connection(self):
+        """
+        Create a context manager to open the connection to the server and
+        close it when leaving the context block.
+        :return:
+        """
         async with trio.open_nursery() as nursery:
             self.protocol = self._create_protocol()
             client_stream = await trio.open_tcp_stream(self.host, self.port)
 
             self.protocol.connection_made(transport=client_stream)
             nursery.start_soon(
-                functools.partial(self.receiver, stream=client_stream),
+                functools.partial(self._receiver, stream=client_stream),
             )
 
             yield self.protocol
 
             nursery.cancel_scope.cancel()
 
-    async def receiver(self, stream):
+    async def _receiver(self, stream):
+        """
+        Process incoming raw stream data.
+        :return:
+        """
         async for data in stream:
             self.protocol.data_received(data)
 
-            # seems like this should work due to the framer but it doesn't
-            # for d in data:
-            #     self.protocol.data_received(bytes([d]))
-
     def stop(self):
         """
-        Stops the client
+        Stop the client.
         :return:
         """
         if self.connected:
@@ -184,6 +199,7 @@ class TrioModbusTcpClient:
     def _create_protocol(self):
         """
         Factory function to create initialized protocol instance.
+        :return: The initialized protocol
         """
         protocol = self.protocol_class()
         protocol.factory = self
@@ -192,6 +208,7 @@ class TrioModbusTcpClient:
     def protocol_made_connection(self, protocol):
         """
         Protocol notification of successful connection.
+        :return:
         """
         _logger.info('Protocol made connection.')
         if not self.connected:
@@ -206,7 +223,6 @@ def init_tcp_client(proto_cls, host, port, **kwargs):
     """
     Helper function to initialize tcp client
     :param proto_cls:
-    :param loop:
     :param host:
     :param port:
     :param kwargs:

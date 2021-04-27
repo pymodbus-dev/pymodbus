@@ -1,3 +1,5 @@
+from unittest import mock
+
 import contextlib
 import functools
 import logging
@@ -12,7 +14,10 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.factory import ServerDecoder
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
-from pymodbus.register_read_message import ReadHoldingRegistersResponse
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersRequest,
+    ReadHoldingRegistersResponse,
+)
 from pymodbus.server.trio import Executor, incoming, tcp_server
 from pymodbus.register_write_message import WriteMultipleRegistersResponse
 
@@ -201,46 +206,24 @@ async def test_logs_server_response_send(trio_tcp_client, caplog):
     assert "send: [ReadHoldingRegistersResponse (1)]- b'0001000000050003020000'" in caplog.text
 
 
-class Response:
-    def __init__(self):
-        self.transaction_id = None
-        self.unit_id = None
-
-
-class Request:
-    def __init__(self, unit_id, transaction_id=0, fail_to_execute=False):
-        self.exception_codes = []
-        self.executed_contexts = []
-        self.fail_to_execute = fail_to_execute
-        self.transaction_id = transaction_id
-        self.unit_id = unit_id
-
-    def execute(self, context):
-        if self.fail_to_execute:
-            raise Exception('failing to execute for testing purposes')
-        self.executed_contexts.append(context)
-        return Response()
-
-    def doException(self, exception):
-        self.exception_codes.append(exception)
-        return Response()
-
-
 def test_execute_broadcasts(trio_server_multiunit_context):
     context = trio_server_multiunit_context
+    response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
 
-    test_request = Request(unit_id=0)
+    test_request = ReadHoldingRegistersRequest(address=1, count=1, unit=0)
+    test_request.execute = mock.Mock()
+    test_request.doException = mock.Mock()
     executor = Executor(
         addr=None,
         context=context,
-        response_send=None,
+        response_send=response_send,
         ignore_missing_slaves=False,
         broadcast_enable=True,
     )
     executor.execute(request=test_request)
 
-    assert len(test_request.executed_contexts) == len(context.slaves())
-    assert test_request.exception_codes == []
+    test_request.execute.assert_has_calls([mock.call(v) for _, v in context])
+    test_request.doException.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -255,7 +238,9 @@ def test_execute_does_not_broadcast(
     context = trio_server_multiunit_context
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
 
-    test_request = Request(unit_id=unit_id)
+    test_request = ReadHoldingRegistersRequest(address=1, count=1, unit=unit_id)
+    test_request.execute = mock.Mock()
+    test_request.doException = mock.Mock()
     executor = Executor(
         addr=None,
         context=context,
@@ -265,8 +250,10 @@ def test_execute_does_not_broadcast(
     )
     executor.execute(request=test_request)
 
-    assert len(test_request.executed_contexts) == 1
-    assert test_request.exception_codes == []
+    slave_context = dict(context)[unit_id]
+
+    test_request.execute.assert_called_with(slave_context)
+    test_request.doException.assert_not_called()
 
 
 def test_execute_does_ignore_missing_slaves(trio_server_multiunit_context):
@@ -274,7 +261,9 @@ def test_execute_does_ignore_missing_slaves(trio_server_multiunit_context):
 
     missing_unit_id = max(context.slaves()) + 1
 
-    test_request = Request(unit_id=missing_unit_id)
+    test_request = ReadHoldingRegistersRequest(address=1, count=1, unit=missing_unit_id)
+    test_request.execute = mock.Mock()
+    test_request.doException = mock.Mock()
     executor = Executor(
         addr=None,
         context=context,
@@ -284,8 +273,8 @@ def test_execute_does_ignore_missing_slaves(trio_server_multiunit_context):
     )
     executor.execute(request=test_request)
 
-    assert len(test_request.executed_contexts) == 0
-    assert test_request.exception_codes == []
+    test_request.execute.assert_not_called()
+    test_request.doException.assert_not_called()
 
 
 def test_execute_does_not_ignore_missing_slaves(trio_server_multiunit_context):
@@ -294,7 +283,9 @@ def test_execute_does_not_ignore_missing_slaves(trio_server_multiunit_context):
 
     missing_unit_id = max(context.slaves()) + 1
 
-    test_request = Request(unit_id=missing_unit_id)
+    test_request = ReadHoldingRegistersRequest(address=1, count=1, unit=missing_unit_id)
+    test_request.execute = mock.Mock()
+    test_request.doException = mock.Mock()
     executor = Executor(
         addr=None,
         context=context,
@@ -304,14 +295,17 @@ def test_execute_does_not_ignore_missing_slaves(trio_server_multiunit_context):
     )
     executor.execute(request=test_request)
 
-    assert test_request.exception_codes == [ModbusExceptions.GatewayNoResponse]
+    test_request.execute.assert_not_called()
+    test_request.doException.assert_called_once_with(ModbusExceptions.GatewayNoResponse)
 
 
 def test_execute_handles_slave_failure(trio_server_multiunit_context):
     context = trio_server_multiunit_context
     response_send, response_receive = trio.open_memory_channel(max_buffer_size=1)
 
-    test_request = Request(unit_id=0, fail_to_execute=True)
+    test_request = ReadHoldingRegistersRequest(address=1, count=1, unit=0)
+    test_request.execute = mock.Mock(side_effect=Exception)
+    test_request.doException = mock.Mock()
     executor = Executor(
         addr=None,
         context=context,
@@ -321,7 +315,8 @@ def test_execute_handles_slave_failure(trio_server_multiunit_context):
     )
     executor.execute(request=test_request)
 
-    assert test_request.exception_codes == [ModbusExceptions.SlaveFailure]
+    test_request.execute.assert_called_once()
+    test_request.doException.assert_called_once_with(ModbusExceptions.SlaveFailure)
 
 
 @pytest.mark.trio

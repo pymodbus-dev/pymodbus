@@ -39,14 +39,17 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     factory = None
     transport = None
 
+    def _build_packet(self, request):
+        request.transaction_id = self.transaction.getNextTID()
+        return self.framer.buildPacket(request)
+
     async def execute(self, request=None):
         """
         Executes requests asynchronously
         :param request:
         :return:
         """
-        request.transaction_id = self.transaction.getNextTID()
-        packet = self.framer.buildPacket(request)
+        packet = self._build_packet(request=request)
         _logger.debug("send: " + hexlify_packets(packet))
         # TODO: should we retry on trio.BusyResourceError?
         await self.transport.send_all(packet)

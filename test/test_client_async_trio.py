@@ -17,7 +17,7 @@ protocols = [ModbusTcpClientProtocol]
 
 
 def test_factory_stop():
-    mock_protocol_class = mock.MagicMock()
+    mock_protocol_class = mock.Mock()
     client = TrioModbusTcpClient(protocol_class=mock_protocol_class)
 
     assert not client.connected
@@ -25,14 +25,14 @@ def test_factory_stop():
     assert not client.connected
 
     # fake connected client:
-    client.protocol = mock.MagicMock()
+    client.protocol = mock.Mock()
     client.connected = True
 
     client.stop()
     client.protocol.transport.close.assert_called_once_with()
 
 def test_factory_protocol_made_connection():
-    mock_protocol_class = mock.MagicMock()
+    mock_protocol_class = mock.Mock()
     client = TrioModbusTcpClient(protocol_class=mock_protocol_class)
 
     assert not client.connected
@@ -47,7 +47,7 @@ def test_factory_protocol_made_connection():
 
 # @pytest.mark.trio
 # async def test_factory_start_success(self):
-#     mock_protocol_class = mock.MagicMock()
+#     mock_protocol_class = mock.Mock()
 #     client = TrioModbusTcpClient(
 #         protocol_class=mock_protocol_class,
 #         host=mock.sentinel.HOST,
@@ -66,7 +66,7 @@ def testClientProtocolConnectionMade(protocol):
     :return:
     """
     protocol = protocol(ModbusSocketFramer(ClientDecoder()))
-    transport = mock.MagicMock()
+    transport = mock.Mock()
     protocol.connection_made(transport)
     assert protocol.transport == transport
     # assert protocol.connected
@@ -118,10 +118,15 @@ def test_protocol_build_packet_packs_id():
     assert packet[6] == unit_id
 
 
+async def anoop():
+    pass
+
+
 @pytest.mark.trio
 async def test_protocol_execute_sends():
     protocol = BaseModbusAsyncClientProtocol()
-    transport = mock.AsyncMock()
+    transport = mock.Mock()
+    transport.send_all = mock.Mock(return_value=anoop())
     protocol.transport = transport
     unit_id = 0x23
     request = ReadHoldingRegistersRequest(address=1, count=1, unit=unit_id)
@@ -147,7 +152,7 @@ def test_protocol_connection_made_sets_connected():
 
 def test_protocol_connection_made_notifies_factory():
     protocol = BaseModbusAsyncClientProtocol()
-    factory = mock.MagicMock()
+    factory = mock.Mock()
     protocol.factory = factory
     protocol.connection_made(transport=object())
     factory.protocol_made_connection.assert_called_once_with(protocol)

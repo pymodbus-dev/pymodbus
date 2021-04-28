@@ -52,6 +52,10 @@ def test_factory_protocol_made_connection():
     assert client.protocol is mock.sentinel.PROTOCOL
 
 
+async def aag():
+    return trio.testing.MemoryReceiveStream()
+
+
 @pytest.mark.trio
 async def test_factory_start_success():
     mock_protocol_class = mock.Mock()
@@ -61,7 +65,7 @@ async def test_factory_start_success():
         port=mock.sentinel.PORT,
     )
 
-    with mock.patch('trio.open_tcp_stream') as patch:
+    with mock.patch('trio.open_tcp_stream', instance=True, return_value=aag()) as patch:
         async with client.manage_connection():
             patch.assert_called_once_with(mock.sentinel.HOST, mock.sentinel.PORT)
 
@@ -256,7 +260,7 @@ def test_tcp_protocol_data_received():
 @pytest.mark.trio
 async def test_tcp_client_manage_connection_is_connected():
     client = TrioModbusTcpClient(host='127.0.0.1')
-    with mock.patch('trio.open_tcp_stream'):
+    with mock.patch('trio.open_tcp_stream', instance=True, return_value=aag()):
         async with client.manage_connection():
             assert client.connected
 

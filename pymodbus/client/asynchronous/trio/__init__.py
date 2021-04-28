@@ -185,8 +185,11 @@ class TrioModbusTcpClient:
         Process incoming raw stream data.
         :return:
         """
-        async for data in stream:
-            self.protocol.data_received(data)
+        try:
+            async for data in stream:
+                self.protocol.data_received(data)
+        except Exception as e:
+            print()
 
     def stop(self):
         """

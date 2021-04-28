@@ -76,7 +76,7 @@ def testClientProtocolConnectionMade(protocol):
     transport = mock.Mock()
     protocol.connection_made(transport)
     assert protocol.transport == transport
-    # assert protocol.connected
+    assert protocol._connected
 
 
 @pytest.mark.trio

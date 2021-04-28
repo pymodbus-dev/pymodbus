@@ -39,6 +39,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     #: Factory that created this instance.
     factory = None
     transport = None
+    send_lock = None
 
     def _build_packet(self, request):
         request.transaction_id = self.transaction.getNextTID()
@@ -52,8 +53,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         packet = self._build_packet(request=request)
         _logger.debug("send: " + hexlify_packets(packet))
-        # TODO: should we retry on trio.BusyResourceError?
-        await self.transport.send_all(packet)
+        async with self.send_lock:
+            await self.transport.send_all(packet)
         with trio.fail_after(seconds=1):
             response = await self._build_response(request.transaction_id)
         return response
@@ -142,6 +143,7 @@ class ModbusTcpClientProtocol(BaseModbusAsyncClientProtocol):
     #: Factory that created this instance.
     factory = None
     transport = None
+    send_lock = None
 
     def data_received(self, data):
         """
@@ -168,6 +170,7 @@ class TrioModbusTcpClient:
         """
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusTcpClientProtocol
+        self.protocol_class.send_lock = trio.Lock()
         #: Current protocol instance.
         self.protocol = None
 

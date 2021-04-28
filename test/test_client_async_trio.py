@@ -137,6 +137,7 @@ async def anoop():
 @pytest.mark.trio
 async def test_protocol_execute_sends():
     protocol = BaseModbusAsyncClientProtocol()
+    protocol.send_lock = trio.Lock()
     transport = mock.Mock()
     transport.send_all = mock.Mock(return_value=anoop())
     protocol.transport = transport

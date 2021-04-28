@@ -86,7 +86,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
         unit = decoded.get("unit", 0)
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
-        self.data = b''
 
     def _handle_response(self, reply, **kwargs):
         """

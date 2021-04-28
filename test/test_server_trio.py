@@ -1,6 +1,5 @@
 from unittest import mock
 
-import contextlib
 import functools
 import logging
 

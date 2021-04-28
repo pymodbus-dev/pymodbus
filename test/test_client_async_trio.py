@@ -12,7 +12,10 @@ from pymodbus.client.asynchronous.trio import (
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.register_read_message import ReadHoldingRegistersRequest
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersRequest,
+    ReadHoldingRegistersResponse,
+)
 protocols = [ModbusTcpClientProtocol]
 
 
@@ -156,3 +159,83 @@ def test_protocol_connection_made_notifies_factory():
     protocol.factory = factory
     protocol.connection_made(transport=object())
     factory.protocol_made_connection.assert_called_once_with(protocol)
+
+
+def test_protocol_data_received_processes():
+    protocol = BaseModbusAsyncClientProtocol()
+    protocol.framer.processIncomingPacket = mock.Mock()
+    data = b'\x00\x01\x00\x00\x00\x05\x07\x03\x02\x9d\xdd'
+    protocol._data_received(data)
+
+    protocol.framer.processIncomingPacket.assert_called_once_with(
+        data,
+        protocol._handle_response,
+        unit=7,
+    )
+
+
+def test_protocol_handle_response_skips_none_handler():
+    protocol = BaseModbusAsyncClientProtocol()
+    transaction_id = 13
+    response = ReadHoldingRegistersResponse(
+        values=[40412],
+        transaction=transaction_id,
+    )
+    protocol.transaction.getTransaction = mock.Mock(return_value=None)
+
+    protocol._handle_response(reply=response)
+
+    protocol.transaction.getTransaction.assert_called_once_with(response.transaction_id)
+
+
+def test_protocol_handle_response_calls_handler():
+    protocol = BaseModbusAsyncClientProtocol()
+    transaction_id = 13
+    response = ReadHoldingRegistersResponse(
+        values=[40412],
+        transaction=transaction_id,
+    )
+    handler = mock.Mock()
+    protocol.transaction.getTransaction = mock.Mock(return_value=handler)
+
+    protocol._handle_response(reply=response)
+
+    protocol.transaction.getTransaction.assert_called_once_with(response.transaction_id)
+    handler.assert_called_once_with(response)
+
+
+@pytest.mark.trio
+async def test_protocol_build_response_raises_if_not_connected():
+    protocol = BaseModbusAsyncClientProtocol()
+    protocol._connected = False
+    with pytest.raises(ConnectionException):
+        await protocol._build_response(tid=None)
+
+
+@pytest.mark.trio
+async def test_protocol_build_response_adds_transaction(autojump_clock):
+    protocol = BaseModbusAsyncClientProtocol()
+    protocol._connected = True
+    protocol.transaction.addTransaction = mock.Mock()
+    transaction_id = 37
+    with trio.move_on_after(1):
+        await protocol._build_response(tid=transaction_id)
+
+    protocol.transaction.addTransaction.assert_called_once()
+    assert protocol.transaction.addTransaction.call_args.args[1] == transaction_id
+
+
+@pytest.mark.trio
+async def test_protocol_build_response_adds_transaction(autojump_clock):
+    protocol = BaseModbusAsyncClientProtocol()
+    protocol._connected = True
+    transaction_id = 37
+    value = 13
+    event_and_value = _EventAndValue()
+    event_and_value.value = value
+    event_and_value.event.set()
+    with trio.move_on_after(1):
+        with mock.patch('pymodbus.client.asynchronous.trio._EventAndValue', return_value=event_and_value):
+            result = await protocol._build_response(tid=transaction_id)
+
+    assert result == value

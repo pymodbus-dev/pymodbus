@@ -111,8 +111,8 @@ async def test_read_holding_registers(trio_tcp_client, trio_tcp_server, autojump
         address=address,
         values=[value - 5, value, value + 5],
     )
-    # TODO: is the +1 good?  seems related to ModbusSlaveContext.zero_mode probably
     response = await trio_tcp_client.read_holding_registers(
+        # plus one for since the address is the beginning of the three values
         address=address + 1,
         count=1,
     )
@@ -125,8 +125,8 @@ async def test_write_holding_registers(trio_tcp_client, trio_tcp_server, autojum
     address = 12
     value = 40413
 
-    # TODO: is the +1 good?  seems related to ModbusSlaveContext.zero_mode probably
     response = await trio_tcp_client.write_registers(
+        # plus one for since the address is the beginning of the three values
         address=address + 1,
         values=[value],
     )
@@ -344,7 +344,7 @@ sample_read_data = b'\x00\x01\x00\x00\x00\x06\x00\x03\x00\r\x00\x01'
     argnames=['data_blocks'],
     argvalues=[
         [[sample_read_data]],
-        # TODO: can the framer actually handle this?
+        # TODO: enable when the framer can handle fragmentation
         # [[sample_read_data[:5], sample_read_data[5:]]],
         # [[bytes([byte]) for byte in sample_read_data]],
     ],

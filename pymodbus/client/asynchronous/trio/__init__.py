@@ -221,12 +221,12 @@ class TrioModbusTcpClient:
                           'callback called while connected.')
 
 
-def init_tcp_client(proto_cls, host, port, **kwargs):
+def init_tcp_client(host, port=502, proto_cls=None, **kwargs):
     """
     Helper function to initialize tcp client
-    :param proto_cls:
     :param host:
     :param port:
+    :param proto_cls:
     :param kwargs:
     :return:
     """

@@ -8,6 +8,7 @@ from pymodbus.client.asynchronous.trio import (
     BaseModbusAsyncClientProtocol,
     ModbusTcpClientProtocol,
     TrioModbusTcpClient,
+    init_tcp_client,
 )
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
@@ -16,6 +17,8 @@ from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
 )
+
+
 protocols = [ModbusTcpClientProtocol]
 
 
@@ -239,3 +242,64 @@ async def test_protocol_build_response_adds_transaction(autojump_clock):
             result = await protocol._build_response(tid=transaction_id)
 
     assert result == value
+
+
+def test_tcp_protocol_data_received():
+    protocol = ModbusTcpClientProtocol()
+    protocol._data_received = mock.Mock()
+    data = object()
+    protocol.data_received(data=data)
+    protocol._data_received.assert_called_once_with(data)
+
+
+# @pytest.mark.trio
+# async def test_tcp_client_manage_connection_is_connected():
+#     client = TrioModbusTcpClient(host='127.0.0.1')
+#     async with client.manage_connection():
+#         assert client.connected
+
+
+async def ag(iterable):
+    for element in iterable:
+        yield element
+
+
+@pytest.mark.trio
+async def test_client_receiver_passes_on_data():
+    client = TrioModbusTcpClient()
+    client.protocol = mock.Mock()
+    client.protocol.data_received = mock.Mock()
+    data = [1, 1, 2, 3, 5]
+    await client._receiver(stream=ag(data))
+    client.protocol.data_received.assert_has_calls(
+        [mock.call(element) for element in data],
+    )
+
+
+def test_client_create_protocol():
+    client = TrioModbusTcpClient(protocol_class=BaseModbusAsyncClientProtocol)
+    protocol = client._create_protocol()
+    assert isinstance(protocol, BaseModbusAsyncClientProtocol)
+    assert protocol.factory is client
+
+
+def test_client_protocol_made_connection():
+    client = TrioModbusTcpClient()
+    protocol = BaseModbusAsyncClientProtocol()
+    client.protocol_made_connection(protocol=protocol)
+    assert client.connected
+    assert client.protocol is protocol
+
+
+def test_client_protocol_remade_connection_ignore():
+    client = TrioModbusTcpClient()
+    protocol = BaseModbusAsyncClientProtocol()
+    client.protocol_made_connection(protocol=protocol)
+    client.protocol_made_connection(protocol=None)
+    assert client.connected
+    assert client.protocol is protocol
+
+
+def test_init_tcp_client():
+    client = init_tcp_client(host='127.0.0.1')
+    assert isinstance(client, TrioModbusTcpClient)

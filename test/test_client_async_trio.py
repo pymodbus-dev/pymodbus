@@ -51,19 +51,20 @@ def test_factory_protocol_made_connection():
     assert client.connected
     assert client.protocol is mock.sentinel.PROTOCOL
 
-# @pytest.mark.trio
-# async def test_factory_start_success(self):
-#     mock_protocol_class = mock.Mock()
-#     client = TrioModbusTcpClient(
-#         protocol_class=mock_protocol_class,
-#         host=mock.sentinel.HOST,
-#         port=mock.sentinel.PORT,
-#     )
-#
-#     async with client.manage_connection():
-#         # mock_loop.create_connection.assert_called_once_with(mock.ANY, mock.sentinel.HOST, mock.sentinel.PORT)
-#         # assert mock_async.call_count == 0
-#         pass
+
+@pytest.mark.trio
+async def test_factory_start_success():
+    mock_protocol_class = mock.Mock()
+    client = TrioModbusTcpClient(
+        protocol_class=mock_protocol_class,
+        host=mock.sentinel.HOST,
+        port=mock.sentinel.PORT,
+    )
+
+    with mock.patch('trio.open_tcp_stream') as patch:
+        async with client.manage_connection():
+            patch.assert_called_once_with(mock.sentinel.HOST, mock.sentinel.PORT)
+
 
 @pytest.mark.parametrize("protocol", protocols)
 def testClientProtocolConnectionMade(protocol):
@@ -252,11 +253,12 @@ def test_tcp_protocol_data_received():
     protocol._data_received.assert_called_once_with(data)
 
 
-# @pytest.mark.trio
-# async def test_tcp_client_manage_connection_is_connected():
-#     client = TrioModbusTcpClient(host='127.0.0.1')
-#     async with client.manage_connection():
-#         assert client.connected
+@pytest.mark.trio
+async def test_tcp_client_manage_connection_is_connected():
+    client = TrioModbusTcpClient(host='127.0.0.1')
+    with mock.patch('trio.open_tcp_stream'):
+        async with client.manage_connection():
+            assert client.connected
 
 
 async def ag(iterable):

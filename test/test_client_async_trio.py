@@ -170,6 +170,17 @@ def test_protocol_connection_made_notifies_factory():
     factory.protocol_made_connection.assert_called_once_with(protocol)
 
 
+def test_protocol_connection_lost():
+    protocol = BaseModbusAsyncClientProtocol()
+    tid = 3
+    event_and_value = _EventAndValue()
+    protocol.transaction.addTransaction(request=event_and_value, tid=tid)
+    protocol._connectionLost('')
+    assert event_and_value.event.is_set()
+    with pytest.raises(ConnectionException):
+        event_and_value.value.unwrap()
+
+
 def test_protocol_data_received_processes():
     protocol = BaseModbusAsyncClientProtocol()
     protocol.framer.processIncomingPacket = mock.Mock()

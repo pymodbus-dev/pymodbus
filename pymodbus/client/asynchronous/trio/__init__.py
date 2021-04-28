@@ -73,7 +73,22 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         if self.factory:
             self.factory.protocol_made_connection(self)
 
-    # TODO: _connectionLost looks like functionality to have somewhere
+    def _connectionLost(self, reason):
+        """
+        Called upon a client disconnect
+
+        :param reason: The reason for the disconnect
+        """
+        _logger.debug(
+            "Client disconnected from modbus server: %s" % reason)
+        self._connected = False
+        for tid in list(self.transaction):
+            event_and_value = self.transaction.getTransaction(tid)
+            if event_and_value.event.is_set():
+                continue
+            event_and_value.set(outcome.Error(ConnectionException(
+                'Connection lost during request',
+            )))
 
     def _data_received(self, data):
         """

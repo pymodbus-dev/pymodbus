@@ -33,6 +33,7 @@ six>=1.15.0
 # if you want to use the Trio asynchronous version, uncomment these
 # -------------------------------------------------------------------
 # async_generator ~= 1.10
+# outcome ~= 1.1
 
 # -------------------------------------------------------------------
 # if you want to build the documentation, uncomment these

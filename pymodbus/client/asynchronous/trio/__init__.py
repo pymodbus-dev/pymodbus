@@ -6,6 +6,7 @@ import functools
 import logging
 
 import async_generator
+import outcome
 import trio
 
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
@@ -95,9 +96,9 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         if reply is not None:
             tid = reply.transaction_id
-            handler = self.transaction.getTransaction(tid)
-            if handler:
-                handler(reply)
+            event_and_value = self.transaction.getTransaction(tid)
+            if event_and_value is not None:
+                event_and_value.set(outcome.Value(reply))
             else:
                 _logger.debug("Unrequested message: " + str(reply))
 
@@ -113,9 +114,9 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             raise ConnectionException('Client is not connected')
 
         event_and_value = _EventAndValue()
-        self.transaction.addTransaction(event_and_value.set, tid)
+        self.transaction.addTransaction(event_and_value, tid)
         await event_and_value.event.wait()
-        return event_and_value.value
+        return event_and_value.value.unwrap()
 
 
 class ModbusTcpClientProtocol(BaseModbusAsyncClientProtocol):

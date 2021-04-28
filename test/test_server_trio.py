@@ -103,10 +103,9 @@ async def trio_tcp_client_fixture(trio_tcp_server):
 
 
 @pytest.mark.trio
-async def test_read_holding_registers(trio_tcp_client, trio_tcp_server):
+async def test_read_holding_registers(trio_tcp_client, trio_tcp_server, autojump_clock):
     address = 12
     value = 40413
-    # TODO: learn what fx is about...
     trio_tcp_server.context[0].setValues(
         fx=3,
         address=address,
@@ -122,7 +121,7 @@ async def test_read_holding_registers(trio_tcp_client, trio_tcp_server):
 
 
 @pytest.mark.trio
-async def test_write_holding_registers(trio_tcp_client, trio_tcp_server):
+async def test_write_holding_registers(trio_tcp_client, trio_tcp_server, autojump_clock):
     address = 12
     value = 40413
 
@@ -133,7 +132,6 @@ async def test_write_holding_registers(trio_tcp_client, trio_tcp_server):
     )
     assert isinstance(response, WriteMultipleRegistersResponse)
 
-    # TODO: learn what fx is about...
     server_values = trio_tcp_server.context[0].getValues(
         fx=3,
         address=address,
@@ -143,7 +141,7 @@ async def test_write_holding_registers(trio_tcp_client, trio_tcp_server):
 
 
 @pytest.mark.trio
-async def test_large_count_excepts(trio_tcp_client):
+async def test_large_count_excepts(trio_tcp_client, autojump_clock):
     response = await trio_tcp_client.read_holding_registers(
         address=0,
         count=300,
@@ -153,7 +151,7 @@ async def test_large_count_excepts(trio_tcp_client):
 
 
 @pytest.mark.trio
-async def test_invalid_client_excepts_gateway_no_response(trio_tcp_client):
+async def test_invalid_client_excepts_gateway_no_response(trio_tcp_client, autojump_clock):
     response = await trio_tcp_client.read_holding_registers(
         address=0,
         count=1,
@@ -198,7 +196,7 @@ async def test_times_out_when_broadcast_enabled_and_no_contexts(trio_tcp_client)
 
 
 @pytest.mark.trio
-async def test_logs_server_response_send(trio_tcp_client, caplog):
+async def test_logs_server_response_send(trio_tcp_client, caplog, autojump_clock):
     with caplog.at_level(logging.DEBUG):
         await trio_tcp_client.read_holding_registers(address=0, count=1)
 

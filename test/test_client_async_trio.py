@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 import trio
+import outcome
 
 from pymodbus.client.asynchronous.trio import (
     _EventAndValue,
@@ -203,13 +204,14 @@ def test_protocol_handle_response_calls_handler():
         values=[40412],
         transaction=transaction_id,
     )
-    handler = mock.Mock()
-    protocol.transaction.getTransaction = mock.Mock(return_value=handler)
+    event_and_value = _EventAndValue()
+    event_and_value.set = mock.Mock()
+    protocol.transaction.getTransaction = mock.Mock(return_value=event_and_value)
 
     protocol._handle_response(reply=response)
 
     protocol.transaction.getTransaction.assert_called_once_with(response.transaction_id)
-    handler.assert_called_once_with(response)
+    event_and_value.set.assert_called_once_with(outcome.Value(response))
 
 
 @pytest.mark.trio
@@ -240,8 +242,7 @@ async def test_protocol_build_response_adds_transaction(autojump_clock):
     transaction_id = 37
     value = 13
     event_and_value = _EventAndValue()
-    event_and_value.value = value
-    event_and_value.event.set()
+    event_and_value.set(outcome.Value(value))
     with trio.move_on_after(1):
         with mock.patch('pymodbus.client.asynchronous.trio._EventAndValue', return_value=event_and_value):
             result = await protocol._build_response(tid=transaction_id)

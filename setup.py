@@ -109,8 +109,9 @@ setup(
         ],
 
         'trio': [
-            'trio ~= 0.17.0',
             'async_generator ~= 1.10',
+            'outcome ~= 1.1',
+            'trio ~= 0.17.0',
         ],
         'repl:python_version <= "2.7"': [
             'click>=7.0',

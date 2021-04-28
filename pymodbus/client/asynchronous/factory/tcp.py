@@ -119,7 +119,7 @@ def trio_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     """
     from pymodbus.client.asynchronous.trio import init_tcp_client
     proto_cls = kwargs.get("proto_cls", None)
-    client = init_tcp_client(proto_cls, host, port)
+    client = init_tcp_client(proto_cls=proto_cls, host=host, port=port)
 
     return client
 

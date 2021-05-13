@@ -1,3 +1,8 @@
+version 2.5.2
+----------------------------------------------------------
+* Add kwarg `reset_socket` to control closing of the socket on read failures (set to `True` by default).
+* Add `--reset-socket/--no-reset-socket` to REPL client.
+
 version 2.5.1
 ----------------------------------------------------------
 * Bug fix TCP Repl server.

@@ -25,7 +25,8 @@ __________                          .______.                    _________
  |     ___<   |  |/     \ /  _ \ / __ |  | __ \|  |  \/  ___/  \_____  \_/ __ \_  __ \  \/ // __ \_  __ \\
  |    |    \___  |  Y Y  (  <_> ) /_/ |  | \_\ \  |  /\___ \   /        \  ___/|  | \/\   /\  ___/|  | \/
  |____|    / ____|__|_|  /\____/\____ |  |___  /____//____  > /_______  /\___  >__|    \_/  \___  >__|
-           \/          \/            \/      \/           \/          \/     \/                 \/"""
+           \/          \/            \/      \/           \/          \/     \/                 \/
+"""
 
 SMALL_TITLE = "Pymodbus server..."
 BOTTOM_TOOLBAR = HTML('(MODBUS SERVER) <b><style bg="ansired">Press Ctrl+C or '
@@ -80,7 +81,9 @@ CUSTOM_FORMATTERS = [
 
 
 def info(message):
-    click.secho(str(message), fg="green")
+    if not isinstance(message, str):
+        message = str(message)
+    click.secho(message, fg="green")
 
 
 def warning(message):
@@ -191,12 +194,12 @@ async def interactive_shell(server):
 
 
 async def main(server):
-    with patch_stdout():
-        try:
-            await interactive_shell(server)
-        finally:
-            pass
-        warning("Bye Bye!!!")
+    # with patch_stdout():
+    try:
+        await interactive_shell(server)
+    finally:
+        pass
+    warning("Bye Bye!!!")
 
 
 async def run_repl(server):

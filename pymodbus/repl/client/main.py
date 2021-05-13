@@ -233,9 +233,10 @@ def cli(client):
 @click.option("--retry-on-error", is_flag=True, default=False,
               help="Retry on error response")
 @click.option("--retries", default=3, help="Retry count")
+@click.option("--reset-socket/--no-reset-socket", default=True, help="Reset client socket on error")
 @click.pass_context
 def main(ctx, verbose, broadcast_support, retry_on_empty,
-         retry_on_error, retries):
+         retry_on_error, retries, reset_socket):
     if verbose:
         global log
         import logging
@@ -248,7 +249,8 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
         "broadcast": broadcast_support,
         "retry_on_empty": retry_on_empty,
         "retry_on_invalid": retry_on_error,
-        "retries": retries
+        "retries": retries,
+        "reset_socket": reset_socket
     }
 
 

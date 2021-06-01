@@ -223,8 +223,17 @@ class AsyncioServerTest(asynctest.TestCase):
 
         protocol.transport.close()  # close isn't synchronous and there's no notification that it's done
         # so we have to wait a bit
-        yield from asyncio.sleep(0.1)
-        self.assertTrue(len(server.active_connections) == 0)
+        allowed_delay = 1
+        deadline = time.monotonic() + allowed_delay
+        while time.monotonic() <= deadline:
+            yield from asyncio.sleep(0.1)
+            if len(server.active_connections) == 0:
+                break
+        else:
+            self.assertTrue(
+                len(server.active_connections) == 0,
+                msg="connections not closed within {} seconds".format(allowed_delay),
+            )
 
         server.server_close()
 

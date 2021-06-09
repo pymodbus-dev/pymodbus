@@ -132,7 +132,7 @@ class ModbusServerContext(object):
     def __contains__(self, slave):
         ''' Check if the given slave is in this list
 
-        :param slave: slave The slave to check for existance
+        :param slave: slave The slave to check for existence
         :returns: True if the slave exists, False otherwise
         '''
         if self.single and self._slaves:

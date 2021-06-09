@@ -307,7 +307,7 @@ class ModbusTcpClient(BaseModbusClient):
 
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
-            # size and the slave sends noisy data continuosly.
+            # size and the slave sends noisy data continuously.
             if time_ > end:
                 break
 
@@ -448,7 +448,7 @@ class ModbusTlsClient(ModbusTcpClient):
 
             # Timeout is reduced also if some data has been received in order
             # to avoid infinite loops when there isn't an expected response
-            # size and the slave sends noisy data continuosly.
+            # size and the slave sends noisy data continuously.
             if time_ > end:
                 break
 

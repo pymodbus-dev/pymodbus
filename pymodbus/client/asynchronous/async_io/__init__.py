@@ -32,7 +32,12 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :return:
         """
         req = self._execute(request)
-        resp = await asyncio.wait_for(req, timeout=self._timeout)
+        broadcast = (self.broadcast_enable
+                     and request.unit_id == 0)
+        if broadcast:
+            resp = b'Broadcast write sent - no response expected'
+        else:
+            resp = await asyncio.wait_for(req, timeout=self._timeout)
         return resp
 
     def connection_made(self, transport):

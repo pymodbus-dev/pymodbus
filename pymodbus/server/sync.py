@@ -400,6 +400,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                         False to treat 0 as any other unit_id
         """
+        framer = framer or ModbusTlsFramer
         self.sslctx = sslctx
         if self.sslctx is None:
             self.sslctx = ssl.create_default_context()

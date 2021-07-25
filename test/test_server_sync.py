@@ -19,6 +19,7 @@ from pymodbus.server.sync import StartTcpServer, StartTlsServer, StartUdpServer,
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.datastore import ModbusServerContext
+from pymodbus.transaction import ModbusTlsFramer
 
 from pymodbus.compat import socketserver
 
@@ -284,6 +285,7 @@ class SynchronousServerTest(unittest.TestCase):
                 identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
                 server = ModbusTlsServer(context=None, identity=identity,
                                          bind_and_activate=False)
+                self.assertIs(server.framer, ModbusTlsFramer)
                 server.server_activate()
                 self.assertIsNotNone(server.sslctx)
                 self.assertEqual(type(server.socket), ssl.SSLSocket)

@@ -376,10 +376,9 @@ class ModbusTlsServer(ModbusTcpServer):
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None,
-                 sslctx=None, certfile=None, keyfile=None, password=None,
-                 reqclicert=False, handler=None, allow_reuse_address=False,
-                 **kwargs):
+    def __init__(self, context, framer=None, identity=None,
+                 address=None, handler=None, allow_reuse_address=False,
+                 sslctx=None, certfile=None, keyfile=None, **kwargs):
         """ Overloaded initializer for the ModbusTcpServer
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -389,16 +388,14 @@ class ModbusTlsServer(ModbusTcpServer):
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param sslctx: The SSLContext to use for TLS (default None and auto
-                       create)
-        :param certfile: The cert file path for TLS (used if sslctx is None)
-        :param keyfile: The key file path for TLS (used if sslctx is None)
-        :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client's certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
+        :param sslctx: The SSLContext to use for TLS (default None and auto
+                       create)
+        :param certfile: The cert file path for TLS (used if sslctx is None)
+        :param keyfile: The key file path for TLS (used if sslctx is None)
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
@@ -630,8 +627,7 @@ def StartTcpServer(context=None, identity=None, address=None,
 
 
 def StartTlsServer(context=None, identity=None, address=None, sslctx=None,
-                   certfile=None, keyfile=None, password=None, reqclicert=False,
-                   custom_functions=[], **kwargs):
+                   certfile=None, keyfile=None, custom_functions=[], **kwargs):
     """ A factory to start and run a tls modbus server
 
     :param context: The ModbusServerContext datastore
@@ -640,16 +636,14 @@ def StartTlsServer(context=None, identity=None, address=None, sslctx=None,
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
-    :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     :param ignore_missing_slaves: True to not send errors on a request to a
                                       missing slave
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
-    server = ModbusTlsServer(context, framer, identity, address, sslctx,
-                             certfile, keyfile, password, reqclicert, **kwargs)
+    server = ModbusTlsServer(context, framer, identity, address, sslctx=sslctx,
+                             certfile=certfile, keyfile=keyfile, **kwargs)
 
     for f in custom_functions:
         server.decoder.register(f)

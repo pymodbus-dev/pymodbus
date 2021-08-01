@@ -42,8 +42,10 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
 
     if not loop.is_running():
         asyncio.set_event_loop(loop)
-        cor = init_tls_client(proto_cls, loop, host, port,
-                              sslctx, certfile, keyfile, password, framer)
+        cor = init_tls_client(proto_cls, loop, host=host, port=port,
+                              sslctx=sslctx, certfile=certfile,
+                              keyfile=keyfile, password=password,
+                              framer=framer)
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
         return loop, init_tls_client(proto_cls, loop, host, port)

@@ -452,7 +452,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
 
     async def start(self, host, port=802, sslctx=None,
                     server_hostname=None, certfile=None, keyfile=None,
-                    password=None):
+                    password=None, **kwargs):
         """
         Initiates connection to start client
         :param host: The host to connect to (default localhost)
@@ -840,7 +840,8 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
 
 
 async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
-                    server_hostname=None, framer=None, **kwargs):
+                          server_hostname=None, certfile=None, keyfile=None,
+                          password=None, framer=None, **kwargs):
     """
     Helper function to initialize tcp client
     :param proto_cls:
@@ -857,7 +858,9 @@ async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
     """
     client = ReconnectingAsyncioModbusTlsClient(protocol_class=proto_cls,
                                                 loop=loop, framer=framer)
-    await client.start(host, port, sslctx, server_hostname)
+    await client.start(host, port, sslctx, server_hostname=server_hostname,
+                       certfile=certfile, keyfile=keyfile, password=password,
+                       **kwargs)
     return client
 
 

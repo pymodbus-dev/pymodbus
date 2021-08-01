@@ -16,7 +16,6 @@ from pymodbus.server.sync import ModbusConnectedRequestHandler
 from pymodbus.server.sync import ModbusDisconnectedRequestHandler
 from pymodbus.server.sync import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer, ModbusSerialServer
 from pymodbus.server.sync import StartTcpServer, StartTlsServer, StartUdpServer, StartSerialServer
-from pymodbus.server.tls_helper import sslctx_provider
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.datastore import ModbusServerContext
@@ -279,30 +278,23 @@ class SynchronousServerTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
     # Test TLS Server
     #-----------------------------------------------------------------------#
-    def testTlsSSLCTX_Provider(self):
-        ''' test that sslctx_provider() produce SSLContext correctly '''
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
-            sslctx = sslctx_provider(reqclicert=True)
-            self.assertIsNotNone(sslctx)
-            self.assertEqual(type(sslctx), ssl.SSLContext)
-            self.assertEqual(sslctx.verify_mode, ssl.CERT_REQUIRED)
-
-            sslctx_old = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            sslctx_new = sslctx_provider(sslctx=sslctx_old)
-            self.assertEqual(sslctx_new, sslctx_old)
-
     def testTlsServerInit(self):
         ''' test that the synchronous TLS server initial correctly '''
         with patch.object(socketserver.TCPServer, 'server_activate'):
             with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
                 server = ModbusTlsServer(context=None, identity=identity,
-                                         reqclicert=True,
                                          bind_and_activate=False)
                 self.assertIs(server.framer, ModbusTlsFramer)
                 server.server_activate()
                 self.assertIsNotNone(server.sslctx)
-                self.assertEqual(server.sslctx.verify_mode, ssl.CERT_REQUIRED)
+                self.assertEqual(type(server.socket), ssl.SSLSocket)
+                server.server_close()
+                sslctx = ssl.create_default_context()
+                server = ModbusTlsServer(context=None, identity=identity,
+                                         sslctx=sslctx, bind_and_activate=False)
+                server.server_activate()
+                self.assertEqual(server.sslctx, sslctx)
                 self.assertEqual(type(server.socket), ssl.SSLSocket)
                 server.server_close()
 

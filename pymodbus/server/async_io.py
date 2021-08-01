@@ -71,17 +71,14 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            sockname = transport.get_extra_info('sockname')
-            if sockname is not None:
-                _logger.debug(
-                    "Socket [%s:%s] opened" % transport.get_extra_info(
-                        'sockname')[:2])
+            if hasattr(transport, 'get_extra_info') and transport.get_extra_info('sockname') is not None:
+                _logger.debug("Socket [%s:%s] opened" % transport.get_extra_info('sockname'))
             else:
                 if hasattr(transport, 'serial'):
                     _logger.debug(
-                        "Serial connection opened on port: {}".format(
-                            transport.serial.port)
+                        "Serial connection opened on port: {}".format(transport.serial.port)
                     )
+
             self.transport = transport
             self.running = True
             self.framer = self.server.framer(self.server.decoder, client=None)
@@ -371,12 +368,12 @@ class ModbusServerFactory:
 
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     """ Implements the modbus server protocol
+
     This uses asyncio.Protocol to implement
     the client handler for a serial connection.
     """
     def connection_made(self, transport):
         super().connection_made(transport)
-
         _logger.debug("Serial connection established")
 
     def connection_lost(self, exc):
@@ -747,7 +744,6 @@ class ModbusSerialServer(object):
         self.auto_reconnect = kwargs.get('auto_reconnect', False)
         self.reconnect_delay = kwargs.get('reconnect_delay', 2)
         self.reconnecting_task = None
-
         self.handler = kwargs.get("handler") or ModbusSingleRequestHandler
         self.framer = framer or ModbusRtuFramer
         self.decoder = ServerDecoder()
@@ -755,6 +751,11 @@ class ModbusSerialServer(object):
         self.response_manipulator = kwargs.get("response_manipulator", None)
         self.protocol = None
         self.transport = None
+        self.control = ModbusControlBlock()
+        identity = kwargs.get('identity')
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity.update(identity)
+
 
     async def start(self):
         await self._connect()
@@ -811,6 +812,62 @@ class ModbusSerialServer(object):
         while True:
             await asyncio.sleep(360)
 
+        self.protocol = None
+        self.transport = None
+
+    async def start(self):
+        await self._connect()
+    
+    def _protocol_factory(self):
+        return self.handler(self)
+
+    async def _delayed_connect(self):
+        await asyncio.sleep(self.reconnect_delay)
+        await self._connect()
+
+    async def _connect(self):
+        if self.reconnecting_task is not None:
+            self.reconnecting_task = None
+
+        try:
+            self.transport, self.protocol = await create_serial_connection(
+                asyncio.get_event_loop(),
+                self._protocol_factory,
+                self.device,
+                baudrate=self.baudrate,
+                bytesize=self.bytesize,
+                parity=self.parity,
+                stopbits=self.stopbits,
+                timeout=self.timeout
+            )
+        except serial.serialutil.SerialException as e:
+            _logger.debug("Failed to open serial port: {}".format(self.device))
+            if not self.autoreconnect:
+                raise e
+
+            self._check_reconnect()
+
+        except Exception as e:
+            _logger.debug("Exception while create")
+
+    def on_connection_lost(self):
+        if self.transport is not None:
+            self.transport.close()
+            self.transport = None
+            self.protocol = None
+
+        self._check_reconnect()
+
+    def _check_reconnect(self):
+        _logger.debug("checkking auto-reconnect {} {}".format(self.autoreconnect, self.reconnecting_task))
+        if self.autoreconnect and (self.reconnecting_task is None):
+            _logger.debug("Scheduling serial connection reconnect")
+            loop = asyncio.get_event_loop()
+            self.reconnecting_task = loop.create_task(self._delayed_connect())
+
+    async def serve_forever(self):
+        while True:
+            await asyncio.sleep(360)
 
 # --------------------------------------------------------------------------- #
 # Creation Factories
@@ -929,7 +986,7 @@ async def StartSerialServer(context=None, identity=None,
                                   missing slave
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity, **kwargs)
+    server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for f in custom_functions:
         server.decoder.register(f)
     await server.start()

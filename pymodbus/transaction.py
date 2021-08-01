@@ -247,11 +247,12 @@ class ModbusTransactionManager(object):
             time.sleep(delay)
             _logger.debug("Sleeping {}".format(delay))
         self.client.connect()
-        in_waiting = self.client._in_waiting()
-        if in_waiting:
-            if response_length == in_waiting:
-                result = self._recv(response_length, full)
-                return result, None
+        if hasattr(self.client, "_in_waiting"):
+            in_waiting = self.client._in_waiting()
+            if in_waiting:
+                if response_length == in_waiting:
+                    result = self._recv(response_length, full)
+                    return result, None
         return self._transact(packet, response_length, full=full)
 
     def _transact(self, packet, response_length,

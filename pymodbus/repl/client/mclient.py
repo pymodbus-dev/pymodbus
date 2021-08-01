@@ -155,7 +155,7 @@ class ExtendedRequestSupport(object):
         Write `value` to coil at `address`.
 
         :param address: coil offset to write to
-        :param values: list of bit values to write (comma seperated)
+        :param values: list of bit values to write (comma separated)
         :param unit: The slave unit this request is targeting
         :return:
         """
@@ -183,7 +183,7 @@ class ExtendedRequestSupport(object):
         Write list of `values` to registers starting at `address`.
 
         :param address: register offset to write to
-        :param values: list of register value to write (comma seperated)
+        :param values: list of register value to write (comma separated)
         :param unit: The slave unit this request is targeting
         :return:
         """
@@ -239,7 +239,7 @@ class ExtendedRequestSupport(object):
         :param read_address: register offset to read from
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
-        :param write_registers: List of register values to write (comma seperated)
+        :param write_registers: List of register values to write (comma separated)
         :param unit: The slave unit this request is targeting
         :return:
         """

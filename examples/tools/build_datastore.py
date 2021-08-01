@@ -33,7 +33,7 @@ class ConfigurationException(Exception):
 # Datablock Builders
 #--------------------------------------------------------------------------#
 def build_translation(option, opt, value, parser):
-    """ Converts a register dump list to a pickeld datastore
+    """ Converts a register dump list to a pickled datastore
 
     :param option: The option instance
     :param opt: The option string specified

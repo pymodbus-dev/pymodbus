@@ -273,7 +273,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 class BinaryPayloadDecoder(object):
     """
     A utility that helps decode payload messages from a modbus
-    reponse message.  It really is just a simple wrapper around
+    response message.  It really is just a simple wrapper around
     the struct module, however it saves time looking up the format
     strings. What follows is a simple example::
 

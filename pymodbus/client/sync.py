@@ -16,6 +16,7 @@ from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.transaction import ModbusTlsFramer
 from pymodbus.client.common import ModbusClientMixin
+from pymodbus.client.tls_helper import sslctx_provider
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -367,27 +368,23 @@ class ModbusTlsClient(ModbusTcpClient):
     """
 
     def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None,
-        framer=ModbusTlsFramer, **kwargs):
+        certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
+        **kwargs):
         """ Initialize a client instance
 
         :param host: The host to connect to (default localhost)
         :param port: The modbus port to connect to (default 802)
         :param sslctx: The SSLContext to use for TLS (default None and auto create)
+        :param certfile: The optional client's cert file path for TLS server request
+        :param keyfile: The optional client's key file path for TLS server request
+        :param password: The password for for decrypting client's private key file
         :param source_address: The source address tuple to bind to (default ('', 0))
         :param timeout: The timeout to use for this socket (default Defaults.Timeout)
         :param framer: The modbus framer to use (default ModbusSocketFramer)
 
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         """
-        self.sslctx = sslctx
-        if self.sslctx is None:
-            self.sslctx = ssl.create_default_context()
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            self.sslctx.options |= ssl.OP_NO_TLSv1_1
-            self.sslctx.options |= ssl.OP_NO_TLSv1
-            self.sslctx.options |= ssl.OP_NO_SSLv3
-            self.sslctx.options |= ssl.OP_NO_SSLv2
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         ModbusTcpClient.__init__(self, host, port, framer, **kwargs)
 
     def connect(self):

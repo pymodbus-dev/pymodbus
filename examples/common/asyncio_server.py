@@ -131,7 +131,13 @@ async def run_server():
 
     # Tls:
     # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
-    #                      certfile="server.crt", keyfile="server.key",
+    #                      certfile="server.crt", keyfile="server.key", password="pwd",
+    #                      allow_reuse_address=True, allow_reuse_port=True,
+    #                      defer_start=False)
+
+    # Tls and force require client's certificate for TLS full handshake:
+    # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
+    #                      certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
     #                      allow_reuse_address=True, allow_reuse_port=True,
     #                      defer_start=False)
 

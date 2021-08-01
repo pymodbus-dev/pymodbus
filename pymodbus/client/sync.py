@@ -231,7 +231,6 @@ class ModbusTcpClient(BaseModbusClient):
         time_ = time.time()
         end = time_ + self.timeout
         data = None
-        data_length = 0
         ready = select.select([self.socket], [], [], end - time_)
         if ready[0]:
             data = self.socket.recv(1024)

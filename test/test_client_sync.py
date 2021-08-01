@@ -23,7 +23,7 @@ from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.transaction import ModbusBinaryFramer
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 from pymodbus.utilities import hexlify_packets
 
 
@@ -338,6 +338,7 @@ class SynchronousClientTest(unittest.TestCase):
         # default SSLContext
         client = ModbusTlsClient()
         self.assertNotEqual(client, None)
+        self.assertIsInstance(client.framer, ModbusTlsFramer)
         self.assertTrue(client.sslctx)
 
     def testBasicSyncTlsClient(self):

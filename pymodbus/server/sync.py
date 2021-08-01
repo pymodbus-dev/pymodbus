@@ -404,8 +404,19 @@ class ModbusTlsServer(ModbusTcpServer):
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                         False to treat 0 as any other unit_id
         """
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
-                                      reqclicert)
+        framer = framer or ModbusTlsFramer
+        self.sslctx = sslctx
+        if self.sslctx is None:
+            self.sslctx = ssl.create_default_context()
+            self.sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
+            # According to MODBUS/TCP Security Protocol Specification, it is
+            # TLSv2 at least
+            self.sslctx.options |= ssl.OP_NO_TLSv1_1
+            self.sslctx.options |= ssl.OP_NO_TLSv1
+            self.sslctx.options |= ssl.OP_NO_SSLv3
+            self.sslctx.options |= ssl.OP_NO_SSLv2
+        self.sslctx.verify_mode = ssl.CERT_OPTIONAL
+        self.sslctx.check_hostname = False
 
         ModbusTcpServer.__init__(self, context, framer, identity, address,
                                  handler, allow_reuse_address, **kwargs)
@@ -684,7 +695,7 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[],
                                   missing slave
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity, **kwargs)
+    server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for f in custom_functions:
         server.decoder.register(f)
     server.serve_forever()

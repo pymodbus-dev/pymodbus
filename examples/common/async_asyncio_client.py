@@ -4,7 +4,7 @@ Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus
-client implementation from pymodbus with ayncio.
+client implementation from pymodbus with asyncio.
 
 The example is only valid on Python3.4 and above
 """

@@ -239,7 +239,7 @@ def rtuFrameSize(data, byte_count_pos):
 
 def hexlify_packets(packet):
     """
-    Returns hex representation of bytestring recieved
+    Returns hex representation of bytestring received
     :param packet:
     :return:
     """

@@ -224,7 +224,7 @@ class DeviceInformation(Singleton):
     .. attribute:: Regular
 
        In addition to basic data objects, the device provides additional
-       and optinoal identification and description data objects. All of
+       and optional identification and description data objects. All of
        the objects of this category are defined in the standard but their
        implementation is optional.
 

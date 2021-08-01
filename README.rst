@@ -89,7 +89,7 @@ For those of you that just want to get started fast, here you go::
     client.close()
 
 For more advanced examples, check out the `Examples <https://pymodbus.readthedocs.io/en/dev/source/example/modules.html>`_ included in the
-respository. If you have created any utilities that meet a specific
+repository. If you have created any utilities that meet a specific
 need, feel free to submit them so others can benefit.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,7 +113,7 @@ get lost in the noise: http://groups.google.com/group/pymodbus or
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 .. important::
-   **Note For async clients, it is recomended to use `asyncio` as the async facilitator (Python 3.6 and above).**
+   **Note For async clients, it is recommended to use `asyncio` as the async facilitator (Python 3.6 and above).**
    **If using tornado make sure the tornado version is `4.5.3`.Other versions of tornado can break the implementation**
 
 

@@ -467,7 +467,7 @@ class ModbusCountersHandler(object):
 #---------------------------------------------------------------------------#
 class ModbusControlBlock(Singleton):
     '''
-    This is a global singleotn that controls all system information
+    This is a global singleton that controls all system information
 
     All activity should be logged here and all diagnostic requests
     should come from here.

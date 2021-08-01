@@ -223,7 +223,7 @@ def build_application(server):
     """ Helper method to create and initiailze a bottle application
 
     :param server: The modbus server to pull instance data from
-    :returns: An initialied bottle application
+    :returns: An initialized bottle application
     """
     log.info("building web application")
     api = ModbusApiWebApp(server)

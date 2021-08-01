@@ -278,7 +278,7 @@ class SynchronousServerTest(unittest.TestCase):
     # Test TLS Server
     #-----------------------------------------------------------------------#
     def testTlsServerInit(self):
-        ''' test that the synchronous TLS server intial correctly '''
+        ''' test that the synchronous TLS server initial correctly '''
         with patch.object(socketserver.TCPServer, 'server_activate'):
             with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})

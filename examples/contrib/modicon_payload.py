@@ -147,7 +147,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 class ModiconPayloadDecoder(object):
     """
     A utility that helps decode modicon encoded payload
-    messages from a modbus reponse message. What follows is
+    messages from a modbus response message. What follows is
     a simple example::
 
         decoder = ModiconPayloadDecoder(payload)

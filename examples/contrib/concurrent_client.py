@@ -26,7 +26,7 @@ except ImportError:
     from futures import Future
 
 # -------------------------------------------------------------------------- #
-# import neccessary modbus libraries
+# import necessary modbus libraries
 # -------------------------------------------------------------------------- #
 from pymodbus.client.common import ModbusClientMixin
 

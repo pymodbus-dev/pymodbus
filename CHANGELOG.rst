@@ -1,3 +1,7 @@
+version 2.5.3
+----------------------------------------------------------
+* Fix retries on tcp client failing randomly.
+
 version 2.5.2
 ----------------------------------------------------------
 * Add kwarg `reset_socket` to control closing of the socket on read failures (set to `True` by default).

@@ -4,8 +4,7 @@ Implementation of a Threaded Modbus Server
 
 """
 from binascii import b2a_hex
-import serial
-from serial_asyncio import create_serial_connection
+
 import ssl
 import traceback
 
@@ -768,6 +767,8 @@ class ModbusSerialServer(object):
             self.reconnecting_task = None
 
         try:
+            import serial
+            from serial_asyncio import create_serial_connection
             self.transport, self.protocol = await create_serial_connection(
                 asyncio.get_event_loop(),
                 self._protocol_factory,

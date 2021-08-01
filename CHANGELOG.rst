@@ -3,6 +3,11 @@ version 3.0.0dev0
 * Support python3.7 and above
 * Support creating asyncio clients from with in coroutines.
 
+version 2.5.2
+----------------------------------------------------------
+* Add kwarg `reset_socket` to control closing of the socket on read failures (set to `True` by default).
+* Add `--reset-socket/--no-reset-socket` to REPL client.
+
 version 2.5.1
 ----------------------------------------------------------
 * Bug fix TCP Repl server.

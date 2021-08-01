@@ -1,6 +1,7 @@
 version 2.5.3
 ----------------------------------------------------------
 * Fix retries on tcp client failing randomly.
+* Fix Asyncio client timeout arg not being used.
 
 version 2.5.2
 ----------------------------------------------------------

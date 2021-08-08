@@ -450,9 +450,8 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         self.framer = framer
         ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop)
 
-    async def start(self, host, port=802, sslctx=None,
-                    server_hostname=None, certfile=None, keyfile=None,
-                    password=None, **kwargs):
+    async def start(self, host='localhost', port=802, sslctx=None,
+                    certfile=None, keyfile=None, password=None, **kwargs):
         """
         Initiates connection to start client
         :param host: The host to connect to (default localhost)
@@ -463,7 +462,6 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         :param password: The password for for decrypting client's private key file
         """
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.server_hostname = server_hostname
         return await ReconnectingAsyncioModbusTcpClient.start(self, host, port)
 
     async def _connect(self):
@@ -840,8 +838,8 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
 
 
 async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
-                          server_hostname=None, certfile=None, keyfile=None,
-                          password=None, framer=None, **kwargs):
+                          certfile=None, keyfile=None, password=None,
+                          framer=None, **kwargs):
     """
     Helper function to initialize tcp client
     :param proto_cls:
@@ -858,9 +856,7 @@ async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
     """
     client = ReconnectingAsyncioModbusTlsClient(protocol_class=proto_cls,
                                                 loop=loop, framer=framer)
-    await client.start(host, port, sslctx, server_hostname=server_hostname,
-                       certfile=certfile, keyfile=keyfile, password=password,
-                       **kwargs)
+    await client.start(host, port, sslctx, certfile, keyfile, password)
     return client
 
 

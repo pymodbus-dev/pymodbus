@@ -8,7 +8,7 @@ Python builtin module ssl - TLS/SSL wrapper for socket objects for the TLS
 feature.
 """
 # -------------------------------------------------------------------------- #
-# import neccessary libraries
+# import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
 from pymodbus.client.sync import ModbusTlsClient

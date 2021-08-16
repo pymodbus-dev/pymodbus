@@ -33,7 +33,7 @@ import xml.etree.ElementTree as xml
 class ModbusDatastoreSaver(object):
     """ An abstract base class that can be used to implement
     a persistance format for the modbus server context. In
-    order to use it, just complete the neccessary callbacks
+    order to use it, just complete the necessary callbacks
     (SAX style) that your persistance format needs.
     """
 

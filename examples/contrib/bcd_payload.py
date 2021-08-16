@@ -142,7 +142,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
 class BcdPayloadDecoder(object):
     """
     A utility that helps decode binary coded decimal payload
-    messages from a modbus reponse message. What follows is
+    messages from a modbus response message. What follows is
     a simple example::
 
         decoder = BcdPayloadDecoder(payload)

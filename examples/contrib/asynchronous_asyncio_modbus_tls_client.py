@@ -8,7 +8,7 @@ that uses Python builtin module ssl - TLS/SSL wrapper for socket objects for
 the TLS feature and asyncio.
 """
 # -------------------------------------------------------------------------- #
-# import neccessary libraries
+# import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient

@@ -43,15 +43,23 @@ def run_binary_payload_ex():
     # Here we demonstrate packing a random payload layout, unpacked it looks
     # like the following:
     #
-    # - a 8 byte string 'abcdefgh'
-    # - a 32 bit float 22.34
-    # - a 16 bit unsigned int 0x1234
-    # - another 16 bit unsigned int 0x5678
-    # - an 8 bit int 0x12
+    # - an 8 byte string "abcdefgh"
     # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
-    # - an 32 bit uint 0x12345678
-    # - an 32 bit signed int -0x1234
-    # - an 64 bit signed int 0x12345678
+    # - an 8 bit int -0x12
+    # - an 8 bit unsigned int 0x12
+    # - a 16 bit int -0x5678
+    # - a 16 bit unsigned int 0x1234
+    # - a 32 bit int -0x1234
+    # - a 32 bit unsigned int 0x12345678
+    # - a 16 bit float 12.34
+    # - a 16 bit float -12.34
+    # - a 32 bit float 22.34
+    # - a 32 bit float -22.34
+    # - a 64 bit int -0xDEADBEEF
+    # - a 64 bit unsigned int 0x12345678DEADBEEF
+    # - another 64 bit unsigned int 0x12345678DEADBEEF
+    # - a 64 bit float 123.45
+    # - a 64 bit float -123.45
 
     # The packing can also be applied to the word (wordorder) and bytes in each
     # word (byteorder)
@@ -123,12 +131,23 @@ def run_binary_payload_ex():
         # Here we demonstrate decoding a random register layout, unpacked it looks
         # like the following:
         #
-        # - a 8 byte string 'abcdefgh'
-        # - a 32 bit float 22.34
-        # - a 16 bit unsigned int 0x1234
-        # - another 16 bit unsigned int which we will ignore
-        # - an 8 bit int 0x12
+        # - an 8 byte string "abcdefgh"
         # - an 8 bit bitstring [0,1,0,1,1,0,1,0]
+        # - an 8 bit int -0x12
+        # - an 8 bit unsigned int 0x12
+        # - a 16 bit int -0x5678
+        # - a 16 bit unsigned int 0x1234
+        # - a 32 bit int -0x1234
+        # - a 32 bit unsigned int 0x12345678
+        # - a 16 bit float 12.34
+        # - a 16 bit float -12.34
+        # - a 32 bit float 22.34
+        # - a 32 bit float -22.34
+        # - a 64 bit int -0xDEADBEEF
+        # - a 64 bit unsigned int 0x12345678DEADBEEF
+        # - another 64 bit unsigned int which we will ignore
+        # - a 64 bit float 123.45
+        # - a 64 bit float -123.45
         # ----------------------------------------------------------------------- #
         address = 0x0
         count = len(payload)

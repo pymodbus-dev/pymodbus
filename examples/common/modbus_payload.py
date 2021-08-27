@@ -35,7 +35,7 @@ def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
     client = ModbusClient('127.0.0.1', port=5020)
     client.connect()
-    
+
     # ----------------------------------------------------------------------- #
     # If you need to build a complex message to send, you can use the payload
     # builder to simplify the packing logic.
@@ -193,7 +193,7 @@ def run_binary_payload_ex():
         print("-" * 60)
         for name, value in iteritems(decoded):
             print("%s\t" % name, hex(value) if isinstance(value, int) else value)
-    
+
     # ----------------------------------------------------------------------- #
     # close the client
     # ----------------------------------------------------------------------- #

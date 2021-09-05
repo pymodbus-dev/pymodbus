@@ -45,6 +45,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         self.transport = transport
         self._connectionMade()
+        self.__units_send = set()
 
         if self.factory:
             self.factory.protocol_made_connection(self)
@@ -135,9 +136,10 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
+        self.__units_send.add(request.unit_id)
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        _logger.debug("send: " + hexlify_packets(packet))
+        _logger.debug("send: u%d " + hexlify_packets(packet), request.unit_id)
         self.write_transport(packet)
         return self._buildResponse(request.transaction_id)
 
@@ -146,9 +148,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
         :param data: The data returned from the server
         '''
-        _logger.debug("recv: " + hexlify_packets(data))
-        unit = self.framer.decode_data(data).get("unit", 0)
-        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
+        _logger.debug("recv: %r " + hexlify_packets(data), self.__units_send)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=list(self.__units_send))
 
     def _handleResponse(self, reply, **kwargs):
         """

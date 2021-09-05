@@ -230,8 +230,8 @@ class ModbusRtuFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    _logger.debug("Not a valid unit id - {}, "
-                                  "ignoring!!".format(self._header['uid']))
+                    _logger.debug("Not a valid unit id - {} not in {}, "
+                                  "ignoring!!".format(self._header['uid'], unit))
                     self.resetFrame()
             else:
                 _logger.debug("Frame check failed, ignoring!!")

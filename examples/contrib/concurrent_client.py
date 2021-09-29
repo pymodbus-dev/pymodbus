@@ -49,8 +49,8 @@ class _Primitives(object):
     """
 
     def __init__(self, **kwargs):
-        self.queue  = kwargs.get('queue')
-        self.event  = kwargs.get('event')
+        self.queue = kwargs.get('queue')
+        self.event = kwargs.get('event')
         self.worker = kwargs.get('worker')
 
     @classmethod
@@ -83,8 +83,9 @@ class _Primitives(object):
 # We use named tuples here as they are very lightweight while giving us
 # all the benefits of classes.
 # -------------------------------------------------------------------------- #
-WorkRequest  = namedtuple('WorkRequest',  'request, work_id')
+WorkRequest  = namedtuple('WorkRequest',  'request, work_id') # noqa 241
 WorkResponse = namedtuple('WorkResponse', 'is_exception, work_id, response')
+
 
 # -------------------------------------------------------------------------- #
 # Define our worker processes
@@ -108,7 +109,8 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
         try:
             workitem = input_queue.get(timeout=1)
             log.debug("dequeue worker request: %s", workitem)
-            if not workitem: continue
+            if not workitem:
+                continue
             try:
                 log.debug("executing request on thread: %s", workitem)
                 result = client.execute(workitem.request)
@@ -118,7 +120,7 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                               "thread: %s", threading.current_thread())
                 output_queue.put(WorkResponse(True,
                                               workitem.work_id, exception))
-        except Exception as ex:
+        except Exception:
             pass
     log.info("request worker shutting down: %s", threading.current_thread())
 
@@ -142,13 +144,15 @@ def _manager_worker_process(output_queue, futures, is_shutdown):
             workitem = output_queue.get()
             future = futures.get(workitem.work_id, None)
             log.debug("dequeue manager response: %s", workitem)
-            if not future: continue
+            if not future:
+                continue
             if workitem.is_exception:
                 future.set_exception(workitem.response)
-            else: future.set_result(workitem.response)
+            else:
+                future.set_result(workitem.response)
             log.debug("updated future result: %s", future)
             del futures[workitem.work_id]
-        except Exception as ex:
+        except Exception:
             log.exception("error in manager")
     log.info("manager worker shutting down: %s", threading.current_thread())
 
@@ -195,7 +199,7 @@ class ConcurrentClient(ModbusClientMixin):
             self.workers.append(worker)
 
     def shutdown(self):
-        """ Shutdown all the workers being used to 
+        """ Shutdown all the workers being used to
         concurrently process the requests.
         """
         log.info("stating to shut down workers")
@@ -241,7 +245,7 @@ if __name__ == "__main__":
         client.connect()
         return client
 
-    client = ConcurrentClient(factory = client_factory)
+    client = ConcurrentClient(factory=client_factory)
     try:
         log.info("issuing concurrent requests")
         futures = [client.read_coils(i * 8, 8) for i in range(10)]

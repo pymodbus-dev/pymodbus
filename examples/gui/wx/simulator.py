@@ -31,12 +31,14 @@ from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 import logging
 log = logging.getLogger(__name__)
 
+
 # --------------------------------------------------------------------------- #
 # Application Error
 # --------------------------------------------------------------------------- #
 class ConfigurationException(Exception):
     """ Exception for configuration error """
     pass
+
 
 # --------------------------------------------------------------------------- #
 # Extra Global Functions
@@ -46,6 +48,7 @@ class ConfigurationException(Exception):
 def root_test():
     """ Simple test to see if we are running as root """
     return getpass.getuser() == "root"
+
 
 # --------------------------------------------------------------------------- #
 # Simulator Class
@@ -87,11 +90,11 @@ class Simulator(object):
 
     def _simulator(self):
         """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print 'listening on port', port
+                print('listening on port', port)
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -99,6 +102,7 @@ class Simulator(object):
     def run(self):
         """ Used to run the simulator """
         reactor.callWhenRunning(self._simulator)
+
 
 # --------------------------------------------------------------------------- #
 # Network reset thread
@@ -120,6 +124,7 @@ class NetworkReset(Thread):
     def run(self):
         """ Run the network reset """
         os.system("/etc/init.d/networking restart")
+
 
 # --------------------------------------------------------------------------- #
 # Main Gui Class
@@ -145,26 +150,26 @@ class SimulatorFrame(wx.Frame):
         panel = wx.Panel(self, -1)
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(wx.Button(panel, 1, 'Apply'), 1)
-        box.Add(wx.Button(panel, 2, 'Help'),  1)
+        box.Add(wx.Button(panel, 2, 'Help'), 1)
         box.Add(wx.Button(panel, 3, 'Close'), 1)
         panel.SetSizer(box)
 
         # --------------------------------------------------------------------------- #
         # Add input boxes
         # --------------------------------------------------------------------------- #
-        #self.tdevice    = self.tree.get_widget("fileTxt")
-        #self.tsubnet    = self.tree.get_widget("addressTxt")
-        #self.tnumber    = self.tree.get_widget("deviceTxt")
+        # self.tdevice    = self.tree.get_widget("fileTxt")
+        # self.tsubnet    = self.tree.get_widget("addressTxt")
+        # self.tnumber    = self.tree.get_widget("deviceTxt")
 
         # --------------------------------------------------------------------------- #
         # Tie callbacks
         # --------------------------------------------------------------------------- #
         self.Bind(wx.EVT_BUTTON, self.start_clicked, id=1)
-        self.Bind(wx.EVT_BUTTON, self.help_clicked,  id=2)
+        self.Bind(wx.EVT_BUTTON, self.help_clicked, id=2)
         self.Bind(wx.EVT_BUTTON, self.close_clicked, id=3)
 
-        #if not root_test():
-        #    self.error_dialog("This program must be run with root permissions!", True)
+        # if not root_test():
+        #     self.error_dialog("This program must be run with root permissions!", True)
 
 # --------------------------------------------------------------------------- #
 # Gui helpers
@@ -190,9 +195,10 @@ class SimulatorFrame(wx.Frame):
         """ Quick pop-up for error messages """
         log.debug("error event called")
         dialog = wx.MessageDialog(self, message, 'Error',
-            wx.OK | wx.ICON_ERROR)
+                                  wx.OK | wx.ICON_ERROR)
         dialog.ShowModel()
-        if quit: self.Destroy()
+        if quit:
+            self.Destroy()
         dialog.Destroy()
 
 # --------------------------------------------------------------------------- #
@@ -213,7 +219,7 @@ class SimulatorFrame(wx.Frame):
             net = int(octets[2]) % 255
             start = int(octets[3]) % 255
         else:
-            self.error_dialog("Invalid starting address!");
+            self.error_dialog("Invalid starting address!")
             return False
 
         # check interface size
@@ -223,10 +229,11 @@ class SimulatorFrame(wx.Frame):
                 j = i % 255
                 cmd = "/sbin/ifconfig eth0:%d %s.%d.%d" % (i, base, net, j)
                 os.system(cmd)
-                if j == 254: net = net + 1
+                if j == 254:
+                    net = net + 1
             self.restart = 1
         else:
-            self.error_dialog("Invalid number of devices!");
+            self.error_dialog("Invalid number of devices!")
             return False
 
         # check input file
@@ -235,11 +242,11 @@ class SimulatorFrame(wx.Frame):
             try:
                 handle = Simulator(config=self.file)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
-            self.error_dialog("Device to emulate does not exist!");
+            self.error_dialog("Device to emulate does not exist!")
             return False
 
     def help_clicked(self, widget):
@@ -249,10 +256,10 @@ class SimulatorFrame(wx.Frame):
         data.set_name(('Modbus Simulator'))
         data.set_authors(["Galen Collins"])
         data.set_comments(('First Select a device to simulate,\n'
-            + 'then select the starting subnet of the new devices\n'
-            + 'then select the number of device to simulate and click start'))
+                          + 'then select the starting subnet of the new devices\n'
+                          + 'then select the number of device to simulate and click start'))
         data.set_website("http://code.google.com/p/pymodbus/")
-        data.connect("response", lambda w,r: w.hide())
+        data.connect("response", lambda w, r: w.hide())
         data.run()
 
     def close_clicked(self, event):
@@ -263,6 +270,7 @@ class SimulatorFrame(wx.Frame):
     def file_changed(self, event):
         """ Callback for the filename change """
         self.file = widget.get_filename()
+
 
 class SimulatorApp(wx.App):
     """ The main wx application handle for our simulator
@@ -281,6 +289,7 @@ class SimulatorApp(wx.App):
         self.SetTopWindow(frame)
         return True
 
+
 # --------------------------------------------------------------------------- #
 # Main handle function
 # --------------------------------------------------------------------------- #
@@ -296,11 +305,12 @@ def main():
     if debug:
         try:
             log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception:
+            print("Logging is not supported on this system")
     simulator = SimulatorApp(0)
     reactor.run()
+
 
 # --------------------------------------------------------------------------- #
 # Library/Console Test

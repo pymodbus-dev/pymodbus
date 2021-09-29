@@ -23,11 +23,12 @@ from twisted.internet import error as twisted_error
 from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 # Logging
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 import logging
 log = logging.getLogger(__name__)
+
 
 # --------------------------------------------------------------------------- #
 # Application Error
@@ -42,6 +43,7 @@ class ConfigurationException(Exception):
     def __str__(self):
         return 'Configuration Error: %s' % self.string
 
+
 # --------------------------------------------------------------------------- #
 # Extra Global Functions
 # --------------------------------------------------------------------------- #
@@ -50,6 +52,7 @@ class ConfigurationException(Exception):
 def root_test():
     """ Simple test to see if we are running as root """
     return getpass.getuser() == "root"
+
 
 # --------------------------------------------------------------------------- #
 # Simulator Class
@@ -91,11 +94,11 @@ class Simulator(object):
 
     def _simulator(self):
         """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print 'listening on port', port
+                print('listening on port', port)
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -103,6 +106,7 @@ class Simulator(object):
     def run(self):
         """ Used to run the simulator """
         reactor.callWhenRunning(self._simulator)
+
 
 # --------------------------------------------------------------------------- #
 # Network reset thread
@@ -124,34 +128,7 @@ class NetworkReset(Thread):
         """ Run the network reset """
         os.system("/etc/init.d/networking restart")
 
-# --------------------------------------------------------------------------- #
-# Main Gui Class
-# --------------------------------------------------------------------------- #
-# Note, if you are using gtk2 before 2.12, the file_set signal is not
-# introduced.  To fix this, you need to apply the following patch
-# --------------------------------------------------------------------------- #
-#Index: simulator.py
-#===================================================================
-#--- simulator.py       (revision 60)
-#+++ simulator.py       (working copy)
-#@@ -158,7 +161,7 @@
-#                       "on_helpBtn_clicked"    : self.help_clicked,
-#                       "on_quitBtn_clicked"    : self.close_clicked,
-#                       "on_startBtn_clicked"   : self.start_clicked,
-#-                      "on_file_changed"       : self.file_changed,
-#+                      #"on_file_changed"      : self.file_changed,
-#                       "on_window_destroy"     : self.close_clicked
-#               }
-#               self.tree.signal_autoconnect(actions)
-#@@ -235,6 +238,7 @@
-#                       return False
-#
-#               # check input file
-#+              self.file_changed(self.tdevice)
-#               if os.path.exists(self.file):
-#                       self.grey_out()
-#                       handle = Simulator(config=self.file)
-# --------------------------------------------------------------------------- #
+
 class SimulatorApp(object):
     """
     This class implements the GUI for the flasher application
@@ -167,11 +144,11 @@ class SimulatorApp(object):
         # --------------------------------------------------------------------------- #
         # Action Handles
         # --------------------------------------------------------------------------- #
-        self.tree    = glade.XML(xml)
-        self.bstart  = self.tree.get_widget("startBtn")
-        self.bhelp   = self.tree.get_widget("helpBtn")
-        self.bclose  = self.tree.get_widget("quitBtn")
-        self.window  = self.tree.get_widget("window")
+        self.tree    = glade.XML(xml)  # noqa E221
+        self.bstart  = self.tree.get_widget("startBtn")  # noqa E221
+        self.bhelp   = self.tree.get_widget("helpBtn")  # noqa E221
+        self.bclose  = self.tree.get_widget("quitBtn")  # noqa E221
+        self.window  = self.tree.get_widget("window")  # noqa E221
         self.tdevice = self.tree.get_widget("fileTxt")
         self.tsubnet = self.tree.get_widget("addressTxt")
         self.tnumber = self.tree.get_widget("deviceTxt")
@@ -180,11 +157,11 @@ class SimulatorApp(object):
         # Actions
         # --------------------------------------------------------------------------- #
         actions = {
-            "on_helpBtn_clicked"  : self.help_clicked,
-            "on_quitBtn_clicked"  : self.close_clicked,
-            "on_startBtn_clicked" : self.start_clicked,
-            "on_file_changed"     : self.file_changed,
-            "on_window_destroy"   : self.close_clicked
+            "on_helpBtn_clicked" : self.help_clicked,  # noqa E203
+            "on_quitBtn_clicked" : self.close_clicked,  # noqa E203
+            "on_startBtn_clicked": self.start_clicked,  # noqa E203
+            "on_file_changed"    : self.file_changed,  # noqa E203
+            "on_window_destroy"  : self.close_clicked  # noqa E203
         }
         self.tree.signal_autoconnect(actions)
         if not root_test():
@@ -213,11 +190,11 @@ class SimulatorApp(object):
     def error_dialog(self, message, quit=False):
         """ Quick pop-up for error messages """
         dialog = gtk.MessageDialog(
-            parent         = self.window,
-            flags          = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-            type           = gtk.MESSAGE_ERROR,
-            buttons        = gtk.BUTTONS_CLOSE,
-            message_format = message)
+            parent         = self.window,   # noqa E221 E251
+            flags          = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,  # noqa E221 E251
+            type           = gtk.MESSAGE_ERROR,  # noqa E221 E251
+            buttons        = gtk.BUTTONS_CLOSE,  # noqa E221 E251
+            message_format = message)  # noqa E221 E251
         dialog.set_title('Error')
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
@@ -243,7 +220,7 @@ class SimulatorApp(object):
             net = int(octets[2]) % 255
             start = int(octets[3]) % 255
         else:
-            self.error_dialog("Invalid starting address!");
+            self.error_dialog("Invalid starting address!")
             return False
 
         # check interface size
@@ -253,10 +230,11 @@ class SimulatorApp(object):
                 j = i % 255
                 cmd = "/sbin/ifconfig eth0:%d %s.%d.%d" % (i, base, net, j)
                 os.system(cmd)
-                if j == 254: net = net + 1
+                if j == 254:
+                    net = net + 1
             self.restart = 1
         else:
-            self.error_dialog("Invalid number of devices!");
+            self.error_dialog("Invalid number of devices!")
             return False
 
         # check input file
@@ -265,11 +243,11 @@ class SimulatorApp(object):
             try:
                 handle = Simulator(config=self.file)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
-            self.error_dialog("Device to emulate does not exist!");
+            self.error_dialog("Device to emulate does not exist!")
             return False
 
     def help_clicked(self, widget):
@@ -279,10 +257,10 @@ class SimulatorApp(object):
         data.set_name(('Modbus Simulator'))
         data.set_authors(["Galen Collins"])
         data.set_comments(('First Select a device to simulate,\n'
-            + 'then select the starting subnet of the new devices\n'
-            + 'then select the number of device to simulate and click start'))
+                          + 'then select the starting subnet of the new devices\n'
+                          + 'then select the number of device to simulate and click start'))
         data.set_website("http://code.google.com/p/pymodbus/")
-        data.connect("response", lambda w,r: w.hide())
+        data.connect("response", lambda w, r: w.hide())
         data.run()
 
     def close_clicked(self, widget):
@@ -293,6 +271,7 @@ class SimulatorApp(object):
     def file_changed(self, widget):
         """ Callback for the filename change """
         self.file = widget.get_filename()
+
 
 # --------------------------------------------------------------------------- #
 # Main handle function
@@ -309,11 +288,12 @@ def main():
     if debug:
         try:
             log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception:
+            print("Logging is not supported on this system")
     simulator = SimulatorApp('./simulator.glade')
     reactor.run()
+
 
 # --------------------------------------------------------------------------- #
 # Library/Console Test

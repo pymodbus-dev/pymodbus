@@ -177,7 +177,7 @@ def generate_messages(framer, options):
                 packet = packet.encode('hex')
             else:
                 packet = c.encode(packet, 'hex_codec').decode('utf-8')
-        print ("{}\n".format(packet))   # because ascii ends with a \r\n
+        print("{}\n".format(packet))   # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
@@ -224,14 +224,14 @@ def main():
         try:
             modbus_log.setLevel(logging.DEBUG)
             logging.basicConfig()
-        except Exception as e:
+        except Exception:
             print("Logging is not supported on this system")
 
     framer = lookup = {
-        'tcp':    ModbusSocketFramer,
-        'rtu':    ModbusRtuFramer,
+        'tcp':    ModbusSocketFramer, # noqa E221
+        'rtu':    ModbusRtuFramer, # noqa E221
         'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer,
+        'ascii':  ModbusAsciiFramer, # noqa E221
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

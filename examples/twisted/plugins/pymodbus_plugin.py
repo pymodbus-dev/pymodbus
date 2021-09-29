@@ -12,6 +12,7 @@ from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.internal.ptwisted import InstallManagementConsole
 
+
 class Options(usage.Options):
     """
     The following are the options available to the
@@ -23,6 +24,7 @@ class Options(usage.Options):
         ["store", "s", "./datastore", "The pickled datastore to use"],
         ["console", "c", False, "Should the management console be started"],
     ]
+
 
 class ModbusServiceMaker(object):
     """
@@ -39,14 +41,14 @@ class ModbusServiceMaker(object):
         """
         if options["type"] == "tcp":
             server = internet.TCPServer
-        else: server = internet.UDPServer
-
+        else:
+            server = internet.UDPServer
 
         framer = ModbusSocketFramer
         context = self._build_context(options['store'])
         factory = ModbusServerFactory(None, framer)
         if options['console']:
-            InstallManagementConsole({ 'server' : factory })
+            InstallManagementConsole({'server': factory})
         return server(int(options["port"]), factory)
 
     def _build_context(self, path):
@@ -57,7 +59,9 @@ class ModbusServiceMaker(object):
         import pickle
         try:
             context = pickle.load(path)
-        except Exception: context = None
+        except Exception:
+            context = None
         return context
+
 
 serviceMaker = ModbusServiceMaker()

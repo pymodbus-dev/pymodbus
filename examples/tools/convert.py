@@ -11,9 +11,10 @@ from optparse import OptionParser
 from lxml import etree
 import pickle
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Helper Classes
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 class ConversionException(Exception):
     """ Exception for configuration error """
 
@@ -32,27 +33,28 @@ class ConversionException(Exception):
         """
         return 'Conversion Error: %s' % self.string
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Lxml Parser Tree
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 class ModbusXML:
     convert = {
-        'true':True,
-        'false':False,
+        'true': True,
+        'false': False,
     }
     lookup = {
-        'InputRegisters':'ir',
-        'HoldingRegisters':'hr',
-        'CoilDiscretes':'ci',
-        'InputDiscretes':'di'
+        'InputRegisters': 'ir',
+        'HoldingRegisters': 'hr',
+        'CoilDiscretes': 'ci',
+        'InputDiscretes': 'di'
     }
 
     def __init__(self):
         """
         Initializer for the parser object
         """
-        self.next  = 0
-        self.result = {'di':{}, 'ci':{}, 'ir':{}, 'hr':{}}
+        self.next = 0
+        self.result = {'di': {}, 'ci': {}, 'ir': {}, 'hr': {}}
 
     def start(self, tag, attrib):
         """
@@ -63,7 +65,8 @@ class ModbusXML:
         if tag == "value":
             try:
                 self.next = attrib['index']
-            except KeyError: raise ConversionException("Invalid XML: index")
+            except KeyError:
+                raise ConversionException("Invalid XML: index")
         elif tag in self.lookup:
             self.h = self.result[self.lookup[tag]]
 
@@ -81,7 +84,8 @@ class ModbusXML:
         """
         if data in self.convert:
             result = self.convert[data]
-        else: result = data
+        else:
+            result = data
         self.h[self.next] = data
 
     def comment(self, text):
@@ -98,9 +102,10 @@ class ModbusXML:
         """
         return self.result
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Helper Functions
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 def store_dump(result, file):
     """
     Quick function to dump a result to a pickle
@@ -114,28 +119,30 @@ def store_dump(result, file):
     with open(file, "w") as input:
         pickle.dump(result, input)
 
+
 def main():
     """
     The main function for this script
     """
     parser = OptionParser()
     parser.add_option("-o", "--output",
-                    help="The output file to write to",
-                    dest="output", default="example.store")
+                      help="The output file to write to",
+                      dest="output", default="example.store")
     parser.add_option("-i", "--input",
-                    help="File to convert to a datastore",
-                    dest="input", default="scrape.xml")
+                      help="File to convert to a datastore",
+                      dest="input", default="scrape.xml")
     try:
         (opt, arg) = parser.parse_args()
 
-        parser = etree.XMLParser(target = ModbusXML())
+        parser = etree.XMLParser(target=ModbusXML())
         result = etree.parse(opt.input, parser)
         store_dump(result, opt.output)
-        print "Created datastore: %s\n" % opt.output
+        print("Created datastore: %s\n" % opt.output)
 
-    except ConversionException, ex:
-        print ex
+    except ConversionException as ex:
+        print(ex)
         parser.print_help()
+
 
 # --------------------------------------------------------------------------- #
 # Main jumper

@@ -12,9 +12,9 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.compat import iteritems
 from collections import OrderedDict
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the client logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
@@ -35,7 +35,7 @@ def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
     client = ModbusClient('127.0.0.1', port=5020)
     client.connect()
-    
+
     # ----------------------------------------------------------------------- #
     # If you need to build a complex message to send, you can use the payload
     # builder to simplify the packing logic.
@@ -132,7 +132,7 @@ def run_binary_payload_ex():
         # ----------------------------------------------------------------------- #
         address = 0x0
         count = len(payload)
-        result = client.read_holding_registers(address, count,  unit=1)
+        result = client.read_holding_registers(address, count, unit=1)
         print("-" * 60)
         print("Registers")
         print("-" * 60)
@@ -143,11 +143,10 @@ def run_binary_payload_ex():
                                                      wordorder=wo)
 
         assert decoder._byteorder == builder._byteorder, \
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
+               "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
         assert decoder._wordorder == builder._wordorder, \
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
-
+               "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
         decoded = OrderedDict([
             ('string', decoder.decode_string(len(strng))),
@@ -174,7 +173,7 @@ def run_binary_payload_ex():
         print("-" * 60)
         for name, value in iteritems(decoded):
             print("%s\t" % name, hex(value) if isinstance(value, int) else value)
-    
+
     # ----------------------------------------------------------------------- #
     # close the client
     # ----------------------------------------------------------------------- #

@@ -3,7 +3,7 @@ Modbus Modicon Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
-that can be used in the pymodbus library. Below is a 
+that can be used in the pymodbus library. Below is a
 simple modicon encoded builder and decoder.
 """
 from struct import pack, unpack
@@ -58,7 +58,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         string = str(self)
         length = len(string)
         string = string + ('\x00' * (length % 2))
-        return [string[i:i+2] for i in range(0, length, 2)]
+        return [string[i:i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         """ Adds a collection of bits to be encoded
@@ -178,7 +178,7 @@ class ModiconPayloadDecoder(object):
         :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
-        if isinstance(registers, list): # repack into flat binary
+        if isinstance(registers, list):  # repack into flat binary
             payload = ''.join(pack('>H', x) for x in registers)
             return ModiconPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')

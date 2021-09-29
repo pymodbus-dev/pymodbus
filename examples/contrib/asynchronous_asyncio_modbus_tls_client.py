@@ -27,7 +27,7 @@ context.options |= ssl.OP_NO_TLSv1_1
 async def start_async_test(client):
     result = await client.read_coils(1, 8)
     print(result.bits)
-    await client.write_coils(1, [False]*3)
+    await client.write_coils(1, [False] * 3)
     result = await client.read_coils(1, 8)
     print(result.bits)
 

@@ -14,15 +14,16 @@ twisted is just not feasible. What follows is an example of its use:
 import asyncio
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
-from pymodbus.server.async_io import StartTlsServer
-from pymodbus.server.async_io import StartUdpServer
-from pymodbus.server.async_io import StartSerialServer
+# from pymodbus.server.async_io import StartTlsServer
+# from pymodbus.server.async_io import StartUdpServer
+# from pymodbus.server.async_io import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.datastore import ModbusSequentialDataBlock
+# from pymodbus.datastore import ModbusSparseDataBlock
 
-from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
@@ -90,10 +91,10 @@ async def run_server():
     #     store = ModbusSlaveContext(..., zero_mode=True)
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100))
 
     context = ModbusServerContext(slaves=store, single=True)
 
@@ -160,4 +161,3 @@ async def run_server():
 
 if __name__ == "__main__":
     asyncio.run(run_server())
-

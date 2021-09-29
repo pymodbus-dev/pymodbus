@@ -33,12 +33,14 @@ from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
 import logging
 log = logging.getLogger(__name__)
 
+
 # --------------------------------------------------------------------------- #
 # Application Error
 # --------------------------------------------------------------------------- #
 class ConfigurationException(Exception):
     """ Exception for configuration error """
     pass
+
 
 # --------------------------------------------------------------------------- #
 # Extra Global Functions
@@ -48,6 +50,7 @@ class ConfigurationException(Exception):
 def root_test():
     """ Simple test to see if we are running as root """
     return getpass.getuser() == "root"
+
 
 # --------------------------------------------------------------------------- #
 # Simulator Class
@@ -89,7 +92,7 @@ class Simulator(object):
 
     def _simulator(self):
         """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
@@ -101,6 +104,7 @@ class Simulator(object):
     def run(self):
         """ Used to run the simulator """
         reactor.callWhenRunning(self._simulator)
+
 
 # --------------------------------------------------------------------------- #
 # Network reset thread
@@ -122,6 +126,8 @@ class NetworkReset(Thread):
         """ Run the network reset """
         os.system("/etc/init.d/networking restart")
 
+
+
 # --------------------------------------------------------------------------- #
 # Main Gui Class
 # --------------------------------------------------------------------------- #
@@ -129,8 +135,8 @@ class SimulatorFrame(Frame):
     """
     This class implements the GUI for the flasher application
     """
-    subnet  = 205
-    number  = 1
+    subnet = 205
+    number = 1
     restart = 0
 
     def __init__(self, master, font):
@@ -148,13 +154,13 @@ class SimulatorFrame(Frame):
         button.pack(side=LEFT, padx=15)
         self._widgets.append(button)
 
-        button = Button(frame, text="Help",  command=self.help_clicked, font=font)
+        button = Button(frame, text="Help", command=self.help_clicked, font=font)
         button.pack(side=LEFT, padx=15)
         self._widgets.append(button)
 
         button = Button(frame, text="Close", command=self.close_clicked, font=font)
         button.pack(side=LEFT, padx=15)
-        #self._widgets.append(button) # we don't want to grey this out
+        # self._widgets.append(button) # we don't want to grey this out
 
         # --------------------------------------------------------------------------- #
         # Initialize Input Fields
@@ -189,8 +195,8 @@ class SimulatorFrame(Frame):
         entry.grid(row=2, column=1, pady=10)
         self._widgets.append(entry)
 
-        #if not root_test():
-        #    self.error_dialog("This program must be run with root permissions!", True)
+        # if not root_test():
+        #     self.error_dialog("This program must be run with root permissions!", True)
 
 # --------------------------------------------------------------------------- #
 # Gui helpers
@@ -212,15 +218,16 @@ class SimulatorFrame(Frame):
     def error_dialog(self, message, quit=False):
         """ Quick pop-up for error messages """
         dialog = gtk.MessageDialog(
-            parent          = self.window,
-            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-            type            = gtk.MESSAGE_ERROR,
-            buttons         = gtk.BUTTONS_CLOSE,
-            message_format  = message)
+            parent          = self.window,  # noqa E221 E251
+            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,  # noqa E221 E251
+            type            = gtk.MESSAGE_ERROR,  # noqa E221 E251
+            buttons         = gtk.BUTTONS_CLOSE,  # noqa E221 E251
+            message_format  = message)  # noqa E221 E251
         dialog.set_title('Error')
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
-        else: dialog.connect("response", lambda w, r: w.destroy())
+        else:
+            dialog.connect("response", lambda w, r: w.destroy())
         dialog.show()
 
 # --------------------------------------------------------------------------- #
@@ -241,7 +248,7 @@ class SimulatorFrame(Frame):
             net = int(octets[2]) % 255
             start = int(octets[3]) % 255
         else:
-            self.error_dialog("Invalid starting address!");
+            self.error_dialog("Invalid starting address!")
             return False
 
         # check interface size
@@ -251,10 +258,11 @@ class SimulatorFrame(Frame):
                 j = i % 255
                 cmd = "/sbin/ifconfig eth0:%d %s.%d.%d" % (i, base, net, j)
                 os.system(cmd)
-                if j == 254: net = net + 1
+                if j == 254:
+                    net = net + 1
             self.restart = 1
         else:
-            self.error_dialog("Invalid number of devices!");
+            self.error_dialog("Invalid number of devices!")
             return False
 
         # check input file
@@ -268,7 +276,7 @@ class SimulatorFrame(Frame):
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
-            self.error_dialog("Device to emulate does not exist!");
+            self.error_dialog("Device to emulate does not exist!")
             return False
 
     def help_clicked(self):
@@ -278,21 +286,22 @@ class SimulatorFrame(Frame):
         data.set_name(('Modbus Simulator'))
         data.set_authors(["Galen Collins"])
         data.set_comments(('First Select a device to simulate,\n'
-            + 'then select the starting subnet of the new devices\n'
-            + 'then select the number of device to simulate and click start'))
+                          + 'then select the starting subnet of the new devices\n'
+                          + 'then select the number of device to simulate and click start'))
         data.set_website("http://code.google.com/p/pymodbus/")
-        data.connect("response", lambda w,r: w.hide())
+        data.connect("response", lambda w, r: w.hide())
         data.run()
 
     def close_clicked(self):
         """ Callback for close button """
-        #self.destroy_interfaces()
+        # self.destroy_interfaces()
         reactor.stop()
 
     def file_clicked(self):
         """ Callback for the filename change """
         file = OpenFilename()
         self.tdevice_value.set(file)
+
 
 class SimulatorApp(object):
     """ The main wx application handle for our simulator
@@ -304,9 +313,10 @@ class SimulatorApp(object):
 
         :param master: The master window to connect to
         """
-        font  = ('Helvetica', 12, 'normal')
+        font = ('Helvetica', 12, 'normal')
         frame = SimulatorFrame(master, font)
         frame.pack()
+
 
 # --------------------------------------------------------------------------- #
 # Main handle function
@@ -323,12 +333,13 @@ def main():
     if debug:
         try:
             log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception as e:
-    	    print("Logging is not supported on this system")
+            logging.basicConfig()
+        except Exception:
+            print("Logging is not supported on this system")
     simulator = SimulatorApp(root)
     root.title("Modbus Simulator")
     reactor.run()
+
 
 # --------------------------------------------------------------------------- #
 # Library/Console Test

@@ -13,7 +13,7 @@ from threading import Thread
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
 from pymodbus.server.asynchronous import ModbusServerFactory
-from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
 # -------------------------------------------------------------------------- #
 # Logging
@@ -83,7 +83,7 @@ class Simulator(object):
 
     def _simulator(self):
         """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))

@@ -3,6 +3,7 @@ import unittest
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from base_runner import Runner
 
+
 class SynchronousTcpClient(Runner, unittest.TestCase):
     """
     These are the integration tests for the synchronous
@@ -18,6 +19,7 @@ class SynchronousTcpClient(Runner, unittest.TestCase):
         """ Cleans up the test environment """
         self.client.close()
         self.shutdown()
+
 
 # --------------------------------------------------------------------------- #
 # Main

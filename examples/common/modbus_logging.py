@@ -34,7 +34,7 @@ if __name__ == "__main__":
     log = logging.getLogger('pymodbus')
     log.setLevel(logging.ERROR)
     handlers = [
-        Handlers.RotatingFileHandler("logfile", maxBytes=1024*1024),
+        Handlers.RotatingFileHandler("logfile", maxBytes=1024 * 1024),
         Handlers.SMTPHandler("mx.host.com",
                              "pymodbus@host.com",
                              ["support@host.com"],
@@ -43,4 +43,3 @@ if __name__ == "__main__":
         Handlers.DatagramHandler('localhost', 12345),
     ]
     [log.addHandler(h) for h in handlers]
-

@@ -63,9 +63,9 @@ class ModbusDatastoreSaver(object):
                 self.handle_slave_end(slave_name)
             self.handle_save_end()
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # predefined state machine callbacks
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     def handle_save_start(self):
         pass
 
@@ -163,10 +163,10 @@ class XmlDatastoreSaver(ModbusDatastoreSaver):
     _store = None
 
     STORE_NAMES = {
-        'i' : 'input-registers',
-        'd' : 'discretes',
-        'h' : 'holding-registers',
-        'c' : 'coils',
+        'i': 'input-registers',
+        'd': 'discretes',
+        'h': 'holding-registers',
+        'c': 'coils',
     }
 
     def handle_save_start(self):

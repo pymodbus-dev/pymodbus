@@ -13,9 +13,10 @@ from optparse import OptionParser
 from pymodbus.datastore import ModbusSequentialDataBlock as seqblock
 from pymodbus.datastore import ModbusSparseDataBlock as sparblock
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Helper Classes
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 class ConfigurationException(Exception):
     """ Exception for configuration error """
 
@@ -29,9 +30,10 @@ class ConfigurationException(Exception):
     def __str__(self):
         return 'Configuration Error: %s' % self.string
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Datablock Builders
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 def build_translation(option, opt, value, parser):
     """ Converts a register dump list to a pickled datastore
 
@@ -44,12 +46,13 @@ def build_translation(option, opt, value, parser):
     try:
         with open(value, "r") as input:
             data = pickle.load(input)
-    except:
+    except Exception:
         raise ConfigurationException("File Not Found %s" % value)
 
     with open(value + ".trans", "w") as output:
-        pass # TODO
-    exit() # So we don't start a dummy build
+        pass  # TODO
+    exit()  # So we don't start a dummy build
+
 
 def build_conversion(option, opt, value, parser):
     """ This converts a pickled datastore to a register dump list
@@ -62,41 +65,44 @@ def build_conversion(option, opt, value, parser):
     try:
         with open(value, "r") as input:
             data = pickle.load(input)
-    except:
+    except Exception:
         raise ConfigurationException("File Not Found %s" % value)
 
     with open(value + ".dump", "w") as output:
-        for dk,dv in data.iteritems():
+        for dk, dv in data.iteritems():
             output.write("[ %s ]\n\n" % dk)
 
             # handle sequential
             if isinstance(dv.values, list):
-                output.write("\n".join(["[%d] = %d" % (vk,vv)
-                        for vk,vv in enumerate(dv.values)]))
+                output.write("\n".join(["[%d] = %d" % (vk, vv)
+                             for vk, vv in enumerate(dv.values)]))
 
             # handle sparse
             elif isinstance(data[k].values, dict):
-                output.write("\n".join(["[%d] = %d" % (vk,vv)
-                        for vk,vv in dv.values.iteritems()]))
-            else: raise ConfigurationException("Datastore is corrupted %s" % value)
+                output.write("\n".join(["[%d] = %d" % (vk, vv)
+                             for vk, vv in dv.values.iteritems()]))
+            else:
+                raise ConfigurationException("Datastore is corrupted %s" % value)
             output.write("\n\n")
-    exit() # So we don't start a dummy build
+    exit()  # So we don't start a dummy build
 
-#--------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # Datablock Builders
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 def build_sequential():
     """
     This builds a quick mock sequential datastore with 100 values for each
     discrete, coils, holding, and input bits/registers.
     """
     data = {
-        'di' : seqblock(0, [bool(x) for x in range(1, 100)]),
-        'ci' : seqblock(0, [bool(not x) for x in range(1, 100)]),
-        'hr' : seqblock(0, [int(x) for x in range(1, 100)]),
-        'ir' : seqblock(0, [int(2*x) for x in range(1, 100)]),
+        'di': seqblock(0, [bool(x) for x in range(1, 100)]),
+        'ci': seqblock(0, [bool(not x) for x in range(1, 100)]),
+        'hr': seqblock(0, [int(x) for x in range(1, 100)]),
+        'ir': seqblock(0, [int(2 * x) for x in range(1, 100)]),
     }
     return data
+
 
 def build_sparse():
     """
@@ -104,32 +110,33 @@ def build_sparse():
     discrete, coils, holding, and input bits/registers.
     """
     data = {
-        'di' : sparblock([bool(x) for x in range(1, 100)]),
-        'ci' : sparblock([bool(not x) for x in range(1, 100)]),
-        'hr' : sparblock([int(x) for x in range(1, 100)]),
-        'ir' : sparblock([int(2*x) for x in range(1, 100)]),
+        'di': sparblock([bool(x) for x in range(1, 100)]),
+        'ci': sparblock([bool(not x) for x in range(1, 100)]),
+        'hr': sparblock([int(x) for x in range(1, 100)]),
+        'ir': sparblock([int(2 * x) for x in range(1, 100)]),
     }
     return data
+
 
 def main():
     """ The main function for this script """
     parser = OptionParser()
     parser.add_option("-o", "--output",
-        help="The output file to write to",
-        dest="file", default="example.store")
+                      help="The output file to write to",
+                      dest="file", default="example.store")
     parser.add_option("-t", "--type",
-        help="The type of block to create (sequential,sparse)",
-        dest="type", default="sparse")
+                      help="The type of block to create (sequential,sparse)",
+                      dest="type", default="sparse")
     parser.add_option("-c", "--convert",
-        help="Convert a file datastore to a register dump",
-        type="string",
-        action="callback", callback=build_conversion)
+                      help="Convert a file datastore to a register dump",
+                      type="string",
+                      action="callback", callback=build_conversion)
     parser.add_option("-r", "--restore",
-        help="Convert a register dump to a file datastore",
-        type="string",
-        action="callback", callback=build_translation)
+                      help="Convert a register dump to a file datastore",
+                      type="string",
+                      action="callback", callback=build_translation)
     try:
-        (opt, arg) = parser.parse_args() # so we can catch the csv callback
+        (opt, arg) = parser.parse_args()  # so we can catch the csv callback
 
         if opt.type == "sparse":
             result = build_sparse()
@@ -140,11 +147,12 @@ def main():
 
         with open(opt.file, "w") as output:
             pickle.dump(result, output)
-        print "Created datastore: %s\n" % opt.file
+        print("Created datastore: %s\n" % opt.file)
 
-    except ConfigurationException, ex:
-        print ex
+    except ConfigurationException as ex:
+        print(ex)
         parser.print_help()
+
 
 # --------------------------------------------------------------------------- #
 # Main jumper

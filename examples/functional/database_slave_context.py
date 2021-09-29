@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-import unittest, os
+import os
+import unittest
 from pymodbus.datastore.database import DatabaseSlaveContext
 from base_context import ContextRunner
+
 
 class DatabaseSlaveContextTest(ContextRunner, unittest.TestCase):
     """
@@ -13,7 +15,8 @@ class DatabaseSlaveContextTest(ContextRunner, unittest.TestCase):
     def setUp(self):
         """ Initializes the test environment """
         path = './' + self.__database.split('///')[1]
-        if os.path.exists(path): os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
         self.context = DatabaseSlaveContext(database=self.__database)
         self.initialize()
 
@@ -21,6 +24,7 @@ class DatabaseSlaveContextTest(ContextRunner, unittest.TestCase):
         """ Cleans up the test environment """
         self.context._connection.close()
         self.shutdown()
+
 
 # --------------------------------------------------------------------------- #
 # Main

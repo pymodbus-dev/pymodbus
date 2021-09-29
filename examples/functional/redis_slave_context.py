@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 import unittest
-import os
-from subprocess import Popen as execute
 from pymodbus.datastore.modredis import RedisSlaveContext
 from base_context import ContextRunner
+
 
 class RedisSlaveContextTest(ContextRunner, unittest.TestCase):
     """
@@ -13,7 +12,7 @@ class RedisSlaveContextTest(ContextRunner, unittest.TestCase):
 
     def setUp(self):
         """ Initializes the test environment """
-        self.context = RedisSlaveContext() # the redis client will block, so no wait needed
+        self.context = RedisSlaveContext()  # the redis client will block, so no wait needed
         self.initialize("redis-server")
 
     def tearDown(self):
@@ -21,6 +20,7 @@ class RedisSlaveContextTest(ContextRunner, unittest.TestCase):
         self.server.kill()
         self.fnull.close()
         self.shutdown()
+
 
 # --------------------------------------------------------------------------- #
 # Main

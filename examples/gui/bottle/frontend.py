@@ -284,7 +284,7 @@ if __name__ == '__main__':
     identity = ModbusDeviceIdentification()
     identity.VendorName  = 'Pymodbus'  # noqa E221
     identity.ProductCode = 'PM'
-    identity.VendorUrl   = 'http://github.com/riptideio/pymodbus/' # noqa E221
+    identity.VendorUrl   = 'https://github.com/riptideio/pymodbus/' # noqa E221
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName   = 'Pymodbus Server' # noqa E221
     identity.MajorMinorRevision = version.short()

@@ -13,33 +13,33 @@ _logger.setLevel(logging.DEBUG)
 logging.basicConfig()
 
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # Sunspec Common Constants
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 class SunspecDefaultValue(object):
     """ A collection of constants to indicate if
     a value is not implemented.
     """
-    Signed16        = 0x8000
-    Unsigned16      = 0xffff
-    Accumulator16   = 0x0000
-    Scale           = 0x8000
-    Signed32        = 0x80000000
-    Float32         = 0x7fc00000
-    Unsigned32      = 0xffffffff
-    Accumulator32   = 0x00000000
-    Signed64        = 0x8000000000000000
-    Unsigned64      = 0xffffffffffffffff
-    Accumulator64   = 0x0000000000000000
-    String          = '\x00'
+    Signed16        = 0x8000  # noqa E221
+    Unsigned16      = 0xffff  # noqa E221
+    Accumulator16   = 0x0000  # noqa E221
+    Scale           = 0x8000  # noqa E221
+    Signed32        = 0x80000000  # noqa E221
+    Float32         = 0x7fc00000  # noqa E221
+    Unsigned32      = 0xffffffff  # noqa E221
+    Accumulator32   = 0x00000000  # noqa E221
+    Signed64        = 0x8000000000000000  # noqa E221
+    Unsigned64      = 0xffffffffffffffff  # noqa E221
+    Accumulator64   = 0x0000000000000000  # noqa E221
+    String          = '\x00'  # noqa E221
 
 
 class SunspecStatus(object):
     """ Indicators of the current status of a
     sunspec device
     """
-    Normal  = 0x00000000
-    Error   = 0xfffffffe
+    Normal  = 0x00000000  # noqa E221
+    Error   = 0xfffffffe  # noqa E221
     Unknown = 0xffffffff
 
 
@@ -54,73 +54,73 @@ class SunspecModel(object):
     """ Assigned device indentifiers that are pre-assigned
     by the sunspec protocol.
     """
-    #---------------------------------------------
+    # ---------------------------------------------
     # 0xx Common Models
-    #---------------------------------------------
-    CommonBlock                              = 1
-    AggregatorBlock                          = 2
+    # ---------------------------------------------
+    CommonBlock                              = 1  # noqa E221
+    AggregatorBlock                          = 2  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 1xx Inverter Models
-    #---------------------------------------------
-    SinglePhaseIntegerInverter               = 101
-    SplitPhaseIntegerInverter                = 102
-    ThreePhaseIntegerInverter                = 103
-    SinglePhaseFloatsInverter                = 103
-    SplitPhaseFloatsInverter                 = 102
-    ThreePhaseFloatsInverter                 = 103
+    # ---------------------------------------------
+    SinglePhaseIntegerInverter               = 101  # noqa E221
+    SplitPhaseIntegerInverter                = 102  # noqa E221
+    ThreePhaseIntegerInverter                = 103  # noqa E221
+    SinglePhaseFloatsInverter                = 103  # noqa E221
+    SplitPhaseFloatsInverter                 = 102  # noqa E221
+    ThreePhaseFloatsInverter                 = 103  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 2xx Meter Models
-    #---------------------------------------------
-    SinglePhaseMeter                         = 201
-    SplitPhaseMeter                          = 201
-    WyeConnectMeter                          = 201
-    DeltaConnectMeter                        = 201
+    # ---------------------------------------------
+    SinglePhaseMeter                         = 201  # noqa E221
+    SplitPhaseMeter                          = 201  # noqa E221
+    WyeConnectMeter                          = 201  # noqa E221
+    DeltaConnectMeter                        = 201  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 3xx Environmental Models
-    #---------------------------------------------
-    BaseMeteorological                       = 301
-    Irradiance                               = 302
-    BackOfModuleTemperature                  = 303
-    Inclinometer                             = 304
-    Location                                 = 305
-    ReferencePoint                           = 306
-    BaseMeteorological                       = 307
-    MiniMeteorological                       = 308
+    # ---------------------------------------------
+    BaseMeteorological                       = 301  # noqa E221
+    Irradiance                               = 302  # noqa E221
+    BackOfModuleTemperature                  = 303  # noqa E221
+    Inclinometer                             = 304  # noqa E221
+    Location                                 = 305  # noqa E221
+    ReferencePoint                           = 306  # noqa E221
+    BaseMeteorological                       = 307  # noqa E221
+    MiniMeteorological                       = 308  # noqa E221
 
-    #---------------------------------------------
-    # 4xx String Combiner Models             
-    #---------------------------------------------
-    BasicStringCombiner                      = 401
-    AdvancedStringCombiner                   = 402
+    # ---------------------------------------------
+    # 4xx String Combiner Models
+    # ---------------------------------------------
+    BasicStringCombiner                      = 401  # noqa E221
+    AdvancedStringCombiner                   = 402  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 5xx Panel Models
-    #---------------------------------------------
-    PanelFloat                               = 501
-    PanelInteger                             = 502
+    # ---------------------------------------------
+    PanelFloat                               = 501  # noqa E221
+    PanelInteger                             = 502  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 641xx Outback Blocks
-    #---------------------------------------------
-    OutbackDeviceIdentifier                  = 64110
-    OutbackChargeController                  = 64111
-    OutbackFMSeriesChargeController          = 64112
-    OutbackFXInverterRealTime                = 64113
-    OutbackFXInverterConfiguration           = 64114
-    OutbackSplitPhaseRadianInverter          = 64115
-    OutbackRadianInverterConfiguration       = 64116
-    OutbackSinglePhaseRadianInverterRealTime = 64117
-    OutbackFLEXNetDCRealTime                 = 64118
-    OutbackFLEXNetDCConfiguration            = 64119
-    OutbackSystemControl                     = 64120
+    # ---------------------------------------------
+    OutbackDeviceIdentifier                  = 64110  # noqa E221
+    OutbackChargeController                  = 64111  # noqa E221
+    OutbackFMSeriesChargeController          = 64112  # noqa E221
+    OutbackFXInverterRealTime                = 64113  # noqa E221
+    OutbackFXInverterConfiguration           = 64114  # noqa E221
+    OutbackSplitPhaseRadianInverter          = 64115  # noqa E221
+    OutbackRadianInverterConfiguration       = 64116  # noqa E221
+    OutbackSinglePhaseRadianInverterRealTime = 64117  # noqa E221
+    OutbackFLEXNetDCRealTime                 = 64118  # noqa E221
+    OutbackFLEXNetDCConfiguration            = 64119  # noqa E221
+    OutbackSystemControl                     = 64120  # noqa E221
 
-    #---------------------------------------------
+    # ---------------------------------------------
     # 64xxx Vender Extension Block
-    #---------------------------------------------
-    EndOfSunSpecMap                          = 65535
+    # ---------------------------------------------
+    EndOfSunSpecMap                          = 65535  # noqa E221
 
     @classmethod
     def lookup(klass, code):
@@ -131,7 +131,7 @@ class SunspecModel(object):
         :returns: The device model name, or None if none available
         """
         values = dict((v, k) for k, v in klass.__dict__.iteritems()
-            if not callable(v))
+                      if not callable(v))
         return values.get(code, None)
 
 
@@ -139,14 +139,14 @@ class SunspecOffsets(object):
     """ Well known offsets that are used throughout
     the sunspec protocol
     """
-    CommonBlock             = 40000
-    CommonBlockLength       = 69
-    AlternateCommonBlock    = 50000
+    CommonBlock             = 40000  # noqa E221
+    CommonBlockLength       = 69  # noqa E221
+    AlternateCommonBlock    = 50000  # noqa E221
 
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # Common Functions
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 def defer_or_apply(func):
     """ Decorator to apply an adapter method
     to a result regardless if it is a deferred
@@ -177,9 +177,9 @@ def create_sunspec_sync_client(host):
     return client
 
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # Sunspec Client
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 class SunspecDecoder(BinaryPayloadDecoder):
     """ A decoder that deals correctly with the sunspec
     binary format.
@@ -219,11 +219,11 @@ class SunspecClient(object):
 
         :returns: True if successful, false otherwise
         """
-        decoder  = self.get_device_block(self.offset, 2)
+        decoder = self.get_device_block(self.offset, 2)
         if decoder.decode_32bit_uint() == SunspecIdentifier.Sunspec:
             return True
         self.offset = SunspecOffsets.AlternateCommonBlock
-        decoder  = self.get_device_block(self.offset, 2)
+        decoder = self.get_device_block(self.offset, 2)
         return decoder.decode_32bit_uint() == SunspecIdentifier.Sunspec
 
     def get_common_block(self):
@@ -232,20 +232,20 @@ class SunspecClient(object):
 
         :returns: A dictionary of the common block information
         """
-        length  = SunspecOffsets.CommonBlockLength
+        length = SunspecOffsets.CommonBlockLength
         decoder = self.get_device_block(self.offset, length)
         return {
-            'SunSpec_ID':       decoder.decode_32bit_uint(),
-            'SunSpec_DID':      decoder.decode_16bit_uint(),
-            'SunSpec_Length':   decoder.decode_16bit_uint(),
-            'Manufacturer':     decoder.decode_string(size=32),
-            'Model':            decoder.decode_string(size=32),
-            'Options':          decoder.decode_string(size=16),
-            'Version':          decoder.decode_string(size=16),
-            'SerialNumber':     decoder.decode_string(size=32),
-            'DeviceAddress':    decoder.decode_16bit_uint(),
-            'Next_DID':         decoder.decode_16bit_uint(),
-            'Next_DID_Length':  decoder.decode_16bit_uint(),
+            'SunSpec_ID':       decoder.decode_32bit_uint(),  # noqa E221
+            'SunSpec_DID':      decoder.decode_16bit_uint(),  # noqa E221
+            'SunSpec_Length':   decoder.decode_16bit_uint(),  # noqa E221
+            'Manufacturer':     decoder.decode_string(size=32),  # noqa E221
+            'Model':            decoder.decode_string(size=32),  # noqa E221
+            'Options':          decoder.decode_string(size=16),  # noqa E221
+            'Version':          decoder.decode_string(size=16),  # noqa E221
+            'SerialNumber':     decoder.decode_string(size=32),  # noqa E221
+            'DeviceAddress':    decoder.decode_16bit_uint(),  # noqa E221
+            'Next_DID':         decoder.decode_16bit_uint(),  # noqa E221
+            'Next_DID_Length':  decoder.decode_16bit_uint(),  # noqa E221
         }
 
     def get_device_block(self, offset, size):
@@ -276,14 +276,14 @@ class SunspecClient(object):
         """
         blocks = []
         offset = self.offset + 2
-        model  = SunspecModel.CommonBlock
+        model = SunspecModel.CommonBlock
         while model != SunspecModel.EndOfSunSpecMap:
             decoder = self.get_device_block(offset, 2)
-            model   = decoder.decode_16bit_uint()
-            length  = decoder.decode_16bit_uint()
+            model = decoder.decode_16bit_uint()
+            length = decoder.decode_16bit_uint()
             blocks.append({
-                'model' : model,
-                'name'  : SunspecModel.lookup(model),
+                'model': model,
+                'name': SunspecModel.lookup(model),
                 'length': length,
                 'offset': offset + length + 2
             })
@@ -291,9 +291,9 @@ class SunspecClient(object):
         return blocks
 
 
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # A quick test runner
-#------------------------------------------------------------
+# ------------------------------------------------------------
 if __name__ == "__main__":
     client = create_sunspec_sync_client("YOUR.HOST.GOES.HERE")
 

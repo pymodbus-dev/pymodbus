@@ -20,7 +20,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 # --------------------------------------------------------------------------- #
 # import the twisted libraries we need
@@ -59,20 +59,20 @@ def updating_writer(a):
 
 
 def run_updating_server():
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # initialize your data store
-    # ----------------------------------------------------------------------- # 
-    
+    # ----------------------------------------------------------------------- #
+
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100))
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'pymodbus'
     identity.ProductCode = 'PM'
@@ -80,13 +80,13 @@ def run_updating_server():
     identity.ProductName = 'pymodbus Server'
     identity.ModelName = 'pymodbus Server'
     identity.MajorMinorRevision = version.short()
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     time = 5  # 5 seconds delay
     loop = LoopingCall(f=updating_writer, a=(context,))
-    loop.start(time, now=False) # initially delay by time
+    loop.start(time, now=False)  # initially delay by time
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 

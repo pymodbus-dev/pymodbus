@@ -7,25 +7,25 @@ The asynchronous server is a high performance implementation using the
 twisted library as its backend.  This allows it to scale to many thousands
 of nodes which can be helpful for testing monitoring software.
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.server.asynchronous import StartUdpServer
-from pymodbus.server.asynchronous import StartSerialServer
+# from pymodbus.server.asynchronous import StartUdpServer
+# from pymodbus.server.asynchronous import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import (ModbusRtuFramer,
-                                  ModbusAsciiFramer,
-                                  ModbusBinaryFramer)
+# from pymodbus.transaction import (ModbusRtuFramer,
+#                                   ModbusAsciiFramer,
+#                                   ModbusBinaryFramer)
 from custom_message import CustomModbusRequest
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the service logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -35,9 +35,9 @@ log.setLevel(logging.DEBUG)
 
 
 def run_async_server():
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # initialize your data store
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # The datastores only respond to the addresses that they are initialized to
     # Therefore, if you initialize a DataBlock to addresses from 0x00 to 0xFF,
     # a request to 0x100 will respond with an invalid address exception.
@@ -88,21 +88,21 @@ def run_async_server():
     # will map to (1-8)::
     #
     #     store = ModbusSlaveContext(..., zero_mode=True)
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100))
     store.register(CustomModbusRequest.function_code, 'cm',
                    ModbusSequentialDataBlock(0, [17] * 100))
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
     identity.ProductCode = 'PM'
@@ -110,10 +110,10 @@ def run_async_server():
     identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
     identity.MajorMinorRevision = version.short()
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
 
     # TCP Server
 
@@ -149,4 +149,3 @@ def run_async_server():
 
 if __name__ == "__main__":
     run_async_server()
-

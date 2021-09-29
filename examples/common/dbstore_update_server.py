@@ -22,7 +22,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 import random
 
 # --------------------------------------------------------------------------- #
@@ -50,10 +50,10 @@ def updating_writer(a):
     :param arguments: The input arguments to the call
     """
     log.debug("Updating the database context")
-    context  = a[0]
-    readfunction = 0x03 # read holding registers
+    context = a[0]
+    readfunction = 0x03  # read holding registers
     writefunction = 0x10
-    slave_id = 0x01 # slave address
+    slave_id = 0x01  # slave address
     count = 50
 
     # import pdb; pdb.set_trace()
@@ -101,5 +101,3 @@ def run_dbstore_update_server():
 
 if __name__ == "__main__":
     run_dbstore_update_server()
-
-

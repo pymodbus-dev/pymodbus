@@ -6,7 +6,7 @@ Pymodbus Server With Custom Datablock Side Effect
 This is an example of performing custom logic after a value has been
 written to the datastore.
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from __future__ import print_function
@@ -15,20 +15,20 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the service logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # create your custom data block here
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 
 
 class CustomDataBlock(ModbusSparseDataBlock):
@@ -52,11 +52,11 @@ class CustomDataBlock(ModbusSparseDataBlock):
 
 
 def run_custom_db_server():
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # initialize your data store
-    # ----------------------------------------------------------------------- # 
-    block  = CustomDataBlock([0]*100)
-    store  = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
+    # ----------------------------------------------------------------------- #
+    block = CustomDataBlock([0] * 100)
+    store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
@@ -82,5 +82,3 @@ def run_custom_db_server():
 
 if __name__ == "__main__":
     run_custom_db_server()
-
-

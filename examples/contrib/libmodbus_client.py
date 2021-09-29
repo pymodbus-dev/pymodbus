@@ -72,7 +72,8 @@ compiler.cdef("""
     int modbus_write_bits(modbus_t *ctx, int addr, int nb, const uint8_t *data);
     int modbus_write_register(modbus_t *ctx, int reg_addr, int value);
     int modbus_write_registers(modbus_t *ctx, int addr, int nb, const uint16_t *data);
-    int modbus_write_and_read_registers(modbus_t *ctx, int write_addr, int write_nb, const uint16_t *src, int read_addr, int read_nb, uint16_t *dest);
+    int modbus_write_and_read_registers(modbus_t *ctx, int write_addr, int write_nb,
+                                        const uint16_t *src, int read_addr, int read_nb, uint16_t *dest);
 
     int modbus_mask_write_register(modbus_t *ctx, int addr, uint16_t and_mask, uint16_t or_mask);
     int modbus_send_raw_request(modbus_t *ctx, uint8_t *raw_req, int raw_req_length);
@@ -88,7 +89,7 @@ compiler.cdef("""
     int modbus_receive_from(modbus_t *ctx, int sockfd, uint8_t *req);
     int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
 """)
-LIB = compiler.dlopen('modbus') # create our bindings
+LIB = compiler.dlopen('modbus')  # create our bindings
 
 # -------------------------------------------------------------------------- #
 # helper utilites
@@ -147,9 +148,9 @@ class LibmodbusLevel1Client(object):
             :param baudrate: The baud rate to use for the serial device
             :returns: A new level1 client
         """
-        port     = kwargs.get('port', '/dev/ttyS0')
+        port     = kwargs.get('port', '/dev/ttyS0')  # noqa E221
         baudrate = kwargs.get('baud', Defaults.Baudrate)
-        parity   = kwargs.get('parity', Defaults.Parity)
+        parity   = kwargs.get('parity', Defaults.Parity) # noqa E221
         bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         client = LIB.modbus_new_rtu(port, baudrate, parity, bytesize, stopbits)
@@ -166,7 +167,7 @@ class LibmodbusLevel1Client(object):
         :param client: The underlying client instance to operate with.
         """
         self.client = client
-        self.slave  = Defaults.UnitId
+        self.slave = Defaults.UnitId
 
     def set_slave(self, slave):
         """ Set the current slave to operate against.
@@ -310,8 +311,8 @@ class LibmodbusLevel1Client(object):
         write_count = len(write_registers)
         read_result = compiler.new("uint16_t[]", read_count)
         self.__execute(LIB.modbus_write_and_read_registers,
-            write_address, write_count, write_registers,
-            read_address, read_count, read_result)
+                       write_address, write_count, write_registers,
+                       read_address, read_count, read_result)
         return read_result
 
 # -------------------------------------------------------------------------- #
@@ -332,24 +333,24 @@ class LibmodbusClient(ModbusClientMixin):
 
     __methods = {
         'ReadCoilsRequest': lambda c, r: c.read_bits(r.address, r.count),
-        'ReadDiscreteInputsRequest': lambda c, r: c.read_input_bits(r.address, 
+        'ReadDiscreteInputsRequest': lambda c, r: c.read_input_bits(r.address,
                                                                     r.count),
-        'WriteSingleCoilRequest': lambda c, r: c.write_bit(r.address, 
+        'WriteSingleCoilRequest': lambda c, r: c.write_bit(r.address,
                                                            r.value),
-        'WriteMultipleCoilsRequest': lambda c, r: c.write_bits(r.address, 
+        'WriteMultipleCoilsRequest': lambda c, r: c.write_bits(r.address,
                                                                r.values),
-        'WriteSingleRegisterRequest': lambda c, r: c.write_register(r.address, 
+        'WriteSingleRegisterRequest': lambda c, r: c.write_register(r.address,
                                                                     r.value),
-        'WriteMultipleRegistersRequest': 
+        'WriteMultipleRegistersRequest':
             lambda c, r: c.write_registers(r.address, r.values),
-        'ReadHoldingRegistersRequest': 
+        'ReadHoldingRegistersRequest':
             lambda c, r: c.read_registers(r.address, r.count),
-        'ReadInputRegistersRequest': 
+        'ReadInputRegistersRequest':
             lambda c, r: c.read_input_registers(r.address, r.count),
-        'ReadWriteMultipleRegistersRequest': 
-            lambda c, r: c.read_and_write_registers(r.read_address, 
-                                                    r.read_count, 
-                                                    r.write_address, 
+        'ReadWriteMultipleRegistersRequest':
+            lambda c, r: c.read_and_write_registers(r.read_address,
+                                                    r.read_count,
+                                                    r.write_address,
                                                     r.write_registers),
     }
 
@@ -359,23 +360,23 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __adapters = {
-        'ReadCoilsRequest': 
+        'ReadCoilsRequest':
             lambda tx, rx: ReadCoilsResponse(list(rx)),
-        'ReadDiscreteInputsRequest': 
+        'ReadDiscreteInputsRequest':
             lambda tx, rx: ReadDiscreteInputsResponse(list(rx)),
-        'WriteSingleCoilRequest': 
+        'WriteSingleCoilRequest':
             lambda tx, rx: WriteSingleCoilResponse(tx.address, rx),
-        'WriteMultipleCoilsRequest': 
+        'WriteMultipleCoilsRequest':
             lambda tx, rx: WriteMultipleCoilsResponse(tx.address, rx),
-        'WriteSingleRegisterRequest': 
+        'WriteSingleRegisterRequest':
             lambda tx, rx: WriteSingleRegisterResponse(tx.address, rx),
-        'WriteMultipleRegistersRequest': 
+        'WriteMultipleRegistersRequest':
             lambda tx, rx: WriteMultipleRegistersResponse(tx.address, rx),
-        'ReadHoldingRegistersRequest': 
+        'ReadHoldingRegistersRequest':
             lambda tx, rx: ReadHoldingRegistersResponse(list(rx)),
-        'ReadInputRegistersRequest': 
+        'ReadInputRegistersRequest':
             lambda tx, rx: ReadInputRegistersResponse(list(rx)),
-        'ReadWriteMultipleRegistersRequest': 
+        'ReadWriteMultipleRegistersRequest':
             lambda tx, rx: ReadWriteMultipleRegistersResponse(list(rx)),
     }
 

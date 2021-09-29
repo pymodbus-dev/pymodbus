@@ -8,18 +8,18 @@ to clients about the device. This is part of the MODBUS specification, and
 uses the MEI 0x2B 0x0E request / response. This example creates an otherwise
 empty server.
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
-from pymodbus.server.sync import StartUdpServer
-from pymodbus.server.sync import StartSerialServer
+# from pymodbus.server.sync import StartUdpServer
+# from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 
 # --------------------------------------------------------------------------- #
 # import versions of libraries which we will use later on for the example
@@ -27,9 +27,9 @@ from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 from pymodbus import __version__ as pymodbus_version
 from serial import __version__ as pyserial_version
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the service logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -44,12 +44,12 @@ def run_server():
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext()
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
     identity.ProductCode = 'PM'
@@ -90,7 +90,7 @@ def run_server():
 
     # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # Tcp:
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
@@ -100,11 +100,11 @@ def run_server():
 
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
-    
+
     # Ascii:
     # StartSerialServer(context, identity=identity,
     #                    port='/dev/ttyp0', timeout=1)
-    
+
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
     #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)

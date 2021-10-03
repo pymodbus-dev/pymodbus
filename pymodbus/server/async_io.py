@@ -712,12 +712,13 @@ class ModbusSerialServer(object):
 
     handler = None
 
-    def __init__(self, context, framer=None, **kwargs):  # pragma: no cover
+    def __init__(self, context, framer=None, identity=None, **kwargs):  # pragma: no cover
         """ Overloaded initializer for the socket server
-        If the identify structure is not passed in, the ModbusControlBlock
+        If the identity structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
         :param context: The ModbusServerContext datastore
         :param framer: The framer strategy to use
+        :param identity: An optional identify structure
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use
         :param bytesize: The bytesize of the serial messages
@@ -753,6 +754,10 @@ class ModbusSerialServer(object):
         self.decoder = ServerDecoder()
         self.context = context or ModbusServerContext()
         self.response_manipulator = kwargs.get("response_manipulator", None)
+        self.control = ModbusControlBlock()
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity.update(identity)
+
         self.protocol = None
         self.transport = None
 

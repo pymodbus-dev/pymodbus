@@ -212,7 +212,7 @@ def register_api_routes(application, register):
     log.info("installing application routes:")
     methods = inspect.getmembers(application)
     methods = filter(lambda n: not n[0].startswith('_'), methods)
-    for method, func in dict(methods).iteritems():
+    for method, func in dict(methods).items():
         pieces = method.split('_')
         verb, path = pieces[0], pieces[1:]
         args = inspect.getargspec(func).args[1:]

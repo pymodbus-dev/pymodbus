@@ -22,7 +22,7 @@ class ContextWrapper(object):
             self._enter()
         return self if not self._factory else self._factory()
 
-    def __exit__(self, args):
+    def __exit__(self, *args):
         if self._leave:
             self._leave()
 

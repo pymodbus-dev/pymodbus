@@ -2,6 +2,9 @@ version 2.5.3
 ----------------------------------------------------------
 * Fix retries on tcp client failing randomly.
 * Fix Asyncio client timeout arg not being used.
+* Treat exception codes as valid responses
+* Fix examples (modbus_payload)
+* Add missing identity argument to async ModbusSerialServer
 
 version 2.5.2
 ----------------------------------------------------------

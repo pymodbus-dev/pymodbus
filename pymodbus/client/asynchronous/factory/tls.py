@@ -28,8 +28,8 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
     """
     import asyncio
     from pymodbus.client.asynchronous.async_io import init_tls_client
-    loop = kwargs.get("loop") or asyncio.new_event_loop()
-    proto_cls = kwargs.get("proto_cls", None)
+    loop = kwargs.pop("loop", None) or asyncio.new_event_loop()
+    proto_cls = kwargs.pop("proto_cls", None)
     if not loop.is_running():
         asyncio.set_event_loop(loop)
         cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,

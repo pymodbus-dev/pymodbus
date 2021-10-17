@@ -85,7 +85,7 @@ class Configuration:
         """ Parses the config file and creates a server context
         """
         handle = pickle.load(self.file)
-        try:  # test for existance, or bomb
+        try:  # test for existence, or bomb
             dsd = handle['di']
             csd = handle['ci']
             hsd = handle['hr']

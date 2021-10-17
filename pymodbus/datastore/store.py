@@ -241,7 +241,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         return klass(values)
 
     def reset(self):
-        ''' Reset the store to the intially provided defaults'''
+        ''' Reset the store to the initially provided defaults'''
         self.values = self.default_value.copy()
 
     def validate(self, address, count=1):

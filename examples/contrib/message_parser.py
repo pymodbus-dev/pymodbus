@@ -53,7 +53,7 @@ class Decoder(object):
     def decode(self, message):
         """ Attempt to decode the supplied message
 
-        :param message: The messge to decode
+        :param message: The message to decode
         """
         if IS_PYTHON3:
             value = message if self.encode else c.encode(message, 'hex_codec')

@@ -7,7 +7,7 @@ The following is a full example of a continuous client processor. Feel
 free to use it as a skeleton guide in implementing your own.
 """
 # --------------------------------------------------------------------------- #
-# import the neccessary modules
+# import the necessary modules
 # --------------------------------------------------------------------------- #
 from twisted.internet import serialport, reactor
 from twisted.internet.protocol import ClientFactory
@@ -46,7 +46,7 @@ UNIT = 0x01
 # --------------------------------------------------------------------------- #
 # an example custom protocol
 # --------------------------------------------------------------------------- #
-# Here you can perform your main procesing loop utilizing defereds and timed
+# Here you can perform your main processing loop utilizing defereds and timed
 # callbacks.
 # --------------------------------------------------------------------------- #
 class ExampleProtocol(ModbusClientProtocol):

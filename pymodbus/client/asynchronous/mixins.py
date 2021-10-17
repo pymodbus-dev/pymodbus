@@ -55,7 +55,7 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
         self.host = host
         self.port = port
         self.source_address = source_address or ("", 0)
-        self.timeout = timeout if timeout is not None else Defaults.Timeout
+        self._timeout = timeout if timeout is not None else Defaults.Timeout
 
 
 class AsyncModbusSerialClientMixin(BaseAsyncModbusClient):

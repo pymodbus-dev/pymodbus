@@ -52,8 +52,7 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     return protocol, future
 
 
-def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                     source_address=None, timeout=None, **kwargs):
+def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     """
     Factory to create asyncio based asynchronous udp clients
     :param host: Host IP address
@@ -66,9 +65,9 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     """
     import asyncio
     from pymodbus.client.asynchronous.async_io import init_udp_client
-    loop = kwargs.get("loop") or asyncio.get_event_loop()
-    proto_cls = kwargs.get("proto_cls", None)
-    cor = init_udp_client(proto_cls, loop, host, port)
+    loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
+    proto_cls = kwargs.pop("proto_cls", None)
+    cor = init_udp_client(proto_cls, loop, host, port, **kwargs)
     if not loop.is_running():
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     else:

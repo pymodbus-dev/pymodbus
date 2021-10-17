@@ -9,9 +9,8 @@ import ssl
 
 from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 
-_logger = logging.getLogger()
 if IS_PYTHON3:  # Python 3
-    from asynctest.mock import patch, Mock, MagicMock
+    from asynctest.mock import patch, Mock
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async_io import StartTcpServer, StartTlsServer, StartUdpServer, StopServer, ModbusServerFactory
@@ -23,12 +22,13 @@ from pymodbus.exceptions import NoSuchSlaveException
 # Fixture
 # ---------------------------------------------------------------------------#
 import platform
-from distutils.version import LooseVersion
+from pkg_resources import parse_version
+_logger = logging.getLogger()
 
 IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = LooseVersion("10.12")
+OSX_SIERRA = parse_version("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < LooseVersion(platform.mac_ver()[0])
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
     SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
@@ -203,18 +203,14 @@ class AsyncioServerTest(asynctest.TestCase):
         await asyncio.sleep(0.2)
         assert len(server.active_connections) == 1
 
-
         protocol.transport.close()  # close isn't synchronous and there's no notification that it's done
-        # so we have to wait a bit
-
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.2)  # so we have to wait a bit
         assert len(server.active_connections) == 0
 
         server.server_close()
 
     async def testTcpServerCloseActiveConnection(self):
         """ Test server_close() while there are active TCP connections """
-        data = b"\x01\x00\x00\x00\x00\x06\x01\x01\x00\x00\x00\x01"
         server = await StartTcpServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop)
         if PYTHON_VERSION >= (3, 7):
             server_task = asyncio.create_task(server.serve_forever())

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Installs pymodbus using distutils
+Installs pymodbus using setuptools
 
 Run:
     python setup.py install
@@ -123,4 +123,3 @@ setup(
     test_suite='nose.collector',
     cmdclass=command_classes,
 )
-

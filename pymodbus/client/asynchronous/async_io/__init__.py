@@ -240,7 +240,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None):
+    def __init__(self, protocol_class=None, loop=None, **kwargs):
         """
         Initialize ReconnectingAsyncioModbusTcpClient
         :param protocol_class: Protocol used to talk to modbus device.
@@ -257,6 +257,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
         self.connected = False
         #: Reconnect delay in milli seconds.
         self.delay_ms = self.DELAY_MIN_MS
+        self._proto_args = kwargs
 
     def reset_delay(self):
         """
@@ -296,7 +297,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
         """
         Factory function to create initialized protocol instance.
         """
-        protocol = self.protocol_class()
+        protocol = self.protocol_class(**self._proto_args)
         protocol.factory = self
         return protocol
 
@@ -353,7 +354,7 @@ class ReconnectingAsyncioModbusTcpClient(object):
 class AsyncioModbusTcpClient(object):
     """Client to connect to modbus device over TCP/IP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None):
+    def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
         """
         Initializes Asyncio Modbus Tcp Client
         :param host: Host IP address
@@ -372,6 +373,7 @@ class AsyncioModbusTcpClient(object):
         self.port = port
 
         self.connected = False
+        self._proto_args = kwargs
 
     def stop(self):
         """
@@ -387,7 +389,7 @@ class AsyncioModbusTcpClient(object):
         """
         Factory function to create initialized protocol instance.
         """
-        protocol = self.protocol_class()
+        protocol = self.protocol_class(**self._proto_args)
         protocol.factory = self
         return protocol
 
@@ -441,27 +443,34 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
     """
     Client to connect to modbus device repeatedly over TLS."
     """
-    def __init__(self, protocol_class=None, loop=None, framer=None):
+    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
         """
         Initialize ReconnectingAsyncioModbusTcpClient
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Event loop to use
         """
         self.framer = framer
-        ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop)
+        ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop, **kwargs)
 
-    async def start(self, host='localhost', port=802, sslctx=None,
-                    certfile=None, keyfile=None, password=None, **kwargs):
+    async def start(self, host, port=802, sslctx=None, server_hostname=None):
         """
         Initiates connection to start client
-        :param host: The host to connect to (default localhost)
-        :param port: Port to connect
-        :param sslctx:The SSLContext to use for TLS (default None and auto create)
-        :param certfile: The optional client's cert file path for TLS server request
-        :param keyfile: The optional client's key file path for TLS server request
-        :param password: The password for for decrypting client's private key file
+        :param host:
+        :param port:
+        :param sslctx:
+        :param server_hostname:
+        :return:
         """
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
+        self.sslctx = sslctx
+        if self.sslctx is None:
+            self.sslctx = ssl.create_default_context()
+            # According to MODBUS/TCP Security Protocol Specification, it is
+            # TLSv2 at least
+            self.sslctx.options |= ssl.OP_NO_TLSv1_1
+            self.sslctx.options |= ssl.OP_NO_TLSv1
+            self.sslctx.options |= ssl.OP_NO_SSLv3
+            self.sslctx.options |= ssl.OP_NO_SSLv2
+        self.server_hostname = server_hostname
         return await ReconnectingAsyncioModbusTcpClient.start(self, host, port)
 
     async def _connect(self):
@@ -484,7 +493,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         """
         Factory function to create initialized protocol instance.
         """
-        protocol = self.protocol_class(framer=self.framer)
+        protocol = self.protocol_class(framer=self.framer, **self._proto_args)
         protocol.transaction = FifoTransactionManager(self)
         protocol.factory = self
         return protocol
@@ -500,7 +509,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None):
+    def __init__(self, protocol_class=None, loop=None, **kwargs):
         """
         Initializes ReconnectingAsyncioModbusUdpClient
         :param protocol_class: Protocol used to talk to modbus device.
@@ -517,6 +526,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
         self.port = 0
 
         self.connected = False
+        self._proto_args = kwargs
         self.reset_delay()
 
     def reset_delay(self):
@@ -565,7 +575,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
         """
         Factory function to create initialized protocol instance.
         """
-        protocol = self.protocol_class()
+        protocol = self.protocol_class(**self._proto_args)
         protocol.host = host
         protocol.port = port
         protocol.factory = self
@@ -629,7 +639,7 @@ class AsyncioModbusUdpClient(object):
     Client to connect to modbus device over UDP.
     """
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None):
+    def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
         """
         Initializes Asyncio Modbus UDP Client
         :param host: Host IP address
@@ -648,6 +658,7 @@ class AsyncioModbusUdpClient(object):
         self.port = port
 
         self.connected = False
+        self._proto_args = kwargs
 
     def stop(self):
         """
@@ -666,7 +677,7 @@ class AsyncioModbusUdpClient(object):
         """
         Factory function to create initialized protocol instance.
         """
-        protocol = self.protocol_class()
+        protocol = self.protocol_class(**self._proto_args)
         protocol.host = host
         protocol.port = port
         protocol.factory = self
@@ -832,14 +843,14 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     :return:
     """
     client = ReconnectingAsyncioModbusTcpClient(protocol_class=proto_cls,
-                                                loop=loop)
+                                                loop=loop, **kwargs)
     await client.start(host, port)
     return client
 
 
-async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
-                          certfile=None, keyfile=None, password=None,
-                          framer=None, **kwargs):
+@asyncio.coroutine
+def init_tls_client(proto_cls, loop, host, port, sslctx=None,
+                    server_hostname=None, framer=None, **kwargs):
     """
     Helper function to initialize tcp client
     :param proto_cls:
@@ -847,16 +858,15 @@ async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
     :param host:
     :param port:
     :param sslctx:
-    :param certfile: The optional client's cert file path for TLS server request
-    :param keyfile: The optional client's key file path for TLS server request
-    :param password: The password for for decrypting client's private key file
+    :param server_hostname:
     :param framer:
     :param kwargs:
     :return:
     """
     client = ReconnectingAsyncioModbusTlsClient(protocol_class=proto_cls,
-                                                loop=loop, framer=framer)
-    await client.start(host, port, sslctx, certfile, keyfile, password)
+                                                loop=loop, framer=framer,
+                                                **kwargs)
+    await client.start(host, port, sslctx, server_hostname)
     return client
 
 
@@ -871,6 +881,6 @@ async def init_udp_client(proto_cls, loop, host, port, **kwargs):
     :return:
     """
     client = ReconnectingAsyncioModbusUdpClient(protocol_class=proto_cls,
-                                                loop=loop)
+                                                loop=loop, **kwargs)
     await client.start(host, port)
     return client

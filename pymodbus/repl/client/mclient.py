@@ -270,7 +270,7 @@ class ExtendedRequestSupport(object):
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).read_input_registers(
+        resp = super(ExtendedRequestSupport, self).mask_write_register(
             address=address, and_mask=and_mask, or_mask=or_mask, **kwargs)
         if not resp.isError():
             return {

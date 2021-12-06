@@ -50,7 +50,10 @@ class ReadRegistersRequestBase(ModbusRequest):
 
 
 class ReadRegistersResponseBase(ModbusResponse):
-    """Base class for responding to a modbus register read."""
+    """Base class for responding to a modbus register read.
+
+    The requested registers can be found in the .registers list.
+    """
 
     _rtu_byte_count_pos = 2
 
@@ -60,6 +63,8 @@ class ReadRegistersResponseBase(ModbusResponse):
         :param values: The values to write to
         """
         ModbusResponse.__init__(self, **kwargs)
+
+        #: A list of register values
         self.registers = values or []
 
     def encode(self):
@@ -122,9 +127,9 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         """Run a read holding request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized response, exception message otherwise
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadHoldingRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not 1 <= self.count <= 0x7D:
+        if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -140,8 +145,9 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
     starting register address and the number of registers. In the PDU
     Registers are addressed starting at zero. Therefore registers numbered
     1-16 are addressed as 0-15.
-    """
 
+    The requested registers can be found in the .registers list.
+    """
     function_code = 3
 
     def __init__(self, values=None, **kwargs):
@@ -176,9 +182,9 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         """Run a read input request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized response, exception message otherwise
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadInputRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not 1 <= self.count <= 0x7D:
+        if not (1 <= self.count <= 0x7d):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -194,8 +200,9 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
     starting register address and the number of registers. In the PDU
     Registers are addressed starting at zero. Therefore input registers
     numbered 1-16 are addressed as 0-15.
-    """
 
+    The requested registers can be found in the .registers list.
+    """
     function_code = 4
 
     def __init__(self, values=None, **kwargs):
@@ -281,9 +288,9 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
-        :returns: An initialized response, exception message otherwise
+        :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadWriteMultipleRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not 1 <= self.read_count <= 0x07D:
+        if not (1 <= self.read_count <= 0x07d):
             return self.doException(merror.IllegalValue)
         if not 1 <= self.write_count <= 0x079:
             return self.doException(merror.IllegalValue)
@@ -331,8 +338,9 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
     The normal response contains the data from the group of registers that
     were read. The byte count field specifies the quantity of bytes to
     follow in the read data field.
-    """
 
+    The requested registers can be found in the .registers list.
+    """
     function_code = 23
     _rtu_byte_count_pos = 2
 
@@ -379,6 +387,7 @@ __all__ = [
     "ReadHoldingRegistersResponse",
     "ReadInputRegistersRequest",
     "ReadInputRegistersResponse",
+    "ReadRegistersResponseBase",
     "ReadWriteMultipleRegistersRequest",
     "ReadWriteMultipleRegistersResponse",
 ]

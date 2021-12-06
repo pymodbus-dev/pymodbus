@@ -31,11 +31,11 @@ _logger = logging.getLogger(__name__)
 class BaseModbusClient(ModbusClientMixin):
     """Interface for a modbus synchronous client.
 
-    Defined here are all the methods for performing the related request
-    methods.  Derived classes simply need to implement the transport
-    methods and set the correct framer.
+    Defined here are all the methods for performing the related
+    request methods.
+    Derived classes simply need to implement the transport methods and set the correct
+    framer.
     """
-
     def __init__(self, framer, **kwargs):
         """Initialize a client instance.
 
@@ -128,7 +128,7 @@ class BaseModbusClient(ModbusClientMixin):
         self.close()
 
     def idle_time(self):
-        """Return bus Idle Time to initiate next transaction.
+        """Bus Idle Time to initiate next transaction
 
         :return: time stamp
         """
@@ -160,7 +160,7 @@ class BaseModbusClient(ModbusClientMixin):
             _logger.exception(exc)
 
     def register(self, function):
-        """Register a function and sub function class with the decoder.
+        """Registers a function and sub function class with the decoder
 
         :param function: Custom function class to register
         :return:

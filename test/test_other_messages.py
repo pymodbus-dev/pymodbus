@@ -87,6 +87,45 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.event_count, 0x12)
         self.assertEqual(response.events, [0x12,0x34,0x56])
 
+    def testReportSlaveIdRequest(self):
+        with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
+            # First test regular identity strings
+            identity = {
+                0x00: 'VN',  # VendorName
+                0x01: 'PC',  # ProductCode
+                0x02: 'REV',  # MajorMinorRevision
+                0x03: 'VU',  # VendorUrl
+                0x04: 'PN',  # ProductName
+                0x05: 'MN',  # ModelName
+                0x06: 'UAN',  # UserApplicationName
+                0x07: 'RA',  # reserved
+                0x08: 'RB',  # reserved
+            }
+            dif.get.return_value = identity
+            expected_identity = "-".join(identity.values()).encode()
+
+            request = ReportSlaveIdRequest()
+            response = request.execute()
+            self.assertEqual(response.identifier, expected_identity)
+
+            # Change to byte strings and test again (final result should be the same)
+            identity = {
+                0x00: b'VN',  # VendorName
+                0x01: b'PC',  # ProductCode
+                0x02: b'REV',  # MajorMinorRevision
+                0x03: b'VU',  # VendorUrl
+                0x04: b'PN',  # ProductName
+                0x05: b'MN',  # ModelName
+                0x06: b'UAN',  # UserApplicationName
+                0x07: b'RA',  # reserved
+                0x08: b'RB',  # reserved
+            }
+            dif.get.return_value = identity
+
+            request = ReportSlaveIdRequest()
+            response = request.execute()
+            self.assertEqual(response.identifier, expected_identity)
+
     def testReportSlaveId(self):
         with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
             dif.get.return_value = dict()

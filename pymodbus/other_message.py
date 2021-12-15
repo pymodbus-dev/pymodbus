@@ -369,7 +369,16 @@ class ReportSlaveIdRequest(ModbusRequest):
             reportSlaveIdData = getattr(context, 'reportSlaveIdData', None)
         if not reportSlaveIdData:
             information = DeviceInformationFactory.get(_MCB)
-            identifier = "-".join(information.values()).encode()
+
+            # Support identity values as bytes data and regular str data
+            id_data = []
+            for v in information.values():
+                if type(v) is bytes:
+                    id_data.append(v)
+                else:
+                    id_data.append(v.encode())
+
+            identifier = b"-".join(id_data)
             identifier = identifier or b'Pymodbus'
             reportSlaveIdData = identifier
         return ReportSlaveIdResponse(reportSlaveIdData)

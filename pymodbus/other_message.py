@@ -373,7 +373,7 @@ class ReportSlaveIdRequest(ModbusRequest):
             # Support identity values as bytes data and regular str data
             id_data = []
             for v in information.values():
-                if type(v) is bytes:
+                if isinstance(v, bytes):
                     id_data.append(v)
                 else:
                     id_data.append(v.encode())

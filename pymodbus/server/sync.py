@@ -541,7 +541,8 @@ class ModbusSerialServer(object):
         self.socket = None
         if self._connect():
             self.is_running = True
-            self._build_handler()
+            self._build_handler(kwargs.get('handler',
+                                           CustomSingleRequestHandler))
 
     def _connect(self):
         """ Connect to the serial server
@@ -560,19 +561,19 @@ class ModbusSerialServer(object):
             _logger.error(msg)
         return self.socket is not None
 
-    def _build_handler(self):
+    def _build_handler(self, handler):
         """ A helper method to create and monkeypatch
             a serial handler.
+        :param handler: a custom handler, uses ModbusSingleRequestHandler if set to None
 
         :returns: A patched handler
         """
-
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        self.handler = CustomSingleRequestHandler(request,
-                                                  (self.device, self.device),
-                                                  self)
+        self.handler = handler(request,
+                               (self.device, self.device),
+                               self)
 
     def serve_forever(self):
         """ Callback for connecting a new client thread

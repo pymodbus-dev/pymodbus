@@ -221,6 +221,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param single: True or False (If True, ignore unit address validation)
 
         """
+        unit = self.decode_data(self._buffer).get("unit", 0)
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         self.addToFrame(data)

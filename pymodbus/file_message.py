@@ -144,7 +144,7 @@ class ReadFileRecordRequest(ModbusRequest):
         :return: 
         """
         for record in self.records:
-            self.count += record.record_length
+            self.count+=record.record_length
 
         return 4 + self.count
 

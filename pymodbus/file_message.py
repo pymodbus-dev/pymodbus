@@ -140,7 +140,7 @@ class ReadFileRecordRequest(ModbusRequest):
     
     def get_response_pdu_size(self):
         """
-        Func_code (1 byte) + Byte Count(1 byte) + Byte Count2 (1 byte) + Reference Type (1 byte) + registers per record
+        Func_code (1 byte) + Byte Count(1 byte) + Byte Count2 (1 byte) + Reference Type (1 byte) + registers to read for file
         :return: 
         """
         for record in self.records:

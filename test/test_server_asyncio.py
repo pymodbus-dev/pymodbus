@@ -22,6 +22,7 @@ from pymodbus.exceptions import NoSuchSlaveException
 # Fixture
 # ---------------------------------------------------------------------------#
 import platform
+import ssl
 from pkg_resources import parse_version
 _logger = logging.getLogger()
 

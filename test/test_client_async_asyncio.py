@@ -1,3 +1,4 @@
+from pymodbus.client.asynchronous import schedulers
 from pymodbus.compat import PYTHON_VERSION
 import pytest
 from unittest import mock
@@ -11,6 +12,11 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+
 
 
 class TestAsyncioClient(object):

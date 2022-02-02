@@ -617,10 +617,10 @@ class ReconnectingAsyncioModbusUdpClient(object):
             self.connected = False
             self.protocol = None
             if self.host:
-                asyncio.ensure_future(self._reconnect(), loop=self.loop)
+                asyncio.create_task(self._reconnect())
         else:
             _logger.error('Factory protocol disconnect '
-                          'callback called while not connected.'
+                          'callback called while not connected.')
 
     async def _reconnect(self):
         _logger.debug('Waiting %d ms before next '

@@ -6,9 +6,6 @@ Pymodbus Synchronous Client Examples
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus.
 
-It should be noted that the client can also be used with
-the guard construct that is available in python 2.5 and up::
-
     with ModbusClient('127.0.0.1') as client:
         result = client.read_coils(1,10)
         print result

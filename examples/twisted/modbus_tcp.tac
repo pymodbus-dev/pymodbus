@@ -10,7 +10,6 @@ from twisted.python.logfile import DailyLogFile
 from pymodbus.constants import Defaults
 from pymodbus.server.async import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.internal.ptwisted import InstallManagementConsole
 
 def BuildService():
     """
@@ -19,7 +18,6 @@ def BuildService():
     context = None
     framer = ModbusSocketFramer
     factory = ModbusServerFactory(context, framer)
-    InstallManagementConsole({ 'server' : factory })
     application = internet.TCPServer(Defaults.Port, factory)
     return application
 

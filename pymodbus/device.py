@@ -528,10 +528,10 @@ class ModbusControlBlock(Singleton):
     #-------------------------------------------------------------------------#
     # Other Properties
     #-------------------------------------------------------------------------#
-    Identity = property(lambda (s): s.__identity)
-    Counter  = property(lambda (s): s.__counters)
-    Events   = property(lambda (s): s.__events)
-    Plus     = property(lambda (s): s.__plus)
+    Identity = property(lambda s: s.__identity)
+    Counter  = property(lambda s: s.__counters)
+    Events   = property(lambda s: s.__events)
+    Plus     = property(lambda s: s.__plus)
 
     def reset(self):
         ''' This clears all of the system counters and the
@@ -551,7 +551,7 @@ class ModbusControlBlock(Singleton):
         '''
         self.__listen_only = bool(value)
 
-    ListenOnly = property(lambda (s): s.__listen_only, _setListenOnly)
+    ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 
     #-------------------------------------------------------------------------#
     # Mode Properties
@@ -564,7 +564,7 @@ class ModbusControlBlock(Singleton):
         if mode in ['ASCII', 'RTU']:
             self.__mode = mode
 
-    Mode = property(lambda (s): s.__mode, _setMode)
+    Mode = property(lambda s: s.__mode, _setMode)
 
     #-------------------------------------------------------------------------#
     # Delimiter Properties
@@ -581,7 +581,7 @@ class ModbusControlBlock(Singleton):
         elif isinstance(char, int):
             self.__delimiter = int2byte(char)
 
-    Delimiter = property(lambda (s): s.__delimiter, _setDelimiter)
+    Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
     #-------------------------------------------------------------------------#
     # Diagnostic Properties
@@ -602,7 +602,7 @@ class ModbusControlBlock(Singleton):
         :returns: The current value of the requested bit
         '''
         try:
-            if bit and bit >= 0 and bit < len(self.__diagnostic):
+            if bit and 0 <= bit < len(self.__diagnostic):
                 return self.__diagnostic[bit]
         except Exception:
             return None

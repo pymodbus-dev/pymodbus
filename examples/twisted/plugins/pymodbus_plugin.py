@@ -10,7 +10,6 @@ from twisted.application import internet
 from pymodbus.constants import Defaults
 from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.internal.ptwisted import InstallManagementConsole
 
 class Options(usage.Options):
     """
@@ -45,8 +44,6 @@ class ModbusServiceMaker(object):
         framer = ModbusSocketFramer
         context = self._build_context(options['store'])
         factory = ModbusServerFactory(None, framer)
-        if options['console']:
-            InstallManagementConsole({ 'server' : factory })
         return server(int(options["port"]), factory)
 
     def _build_context(self, path):

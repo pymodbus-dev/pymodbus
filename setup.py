@@ -82,7 +82,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
-    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*',
+    python_requires='>=3.5, !=3.10',
     install_requires=install_requires,
     extras_require={
         'quality': [
@@ -105,13 +105,7 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
-
-        'repl:python_version <= "2.7"': [
-            'click>=7.0',
-            'prompt-toolkit==2.0.4',
-            'pygments>=2.2.0'
-        ],
-        'repl:python_version >= "3.6"': [
+        'repl:python_version >= "3.7"': [
             'click>=7.0',
             'prompt-toolkit>=3.0.8',
             'pygments>=2.2.0',

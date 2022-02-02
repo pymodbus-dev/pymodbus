@@ -1,7 +1,7 @@
 Requirements
 -------------
 
-* Python 2.7 or later.
+* Python 3.7 or later.
 * Python Twisted, Tornado or asyncio (For async client and server)
 * Pyserial
 

@@ -21,7 +21,6 @@ from pymodbus.transaction import (ModbusSocketFramer,
                                   ModbusAsciiFramer,
                                   ModbusBinaryFramer)
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.internal.ptwisted import InstallManagementConsole
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -248,8 +247,6 @@ def StartTcpServer(context, identity=None, address=None,
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     for f in custom_functions:
         factory.decoder.register(f)
-    if console:
-        InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
@@ -322,10 +319,6 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     for f in custom_functions:
         factory.decoder.register(f)
-    if console:
-        InstallManagementConsole({'factory': factory})
-    if console:
-        InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging

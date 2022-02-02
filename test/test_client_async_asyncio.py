@@ -126,7 +126,7 @@ class TestAsyncioClient(object):
         with mock.patch('pymodbus.client.asynchronous.async_io.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
         assert not client.connected
         assert client.protocol is None
@@ -156,7 +156,7 @@ class TestAsyncioClient(object):
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 
     @mock.patch('pymodbus.client.asynchronous.async_io.asyncio.sleep')

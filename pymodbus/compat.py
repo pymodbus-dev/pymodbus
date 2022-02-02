@@ -1,5 +1,5 @@
 """
-Python 2.x/3.x Compatibility Layer
+Python 3.x Compatibility Layer
 -------------------------------------------------
 
 This is mostly based on the jinja2 compat code:
@@ -57,13 +57,8 @@ socketserver.ThreadingMixIn.daemon_threads = True
 implements_to_string = lambda x: x
 
 byte2int = lambda b: b
-if PYTHON_VERSION >= (3, 4):
-    def is_installed(module):
-        import importlib.util
-        found = importlib.util.find_spec(module)
-        return found
-else:
-    def is_installed(module):
-        import importlib
-        found = importlib.find_loader(module)
-        return found
+
+def is_installed(module):
+    import importlib.util
+    found = importlib.util.find_spec(module)
+    return found

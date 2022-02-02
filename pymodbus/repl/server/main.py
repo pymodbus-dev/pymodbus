@@ -5,14 +5,14 @@ All rights reserved.
 import asyncio
 import json
 import click
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+from pymodbus.compat import PYTHON_VERSION
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
     ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
-if IS_PYTHON3 and PYTHON_VERSION > (3, 7):
+if PYTHON_VERSION > (3, 7):
     CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
     CANCELLED_ERROR = asyncio.CancelledError

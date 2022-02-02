@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 from unittest.mock import patch, Mock
+
 from pymodbus.client.asynchronous.tornado import (BaseTornadoClient,
                                                   AsyncModbusSerialClient, AsyncModbusUDPClient, AsyncModbusTCPClient
                                                   )
@@ -15,13 +16,13 @@ from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 # Fixture
 # ---------------------------------------------------------------------------#
 import platform
-from distutils.version import LooseVersion
+from pkg_resources import parse_version
 
 IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = LooseVersion("10.12")
+OSX_SIERRA = parse_version("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ttyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ptyp0'
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     SERIAL_PORT = "/dev/ptmx"
@@ -39,8 +40,8 @@ class AsynchronousClientTest(unittest.TestCase):
     def testBaseClientInit(self):
         """ Test the client client initialize """
         client = BaseTornadoClient()
-        self.assertTrue(client.port ==502)
-        self.assertTrue(client.host =="127.0.0.1")
+        self.assertTrue(client.port == 502)
+        self.assertTrue(client.host == "127.0.0.1")
         self.assertEqual(0, len(list(client.transaction)))
         self.assertFalse(client._connected)
         self.assertTrue(client.io_loop is None)
@@ -91,7 +92,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def testBaseClientHandleResponse(self,  mock_iostream, mock_ioloop):
+    def testBaseClientHandleResponse(self, mock_iostream, mock_ioloop):
         """ Test the BaseTornado client handles responses """
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -167,13 +168,15 @@ class AsynchronousClientTest(unittest.TestCase):
         client.close()
         self.assertFalse(client._connected)
 
-
     # -----------------------------------------------------------------------#
     # Test Serial Client client
     # -----------------------------------------------------------------------#
     def testSerialClientInit(self):
         """ Test the tornado serial client client initialize """
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP, framer=ModbusRtuFramer(ClientDecoder()), port=SERIAL_PORT)
+        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
+                                         framer=ModbusRtuFramer(
+                                             ClientDecoder()),
+                                         port=SERIAL_PORT)
         self.assertEqual(0, len(list(client.transaction)))
         self.assertTrue(isinstance(client.framer, ModbusRtuFramer))
 
@@ -304,6 +307,7 @@ class AsynchronousClientTest(unittest.TestCase):
         """ Test the base class for all the clients """
         factory = ModbusClientFactory()
         self.assertTrue(factory is not None)
+
 
 # ---------------------------------------------------------------------------#
 # Main

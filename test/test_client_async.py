@@ -9,7 +9,7 @@ from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsCl
 from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
 
 import platform
-from distutils.version import LooseVersion
+from pkg_resources import parse_version
 
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
@@ -22,17 +22,18 @@ from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTo
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer
+from pymodbus.transaction import ModbusAsciiFramer, ModbusBinaryFramer
 from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
 
 import ssl
 
 IS_DARWIN = platform.system().lower() == "darwin"
 IS_WINDOWS = platform.system().lower() == "windows"
-OSX_SIERRA = LooseVersion("10.12")
+OSX_SIERRA = parse_version("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ttyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ptyp0'
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
+    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     if IS_WINDOWS:
@@ -224,9 +225,9 @@ class TestAsynchronousClient(object):
                     assert (not client.protocol._connected)
 
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
-                                        ("socket", ModbusSocketFramer),
-                                        ("binary",  ModbusBinaryFramer),
-                                        ("ascii", ModbusAsciiFramer)])
+                                                ("socket", ModbusSocketFramer),
+                                                ("binary", ModbusBinaryFramer),
+                                                ("ascii", ModbusAsciiFramer)])
     def testSerialTornadoClient(self, method, framer):
         """ Test the serial tornado client client initialize """
         from serial import Serial
@@ -253,10 +254,10 @@ class TestAsynchronousClient(object):
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
-                                        ("socket", ModbusSocketFramer),
-                                        ("binary",  ModbusBinaryFramer),
-                                        ("ascii", ModbusAsciiFramer)])
-    def testSerialAsyncioClient(self,  mock_gather, mock_event_loop, method, framer):
+                                                ("socket", ModbusSocketFramer),
+                                                ("binary", ModbusBinaryFramer),
+                                                ("ascii", ModbusAsciiFramer)])
+    def testSerialAsyncioClient(self, mock_gather, mock_event_loop, method, framer):
         """
         Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler.
         :return:

@@ -14,11 +14,12 @@ import pytest
 from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
 from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
 from pymodbus.client.sync import ModbusTlsClient
+from pymodbus.client.tls_helper import sslctx_provider
 from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
 from pymodbus.transaction import ModbusBinaryFramer
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 from pymodbus.utilities import hexlify_packets
 
 
@@ -307,17 +308,34 @@ class SynchronousClientTest(unittest.TestCase):
     # Test TLS Client
     # -----------------------------------------------------------------------#
 
+    def testTlsSSLCTX_Provider(self):
+        ''' test that sslctx_provider() produce SSLContext correctly '''
+        with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
+            sslctx1 = sslctx_provider(certfile="cert.pem")
+            self.assertIsNotNone(sslctx1)
+            self.assertEqual(type(sslctx1), ssl.SSLContext)
+            self.assertEqual(mock_method.called, False)
+
+            sslctx2 = sslctx_provider(keyfile="key.pem")
+            self.assertIsNotNone(sslctx2)
+            self.assertEqual(type(sslctx2), ssl.SSLContext)
+            self.assertEqual(mock_method.called, False)
+
+            sslctx3 = sslctx_provider(certfile="cert.pem", keyfile="key.pem")
+            self.assertIsNotNone(sslctx3)
+            self.assertEqual(type(sslctx3), ssl.SSLContext)
+            self.assertEqual(mock_method.called, True)
+
+            sslctx_old = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            sslctx_new = sslctx_provider(sslctx=sslctx_old)
+            self.assertEqual(sslctx_new, sslctx_old)
+
     def testSyncTlsClientInstantiation(self):
         # default SSLContext
         client = ModbusTlsClient()
         self.assertNotEqual(client, None)
+        self.assertIsInstance(client.framer, ModbusTlsFramer)
         self.assertTrue(client.sslctx)
-
-        # user defined SSLContext
-        context = ssl.create_default_context()
-        client = ModbusTlsClient(sslctx=context)
-        self.assertNotEqual(client, None)
-        self.assertEqual(client.sslctx, context)
 
     def testBasicSyncTlsClient(self):
         ''' Test the basic methods for the tls sync client'''

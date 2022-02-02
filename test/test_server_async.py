@@ -2,6 +2,7 @@
 import unittest
 import pytest
 from unittest.mock import patch, Mock, MagicMock
+
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.asynchronous import ModbusServerFactory
@@ -14,16 +15,16 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
 import sys
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Fixture
-#---------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 import platform
-from distutils.version import LooseVersion
+from pkg_resources import parse_version
 
 IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = LooseVersion("10.12")
+OSX_SIERRA = parse_version("10.12")
 if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = LooseVersion(platform.mac_ver()[0])
+    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
     SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
@@ -40,9 +41,9 @@ class AsynchronousServerTest(unittest.TestCase):
     This is the unittest for the pymodbus.server.asynchronous module
     '''
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Setup/TearDown
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     def setUp(self):
         '''
         Initializes the test environment
@@ -54,9 +55,9 @@ class AsynchronousServerTest(unittest.TestCase):
         ''' Cleans up the test environment '''
         pass
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Test ModbusTcpProtocol
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     def testTcpServerStartup(self):
         ''' Test that the modbus tcp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
@@ -102,7 +103,7 @@ class AsynchronousServerTest(unittest.TestCase):
         request = MagicMock()
         protocol._send = MagicMock()
 
-        # tst  if _send being called
+        # test if _send being called
         protocol._execute(request)
         self.assertTrue(protocol._send.called)
 
@@ -133,7 +134,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testSendTcp(self):
 
         class MockMsg(object):
-            def __init__(self,  msg, resp=False):
+            def __init__(self, msg, resp=False):
                 self.should_respond = resp
                 self.msg = msg
 
@@ -145,19 +146,19 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.framer = MagicMock()
         protocol.factory = MagicMock()
         protocol.framer.buildPacket = MagicMock(return_value=mock_msg)
-        protocol.transport= MagicMock()
+        protocol.transport = MagicMock()
 
         protocol._send(mock_data)
 
         self.assertTrue(protocol.framer.buildPacket.called)
         self.assertTrue(protocol.transport.write.called)
 
-        mock_data =MockMsg(resp=False, msg="helloworld")
+        mock_data = MockMsg(resp=False, msg="helloworld")
         self.assertEqual(protocol._send(mock_data), None)
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Test ModbusServerFactory
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     def testModbusServerFactory(self):
         ''' Test the base class for all the clients '''
         factory = ModbusServerFactory(store=None)
@@ -167,9 +168,9 @@ class AsynchronousServerTest(unittest.TestCase):
         factory = ModbusServerFactory(store=None, identity=identity)
         self.assertEqual(factory.control.Identity.VendorName, 'VendorName')
 
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     # Test ModbusUdpProtocol
-    #-----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------- #
     def testUdpServerInitialize(self):
         protocol = ModbusUdpProtocol(store=None)
         self.assertEqual(protocol.control.Identity.VendorName, '')
@@ -177,7 +178,6 @@ class AsynchronousServerTest(unittest.TestCase):
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         protocol = ModbusUdpProtocol(store=None, identity=identity)
         self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
-
 
     def testUdpServerStartup(self):
         ''' Test that the modbus udp asynchronous server starts correctly '''
@@ -223,6 +223,7 @@ class AsynchronousServerTest(unittest.TestCase):
             t.start()
             time.sleep(2)
             self.assertEqual(mock_reactor.callFromThread.call_count, 1)
+
     def testDatagramReceived(self):
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         mock_addr = 0x01
@@ -242,13 +243,12 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.control = MagicMock()
         protocol.framer = MagicMock()
         protocol.framer.buildPacket = MagicMock(return_value=mock_data)
-        protocol.transport= MagicMock()
+        protocol.transport = MagicMock()
 
         protocol._send(mock_data, mock_addr)
 
         self.assertTrue(protocol.framer.buildPacket.called)
         self.assertTrue(protocol.transport.write.called)
-
 
     def testUdpExecuteSuccess(self):
         protocol = ModbusUdpProtocol(store=None)
@@ -257,7 +257,7 @@ class AsynchronousServerTest(unittest.TestCase):
         request = MagicMock()
         protocol._send = MagicMock()
 
-        # tst  if _send being called
+        # test if _send being called
         protocol._execute(request, mock_addr)
         self.assertTrue(protocol._send.called)
 
@@ -291,7 +291,6 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertTrue(reactor.stop.called)
 
     def testIsMainThread(self):
-        import threading
         self.assertTrue(_is_main_thread())
 
 

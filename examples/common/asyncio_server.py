@@ -131,7 +131,13 @@ async def run_server():
 
     # Tls:
     # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
-    #                      certfile="server.crt", keyfile="server.key",
+    #                      certfile="server.crt", keyfile="server.key", password="pwd",
+    #                      allow_reuse_address=True, allow_reuse_port=True,
+    #                      defer_start=False)
+
+    # Tls and force require client's certificate for TLS full handshake:
+    # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
+    #                      certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
     #                      allow_reuse_address=True, allow_reuse_port=True,
     #                      defer_start=False)
 
@@ -141,17 +147,16 @@ async def run_server():
     # #
     # await server.serve_forever()
 
-    # !!! SERIAL SERVER NOT IMPLEMENTED !!!
     # Ascii:
-    # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
+    # await StartSerialServer(context, identity=identity,
+    #                    port='/dev/ttyp0', timeout=1, autoreconnect=True)
 
     # RTU:
-    # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+    # await StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
+    #                    port='/dev/ttyp0', timeout=.005, baudrate=9600, autoreconnect=True)
 
     # Binary
-    # StartSerialServer(context,
+    # await StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
     #                   port='/dev/ttyp0',

@@ -1,12 +1,13 @@
+
 import functools
 
 
 def _yielded_return(return_value, *args):
     """Generator factory function with return value."""
 
-    def _():
+    async def _():
         """Actual generator producing value."""
-        yield
+        # yield
         return return_value
 
     # return new generator each time this function is called:
@@ -19,9 +20,10 @@ def return_as_coroutine(return_value=None):
     Typically used as a side effect of a mocked coroutine like this:
 
         # in module mymod:
-        async def my_coro_under_test():
-            await asyncio.sleep(1)
-            await asyncio.sleep(2)
+        @asyncio.coroutine
+        def my_coro_under_test():
+            yield from asyncio.sleep(1)
+            yield from asyncio.sleep(2)
             return 42
 
         # in test module:

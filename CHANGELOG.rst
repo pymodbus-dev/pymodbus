@@ -1,3 +1,18 @@
+
+version 3.0.0dev1
+----------------------------------------------------------
+* Support python3.10
+* Implement asyncio ModbusSerialServer
+* ModbusTLS updates (tls handshake, default framer)
+* Support broadcast messages with asyncio client
+* Fix for lazy loading serial module with asyncio clients.
+* Updated examples and tests
+
+version 3.0.0dev0
+----------------------------------------------------------
+* Support python3.7 and above
+* Support creating asyncio clients from with in coroutines.
+
 version 2.5.3
 ----------------------------------------------------------
 * Fix retries on tcp client failing randomly.
@@ -5,7 +20,6 @@ version 2.5.3
 * Treat exception codes as valid responses
 * Fix examples (modbus_payload)
 * Add missing identity argument to async ModbusSerialServer
-
 version 2.5.2
 ----------------------------------------------------------
 * Add kwarg `reset_socket` to control closing of the socket on read failures (set to `True` by default).

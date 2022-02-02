@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.register_read_message import *
 from pymodbus.register_read_message import ReadRegistersRequestBase

@@ -1,13 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import pytest
 import unittest
 from itertools import count
-from pymodbus.compat import IS_PYTHON3
-
-if IS_PYTHON3:  # Python 3
-    from unittest.mock import patch, Mock, MagicMock
-else:  # Python 2
-    from mock import patch, Mock, MagicMock
+from unittest.mock import patch, MagicMock
 
 from binascii import a2b_hex
 from pymodbus.pdu import *
@@ -410,9 +405,9 @@ class ModbusTransactionTest(unittest.TestCase):
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
         result = self._tls.decode_data(msg1)
-        self.assertEqual(dict(), result);
+        self.assertEqual(dict(), result)
         result = self._tls.decode_data(msg2)
-        self.assertEqual(dict(fcode=1), result);
+        self.assertEqual(dict(fcode=1), result)
         self._tls.advanceFrame()
 
     def testTLSIncomingPacket(self):

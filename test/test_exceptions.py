@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.exceptions import *
 
@@ -28,8 +28,8 @@ class SimpleExceptionsTest(unittest.TestCase):
                 raise ex
             except ModbusException as ex:
                 self.assertTrue("Modbus Error:" in str(ex))
-                pass
-            else: self.fail("Excepted a ModbusExceptions")
+                return
+            self.fail("Excepted a ModbusExceptions")
 
 #---------------------------------------------------------------------------#
 # Main

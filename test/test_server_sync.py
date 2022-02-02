@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-from pymodbus.compat import IS_PYTHON3
+#!/usr/bin/env python3
 import unittest
-if IS_PYTHON3: # Python 3
-    from unittest.mock import patch, Mock
-else: # Python 2
-    from mock import patch, Mock
+from unittest.mock import patch, Mock
 import serial
 import socket
 import ssl

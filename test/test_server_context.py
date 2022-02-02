@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.datastore import *
 from pymodbus.exceptions import NoSuchSlaveException

@@ -73,9 +73,6 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
     Run Reactive Modbus server exposing REST endpoint
     for response manipulation.
     """
-    if not IS_PYTHON3:
-        click.secho("Pymodbus Server REPL not supported on python2", fg="read")
-        exit(1)
     repl = ctx.obj.pop("repl")
     web_app_config = ctx.obj
     loop = asyncio.get_event_loop()

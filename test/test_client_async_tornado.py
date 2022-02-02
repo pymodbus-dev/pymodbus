@@ -1,10 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
-from pymodbus.compat import IS_PYTHON3
-if IS_PYTHON3:
-    from unittest.mock import patch, Mock
-else: # Python 2
-    from mock import patch, Mock
+from unittest.mock import patch, Mock
 from pymodbus.client.asynchronous.tornado import (BaseTornadoClient,
                                                   AsyncModbusSerialClient, AsyncModbusUDPClient, AsyncModbusTCPClient
                                                   )

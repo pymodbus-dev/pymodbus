@@ -6,8 +6,6 @@ from pymodbus.client.asynchronous.factory.serial import get_factory
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-from pymodbus.client.asynchronous.schedulers import ASYNC_IO
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +63,6 @@ class AsyncModbusSerialClient(object):
         :param kwargs:
         :return:
         """
-        if (not (IS_PYTHON3 and PYTHON_VERSION >= (3, 4))
-                and scheduler == ASYNC_IO):
-            logger.critical("ASYNCIO is supported only on python3")
-            import sys
-            sys.exit(1)
         factory_class = get_factory(scheduler)
         framer = cls._framer(method)
         yieldable = factory_class(framer=framer, port=port, **kwargs)

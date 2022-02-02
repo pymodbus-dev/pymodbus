@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 An example of creating a fully implemented modbus server
 with read/write data as well as user configurable base data

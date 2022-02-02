@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 Pydoctor API Runner
 ---------------------
@@ -19,9 +19,10 @@ try:
         --html-output=html
         --html-write-function-pages --make-html'''.split()
 
-    print "Building Pydoctor API Documentation"
+    print( "Building Pydoctor API Documentation")
     main(sys.argv[1:])
 
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/pydoctor")
-except: print "Pydoctor unavailable...not building"
+except:
+    print( "Pydoctor unavailable...not building")

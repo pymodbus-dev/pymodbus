@@ -210,7 +210,7 @@ def register_api_routes(application, register):
     for method, func in dict(methods).iteritems():
         pieces = method.split('_')
         verb, path = pieces[0], pieces[1:]
-        args = inspect.getargspec(func).args[1:]
+        args = inspect.getfullargspec(func).args[1:]
         args = ['<%s>' % arg for arg in args]
         args = '/'.join(args)
         args = '' if len(args) == 0 else '/' + args

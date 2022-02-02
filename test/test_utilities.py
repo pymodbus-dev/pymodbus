@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 import struct
 from pymodbus.utilities import pack_bitstring, unpack_bitstring

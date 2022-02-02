@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Note that this is not finished
 """
@@ -241,7 +241,7 @@ class SimulatorFrame(Frame):
             net = int(octets[2]) % 255
             start = int(octets[3]) % 255
         else:
-            self.error_dialog("Invalid starting address!");
+            self.error_dialog("Invalid starting address!")
             return False
 
         # check interface size
@@ -254,7 +254,7 @@ class SimulatorFrame(Frame):
                 if j == 254: net = net + 1
             self.restart = 1
         else:
-            self.error_dialog("Invalid number of devices!");
+            self.error_dialog("Invalid number of devices!")
             return False
 
         # check input file
@@ -268,7 +268,7 @@ class SimulatorFrame(Frame):
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
-            self.error_dialog("Device to emulate does not exist!");
+            self.error_dialog("Device to emulate does not exist!")
             return False
 
     def help_clicked(self):
@@ -323,9 +323,9 @@ def main():
     if debug:
         try:
             log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
+            logging.basicConfig()
         except Exception as e:
-    	    print("Logging is not supported on this system")
+            print("Logging is not supported on this system")
     simulator = SimulatorApp(root)
     root.title("Modbus Simulator")
     reactor.run()

@@ -1,23 +1,18 @@
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+from pymodbus.compat import PYTHON_VERSION
 import pytest
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    from unittest import mock
-    from pymodbus.client.asynchronous.async_io import (
-        BaseModbusAsyncClientProtocol,
-        ReconnectingAsyncioModbusTcpClient,
-        ModbusClientProtocol, ModbusUdpClientProtocol)
-    from test.asyncio_test_helper import return_as_coroutine, run_coroutine
-    from pymodbus.factory import ClientDecoder
-    from pymodbus.exceptions import ConnectionException
-    from pymodbus.transaction import ModbusSocketFramer
-    from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-    protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
-else:
-    import mock
-    protocols = [None, None]
+from unittest import mock
+from pymodbus.client.asynchronous.async_io import (
+    BaseModbusAsyncClientProtocol,
+    ReconnectingAsyncioModbusTcpClient,
+    ModbusClientProtocol, ModbusUdpClientProtocol)
+from test.asyncio_test_helper import return_as_coroutine, run_coroutine
+from pymodbus.factory import ClientDecoder
+from pymodbus.exceptions import ConnectionException
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
 
 
-@pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
 class TestAsyncioClient(object):
     def test_base_modbus_async_client_protocol(self):
         protocol = BaseModbusAsyncClientProtocol()

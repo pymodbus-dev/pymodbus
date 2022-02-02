@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import iteritems, byte2int, IS_PYTHON3
+from pymodbus.compat import iteritems, byte2int
 
 _MCB = ModbusControlBlock()
 
@@ -140,11 +140,8 @@ class ReadDeviceInformationResponse(ModbusResponse):
         if self.space_left <= 0:
             raise _OutOfSpaceException(object_id)
         encoded_obj = struct.pack('>BB', object_id, len(data))
-        if IS_PYTHON3:
-            if isinstance(data, bytes):
-                encoded_obj += data
-            else:
-                encoded_obj += data.encode()
+        if isinstance(data, bytes):
+            encoded_obj += data
         else:
             encoded_obj += data.encode()
         self.number_of_objects += 1

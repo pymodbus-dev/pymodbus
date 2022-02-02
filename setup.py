@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Installs pymodbus using distutils
 
@@ -25,13 +25,11 @@ try:
 except ImportError:
     command_classes = {}
 from pymodbus import __version__, __author__, __maintainer__
-from pymodbus.utilities import IS_PYTHON3
 
 CONSOLE_SCRIPTS = [
             'pymodbus.console=pymodbus.repl.client.main:main'
         ]
-if IS_PYTHON3:
-    CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
+CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
 with open('requirements.txt') as reqs:
     install_requires = [
         line for line in reqs.read().split('\n')

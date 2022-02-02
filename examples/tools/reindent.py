@@ -45,7 +45,7 @@ def main():
     global verbose, recurse, dryrun
     try:
         opts, args = getopt.getopt(sys.argv[1:], "drv")
-    except getopt.error, msg:
+    except getopt.error as msg:
         errprint(msg)
         return
     for o, a in opts:
@@ -64,7 +64,7 @@ def main():
 def check(file):
     if os.path.isdir(file) and not os.path.islink(file):
         if verbose:
-            print "listing directory", file
+            print("listing directory", file)
         names = os.listdir(file)
         for name in names:
             fullname = os.path.join(file, name)
@@ -75,10 +75,10 @@ def check(file):
         return
 
     if verbose:
-        print "checking", file, "...",
+        print("checking", file, "...", end=' ')
     try:
         f = open(file)
-    except IOError, msg:
+    except IOError as msg:
         errprint("%s: I/O Error: %s" % (file, str(msg)))
         return
 
@@ -86,24 +86,25 @@ def check(file):
     f.close()
     if r.run():
         if verbose:
-            print "changed."
+            print("changed.")
             if dryrun:
-                print "But this is a dry run, so leaving it alone."
+                print("But this is a dry run, so leaving it alone.")
         if not dryrun:
             bak = file + ".bak"
             if os.path.exists(bak):
                 os.remove(bak)
             os.rename(file, bak)
             if verbose:
-                print "renamed", file, "to", bak
+                print("renamed", file, "to", bak)
             f = open(file, "w")
             r.write(f)
             f.close()
             if verbose:
-                print "wrote new", file
+                print("wrote new", file)
     else:
         if verbose:
-            print "unchanged."
+            print("unchanged.")
+
 
 class Reindenter:
 

@@ -37,7 +37,6 @@ jobs:
               3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
-              pypy2: docker://pypy:2-jessie
               pypy3: docker://pypy:3-stretch
           - name: macOS
             runs-on: macos-latest

@@ -98,7 +98,7 @@ class TestAsyncioClient(object):
         assert client.delay_ms < client.DELAY_MAX_MS
 
     @pytest.mark.asyncio
-    async def test_initialization_serial_in_loop(self):
+    def test_initialization_serial_in_loop(self):
         _, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu')
 
         assert client.port == '/tmp/ptyp0'

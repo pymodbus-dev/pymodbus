@@ -483,7 +483,11 @@ class ModbusTcpServer:
 
     async def serve_forever(self):
         if self.server is None:
-            self.server = await self.server_factory
+            try:
+                self.server = await self.server_factory
+            except:
+                self.serving.set_result(False)
+                raise
             self.serving.set_result(True)
             await self.server.serve_forever()
         else:

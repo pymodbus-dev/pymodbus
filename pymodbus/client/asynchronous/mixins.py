@@ -31,8 +31,9 @@ class BaseAsyncModbusClient(BaseModbusClient):
         self._connected = False
         self._timeout = timeout
 
+        framer_inst = framer(ClientDecoder()) if framer else ModbusSocketFramer(ClientDecoder())
         super(BaseAsyncModbusClient, self).__init__(
-            framer or ModbusSocketFramer(ClientDecoder()), **kwargs
+            framer_inst, **kwargs
         )
 
 

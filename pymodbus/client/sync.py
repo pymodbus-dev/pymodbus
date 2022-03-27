@@ -290,7 +290,11 @@ class ModbusTcpClient(BaseModbusClient):
         time_ = time.time()
         end = time_ + timeout
         while recv_size > 0:
-            ready = select.select([self.socket], [], [], end - time_)
+            try:
+                ready = select.select([self.socket], [], [], end - time_)
+            except ValueError:
+                return self._handle_abrupt_socket_close(
+                    size, data, time.time() - time_)
             if ready[0]:
                 recv_data = self.socket.recv(recv_size)
                 if recv_data == b'':

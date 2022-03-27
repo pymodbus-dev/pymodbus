@@ -1,5 +1,9 @@
 version 3.0.0dev2
 ----------------------------------------------------------
+* Fix mask_write_register call. (#685)
+* Add support for byte strings in the device information fields (#693)
+* Catch socket going away. (#722)
+* Misc typo errors (#718)
 
 version 3.0.0dev1
 ----------------------------------------------------------

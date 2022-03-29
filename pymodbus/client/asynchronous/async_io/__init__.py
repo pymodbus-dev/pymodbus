@@ -835,6 +835,7 @@ class AsyncioModbusSerialClient(object):
             _logger.error('Factory protocol disconnect callback '
                           'called while not connected.')
 
+
 async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     """
     Helper function to initialize tcp client
@@ -852,8 +853,7 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     return client
 
 
-@asyncio.coroutine
-def init_tls_client(proto_cls, loop, host, port, sslctx=None,
+async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
                     server_hostname=None, framer=None, **kwargs):
     """
     Helper function to initialize tcp client
@@ -873,6 +873,7 @@ def init_tls_client(proto_cls, loop, host, port, sslctx=None,
                                                 **kwargs)
     await client.start(host, port, sslctx, server_hostname)
     return client
+
 
 async def init_udp_client(proto_cls, loop, host, port, **kwargs):
     """

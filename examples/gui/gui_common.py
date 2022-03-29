@@ -13,12 +13,13 @@ from threading import Thread
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
 from pymodbus.server.asynchronous import ModbusServerFactory
-from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #
 import logging
+
 log = logging.getLogger("pymodbus")
 
 # -------------------------------------------------------------------------- #
@@ -27,8 +28,10 @@ log = logging.getLogger("pymodbus")
 
 
 class ConfigurationException(Exception):
-    """ Exception for configuration error """
+    """Exception for configuration error"""
+
     pass
+
 
 # -------------------------------------------------------------------------- #
 # Extra Global Functions
@@ -38,8 +41,9 @@ class ConfigurationException(Exception):
 
 
 def root_test():
-    """ Simple test to see if we are running as root """
+    """Simple test to see if we are running as root"""
     return getpass.getuser() == "root"
+
 
 # -------------------------------------------------------------------------- #
 # Simulator Class
@@ -69,33 +73,34 @@ class Simulator(object):
             raise ConfigurationException("File not found %s" % config)
 
     def _parse(self):
-        """ Parses the config file and creates a server context """
+        """Parses the config file and creates a server context"""
         try:
             handle = pickle.load(self.file)
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
+            dsd = handle["di"]
+            csd = handle["ci"]
+            hsd = handle["hr"]
+            isd = handle["ir"]
         except KeyError:
             raise ConfigurationException("Invalid Configuration")
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
 
     def _simulator(self):
-        """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        """Starts the snmp simulator"""
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                log.debug('listening on port %d' % port)
+                log.debug("listening on port %d" % port)
                 return port
             except twisted_error.CannotListenError:
                 pass
 
     def run(self):
-        """ Used to run the simulator """
-        log.debug('simulator started')
+        """Used to run the simulator"""
+        log.debug("simulator started")
         reactor.callWhenRunning(self._simulator)
+
 
 # -------------------------------------------------------------------------- #
 # Network reset thread
@@ -113,10 +118,10 @@ class NetworkReset(Thread):
     """
 
     def __init__(self):
-        """ Initialize a new network reset thread """
+        """Initialize a new network reset thread"""
         Thread.__init__(self)
         self.setDaemon(True)
 
     def run(self):
-        """ Run the network reset """
+        """Run the network reset"""
         os.system("/etc/init.d/networking restart")

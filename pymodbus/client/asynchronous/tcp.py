@@ -16,8 +16,17 @@ class AsyncModbusTCPClient(object):
 
         from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
-                framer=None, source_address=None, timeout=None, **kwargs):
+
+    def __new__(
+        cls,
+        scheduler,
+        host="127.0.0.1",
+        port=Defaults.Port,
+        framer=None,
+        source_address=None,
+        timeout=None,
+        **kwargs
+    ):
         """
         Scheduler to use:
             - reactor (Twisted)
@@ -33,8 +42,12 @@ class AsyncModbusTCPClient(object):
         :return:
         """
         factory_class = get_factory(scheduler)
-        yieldable = factory_class(host=host, port=port, framer=framer,
-                                  source_address=source_address,
-                                  timeout=timeout, **kwargs)
+        yieldable = factory_class(
+            host=host,
+            port=port,
+            framer=framer,
+            source_address=source_address,
+            timeout=timeout,
+            **kwargs
+        )
         return yieldable
-

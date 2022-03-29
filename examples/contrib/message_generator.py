@@ -13,6 +13,7 @@ for the supplied modbus format:
 """
 from optparse import OptionParser
 import codecs as c
+
 # -------------------------------------------------------------------------- #
 # import all the available framers
 # -------------------------------------------------------------------------- #
@@ -20,6 +21,7 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+
 # -------------------------------------------------------------------------- #
 # import all available messages
 # -------------------------------------------------------------------------- #
@@ -36,6 +38,7 @@ from pymodbus.register_write_message import *
 # initialize logging
 # -------------------------------------------------------------------------- #
 import logging
+
 modbus_log = logging.getLogger("pymodbus")
 
 
@@ -52,19 +55,15 @@ _request_messages = [
     WriteSingleRegisterRequest,
     WriteSingleCoilRequest,
     ReadWriteMultipleRegistersRequest,
-
     ReadExceptionStatusRequest,
     GetCommEventCounterRequest,
     GetCommEventLogRequest,
     ReportSlaveIdRequest,
-
     ReadFileRecordRequest,
     WriteFileRecordRequest,
     MaskWriteRegisterRequest,
     ReadFifoQueueRequest,
-
     ReadDeviceInformationRequest,
-
     ReturnQueryDataRequest,
     RestartCommunicationsOptionRequest,
     ReturnDiagnosticRegisterRequest,
@@ -81,7 +80,7 @@ _request_messages = [
     ReturnSlaveBusCharacterOverrunCountRequest,
     ReturnIopOverrunCountRequest,
     ClearOverrunCountRequest,
-    GetClearModbusPlusRequest
+    GetClearModbusPlusRequest,
 ]
 
 
@@ -98,19 +97,15 @@ _response_messages = [
     WriteSingleRegisterResponse,
     WriteSingleCoilResponse,
     ReadWriteMultipleRegistersResponse,
-
     ReadExceptionStatusResponse,
     GetCommEventCounterResponse,
     GetCommEventLogResponse,
     ReportSlaveIdResponse,
-
     ReadFileRecordResponse,
     WriteFileRecordResponse,
     MaskWriteRegisterResponse,
     ReadFifoQueueResponse,
-
     ReadDeviceInformationResponse,
-
     ReturnQueryDataResponse,
     RestartCommunicationsOptionResponse,
     ReturnDiagnosticRegisterResponse,
@@ -127,7 +122,7 @@ _response_messages = [
     ReturnSlaveBusCharacterOverrunCountResponse,
     ReturnIopOverrunCountResponse,
     ClearOverrunCountResponse,
-    GetClearModbusPlusResponse
+    GetClearModbusPlusResponse,
 ]
 
 
@@ -140,17 +135,17 @@ _response_messages = [
 # their default values.
 # -------------------------------------------------------------------------- #
 _arguments = {
-    'address': 0x12,
-    'count': 0x08,
-    'value': 0x01,
-    'values': [0x01] * 8,
-    'read_address': 0x12,
-    'read_count': 0x08,
-    'write_address': 0x12,
-    'write_registers': [0x01] * 8,
-    'transaction': 0x01,
-    'protocol': 0x00,
-    'unit': 0xff,
+    "address": 0x12,
+    "count": 0x08,
+    "value": 0x01,
+    "values": [0x01] * 8,
+    "read_address": 0x12,
+    "read_count": 0x08,
+    "write_address": 0x12,
+    "write_registers": [0x01] * 8,
+    "transaction": 0x01,
+    "protocol": 0x00,
+    "unit": 0xFF,
 }
 
 
@@ -158,7 +153,7 @@ _arguments = {
 # generate all the requested messages
 # -------------------------------------------------------------------------- #
 def generate_messages(framer, options):
-    """ A helper method to parse the command line options
+    """A helper method to parse the command line options
 
     :param framer: The framer to encode the messages with
     :param options: The message options to use
@@ -172,48 +167,68 @@ def generate_messages(framer, options):
         print("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = c.encode(packet, 'hex_codec').decode('utf-8')
-        print ("{}\n".format(packet))   # because ascii ends with a \r\n
+            packet = c.encode(packet, "hex_codec").decode("utf-8")
+        print("{}\n".format(packet))  # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
 # initialize our program settings
 # -------------------------------------------------------------------------- #
 def get_options():
-    """ A helper method to parse the command line options
+    """A helper method to parse the command line options
 
     :returns: The options manager
     """
     parser = OptionParser()
 
-    parser.add_option("-f", "--framer",
-                      help="The type of framer to use "
-                           "(tcp, rtu, binary, ascii)",
-                      dest="framer", default="tcp")
+    parser.add_option(
+        "-f",
+        "--framer",
+        help="The type of framer to use " "(tcp, rtu, binary, ascii)",
+        dest="framer",
+        default="tcp",
+    )
 
-    parser.add_option("-D", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
-    parser.add_option("-a", "--ascii",
-                      help="The indicates that the message is ascii",
-                      action="store_true", dest="ascii", default=True)
+    parser.add_option(
+        "-a",
+        "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true",
+        dest="ascii",
+        default=True,
+    )
 
-    parser.add_option("-b", "--binary",
-                      help="The indicates that the message is binary",
-                      action="store_false", dest="ascii")
+    parser.add_option(
+        "-b",
+        "--binary",
+        help="The indicates that the message is binary",
+        action="store_false",
+        dest="ascii",
+    )
 
-    parser.add_option("-m", "--messages",
-                      help="The messages to encode (rx, tx)",
-                      dest="messages", default='rx')
+    parser.add_option(
+        "-m",
+        "--messages",
+        help="The messages to encode (rx, tx)",
+        dest="messages",
+        default="rx",
+    )
 
     (opt, arg) = parser.parse_args()
     return opt
 
 
 def main():
-    """ The main runner function
-    """
+    """The main runner function"""
     option = get_options()
 
     if option.debug:
@@ -224,10 +239,10 @@ def main():
             print("Logging is not supported on this system")
 
     framer = lookup = {
-        'tcp':    ModbusSocketFramer,
-        'rtu':    ModbusRtuFramer,
-        'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer,
+        "tcp": ModbusSocketFramer,
+        "rtu": ModbusRtuFramer,
+        "binary": ModbusBinaryFramer,
+        "ascii": ModbusAsciiFramer,
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

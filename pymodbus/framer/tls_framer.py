@@ -8,6 +8,7 @@ from pymodbus.framer import ModbusFramer, TLS_FRAME_HEADER
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
@@ -16,7 +17,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ModbusTlsFramer(ModbusFramer):
-    """ Modbus TLS Frame controller
+    """Modbus TLS Frame controller
 
     No prefix MBAP header before decrypted PDU is used as a message frame for
     Modbus Security Application Protocol.  It allows us to easily separate
@@ -27,11 +28,11 @@ class ModbusTlsFramer(ModbusFramer):
     """
 
     def __init__(self, decoder, client=None):
-        """ Initializes a new instance of the framer
+        """Initializes a new instance of the framer
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
+        self._buffer = b""
         self._header = {}
         self._hsize = 0x0
         self.decoder = decoder
@@ -52,16 +53,16 @@ class ModbusTlsFramer(ModbusFramer):
         return False
 
     def advanceFrame(self):
-        """ Skip over the current framed message
+        """Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = b''
+        self._buffer = b""
         self._header = {}
 
     def isFrameReady(self):
-        """ Check if we should continue decode logic
+        """Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder factory know that there is still data in the buffer.
 
@@ -70,18 +71,18 @@ class ModbusTlsFramer(ModbusFramer):
         return len(self._buffer) > self._hsize
 
     def addToFrame(self, message):
-        """ Adds new packet data to the current frame buffer
+        """Adds new packet data to the current frame buffer
 
         :param message: The most recent packet
         """
         self._buffer += message
 
     def getFrame(self):
-        """ Return the next frame from the buffered data
+        """Return the next frame from the buffered data
 
         :returns: The next full frame buffer
         """
-        return self._buffer[self._hsize:]
+        return self._buffer[self._hsize :]
 
     def populateResult(self, result):
         """
@@ -97,7 +98,7 @@ class ModbusTlsFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
         if len(data) > self._hsize:
-            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0:self._hsize+1])
+            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0 : self._hsize + 1])
             return dict(fcode=fcode)
         return dict()
 
@@ -133,8 +134,9 @@ class ModbusTlsFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    _logger.debug("Not in valid unit id - {}, "
-                                  "ignoring!!".format(unit))
+                    _logger.debug(
+                        "Not in valid unit id - {}, " "ignoring!!".format(unit)
+                    )
                     self.resetFrame()
             else:
                 _logger.debug("Frame check failed, ignoring!!")
@@ -164,7 +166,7 @@ class ModbusTlsFramer(ModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
+        self._buffer = b""
 
     def getRawFrame(self):
         """
@@ -173,7 +175,7 @@ class ModbusTlsFramer(ModbusFramer):
         return self._buffer
 
     def buildPacket(self, message):
-        """ Creates a ready to send modbus packet
+        """Creates a ready to send modbus packet
 
         :param message: The populated request/response to send
         """
@@ -181,5 +183,6 @@ class ModbusTlsFramer(ModbusFramer):
         packet = struct.pack(TLS_FRAME_HEADER, message.function_code)
         packet += data
         return packet
+
 
 # __END__

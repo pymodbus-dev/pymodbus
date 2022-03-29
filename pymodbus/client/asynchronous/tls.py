@@ -18,9 +18,21 @@ class AsyncModbusTLSClient(object):
 
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort,
-                framer=None, sslctx=None, certfile=None, keyfile=None,
-                password=None, source_address=None, timeout=None, **kwargs):
+
+    def __new__(
+        cls,
+        scheduler,
+        host="127.0.0.1",
+        port=Defaults.TLSPort,
+        framer=None,
+        sslctx=None,
+        certfile=None,
+        keyfile=None,
+        password=None,
+        source_address=None,
+        timeout=None,
+        **kwargs
+    ):
         """
         Scheduler to use:
             - async_io (asyncio)
@@ -39,10 +51,16 @@ class AsyncModbusTLSClient(object):
         """
         framer = framer or ModbusTlsFramer(ClientDecoder())
         factory_class = get_factory(scheduler)
-        yieldable = factory_class(host=host, port=port, sslctx=sslctx,
-                                  certfile=certfile, keyfile=keyfile,
-                                  password=password, framer=framer,
-                                  source_address=source_address,
-                                  timeout=timeout, **kwargs)
+        yieldable = factory_class(
+            host=host,
+            port=port,
+            sslctx=sslctx,
+            certfile=certfile,
+            keyfile=keyfile,
+            password=password,
+            framer=framer,
+            source_address=source_address,
+            timeout=timeout,
+            **kwargs
+        )
         return yieldable
-

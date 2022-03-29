@@ -9,37 +9,43 @@ import random
 import logging
 from pymodbus.version import version as pymodbus_version
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
-from pymodbus.datastore.store import (ModbusSparseDataBlock,
-                                      ModbusSequentialDataBlock)
+from pymodbus.datastore.store import ModbusSparseDataBlock, ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.device import ModbusDeviceIdentification
 
 try:
     from aiohttp import web
 except ImportError as e:
-    print("Reactive server requires aiohttp. "
-          "Please install with 'pip install aiohttp' and try again.")
+    print(
+        "Reactive server requires aiohttp. "
+        "Please install with 'pip install aiohttp' and try again."
+    )
     exit(1)
 
-from pymodbus.server.async_io import (ModbusTcpServer,
-                                      ModbusTlsServer,
-                                      ModbusSerialServer,
-                                      ModbusUdpServer,
-                                      ModbusSingleRequestHandler,
-                                      ModbusConnectedRequestHandler,
-                                      ModbusDisconnectedRequestHandler)
-from pymodbus.transaction import (ModbusRtuFramer,
-                                  ModbusSocketFramer,
-                                  ModbusTlsFramer,
-                                  ModbusAsciiFramer,
-                                  ModbusBinaryFramer)
+from pymodbus.server.async_io import (
+    ModbusTcpServer,
+    ModbusTlsServer,
+    ModbusSerialServer,
+    ModbusUdpServer,
+    ModbusSingleRequestHandler,
+    ModbusConnectedRequestHandler,
+    ModbusDisconnectedRequestHandler,
+)
+from pymodbus.transaction import (
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+)
+
 logger = logging.getLogger(__name__)
 
 SERVER_MAPPER = {
     "tcp": ModbusTcpServer,
     "serial": ModbusSerialServer,
     "udp": ModbusUdpServer,
-    "tls": ModbusTlsServer
+    "tls": ModbusTlsServer,
 }
 
 DEFAULT_FRAMER = {
@@ -48,30 +54,26 @@ DEFAULT_FRAMER = {
     "tls": ModbusTlsFramer,
     "udp": ModbusSocketFramer,
     "ascii": ModbusAsciiFramer,
-    "binary": ModbusBinaryFramer
+    "binary": ModbusBinaryFramer,
 }
 
 DEFAULT_MANIPULATOR = {
     "response_type": "normal",  # normal, error, delayed, empty
     "delay_by": 0,
     "error_code": ModbusExceptions.IllegalAddress,
-    "clear_after": 5  # request count
-
+    "clear_after": 5,  # request count
 }
 DEFUALT_HANDLERS = {
     "ModbusSingleRequestHandler": ModbusSingleRequestHandler,
     "ModbusConnectedRequestHandler": ModbusConnectedRequestHandler,
-    "ModbusDisconnectedRequestHandler": ModbusDisconnectedRequestHandler
+    "ModbusDisconnectedRequestHandler": ModbusDisconnectedRequestHandler,
 }
-DEFAULT_MODBUS_MAP = {"start_offset": 0,
-                      "count": 100,
-                      "value": 0, "sparse": False}
+DEFAULT_MODBUS_MAP = {"start_offset": 0, "count": 100, "value": 0, "sparse": False}
 DEFAULT_DATA_BLOCK = {
     "co": DEFAULT_MODBUS_MAP,
     "di": DEFAULT_MODBUS_MAP,
     "ir": DEFAULT_MODBUS_MAP,
-    "hr": DEFAULT_MODBUS_MAP
-
+    "hr": DEFAULT_MODBUS_MAP,
 }
 
 HINT = """
@@ -90,6 +92,7 @@ class ReactiveServer:
     Modbus Asynchronous Server which can manipulate the response dynamically.
     Useful for testing
     """
+
     def __init__(self, host, port, modbus_server, loop=None):
         self._web_app = web.Application()
         self._runner = web.AppRunner(self._web_app)
@@ -118,8 +121,7 @@ class ReactiveServer:
             self._manipulator_config.update(**value)
 
     def _add_routes(self):
-        self._web_app.add_routes([
-            web.post('/', self._response_manipulator)])
+        self._web_app.add_routes([web.post("/", self._response_manipulator)])
 
     async def start_modbus_server(self, app):
         """
@@ -131,16 +133,19 @@ class ReactiveServer:
             if hasattr(asyncio, "create_task"):
                 if isinstance(self._modbus_server, ModbusSerialServer):
                     app["modbus_serial_server"] = asyncio.create_task(
-                        self._modbus_server.start())
+                        self._modbus_server.start()
+                    )
                 app["modbus_server"] = asyncio.create_task(
-                    self._modbus_server.serve_forever())
+                    self._modbus_server.serve_forever()
+                )
             else:
                 if isinstance(self._modbus_server, ModbusSerialServer):
                     app["modbus_serial_server"] = asyncio.ensure_future(
                         self._modbus_server.start()
                     )
                 app["modbus_server"] = asyncio.ensure_future(
-                    self._modbus_server.serve_forever())
+                    self._modbus_server.serve_forever()
+                )
 
             logger.info("Modbus server started")
         except Exception as e:
@@ -196,15 +201,15 @@ class ReactiveServer:
         else:
             clear_after = self._manipulator_config.get("clear_after")
             if clear_after and self._counter > clear_after:
-                logger.info("Resetting manipulator"
-                            " after {} responses".format(clear_after))
+                logger.info(
+                    "Resetting manipulator" " after {} responses".format(clear_after)
+                )
                 self.update_manipulator_config(dict(DEFAULT_MANIPULATOR))
                 return response
             response_type = self._manipulator_config.get("response_type")
             if response_type == "error":
                 error_code = self._manipulator_config.get("error_code")
-                logger.warning(
-                    "Sending error response for all incoming requests")
+                logger.warning("Sending error response for all incoming requests")
                 err_response = ExceptionResponse(response.function_code, error_code)
                 err_response.transaction_id = response.transaction_id
                 err_response.unit_id = response.unit_id
@@ -214,7 +219,8 @@ class ReactiveServer:
                 delay_by = self._manipulator_config.get("delay_by")
                 logger.warning(
                     "Delaying response by {}s for "
-                    "all incoming requests".format(delay_by))
+                    "all incoming requests".format(delay_by)
+                )
                 time.sleep(delay_by)
                 self._counter += 1
             elif response_type == "empty":
@@ -224,8 +230,9 @@ class ReactiveServer:
             elif response_type == "stray":
                 data_len = self._manipulator_config.get("data_len", 10)
                 if data_len <= 0:
-                    logger.warning(f"Invalid data_len {data_len}. "
-                                   f"Using default lenght 10")
+                    logger.warning(
+                        f"Invalid data_len {data_len}. " f"Using default lenght 10"
+                    )
                     data_len = 10
                 response = os.urandom(data_len)
                 self._counter += 1
@@ -237,12 +244,13 @@ class ReactiveServer:
         Run Web app
         :return:
         """
+
         def _info(message):
             msg = HINT.format(message, self._host, self._port)
             print(msg)
             # print(message)
-        web.run_app(self._web_app, host=self._host, port=self._port,
-                    print=_info)
+
+        web.run_app(self._web_app, host=self._host, port=self._port, print=_info)
 
     async def run_async(self):
         """
@@ -257,11 +265,15 @@ class ReactiveServer:
             logger.error(e)
 
     @classmethod
-    def create_identity(cls, vendor="Pymodbus", product_code="PM",
-                        vendor_url='http://github.com/riptideio/pymodbus/',
-                        product_name="Pymodbus Server",
-                        model_name="Reactive Server",
-                        version=pymodbus_version.short()):
+    def create_identity(
+        cls,
+        vendor="Pymodbus",
+        product_code="PM",
+        vendor_url="http://github.com/riptideio/pymodbus/",
+        product_name="Pymodbus Server",
+        model_name="Reactive Server",
+        version=pymodbus_version.short(),
+    ):
         """
         Create modbus identity
         :param vendor:
@@ -283,8 +295,7 @@ class ReactiveServer:
         return identity
 
     @classmethod
-    def create_context(cls, data_block=None, unit=1,
-                       single=False):
+    def create_context(cls, data_block=None, unit=1, single=False):
         """
         Create Modbus context.
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
@@ -298,18 +309,21 @@ class ReactiveServer:
             start_address = block_desc.get("start_address", 0)
             default_count = block_desc.get("count", 0)
             default_value = block_desc.get("value", 0)
-            default_values = [default_value]*default_count
+            default_values = [default_value] * default_count
             sparse = block_desc.get("sparse", False)
             db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
             if sparse:
                 address_map = block_desc.get("address_map")
                 if not address_map:
                     address_map = random.sample(
-                        range(start_address+1, default_count), default_count-1)
+                        range(start_address + 1, default_count), default_count - 1
+                    )
                     address_map.insert(0, 0)
-                block[modbus_entity] = {add: val for add in sorted(address_map) for val in default_values}
+                block[modbus_entity] = {
+                    add: val for add in sorted(address_map) for val in default_values
+                }
             else:
-                block[modbus_entity] =db(start_address, default_values)
+                block[modbus_entity] = db(start_address, default_values)
 
         slave_context = ModbusSlaveContext(**block, zero_mode=True)
         if not single:
@@ -322,9 +336,21 @@ class ReactiveServer:
         return server_context
 
     @classmethod
-    def factory(cls, server, framer=None, context=None, unit=1, single=False,
-                host="localhost", modbus_port=5020, web_port=8080,
-                data_block=DEFAULT_DATA_BLOCK, identity=None, loop=None, **kwargs):
+    def factory(
+        cls,
+        server,
+        framer=None,
+        context=None,
+        unit=1,
+        single=False,
+        host="localhost",
+        modbus_port=5020,
+        web_port=8080,
+        data_block=DEFAULT_DATA_BLOCK,
+        identity=None,
+        loop=None,
+        **kwargs,
+    ):
         """
         Factory to create ReactiveModbusServer
         :param server: Modbus server type (tcp, rtu, tls, udp)
@@ -348,18 +374,24 @@ class ReactiveServer:
         if not framer:
             framer = DEFAULT_FRAMER.get(server)
         if not context:
-            context = cls.create_context(data_block=data_block,
-                                         unit=unit, single=single)
+            context = cls.create_context(
+                data_block=data_block, unit=unit, single=single
+            )
         if not identity:
             identity = cls.create_identity()
         if server == ModbusSerialServer:
             kwargs["port"] = modbus_port
-            server = server(context, framer=framer, identity=identity,
-                            **kwargs)
+            server = server(context, framer=framer, identity=identity, **kwargs)
         else:
-            server = server(context, framer=framer, identity=identity,
-                            address=(host, modbus_port), defer_start=False,
-                            **kwargs)
+            server = server(
+                context,
+                framer=framer,
+                identity=identity,
+                address=(host, modbus_port),
+                defer_start=False,
+                **kwargs,
+            )
         return ReactiveServer(host, web_port, server, loop)
+
 
 # __END__

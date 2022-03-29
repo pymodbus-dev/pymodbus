@@ -16,9 +16,15 @@ from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 
-from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as AsyncTornadoModbusSerialClient
-from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as AsyncTornadoModbusTcpClient
-from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as AsyncTornadoModbusUdoClient
+from pymodbus.client.asynchronous.tornado import (
+    AsyncModbusSerialClient as AsyncTornadoModbusSerialClient,
+)
+from pymodbus.client.asynchronous.tornado import (
+    AsyncModbusTCPClient as AsyncTornadoModbusTcpClient,
+)
+from pymodbus.client.asynchronous.tornado import (
+    AsyncModbusUDPClient as AsyncTornadoModbusUdoClient,
+)
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
@@ -33,7 +39,7 @@ IS_WINDOWS = platform.system().lower() == "windows"
 OSX_SIERRA = parse_version("10.12")
 if IS_DARWIN:
     IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
+    SERIAL_PORT = "/dev/ptyp0" if not IS_HIGH_SIERRA_OR_ABOVE else "/dev/ttyp0"
 else:
     IS_HIGH_SIERRA_OR_ABOVE = False
     if IS_WINDOWS:
@@ -74,42 +80,48 @@ class TestAsynchronousClient(object):
         :return:
         """
         from twisted.internet import reactor
+
         with patch("twisted.internet.reactor") as mock_reactor:
+
             def test_callback(client):
                 pass
 
             def test_errback(client):
                 pass
-            AsyncModbusTCPClient(schedulers.REACTOR,
-                                 framer=ModbusSocketFramer(ClientDecoder()),
-                                 callback=test_callback,
-                                 errback=test_errback)
+
+            AsyncModbusTCPClient(
+                schedulers.REACTOR,
+                framer=ModbusSocketFramer(ClientDecoder()),
+                callback=test_callback,
+                errback=test_errback,
+            )
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
     def testTcpTornadoClient(self, mock_iostream, mock_ioloop):
-        """ Test the TCP tornado client client initialize """
-        protocol, future = AsyncModbusTCPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
+        """Test the TCP tornado client client initialize"""
+        protocol, future = AsyncModbusTCPClient(
+            schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder())
+        )
         client = future.result()
-        assert(isinstance(client, AsyncTornadoModbusTcpClient))
-        assert(0 == len(list(client.transaction)))
-        assert(isinstance(client.framer, ModbusSocketFramer))
-        assert(client.port == 502)
+        assert isinstance(client, AsyncTornadoModbusTcpClient)
+        assert 0 == len(list(client.transaction))
+        assert isinstance(client.framer, ModbusSocketFramer)
+        assert client.port == 502
         assert client._connected
-        assert(client.stream.connect.call_count == 1)
-        assert(client.stream.read_until_close.call_count == 1)
+        assert client.stream.connect.call_count == 1
+        assert client.stream.read_until_close.call_count == 1
 
         def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
+            assert isinstance(failure.exception(), ConnectionException)
 
         d = client._build_response(0x00)
         d.add_done_callback(handle_failure)
 
-        assert(client._connected)
+        assert client._connected
         client.close()
         protocol.stop()
-        assert(not client._connected)
-
+        assert not client._connected
 
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather")
@@ -124,22 +136,21 @@ class TestAsynchronousClient(object):
     # Test TLS Client client
     # -----------------------------------------------------------------------#
 
-
     def testTlsAsyncioClient(self):
         """
         Test the TLS AsyncIO client
         """
         loop, client = AsyncModbusTLSClient(schedulers.ASYNC_IO)
-        assert(isinstance(client, ReconnectingAsyncioModbusTlsClient))
-        assert(isinstance(client.framer, ModbusTlsFramer))
-        assert(isinstance(client.sslctx, ssl.SSLContext))
-        assert(client.port == 802)
+        assert isinstance(client, ReconnectingAsyncioModbusTlsClient)
+        assert isinstance(client.framer, ModbusTlsFramer)
+        assert isinstance(client.sslctx, ssl.SSLContext)
+        assert client.port == 802
 
         def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
+            assert isinstance(failure.exception(), ConnectionException)
 
         client.stop()
-        assert(client.host is None)
+        assert client.host is None
 
     # -----------------------------------------------------------------------#
     # Test UDP client
@@ -148,31 +159,34 @@ class TestAsynchronousClient(object):
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
     def testUdpTornadoClient(self, mock_iostream, mock_ioloop):
-        """ Test the udp tornado client client initialize """
-        protocol, future = AsyncModbusUDPClient(schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
+        """Test the udp tornado client client initialize"""
+        protocol, future = AsyncModbusUDPClient(
+            schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder())
+        )
         client = future.result()
-        assert(isinstance(client, AsyncTornadoModbusUdoClient))
-        assert(0 == len(list(client.transaction)))
-        assert(isinstance(client.framer, ModbusSocketFramer))
-        assert(client.port == 502)
-        assert(client._connected)
+        assert isinstance(client, AsyncTornadoModbusUdoClient)
+        assert 0 == len(list(client.transaction))
+        assert isinstance(client.framer, ModbusSocketFramer)
+        assert client.port == 502
+        assert client._connected
 
         def handle_failure(failure):
-            assert(isinstance(failure.exception(), ConnectionException))
+            assert isinstance(failure.exception(), ConnectionException)
 
         d = client._build_response(0x00)
         d.add_done_callback(handle_failure)
 
-        assert(client._connected)
+        assert client._connected
         client.close()
         protocol.stop()
-        assert(not client._connected)
+        assert not client._connected
 
     def testUdpTwistedClient(self):
-        """ Test the udp twisted client client initialize """
+        """Test the udp twisted client client initialize"""
         with pytest.raises(NotImplementedError):
-            AsyncModbusUDPClient(schedulers.REACTOR,
-                                 framer=ModbusSocketFramer(ClientDecoder()))
+            AsyncModbusUDPClient(
+                schedulers.REACTOR, framer=ModbusSocketFramer(ClientDecoder())
+            )
 
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
@@ -186,77 +200,103 @@ class TestAsynchronousClient(object):
     # -----------------------------------------------------------------------#
 
     @pytest.mark.skipif(
-        sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
-        reason='Twisted serial requires pywin32 which is not compatible with PyPy',
+        sys.platform == "win32" and platform.python_implementation() == "PyPy",
+        reason="Twisted serial requires pywin32 which is not compatible with PyPy",
     )
-    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
-                                                ("socket", ModbusSocketFramer),
-                                                ("binary", ModbusBinaryFramer),
-                                                ("ascii", ModbusAsciiFramer)])
+    @pytest.mark.parametrize(
+        "method, framer",
+        [
+            ("rtu", ModbusRtuFramer),
+            ("socket", ModbusSocketFramer),
+            ("binary", ModbusBinaryFramer),
+            ("ascii", ModbusAsciiFramer),
+        ],
+    )
     def testSerialTwistedClient(self, method, framer):
-        """ Test the serial twisted client client initialize """
+        """Test the serial twisted client client initialize"""
         from serial import Serial
+
         with patch("serial.Serial") as mock_sp:
             from twisted.internet import reactor
             from twisted.internet.serialport import SerialPort
-            with maybe_manage(sys.platform == 'win32', patch.object(SerialPort, "_finishPortSetup")):
-                with patch('twisted.internet.reactor') as mock_reactor:
 
-                    protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
-                                                               method=method,
-                                                               port=SERIAL_PORT,
-                                                               proto_cls=ModbusSerClientProtocol)
+            with maybe_manage(
+                sys.platform == "win32", patch.object(SerialPort, "_finishPortSetup")
+            ):
+                with patch("twisted.internet.reactor") as mock_reactor:
 
-                    assert (isinstance(client, SerialPort))
-                    assert (isinstance(client.protocol, ModbusSerClientProtocol))
-                    assert (0 == len(list(client.protocol.transaction)))
-                    assert (isinstance(client.protocol.framer, framer))
-                    assert (client.protocol._connected)
+                    protocol, client = AsyncModbusSerialClient(
+                        schedulers.REACTOR,
+                        method=method,
+                        port=SERIAL_PORT,
+                        proto_cls=ModbusSerClientProtocol,
+                    )
+
+                    assert isinstance(client, SerialPort)
+                    assert isinstance(client.protocol, ModbusSerClientProtocol)
+                    assert 0 == len(list(client.protocol.transaction))
+                    assert isinstance(client.protocol.framer, framer)
+                    assert client.protocol._connected
 
                     def handle_failure(failure):
-                        assert (isinstance(failure.exception(), ConnectionException))
+                        assert isinstance(failure.exception(), ConnectionException)
 
                     d = client.protocol._buildResponse(0x00)
                     d.addCallback(handle_failure)
 
-                    assert (client.protocol._connected)
+                    assert client.protocol._connected
                     client.protocol.close()
                     protocol.stop()
-                    assert (not client.protocol._connected)
+                    assert not client.protocol._connected
 
-    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
-                                                ("socket", ModbusSocketFramer),
-                                                ("binary", ModbusBinaryFramer),
-                                                ("ascii", ModbusAsciiFramer)])
+    @pytest.mark.parametrize(
+        "method, framer",
+        [
+            ("rtu", ModbusRtuFramer),
+            ("socket", ModbusSocketFramer),
+            ("binary", ModbusBinaryFramer),
+            ("ascii", ModbusAsciiFramer),
+        ],
+    )
     def testSerialTornadoClient(self, method, framer):
-        """ Test the serial tornado client client initialize """
+        """Test the serial tornado client client initialize"""
         from serial import Serial
-        with maybe_manage(sys.platform in ('darwin', 'win32'), patch.object(Serial, "open")):
-            protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
+
+        with maybe_manage(
+            sys.platform in ("darwin", "win32"), patch.object(Serial, "open")
+        ):
+            protocol, future = AsyncModbusSerialClient(
+                schedulers.IO_LOOP, method=method, port=SERIAL_PORT
+            )
             client = future.result()
-            assert(isinstance(client, AsyncTornadoModbusSerialClient))
-            assert(0 == len(list(client.transaction)))
-            assert(isinstance(client.framer, framer))
-            assert(client.port == SERIAL_PORT)
-            assert(client._connected)
+            assert isinstance(client, AsyncTornadoModbusSerialClient)
+            assert 0 == len(list(client.transaction))
+            assert isinstance(client.framer, framer)
+            assert client.port == SERIAL_PORT
+            assert client._connected
 
             def handle_failure(failure):
-                assert(isinstance(failure.exception(), ConnectionException))
+                assert isinstance(failure.exception(), ConnectionException)
 
             d = client._build_response(0x00)
             d.add_done_callback(handle_failure)
 
-            assert(client._connected)
+            assert client._connected
             client.close()
             protocol.stop()
-            assert(not client._connected)
+            assert not client._connected
 
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
-    @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
-                                                ("socket", ModbusSocketFramer),
-                                                ("binary", ModbusBinaryFramer),
-                                                ("ascii", ModbusAsciiFramer)])
+    @pytest.mark.parametrize(
+        "method, framer",
+        [
+            ("rtu", ModbusRtuFramer),
+            ("socket", ModbusSocketFramer),
+            ("binary", ModbusBinaryFramer),
+            ("ascii", ModbusAsciiFramer),
+        ],
+    )
     def testSerialAsyncioClient(self, mock_gather, mock_event_loop, method, framer):
         """
         Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler.
@@ -264,17 +304,26 @@ class TestAsynchronousClient(object):
         """
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False
-        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
-                                               baudrate=19200, parity='E', stopbits=2, bytesize=7)
-        assert(isinstance(client, AsyncioModbusSerialClient))
-        assert(isinstance(client.framer, framer))
-        assert(client.port == SERIAL_PORT)
-        assert(client.baudrate == 19200)
-        assert(client.parity == 'E')
-        assert(client.stopbits == 2)
-        assert(client.bytesize == 7)
+        loop, client = AsyncModbusSerialClient(
+            schedulers.ASYNC_IO,
+            method=method,
+            port=SERIAL_PORT,
+            loop=loop,
+            baudrate=19200,
+            parity="E",
+            stopbits=2,
+            bytesize=7,
+        )
+        assert isinstance(client, AsyncioModbusSerialClient)
+        assert isinstance(client.framer, framer)
+        assert client.port == SERIAL_PORT
+        assert client.baudrate == 19200
+        assert client.parity == "E"
+        assert client.stopbits == 2
+        assert client.bytesize == 7
         client.stop()
         loop.stop()
+
 
 # ---------------------------------------------------------------------------#
 # Main

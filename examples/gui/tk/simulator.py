@@ -16,6 +16,7 @@ from threading import Thread
 from Tkinter import *
 from tkFileDialog import askopenfilename as OpenFilename
 from twisted.internet import tksupport
+
 root = Tk()
 tksupport.install(root)
 
@@ -25,20 +26,23 @@ tksupport.install(root)
 from twisted.internet import reactor
 from twisted.internet import error as twisted_error
 from pymodbus.server.asynchronous import ModbusServerFactory
-from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 # Logging
-#--------------------------------------------------------------------------#
+# --------------------------------------------------------------------------#
 import logging
+
 log = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Application Error
 # --------------------------------------------------------------------------- #
 class ConfigurationException(Exception):
-    """ Exception for configuration error """
+    """Exception for configuration error"""
+
     pass
+
 
 # --------------------------------------------------------------------------- #
 # Extra Global Functions
@@ -46,8 +50,9 @@ class ConfigurationException(Exception):
 # These are extra helper functions that don't belong in a class
 # --------------------------------------------------------------------------- #
 def root_test():
-    """ Simple test to see if we are running as root """
+    """Simple test to see if we are running as root"""
     return getpass.getuser() == "root"
+
 
 # --------------------------------------------------------------------------- #
 # Simulator Class
@@ -75,32 +80,33 @@ class Simulator(object):
             raise ConfigurationException("File not found %s" % config)
 
     def _parse(self):
-        """ Parses the config file and creates a server context """
+        """Parses the config file and creates a server context"""
         try:
             handle = pickle.load(self.file)
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
+            dsd = handle["di"]
+            csd = handle["ci"]
+            hsd = handle["hr"]
+            isd = handle["ir"]
         except KeyError:
             raise ConfigurationException("Invalid Configuration")
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
 
     def _simulator(self):
-        """ Starts the snmp simulator """
-        ports = [502]+range(20000,25000)
+        """Starts the snmp simulator"""
+        ports = [502] + range(20000, 25000)
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                log.info('listening on port %d' % port)
+                log.info("listening on port %d" % port)
                 return port
             except twisted_error.CannotListenError:
                 pass
 
     def run(self):
-        """ Used to run the simulator """
+        """Used to run the simulator"""
         reactor.callWhenRunning(self._simulator)
+
 
 # --------------------------------------------------------------------------- #
 # Network reset thread
@@ -114,13 +120,15 @@ class NetworkReset(Thread):
     program to call the network restart function (an easy way to
     remove all the virtual interfaces)
     """
+
     def __init__(self):
         Thread.__init__(self)
         self.setDaemon(True)
 
     def run(self):
-        """ Run the network reset """
+        """Run the network reset"""
         os.system("/etc/init.d/networking restart")
+
 
 # --------------------------------------------------------------------------- #
 # Main Gui Class
@@ -129,12 +137,13 @@ class SimulatorFrame(Frame):
     """
     This class implements the GUI for the flasher application
     """
-    subnet  = 205
-    number  = 1
+
+    subnet = 205
+    number = 1
     restart = 0
 
     def __init__(self, master, font):
-        """ Sets up the gui, callback, and widget handles """
+        """Sets up the gui, callback, and widget handles"""
         Frame.__init__(self, master)
         self._widgets = []
 
@@ -148,13 +157,13 @@ class SimulatorFrame(Frame):
         button.pack(side=LEFT, padx=15)
         self._widgets.append(button)
 
-        button = Button(frame, text="Help",  command=self.help_clicked, font=font)
+        button = Button(frame, text="Help", command=self.help_clicked, font=font)
         button.pack(side=LEFT, padx=15)
         self._widgets.append(button)
 
         button = Button(frame, text="Close", command=self.close_clicked, font=font)
         button.pack(side=LEFT, padx=15)
-        #self._widgets.append(button) # we don't want to grey this out
+        # self._widgets.append(button) # we don't want to grey this out
 
         # --------------------------------------------------------------------------- #
         # Initialize Input Fields
@@ -176,7 +185,7 @@ class SimulatorFrame(Frame):
         entry.grid(row=1, column=1, pady=10)
         self._widgets.append(entry)
 
-        image = PhotoImage(file='fileopen.gif')
+        image = PhotoImage(file="fileopen.gif")
         button = Button(frame, image=image, command=self.file_clicked)
         button.image = image
         button.grid(row=1, column=2, pady=10)
@@ -189,53 +198,55 @@ class SimulatorFrame(Frame):
         entry.grid(row=2, column=1, pady=10)
         self._widgets.append(entry)
 
-        #if not root_test():
+        # if not root_test():
         #    self.error_dialog("This program must be run with root permissions!", True)
 
-# --------------------------------------------------------------------------- #
-# Gui helpers
-# --------------------------------------------------------------------------- #
-# Not callbacks, but used by them
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # Gui helpers
+    # --------------------------------------------------------------------------- #
+    # Not callbacks, but used by them
+    # --------------------------------------------------------------------------- #
     def show_buttons(self, state=False):
-        """ Greys out the buttons """
-        state = 'active' if state else 'disabled'
+        """Greys out the buttons"""
+        state = "active" if state else "disabled"
         for widget in self._widgets:
             widget.configure(state=state)
 
     def destroy_interfaces(self):
-        """ This is used to reset the virtual interfaces """
+        """This is used to reset the virtual interfaces"""
         if self.restart:
             n = NetworkReset()
             n.start()
 
     def error_dialog(self, message, quit=False):
-        """ Quick pop-up for error messages """
+        """Quick pop-up for error messages"""
         dialog = gtk.MessageDialog(
-            parent          = self.window,
-            flags           = gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
-            type            = gtk.MESSAGE_ERROR,
-            buttons         = gtk.BUTTONS_CLOSE,
-            message_format  = message)
-        dialog.set_title('Error')
+            parent=self.window,
+            flags=gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_MODAL,
+            type=gtk.MESSAGE_ERROR,
+            buttons=gtk.BUTTONS_CLOSE,
+            message_format=message,
+        )
+        dialog.set_title("Error")
         if quit:
             dialog.connect("response", lambda w, r: gtk.main_quit())
-        else: dialog.connect("response", lambda w, r: w.destroy())
+        else:
+            dialog.connect("response", lambda w, r: w.destroy())
         dialog.show()
 
-# --------------------------------------------------------------------------- #
-# Button Actions
-# --------------------------------------------------------------------------- #
-# These are all callbacks for the various buttons
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # Button Actions
+    # --------------------------------------------------------------------------- #
+    # These are all callbacks for the various buttons
+    # --------------------------------------------------------------------------- #
     def start_clicked(self):
-        """ Starts the simulator """
+        """Starts the simulator"""
         start = 1
         base = "172.16"
 
         # check starting network
         net = self.tsubnet_value.get()
-        octets = net.split('.')
+        octets = net.split(".")
         if len(octets) == 4:
             base = "%s.%s" % (octets[0], octets[1])
             net = int(octets[2]) % 255
@@ -246,12 +257,13 @@ class SimulatorFrame(Frame):
 
         # check interface size
         size = int(self.tnumber_value.get())
-        if (size >= 1):
+        if size >= 1:
             for i in range(start, (size + start)):
                 j = i % 255
                 cmd = "/sbin/ifconfig eth0:%d %s.%d.%d" % (i, base, net, j)
                 os.system(cmd)
-                if j == 254: net = net + 1
+                if j == 254:
+                    net = net + 1
             self.restart = 1
         else:
             self.error_dialog("Invalid number of devices!")
@@ -272,31 +284,35 @@ class SimulatorFrame(Frame):
             return False
 
     def help_clicked(self):
-        """ Quick pop-up for about page """
+        """Quick pop-up for about page"""
         data = gtk.AboutDialog()
         data.set_version("0.1")
-        data.set_name(('Modbus Simulator'))
+        data.set_name(("Modbus Simulator"))
         data.set_authors(["Galen Collins"])
-        data.set_comments(('First Select a device to simulate,\n'
-            + 'then select the starting subnet of the new devices\n'
-            + 'then select the number of device to simulate and click start'))
+        data.set_comments(
+            (
+                "First Select a device to simulate,\n"
+                + "then select the starting subnet of the new devices\n"
+                + "then select the number of device to simulate and click start"
+            )
+        )
         data.set_website("http://code.google.com/p/pymodbus/")
-        data.connect("response", lambda w,r: w.hide())
+        data.connect("response", lambda w, r: w.hide())
         data.run()
 
     def close_clicked(self):
-        """ Callback for close button """
-        #self.destroy_interfaces()
+        """Callback for close button"""
+        # self.destroy_interfaces()
         reactor.stop()
 
     def file_clicked(self):
-        """ Callback for the filename change """
+        """Callback for the filename change"""
         file = OpenFilename()
         self.tdevice_value.set(file)
 
+
 class SimulatorApp(object):
-    """ The main wx application handle for our simulator
-    """
+    """The main wx application handle for our simulator"""
 
     def __init__(self, master):
         """
@@ -304,9 +320,10 @@ class SimulatorApp(object):
 
         :param master: The master window to connect to
         """
-        font  = ('Helvetica', 12, 'normal')
+        font = ("Helvetica", 12, "normal")
         frame = SimulatorFrame(master, font)
         frame.pack()
+
 
 # --------------------------------------------------------------------------- #
 # Main handle function
@@ -329,6 +346,7 @@ def main():
     simulator = SimulatorApp(root)
     root.title("Modbus Simulator")
     reactor.run()
+
 
 # --------------------------------------------------------------------------- #
 # Library/Console Test

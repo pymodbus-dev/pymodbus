@@ -31,28 +31,28 @@ import xml.etree.ElementTree as xml
 
 
 class ModbusDatastoreSaver(object):
-    """ An abstract base class that can be used to implement
+    """An abstract base class that can be used to implement
     a persistance format for the modbus server context. In
     order to use it, just complete the necessary callbacks
     (SAX style) that your persistance format needs.
     """
 
     def __init__(self, context, path=None):
-        """ Initialize a new instance of the saver.
+        """Initialize a new instance of the saver.
 
         :param context: The modbus server context
         :param path: The output path to save to
         """
         self.context = context
-        self.path = path or 'modbus-context-dump'
+        self.path = path or "modbus-context-dump"
 
     def save(self):
-        """ The main runner method to save the
+        """The main runner method to save the
         context to file which calls the various
         callbacks which the sub classes will
         implement.
         """
-        with open(self.path, 'w') as self.file_handle:
+        with open(self.path, "w") as self.file_handle:
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)
@@ -63,9 +63,9 @@ class ModbusDatastoreSaver(object):
                 self.handle_slave_end(slave_name)
             self.handle_save_end()
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # predefined state machine callbacks
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     def handle_save_start(self):
         pass
 
@@ -89,18 +89,19 @@ class ModbusDatastoreSaver(object):
 # Implementations of the data store savers
 # ---------------------------------------------------------------- #
 class JsonDatastoreSaver(ModbusDatastoreSaver):
-    """ An implementation of the modbus datastore saver
+    """An implementation of the modbus datastore saver
     that persists the context as a json document.
     """
+
     _context = None
     _store = None
     _slave = None
 
     STORE_NAMES = {
-        'i': 'input-registers',
-        'd': 'discretes',
-        'h': 'holding-registers',
-        'c': 'coils',
+        "i": "input-registers",
+        "d": "discretes",
+        "h": "holding-registers",
+        "c": "coils",
     }
 
     def handle_save_start(self):
@@ -120,19 +121,20 @@ class JsonDatastoreSaver(ModbusDatastoreSaver):
 
 
 class CsvDatastoreSaver(ModbusDatastoreSaver):
-    """ An implementation of the modbus datastore saver
+    """An implementation of the modbus datastore saver
     that persists the context as a csv document.
     """
+
     _context = None
     _store = None
     _line = None
-    NEWLINE = '\r\n'
+    NEWLINE = "\r\n"
     HEADER = "slave,store,address,value" + NEWLINE
     STORE_NAMES = {
-        'i': 'i',
-        'd': 'd',
-        'h': 'h',
-        'c': 'c',
+        "i": "i",
+        "d": "d",
+        "h": "h",
+        "c": "c",
     }
 
     def handle_save_start(self):
@@ -152,21 +154,22 @@ class CsvDatastoreSaver(ModbusDatastoreSaver):
 
     def handle_store_value(self, values):
         for a, v in values:
-            yield ','.join(self._line + [str(a), str(v)]) + self.NEWLINE
+            yield ",".join(self._line + [str(a), str(v)]) + self.NEWLINE
 
 
 class XmlDatastoreSaver(ModbusDatastoreSaver):
-    """ An implementation of the modbus datastore saver
+    """An implementation of the modbus datastore saver
     that persists the context as a XML document.
     """
+
     _context = None
     _store = None
 
     STORE_NAMES = {
-        'i' : 'input-registers',
-        'd' : 'discretes',
-        'h' : 'holding-registers',
-        'c' : 'coils',
+        "i": "input-registers",
+        "d": "discretes",
+        "h": "holding-registers",
+        "c": "coils",
     }
 
     def handle_save_start(self):

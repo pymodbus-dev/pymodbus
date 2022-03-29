@@ -3,7 +3,12 @@ from __future__ import absolute_import
 
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
+from pymodbus.transaction import (
+    ModbusRtuFramer,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
 
@@ -18,6 +23,7 @@ class AsyncModbusSerialClient(object):
 
         from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
     """
+
     @classmethod
     def _framer(cls, method):
         """
@@ -27,18 +33,18 @@ class AsyncModbusSerialClient(object):
         :returns: The requested serial framer
         """
         method = method.lower()
-        if method == 'ascii':
+        if method == "ascii":
             return ModbusAsciiFramer(ClientDecoder())
-        elif method == 'rtu':
+        elif method == "rtu":
             return ModbusRtuFramer(ClientDecoder())
-        elif method == 'binary':
+        elif method == "binary":
             return ModbusBinaryFramer(ClientDecoder())
-        elif method == 'socket':
+        elif method == "socket":
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")
 
-    def __new__(cls, scheduler, method, port,  **kwargs):
+    def __new__(cls, scheduler, method, port, **kwargs):
         """
         Scheduler to use:
             - reactor (Twisted)

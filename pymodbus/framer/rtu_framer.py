@@ -12,6 +12,7 @@ from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -55,14 +56,14 @@ class ModbusRtuFramer(ModbusFramer):
     """
 
     def __init__(self, decoder, client=None):
-        """ Initializes a new instance of the framer
+        """Initializes a new instance of the framer
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
         self._hsize = 0x01
-        self._end = b'\x0d\x0a'
+        self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.decoder = decoder
         self.client = client
@@ -87,9 +88,9 @@ class ModbusRtuFramer(ModbusFramer):
         """
         try:
             self.populateHeader()
-            frame_size = self._header['len']
-            data = self._buffer[:frame_size - 2]
-            crc = self._header['crc']
+            frame_size = self._header["len"]
+            data = self._buffer[: frame_size - 2]
+            crc = self._header["crc"]
             crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
             return checkCRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
@@ -103,9 +104,9 @@ class ModbusRtuFramer(ModbusFramer):
         current frame header handle
         """
 
-        self._buffer = self._buffer[self._header['len']:]
+        self._buffer = self._buffer[self._header["len"] :]
         _logger.debug("Frame advanced, resetting header!!")
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def resetFrame(self):
         """
@@ -116,10 +117,12 @@ class ModbusRtuFramer(ModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        _logger.debug("Resetting frame - Current Frame in "
-                      "buffer - {}".format(hexlify_packets(self._buffer)))
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        _logger.debug(
+            "Resetting frame - Current Frame in "
+            "buffer - {}".format(hexlify_packets(self._buffer))
+        )
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def isFrameReady(self):
         """
@@ -152,16 +155,16 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header['uid'] = byte2int(data[0])
+        self._header["uid"] = byte2int(data[0])
         func_code = byte2int(data[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         size = pdu_class.calculateRtuFrameSize(data)
-        self._header['len'] = size
+        self._header["len"] = size
 
         if len(data) < size:
             # crc yet not available
             raise IndexError
-        self._header['crc'] = data[size - 2:size]
+        self._header["crc"] = data[size - 2 : size]
 
     def addToFrame(self, message):
         """
@@ -179,12 +182,12 @@ class ModbusRtuFramer(ModbusFramer):
         :returns: The frame data or ''
         """
         start = self._hsize
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
             _logger.debug("Getting Frame - {}".format(hexlify_packets(buffer)))
             return buffer
-        return b''
+        return b""
 
     def populateResult(self, result):
         """
@@ -195,8 +198,8 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
-        result.transaction_id = self._header['uid']
+        result.unit_id = self._header["uid"]
+        result.transaction_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -230,8 +233,10 @@ class ModbusRtuFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    _logger.debug("Not a valid unit id - {}, "
-                                  "ignoring!!".format(self._header['uid']))
+                    _logger.debug(
+                        "Not a valid unit id - {}, "
+                        "ignoring!!".format(self._header["uid"])
+                    )
                     self.resetFrame()
             else:
                 _logger.debug("Frame check failed, ignoring!!")
@@ -246,11 +251,13 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: The populated request/response to send
         """
         data = message.encode()
-        packet = struct.pack(RTU_FRAME_HEADER,
-                             message.unit_id,
-                             message.function_code) + data
+        packet = (
+            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+        )
         packet += struct.pack(">H", computeCRC(packet))
-        message.transaction_id = message.unit_id  # Ensure that transaction is actually the unit id for serial comms
+        message.transaction_id = (
+            message.unit_id
+        )  # Ensure that transaction is actually the unit id for serial comms
         return packet
 
     def sendPacket(self, message):
@@ -264,17 +271,17 @@ class ModbusRtuFramer(ModbusFramer):
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 ts = round(time.time(), 6)
-                _logger.debug("Changing state to IDLE - Last Frame End - {}, "
-                              "Current Time stamp - {}".format(
-                    self.client.last_frame_end, ts)
+                _logger.debug(
+                    "Changing state to IDLE - Last Frame End - {}, "
+                    "Current Time stamp - {}".format(self.client.last_frame_end, ts)
                 )
 
                 if self.client.last_frame_end:
                     idle_time = self.client.idle_time()
                     if round(ts - idle_time, 6) <= self.client.silent_interval:
-                        _logger.debug("Waiting for 3.5 char before next "
-                                      "send - {} ms".format(
-                            self.client.silent_interval * 1000)
+                        _logger.debug(
+                            "Waiting for 3.5 char before next "
+                            "send - {} ms".format(self.client.silent_interval * 1000)
                         )
                         time.sleep(self.client.silent_interval)
                 else:
@@ -288,8 +295,10 @@ class ModbusRtuFramer(ModbusFramer):
                 break
             else:
                 if time.time() > timeout:
-                    _logger.debug("Spent more time than the read time out, "
-                                  "resetting the transaction to IDLE")
+                    _logger.debug(
+                        "Spent more time than the read time out, "
+                        "resetting the transaction to IDLE"
+                    )
                     self.client.state = ModbusTransactionState.IDLE
                 else:
                     _logger.debug("Sleeping")
@@ -327,8 +336,8 @@ class ModbusRtuFramer(ModbusFramer):
         """
         Returns the complete buffer
         """
-        _logger.debug("Getting Raw Frame - "
-                      "{}".format(hexlify_packets(self._buffer)))
+        _logger.debug("Getting Raw Frame - " "{}".format(hexlify_packets(self._buffer)))
         return self._buffer
+
 
 # __END__

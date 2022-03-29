@@ -18,8 +18,8 @@ import six
 # python version checks
 # --------------------------------------------------------------------------- #
 PYTHON_VERSION = sys.version_info
-IS_PYPY = hasattr(sys, 'pypy_translation_info')
-IS_JYTHON = sys.platform.startswith('java')
+IS_PYPY = hasattr(sys, "pypy_translation_info")
+IS_JYTHON = sys.platform.startswith("java")
 
 # --------------------------------------------------------------------------- #
 # python > 3.3 compatibility layer
@@ -48,6 +48,7 @@ intern = six.moves.intern
 # module renames
 # ----------------------------------------------------------------------- #
 import socketserver
+
 # #609 monkey patch for socket server memory leaks
 # Refer https://bugs.python.org/issue37193
 socketserver.ThreadingMixIn.daemon_threads = True
@@ -58,7 +59,9 @@ implements_to_string = lambda x: x
 
 byte2int = lambda b: b
 
+
 def is_installed(module):
     import importlib.util
+
     found = importlib.util.find_spec(module)
     return found

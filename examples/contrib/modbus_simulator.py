@@ -9,12 +9,13 @@ from optparse import OptionParser
 from twisted.internet import reactor
 
 from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #
 import logging
+
 logging.basicConfig()
 
 server_log = logging.getLogger("pymodbus.server")
@@ -29,9 +30,10 @@ import getpass
 
 
 def root_test():
-    """ Simple test to see if we are running as root """
+    """Simple test to see if we are running as root"""
     return True  # removed for the time being as it isn't portable
-    #return getpass.getuser() == "root"
+    # return getpass.getuser() == "root"
+
 
 # -------------------------------------------------------------------------- #
 # Helper Classes
@@ -39,10 +41,10 @@ def root_test():
 
 
 class ConfigurationException(Exception):
-    """ Exception for configuration error """
+    """Exception for configuration error"""
 
     def __init__(self, string):
-        """ Initializes the ConfigurationException instance
+        """Initializes the ConfigurationException instance
 
         :param string: The message to append to the exception
         """
@@ -50,12 +52,11 @@ class ConfigurationException(Exception):
         self.string = string
 
     def __str__(self):
-        """ Builds a representation of the object
+        """Builds a representation of the object
 
         :returns: A string representation of the object
         """
-        return 'Configuration Error: %s' % self.string
-
+        return "Configuration Error: %s" % self.string
 
 
 class Configuration:
@@ -82,18 +83,18 @@ class Configuration:
             raise ConfigurationException("File not found %s" % config)
 
     def parse(self):
-        """ Parses the config file and creates a server context
-        """
+        """Parses the config file and creates a server context"""
         handle = pickle.load(self.file)
         try:  # test for existence, or bomb
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
+            dsd = handle["di"]
+            csd = handle["ci"]
+            hsd = handle["hr"]
+            isd = handle["ir"]
         except Exception:
             raise ConfigurationException("Invalid Configuration")
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
+
 
 # -------------------------------------------------------------------------- #
 # Main start point
@@ -101,14 +102,19 @@ class Configuration:
 
 
 def main():
-    """ Server launcher """
+    """Server launcher"""
     parser = OptionParser()
-    parser.add_option("-c", "--conf",
-                      help="The configuration file to load",
-                      dest="file")
-    parser.add_option("-D", "--debug",
-                      help="Turn on to enable tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-c", "--conf", help="The configuration file to load", dest="file"
+    )
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Turn on to enable tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
     (opt, arg) = parser.parse_args()
 
     # enable debugging information
@@ -126,6 +132,7 @@ def main():
     except ConfigurationException as err:
         print(err)
         parser.print_help()
+
 
 # -------------------------------------------------------------------------- #
 # Main jumper

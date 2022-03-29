@@ -11,11 +11,13 @@ from pymodbus.constants import Defaults
 from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.transaction import ModbusSocketFramer
 
+
 class Options(usage.Options):
     """
     The following are the options available to the
     pymodbus server.
     """
+
     optParameters = [
         ["port", "p", Defaults.Port, "The port number to listen on."],
         ["type", "t", "tcp", "The type of server to host (tcp, udp, ascii, rtu)"],
@@ -23,10 +25,12 @@ class Options(usage.Options):
         ["console", "c", False, "Should the management console be started"],
     ]
 
+
 class ModbusServiceMaker(object):
     """
     A helper class used to build a twisted plugin
     """
+
     implements(IServiceMaker, IPlugin)
     tapname = "pymodbus"
     description = "A modbus server"
@@ -38,11 +42,11 @@ class ModbusServiceMaker(object):
         """
         if options["type"] == "tcp":
             server = internet.TCPServer
-        else: server = internet.UDPServer
-
+        else:
+            server = internet.UDPServer
 
         framer = ModbusSocketFramer
-        context = self._build_context(options['store'])
+        context = self._build_context(options["store"])
         factory = ModbusServerFactory(None, framer)
         return server(int(options["port"]), factory)
 
@@ -52,9 +56,12 @@ class ModbusServiceMaker(object):
         note, this should be a ModbusServerContext.
         """
         import pickle
+
         try:
             context = pickle.load(path)
-        except Exception: context = None
+        except Exception:
+            context = None
         return context
+
 
 serviceMaker = ModbusServiceMaker()

@@ -38,10 +38,19 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ModbusException
 from pymodbus.client.common import ModbusClientMixin
 from pymodbus.bit_read_message import ReadCoilsResponse, ReadDiscreteInputsResponse
-from pymodbus.register_read_message import ReadHoldingRegistersResponse, ReadInputRegistersResponse
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersResponse,
+    ReadInputRegistersResponse,
+)
 from pymodbus.register_read_message import ReadWriteMultipleRegistersResponse
-from pymodbus.bit_write_message import WriteSingleCoilResponse, WriteMultipleCoilsResponse
-from pymodbus.register_write_message import WriteSingleRegisterResponse, WriteMultipleRegistersResponse
+from pymodbus.bit_write_message import (
+    WriteSingleCoilResponse,
+    WriteMultipleCoilsResponse,
+)
+from pymodbus.register_write_message import (
+    WriteSingleRegisterResponse,
+    WriteMultipleRegistersResponse,
+)
 
 # --------------------------------------------------------------------------- #
 # create the C interface
@@ -50,7 +59,8 @@ from pymodbus.register_write_message import WriteSingleRegisterResponse, WriteMu
 # --------------------------------------------------------------------------- #
 
 compiler = FFI()
-compiler.cdef("""
+compiler.cdef(
+    """
     typedef struct _modbus modbus_t;
 
     int modbus_connect(modbus_t *ctx);
@@ -87,8 +97,9 @@ compiler.cdef("""
     int modbus_receive(modbus_t *ctx, uint8_t *req);
     int modbus_receive_from(modbus_t *ctx, int sockfd, uint8_t *req);
     int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
-""")
-LIB = compiler.dlopen('modbus') # create our bindings
+"""
+)
+LIB = compiler.dlopen("modbus")  # create our bindings
 
 # -------------------------------------------------------------------------- #
 # helper utilites
@@ -104,15 +115,16 @@ def set_float(value, data):
 
 
 def cast_to_int16(data):
-    return int(compiler.cast('int16_t', data))
+    return int(compiler.cast("int16_t", data))
 
 
 def cast_to_int32(data):
-    return int(compiler.cast('int32_t', data))
+    return int(compiler.cast("int32_t", data))
 
 
 class NotImplementedException(Exception):
     pass
+
 
 # -------------------------------------------------------------------------- #
 # level1 client
@@ -120,43 +132,43 @@ class NotImplementedException(Exception):
 
 
 class LibmodbusLevel1Client(object):
-    """ A raw wrapper around the libmodbus c library. Feel free
+    """A raw wrapper around the libmodbus c library. Feel free
     to use it if you want increased performance and don't mind the
     entire protocol not being implemented.
     """
 
     @classmethod
-    def create_tcp_client(klass, host='127.0.0.1', port=Defaults.Port):
-        """ Create a TCP modbus client for the supplied parameters.
+    def create_tcp_client(klass, host="127.0.0.1", port=Defaults.Port):
+        """Create a TCP modbus client for the supplied parameters.
 
-            :param host: The host to connect to
-            :param port: The port to connect to on that host
-            :returns: A new level1 client
+        :param host: The host to connect to
+        :param port: The port to connect to on that host
+        :returns: A new level1 client
         """
         client = LIB.modbus_new_tcp(host.encode(), port)
         return klass(client)
 
     @classmethod
     def create_rtu_client(klass, **kwargs):
-        """ Create a TCP modbus client for the supplied parameters.
+        """Create a TCP modbus client for the supplied parameters.
 
-            :param port: The serial port to attach to
-            :param stopbits: The number of stop bits to use
-            :param bytesize: The bytesize of the serial messages
-            :param parity: Which kind of parity to use
-            :param baudrate: The baud rate to use for the serial device
-            :returns: A new level1 client
+        :param port: The serial port to attach to
+        :param stopbits: The number of stop bits to use
+        :param bytesize: The bytesize of the serial messages
+        :param parity: Which kind of parity to use
+        :param baudrate: The baud rate to use for the serial device
+        :returns: A new level1 client
         """
-        port     = kwargs.get('port', '/dev/ttyS0')
-        baudrate = kwargs.get('baud', Defaults.Baudrate)
-        parity   = kwargs.get('parity', Defaults.Parity)
-        bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        port = kwargs.get("port", "/dev/ttyS0")
+        baudrate = kwargs.get("baud", Defaults.Baudrate)
+        parity = kwargs.get("parity", Defaults.Parity)
+        bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+        stopbits = kwargs.get("stopbits", Defaults.Stopbits)
         client = LIB.modbus_new_rtu(port, baudrate, parity, bytesize, stopbits)
         return klass(client)
 
     def __init__(self, client):
-        """ Initalize a new instance of the LibmodbusLevel1Client. This
+        """Initalize a new instance of the LibmodbusLevel1Client. This
         method should not be used, instead new instances should be created
         using the two supplied factory methods:
 
@@ -166,10 +178,10 @@ class LibmodbusLevel1Client(object):
         :param client: The underlying client instance to operate with.
         """
         self.client = client
-        self.slave  = Defaults.UnitId
+        self.slave = Defaults.UnitId
 
     def set_slave(self, slave):
-        """ Set the current slave to operate against.
+        """Set the current slave to operate against.
 
         :param slave: The new slave to operate against
         :returns: The resulting slave to operate against
@@ -178,21 +190,21 @@ class LibmodbusLevel1Client(object):
         return self.slave
 
     def connect(self):
-        """ Attempt to connect to the client target.
+        """Attempt to connect to the client target.
 
         :returns: True if successful, throws otherwise
         """
-        return (self.__execute(LIB.modbus_connect) == 0)
+        return self.__execute(LIB.modbus_connect) == 0
 
     def flush(self):
-        """ Discards the existing bytes on the wire.
+        """Discards the existing bytes on the wire.
 
         :returns: The number of flushed bytes, or throws
         """
         return self.__execute(LIB.modbus_flush)
 
     def close(self):
-        """ Closes and frees the underlying connection
+        """Closes and frees the underlying connection
         and context structure.
 
         :returns: Always True
@@ -202,7 +214,7 @@ class LibmodbusLevel1Client(object):
         return True
 
     def __execute(self, command, *args):
-        """ Run the supplied command against the currently
+        """Run the supplied command against the currently
         instantiated client with the supplied arguments. This
         will make sure to correctly handle resulting errors.
 
@@ -298,7 +310,9 @@ class LibmodbusLevel1Client(object):
         self.__execute(LIB.modbus_read_input_registers, address, count, result)
         return result
 
-    def read_and_write_registers(self, read_address, read_count, write_address, write_registers):
+    def read_and_write_registers(
+        self, read_address, read_count, write_address, write_registers
+    ):
         """
 
         :param read_address: The address to start reading from
@@ -309,10 +323,17 @@ class LibmodbusLevel1Client(object):
         """
         write_count = len(write_registers)
         read_result = compiler.new("uint16_t[]", read_count)
-        self.__execute(LIB.modbus_write_and_read_registers,
-            write_address, write_count, write_registers,
-            read_address, read_count, read_result)
+        self.__execute(
+            LIB.modbus_write_and_read_registers,
+            write_address,
+            write_count,
+            write_registers,
+            read_address,
+            read_count,
+            read_result,
+        )
         return read_result
+
 
 # -------------------------------------------------------------------------- #
 # level2 client
@@ -320,7 +341,7 @@ class LibmodbusLevel1Client(object):
 
 
 class LibmodbusClient(ModbusClientMixin):
-    """ A facade around the raw level 1 libmodbus client
+    """A facade around the raw level 1 libmodbus client
     that implements the pymodbus protocol on top of the lower level
     client.
     """
@@ -331,26 +352,23 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __methods = {
-        'ReadCoilsRequest': lambda c, r: c.read_bits(r.address, r.count),
-        'ReadDiscreteInputsRequest': lambda c, r: c.read_input_bits(r.address, 
-                                                                    r.count),
-        'WriteSingleCoilRequest': lambda c, r: c.write_bit(r.address, 
-                                                           r.value),
-        'WriteMultipleCoilsRequest': lambda c, r: c.write_bits(r.address, 
-                                                               r.values),
-        'WriteSingleRegisterRequest': lambda c, r: c.write_register(r.address, 
-                                                                    r.value),
-        'WriteMultipleRegistersRequest': 
-            lambda c, r: c.write_registers(r.address, r.values),
-        'ReadHoldingRegistersRequest': 
-            lambda c, r: c.read_registers(r.address, r.count),
-        'ReadInputRegistersRequest': 
-            lambda c, r: c.read_input_registers(r.address, r.count),
-        'ReadWriteMultipleRegistersRequest': 
-            lambda c, r: c.read_and_write_registers(r.read_address, 
-                                                    r.read_count, 
-                                                    r.write_address, 
-                                                    r.write_registers),
+        "ReadCoilsRequest": lambda c, r: c.read_bits(r.address, r.count),
+        "ReadDiscreteInputsRequest": lambda c, r: c.read_input_bits(r.address, r.count),
+        "WriteSingleCoilRequest": lambda c, r: c.write_bit(r.address, r.value),
+        "WriteMultipleCoilsRequest": lambda c, r: c.write_bits(r.address, r.values),
+        "WriteSingleRegisterRequest": lambda c, r: c.write_register(r.address, r.value),
+        "WriteMultipleRegistersRequest": lambda c, r: c.write_registers(
+            r.address, r.values
+        ),
+        "ReadHoldingRegistersRequest": lambda c, r: c.read_registers(
+            r.address, r.count
+        ),
+        "ReadInputRegistersRequest": lambda c, r: c.read_input_registers(
+            r.address, r.count
+        ),
+        "ReadWriteMultipleRegistersRequest": lambda c, r: c.read_and_write_registers(
+            r.read_address, r.read_count, r.write_address, r.write_registers
+        ),
     }
 
     # ----------------------------------------------------------------------- #
@@ -359,28 +377,35 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __adapters = {
-        'ReadCoilsRequest': 
-            lambda tx, rx: ReadCoilsResponse(list(rx)),
-        'ReadDiscreteInputsRequest': 
-            lambda tx, rx: ReadDiscreteInputsResponse(list(rx)),
-        'WriteSingleCoilRequest': 
-            lambda tx, rx: WriteSingleCoilResponse(tx.address, rx),
-        'WriteMultipleCoilsRequest': 
-            lambda tx, rx: WriteMultipleCoilsResponse(tx.address, rx),
-        'WriteSingleRegisterRequest': 
-            lambda tx, rx: WriteSingleRegisterResponse(tx.address, rx),
-        'WriteMultipleRegistersRequest': 
-            lambda tx, rx: WriteMultipleRegistersResponse(tx.address, rx),
-        'ReadHoldingRegistersRequest': 
-            lambda tx, rx: ReadHoldingRegistersResponse(list(rx)),
-        'ReadInputRegistersRequest': 
-            lambda tx, rx: ReadInputRegistersResponse(list(rx)),
-        'ReadWriteMultipleRegistersRequest': 
-            lambda tx, rx: ReadWriteMultipleRegistersResponse(list(rx)),
+        "ReadCoilsRequest": lambda tx, rx: ReadCoilsResponse(list(rx)),
+        "ReadDiscreteInputsRequest": lambda tx, rx: ReadDiscreteInputsResponse(
+            list(rx)
+        ),
+        "WriteSingleCoilRequest": lambda tx, rx: WriteSingleCoilResponse(
+            tx.address, rx
+        ),
+        "WriteMultipleCoilsRequest": lambda tx, rx: WriteMultipleCoilsResponse(
+            tx.address, rx
+        ),
+        "WriteSingleRegisterRequest": lambda tx, rx: WriteSingleRegisterResponse(
+            tx.address, rx
+        ),
+        "WriteMultipleRegistersRequest": lambda tx, rx: WriteMultipleRegistersResponse(
+            tx.address, rx
+        ),
+        "ReadHoldingRegistersRequest": lambda tx, rx: ReadHoldingRegistersResponse(
+            list(rx)
+        ),
+        "ReadInputRegistersRequest": lambda tx, rx: ReadInputRegistersResponse(
+            list(rx)
+        ),
+        "ReadWriteMultipleRegistersRequest": lambda tx, rx: ReadWriteMultipleRegistersResponse(
+            list(rx)
+        ),
     }
 
     def __init__(self, client):
-        """ Initalize a new instance of the LibmodbusClient. This should
+        """Initalize a new instance of the LibmodbusClient. This should
         be initialized with one of the LibmodbusLevel1Client instances:
 
         * LibmodbusLevel1Client.create_rtu_client(...)
@@ -396,7 +421,7 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     def execute(self, request):
-        """ Execute the supplied request against the server.
+        """Execute the supplied request against the server.
 
         :param request: The request to process
         :returns: The result of the request execution
@@ -409,8 +434,7 @@ class LibmodbusClient(ModbusClientMixin):
         adapter = self.__adapters.get(method, None)
 
         if not operation or not adapter:
-            raise NotImplementedException("Method not "
-                                          "implemented: " + operation)
+            raise NotImplementedException("Method not " "implemented: " + operation)
 
         response = operation(self.client, request)
         return adapter(request, response)
@@ -430,7 +454,7 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     def __enter__(self):
-        """ Implement the client with enter block
+        """Implement the client with enter block
 
         :returns: The current instance of the client
         """
@@ -438,18 +462,19 @@ class LibmodbusClient(ModbusClientMixin):
         return self
 
     def __exit__(self, klass, value, traceback):
-        """ Implement the client with exit block """
+        """Implement the client with exit block"""
         self.client.close()
+
 
 # -------------------------------------------------------------------------- #
 # main example runner
 # -------------------------------------------------------------------------- #
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # create our low level client
-    host = '127.0.0.1'
+    host = "127.0.0.1"
     port = 502
     protocol = LibmodbusLevel1Client.create_tcp_client(host, port)
 

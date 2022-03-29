@@ -24,14 +24,16 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
 from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
+
 # from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
-#from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
-#from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
+# from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
+# from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
+
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -40,16 +42,16 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # Initialize the client
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('localhost', port=5020, framer=ModbusFramer)
+    client = ModbusClient("localhost", port=5020, framer=ModbusFramer)
     client.connect()
 
     # ----------------------------------------------------------------------- #
     # perform your requests
     # ----------------------------------------------------------------------- #
     rq = client.write_coil(1, True)
-    rr = client.read_coils(1,1)
-    assert(not rq.isError())     # test that we are not an error
-    assert(rr.bits[0] == True)          # test the expected value
+    rr = client.read_coils(1, 1)
+    assert not rq.isError()  # test that we are not an error
+    assert rr.bits[0] == True  # test the expected value
 
     # ----------------------------------------------------------------------- #
     # close the client

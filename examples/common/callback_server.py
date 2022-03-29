@@ -27,6 +27,7 @@ from multiprocessing import Queue, Process
 # configure the service logging
 # --------------------------------------------------------------------------- #
 import logging
+
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -37,23 +38,22 @@ log.setLevel(logging.DEBUG)
 
 
 class CallbackDataBlock(ModbusSparseDataBlock):
-    """ A datablock that stores the new value in memory
+    """A datablock that stores the new value in memory
     and passes the operation to a message queue for further
     processing.
     """
 
     def __init__(self, devices, queue):
-        """
-        """
+        """ """
         self.devices = devices
         self.queue = queue
 
         values = {k: 0 for k in devices.keys()}
-        values[0xbeef] = len(values)  # the number of devices
+        values[0xBEEF] = len(values)  # the number of devices
         super(CallbackDataBlock, self).__init__(values)
 
     def setValues(self, address, value):
-        """ Sets the requested values of the datastore
+        """Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
@@ -61,13 +61,14 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         super(CallbackDataBlock, self).setValues(address, value)
         self.queue.put((self.devices.get(address, None), value))
 
+
 # --------------------------------------------------------------------------- #
 # define your callback process
 # --------------------------------------------------------------------------- #
 
 
 def rescale_value(value):
-    """ Rescale the input value from the range
+    """Rescale the input value from the range
     of 0..100 to -3200..3200.
 
     :param value: The input value to scale
@@ -79,7 +80,7 @@ def rescale_value(value):
 
 
 def device_writer(queue):
-    """ A worker process that processes new messages
+    """A worker process that processes new messages
     from a queue to write to device outputs
 
     :param queue: The queue to get new messages from
@@ -88,8 +89,10 @@ def device_writer(queue):
         device, value = queue.get()
         scaled = rescale_value(value[0])
         log.debug("Write(%s) = %s" % (device, value))
-        if not device: continue
+        if not device:
+            continue
         # do any logic here to update your devices
+
 
 # --------------------------------------------------------------------------- #
 # initialize your device map
@@ -97,19 +100,19 @@ def device_writer(queue):
 
 
 def read_device_map(path):
-    """ A helper method to read the device
+    """A helper method to read the device
     path to address mapping from file::
 
-       0x0001,/dev/device1 
-       0x0002,/dev/device2 
+       0x0001,/dev/device1
+       0x0002,/dev/device2
 
     :param path: The path to the input file
     :returns: The input mapping file
     """
     devices = {}
-    with open(path, 'r') as stream:
+    with open(path, "r") as stream:
         for line in stream:
-            piece = line.strip().split(',')
+            piece = line.strip().split(",")
             devices[int(piece[0], 16)] = piece[1]
     return devices
 
@@ -128,11 +131,11 @@ def run_callback_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
+    identity.VendorName = "pymodbus"
+    identity.ProductCode = "PM"
+    identity.VendorUrl = "http://github.com/riptideio/pymodbus/"
+    identity.ProductName = "pymodbus Server"
+    identity.ModelName = "pymodbus Server"
     identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
@@ -145,4 +148,3 @@ def run_callback_server():
 
 if __name__ == "__main__":
     run_callback_server()
-

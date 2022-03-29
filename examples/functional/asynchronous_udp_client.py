@@ -3,6 +3,7 @@ import unittest
 from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from base_runner import Runner
 
+
 class AsynchronousUdpClient(Runner, unittest.TestCase):
     """
     These are the integration tests for the asynchronous
@@ -10,14 +11,15 @@ class AsynchronousUdpClient(Runner, unittest.TestCase):
     """
 
     def setUp(self):
-        """ Initializes the test environment """
+        """Initializes the test environment"""
         super(Runner, self).setUp()
         self.client = ModbusClient()
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        """Cleans up the test environment"""
         self.client.close()
         super(Runner, self).tearDown()
+
 
 # --------------------------------------------------------------------------- #
 # Main

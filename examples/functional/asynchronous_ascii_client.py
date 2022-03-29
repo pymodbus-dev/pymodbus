@@ -3,6 +3,7 @@ import unittest
 from pymodbus.client.asynchronous import ModbusSerialClient as ModbusClient
 from base_runner import Runner
 
+
 class AsynchronousAsciiClient(Runner, unittest.TestCase):
     """
     These are the integration tests for the asynchronous
@@ -10,14 +11,15 @@ class AsynchronousAsciiClient(Runner, unittest.TestCase):
     """
 
     def setUp(self):
-        """ Initializes the test environment """
+        """Initializes the test environment"""
         super(Runner, self).setUp()
-        self.client = ModbusClient(method='ascii')
+        self.client = ModbusClient(method="ascii")
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        """Cleans up the test environment"""
         self.client.close()
         self.shutdown()
+
 
 # --------------------------------------------------------------------------- #
 # Main

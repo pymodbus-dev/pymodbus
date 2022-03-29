@@ -20,14 +20,18 @@ from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 # from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 # from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
+
 # from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -50,9 +54,8 @@ UNIT = 0x01
 # callbacks.
 # --------------------------------------------------------------------------- #
 class ExampleProtocol(ModbusClientProtocol):
-
     def __init__(self, framer, endpoint):
-        """ Initializes our custom protocol
+        """Initializes our custom protocol
 
         :param framer: The decoder to use to process messages
         :param endpoint: The endpoint to send results to
@@ -63,14 +66,13 @@ class ExampleProtocol(ModbusClientProtocol):
         reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def fetch_holding_registers(self):
-        """ Defer fetching holding registers
-        """
+        """Defer fetching holding registers"""
         log.debug("Starting the next cycle")
         d = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
         d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
-        """ Write values of holding registers, defer fetching coils
+        """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
         """
@@ -80,7 +82,7 @@ class ExampleProtocol(ModbusClientProtocol):
         d.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
-        """ Write values of coils, trigger next cycle
+        """Write values of coils, trigger next cycle
 
         :param response: The response to process
         """
@@ -90,7 +92,7 @@ class ExampleProtocol(ModbusClientProtocol):
         reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def error_handler(self, failure):
-        """ Handle any twisted errors
+        """Handle any twisted errors
 
         :param failure: The error to handle
         """
@@ -113,12 +115,12 @@ class ExampleFactory(ClientFactory):
     protocol = ExampleProtocol
 
     def __init__(self, framer, endpoint):
-        """ Remember things necessary for building a protocols """
+        """Remember things necessary for building a protocols"""
         self.framer = framer
         self.endpoint = endpoint
 
     def buildProtocol(self, _):
-        """ Create a protocol and start the reading cycle """
+        """Create a protocol and start the reading cycle"""
         proto = self.protocol(self.framer, self.endpoint)
         proto.factory = self
         return proto
@@ -135,9 +137,8 @@ class ExampleFactory(ClientFactory):
 # How you start your client is really up to you.
 # --------------------------------------------------------------------------- #
 class SerialModbusClient(serialport.SerialPort):
-
     def __init__(self, factory, *args, **kwargs):
-        """ Setup the client and start listening on the serial port
+        """Setup the client and start listening on the serial port
 
         :param factory: The factory to build clients with
         """
@@ -155,13 +156,13 @@ class SerialModbusClient(serialport.SerialPort):
 # - a database or file recorder
 # --------------------------------------------------------------------------- #
 class LoggingLineReader(object):
-
     def write(self, response):
-        """ Handle the next modbus response
+        """Handle the next modbus response
 
         :param response: The response to process
         """
         log.info("Read Data: %d" % response)
+
 
 # --------------------------------------------------------------------------- #
 # start running the processor
@@ -188,4 +189,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

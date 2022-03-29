@@ -13,6 +13,7 @@ from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 
 import logging
+
 logging.basicConfig()
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
@@ -27,10 +28,10 @@ STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
 UNIT = 0x01
 
-class ExampleProtocol(ModbusClientProtocol):
 
+class ExampleProtocol(ModbusClientProtocol):
     def __init__(self, framer):
-        """ Initializes our custom protocol
+        """Initializes our custom protocol
 
         :param framer: The decoder to use to process messages
         :param endpoint: The endpoint to send results to
@@ -40,14 +41,13 @@ class ExampleProtocol(ModbusClientProtocol):
         reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def fetch_holding_registers(self):
-        """ Defer fetching holding registers
-        """
+        """Defer fetching holding registers"""
         log.debug("Starting the next cycle")
         d = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
         d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
-        """ Write values of holding registers, defer fetching coils
+        """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
         """
@@ -57,7 +57,7 @@ class ExampleProtocol(ModbusClientProtocol):
         d.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
-        """ Write values of coils, trigger next cycle
+        """Write values of coils, trigger next cycle
 
         :param response: The response to process
         """
@@ -67,7 +67,7 @@ class ExampleProtocol(ModbusClientProtocol):
         reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def error_handler(self, failure):
-        """ Handle any twisted errors
+        """Handle any twisted errors
 
         :param failure: The error to handle
         """
@@ -76,13 +76,14 @@ class ExampleProtocol(ModbusClientProtocol):
 
 if __name__ == "__main__":
     import time
-    proto, client = AsyncModbusSerialClient(schedulers.REACTOR,
-                                            method="rtu", 
-                                            port=SERIAL_PORT, 
-                                            timeout=2, 
-                                            proto_cls=ExampleProtocol)
+
+    proto, client = AsyncModbusSerialClient(
+        schedulers.REACTOR,
+        method="rtu",
+        port=SERIAL_PORT,
+        timeout=2,
+        proto_cls=ExampleProtocol,
+    )
     proto.start()
     time.sleep(10)  # Wait for operation to complete
     # proto.stop()
-
-

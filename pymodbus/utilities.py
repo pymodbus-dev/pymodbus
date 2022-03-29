@@ -13,6 +13,7 @@ class ModbusTransactionState(object):
     """
     Modbus Client States
     """
+
     IDLE = 0
     SENDING = 1
     WAITING_FOR_REPLY = 2
@@ -42,6 +43,7 @@ class ModbusTransactionState(object):
 # Helpers
 # --------------------------------------------------------------------------- #
 
+
 def default(value):
     """
     Given a python object, return the default value
@@ -54,7 +56,7 @@ def default(value):
 
 
 def dict_property(store, index):
-    """ Helper to create class properties from a dictionary.
+    """Helper to create class properties from a dictionary.
     Basically this allows you to remove a lot of possible
     boilerplate code.
 
@@ -62,13 +64,14 @@ def dict_property(store, index):
     :param index: The index into the store to close over
     :returns: An initialized property set
     """
-    if hasattr(store, '__call__'):
+    if hasattr(store, "__call__"):
         getter = lambda self: store(self)[index]
         setter = lambda self, value: store(self).__setitem__(index, value)
     elif isinstance(store, str):
         getter = lambda self: self.__getattribute__(store)[index]
         setter = lambda self, value: self.__getattribute__(store).__setitem__(
-            index, value)
+            index, value
+        )
     else:
         getter = lambda self: store[index]
         setter = lambda self, value: store.__setitem__(index, value)
@@ -80,7 +83,7 @@ def dict_property(store, index):
 # Bit packing functions
 # --------------------------------------------------------------------------- #
 def pack_bitstring(bits):
-    """ Creates a string out of an array of bits
+    """Creates a string out of an array of bits
 
     :param bits: A bit array
 
@@ -89,7 +92,7 @@ def pack_bitstring(bits):
         bits   = [False, True, False, True]
         result = pack_bitstring(bits)
     """
-    ret = b''
+    ret = b""
     i = packed = 0
     for bit in bits:
         if bit:
@@ -101,13 +104,13 @@ def pack_bitstring(bits):
         else:
             packed >>= 1
     if 0 < i < 8:
-        packed >>= (7 - i)
+        packed >>= 7 - i
         ret += int2byte(packed)
     return ret
 
 
 def unpack_bitstring(string):
-    """ Creates bit array out of a string
+    """Creates bit array out of a string
 
     :param string: The modbus data packet to decode
 
@@ -135,11 +138,13 @@ def make_byte_string(s):
     if isinstance(s, string_types):
         s = s.encode()
     return s
+
+
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
 def __generate_crc16_table():
-    """ Generates a crc16 lookup table
+    """Generates a crc16 lookup table
 
     .. note:: This will only be generated once
     """
@@ -148,17 +153,19 @@ def __generate_crc16_table():
         crc = 0x0000
         for _ in range(8):
             if (byte ^ crc) & 0x0001:
-                crc = (crc >> 1) ^ 0xa001
-            else: crc >>= 1
+                crc = (crc >> 1) ^ 0xA001
+            else:
+                crc >>= 1
             byte >>= 1
         result.append(crc)
     return result
+
 
 __crc16_table = __generate_crc16_table()
 
 
 def computeCRC(data):
-    """ Computes a crc16 on the passed in string. For modbus,
+    """Computes a crc16 on the passed in string. For modbus,
     this is only used on the binary serial protocols (in this
     case RTU).
 
@@ -168,16 +175,16 @@ def computeCRC(data):
     :param data: The data to create a crc16 of
     :returns: The calculated CRC
     """
-    crc = 0xffff
+    crc = 0xFFFF
     for a in data:
-        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff]
-        crc = ((crc >> 8) & 0xff) ^ idx
-    swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
+        idx = __crc16_table[(crc ^ byte2int(a)) & 0xFF]
+        crc = ((crc >> 8) & 0xFF) ^ idx
+    swapped = ((crc << 8) & 0xFF00) | ((crc >> 8) & 0x00FF)
     return swapped
 
 
 def checkCRC(data, check):
-    """ Checks if the data matches the passed in CRC
+    """Checks if the data matches the passed in CRC
 
     :param data: The data to create a crc16 of
     :param check: The CRC to validate
@@ -187,7 +194,7 @@ def checkCRC(data, check):
 
 
 def computeLRC(data):
-    """ Used to compute the longitudinal redundancy check
+    """Used to compute the longitudinal redundancy check
     against a string. This is only used on the serial ASCII
     modbus protocol. A full description of this implementation
     can be found in appendex B of the serial line modbus description.
@@ -196,13 +203,13 @@ def computeLRC(data):
     :returns: The calculated LRC
 
     """
-    lrc = sum(byte2int(a) for a in data) & 0xff
-    lrc = (lrc ^ 0xff) + 1
-    return lrc & 0xff
+    lrc = sum(byte2int(a) for a in data) & 0xFF
+    lrc = (lrc ^ 0xFF) + 1
+    return lrc & 0xFF
 
 
 def checkLRC(data, check):
-    """ Checks if the passed in data matches the LRC
+    """Checks if the passed in data matches the LRC
 
     :param data: The data to calculate
     :param check: The LRC to validate
@@ -212,7 +219,7 @@ def checkLRC(data, check):
 
 
 def rtuFrameSize(data, byte_count_pos):
-    """ Calculates the size of the frame based on the byte count.
+    """Calculates the size of the frame based on the byte count.
 
     :param data: The buffer containing the frame.
     :param byte_count_pos: The index of the byte count in the buffer.
@@ -241,13 +248,20 @@ def hexlify_packets(packet):
     :return:
     """
     if not packet:
-        return ''
+        return ""
     return " ".join([hex(byte2int(x)) for x in packet])
+
 
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 __all__ = [
-    'pack_bitstring', 'unpack_bitstring', 'default',
-    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC', 'rtuFrameSize'
+    "pack_bitstring",
+    "unpack_bitstring",
+    "default",
+    "computeCRC",
+    "checkCRC",
+    "computeLRC",
+    "checkLRC",
+    "rtuFrameSize",
 ]

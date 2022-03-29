@@ -16,16 +16,17 @@ from pymodbus.compat import string_types
 @Condition
 def has_selected_completion():
     complete_state = get_app().current_buffer.complete_state
-    return (complete_state is not None and
-            complete_state.current_completion is not None)
+    return complete_state is not None and complete_state.current_completion is not None
 
 
-style = Style.from_dict({
-    'completion-menu.completion': 'bg:#008888 #ffffff',
-    'completion-menu.completion.current': 'bg:#00aaaa #000000',
-    'scrollbar.background': 'bg:#88aaaa',
-    'scrollbar.button': 'bg:#222222',
-})
+style = Style.from_dict(
+    {
+        "completion-menu.completion": "bg:#008888 #ffffff",
+        "completion-menu.completion.current": "bg:#00aaaa #000000",
+        "scrollbar.background": "bg:#88aaaa",
+        "scrollbar.button": "bg:#222222",
+    }
+)
 
 
 class CmdCompleter(Completer):
@@ -41,7 +42,7 @@ class CmdCompleter(Completer):
         :param ignore_case: Ignore Case while looking up for commands
         """
         self._commands = commands or get_commands(client)
-        self._commands['help'] = ""
+        self._commands["help"] = ""
         self._command_names = self._commands.keys()
         self.ignore_case = ignore_case
 
@@ -62,7 +63,7 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return:
         """
-        if len(words) == 1 and word_before_cursor != '':
+        if len(words) == 1 and word_before_cursor != "":
             return True
         else:
             return False
@@ -76,7 +77,7 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return: Specifies whether we are currently completing an arg.
         """
-        if len(words) > 1 and word_before_cursor != '':
+        if len(words) > 1 and word_before_cursor != "":
             return True
         else:
             return False
@@ -133,24 +134,25 @@ class CmdCompleter(Completer):
         if self.completing_command(words, word_before_cursor):
             commands = self._command_names
             c_meta = {
-                k: v.help_text
-                if not isinstance(v, string_types)
-                else v for k, v in self._commands.items()
+                k: v.help_text if not isinstance(v, string_types) else v
+                for k, v in self._commands.items()
             }
-            meta = lambda x: (x, c_meta.get(x, ''))
+            meta = lambda x: (x, c_meta.get(x, ""))
         else:
-            if not list(filter(lambda cmd: any(x == cmd for x in words),
-                               self._command_names)):
+            if not list(
+                filter(lambda cmd: any(x == cmd for x in words), self._command_names)
+            ):
                 # yield commands
                 pass
 
-            if ' ' in text:
+            if " " in text:
                 command = self.arg_completions(words, word_before_cursor)
                 commands = list(command.get_completion())
-                commands = list(filter(lambda cmd: not(any(cmd in x for x in words)), commands))
+                commands = list(
+                    filter(lambda cmd: not (any(cmd in x for x in words)), commands)
+                )
                 meta = command.get_meta
         for a in commands:
             if self._get_completions(a, word_before_cursor):
-                cmd, display_meta = meta(a) if meta else ('', '')
-                yield Completion(a, -len(word_before_cursor),
-                                 display_meta=display_meta)
+                cmd, display_meta = meta(a) if meta else ("", "")
+                yield Completion(a, -len(word_before_cursor), display_meta=display_meta)

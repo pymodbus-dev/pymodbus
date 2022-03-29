@@ -32,6 +32,7 @@ from pymodbus.compat import byte2int
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -39,55 +40,55 @@ _logger = logging.getLogger(__name__)
 # Server Decoder
 # --------------------------------------------------------------------------- #
 class ServerDecoder(IModbusDecoder):
-    """ Request Message Factory (Server)
+    """Request Message Factory (Server)
 
     To add more implemented functions, simply add them to the list
     """
+
     __function_table = [
-            ReadHoldingRegistersRequest,
-            ReadDiscreteInputsRequest,
-            ReadInputRegistersRequest,
-            ReadCoilsRequest,
-            WriteMultipleCoilsRequest,
-            WriteMultipleRegistersRequest,
-            WriteSingleRegisterRequest,
-            WriteSingleCoilRequest,
-            ReadWriteMultipleRegistersRequest,
-            DiagnosticStatusRequest,
-            ReadExceptionStatusRequest,
-            GetCommEventCounterRequest,
-            GetCommEventLogRequest,
-            ReportSlaveIdRequest,
-            ReadFileRecordRequest,
-            WriteFileRecordRequest,
-            MaskWriteRegisterRequest,
-            ReadFifoQueueRequest,
-            ReadDeviceInformationRequest,
+        ReadHoldingRegistersRequest,
+        ReadDiscreteInputsRequest,
+        ReadInputRegistersRequest,
+        ReadCoilsRequest,
+        WriteMultipleCoilsRequest,
+        WriteMultipleRegistersRequest,
+        WriteSingleRegisterRequest,
+        WriteSingleCoilRequest,
+        ReadWriteMultipleRegistersRequest,
+        DiagnosticStatusRequest,
+        ReadExceptionStatusRequest,
+        GetCommEventCounterRequest,
+        GetCommEventLogRequest,
+        ReportSlaveIdRequest,
+        ReadFileRecordRequest,
+        WriteFileRecordRequest,
+        MaskWriteRegisterRequest,
+        ReadFifoQueueRequest,
+        ReadDeviceInformationRequest,
     ]
     __sub_function_table = [
-            ReturnQueryDataRequest,
-            RestartCommunicationsOptionRequest,
-            ReturnDiagnosticRegisterRequest,
-            ChangeAsciiInputDelimiterRequest,
-            ForceListenOnlyModeRequest,
-            ClearCountersRequest,
-            ReturnBusMessageCountRequest,
-            ReturnBusCommunicationErrorCountRequest,
-            ReturnBusExceptionErrorCountRequest,
-            ReturnSlaveMessageCountRequest,
-            ReturnSlaveNoResponseCountRequest,
-            ReturnSlaveNAKCountRequest,
-            ReturnSlaveBusyCountRequest,
-            ReturnSlaveBusCharacterOverrunCountRequest,
-            ReturnIopOverrunCountRequest,
-            ClearOverrunCountRequest,
-            GetClearModbusPlusRequest,
-            ReadDeviceInformationRequest,
+        ReturnQueryDataRequest,
+        RestartCommunicationsOptionRequest,
+        ReturnDiagnosticRegisterRequest,
+        ChangeAsciiInputDelimiterRequest,
+        ForceListenOnlyModeRequest,
+        ClearCountersRequest,
+        ReturnBusMessageCountRequest,
+        ReturnBusCommunicationErrorCountRequest,
+        ReturnBusExceptionErrorCountRequest,
+        ReturnSlaveMessageCountRequest,
+        ReturnSlaveNoResponseCountRequest,
+        ReturnSlaveNAKCountRequest,
+        ReturnSlaveBusyCountRequest,
+        ReturnSlaveBusCharacterOverrunCountRequest,
+        ReturnIopOverrunCountRequest,
+        ClearOverrunCountRequest,
+        GetClearModbusPlusRequest,
+        ReadDeviceInformationRequest,
     ]
 
     def __init__(self):
-        """ Initializes the client lookup tables
-        """
+        """Initializes the client lookup tables"""
         functions = set(f.function_code for f in self.__function_table)
         self.__lookup = dict([(f.function_code, f) for f in self.__function_table])
         self.__sub_lookup = dict((f, {}) for f in functions)
@@ -95,7 +96,7 @@ class ServerDecoder(IModbusDecoder):
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def decode(self, message):
-        """ Wrapper to decode a request packet
+        """Wrapper to decode a request packet
 
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error
@@ -107,7 +108,7 @@ class ServerDecoder(IModbusDecoder):
         return None
 
     def lookupPduClass(self, function_code):
-        """ Use `function_code` to determine the class of the PDU.
+        """Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
@@ -130,20 +131,20 @@ class ServerDecoder(IModbusDecoder):
             request = IllegalFunctionRequest(function_code)
         else:
             fc_string = "%s: %s" % (
-                str(self.__lookup[function_code]).split('.')[-1].rstrip(
-                    "'>"),
-                function_code
+                str(self.__lookup[function_code]).split(".")[-1].rstrip("'>"),
+                function_code,
             )
             _logger.debug("Factory Request[%s]" % fc_string)
         request.decode(data[1:])
 
-        if hasattr(request, 'sub_function_code'):
+        if hasattr(request, "sub_function_code"):
             lookup = self.__sub_lookup.get(request.function_code, {})
             subtype = lookup.get(request.sub_function_code, None)
-            if subtype: request.__class__ = subtype
+            if subtype:
+                request.__class__ = subtype
 
         return request
-    
+
     def register(self, function=None):
         """
         Registers a function and sub function class with the decoder
@@ -151,82 +152,82 @@ class ServerDecoder(IModbusDecoder):
         :return:
         """
         if function and not issubclass(function, ModbusRequest):
-            raise MessageRegisterException("'{}' is Not a valid Modbus Message"
-                                           ". Class needs to be derived from "
-                                           "`pymodbus.pdu.ModbusRequest` "
-                                           "".format(
-                function.__class__.__name__
-            ))
+            raise MessageRegisterException(
+                "'{}' is Not a valid Modbus Message"
+                ". Class needs to be derived from "
+                "`pymodbus.pdu.ModbusRequest` "
+                "".format(function.__class__.__name__)
+            )
         self.__lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = dict()
             self.__sub_lookup[function.function_code][
-                function.sub_function_code] = function
+                function.sub_function_code
+            ] = function
 
 
 # --------------------------------------------------------------------------- #
 # Client Decoder
 # --------------------------------------------------------------------------- #
 class ClientDecoder(IModbusDecoder):
-    """ Response Message Factory (Client)
+    """Response Message Factory (Client)
 
     To add more implemented functions, simply add them to the list
     """
+
     __function_table = [
-            ReadHoldingRegistersResponse,
-            ReadDiscreteInputsResponse,
-            ReadInputRegistersResponse,
-            ReadCoilsResponse,
-            WriteMultipleCoilsResponse,
-            WriteMultipleRegistersResponse,
-            WriteSingleRegisterResponse,
-            WriteSingleCoilResponse,
-            ReadWriteMultipleRegistersResponse,
-            DiagnosticStatusResponse,
-            ReadExceptionStatusResponse,
-            GetCommEventCounterResponse,
-            GetCommEventLogResponse,
-            ReportSlaveIdResponse,
-            ReadFileRecordResponse,
-            WriteFileRecordResponse,
-            MaskWriteRegisterResponse,
-            ReadFifoQueueResponse,
-            ReadDeviceInformationResponse,
+        ReadHoldingRegistersResponse,
+        ReadDiscreteInputsResponse,
+        ReadInputRegistersResponse,
+        ReadCoilsResponse,
+        WriteMultipleCoilsResponse,
+        WriteMultipleRegistersResponse,
+        WriteSingleRegisterResponse,
+        WriteSingleCoilResponse,
+        ReadWriteMultipleRegistersResponse,
+        DiagnosticStatusResponse,
+        ReadExceptionStatusResponse,
+        GetCommEventCounterResponse,
+        GetCommEventLogResponse,
+        ReportSlaveIdResponse,
+        ReadFileRecordResponse,
+        WriteFileRecordResponse,
+        MaskWriteRegisterResponse,
+        ReadFifoQueueResponse,
+        ReadDeviceInformationResponse,
     ]
     __sub_function_table = [
-            ReturnQueryDataResponse,
-            RestartCommunicationsOptionResponse,
-            ReturnDiagnosticRegisterResponse,
-            ChangeAsciiInputDelimiterResponse,
-            ForceListenOnlyModeResponse,
-            ClearCountersResponse,
-            ReturnBusMessageCountResponse,
-            ReturnBusCommunicationErrorCountResponse,
-            ReturnBusExceptionErrorCountResponse,
-            ReturnSlaveMessageCountResponse,
-            ReturnSlaveNoReponseCountResponse,
-            ReturnSlaveNAKCountResponse,
-            ReturnSlaveBusyCountResponse,
-            ReturnSlaveBusCharacterOverrunCountResponse,
-            ReturnIopOverrunCountResponse,
-            ClearOverrunCountResponse,
-            GetClearModbusPlusResponse,
-            ReadDeviceInformationResponse,
+        ReturnQueryDataResponse,
+        RestartCommunicationsOptionResponse,
+        ReturnDiagnosticRegisterResponse,
+        ChangeAsciiInputDelimiterResponse,
+        ForceListenOnlyModeResponse,
+        ClearCountersResponse,
+        ReturnBusMessageCountResponse,
+        ReturnBusCommunicationErrorCountResponse,
+        ReturnBusExceptionErrorCountResponse,
+        ReturnSlaveMessageCountResponse,
+        ReturnSlaveNoReponseCountResponse,
+        ReturnSlaveNAKCountResponse,
+        ReturnSlaveBusyCountResponse,
+        ReturnSlaveBusCharacterOverrunCountResponse,
+        ReturnIopOverrunCountResponse,
+        ClearOverrunCountResponse,
+        GetClearModbusPlusResponse,
+        ReadDeviceInformationResponse,
     ]
 
     def __init__(self):
-        """ Initializes the client lookup tables
-        """
+        """Initializes the client lookup tables"""
         functions = set(f.function_code for f in self.__function_table)
-        self.__lookup = dict([(f.function_code, f)
-                              for f in self.__function_table])
+        self.__lookup = dict([(f.function_code, f) for f in self.__function_table])
         self.__sub_lookup = dict((f, {}) for f in functions)
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
 
     def lookupPduClass(self, function_code):
-        """ Use `function_code` to determine the class of the PDU.
+        """Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
@@ -234,7 +235,7 @@ class ClientDecoder(IModbusDecoder):
         return self.__lookup.get(function_code, ExceptionResponse)
 
     def decode(self, message):
-        """ Wrapper to decode a response packet
+        """Wrapper to decode a response packet
 
         :param message: The raw packet to decode
         :return: The decoded modbus message or None if error
@@ -260,22 +261,23 @@ class ClientDecoder(IModbusDecoder):
         fc_string = function_code = byte2int(data[0])
         if function_code in self.__lookup:
             fc_string = "%s: %s" % (
-                str(self.__lookup[function_code]).split('.')[-1].rstrip("'>"),
-                function_code
+                str(self.__lookup[function_code]).split(".")[-1].rstrip("'>"),
+                function_code,
             )
         _logger.debug("Factory Response[%s]" % fc_string)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
-            code = function_code & 0x7f  # strip error portion
+            code = function_code & 0x7F  # strip error portion
             response = ExceptionResponse(code, ecode.IllegalFunction)
         if not response:
             raise ModbusException("Unknown response %d" % function_code)
         response.decode(data[1:])
 
-        if hasattr(response, 'sub_function_code'):
+        if hasattr(response, "sub_function_code"):
             lookup = self.__sub_lookup.get(response.function_code, {})
             subtype = lookup.get(response.sub_function_code, None)
-            if subtype: response.__class__ = subtype
+            if subtype:
+                response.__class__ = subtype
 
         return response
 
@@ -288,18 +290,19 @@ class ClientDecoder(IModbusDecoder):
         :return:
         """
         if function and not issubclass(function, ModbusResponse):
-            raise MessageRegisterException("'{}' is Not a valid Modbus Message"
-                                           ". Class needs to be derived from "
-                                           "`pymodbus.pdu.ModbusResponse` "
-                                           "".format(
-                function.__class__.__name__
-            ))
+            raise MessageRegisterException(
+                "'{}' is Not a valid Modbus Message"
+                ". Class needs to be derived from "
+                "`pymodbus.pdu.ModbusResponse` "
+                "".format(function.__class__.__name__)
+            )
         self.__lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = dict()
             self.__sub_lookup[function.function_code][
-                function.sub_function_code] = function
+                function.sub_function_code
+            ] = function
 
 
 # --------------------------------------------------------------------------- #
@@ -307,6 +310,4 @@ class ClientDecoder(IModbusDecoder):
 # --------------------------------------------------------------------------- #
 
 
-__all__ = ['ServerDecoder', 'ClientDecoder']
-
-
+__all__ = ["ServerDecoder", "ClientDecoder"]

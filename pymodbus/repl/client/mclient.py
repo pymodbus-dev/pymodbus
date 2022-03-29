@@ -11,41 +11,41 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.client.sync import ModbusSerialClient as _ModbusSerialClient
 from pymodbus.client.sync import ModbusTcpClient as _ModbusTcpClient
 from pymodbus.mei_message import ReadDeviceInformationRequest
-from pymodbus.other_message import (ReadExceptionStatusRequest,
-                                    ReportSlaveIdRequest,
-                                    GetCommEventCounterRequest,
-                                    GetCommEventLogRequest)
+from pymodbus.other_message import (
+    ReadExceptionStatusRequest,
+    ReportSlaveIdRequest,
+    GetCommEventCounterRequest,
+    GetCommEventLogRequest,
+)
 from pymodbus.diag_message import (
-                                   ReturnQueryDataRequest,
-                                   RestartCommunicationsOptionRequest,
-                                   ReturnDiagnosticRegisterRequest,
-                                   ChangeAsciiInputDelimiterRequest,
-                                   ForceListenOnlyModeRequest,
-                                   ClearCountersRequest,
-                                   ReturnBusMessageCountRequest,
-                                   ReturnBusCommunicationErrorCountRequest,
-                                   ReturnBusExceptionErrorCountRequest,
-                                   ReturnSlaveMessageCountRequest,
-                                   ReturnSlaveNoResponseCountRequest,
-                                   ReturnSlaveNAKCountRequest,
-                                   ReturnSlaveBusyCountRequest,
-                                   ReturnSlaveBusCharacterOverrunCountRequest,
-                                   ReturnIopOverrunCountRequest,
-                                   ClearOverrunCountRequest,
-                                   GetClearModbusPlusRequest)
+    ReturnQueryDataRequest,
+    RestartCommunicationsOptionRequest,
+    ReturnDiagnosticRegisterRequest,
+    ChangeAsciiInputDelimiterRequest,
+    ForceListenOnlyModeRequest,
+    ClearCountersRequest,
+    ReturnBusMessageCountRequest,
+    ReturnBusCommunicationErrorCountRequest,
+    ReturnBusExceptionErrorCountRequest,
+    ReturnSlaveMessageCountRequest,
+    ReturnSlaveNoResponseCountRequest,
+    ReturnSlaveNAKCountRequest,
+    ReturnSlaveBusyCountRequest,
+    ReturnSlaveBusCharacterOverrunCountRequest,
+    ReturnIopOverrunCountRequest,
+    ClearOverrunCountRequest,
+    GetClearModbusPlusRequest,
+)
 
 
 def make_response_dict(resp):
-    rd = {
-        'function_code': resp.function_code,
-        'address': resp.address
-    }
+    rd = {"function_code": resp.function_code, "address": resp.address}
     if hasattr(resp, "value"):
-        rd['value'] = resp.value
-    elif hasattr(resp, 'values'):
-        rd['values'] = resp.values
-    elif hasattr(resp, 'count'):
-        rd['count'] = resp.count
+        rd["value"] = resp.value
+    elif hasattr(resp, "values"):
+        rd["values"] = resp.values
+    elif hasattr(resp, "count"):
+        rd["count"] = resp.count
 
     return rd
 
@@ -56,45 +56,42 @@ def handle_brodcast(func):
         self = args[0]
         resp = func(*args, **kwargs)
         if kwargs.get("unit") == 0 and self.broadcast_enable:
-            return {
-                'broadcasted': True
-            }
+            return {"broadcasted": True}
         if not resp.isError():
             return make_response_dict(resp)
         else:
             return ExtendedRequestSupport._process_exception(resp, **kwargs)
+
     return _wrapper
 
 
 class ExtendedRequestSupport(object):
-
     @staticmethod
     def _process_exception(resp, **kwargs):
         unit = kwargs.get("unit")
         if unit == 0:
-            err = {
-                "message": "Broadcast message, ignoring errors!!!"
-            }
+            err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
             if isinstance(resp, ExceptionResponse):
                 err = {
-                    'original_function_code': "{} ({})".format(
-                        resp.original_code, hex(resp.original_code)),
-                    'error_function_code': "{} ({})".format(
-                        resp.function_code, hex(resp.function_code)),
-                    'exception code': resp.exception_code,
-                    'message': ModbusExceptions.decode(resp.exception_code)
+                    "original_function_code": "{} ({})".format(
+                        resp.original_code, hex(resp.original_code)
+                    ),
+                    "error_function_code": "{} ({})".format(
+                        resp.function_code, hex(resp.function_code)
+                    ),
+                    "exception code": resp.exception_code,
+                    "message": ModbusExceptions.decode(resp.exception_code),
                 }
             elif isinstance(resp, ModbusIOException):
                 err = {
-                    'original_function_code': "{} ({})".format(
-                        resp.fcode, hex(resp.fcode)),
-                    'error': resp.message
+                    "original_function_code": "{} ({})".format(
+                        resp.fcode, hex(resp.fcode)
+                    ),
+                    "error": resp.message,
                 }
             else:
-                err = {
-                    'error': str(resp)
-                }
+                err = {"error": str(resp)}
         return err
 
     def read_coils(self, address, count=1, **kwargs):
@@ -106,13 +103,9 @@ class ExtendedRequestSupport(object):
         :param unit: The slave unit this request is targeting
         :returns: List of register values
         """
-        resp = super(ExtendedRequestSupport, self).read_coils(address,
-                                                              count, **kwargs)
+        resp = super(ExtendedRequestSupport, self).read_coils(address, count, **kwargs)
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'bits': resp.bits
-            }
+            return {"function_code": resp.function_code, "bits": resp.bits}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
@@ -125,13 +118,11 @@ class ExtendedRequestSupport(object):
         :param unit: The slave unit this request is targeting
         :return: List of bits
         """
-        resp = super(ExtendedRequestSupport,
-                     self).read_discrete_inputs(address, count, **kwargs)
+        resp = super(ExtendedRequestSupport, self).read_discrete_inputs(
+            address, count, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'bits': resp.bits
-            }
+            return {"function_code": resp.function_code, "bits": resp.bits}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
@@ -145,8 +136,7 @@ class ExtendedRequestSupport(object):
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).write_coil(
-            address, value, **kwargs)
+        resp = super(ExtendedRequestSupport, self).write_coil(address, value, **kwargs)
         return resp
 
     @handle_brodcast
@@ -160,7 +150,8 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).write_coils(
-            address, values, **kwargs)
+            address, values, **kwargs
+        )
         return resp
 
     @handle_brodcast
@@ -174,7 +165,8 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).write_register(
-            address, value, **kwargs)
+            address, value, **kwargs
+        )
         return resp
 
     @handle_brodcast
@@ -188,7 +180,8 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).write_registers(
-            address, values, **kwargs)
+            address, values, **kwargs
+        )
         return resp
 
     def read_holding_registers(self, address, count=1, **kwargs):
@@ -201,12 +194,10 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).read_holding_registers(
-            address, count, **kwargs)
+            address, count, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
+            return {"function_code": resp.function_code, "registers": resp.registers}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
@@ -220,17 +211,16 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).read_input_registers(
-            address, count, **kwargs)
+            address, count, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
+            return {"function_code": resp.function_code, "registers": resp.registers}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
-    def readwrite_registers(self, read_address, read_count, write_address,
-                            write_registers, **kwargs):
+    def readwrite_registers(
+        self, read_address, read_count, write_address, write_registers, **kwargs
+    ):
         """
         Read `read_count` number of holding registers starting at \
         `read_address`  and write `write_registers` \
@@ -251,15 +241,13 @@ class ExtendedRequestSupport(object):
             **kwargs
         )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
+            return {"function_code": resp.function_code, "registers": resp.registers}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
-    def mask_write_register(self, address=0x0000,
-                            and_mask=0xffff, or_mask=0x0000, **kwargs):
+    def mask_write_register(
+        self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs
+    ):
         """
         Mask content of holding register at `address`  \
         with `and_mask` and `or_mask`.
@@ -271,19 +259,19 @@ class ExtendedRequestSupport(object):
         :return:
         """
         resp = super(ExtendedRequestSupport, self).mask_write_register(
-            address=address, and_mask=and_mask, or_mask=or_mask, **kwargs)
+            address=address, and_mask=and_mask, or_mask=or_mask, **kwargs
+        )
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'and mask': resp.and_mask,
-                'or mask': resp.or_mask
+                "function_code": resp.function_code,
+                "address": resp.address,
+                "and mask": resp.and_mask,
+                "or mask": resp.or_mask,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
-    def read_device_information(self, read_code=None,
-                                        object_id=0x00, **kwargs):
+    def read_device_information(self, read_code=None, object_id=0x00, **kwargs):
         """
         Read the identification and additional information of remote slave.
 
@@ -296,13 +284,13 @@ class ExtendedRequestSupport(object):
         resp = self.execute(request)
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'information': resp.information,
-                'object count': resp.number_of_objects,
-                'conformity': resp.conformity,
-                'next object id': resp.next_object_id,
-                'more follows': resp.more_follows,
-                'space left': resp.space_left
+                "function_code": resp.function_code,
+                "information": resp.information,
+                "object count": resp.number_of_objects,
+                "conformity": resp.conformity,
+                "next object id": resp.next_object_id,
+                "more follows": resp.more_follows,
+                "space left": resp.space_left,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
@@ -318,10 +306,10 @@ class ExtendedRequestSupport(object):
         resp = self.execute(request)
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'identifier': resp.identifier.decode('cp1252'),
-                'status': resp.status,
-                'byte count': resp.byte_count
+                "function_code": resp.function_code,
+                "identifier": resp.identifier.decode("cp1252"),
+                "status": resp.status,
+                "byte count": resp.byte_count,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
@@ -339,10 +327,7 @@ class ExtendedRequestSupport(object):
         request = ReadExceptionStatusRequest(**kwargs)
         resp = self.execute(request)
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'status': resp.status
-            }
+            return {"function_code": resp.function_code, "status": resp.status}
         else:
             return ExtendedRequestSupport._process_exception(resp)
 
@@ -360,9 +345,9 @@ class ExtendedRequestSupport(object):
         resp = self.execute(request)
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'status': resp.status,
-                'count': resp.count
+                "function_code": resp.function_code,
+                "status": resp.status,
+                "count": resp.count,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
@@ -379,11 +364,11 @@ class ExtendedRequestSupport(object):
         resp = self.execute(request)
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'status': resp.status,
-                'message count': resp.message_count,
-                'event count': resp.event_count,
-                'events': resp.events,
+                "function_code": resp.function_code,
+                "status": resp.status,
+                "message count": resp.message_count,
+                "event count": resp.event_count,
+                "events": resp.events,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
@@ -392,9 +377,9 @@ class ExtendedRequestSupport(object):
         resp = self.execute(request)
         if not resp.isError():
             return {
-                'function code': resp.function_code,
-                'sub function code': resp.sub_function_code,
-                'message': resp.message
+                "function code": resp.function_code,
+                "sub function code": resp.sub_function_code,
+                "message": resp.message,
             }
         else:
             return ExtendedRequestSupport._process_exception(resp)
@@ -718,14 +703,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :return: Current Serial settings as dict.
         """
         return {
-            'baudrate': self.baudrate,
-            'port': self.port,
-            'parity': self.parity,
-            'stopbits': self.stopbits,
-            'bytesize': self.bytesize,
-            'read timeout': self.timeout,
-            't1.5': self.inter_char_timeout,
-            't3.5': self.silent_interval
+            "baudrate": self.baudrate,
+            "port": self.port,
+            "parity": self.parity,
+            "stopbits": self.stopbits,
+            "bytesize": self.bytesize,
+            "read timeout": self.timeout,
+            "t1.5": self.inter_char_timeout,
+            "t3.5": self.silent_interval,
         }
 
 

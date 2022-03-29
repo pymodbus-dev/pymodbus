@@ -5,6 +5,7 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
 from __future__ import absolute_import, unicode_literals
+
 try:
     import click
 except ImportError:
@@ -13,8 +14,10 @@ except ImportError:
 try:
     from prompt_toolkit import PromptSession, print_formatted_text
 except ImportError:
-    print("prompt toolkit is not installed!! "
-          "Install with 'pip install prompt_toolkit --upgrade'")
+    print(
+        "prompt toolkit is not installed!! "
+        "Install with 'pip install prompt_toolkit --upgrade'"
+    )
     exit(1)
 
 from prompt_toolkit.lexers import PygmentsLexer
@@ -41,16 +44,20 @@ __________          _____             .___  __________              .__
            \/            \/            \/ \/        \/     \/|__|
                                         v{} - {}         
 ----------------------------------------------------------------------------
-""".format("1.3.0", version)
+""".format(
+    "1.3.0", version
+)
 
 log = None
 
-style = Style.from_dict({
-    'completion-menu.completion': 'bg:#008888 #ffffff',
-    'completion-menu.completion.current': 'bg:#00aaaa #000000',
-    'scrollbar.background': 'bg:#88aaaa',
-    'scrollbar.button': 'bg:#222222',
-})
+style = Style.from_dict(
+    {
+        "completion-menu.completion": "bg:#008888 #ffffff",
+        "completion-menu.completion.current": "bg:#00aaaa #000000",
+        "scrollbar.background": "bg:#88aaaa",
+        "scrollbar.button": "bg:#222222",
+    }
+)
 
 
 def bottom_toolbar():
@@ -58,14 +65,17 @@ def bottom_toolbar():
     Console toolbar.
     :return:
     """
-    return HTML('Press <b><style bg="ansired">CTRL+D or exit </style></b>'
-                ' to exit! Type "help" for list of available commands')
+    return HTML(
+        'Press <b><style bg="ansired">CTRL+D or exit </style></b>'
+        ' to exit! Type "help" for list of available commands'
+    )
 
 
 class CaseInsenstiveChoice(click.Choice):
     """
     Case Insensitive choice for click commands and options
     """
+
     def convert(self, value, param, ctx):
         """
         Convert args to uppercase for evaluation.
@@ -74,13 +84,15 @@ class CaseInsenstiveChoice(click.Choice):
         if value is None:
             return None
         return super(CaseInsenstiveChoice, self).convert(
-            value.strip().upper(), param, ctx)
+            value.strip().upper(), param, ctx
+        )
 
 
 class NumericChoice(click.Choice):
     """
     Numeric choice for click arguments and options.
     """
+
     def __init__(self, choices, typ):
         self.typ = typ
         super(NumericChoice, self).__init__(choices)
@@ -96,14 +108,17 @@ class NumericChoice(click.Choice):
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail('invalid choice: %s. (choose from %s)' %
-                  (value, ', '.join(self.choices)), param, ctx)
+        self.fail(
+            "invalid choice: %s. (choose from %s)" % (value, ", ".join(self.choices)),
+            param,
+            ctx,
+        )
 
 
 def cli(client):
     kb = KeyBindings()
 
-    @kb.add('c-space')
+    @kb.add("c-space")
     def _(event):
         """
         Initialize autocompletion, or select the next completion.
@@ -114,7 +129,7 @@ def cli(client):
         else:
             buff.start_completion(select_first=False)
 
-    @kb.add('enter', filter=has_selected_completion)
+    @kb.add("enter", filter=has_selected_completion)
     def _(event):
         """
         Makes the enter key work as the tab key only when showing the menu.
@@ -153,41 +168,45 @@ def cli(client):
                     kwargs[a] = val
                     skip_index = i + 1
                 except TypeError:
-                    click.secho("Error parsing arguments!",
-                                fg='yellow')
+                    click.secho("Error parsing arguments!", fg="yellow")
                     execute = False
                     break
                 except ValueError:
-                    click.secho("Error parsing argument",
-                                fg='yellow')
+                    click.secho("Error parsing argument", fg="yellow")
                     execute = False
                     break
         return kwargs, execute
 
-    session = PromptSession(lexer=PygmentsLexer(PythonLexer),
-                            completer=CmdCompleter(client), style=style,
-                            complete_while_typing=True,
-                            bottom_toolbar=bottom_toolbar,
-                            key_bindings=kb,
-                            history=FileHistory('../.pymodhis'),
-                            auto_suggest=AutoSuggestFromHistory())
-    click.secho("{}".format(TITLE), fg='green')
+    session = PromptSession(
+        lexer=PygmentsLexer(PythonLexer),
+        completer=CmdCompleter(client),
+        style=style,
+        complete_while_typing=True,
+        bottom_toolbar=bottom_toolbar,
+        key_bindings=kb,
+        history=FileHistory("../.pymodhis"),
+        auto_suggest=AutoSuggestFromHistory(),
+    )
+    click.secho("{}".format(TITLE), fg="green")
     result = None
     while True:
         try:
 
-            text = session.prompt('> ', complete_while_typing=True)
-            if text.strip().lower() == 'help':
+            text = session.prompt("> ", complete_while_typing=True)
+            if text.strip().lower() == "help":
                 print_formatted_text(HTML("<u>Available commands:</u>"))
                 for cmd, obj in sorted(session.completer.commands.items()):
-                    if cmd != 'help':
+                    if cmd != "help":
                         print_formatted_text(
-                            HTML("<skyblue>{:45s}</skyblue>"
-                                 "<seagreen>{:100s}"
-                                 "</seagreen>".format(cmd, obj.help_text)))
+                            HTML(
+                                "<skyblue>{:45s}</skyblue>"
+                                "<seagreen>{:100s}"
+                                "</seagreen>".format(cmd, obj.help_text)
+                            )
+                        )
 
                 continue
-            elif text.strip().lower() == 'exit':
+            elif text.strip().lower() == "exit":
                 raise EOFError()
             elif text.strip().lower().startswith("client."):
                 try:
@@ -202,13 +221,13 @@ def cli(client):
                             result = Result(getattr(client, cmd)(**kwargs))
                         result.print_result()
                 except Exception as e:
-                    click.secho(repr(e), fg='red')
+                    click.secho(repr(e), fg="red")
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()
-                    if words[0] == 'result.raw':
+                    if words[0] == "result.raw":
                         result.raw()
-                    if words[0] == 'result.decode':
+                    if words[0] == "result.decode":
                         args = words[1:]
                         kwargs, execute = _process_args(args)
                         if execute:
@@ -218,31 +237,51 @@ def cli(client):
         except EOFError:
             break  # Control-D pressed.
         except Exception as e:  # Handle all other exceptions
-            click.secho(str(e), fg='red')
+            click.secho(str(e), fg="red")
 
-    click.secho('GoodBye!', fg='blue')
+    click.secho("GoodBye!", fg="blue")
 
 
-@click.group('pymodbus-repl')
+@click.group("pymodbus-repl")
 @click.version_option(version, message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
-@click.option("--broadcast-support", is_flag=True, default=False,
-              help="Support broadcast messages")
-@click.option("--retry-on-empty", is_flag=True, default=False,
-              help="Retry on empty response")
-@click.option("--retry-on-error", is_flag=True, default=False,
-              help="Retry on error response")
+@click.option(
+    "--broadcast-support",
+    is_flag=True,
+    default=False,
+    help="Support broadcast messages",
+)
+@click.option(
+    "--retry-on-empty", is_flag=True, default=False, help="Retry on empty response"
+)
+@click.option(
+    "--retry-on-error", is_flag=True, default=False, help="Retry on error response"
+)
 @click.option("--retries", default=3, help="Retry count")
-@click.option("--reset-socket/--no-reset-socket", default=True, help="Reset client socket on error")
+@click.option(
+    "--reset-socket/--no-reset-socket",
+    default=True,
+    help="Reset client socket on error",
+)
 @click.pass_context
-def main(ctx, verbose, broadcast_support, retry_on_empty,
-         retry_on_error, retries, reset_socket):
+def main(
+    ctx,
+    verbose,
+    broadcast_support,
+    retry_on_empty,
+    retry_on_error,
+    retries,
+    reset_socket,
+):
     if verbose:
         global log
         import logging
-        format = ('%(asctime)-15s %(threadName)-15s '
-                  '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-        log = logging.getLogger('pymodbus')
+
+        format = (
+            "%(asctime)-15s %(threadName)-15s "
+            "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+        )
+        log = logging.getLogger("pymodbus")
         logging.basicConfig(format=format)
         log.setLevel(logging.DEBUG)
     ctx.obj = {
@@ -250,17 +289,13 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
         "retry_on_empty": retry_on_empty,
         "retry_on_invalid": retry_on_error,
         "retries": retries,
-        "reset_socket": reset_socket
+        "reset_socket": reset_socket,
     }
 
 
 @main.command("tcp")
 @click.pass_context
-@click.option(
-    "--host",
-    default='localhost',
-    help="Modbus TCP IP "
-)
+@click.option("--host", default="localhost", help="Modbus TCP IP ")
 @click.option(
     "--port",
     default=502,
@@ -269,17 +304,19 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
 )
 @click.option(
     "--framer",
-    default='tcp',
+    default="tcp",
     type=str,
     help="Override the default packet framer tcp|rtu",
 )
 def tcp(ctx, host, port, framer):
     from pymodbus.repl.client.mclient import ModbusTcpClient
+
     kwargs = dict(host=host, port=port)
     kwargs.update(**ctx.obj)
-    if framer == 'rtu':
+    if framer == "rtu":
         from pymodbus.framer.rtu_framer import ModbusRtuFramer
-        kwargs['framer'] = ModbusRtuFramer
+
+        kwargs["framer"] = ModbusRtuFramer
     client = ModbusTcpClient(**kwargs)
     cli(client)
 
@@ -288,7 +325,7 @@ def tcp(ctx, host, port, framer):
 @click.pass_context
 @click.option(
     "--method",
-    default='rtu',
+    default="rtu",
     type=str,
     help="Modbus Serial Mode (rtu/ascii)",
 )
@@ -299,84 +336,98 @@ def tcp(ctx, host, port, framer):
     help="Modbus RTU port",
 )
 @click.option(
-        "--baudrate",
-        help="Modbus RTU serial baudrate to use. Defaults to 9600",
-        default=9600,
-        type=int
-    )
+    "--baudrate",
+    help="Modbus RTU serial baudrate to use. Defaults to 9600",
+    default=9600,
+    type=int,
+)
 @click.option(
     "--bytesize",
     help="Modbus RTU serial Number of data bits. "
-         "Possible values: FIVEBITS, SIXBITS, SEVENBITS, "
-         "EIGHTBITS. Defaults to 8",
+    "Possible values: FIVEBITS, SIXBITS, SEVENBITS, "
+    "EIGHTBITS. Defaults to 8",
     type=NumericChoice(["5", "6", "7", "8"], int),
-    default="8"
+    default="8",
 )
 @click.option(
     "--parity",
     help="Modbus RTU serial parity. "
-         " Enable parity checking. Possible values: "
-         "PARITY_NONE, PARITY_EVEN, PARITY_ODD PARITY_MARK, "
-         "PARITY_SPACE. Default to 'N'",
-    default='N',
-    type=CaseInsenstiveChoice(['N', 'E', 'O', 'M', 'S'])
+    " Enable parity checking. Possible values: "
+    "PARITY_NONE, PARITY_EVEN, PARITY_ODD PARITY_MARK, "
+    "PARITY_SPACE. Default to 'N'",
+    default="N",
+    type=CaseInsenstiveChoice(["N", "E", "O", "M", "S"]),
 )
 @click.option(
     "--stopbits",
     help="Modbus RTU serial stop bits. "
-         "Number of stop bits. Possible values: STOPBITS_ONE, "
-         "STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to '1'",
+    "Number of stop bits. Possible values: STOPBITS_ONE, "
+    "STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to '1'",
     default="1",
     type=NumericChoice(["1", "1.5", "2"], float),
 )
 @click.option(
     "--xonxoff",
-    help="Modbus RTU serial xonxoff.  Enable software flow control."
-         "Defaults to 0",
+    help="Modbus RTU serial xonxoff.  Enable software flow control." "Defaults to 0",
     default=0,
-    type=int
+    type=int,
 )
 @click.option(
     "--rtscts",
     help="Modbus RTU serial rtscts. Enable hardware (RTS/CTS) flow "
-         "control. Defaults to 0",
+    "control. Defaults to 0",
     default=0,
-    type=int
+    type=int,
 )
 @click.option(
     "--dsrdtr",
     help="Modbus RTU serial dsrdtr. Enable hardware (DSR/DTR) flow "
-         "control. Defaults to 0",
+    "control. Defaults to 0",
     default=0,
-    type=int
+    type=int,
 )
 @click.option(
     "--timeout",
     help="Modbus RTU serial read timeout. Defaults to 0.025 sec",
     default=0.25,
-    type=float
+    type=float,
 )
 @click.option(
     "--write-timeout",
     help="Modbus RTU serial write timeout. Defaults to 2 sec",
     default=2,
-    type=float
+    type=float,
 )
-def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
-           rtscts, dsrdtr, timeout, write_timeout):
+def serial(
+    ctx,
+    method,
+    port,
+    baudrate,
+    bytesize,
+    parity,
+    stopbits,
+    xonxoff,
+    rtscts,
+    dsrdtr,
+    timeout,
+    write_timeout,
+):
     from pymodbus.repl.client.mclient import ModbusSerialClient
-    client = ModbusSerialClient(method=method,
-                                port=port,
-                                baudrate=baudrate,
-                                bytesize=bytesize,
-                                parity=parity,
-                                stopbits=stopbits,
-                                xonxoff=xonxoff,
-                                rtscts=rtscts,
-                                dsrdtr=dsrdtr,
-                                timeout=timeout,
-                                write_timeout=write_timeout,
-                                **ctx.obj)
+
+    client = ModbusSerialClient(
+        method=method,
+        port=port,
+        baudrate=baudrate,
+        bytesize=bytesize,
+        parity=parity,
+        stopbits=stopbits,
+        xonxoff=xonxoff,
+        rtscts=rtscts,
+        dsrdtr=dsrdtr,
+        timeout=timeout,
+        write_timeout=write_timeout,
+        **ctx.obj
+    )
     cli(client)
 
 

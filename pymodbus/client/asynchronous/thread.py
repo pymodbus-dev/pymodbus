@@ -13,6 +13,7 @@ class EventLoopThread(object):
     Event loop controlling the backend event loops (io_loop for tornado,
     reactor for twisted and event_loop for Asyncio)
     """
+
     def __init__(self, name, start, stop, *args, **kwargs):
         """
         Initialize Event loop thread

@@ -1,12 +1,13 @@
 from pymodbus.interfaces import IModbusSlaveContext
 
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
 # Mocks
-#---------------------------------------------------------------------------#
-class mock(object): pass
+# ---------------------------------------------------------------------------#
+class mock(object):
+    pass
+
 
 class MockContext(IModbusSlaveContext):
-
     def __init__(self, valid=False, default=True):
         self.valid = valid
         self.default = default
@@ -20,8 +21,9 @@ class MockContext(IModbusSlaveContext):
     def setValues(self, fx, address, count):
         pass
 
+
 class FakeList(object):
-    ''' todo, replace with magic mock '''
+    """todo, replace with magic mock"""
 
     def __init__(self, size):
         self.size = size
@@ -31,4 +33,3 @@ class FakeList(object):
 
     def __iter__(self):
         return []
-

@@ -23,12 +23,16 @@ from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
+
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
 import logging
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -90,10 +94,11 @@ async def run_server():
     #     store = ModbusSlaveContext(..., zero_mode=True)
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
     context = ModbusServerContext(slaves=store, single=True)
 
@@ -103,11 +108,11 @@ async def run_server():
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
-    identity.VendorName = 'Pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'Pymodbus Server'
-    identity.ModelName = 'Pymodbus Server'
+    identity.VendorName = "Pymodbus"
+    identity.ProductCode = "PM"
+    identity.VendorUrl = "http://github.com/riptideio/pymodbus/"
+    identity.ProductName = "Pymodbus Server"
+    identity.ModelName = "Pymodbus Server"
     identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
@@ -119,8 +124,13 @@ async def run_server():
     #                      defer_start=False)
 
     # 	deferred start:
-    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
-                                  allow_reuse_address=True, defer_start=True)
+    server = await StartTcpServer(
+        context,
+        identity=identity,
+        address=("0.0.0.0", 5020),
+        allow_reuse_address=True,
+        defer_start=True,
+    )
 
     asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
     await server.serve_forever()
@@ -165,4 +175,3 @@ async def run_server():
 
 if __name__ == "__main__":
     asyncio.run(run_server())
-

@@ -25,11 +25,15 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #
 import logging
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 
@@ -38,10 +42,10 @@ log = logging.getLogger()
 # build a quick wrapper around the framers
 # -------------------------------------------------------------------------- #
 
-class Decoder(object):
 
+class Decoder(object):
     def __init__(self, framer, encode=False):
-        """ Initialize a new instance of the decoder
+        """Initialize a new instance of the decoder
 
         :param framer: The framer to use
         :param encode: If the message needs to be encoded
@@ -50,21 +54,21 @@ class Decoder(object):
         self.encode = encode
 
     def decode(self, message):
-        """ Attempt to decode the supplied message
+        """Attempt to decode the supplied message
 
         :param message: The message to decode
         """
-        value = message if self.encode else c.encode(message, 'hex_codec')
-        print("="*80)
+        value = message if self.encode else c.encode(message, "hex_codec")
+        print("=" * 80)
         print("Decoding Message %s" % value)
-        print("="*80)
+        print("=" * 80)
         decoders = [
             self.framer(ServerDecoder(), client=None),
-            self.framer(ClientDecoder(), client=None)
+            self.framer(ClientDecoder(), client=None),
         ]
         for decoder in decoders:
             print("%s" % decoder.decoder.__class__.__name__)
-            print("-"*80)
+            print("-" * 80)
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
@@ -77,76 +81,104 @@ class Decoder(object):
                 self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
-        """ Attempt to find message errors
+        """Attempt to find message errors
 
         :param message: The message to find errors in
         """
-        log.error("Unable to parse message - {} with {}".format(message,
-                                                                decoder))
+        log.error("Unable to parse message - {} with {}".format(message, decoder))
 
     def report(self, message):
-        """ The callback to print the message information
+        """The callback to print the message information
 
         :param message: The message to print
         """
-        print("%-15s = %s" % ('name', message.__class__.__name__))
+        print("%-15s = %s" % ("name", message.__class__.__name__))
         for (k, v) in message.__dict__.items():
             if isinstance(v, dict):
                 print("%-15s =" % k)
-                for kk,vv in v.items():
+                for kk, vv in v.items():
                     print("  %-12s => %s" % (kk, vv))
 
             elif isinstance(v, collections.Iterable):
                 print("%-15s =" % k)
-                value = str([int(x) for x  in v])
+                value = str([int(x) for x in v])
                 for line in textwrap.wrap(value, 60):
                     print("%-15s . %s" % ("", line))
             else:
                 print("%-15s = %s" % (k, hex(v)))
-        print("%-15s = %s" % ('documentation', message.__doc__))
+        print("%-15s = %s" % ("documentation", message.__doc__))
 
 
 # -------------------------------------------------------------------------- #
 # and decode our message
 # -------------------------------------------------------------------------- #
 def get_options():
-    """ A helper method to parse the command line options
+    """A helper method to parse the command line options
 
     :returns: The options manager
     """
     parser = OptionParser()
 
-    parser.add_option("-p", "--parser",
-                      help="The type of parser to use "
-                           "(tcp, rtu, binary, ascii)",
-                      dest="parser", default="tcp")
+    parser.add_option(
+        "-p",
+        "--parser",
+        help="The type of parser to use " "(tcp, rtu, binary, ascii)",
+        dest="parser",
+        default="tcp",
+    )
 
-    parser.add_option("-D", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
-    parser.add_option("-m", "--message",
-                      help="The message to parse",
-                      dest="message", default=None)
+    parser.add_option(
+        "-m", "--message", help="The message to parse", dest="message", default=None
+    )
 
-    parser.add_option("-a", "--ascii",
-                      help="The indicates that the message is ascii",
-                      action="store_true", dest="ascii", default=False)
+    parser.add_option(
+        "-a",
+        "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true",
+        dest="ascii",
+        default=False,
+    )
 
-    parser.add_option("-b", "--binary",
-                      help="The indicates that the message is binary",
-                      action="store_false", dest="ascii")
+    parser.add_option(
+        "-b",
+        "--binary",
+        help="The indicates that the message is binary",
+        action="store_false",
+        dest="ascii",
+    )
 
-    parser.add_option("-f", "--file",
-                      help="The file containing messages to parse",
-                      dest="file", default=None)
+    parser.add_option(
+        "-f",
+        "--file",
+        help="The file containing messages to parse",
+        dest="file",
+        default=None,
+    )
 
-    parser.add_option("-t", "--transaction",
-                      help="If the incoming message is in hexadecimal format",
-                      action="store_true", dest="transaction", default=False)
-    parser.add_option("--framer",
-                      help="Framer to use", dest="framer", default=None,
-                      )
+    parser.add_option(
+        "-t",
+        "--transaction",
+        help="If the incoming message is in hexadecimal format",
+        action="store_true",
+        dest="transaction",
+        default=False,
+    )
+    parser.add_option(
+        "--framer",
+        help="Framer to use",
+        dest="framer",
+        default=None,
+    )
 
     (opt, arg) = parser.parse_args()
 
@@ -157,7 +189,7 @@ def get_options():
 
 
 def get_messages(option):
-    """ A helper method to generate the messages to parse
+    """A helper method to generate the messages to parse
 
     :param options: The option manager
     :returns: The message iterator to parse
@@ -172,21 +204,21 @@ def get_messages(option):
             option.message = msg
 
         if not option.ascii:
-            option.message = c.decode(option.message.encode(), 'hex_codec')
+            option.message = c.decode(option.message.encode(), "hex_codec")
         yield option.message
     elif option.file:
         with open(option.file, "r") as handle:
             for line in handle:
-                if line.startswith('#'): continue
+                if line.startswith("#"):
+                    continue
                 if not option.ascii:
                     line = line.strip()
-                    line = line.decode('hex')
+                    line = line.decode("hex")
                 yield line
 
 
 def main():
-    """ The main runner function
-    """
+    """The main runner function"""
     option = get_options()
 
     if option.debug:
@@ -197,10 +229,10 @@ def main():
             print("Logging is not supported on this system- {}".format(e))
 
     framer = lookup = {
-        'tcp':    ModbusSocketFramer,
-        'rtu':    ModbusRtuFramer,
-        'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer,
+        "tcp": ModbusSocketFramer,
+        "rtu": ModbusRtuFramer,
+        "binary": ModbusBinaryFramer,
+        "ascii": ModbusAsciiFramer,
     }.get(option.framer or option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer, option.ascii)

@@ -34,6 +34,7 @@ from twisted.internet.task import LoopingCall
 # configure the service logging
 # --------------------------------------------------------------------------- #
 import logging
+
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -44,16 +45,16 @@ log.setLevel(logging.DEBUG)
 
 
 def updating_writer(a):
-    """ A worker process that runs every so often and
+    """A worker process that runs every so often and
     updates live values of the context which resides in an SQLite3 database.
     It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     """
     log.debug("Updating the database context")
-    context  = a[0]
-    readfunction = 0x03 # read holding registers
+    context = a[0]
+    readfunction = 0x03  # read holding registers
     writefunction = 0x10
-    slave_id = 0x01 # slave address
+    slave_id = 0x01  # slave address
     count = 50
 
     # import pdb; pdb.set_trace()
@@ -62,8 +63,7 @@ def updating_writer(a):
     rand_addr = random.randint(0, 65000)
     log.debug("Writing to datastore: {}, {}".format(rand_addr, rand_value))
     # import pdb; pdb.set_trace()
-    context[slave_id].setValues(writefunction, rand_addr, [rand_value],
-                                update=False)
+    context[slave_id].setValues(writefunction, rand_addr, [rand_value], update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
     log.debug("Values from datastore: " + str(values))
 
@@ -73,7 +73,7 @@ def run_dbstore_update_server():
     # initialize your data store
     # ----------------------------------------------------------------------- #
 
-    block = ModbusSequentialDataBlock(0x00, [0] * 0xff)
+    block = ModbusSequentialDataBlock(0x00, [0] * 0xFF)
     store = SqlSlaveContext(block)
 
     context = ModbusServerContext(slaves={1: store}, single=False)
@@ -82,11 +82,11 @@ def run_dbstore_update_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
+    identity.VendorName = "pymodbus"
+    identity.ProductCode = "PM"
+    identity.VendorUrl = "http://github.com/riptideio/pymodbus/"
+    identity.ProductName = "pymodbus Server"
+    identity.ModelName = "pymodbus Server"
     identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
@@ -101,5 +101,3 @@ def run_dbstore_update_server():
 
 if __name__ == "__main__":
     run_dbstore_update_server()
-
-

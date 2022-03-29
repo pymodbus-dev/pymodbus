@@ -30,55 +30,57 @@ __________                          .______.                    _________
 """
 
 SMALL_TITLE = "Pymodbus server..."
-BOTTOM_TOOLBAR = HTML('(MODBUS SERVER) <b><style bg="ansired">Press Ctrl+C or '
-                      'type "exit" to quit</style></b> Type "help" '
-                      'for list of available commands')
-COMMAND_ARGS = ["response_type", "error_code", "delay_by",
-                "clear_after", "data_len"]
+BOTTOM_TOOLBAR = HTML(
+    '(MODBUS SERVER) <b><style bg="ansired">Press Ctrl+C or '
+    'type "exit" to quit</style></b> Type "help" '
+    "for list of available commands"
+)
+COMMAND_ARGS = ["response_type", "error_code", "delay_by", "clear_after", "data_len"]
 RESPONSE_TYPES = ["normal", "error", "delayed", "empty", "stray"]
 COMMANDS = {
     "manipulator": {
         "response_type": None,
         "error_code": None,
         "delay_by": None,
-        "clear_after": None
+        "clear_after": None,
     },
     "exit": None,
     "help": None,
-    "clear": None
+    "clear": None,
 }
-USAGE = "manipulator response_type=|normal|error|delayed|empty|stray \n" \
-        "\tAdditional parameters\n" \
-        "\t\terror_code=&lt;int&gt; \n\t\tdelay_by=&lt;in seconds&gt; \n\t\t" \
-        "clear_after=&lt;clear after n messages int&gt;" \
-        "\n\t\tdata_len=&lt;length of stray data (int)&gt;\n" \
-        "\n\tExample usage: \n\t" \
-        "1. Send error response 3 for 4 requests\n\t" \
-        "   <ansiblue>manipulator response_type=error error_code=3 clear_after=4</ansiblue>\n\t" \
-        "2. Delay outgoing response by 5 seconds indefinitely\n\t" \
-        "   <ansiblue>manipulator response_type=delayed delay_by=5</ansiblue>\n\t" \
-        "3. Send empty response\n\t" \
-        "   <ansiblue>manipulator response_type=empty</ansiblue>\n\t" \
-        "4. Send stray response of lenght 12 and revert to normal after 2 responses\n\t" \
-        "   <ansiblue>manipulator response_type=stray data_len=11 clear_after=2</ansiblue>\n\t" \
-        "5. To disable response manipulation\n\t" \
-        "   <ansiblue>manipulator response_type=normal</ansiblue>"
+USAGE = (
+    "manipulator response_type=|normal|error|delayed|empty|stray \n"
+    "\tAdditional parameters\n"
+    "\t\terror_code=&lt;int&gt; \n\t\tdelay_by=&lt;in seconds&gt; \n\t\t"
+    "clear_after=&lt;clear after n messages int&gt;"
+    "\n\t\tdata_len=&lt;length of stray data (int)&gt;\n"
+    "\n\tExample usage: \n\t"
+    "1. Send error response 3 for 4 requests\n\t"
+    "   <ansiblue>manipulator response_type=error error_code=3 clear_after=4</ansiblue>\n\t"
+    "2. Delay outgoing response by 5 seconds indefinitely\n\t"
+    "   <ansiblue>manipulator response_type=delayed delay_by=5</ansiblue>\n\t"
+    "3. Send empty response\n\t"
+    "   <ansiblue>manipulator response_type=empty</ansiblue>\n\t"
+    "4. Send stray response of lenght 12 and revert to normal after 2 responses\n\t"
+    "   <ansiblue>manipulator response_type=stray data_len=11 clear_after=2</ansiblue>\n\t"
+    "5. To disable response manipulation\n\t"
+    "   <ansiblue>manipulator response_type=normal</ansiblue>"
+)
 COMMAND_HELPS = {
-   "manipulator": "Manipulate response from server.\nUsage: {}".format(USAGE),
-    "clear": "Clears screen"
-
+    "manipulator": "Manipulate response from server.\nUsage: {}".format(USAGE),
+    "clear": "Clears screen",
 }
 
 
 STYLE = Style.from_dict({"": "cyan"})
 CUSTOM_FORMATTERS = [
-        formatters.Label(suffix=": "),
-        formatters.Bar(start="|", end="|", sym_a="#", sym_b="#", sym_c="-"),
-        formatters.Text(" "),
-        formatters.Text(" "),
-        formatters.TimeElapsed(),
-        formatters.Text("  "),
-    ]
+    formatters.Label(suffix=": "),
+    formatters.Bar(start="|", end="|", sym_a="#", sym_b="#", sym_c="-"),
+    formatters.Text(" "),
+    formatters.Text(" "),
+    formatters.TimeElapsed(),
+    formatters.Text("  "),
+]
 
 
 def info(message):
@@ -103,7 +105,9 @@ def print_help():
     print_formatted_text(HTML("<u>Available commands:</u>"))
     for cmd, hlp in sorted(COMMAND_HELPS.items()):
         print_formatted_text(
-            HTML("<skyblue>{:45s}</skyblue><seagreen>{:100s}</seagreen>".format(cmd, hlp))
+            HTML(
+                "<skyblue>{:45s}</skyblue><seagreen>{:100s}</seagreen>".format(cmd, hlp)
+            )
         )
 
 
@@ -116,13 +120,14 @@ async def interactive_shell(server):
     if col > max_len:
         info(TITLE)
     else:
-        print_formatted_text(HTML('<u><b><style color="green">{}'
-                                  '</style></b></u>'.format(SMALL_TITLE)))
+        print_formatted_text(
+            HTML('<u><b><style color="green">{}' "</style></b></u>".format(SMALL_TITLE))
+        )
     info("")
     completer = NestedCompleter.from_nested_dict(COMMANDS)
-    session = PromptSession("SERVER > ",
-                            completer=completer,
-                            bottom_toolbar=BOTTOM_TOOLBAR)
+    session = PromptSession(
+        "SERVER > ", completer=completer, bottom_toolbar=BOTTOM_TOOLBAR
+    )
 
     # Run echo loop. Read text from stdin, and reply it back.
     while True:
@@ -143,7 +148,11 @@ async def interactive_shell(server):
                 if command[0] not in COMMANDS:
                     invalid_command = True
                 if invalid_command:
-                    warning("Invalid command or invalid usage of command - {}".format(command))
+                    warning(
+                        "Invalid command or invalid usage of command - {}".format(
+                            command
+                        )
+                    )
                     continue
                 if len(command) == 1:
                     warning("Usage: '{}'".format(USAGE))
@@ -160,27 +169,33 @@ async def interactive_shell(server):
                         else:
                             if arg in COMMAND_ARGS:
                                 try:
-                                    value = args[index+1]
+                                    value = args[index + 1]
                                     skip_next = True
                                 except IndexError:
-                                    error("Missing value "
-                                          "for argument - {}".format(arg))
+                                    error(
+                                        "Missing value " "for argument - {}".format(arg)
+                                    )
                                     warning("Usage: '{}'".format(USAGE))
                                     break
                         valid = True
                         if arg == "response_type":
                             if value not in RESPONSE_TYPES:
-                                warning("Invalid response "
-                                        "type request - {}".format(value))
+                                warning(
+                                    "Invalid response "
+                                    "type request - {}".format(value)
+                                )
                                 warning("Choose from {}".format(RESPONSE_TYPES))
                                 valid = False
-                        elif arg in ["error_code", "delay_by",
-                                     "clear_after", "data_len"]:
+                        elif arg in [
+                            "error_code",
+                            "delay_by",
+                            "clear_after",
+                            "data_len",
+                        ]:
                             try:
                                 value = int(value)
                             except ValueError:
-                                warning("Expected integer "
-                                        "value for {}".format(arg))
+                                warning("Expected integer " "value for {}".format(arg))
                                 valid = False
 
                         if valid:
@@ -205,5 +220,3 @@ async def main(server):
 
 async def run_repl(server):
     await main(server)
-
-

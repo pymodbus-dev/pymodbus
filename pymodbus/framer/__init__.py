@@ -2,14 +2,15 @@ from pymodbus.interfaces import IModbusFramer
 import struct
 
 # Unit ID, Function Code
-BYTE_ORDER = '>'
-FRAME_HEADER = 'BB'
+BYTE_ORDER = ">"
+FRAME_HEADER = "BB"
 
 # Transaction Id, Protocol ID, Length, Unit ID, Function Code
-SOCKET_FRAME_HEADER = BYTE_ORDER + 'HHH' + FRAME_HEADER
+SOCKET_FRAME_HEADER = BYTE_ORDER + "HHH" + FRAME_HEADER
 
 # Function Code
-TLS_FRAME_HEADER = BYTE_ORDER + 'B'
+TLS_FRAME_HEADER = BYTE_ORDER + "B"
+
 
 class ModbusFramer(IModbusFramer):
     """
@@ -21,7 +22,7 @@ class ModbusFramer(IModbusFramer):
         Validates if the received data is valid for the client
         :param units: list of unit id for which the transaction is valid
         :param single: Set to true to treat this as a single context
-        :return:         """
+        :return:"""
 
         if single:
             return True
@@ -30,7 +31,7 @@ class ModbusFramer(IModbusFramer):
                 # Handle Modbus TCP unit identifier (0x00 0r 0xFF)
                 # in asynchronous requests
                 return True
-            return self._header['uid'] in units
+            return self._header["uid"] in units
 
     def sendPacket(self, message):
         """

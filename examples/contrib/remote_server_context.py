@@ -27,6 +27,7 @@ from pymodbus.interfaces import IModbusSlaveContext
 # -------------------------------------------------------------------------- #
 
 import logging
+
 _logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------------- #
@@ -39,14 +40,14 @@ _logger = logging.getLogger(__name__)
 
 
 class RemoteSingleSlaveContext(IModbusSlaveContext):
-    """ This is a remote server context that allows one
+    """This is a remote server context that allows one
     to create a server context backed by a single client that
     may be attached to many slave units. This can be used to
     effectively create a modbus forwarding server.
     """
 
     def __init__(self, context, unit_id):
-        """ Initializes the datastores
+        """Initializes the datastores
 
         :param context: The underlying context to operate with
         :param unit_id: The slave that this context will contact
@@ -55,11 +56,11 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         self.unit_id = unit_id
 
     def reset(self):
-        """ Resets all the datastores to their default values """
+        """Resets all the datastores to their default values"""
         raise NotImplementedException()
 
     def validate(self, fx, address, count=1):
-        """ Validates the request to make sure it is in range
+        """Validates the request to make sure it is in range
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -67,13 +68,13 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         """
         _logger.debug("validate[%d] %d:%d" % (fx, address, count))
-        result = self.context.get_callbacks[self.decode(fx)](address,
-                                                             count,
-                                                             self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](
+            address, count, self.unit_id
+        )
         return not result.isError()
 
     def getValues(self, fx, address, count=1):
-        """ Get `count` values from datastore
+        """Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
@@ -81,32 +82,30 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         _logger.debug("get values[%d] %d:%d" % (fx, address, count))
-        result = self.context.get_callbacks[self.decode(fx)](address,
-                                                             count,
-                                                             self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](
+            address, count, self.unit_id
+        )
         return self.__extract_result(self.decode(fx), result)
 
     def setValues(self, fx, address, values):
-        """ Sets the datastore with the supplied values
+        """Sets the datastore with the supplied values
 
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
         _logger.debug("set values[%d] %d:%d" % (fx, address, len(values)))
-        self.context.set_callbacks[self.decode(fx)](address,
-                                                    values,
-                                                    self.unit_id)
+        self.context.set_callbacks[self.decode(fx)](address, values, self.unit_id)
 
     def __str__(self):
-        """ Returns a string representation of the context
+        """Returns a string representation of the context
 
         :returns: A string representation of the context
         """
         return "Remote Single Slave Context(%s)" % self.unit_id
 
     def __extract_result(self, fx, result):
-        """ A helper method to extract the values out of
+        """A helper method to extract the values out of
         a response. The future api should make the result
         consistent so we can just call `result.getValues()`.
 
@@ -114,12 +113,13 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param result: The resulting data
         """
         if not result.isError():
-            if fx in ['d', 'c']:
+            if fx in ["d", "c"]:
                 return result.bits
-            if fx in ['h', 'i']:
+            if fx in ["h", "i"]:
                 return result.registers
         else:
             return result
+
 
 # -------------------------------------------------------------------------- #
 # Server Context
@@ -129,41 +129,41 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
 
 
 class RemoteServerContext(object):
-    """ This is a remote server context that allows one
+    """This is a remote server context that allows one
     to create a server context backed by a single client that
     may be attached to many slave units. This can be used to
     effectively create a modbus forwarding server.
     """
 
     def __init__(self, client):
-        """ Initializes the datastores
+        """Initializes the datastores
 
         :param client: The client to retrieve values with
         """
         self.get_callbacks = {
-            'd': lambda a, c, s: client.read_discrete_inputs(a, c, s),
-            'c': lambda a, c, s: client.read_coils(a, c, s),
-            'h': lambda a, c, s: client.read_holding_registers(a, c, s),
-            'i': lambda a, c, s: client.read_input_registers(a, c, s),
+            "d": lambda a, c, s: client.read_discrete_inputs(a, c, s),
+            "c": lambda a, c, s: client.read_coils(a, c, s),
+            "h": lambda a, c, s: client.read_holding_registers(a, c, s),
+            "i": lambda a, c, s: client.read_input_registers(a, c, s),
         }
         self.set_callbacks = {
-            'd': lambda a, v, s: client.write_coils(a, v, s),
-            'c': lambda a, v, s: client.write_coils(a, v, s),
-            'h': lambda a, v, s: client.write_registers(a, v, s),
-            'i': lambda a, v, s: client.write_registers(a, v, s),
+            "d": lambda a, v, s: client.write_coils(a, v, s),
+            "c": lambda a, v, s: client.write_coils(a, v, s),
+            "h": lambda a, v, s: client.write_registers(a, v, s),
+            "i": lambda a, v, s: client.write_registers(a, v, s),
         }
         self._client = client
         self.slaves = {}  # simply a cache
 
     def __str__(self):
-        """ Returns a string representation of the context
+        """Returns a string representation of the context
 
         :returns: A string representation of the context
         """
         return "Remote Server Context(%s)" % self._client
 
     def __iter__(self):
-        """ Iterater over the current collection of slave
+        """Iterater over the current collection of slave
         contexts.
 
         :returns: An iterator over the slave contexts
@@ -172,7 +172,7 @@ class RemoteServerContext(object):
         return iter(self.slaves.items())
 
     def __contains__(self, slave):
-        """ Check if the given slave is in this list
+        """Check if the given slave is in this list
 
         :param slave: slave The slave to check for existence
         :returns: True if the slave exists, False otherwise
@@ -183,7 +183,7 @@ class RemoteServerContext(object):
         return True
 
     def __setitem__(self, slave, context):
-        """ Used to set a new slave context
+        """Used to set a new slave context
 
         :param slave: The slave context to set
         :param context: The new context to set for this slave
@@ -191,14 +191,14 @@ class RemoteServerContext(object):
         raise NotImplementedException()  # doesn't make sense here
 
     def __delitem__(self, slave):
-        """ Wrapper used to access the slave context
+        """Wrapper used to access the slave context
 
         :param slave: The slave context to remove
         """
         raise NotImplementedException()  # doesn't make sense here
 
     def __getitem__(self, slave):
-        """ Used to get access to a slave context
+        """Used to get access to a slave context
 
         :param slave: The slave context to get
         :returns: The requested slave context

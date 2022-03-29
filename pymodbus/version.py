@@ -8,7 +8,6 @@ the svn version as well using the local .entries file.
 
 
 class Version(object):
-
     def __init__(self, package, major, minor, micro, pre=None):
         """
 
@@ -25,24 +24,24 @@ class Version(object):
         self.pre = pre
 
     def short(self):
-        """ Return a string in canonical short version format
+        """Return a string in canonical short version format
         <major>.<minor>.<micro>.<pre>
         """
         if self.pre:
-            return '%d.%d.%d.%s' % (self.major, self.minor, self.micro, self.pre)
+            return "%d.%d.%d.%s" % (self.major, self.minor, self.micro, self.pre)
         else:
-            return '%d.%d.%d' % (self.major, self.minor, self.micro)
+            return "%d.%d.%d" % (self.major, self.minor, self.micro)
 
     def __str__(self):
-        """ Returns a string representation of the object
+        """Returns a string representation of the object
 
         :returns: A string representation of this object
         """
-        return '[%s, version %s]' % (self.package, self.short())
+        return "[%s, version %s]" % (self.package, self.short())
 
- 
-version = Version('pymodbus', 3, 0, 0, 'dev3')
-version.__name__ = 'pymodbus'  # fix epydoc error
+
+version = Version("pymodbus", 3, 0, 0, "dev3")
+version.__name__ = "pymodbus"  # fix epydoc error
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

@@ -22,35 +22,45 @@ argspec = inspect.signature
 
 
 FORMATTERS = {
-    'int8': 'decode_8bit_int',
-    'int16': 'decode_16bit_int',
-    'int32': 'decode_32bit_int',
-    'int64': 'decode_64bit_int',
-    'uint8': 'decode_8bit_uint',
-    'uint16': 'decode_16bit_uint',
-    'uint32': 'decode_32bit_uint',
-    'uint64': 'decode_64bit_int',
-    'float16': 'decode_16bit_float',
-    'float32': 'decode_32bit_float',
-    'float64': 'decode_64bit_float',
+    "int8": "decode_8bit_int",
+    "int16": "decode_16bit_int",
+    "int32": "decode_32bit_int",
+    "int64": "decode_64bit_int",
+    "uint8": "decode_8bit_uint",
+    "uint16": "decode_16bit_uint",
+    "uint32": "decode_32bit_uint",
+    "uint64": "decode_64bit_int",
+    "float16": "decode_16bit_float",
+    "float32": "decode_32bit_float",
+    "float64": "decode_64bit_float",
 }
 
 
-DEFAULT_KWARGS = {
-    'unit': 'Slave address'
-}
+DEFAULT_KWARGS = {"unit": "Slave address"}
 
 OTHER_COMMANDS = {
     "result.raw": "Show RAW Result",
     "result.decode": "Decode register response to known formats",
 }
-EXCLUDE = ['execute', 'recv', 'send', 'trace', 'set_debug']
+EXCLUDE = ["execute", "recv", "send", "trace", "set_debug"]
 CLIENT_METHODS = [
-    'connect', 'close', 'idle_time', 'is_socket_open', 'get_port', 'set_port',
-    'get_stopbits', 'set_stopbits', 'get_bytesize', 'set_bytesize',
-    'get_parity', 'set_parity', 'get_baudrate', 'set_baudrate', 'get_timeout',
-    'set_timeout', 'get_serial_settings'
-
+    "connect",
+    "close",
+    "idle_time",
+    "is_socket_open",
+    "get_port",
+    "set_port",
+    "get_stopbits",
+    "set_stopbits",
+    "get_bytesize",
+    "set_bytesize",
+    "get_parity",
+    "set_parity",
+    "get_baudrate",
+    "set_baudrate",
+    "get_timeout",
+    "set_timeout",
+    "get_serial_settings",
 ]
 CLIENT_ATTRIBUTES = []
 
@@ -59,6 +69,7 @@ class Command(object):
     """
     Class representing Commands to be consumed by Completer.
     """
+
     def __init__(self, name, signature, doc, unit=False):
         """
 
@@ -75,22 +86,24 @@ class Command(object):
             self._params = signature.parameters
             self.args = self.create_completion()
         else:
-            self._params = ''
+            self._params = ""
 
         if self.name.startswith("client.") and unit:
             self.args.update(**DEFAULT_KWARGS)
 
     def _create_help(self):
         doc = filter(lambda d: d, self.doc)
-        cmd_help = list(filter(
-            lambda x: not x.startswith(":param") and not x.startswith(
-                ":return"), doc))
+        cmd_help = list(
+            filter(
+                lambda x: not x.startswith(":param") and not x.startswith(":return"),
+                doc,
+            )
+        )
         return " ".join(cmd_help).strip()
 
     def _create_arg_help(self):
         param_dict = {}
-        params = list(filter(lambda d: d.strip().startswith(":param"),
-                             self.doc))
+        params = list(filter(lambda d: d.strip().startswith(":param"), self.doc))
         for param in params:
             param, help = param.split(":param")[1].strip().split(":")
             param_dict[param] = help
@@ -105,7 +118,7 @@ class Command(object):
         words = {}
 
         def _create(entry, default):
-            if entry not in ['self', 'kwargs']:
+            if entry not in ["self", "kwargs"]:
                 if isinstance(default, (int, string_types)):
                     entry += "={}".format(default)
                 return entry
@@ -135,7 +148,7 @@ class Command(object):
         """
         cmd = cmd.strip()
         cmd = cmd.split("=")[0].strip()
-        return cmd, self.param_help.get(cmd, '')
+        return cmd, self.param_help.get(cmd, "")
 
     def __str__(self):
         if self.doc:
@@ -144,28 +157,34 @@ class Command(object):
 
 
 def _get_requests(members):
-    commands = list(filter(lambda x: (x[0] not in EXCLUDE
-                                      and x[0] not in CLIENT_METHODS
-                                      and callable(x[1])),
-                           members))
+    commands = list(
+        filter(
+            lambda x: (
+                x[0] not in EXCLUDE and x[0] not in CLIENT_METHODS and callable(x[1])
+            ),
+            members,
+        )
+    )
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]),
-                    argspec(c[1]), inspect.getdoc(c[1]), unit=True)
-        for c in commands if not c[0].startswith("_")
+        "client.{}".format(c[0]): Command(
+            "client.{}".format(c[0]), argspec(c[1]), inspect.getdoc(c[1]), unit=True
+        )
+        for c in commands
+        if not c[0].startswith("_")
     }
     return commands
 
 
 def _get_client_methods(members):
-    commands = list(filter(lambda x: (x[0] not in EXCLUDE
-                                      and x[0] in CLIENT_METHODS),
-                           members))
+    commands = list(
+        filter(lambda x: (x[0] not in EXCLUDE and x[0] in CLIENT_METHODS), members)
+    )
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]),
-                    argspec(c[1]), inspect.getdoc(c[1]), unit=False)
-        for c in commands if not c[0].startswith("_")
+        "client.{}".format(c[0]): Command(
+            "client.{}".format(c[0]), argspec(c[1]), inspect.getdoc(c[1]), unit=False
+        )
+        for c in commands
+        if not c[0].startswith("_")
     }
     return commands
 
@@ -174,10 +193,11 @@ def _get_client_properties(members):
     global CLIENT_ATTRIBUTES
     commands = list(filter(lambda x: not callable(x[1]), members))
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]), None, "Read Only!", unit=False)
-        for c in commands if (not c[0].startswith("_")
-                              and isinstance(c[1], (string_types, int, float)))
+        "client.{}".format(c[0]): Command(
+            "client.{}".format(c[0]), None, "Read Only!", unit=False
+        )
+        for c in commands
+        if (not c[0].startswith("_") and isinstance(c[1], (string_types, int, float)))
     }
     CLIENT_ATTRIBUTES.extend(list(commands.keys()))
     return commands
@@ -199,11 +219,11 @@ def get_commands(client):
 
     result_commands = inspect.getmembers(Result, predicate=predicate)
     result_commands = {
-        "result.{}".format(c[0]):
-            Command("result.{}".format(c[0]), argspec(c[1]),
-                    inspect.getdoc(c[1]))
-        for c in result_commands if (not c[0].startswith("_")
-                                     and c[0] != "print_result")
+        "result.{}".format(c[0]): Command(
+            "result.{}".format(c[0]), argspec(c[1]), inspect.getdoc(c[1])
+        )
+        for c in result_commands
+        if (not c[0].startswith("_") and c[0] != "print_result")
     }
     commands.update(requests)
     commands.update(client_methods)
@@ -216,6 +236,7 @@ class Result(object):
     """
     Represent result command.
     """
+
     function_code = None
     data = None
 
@@ -224,12 +245,12 @@ class Result(object):
         :param result: Response of a modbus command.
         """
         if isinstance(result, dict):  # Modbus response
-            self.function_code = result.pop('function_code', None)
+            self.function_code = result.pop("function_code", None)
             self.data = dict(result)
         else:
             self.data = result
 
-    def decode(self, formatters, byte_order='big', word_order='big'):
+    def decode(self, formatters, byte_order="big", word_order="big"):
         """
         Decode the register response to known formatters.
 
@@ -245,22 +266,23 @@ class Result(object):
             formatters = [formatters]
 
         if self.function_code not in [3, 4, 23]:
-            print_formatted_text(
-                HTML("<red>Decoder works only for registers!!</red>"))
+            print_formatted_text(HTML("<red>Decoder works only for registers!!</red>"))
             return
-        byte_order = (Endian.Little if byte_order.strip().lower() == "little"
-                      else Endian.Big)
-        word_order = (Endian.Little if word_order.strip().lower() == "little"
-                      else Endian.Big)
-        decoder = BinaryPayloadDecoder.fromRegisters(self.data.get('registers'),
-                                                     byteorder=byte_order,
-                                                     wordorder=word_order)
+        byte_order = (
+            Endian.Little if byte_order.strip().lower() == "little" else Endian.Big
+        )
+        word_order = (
+            Endian.Little if word_order.strip().lower() == "little" else Endian.Big
+        )
+        decoder = BinaryPayloadDecoder.fromRegisters(
+            self.data.get("registers"), byteorder=byte_order, wordorder=word_order
+        )
         for formatter in formatters:
             formatter = FORMATTERS.get(formatter)
             if not formatter:
                 print_formatted_text(
-                    HTML("<red>Invalid Formatter - {}"
-                         "!!</red>".format(formatter)))
+                    HTML("<red>Invalid Formatter - {}" "!!</red>".format(formatter))
+                )
                 return
             decoded = getattr(decoder, formatter)()
             self.print_result(decoded)
@@ -277,12 +299,11 @@ class Result(object):
         new_dict = OrderedDict()
         for k, v in d.items():
             if isinstance(v, bytes):
-                v = v.decode('utf-8')
+                v = v.decode("utf-8")
             elif isinstance(v, dict):
                 v = self._process_dict(v)
             elif isinstance(v, (list, tuple)):
-                v = [v1.decode('utf-8') if isinstance(v1, bytes) else v1
-                     for v1 in v ]
+                v = [v1.decode("utf-8") if isinstance(v1, bytes) else v1 for v1 in v]
             new_dict[k] = v
         return new_dict
 
@@ -297,10 +318,8 @@ class Result(object):
         if isinstance(data, dict):
             data = self._process_dict(data)
         elif isinstance(data, (list, tuple)):
-            data = [v.decode('utf-8') if isinstance(v, bytes) else v
-                    for v in data]
+            data = [v.decode("utf-8") if isinstance(v, bytes) else v for v in data]
         elif isinstance(data, bytes):
-            data = data.decode('utf-8')
-        tokens = list(pygments.lex(json.dumps(data, indent=4),
-                                   lexer=JsonLexer()))
+            data = data.decode("utf-8")
+        tokens = list(pygments.lex(json.dumps(data, indent=4), lexer=JsonLexer()))
         print_formatted_text(PygmentsTokens(tokens))

@@ -15,7 +15,7 @@ modbus protocol.
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the extended messages to perform
 # --------------------------------------------------------------------------- #
 from pymodbus.diag_message import *
@@ -27,8 +27,11 @@ from pymodbus.mei_message import *
 # configure the client logging
 # --------------------------------------------------------------------------- #
 import logging
-FORMAT = ('%(asctime)-15s %(threadName)-15s '
-          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s "
+    "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -46,8 +49,8 @@ def execute_extended_requests():
     #
     # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
-    # ------------------------------------------------------------------------# 
-    client = ModbusClient(method='rtu', port="/dev/ptyp0")
+    # ------------------------------------------------------------------------#
+    client = ModbusClient(method="rtu", port="/dev/ptyp0")
     # client = ModbusClient(method='ascii', port="/dev/ptyp0")
     # client = ModbusClient(method='binary', port="/dev/ptyp0")
     # client = ModbusClient('127.0.0.1', port=5020)
@@ -232,8 +235,3 @@ def execute_extended_requests():
 
 if __name__ == "__main__":
     execute_extended_requests()
-
-
-
-
-

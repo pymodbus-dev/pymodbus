@@ -10,8 +10,14 @@ from pymodbus.constants import Defaults
 LOGGER = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs
+):
     """
     Factory to create twisted udp asynchronous client
     :param host: Host IP address
@@ -25,8 +31,14 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     raise NotImplementedError()
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                   source_address=None, timeout=None, **kwargs):
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs
+):
     """
     Factory to create Tornado based asynchronous udp clients
     :param host: Host IP address
@@ -38,14 +50,17 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop
-    from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as \
-        Client
+    from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as Client
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, **kwargs)
-    protocol = EventLoopThread("ioloop", IOLoop.current().start,
-                               IOLoop.current().stop)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        **kwargs
+    )
+    protocol = EventLoopThread("ioloop", IOLoop.current().start, IOLoop.current().stop)
     protocol.start()
     future = client.connect()
 
@@ -65,6 +80,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     """
     import asyncio
     from pymodbus.client.asynchronous.async_io import init_udp_client
+
     try:
         loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     except RuntimeError:
@@ -98,8 +114,9 @@ def get_factory(scheduler):
     elif scheduler == schedulers.ASYNC_IO:
         return async_io_factory
     else:
-        LOGGER.warning("Allowed Schedulers: {}, {}, {}".format(
-            schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
-        ))
+        LOGGER.warning(
+            "Allowed Schedulers: {}, {}, {}".format(
+                schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
+            )
+        )
         raise Exception("Invalid Scheduler '{}'".format(scheduler))
-

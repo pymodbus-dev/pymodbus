@@ -27,30 +27,30 @@ def reactor_factory(port, framer, **kwargs):
 
     class SerialClientFactory(ClientFactory):
         def __init__(self, framer, proto_cls):
-            ''' Remember things necessary for building a protocols '''
+            """Remember things necessary for building a protocols"""
             self.proto_cls = proto_cls
             self.framer = framer
 
         def buildProtocol(self):
-            ''' Create a protocol and start the reading cycle '''
+            """Create a protocol and start the reading cycle"""
             proto = self.proto_cls(self.framer)
             proto.factory = self
             return proto
 
     class SerialModbusClient(SerialPort):
-
         def __init__(self, framer, *args, **kwargs):
-            ''' Setup the client and start listening on the serial port
+            """Setup the client and start listening on the serial port
 
             :param factory: The factory to build clients with
-            '''
+            """
             self.decoder = ClientDecoder()
             proto_cls = kwargs.pop("proto_cls", None)
             proto = SerialClientFactory(framer, proto_cls).buildProtocol()
             SerialPort.__init__(self, proto, *args, **kwargs)
 
-    proto = EventLoopThread("reactor", reactor.run, reactor.stop,
-                            installSignalHandlers=0)
+    proto = EventLoopThread(
+        "reactor", reactor.run, reactor.stop, installSignalHandlers=0
+    )
     ser_client = SerialModbusClient(framer, port, reactor, **kwargs)
 
     return proto, ser_client
@@ -66,8 +66,7 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     """
 
     from tornado.ioloop import IOLoop
-    from pymodbus.client.asynchronous.tornado import (AsyncModbusSerialClient as
-                                               Client)
+    from pymodbus.client.asynchronous.tornado import AsyncModbusSerialClient as Client
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
@@ -88,8 +87,10 @@ def async_io_factory(port=None, framer=None, **kwargs):
     :return: asyncio event loop and serial client
     """
     import asyncio
-    from pymodbus.client.asynchronous.async_io import (ModbusClientProtocol,
-                                                       AsyncioModbusSerialClient)
+    from pymodbus.client.asynchronous.async_io import (
+        ModbusClientProtocol,
+        AsyncioModbusSerialClient,
+    )
 
     try:
         loop = kwargs.pop("loop", None) or asyncio.get_running_loop()
@@ -101,16 +102,19 @@ def async_io_factory(port=None, framer=None, **kwargs):
     try:
         from serial_asyncio import create_serial_connection
     except ImportError:
-        LOGGER.critical("pyserial-asyncio is not installed, "
-                        "install with 'pip install pyserial-asyncio")
+        LOGGER.critical(
+            "pyserial-asyncio is not installed, "
+            "install with 'pip install pyserial-asyncio"
+        )
         import sys
+
         sys.exit(1)
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
     coro = client.connect
     if not loop.is_running():
         loop.run_until_complete(coro())
-    else:# loop is not asyncio.get_event_loop():
+    else:  # loop is not asyncio.get_event_loop():
         future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
         future.result()
 
@@ -130,7 +134,9 @@ def get_factory(scheduler):
     elif scheduler == schedulers.ASYNC_IO:
         return async_io_factory
     else:
-        LOGGER.warning("Allowed Schedulers: {}, {}, {}".format(
-            schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
-        ))
+        LOGGER.warning(
+            "Allowed Schedulers: {}, {}, {}".format(
+                schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
+            )
+        )
         raise Exception("Invalid Scheduler '{}'".format(scheduler))

@@ -13,8 +13,14 @@ from pymodbus.constants import Defaults
 LOGGER = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs
+):
     """
     Factory to create twisted tcp asynchronous client
     :param host: Host IP address
@@ -28,9 +34,9 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     from twisted.internet import reactor, protocol
     from pymodbus.client.asynchronous.twisted import ModbusTcpClientProtocol
 
-    deferred = protocol.ClientCreator(
-        reactor, ModbusTcpClientProtocol
-    ).connectTCP(host, port, timeout=timeout, bindAddress=source_address)
+    deferred = protocol.ClientCreator(reactor, ModbusTcpClientProtocol).connectTCP(
+        host, port, timeout=timeout, bindAddress=source_address
+    )
 
     callback = kwargs.get("callback")
     errback = kwargs.get("errback")
@@ -41,15 +47,22 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     if errback:
         deferred.addErrback(errback)
 
-    protocol = EventLoopThread("reactor", reactor.run, reactor.stop,
-                               installSignalHandlers=0)
+    protocol = EventLoopThread(
+        "reactor", reactor.run, reactor.stop, installSignalHandlers=0
+    )
     protocol.start()
 
     return protocol, deferred
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs
+):
     """
     Factory to create Tornado based asynchronous tcp clients
     :param host: Host IP address
@@ -61,16 +74,21 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop
-    from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as \
-        Client
+    from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as Client
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
     protocol.start()
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, ioloop=ioloop, **kwargs)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        ioloop=ioloop,
+        **kwargs
+    )
 
     future = client.connect()
 
@@ -129,7 +147,9 @@ def get_factory(scheduler):
     elif scheduler == schedulers.ASYNC_IO:
         return async_io_factory
     else:
-        LOGGER.warning("Allowed Schedulers: {}, {}, {}".format(
-            schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
-        ))
+        LOGGER.warning(
+            "Allowed Schedulers: {}, {}, {}".format(
+                schedulers.REACTOR, schedulers.IO_LOOP, schedulers.ASYNC_IO
+            )
+        )
         raise Exception("Invalid Scheduler '{}'".format(scheduler))

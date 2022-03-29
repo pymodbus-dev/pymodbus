@@ -17,6 +17,7 @@ try:  # if not installed, install and proceed
     from setuptools import setup, find_packages
 except ImportError:
     from ez_setup import use_setuptools
+
     use_setuptools()
     from setuptools import setup, find_packages
 
@@ -26,14 +27,11 @@ except ImportError:
     command_classes = {}
 from pymodbus import __version__, __author__, __maintainer__
 
-CONSOLE_SCRIPTS = [
-            'pymodbus.console=pymodbus.repl.client.main:main'
-        ]
-CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
-with open('requirements.txt') as reqs:
+CONSOLE_SCRIPTS = ["pymodbus.console=pymodbus.repl.client.main:main"]
+CONSOLE_SCRIPTS.append("pymodbus.server=pymodbus.repl.server.main:server")
+with open("requirements.txt") as reqs:
     install_requires = [
-        line for line in reqs.read().split('\n')
-        if (line and not line.startswith('--'))
+        line for line in reqs.read().split("\n") if (line and not line.startswith("--"))
     ]
     install_requires.append("pyserial >= 3.4")
 # --------------------------------------------------------------------------- #
@@ -50,47 +48,45 @@ setup(
         on a single machine for monitoring software testing.
     """,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        'Environment :: Console',
-        'Environment :: X11 Applications :: GTK',
-        'Framework :: Twisted',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: POSIX :: Linux',
-        'Operating System :: Unix',
-        'Programming Language :: Python :: 3',
-        'Topic :: System :: Networking',
-        'Topic :: Utilities'
+        "Environment :: Console",
+        "Environment :: X11 Applications :: GTK",
+        "Framework :: Twisted",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Unix",
+        "Programming Language :: Python :: 3",
+        "Topic :: System :: Networking",
+        "Topic :: Utilities",
     ],
-    keywords='modbus, twisted, scada',
+    keywords="modbus, twisted, scada",
     author=__author__,
-    author_email='bashwork@gmail.com',
+    author_email="bashwork@gmail.com",
     maintainer=__maintainer__,
-    maintainer_email='otlasanju@gmail.com',
-    url='https://github.com/riptideio/pymodbus/',
-    license='BSD-3-Clause',
-    packages=find_packages(exclude=['examples', 'test']),
-    exclude_package_data={'': ['examples', 'test', 'tools', 'doc']},
-    platforms=['Linux', 'Mac OS X', 'Win'],
+    maintainer_email="otlasanju@gmail.com",
+    url="https://github.com/riptideio/pymodbus/",
+    license="BSD-3-Clause",
+    packages=find_packages(exclude=["examples", "test"]),
+    exclude_package_data={"": ["examples", "test", "tools", "doc"]},
+    platforms=["Linux", "Mac OS X", "Win"],
     include_package_data=True,
     zip_safe=True,
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     install_requires=install_requires,
     extras_require={
-        'quality': [
-            'coverage >= 3.5.3',
-            'nose >= 1.2.1',
-            'mock >= 1.0.0',
-            'pep8 >= 1.3.3'
+        "quality": [
+            "coverage >= 3.5.3",
+            "nose >= 1.2.1",
+            "mock >= 1.0.0",
+            "pep8 >= 1.3.3",
         ],
-        'documents': ['sphinx >= 1.1.3',
-                      'sphinx_rtd_theme',
-                      'humanfriendly'],
-        'twisted': [
+        "documents": ["sphinx >= 1.1.3", "sphinx_rtd_theme", "humanfriendly"],
+        "twisted": [
             # using platform_python_implementation rather than
             # implementation_name for Python 2 support
             'Twisted[conch,serial]>=20.3.0; platform_python_implementation != "PyPy" or sys_platform != "win32"',
@@ -98,20 +94,18 @@ setup(
             # https://github.com/mhammond/pywin32/issues/1289
             'Twisted[conch]>=20.3.0; platform_python_implementation == "PyPy" and sys_platform == "win32"',
         ],
-        'tornado': [
-            'tornado == 4.5.3'
-        ],
+        "tornado": ["tornado == 4.5.3"],
         'repl:python_version >= "3.7"': [
-            'click>=7.0',
-            'prompt-toolkit>=3.0.8',
-            'pygments>=2.2.0',
-            'aiohttp>=3.7.3',
-            'pyserial-asyncio>=0.5'
-        ]
+            "click>=7.0",
+            "prompt-toolkit>=3.0.8",
+            "pygments>=2.2.0",
+            "aiohttp>=3.7.3",
+            "pyserial-asyncio>=0.5",
+        ],
     },
     entry_points={
-        'console_scripts': CONSOLE_SCRIPTS,
+        "console_scripts": CONSOLE_SCRIPTS,
     },
-    test_suite='nose.collector',
+    test_suite="nose.collector",
     cmdclass=command_classes,
 )

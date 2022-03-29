@@ -27,7 +27,7 @@ sslctx.check_hostname = True
 # -------------------------------------------------------------------------- #
 # pass SSLContext which is the context here to ModbusTcpClient()
 # -------------------------------------------------------------------------- #
-client = ModbusTlsClient('test.host.com', 8020, sslctx=sslctx)
+client = ModbusTlsClient("test.host.com", 8020, sslctx=sslctx)
 client.connect()
 
 result = client.read_coils(1, 8)

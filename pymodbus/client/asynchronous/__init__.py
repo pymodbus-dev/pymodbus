@@ -33,11 +33,11 @@ Example run::
 """
 from pymodbus.compat import is_installed
 
-installed = is_installed('twisted')
+installed = is_installed("twisted")
 if installed:
     # Import deprecated async client only if twisted is installed #338
     from pymodbus.client.asynchronous.deprecated.asynchronous import *
     import logging
+
     logger = logging.getLogger(__name__)
-    logger.warning("Importing deprecated clients. "
-                   "Dependency Twisted is Installed")
+    logger.warning("Importing deprecated clients. " "Dependency Twisted is Installed")

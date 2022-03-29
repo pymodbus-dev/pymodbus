@@ -16,16 +16,19 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.transaction import (ModbusSocketFramer,
-                                  ModbusRtuFramer,
-                                  ModbusAsciiFramer,
-                                  ModbusBinaryFramer)
+from pymodbus.transaction import (
+    ModbusSocketFramer,
+    ModbusRtuFramer,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+)
 from pymodbus.pdu import ModbusExceptions as merror
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -33,42 +36,41 @@ _logger = logging.getLogger(__name__)
 # Modbus TCP Server
 # --------------------------------------------------------------------------- #
 class ModbusTcpProtocol(protocol.Protocol):
-    """ Implements a modbus server in twisted """
+    """Implements a modbus server in twisted"""
 
     def connectionMade(self):
-        """ Callback for when a client connects
+        """Callback for when a client connects
 
         ..note:: since the protocol factory cannot be accessed from the
                  protocol __init__, the client connection made is essentially
                  our __init__ method.
         """
         _logger.debug("Client Connected [%s]" % self.transport.getHost())
-        self.framer = self.factory.framer(decoder=self.factory.decoder,
-                                          client=None)
+        self.framer = self.factory.framer(decoder=self.factory.decoder, client=None)
 
     def connectionLost(self, reason):
-        """ Callback for when a client disconnects
+        """Callback for when a client disconnects
 
         :param reason: The client's reason for disconnecting
         """
         _logger.debug("Client Disconnected: %s" % reason)
 
     def dataReceived(self, data):
-        """ Callback when we receive any data
+        """Callback when we receive any data
 
         :param data: The data sent by the client
         """
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug('Data Received: ' + hexlify_packets(data))
+            _logger.debug("Data Received: " + hexlify_packets(data))
         if not self.factory.control.ListenOnly:
             units = self.factory.store.slaves()
             single = self.factory.store.single
-            self.framer.processIncomingPacket(data, self._execute,
-                                              single=single,
-                                              unit=units)
+            self.framer.processIncomingPacket(
+                data, self._execute, single=single, unit=units
+            )
 
     def _execute(self, request):
-        """ Executes the request and returns the result
+        """Executes the request and returns the result
 
         :param request: The decoded request message
         """
@@ -76,9 +78,9 @@ class ModbusTcpProtocol(protocol.Protocol):
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
         except NoSuchSlaveException as ex:
-            _logger.debug("requested slave does not exist: %s" % request.unit_id )
+            _logger.debug("requested slave does not exist: %s" % request.unit_id)
             if self.factory.ignore_missing_slaves:
-                return # the client will simply timeout waiting for a response
+                return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
         except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
@@ -89,7 +91,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         self._send(response)
 
     def _send(self, message):
-        """ Send a request (string) to the network
+        """Send a request (string) to the network
 
         :param message: The unencoded modbus response
         """
@@ -97,7 +99,7 @@ class ModbusTcpProtocol(protocol.Protocol):
             self.factory.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
+                _logger.debug("send: %s" % b2a_hex(pdu))
             return self.transport.write(pdu)
 
 
@@ -112,7 +114,7 @@ class ModbusServerFactory(ServerFactory):
     protocol = ModbusTcpProtocol
 
     def __init__(self, store, framer=None, identity=None, **kwargs):
-        """ Overloaded initializer for the modbus factory
+        """Overloaded initializer for the modbus factory
 
         If the identify structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
@@ -127,7 +129,9 @@ class ModbusServerFactory(ServerFactory):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -137,10 +141,10 @@ class ModbusServerFactory(ServerFactory):
 # Modbus UDP Server
 # --------------------------------------------------------------------------- #
 class ModbusUdpProtocol(protocol.DatagramProtocol):
-    """ Implements a modbus udp server in twisted """
+    """Implements a modbus udp server in twisted"""
 
     def __init__(self, store, framer=None, identity=None, **kwargs):
-        """ Overloaded initializer for the modbus factory
+        """Overloaded initializer for the modbus factory
 
         If the identify structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
@@ -157,26 +161,27 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
-                                                Defaults.IgnoreMissingSlaves)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
     def datagramReceived(self, data, addr):
-        """ Callback when we receive any data
+        """Callback when we receive any data
 
         :param data: The data sent by the client
         """
         _logger.debug("Client Connected [%s]" % addr)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug("Datagram Received: "+ hexlify_packets(data))
+            _logger.debug("Datagram Received: " + hexlify_packets(data))
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
             self.framer.processIncomingPacket(data, continuation)
 
     def _execute(self, request, addr):
-        """ Executes the request and returns the result
+        """Executes the request and returns the result
 
         :param request: The decoded request message
         """
@@ -184,21 +189,20 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
             context = self.store[request.unit_id]
             response = request.execute(context)
         except NoSuchSlaveException as ex:
-            _logger.debug("requested slave does not exist: "
-                          "%s" % request.unit_id )
+            _logger.debug("requested slave does not exist: " "%s" % request.unit_id)
             if self.ignore_missing_slaves:
-                return # the client will simply timeout waiting for a response
+                return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
         except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: %s" % ex)
             response = request.doException(merror.SlaveFailure)
-        #self.framer.populateResult(response)
+        # self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
         response.unit_id = request.unit_id
         self._send(response, addr)
 
     def _send(self, message, addr):
-        """ Send a request (string) to the network
+        """Send a request (string) to the network
 
         :param message: The unencoded modbus response
         :param addr: The (host, port) to send the message to
@@ -206,7 +210,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.control.Counter.BusMessage += 1
         pdu = self.framer.buildPacket(message)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            _logger.debug("send: %s" % b2a_hex(pdu))
         return self.transport.write(pdu, addr)
 
 
@@ -223,9 +227,15 @@ def _is_main_thread():
     return True
 
 
-def StartTcpServer(context, identity=None, address=None,
-                   console=False, defer_reactor_run=False, custom_functions=[],
-                   **kwargs):
+def StartTcpServer(
+    context,
+    identity=None,
+    address=None,
+    console=False,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs
+):
     """
     Helper method to start the Modbus Async TCP server
 
@@ -254,8 +264,14 @@ def StartTcpServer(context, identity=None, address=None,
         reactor.run(installSignalHandlers=_is_main_thread())
 
 
-def StartUdpServer(context, identity=None, address=None,
-                   defer_reactor_run=False, custom_functions=[], **kwargs):
+def StartUdpServer(
+    context,
+    identity=None,
+    address=None,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs
+):
     """
     Helper method to start the Modbus Async Udp server
 
@@ -283,8 +299,14 @@ def StartUdpServer(context, identity=None, address=None,
         reactor.run(installSignalHandlers=_is_main_thread())
 
 
-def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
-                      defer_reactor_run=False, custom_functions=[], **kwargs):
+def StartSerialServer(
+    context,
+    identity=None,
+    framer=ModbusAsciiFramer,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs
+):
     """
     Helper method to start the Modbus Async Serial server
 
@@ -305,9 +327,9 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     from twisted.internet import reactor
     from twisted.internet.serialport import SerialPort
 
-    port = kwargs.get('port', '/dev/ttyS0')
-    baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-    console = kwargs.get('console', False)
+    port = kwargs.get("port", "/dev/ttyS0")
+    baudrate = kwargs.get("baudrate", Defaults.Baudrate)
+    console = kwargs.get("console", False)
     bytesize = kwargs.get("bytesize", Defaults.Bytesize)
     stopbits = kwargs.get("stopbits", Defaults.Stopbits)
     parity = kwargs.get("parity", Defaults.Parity)
@@ -322,9 +344,18 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging
-    SerialPort(protocol, port, reactor, baudrate=baudrate, parity=parity,
-               stopbits=stopbits, timeout=timeout, xonxoff=xonxoff,
-               rtscts=rtscts, bytesize=bytesize)
+    SerialPort(
+        protocol,
+        port,
+        reactor,
+        baudrate=baudrate,
+        parity=parity,
+        stopbits=stopbits,
+        timeout=timeout,
+        xonxoff=xonxoff,
+        rtscts=rtscts,
+        bytesize=bytesize,
+    )
     if not defer_reactor_run:
         reactor.run(installSignalHandlers=_is_main_thread())
 
@@ -334,6 +365,7 @@ def StopServer():
     Helper method to stop Async Server
     """
     from twisted.internet import reactor
+
     if _is_main_thread():
         reactor.stop()
         _logger.debug("Stopping server from main thread")
@@ -345,6 +377,4 @@ def StopServer():
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
-__all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer", "StopServer"
-]
+__all__ = ["StartTcpServer", "StartUdpServer", "StartSerialServer", "StopServer"]

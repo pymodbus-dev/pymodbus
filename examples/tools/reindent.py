@@ -31,7 +31,8 @@ import sys
 
 verbose = 0
 recurse = 0
-dryrun  = 0
+dryrun = 0
+
 
 def errprint(*args):
     sep = ""
@@ -40,8 +41,10 @@ def errprint(*args):
         sep = " "
     sys.stderr.write("\n")
 
+
 def main():
     import getopt
+
     global verbose, recurse, dryrun
     try:
         opts, args = getopt.getopt(sys.argv[1:], "drv")
@@ -49,17 +52,18 @@ def main():
         errprint(msg)
         return
     for o, a in opts:
-        if o == '-d':
+        if o == "-d":
             dryrun += 1
-        elif o == '-r':
+        elif o == "-r":
             recurse += 1
-        elif o == '-v':
+        elif o == "-v":
             verbose += 1
     if not args:
         errprint("Usage:", __doc__)
         return
     for arg in args:
         check(arg)
+
 
 def check(file):
     if os.path.isdir(file) and not os.path.islink(file):
@@ -68,14 +72,14 @@ def check(file):
         names = os.listdir(file)
         for name in names:
             fullname = os.path.join(file, name)
-            if ((recurse and os.path.isdir(fullname) and
-                 not os.path.islink(fullname))
-                or name.lower().endswith(".py")):
+            if (
+                recurse and os.path.isdir(fullname) and not os.path.islink(fullname)
+            ) or name.lower().endswith(".py"):
                 check(fullname)
         return
 
     if verbose:
-        print("checking", file, "...", end=' ')
+        print("checking", file, "...", end=" ")
     try:
         f = open(file)
     except IOError as msg:
@@ -107,20 +111,18 @@ def check(file):
 
 
 class Reindenter:
-
     def __init__(self, f, eol="\n"):
         self.find_stmt = 1  # next token begins a fresh stmt?
-        self.level = 0      # current indent level
+        self.level = 0  # current indent level
         self.eol = eol
-        
+
         # Raw file lines.
         self.raw = f.readlines()
 
         # File lines, rstripped & tab-expanded.  Dummy at start is so
         # that we can use tokenize's 1-based line numbering easily.
         # Note that a line is all-blank iff it's "\n".
-        self.lines = [line.rstrip().expandtabs() + self.eol
-                      for line in self.raw]
+        self.lines = [line.rstrip().expandtabs() + self.eol for line in self.raw]
         self.lines.insert(0, None)
         self.index = 1  # index into self.lines of next line
 
@@ -143,9 +145,9 @@ class Reindenter:
         have2want = {}
         # Program after transformation.
         after = self.after = []
-        for i in range(len(stats)-1):
+        for i in range(len(stats) - 1):
             thisstmt, thislevel = stats[i]
-            nextstmt = stats[i+1][0]
+            nextstmt = stats[i + 1][0]
             have = getlspace(lines[thisstmt])
             want = thislevel * 4
             if want < 0:
@@ -157,21 +159,24 @@ class Reindenter:
                     want = have2want.get(have, -1)
                     if want < 0:
                         # Then it probably belongs to the next real stmt.
-                        for j in xrange(i+1, len(stats)-1):
+                        for j in xrange(i + 1, len(stats) - 1):
                             jline, jlevel = stats[j]
                             if jlevel >= 0:
                                 if have == getlspace(lines[jline]):
                                     want = jlevel * 4
                                 break
-                    if want < 0:           # Maybe it's a hanging
-                                           # comment like this one,
+                    if want < 0:  # Maybe it's a hanging
+                        # comment like this one,
                         # in which case we should shift it like its base
                         # line got shifted.
-                        for j in xrange(i-1, -1, -1):
+                        for j in xrange(i - 1, -1, -1):
                             jline, jlevel = stats[j]
                             if jlevel >= 0:
-                                want = have + getlspace(after[jline-1]) - \
-                                       getlspace(lines[jline])
+                                want = (
+                                    have
+                                    + getlspace(after[jline - 1])
+                                    - getlspace(lines[jline])
+                                )
                                 break
                     if want < 0:
                         # Still no luck -- leave it alone.
@@ -208,12 +213,19 @@ class Reindenter:
         return line
 
     # Line-eater for tokenize.
-    def tokeneater(self, type, token, params, end, line,
-                   INDENT=tokenize.INDENT,
-                   DEDENT=tokenize.DEDENT,
-                   NEWLINE=tokenize.NEWLINE,
-                   COMMENT=tokenize.COMMENT,
-                   NL=tokenize.NL):
+    def tokeneater(
+        self,
+        type,
+        token,
+        params,
+        end,
+        line,
+        INDENT=tokenize.INDENT,
+        DEDENT=tokenize.DEDENT,
+        NEWLINE=tokenize.NEWLINE,
+        COMMENT=tokenize.COMMENT,
+        NL=tokenize.NL,
+    ):
         sline, scol = params
         if type == NEWLINE:
             # A program statement, or ENDMARKER, will eventually follow,
@@ -243,8 +255,9 @@ class Reindenter:
             # must be the first token of the next program statement, or an
             # ENDMARKER.
             self.find_stmt = 0
-            if line:   # not endmarker
+            if line:  # not endmarker
                 self.stats.append((sline, self.level))
+
 
 # Count number of leading blanks.
 def getlspace(line):
@@ -253,6 +266,6 @@ def getlspace(line):
         i += 1
     return i
 
-if __name__ == '__main__':
-    main()
 
+if __name__ == "__main__":
+    main()

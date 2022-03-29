@@ -12,6 +12,7 @@ ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # Logging
 # --------------------------------------------------------------------------- #
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -35,14 +36,14 @@ class ModbusAsciiFramer(ModbusFramer):
     """
 
     def __init__(self, decoder, client=None):
-        """ Initializes a new instance of the framer
+        """Initializes a new instance of the framer
 
         :param decoder: The decoder implementation to use
         """
-        self._buffer = b''
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
         self._hsize = 0x02
-        self._start = b':'
+        self._start = b":"
         self._end = b"\r\n"
         self.decoder = decoder
         self.client = client
@@ -58,7 +59,7 @@ class ModbusAsciiFramer(ModbusFramer):
         return dict()
 
     def checkFrame(self):
-        """ Check and decode the next frame
+        """Check and decode the next frame
 
         :returns: True if we successful, False otherwise
         """
@@ -71,24 +72,24 @@ class ModbusAsciiFramer(ModbusFramer):
 
         end = self._buffer.find(self._end)
         if end != -1:
-            self._header['len'] = end
-            self._header['uid'] = int(self._buffer[1:3], 16)
-            self._header['lrc'] = int(self._buffer[end - 2:end], 16)
-            data = a2b_hex(self._buffer[start + 1:end - 2])
-            return checkLRC(data, self._header['lrc'])
+            self._header["len"] = end
+            self._header["uid"] = int(self._buffer[1:3], 16)
+            self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
+            data = a2b_hex(self._buffer[start + 1 : end - 2])
+            return checkLRC(data, self._header["lrc"])
         return False
 
     def advanceFrame(self):
-        """ Skip over the current framed message
+        """Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header['len'] + 2:]
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = self._buffer[self._header["len"] + 2 :]
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
 
     def isFrameReady(self):
-        """ Check if we should continue decode logic
+        """Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
 
@@ -97,7 +98,7 @@ class ModbusAsciiFramer(ModbusFramer):
         return len(self._buffer) > 1
 
     def addToFrame(self, message):
-        """ Add the next message to the frame buffer
+        """Add the next message to the frame buffer
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
 
@@ -106,37 +107,37 @@ class ModbusAsciiFramer(ModbusFramer):
         self._buffer += message
 
     def getFrame(self):
-        """ Get the next frame from the buffer
+        """Get the next frame from the buffer
 
         :returns: The frame data or ''
         """
         start = self._hsize + 1
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
             return a2b_hex(buffer)
-        return b''
+        return b""
 
     def resetFrame(self):
-        """ Reset the entire message frame.
+        """Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
 
     def populateResult(self, result):
-        """ Populates the modbus result header
+        """Populates the modbus result header
 
         The serial packets do not have any header information
         that is copied.
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
+        result.unit_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -163,7 +164,7 @@ class ModbusAsciiFramer(ModbusFramer):
         """
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
-        single = kwargs.get('single', False)
+        single = kwargs.get("single", False)
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -176,33 +177,33 @@ class ModbusAsciiFramer(ModbusFramer):
                     self.advanceFrame()
                     callback(result)  # defer this
                 else:
-                    _logger.error("Not a valid unit id - {}, "
-                                  "ignoring!!".format(self._header['uid']))
+                    _logger.error(
+                        "Not a valid unit id - {}, "
+                        "ignoring!!".format(self._header["uid"])
+                    )
                     self.resetFrame()
             else:
                 break
 
     def buildPacket(self, message):
-        """ Creates a ready to send modbus packet
+        """Creates a ready to send modbus packet
         Built off of a  modbus request/response
 
         :param message: The request/response to send
         :return: The encoded packet
         """
         encoded = message.encode()
-        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id,
-                             message.function_code)
+        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id, message.function_code)
         checksum = computeLRC(encoded + buffer)
 
         packet = bytearray()
         params = (message.unit_id, message.function_code)
         packet.extend(self._start)
-        packet.extend(('%02x%02x' % params).encode())
+        packet.extend(("%02x%02x" % params).encode())
         packet.extend(b2a_hex(encoded))
-        packet.extend(('%02x' % checksum).encode())
+        packet.extend(("%02x" % checksum).encode())
         packet.extend(self._end)
         return bytes(packet).upper()
 
 
 # __END__
-

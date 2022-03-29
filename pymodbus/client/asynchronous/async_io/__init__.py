@@ -343,13 +343,14 @@ class ReconnectingAsyncioModbusTcpClient(object):
         else:
             _logger.error('Factory protocol disconnect callback called while not connected.')
 
+
     async def _reconnect(self):
         _logger.debug('Waiting %d ms before next '
                       'connection attempt.' % self.delay_ms)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
-        return await self._connect()
 
+        return await self._connect()
 
 class AsyncioModbusTcpClient(object):
     """Client to connect to modbus device over TCP/IP."""
@@ -461,6 +462,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         :param server_hostname:
         :return:
         """
+
         self.sslctx = sslctx
         if self.sslctx is None:
             self.sslctx = ssl.create_default_context()
@@ -555,8 +557,8 @@ class ReconnectingAsyncioModbusUdpClient(object):
                                                     port,
                                                     type=DGRAM_TYPE)
         self.host, self.port = addrinfo[0][-1]
-
         return await self._connect()
+
 
     def stop(self):
         """
@@ -580,6 +582,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
         protocol.port = port
         protocol.factory = self
         return protocol
+
 
     async def _connect(self):
         _logger.debug('Connecting.')
@@ -621,7 +624,7 @@ class ReconnectingAsyncioModbusUdpClient(object):
             self.connected = False
             self.protocol = None
             if self.host:
-                asyncio.ensure_future(self._reconnect(), loop=self.loop)
+                asyncio.create_task(self._reconnect())
         else:
             _logger.error('Factory protocol disconnect '
                           'callback called while not connected.')
@@ -691,6 +694,7 @@ class AsyncioModbusUdpClient(object):
                 self.port,
                 type=DGRAM_TYPE)
             _host, _port = addrinfo[0][-1]
+
             ep = await self.loop.create_datagram_endpoint(
                 functools.partial(self._create_protocol,
                                   host=_host, port=_port),
@@ -842,14 +846,14 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     :param kwargs:
     :return:
     """
+
     client = ReconnectingAsyncioModbusTcpClient(protocol_class=proto_cls,
                                                 loop=loop, **kwargs)
     await client.start(host, port)
     return client
 
 
-@asyncio.coroutine
-def init_tls_client(proto_cls, loop, host, port, sslctx=None,
+async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
                     server_hostname=None, framer=None, **kwargs):
     """
     Helper function to initialize tcp client
@@ -863,6 +867,7 @@ def init_tls_client(proto_cls, loop, host, port, sslctx=None,
     :param kwargs:
     :return:
     """
+
     client = ReconnectingAsyncioModbusTlsClient(protocol_class=proto_cls,
                                                 loop=loop, framer=framer,
                                                 **kwargs)
@@ -880,6 +885,7 @@ async def init_udp_client(proto_cls, loop, host, port, **kwargs):
     :param kwargs:
     :return:
     """
+
     client = ReconnectingAsyncioModbusUdpClient(protocol_class=proto_cls,
                                                 loop=loop, **kwargs)
     await client.start(host, port)

@@ -1,16 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import contextlib
 import sys
 import unittest
 import pytest
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    from unittest.mock import patch
-    import asyncio
-    from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient
-    from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
-else:
-    from mock import patch
+from unittest.mock import patch
+import asyncio
+from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient
+from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
+
 import platform
 from pkg_resources import parse_version
 
@@ -113,8 +110,7 @@ class TestAsynchronousClient(object):
         protocol.stop()
         assert(not client._connected)
 
-    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
-                        reason="requires python3.4 or above")
+
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather")
     def testTcpAsyncioClient(self, mock_gather, mock_loop):
@@ -127,8 +123,8 @@ class TestAsynchronousClient(object):
     # -----------------------------------------------------------------------#
     # Test TLS Client client
     # -----------------------------------------------------------------------#
-    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
-                        reason="requires python3.4 or above")
+
+
     def testTlsAsyncioClient(self):
         """
         Test the TLS AsyncIO client
@@ -178,8 +174,6 @@ class TestAsynchronousClient(object):
             AsyncModbusUDPClient(schedulers.REACTOR,
                                  framer=ModbusSocketFramer(ClientDecoder()))
 
-    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4),
-                        reason="requires python3.4 or above")
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     def testUdpAsycioClient(self, mock_gather, mock_event_loop):
@@ -257,18 +251,6 @@ class TestAsynchronousClient(object):
             protocol.stop()
             assert(not client._connected)
 
-    @pytest.mark.skipif(IS_PYTHON3, reason="requires python2.7")
-    def testSerialAsyncioClientPython2(self):
-        """
-        Test Serial asynchronous asyncio client exits on python2
-        :return:
-        """
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            AsyncModbusSerialClient(schedulers.ASYNC_IO, method="rtu", port=SERIAL_PORT)
-        assert pytest_wrapped_e.type == SystemExit
-        assert pytest_wrapped_e.value.code == 1
-
-    @pytest.mark.skipif(not IS_PYTHON3 or PYTHON_VERSION < (3, 4), reason="requires python3.4 or above")
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),

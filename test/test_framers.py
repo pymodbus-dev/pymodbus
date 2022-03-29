@@ -6,11 +6,7 @@ from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.utilities import ModbusTransactionState
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.compat import IS_PYTHON3
-if IS_PYTHON3:
-    from unittest.mock import Mock, patch
-else:  # Python 2
-    from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 @pytest.fixture

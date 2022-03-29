@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This script is used to convert an XML dump to a
 serialized ModbusDataStore for use with the simulator.
@@ -131,10 +131,10 @@ def main():
         parser = etree.XMLParser(target = ModbusXML())
         result = etree.parse(opt.input, parser)
         store_dump(result, opt.output)
-        print "Created datastore: %s\n" % opt.output
+        print( "Created datastore: %s\n" % opt.output)
 
-    except ConversionException, ex:
-        print ex
+    except ConversionException as ex:
+        print(ex)
         parser.print_help()
 
 # --------------------------------------------------------------------------- #

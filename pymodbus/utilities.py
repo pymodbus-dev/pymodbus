@@ -5,7 +5,7 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
-from pymodbus.compat import int2byte, byte2int, IS_PYTHON3
+from pymodbus.compat import int2byte, byte2int
 from six import string_types
 
 
@@ -119,10 +119,7 @@ def unpack_bitstring(string):
     byte_count = len(string)
     bits = []
     for byte in range(byte_count):
-        if IS_PYTHON3:
-            value = byte2int(int(string[byte]))
-        else:
-            value = byte2int(string[byte])
+        value = byte2int(int(string[byte]))
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
@@ -135,7 +132,7 @@ def make_byte_string(s):
     :param s:
     :return:
     """
-    if IS_PYTHON3 and isinstance(s, string_types):
+    if isinstance(s, string_types):
         s = s.encode()
     return s
 # --------------------------------------------------------------------------- #
@@ -245,10 +242,8 @@ def hexlify_packets(packet):
     """
     if not packet:
         return ''
-    if IS_PYTHON3:
-        return " ".join([hex(byte2int(x)) for x in packet])
-    else:
-        return u" ".join([hex(byte2int(x)) for x in packet])
+    return " ".join([hex(byte2int(x)) for x in packet])
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #

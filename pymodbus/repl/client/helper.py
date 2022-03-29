@@ -14,14 +14,11 @@ from prompt_toolkit.formatted_text import PygmentsTokens, HTML
 from prompt_toolkit import print_formatted_text
 
 from pymodbus.payload import BinaryPayloadDecoder, Endian
-from pymodbus.compat import PYTHON_VERSION, IS_PYTHON2, string_types, izip
+from pymodbus.compat import string_types
 
-predicate = inspect.ismethod
-if IS_PYTHON2 or PYTHON_VERSION < (3, 3):
-    argspec = inspect.getargspec
-else:
-    predicate = inspect.isfunction
-    argspec = inspect.signature
+
+predicate = inspect.isfunction
+argspec = inspect.signature
 
 
 FORMATTERS = {
@@ -75,10 +72,7 @@ class Command(object):
         self.help_text = self._create_help()
         self.param_help = self._create_arg_help()
         if signature:
-            if IS_PYTHON2:
-                self._params = signature
-            else:
-                self._params = signature.parameters
+            self._params = signature.parameters
             self.args = self.create_completion()
         else:
             self._params = ''
@@ -116,26 +110,11 @@ class Command(object):
                     entry += "={}".format(default)
                 return entry
 
-        if IS_PYTHON2:
-            if not self._params.defaults:
-                defaults = [None]*len(self._params.args)
-            else:
-                defaults = list(self._params.defaults)
-                missing = len(self._params.args) - len(defaults)
-                if missing > 1:
-                    defaults.extend([None]*missing)
-            defaults.insert(0, None)
-            for arg, default in izip(self._params.args, defaults):
-                entry = _create(arg, default)
-                if entry:
-                    entry, meta = self.get_meta(entry)
-                    words[entry] = help
-        else:
-            for arg in self._params.values():
-                entry = _create(arg.name, arg.default)
-                if entry:
-                    entry, meta = self.get_meta(entry)
-                    words[entry] = meta
+        for arg in self._params.values():
+            entry = _create(arg.name, arg.default)
+            if entry:
+                entry, meta = self.get_meta(entry)
+                words[entry] = meta
 
         return words
 

@@ -1,14 +1,8 @@
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    import asyncio
-    from serial_asyncio import create_serial_connection
-    from pymodbus.client.asynchronous.async_io import ModbusClientProtocol
-    from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
-    from pymodbus.factory import ClientDecoder
-else:
-    import sys
-    sys.stderr("This example needs to be run only on python 3.4 and above")
-    sys.exit(1)
+import asyncio
+from serial_asyncio import create_serial_connection
+from pymodbus.client.asynchronous.async_io import ModbusClientProtocol
+from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
+from pymodbus.factory import ClientDecoder
 
 
 # ----------------------------------------------------------------------- #

@@ -10,7 +10,6 @@ from twisted.python.logfile import DailyLogFile
 from pymodbus.constants import Defaults
 from pymodbus.server.async import ModbusUdpProtocol
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.internal.ptwisted import InstallManagementConsole
 
 def BuildService():
     """
@@ -19,7 +18,6 @@ def BuildService():
     context = None
     framer = ModbusSocketFramer
     server = ModbusUdpProtocol(context, framer)
-    InstallManagementConsole({ 'server' : server })
     application = internet.UDPServer(Defaults.Port, server)
     return application
 

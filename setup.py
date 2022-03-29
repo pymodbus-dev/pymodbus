@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Installs pymodbus using setuptools
 
@@ -25,13 +25,11 @@ try:
 except ImportError:
     command_classes = {}
 from pymodbus import __version__, __author__, __maintainer__
-from pymodbus.utilities import IS_PYTHON3
 
 CONSOLE_SCRIPTS = [
             'pymodbus.console=pymodbus.repl.client.main:main'
         ]
-if IS_PYTHON3:
-    CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
+CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
 with open('requirements.txt') as reqs:
     install_requires = [
         line for line in reqs.read().split('\n')
@@ -103,13 +101,7 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
-
-        'repl:python_version <= "2.7"': [
-            'click>=7.0',
-            'prompt-toolkit==2.0.4',
-            'pygments>=2.2.0'
-        ],
-        'repl:python_version >= "3.6"': [
+        'repl:python_version >= "3.7"': [
             'click>=7.0',
             'prompt-toolkit>=3.0.8',
             'pygments>=2.2.0',

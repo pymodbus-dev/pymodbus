@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Simple Asynchronous Modbus TCP over TLS client
 ---------------------------------------------------------------------------

@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-from pymodbus.compat import IS_PYTHON3
+#!/usr/bin/env python3
 import unittest
 import pytest
-if IS_PYTHON3:  # Python 3
-    from unittest.mock import patch, MagicMock
-else:  # Python 2
-    from mock import patch, MagicMock
+from unittest.mock import patch, Mock, MagicMock
+
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.asynchronous import ModbusServerFactory
@@ -64,12 +61,8 @@ class AsynchronousServerTest(unittest.TestCase):
     def testTcpServerStartup(self):
         ''' Test that the modbus tcp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            if IS_PYTHON3:
-                console = False
-                call_count = 1
-            else:
-                console = True
-                call_count = 2
+            console = False
+            call_count = 1
             StartTcpServer(context=None, console=console)
             self.assertEqual(mock_reactor.listenTCP.call_count, call_count)
             self.assertEqual(mock_reactor.run.call_count, 1)

@@ -8,18 +8,11 @@ import time
 import random
 import logging
 from pymodbus.version import version as pymodbus_version
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.datastore.store import (ModbusSparseDataBlock,
                                       ModbusSequentialDataBlock)
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.device import ModbusDeviceIdentification
-
-if not IS_PYTHON3 or PYTHON_VERSION < (3, 6):
-    print(f"You are running {PYTHON_VERSION}."
-          "Reactive server requires python3.6 or above")
-    exit()
-
 
 try:
     from aiohttp import web

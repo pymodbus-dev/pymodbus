@@ -602,7 +602,7 @@ class ModbusControlBlock(Singleton):
         :returns: The current value of the requested bit
         '''
         try:
-            if bit and bit >= 0 and bit < len(self.__diagnostic):
+            if bit and 0 <= bit < len(self.__diagnostic):
                 return self.__diagnostic[bit]
         except Exception:
             return None

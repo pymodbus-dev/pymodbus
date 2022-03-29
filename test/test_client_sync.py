@@ -1,13 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from itertools import count
 from io import StringIO
-from pymodbus.compat import IS_PYTHON3
+from unittest.mock import patch, Mock, MagicMock
 
-if IS_PYTHON3:  # Python 3
-    from unittest.mock import patch, Mock, MagicMock
-else:  # Python 2
-    from mock import patch, Mock, MagicMock
 import socket
 import serial
 import ssl

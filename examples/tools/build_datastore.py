@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This creates a dummy datastore for use with the modbus simulator.
 
@@ -140,10 +140,10 @@ def main():
 
         with open(opt.file, "w") as output:
             pickle.dump(result, output)
-        print "Created datastore: %s\n" % opt.file
+        print("Created datastore: %s\n" % opt.file)
 
-    except ConfigurationException, ex:
-        print ex
+    except ConfigurationException as ex:
+        print(ex)
         parser.print_help()
 
 # --------------------------------------------------------------------------- #

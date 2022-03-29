@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.client.asynchronous import ModbusSerialClient as ModbusClient
 from base_runner import Runner

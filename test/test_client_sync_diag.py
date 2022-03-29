@@ -1,17 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from itertools import count
-from pymodbus.compat import IS_PYTHON3
 
-if IS_PYTHON3:  # Python 3
-    from unittest.mock import patch, Mock, MagicMock
-else:  # Python 2
-    from mock import patch, Mock, MagicMock
+from unittest.mock import patch, MagicMock
+
 import socket
 
 from pymodbus.client.sync_diag import ModbusTcpDiagClient, get_client
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import ConnectionException
 from test.test_client_sync import mockSocket
 
 

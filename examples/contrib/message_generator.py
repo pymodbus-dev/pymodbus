@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Modbus Message Generator
 --------------------------------------------------------------------------
@@ -31,7 +31,6 @@ from pymodbus.other_message import *
 from pymodbus.mei_message import *
 from pymodbus.register_read_message import *
 from pymodbus.register_write_message import *
-from pymodbus.compat import IS_PYTHON3
 
 # -------------------------------------------------------------------------- #
 # initialize logging
@@ -173,10 +172,7 @@ def generate_messages(framer, options):
         print("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
-            if not IS_PYTHON3:
-                packet = packet.encode('hex')
-            else:
-                packet = c.encode(packet, 'hex_codec').decode('utf-8')
+            packet = c.encode(packet, 'hex_codec').decode('utf-8')
         print ("{}\n".format(packet))   # because ascii ends with a \r\n
 
 

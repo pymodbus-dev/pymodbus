@@ -4,8 +4,6 @@ from __future__ import absolute_import
 import logging
 from pymodbus.client.asynchronous.factory.tls import get_factory
 from pymodbus.constants import Defaults
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-from pymodbus.client.asynchronous.schedulers import ASYNC_IO
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusTlsFramer
 
@@ -39,11 +37,6 @@ class AsyncModbusTLSClient(object):
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        if (not (IS_PYTHON3 and PYTHON_VERSION >= (3, 4))
-                and scheduler == ASYNC_IO):
-            logger.critical("ASYNCIO is supported only on python3")
-            import sys
-            sys.exit(1)
         framer = framer or ModbusTlsFramer(ClientDecoder())
         factory_class = get_factory(scheduler)
         yieldable = factory_class(host=host, port=port, sslctx=sslctx,

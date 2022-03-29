@@ -107,10 +107,10 @@ def async_io_factory(port=None, framer=None, **kwargs):
         sys.exit(1)
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
-    coro = client.connect()
+    coro = client.connect
     if not loop.is_running():
-        loop.run_until_complete(coro)
-    elif loop is not asyncio.get_event_loop():
+        loop.run_until_complete(coro())
+    else:# loop is not asyncio.get_event_loop():
         future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
         future.result()
 

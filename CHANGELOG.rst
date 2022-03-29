@@ -14,7 +14,6 @@ version 3.0.0dev1
 * Fix for lazy loading serial module with asyncio clients.
 * Updated examples and tests
 
-
 version 3.0.0dev0
 ----------------------------------------------------------
 * Support python3.7 and above

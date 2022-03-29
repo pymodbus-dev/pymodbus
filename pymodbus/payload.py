@@ -14,7 +14,6 @@ from pymodbus.utilities import pack_bitstring
 from pymodbus.utilities import unpack_bitstring
 from pymodbus.utilities import make_byte_string
 from pymodbus.exceptions import ParameterException
-from pymodbus.compat import unicode_string, IS_PYTHON3, PYTHON_VERSION
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
@@ -235,12 +234,10 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        if IS_PYTHON3 and PYTHON_VERSION.minor >= 6:
-            fstring = 'e'
-            p_string = self._pack_words(fstring, value)
-            self._payload.append(p_string)
-        else:
-            _logger.warning("float16 only supported on python3.6 and above!!!")
+        fstring = 'e'
+        p_string = self._pack_words(fstring, value)
+        self._payload.append(p_string)
+
 
     def add_32bit_float(self, value):
         """ Adds a 32 bit float to the buffer
@@ -459,14 +456,12 @@ class BinaryPayloadDecoder(object):
     def decode_16bit_float(self):
         """ Decodes a 16 bit float from the buffer
         """
-        if IS_PYTHON3 and PYTHON_VERSION.minor >= 6:
-            self._pointer += 2
-            fstring = 'e'
-            handle = self._payload[self._pointer - 2:self._pointer]
-            handle = self._unpack_words(fstring, handle)
-            return unpack("!"+fstring, handle)[0]
-        else:
-            _logger.warning("float16 only supported on python3.6 and above!!!")
+        self._pointer += 2
+        fstring = 'e'
+        handle = self._payload[self._pointer - 2:self._pointer]
+        handle = self._unpack_words(fstring, handle)
+        return unpack("!"+fstring, handle)[0]
+
 
     def decode_32bit_float(self):
         """ Decodes a 32 bit float from the buffer

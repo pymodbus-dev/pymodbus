@@ -1,29 +1,24 @@
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.compat import PYTHON_VERSION
 import pytest
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    import asyncio
-    from unittest import mock
-    from pymodbus.client.asynchronous.async_io import (
-        BaseModbusAsyncClientProtocol,
-        ReconnectingAsyncioModbusTcpClient,
-        ModbusClientProtocol, ModbusUdpClientProtocol)
-    from test.asyncio_test_helper import return_as_coroutine, run_coroutine
-    from pymodbus.client.asynchronous import schedulers
-    from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
-    from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
-    from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
-    from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
-    from pymodbus.factory import ClientDecoder
-    from pymodbus.exceptions import ConnectionException
-    from pymodbus.transaction import ModbusSocketFramer
-    from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-    protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
-else:
-    import mock
-    protocols = [None, None]
+from unittest import mock
+from pymodbus.client.asynchronous.async_io import (
+    BaseModbusAsyncClientProtocol,
+    ReconnectingAsyncioModbusTcpClient,
+    ModbusClientProtocol, ModbusUdpClientProtocol)
+from test.asyncio_test_helper import return_as_coroutine, run_coroutine
+from pymodbus.factory import ClientDecoder
+from pymodbus.exceptions import ConnectionException
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 
-@pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
+
 class TestAsyncioClient(object):
     def test_base_modbus_async_client_protocol(self):
         protocol = BaseModbusAsyncClientProtocol()
@@ -103,7 +98,7 @@ class TestAsyncioClient(object):
         assert client.delay_ms < client.DELAY_MAX_MS
 
     @pytest.mark.asyncio
-    async def test_initialization_serial_in_loop(self):
+    def test_initialization_serial_in_loop(self):
         _, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu')
 
         assert client.port == '/tmp/ptyp0'
@@ -171,7 +166,7 @@ class TestAsyncioClient(object):
         with mock.patch('pymodbus.client.asynchronous.async_io.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
         assert not client.connected
         assert client.protocol is None
@@ -201,7 +196,7 @@ class TestAsyncioClient(object):
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 
     # @pytest.mark.asyncio

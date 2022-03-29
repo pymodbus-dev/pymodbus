@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Note that this is not finished
 """
@@ -91,7 +91,7 @@ class Simulator(object):
         for port in ports:
             try:
                 reactor.listenTCP(port, ModbusServerFactory(self._parse()))
-                print 'listening on port', port
+                print('listening on port', port)
                 return port
             except twisted_error.CannotListenError:
                 pass
@@ -213,7 +213,7 @@ class SimulatorFrame(wx.Frame):
             net = int(octets[2]) % 255
             start = int(octets[3]) % 255
         else:
-            self.error_dialog("Invalid starting address!");
+            self.error_dialog("Invalid starting address!")
             return False
 
         # check interface size
@@ -226,7 +226,7 @@ class SimulatorFrame(wx.Frame):
                 if j == 254: net = net + 1
             self.restart = 1
         else:
-            self.error_dialog("Invalid number of devices!");
+            self.error_dialog("Invalid number of devices!")
             return False
 
         # check input file
@@ -235,11 +235,11 @@ class SimulatorFrame(wx.Frame):
             try:
                 handle = Simulator(config=self.file)
                 handle.run()
-            except ConfigurationException, ex:
+            except ConfigurationException as ex:
                 self.error_dialog("Error %s" % ex)
                 self.show_buttons(state=True)
         else:
-            self.error_dialog("Device to emulate does not exist!");
+            self.error_dialog("Device to emulate does not exist!")
             return False
 
     def help_clicked(self, widget):
@@ -296,9 +296,9 @@ def main():
     if debug:
         try:
             log.setLevel(logging.DEBUG)
-    	    logging.basicConfig()
-        except Exception, e:
-    	    print "Logging is not supported on this system"
+            logging.basicConfig()
+        except Exception as e:
+            print(f"Logging is not supported on this system: {e}")
     simulator = SimulatorApp(0)
     reactor.run()
 

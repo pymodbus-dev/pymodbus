@@ -92,11 +92,11 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     from pymodbus.client.asynchronous.async_io import init_tcp_client
 
     try:
-        loop = kwargs.get("loop") or asyncio.get_running_loop()
+        loop = kwargs.pop("loop") or asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
 
-    proto_cls = kwargs.get("proto_cls")
+    proto_cls = kwargs.pop("proto_cls", None)
 
     if not loop.is_running():
         asyncio.set_event_loop(loop)
@@ -104,17 +104,15 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
         client = loop.run_until_complete(asyncio.gather(cor))[0]
 
     elif loop is asyncio.get_event_loop():
-        cor = init_tcp_client(proto_cls, loop, host, port)
+        cor = init_tcp_client(proto_cls, loop, host, port, **kwargs)
         client = asyncio.create_task(cor)
         # future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         # client = future.result()
     else:
-        if loop is asyncio.get_event_loop():
-            return init_tcp_client(proto_cls, loop, host, port)
-        else:
-            cor = init_tcp_client(proto_cls, loop, host, port)
-            future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
-            client = future.result()
+        cor = init_tcp_client(proto_cls, loop, host, port, **kwargs)
+        future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
+        client = future.result()
+
     return loop, client
 
 

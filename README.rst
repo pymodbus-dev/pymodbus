@@ -20,7 +20,7 @@ PyModbus - A Python Modbus Stack
 Summary
 ------------------------------------------------------------
 
-Pymodbus is a full Modbus protocol implementation using twisted/torndo/asyncio for its
+Pymodbus is a full Modbus protocol implementation using twisted/tornado/asyncio for its
 asynchronous communications core.  It can also be used without any third
 party dependencies (aside from pyserial) if a more lightweight project is
 needed.  Furthermore, it should work fine under any python version >= 3.7

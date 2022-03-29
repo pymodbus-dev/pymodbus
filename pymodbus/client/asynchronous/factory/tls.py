@@ -13,9 +13,7 @@ from pymodbus.constants import Defaults
 LOGGER = logging.getLogger(__name__)
 
 def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
-                     certfile=None, keyfile=None, password=None,
-                     framer=None, source_address=None,
-                     timeout=None, **kwargs):
+                     server_hostname=None, framer=None, **kwargs):
     """
     Factory to create asyncio based asynchronous tls clients
     :param host: Target server's name, also matched for certificate
@@ -34,26 +32,22 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
     from pymodbus.client.asynchronous.async_io import init_tls_client
 
     try:
-        loop = kwargs.get("loop") or asyncio.get_running_loop()
+        loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
 
-    proto_cls = kwargs.get("proto_cls")
-
+    proto_cls = kwargs.pop("proto_cls", None)
     if not loop.is_running():
         asyncio.set_event_loop(loop)
-        cor = init_tls_client(proto_cls, loop, host=host, port=port,
-                              sslctx=sslctx, certfile=certfile,
-                              keyfile=keyfile, password=password,
-                              framer=framer)
+        cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
+                              framer, **kwargs)
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
-        return loop, init_tls_client(proto_cls, loop, host, port,
-                                     sslctx, certfile, keyfile, password,
-                                     framer)
+        return loop, init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
+                              framer, **kwargs)
     else:
-        cor = init_tls_client(proto_cls, loop, host, port,
-                              sslctx, certfile, keyfile, password, framer)
+        cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
+                              framer, **kwargs)
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         client = future.result()
 

@@ -71,14 +71,20 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            if hasattr(transport, 'get_extra_info') and transport.get_extra_info('sockname') is not None:
-                _logger.debug("Socket [%s:%s] opened" % transport.get_extra_info('sockname'))
-            else:
-                if hasattr(transport, 'serial'):
+            if hasattr(transport,
+                       'get_extra_info') and transport.get_extra_info(
+                    'sockname') is not None:
+                _logger.debug(
+                    "Socket [%s:%s] opened" % transport.get_extra_info(
+                        'sockname')[:2])
+            elif hasattr(transport, 'serial'):
                     _logger.debug(
-                        "Serial connection opened on port: {}".format(transport.serial.port)
+                        "Serial connection opened on port: {}".format(
+                            transport.serial.port)
                     )
-
+            else:
+                _logger.warning(f"Unabel to get information about"
+                                f" transport {transport}")
             self.transport = transport
             self.running = True
             self.framer = self.server.framer(self.server.decoder, client=None)
@@ -698,7 +704,7 @@ class ModbusSerialServer(object):
                             to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                             False to treat 0 as any other unit_id
-        :param autoreonnect: True to enable automatic reconnection,
+        :param auto_reconnect: True to enable automatic reconnection,
                             False otherwise
         :param reconnect_delay: reconnect delay in seconds
         :param response_manipulator: Callback method for
@@ -780,7 +786,7 @@ class ModbusSerialServer(object):
         self._check_reconnect()
 
     def _check_reconnect(self):
-        _logger.debug("checkking autoreconnect {} {}".format(
+        _logger.debug("checking autoreconnect {} {}".format(
             self.auto_reconnect, self.reconnecting_task))
         if self.auto_reconnect and (self.reconnecting_task is None):
             _logger.debug("Scheduling serial connection reconnect")

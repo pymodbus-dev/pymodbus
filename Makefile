@@ -40,12 +40,11 @@ check: install
 
 
 test: install
+	$(info Running tests on $(PYVER))
 	@pip install --upgrade --quiet --requirement=requirements-tests.txt
-
-    $(info Running tests on $(PYVER))
-    @pip install --upgrade pip --quiet
-    @pytest --cov=pymodbus/ --cov-report term-missing  test
-    @coverage report --fail-under=85 -i
+	@pip install --upgrade pip --quiet
+	@pytest --cov=pymodbus/ --cov-report term-missing  test
+	@coverage report --fail-under=85 -i
 
 
 tox: install

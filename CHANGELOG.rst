@@ -1,3 +1,11 @@
+version 3.0.0dev3
+----------------------------------------------------------
+* Remove python2 compatibility code (#564)
+* Remove Python2 checks and Python2 code snippets
+* Misc co-routines related fixes
+* Fix CI for python3 and remove PyPI from CI
+
+
 version 3.0.0dev2
 ----------------------------------------------------------
 * Fix mask_write_register call. (#685)

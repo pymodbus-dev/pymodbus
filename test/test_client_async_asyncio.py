@@ -278,7 +278,7 @@ class TestAsyncioClient(object):
             assert protocol.factory.protocol_lost_connection.call_count == 1
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def testClientProtocolDataReceived(self, protocol):
+    async def test_client_protocol_data_received(self, protocol):
         ''' Test the client protocol data received '''
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
@@ -319,7 +319,7 @@ class TestAsyncioClient(object):
         assert d == f
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def testClientProtocolHandleResponse(self, protocol):
+    async def test_client_protocol_handle_response(self, protocol):
         ''' Test the client protocol handles responses '''
         protocol = protocol()
         transport = mock.MagicMock()
@@ -340,7 +340,7 @@ class TestAsyncioClient(object):
         assert result == reply
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def testClientProtocolBuildResponse(self, protocol):
+    async def test_client_protocol_build_response(self, protocol):
         ''' Test the udp client protocol builds responses '''
         protocol = protocol()
         # if isinstance(protocol.create_future, mock.MagicMock):

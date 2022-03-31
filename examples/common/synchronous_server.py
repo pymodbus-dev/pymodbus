@@ -12,17 +12,11 @@ twisted is just not feasible. What follows is an example of its use:
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-# from pymodbus.server.sync import StartTcpServer
-# from pymodbus.server.sync import StartTlsServer
-# from pymodbus.server.sync import StartUdpServer
-# from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
-# from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #

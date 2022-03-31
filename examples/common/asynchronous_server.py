@@ -12,15 +12,10 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
-# from pymodbus.server.asynchronous import StartUdpServer
-# from pymodbus.server.asynchronous import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-# from pymodbus.transaction import (ModbusRtuFramer,
-#                                   ModbusAsciiFramer,
-#                                   ModbusBinaryFramer)
 from custom_message import CustomModbusRequest
 
 # --------------------------------------------------------------------------- #

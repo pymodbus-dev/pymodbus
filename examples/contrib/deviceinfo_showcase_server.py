@@ -13,13 +13,9 @@ empty server.
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
-# from pymodbus.server.sync import StartUdpServer
-# from pymodbus.server.sync import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-
-# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 
 # --------------------------------------------------------------------------- #
 # import versions of libraries which we will use later on for the example

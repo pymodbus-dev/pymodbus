@@ -13,7 +13,6 @@ from __future__ import print_function
 import os
 from time import time
 from pymodbus.client.sync import ModbusTcpClient
-# from pymodbus.client.sync import ModbusSerialClient
 
 try:
     from multiprocessing import log_to_stderr

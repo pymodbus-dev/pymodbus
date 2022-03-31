@@ -14,16 +14,11 @@ twisted is just not feasible. What follows is an example of its use:
 import asyncio
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
-# from pymodbus.server.async_io import StartTlsServer
-# from pymodbus.server.async_io import StartUdpServer
-# from pymodbus.server.async_io import StartSerialServer
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
-# from pymodbus.datastore import ModbusSparseDataBlock
 
-# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #

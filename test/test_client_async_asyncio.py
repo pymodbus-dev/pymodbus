@@ -155,14 +155,14 @@ class TestAsyncioClient(object):
         assert not client.connected
         assert client.protocol is None
 
-
         # fake client is connected and *then* looses connection:
         client.connected = True
-        client.host = None
+        client.host = mock.sentinel.HOST
+        client.port = mock.sentinel.PORT
         client.protocol = mock.sentinel.PROTOCOL
         client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
+        mock_async.reset_mock()
         assert not client.connected
-
 
         client.connected = True
         with mock.patch('pymodbus.client.asynchronous.async_io.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:

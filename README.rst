@@ -100,10 +100,9 @@ Examples Directory structure
    examples
    ├── common.      -> Common examples for clients and server (sync/async), Payload encoders and decoders.
    ├── contrib.     -> Examples contributed by contributors. Serial Forwarder, Database contexts etc.
-   ├── functional.  -> Not actively maintained.
-   ├── gui.         -> Not actively maintained. If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or `Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
-   ├── tools.       -> Not actively maintained.
-   └── twisted.     -> Not actively maintained.
+
+If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
+`Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
 
 Also, if you have questions, please ask them on the mailing list
 so that others can benefit from the results and so that I can

@@ -51,8 +51,6 @@ import json
 from collections import defaultdict
 
 from tokenize import generate_tokens
-# from pymodbus.payload import BinaryPayloadDecoder
-# from pymodbus.datastore.store import ModbusSparseDataBlock
 from pymodbus.compat import IS_PYTHON3
 from pymodbus.datastore.context import ModbusSlaveContext
 if IS_PYTHON3:

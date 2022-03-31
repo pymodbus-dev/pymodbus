@@ -15,7 +15,6 @@ from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.datastore import ModbusServerContext
-# from pymodbus.datastore import ModbusSlaveContext
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

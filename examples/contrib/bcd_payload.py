@@ -7,7 +7,6 @@ that can be used in the pymodbus library. Below is a
 simple binary coded decimal builder and decoder.
 """
 from struct import pack
-# from struct import unpack
 from pymodbus.constants import Endian
 from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.utilities import pack_bitstring

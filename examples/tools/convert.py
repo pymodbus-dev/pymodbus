@@ -86,7 +86,7 @@ class ModbusXML:
             result = self.convert[data]
         else:
             result = data
-        self.h[self.next] = data
+        self.h[self.next] = result
 
     def comment(self, text):
         """

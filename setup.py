@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-Installs pymodbus using distutils
+Installs pymodbus using setuptools
 
 Run:
     python setup.py install
@@ -25,13 +25,11 @@ try:
 except ImportError:
     command_classes = {}
 from pymodbus import __version__, __author__, __maintainer__
-from pymodbus.utilities import IS_PYTHON3
 
 CONSOLE_SCRIPTS = [
             'pymodbus.console=pymodbus.repl.client.main:main'
         ]
-if IS_PYTHON3:
-    CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
+CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
 with open('requirements.txt') as reqs:
     install_requires = [
         line for line in reqs.read().split('\n')
@@ -53,13 +51,10 @@ setup(
     """,
     classifiers=[
         'Development Status :: 4 - Beta',
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         'Environment :: Console',
         'Environment :: X11 Applications :: GTK',
         'Framework :: Twisted',
@@ -67,7 +62,6 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX :: Linux',
         'Operating System :: Unix',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Topic :: System :: Networking',
         'Topic :: Utilities'
@@ -84,7 +78,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
-    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*',
+    python_requires='>=3.7',
     install_requires=install_requires,
     extras_require={
         'quality': [
@@ -107,13 +101,7 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
-
-        'repl:python_version <= "2.7"': [
-            'click>=7.0',
-            'prompt-toolkit==2.0.4',
-            'pygments>=2.2.0'
-        ],
-        'repl:python_version >= "3.6"': [
+        'repl:python_version >= "3.7"': [
             'click>=7.0',
             'prompt-toolkit>=3.0.8',
             'pygments>=2.2.0',
@@ -127,4 +115,3 @@ setup(
     test_suite='nose.collector',
     cmdclass=command_classes,
 )
-

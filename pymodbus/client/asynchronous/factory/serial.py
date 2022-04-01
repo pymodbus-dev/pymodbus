@@ -90,8 +90,13 @@ def async_io_factory(port=None, framer=None, **kwargs):
     import asyncio
     from pymodbus.client.asynchronous.async_io import (ModbusClientProtocol,
                                                        AsyncioModbusSerialClient)
-    loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
-    proto_cls = kwargs.pop("proto_cls", None) or ModbusClientProtocol
+
+    try:
+        loop = kwargs.pop("loop", None) or asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+
+    proto_cls = kwargs.get("proto_cls") or ModbusClientProtocol
 
     try:
         from serial_asyncio import create_serial_connection
@@ -102,12 +107,13 @@ def async_io_factory(port=None, framer=None, **kwargs):
         sys.exit(1)
 
     client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
-    coro = client.connect()
-    if loop.is_running():
+    coro = client.connect
+    if not loop.is_running():
+        loop.run_until_complete(coro())
+    else:# loop is not asyncio.get_event_loop():
         future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
         future.result()
-    else:
-        loop.run_until_complete(coro)
+
     return loop, client
 
 

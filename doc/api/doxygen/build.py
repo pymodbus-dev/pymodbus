@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 Doxygen API Builder
 ---------------------
@@ -29,8 +29,8 @@ def which(program):
     return None
 
 if which('doxygen') is not None:
-    print "Building Doxygen API Documentation"
+    print("Building Doxygen API Documentation")
     os.system("doxygen .doxygen")
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/doxygen")
-else: print "Doxygen not available...not building"
+else: print("Doxygen not available...not building")

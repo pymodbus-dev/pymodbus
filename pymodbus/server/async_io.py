@@ -4,8 +4,7 @@ Implementation of a Threaded Modbus Server
 
 """
 from binascii import b2a_hex
-import serial
-from serial_asyncio import create_serial_connection
+
 import ssl
 import traceback
 
@@ -21,6 +20,7 @@ from pymodbus.transaction import *
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.compat import socketserver, byte2int
+from pymodbus.server.tls_helper import sslctx_provider
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -71,26 +71,26 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            sockname = transport.get_extra_info('sockname')
-            if sockname is not None:
+            if hasattr(transport,
+                       'get_extra_info') and transport.get_extra_info(
+                    'sockname') is not None:
                 _logger.debug(
                     "Socket [%s:%s] opened" % transport.get_extra_info(
                         'sockname')[:2])
-            else:
-                if hasattr(transport, 'serial'):
+            elif hasattr(transport, 'serial'):
                     _logger.debug(
                         "Serial connection opened on port: {}".format(
                             transport.serial.port)
                     )
+            else:
+                _logger.warning(f"Unabel to get information about"
+                                f" transport {transport}")
             self.transport = transport
             self.running = True
             self.framer = self.server.framer(self.server.decoder, client=None)
 
             # schedule the connection handler on the event loop
-            if PYTHON_VERSION >= (3, 7):
-                self.handler_task = asyncio.create_task(self.handle())
-            else:
-                self.handler_task = asyncio.ensure_future(self.handle())
+            self.handler_task = asyncio.create_task(self.handle())
         except Exception as ex: # pragma: no cover
             _logger.error("Datastore unable to fulfill request: "
                           "%s; %s", ex, traceback.format_exc())
@@ -371,12 +371,12 @@ class ModbusServerFactory:
 
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     """ Implements the modbus server protocol
+
     This uses asyncio.Protocol to implement
     the client handler for a serial connection.
     """
     def connection_made(self, transport):
         super().connection_made(transport)
-
         _logger.debug("Serial connection established")
 
     def connection_lost(self, exc):
@@ -471,23 +471,14 @@ class ModbusTcpServer:
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
-        if PYTHON_VERSION >= (3, 7):
-            # start_serving is new in version 3.7
-            self.server_factory = self.loop.create_server(
-                lambda: self.handler(self),
-                *self.address,
-                reuse_address=allow_reuse_address,
-                reuse_port=allow_reuse_port,
-                backlog=backlog,
-                start_serving=not defer_start
-            )
-        else:
-            self.server_factory = self.loop.create_server(
-                lambda: self.handler(self),
-                *self.address,
-                reuse_address=allow_reuse_address,
-                reuse_port=allow_reuse_port,
-                backlog=backlog
+        # start_serving is new in version 3.7
+        self.server_factory = self.loop.create_server(
+            lambda: self.handler(self),
+            *self.address,
+            reuse_address=allow_reuse_address,
+            reuse_port=allow_reuse_port,
+            backlog=backlog,
+            start_serving=not defer_start
             )
 
     async def serve_forever(self):
@@ -524,6 +515,8 @@ class ModbusTlsServer(ModbusTcpServer):
                  sslctx=None,
                  certfile=None,
                  keyfile=None,
+                 password=None,
+                 reqclicert=False,
                  handler=None,
                  allow_reuse_address=False,
                  allow_reuse_port=False,
@@ -544,6 +537,8 @@ class ModbusTlsServer(ModbusTcpServer):
                        create)
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
+        :param password: The password for for decrypting the private key file
+        :param reqclicert: Force the sever request client's certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler. The handler class
                         receives connection create/teardown events
@@ -582,44 +577,24 @@ class ModbusTlsServer(ModbusTcpServer):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.sslctx = sslctx
-        if self.sslctx is None:
-            self.sslctx = ssl.create_default_context()
-            self.sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            self.sslctx.options |= ssl.OP_NO_TLSv1_1
-            self.sslctx.options |= ssl.OP_NO_TLSv1
-            self.sslctx.options |= ssl.OP_NO_SSLv3
-            self.sslctx.options |= ssl.OP_NO_SSLv2
-        self.sslctx.verify_mode = ssl.CERT_OPTIONAL
-        self.sslctx.check_hostname = False
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
+                                      reqclicert)
+
         # asyncio future that will be done once server has started
         self.serving = self.loop.create_future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
-        if PYTHON_VERSION >= (3, 7):
-            # start_serving is new in version 3.7
-            self.server_factory = self.loop.create_server(
-                lambda: self.handler(self),
-                *self.address,
-                ssl=self.sslctx,
-                reuse_address=allow_reuse_address,
-                reuse_port=allow_reuse_port,
-                backlog=backlog,
-                start_serving=not defer_start
-            )
-        else:
-            self.server_factory = self.loop.create_server(
-                lambda: self.handler(self),
-                *self.address,
-                ssl=self.sslctx,
-                reuse_address=allow_reuse_address,
-                reuse_port=allow_reuse_port,
-                backlog=backlog
-            )
-
+        # start_serving is new in version 3.7
+        self.server_factory = self.loop.create_server(
+            lambda: self.handler(self),
+            *self.address,
+            ssl=self.sslctx,
+            reuse_address=allow_reuse_address,
+            reuse_port=allow_reuse_port,
+            backlog=backlog,
+            start_serving=not defer_start
+        )
 
 class ModbusUdpServer:
     """
@@ -729,7 +704,7 @@ class ModbusSerialServer(object):
                             to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                             False to treat 0 as any other unit_id
-        :param autoreonnect: True to enable automatic reconnection,
+        :param auto_reconnect: True to enable automatic reconnection,
                             False otherwise
         :param reconnect_delay: reconnect delay in seconds
         :param response_manipulator: Callback method for
@@ -748,7 +723,6 @@ class ModbusSerialServer(object):
         self.auto_reconnect = kwargs.get('auto_reconnect', False)
         self.reconnect_delay = kwargs.get('reconnect_delay', 2)
         self.reconnecting_task = None
-
         self.handler = kwargs.get("handler") or ModbusSingleRequestHandler
         self.framer = framer or ModbusRtuFramer
         self.decoder = ServerDecoder()
@@ -760,6 +734,11 @@ class ModbusSerialServer(object):
 
         self.protocol = None
         self.transport = None
+        self.control = ModbusControlBlock()
+        identity = kwargs.get('identity')
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity.update(identity)
+
 
     async def start(self):
         await self._connect()
@@ -776,6 +755,8 @@ class ModbusSerialServer(object):
             self.reconnecting_task = None
 
         try:
+            import serial
+            from serial_asyncio import create_serial_connection
             self.transport, self.protocol = await create_serial_connection(
                 asyncio.get_event_loop(),
                 self._protocol_factory,
@@ -805,7 +786,7 @@ class ModbusSerialServer(object):
         self._check_reconnect()
 
     def _check_reconnect(self):
-        _logger.debug("checkking autoreconnect {} {}".format(
+        _logger.debug("checking autoreconnect {} {}".format(
             self.auto_reconnect, self.reconnecting_task))
         if self.auto_reconnect and (self.reconnecting_task is None):
             _logger.debug("Scheduling serial connection reconnect")
@@ -816,6 +797,62 @@ class ModbusSerialServer(object):
         while True:
             await asyncio.sleep(360)
 
+        self.protocol = None
+        self.transport = None
+
+    async def start(self):
+        await self._connect()
+    
+    def _protocol_factory(self):
+        return self.handler(self)
+
+    async def _delayed_connect(self):
+        await asyncio.sleep(self.reconnect_delay)
+        await self._connect()
+
+    async def _connect(self):
+        if self.reconnecting_task is not None:
+            self.reconnecting_task = None
+
+        try:
+            self.transport, self.protocol = await create_serial_connection(
+                asyncio.get_event_loop(),
+                self._protocol_factory,
+                self.device,
+                baudrate=self.baudrate,
+                bytesize=self.bytesize,
+                parity=self.parity,
+                stopbits=self.stopbits,
+                timeout=self.timeout
+            )
+        except serial.serialutil.SerialException as e:
+            _logger.debug("Failed to open serial port: {}".format(self.device))
+            if not self.autoreconnect:
+                raise e
+
+            self._check_reconnect()
+
+        except Exception as e:
+            _logger.debug("Exception while create")
+
+    def on_connection_lost(self):
+        if self.transport is not None:
+            self.transport.close()
+            self.transport = None
+            self.protocol = None
+
+        self._check_reconnect()
+
+    def _check_reconnect(self):
+        _logger.debug("checkking auto-reconnect {} {}".format(self.autoreconnect, self.reconnecting_task))
+        if self.autoreconnect and (self.reconnecting_task is None):
+            _logger.debug("Scheduling serial connection reconnect")
+            loop = asyncio.get_event_loop()
+            self.reconnecting_task = loop.create_task(self._delayed_connect())
+
+    async def serve_forever(self):
+        while True:
+            await asyncio.sleep(360)
 
 # --------------------------------------------------------------------------- #
 # Creation Factories
@@ -850,7 +887,8 @@ async def StartTcpServer(context=None, identity=None, address=None,
 
 async def StartTlsServer(context=None, identity=None, address=None,
                          sslctx=None,
-                         certfile=None, keyfile=None,
+                         certfile=None, keyfile=None, password=None,
+                         reqclicert=False,
                          allow_reuse_address=False,
                          allow_reuse_port=False,
                          custom_functions=[],
@@ -863,6 +901,8 @@ async def StartTlsServer(context=None, identity=None, address=None,
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
+    :param password: The password for for decrypting the private key file
+    :param reqclicert: Force the sever request client's certificate
     :param allow_reuse_address: Whether the server will allow the reuse of an
                                 address.
     :param allow_reuse_port: Whether the server will allow the reuse of a port.
@@ -877,7 +917,7 @@ async def StartTlsServer(context=None, identity=None, address=None,
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
     server = ModbusTlsServer(context, framer, identity, address, sslctx,
-                             certfile, keyfile,
+                             certfile, keyfile, password, reqclicert,
                              allow_reuse_address=allow_reuse_address,
                              allow_reuse_port=allow_reuse_port, **kwargs)
 
@@ -934,7 +974,7 @@ async def StartSerialServer(context=None, identity=None,
                                   missing slave
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity, **kwargs)
+    server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for f in custom_functions:
         server.decoder.register(f)
     await server.start()

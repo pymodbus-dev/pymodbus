@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.datastore.remote import RemoteSlaveContext

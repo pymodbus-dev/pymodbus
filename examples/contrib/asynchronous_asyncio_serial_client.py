@@ -1,14 +1,8 @@
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    import asyncio
-    from serial_asyncio import create_serial_connection
-    from pymodbus.client.asynchronous.async_io import ModbusClientProtocol
-    from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
-    from pymodbus.factory import ClientDecoder
-else:
-    import sys
-    sys.stderr("This example needs to be run only on python 3.4 and above")
-    sys.exit(1)
+import asyncio
+from serial_asyncio import create_serial_connection
+from pymodbus.client.asynchronous.async_io import ModbusClientProtocol
+from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
+from pymodbus.factory import ClientDecoder
 
 
 # ----------------------------------------------------------------------- #
@@ -114,7 +108,7 @@ def make_protocol():
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    coro = create_serial_connection(loop, make_protocol, '/dev/ptyp0',
+    coro = create_serial_connection(loop, make_protocol, '/tmp/ttyp0',
                                     baudrate=9600)
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     loop.run_until_complete(start_async_test(protocol))

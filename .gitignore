@@ -39,3 +39,8 @@ test/__pycache__/
 **/.pymodhis
 /build/
 /dist/
+examples/functional
+examples/twisted
+examples/gui
+examples/tools
+**/.DS_Store

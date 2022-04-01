@@ -21,8 +21,6 @@ from pymodbus.transaction import (ModbusSocketFramer,
                                   ModbusAsciiFramer,
                                   ModbusBinaryFramer)
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.internal.ptwisted import InstallManagementConsole
-from pymodbus.compat import IS_PYTHON3
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -218,14 +216,9 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 def _is_main_thread():
     import threading
 
-    if IS_PYTHON3:
-        if threading.current_thread() != threading.main_thread():
-            _logger.debug("Running in spawned thread")
-            return False
-    else:
-        if not isinstance(threading.current_thread(), threading._MainThread):
-            _logger.debug("Running in spawned thread")
-            return False
+    if threading.current_thread() != threading.main_thread():
+        _logger.debug("Running in spawned thread")
+        return False
     _logger.debug("Running in Main thread")
     return True
 
@@ -254,8 +247,6 @@ def StartTcpServer(context, identity=None, address=None,
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     for f in custom_functions:
         factory.decoder.register(f)
-    if console:
-        InstallManagementConsole({'factory': factory})
 
     _logger.info("Starting Modbus TCP Server on %s:%s" % address)
     reactor.listenTCP(address[1], factory, interface=address[0])
@@ -328,10 +319,6 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
     for f in custom_functions:
         factory.decoder.register(f)
-    if console:
-        InstallManagementConsole({'factory': factory})
-    if console:
-        InstallManagementConsole({'factory': factory})
 
     protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging

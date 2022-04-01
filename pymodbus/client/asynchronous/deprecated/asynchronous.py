@@ -8,7 +8,7 @@ Example run::
     from pymodbus.client.asynchronous import ModbusClientProtocol
 
     def printResult(result):
-        print "Result: %d" % result.bits[0]
+        print( "Result: %d" % result.bits[0])
 
     def process(client):
         result = client.write_coil(1, True)

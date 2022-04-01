@@ -447,7 +447,7 @@ if __name__ == "__main__":
     if not os.path.exists("./html"):
         os.mkdir("./html")
 
-    print( "Building Pydoc API Documentation")
+    print("Building Pydoc API Documentation")
     PackageDocumentationGenerator(
         baseModules = ['pymodbus', '__builtin__'],
         destinationDirectory = "./html/",

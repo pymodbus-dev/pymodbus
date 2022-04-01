@@ -49,7 +49,6 @@ async def start_async_test(client):
     # individual request. This can be done by specifying the `unit` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
-    # client = await client
     log.debug("Reading Coils")
     rr = await client.read_coils(1, 1, unit=0x01)
 
@@ -169,7 +168,7 @@ async def run_with_already_running_loop():
     t.daemon = True
     # Start the loop
     t.start()
-    time.sleep(1)
+    asyncio.sleep(1)
     assert loop.is_running()
     asyncio.set_event_loop(loop)
     loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)

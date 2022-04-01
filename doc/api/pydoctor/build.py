@@ -25,4 +25,4 @@ try:
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/pydoctor")
 except:
-    print( "Pydoctor unavailable...not building")
+    print("Pydoctor unavailable...not building")

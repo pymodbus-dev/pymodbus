@@ -27,7 +27,7 @@ try:
     if not os.path.exists("./html"):
         os.mkdir("./html")
 
-    print( "Building Epydoc API Documentation")
+    print("Building Epydoc API Documentation")
     cli()
 
     if os.path.exists('../../../build'):

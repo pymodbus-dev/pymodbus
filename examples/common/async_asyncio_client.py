@@ -172,7 +172,6 @@ async def run_with_already_running_loop():
     assert loop.is_running()
     asyncio.set_event_loop(loop)
     loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)
-    # client = await client
     future = asyncio.run_coroutine_threadsafe(
         start_async_test(client.protocol), loop=loop)
     future.add_done_callback(done)

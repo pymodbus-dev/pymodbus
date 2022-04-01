@@ -806,10 +806,6 @@ class ModbusSerialServer(object):
     def _protocol_factory(self):
         return self.handler(self)
 
-    async def _delayed_connect(self):
-        await asyncio.sleep(self.reconnect_delay)
-        await self._connect()
-
     async def _connect(self):
         if self.reconnecting_task is not None:
             self.reconnecting_task = None
@@ -834,14 +830,6 @@ class ModbusSerialServer(object):
 
         except Exception as e:
             _logger.debug("Exception while create")
-
-    def on_connection_lost(self):
-        if self.transport is not None:
-            self.transport.close()
-            self.transport = None
-            self.protocol = None
-
-        self._check_reconnect()
 
     def _check_reconnect(self):
         _logger.debug("checkking auto-reconnect {} {}".format(self.autoreconnect, self.reconnecting_task))

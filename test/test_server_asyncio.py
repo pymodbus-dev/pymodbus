@@ -79,15 +79,7 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test StartTcpServer without deferred start (immediate execution of server) '''
         with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
             server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
-            serve.assert_awaited()
-
-    async def testTcpServerServeForever(self):
-        ''' Test StartTcpServer serve_forever() method '''
-        with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
-            server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
-
-            await server.serve_forever()
-            serve.assert_awaited()
+            server.assert_awaited()
 
     async def testTcpServerServeForeverTwice(self):
         ''' Call on serve_forever() twice should result in a runtime error '''
@@ -358,13 +350,6 @@ class AsyncioServerTest(asynctest.TestCase):
             assert server.sslctx is not None
             self.loop.create_server.assert_called_once()
 
-    async def testTlsServerServeNoDefer(self):
-        """ Test StartTcpServer without deferred start (immediate execution of server) """
-        with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
-            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
-                server = await StartTlsServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
-                serve.assert_awaited()
-
     async def testTlsServerServeForever(self):
         """ Test StartTcpServer serve_forever() method """
         with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
@@ -570,41 +555,6 @@ class AsyncioServerTest(asynctest.TestCase):
     def testStopServer(self):
         with pytest.warns(DeprecationWarning):
             StopServer()
-
-    async def testTcpServerException(self):
-        """ Sending garbage data on a TCP socket should drop the connection """
-        garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
-        server = await StartTcpServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop)
-        server_task = asyncio.create_task(server.serve_forever())
-
-        await server.serving
-        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
-                   new_callable=lambda: Mock(side_effect=Exception)) as process:
-            connect, receive, eof = self.loop.create_future(), self.loop.create_future(), self.loop.create_future()
-            received_data = None
-            random_port = server.server.sockets[0].getsockname()[1]  # get the random server port
-
-            class BasicClient(asyncio.BaseProtocol):
-                def connection_made(self, transport):
-                    _logger.debug("Client connected")
-                    self.transport = transport
-                    transport.write(garbage)
-                    connect.set_result(True)
-
-                def data_received(self, data):
-                    _logger.debug("Client received data")
-                    receive.set_result(True)
-                    received_data = data
-
-                def eof_received(self):
-                    _logger.debug("Client stream eof")
-                    eof.set_result(True)
-
-            transport, protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1', port=random_port)
-            await asyncio.wait_for(connect, timeout=0.1)
-            await asyncio.wait_for(eof, timeout=0.1)
-            # neither of these should timeout if the test is successful
-            server.server_close()
 
     async def testTcpServerException(self):
         """ Sending garbage data on a TCP socket should drop the connection """

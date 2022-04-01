@@ -106,8 +106,6 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     elif loop is asyncio.get_event_loop():
         cor = init_tcp_client(proto_cls, loop, host, port, **kwargs)
         client = asyncio.create_task(cor)
-        # future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
-        # client = future.result()
     else:
         cor = init_tcp_client(proto_cls, loop, host, port, **kwargs)
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)

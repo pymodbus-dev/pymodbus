@@ -23,8 +23,7 @@ Summary
 Pymodbus is a full Modbus protocol implementation using twisted/tornado/asyncio for its
 asynchronous communications core.  It can also be used without any third
 party dependencies (aside from pyserial) if a more lightweight project is
-needed.  Furthermore, it should work fine under any python version > 2.7
-(including python 3+)
+needed.  Furthermore, it should work fine under any python version >= 3.7
 
 
 ------------------------------------------------------------
@@ -113,16 +112,13 @@ get lost in the noise: http://groups.google.com/group/pymodbus or
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 .. important::
-   **Note For async clients, it is recommended to use `asyncio` as the async facilitator (Python 3.6 and above).**
+   **Note For async clients, it is recommended to use `asyncio` as the async facilitator (Python 3.7 and above).**
    **If using tornado make sure the tornado version is `4.5.3`.Other versions of tornado can break the implementation**
 
 
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
 ------------------------------------------------------------
-Starting with Pymodbus 2.x, pymodbus library comes with handy
-Pymodbus REPL to quickly run the modbus clients in tcp/rtu modes.
-
 Pymodbus REPL comes with many handy features such as payload decoder 
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
@@ -191,7 +187,7 @@ I get time doing such tasks as:
 ------------------------------------------------------------
 Development Instructions
 ------------------------------------------------------------
-The current code base is compatible with both py2 and py3.
+The current code base is compatible python >= 3.7.
 Use make to perform a range of activities
 
 ::

@@ -1,8 +1,8 @@
 Requirements
 -------------
 
-* Python 2.7 or later.
-* Python Twisted, Tornado or asyncio (For async client and server)
+* Python 3.7 or later.
+* Python asyncio (preferred), Twisted or Tornado (For async client and server)
 * Pyserial
 
 On Windows pywin32 is recommended (this is built in to ActivePython,

@@ -152,19 +152,22 @@ class TestAsyncioClient(object):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
-
         assert not client.connected
         assert client.protocol is None
-        client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
-        assert not client.connected
 
-        # fake client ist connected and *then* looses connection:
+        # fake client is connected and *then* looses connection:
         client.connected = True
         client.host = mock.sentinel.HOST
         client.port = mock.sentinel.PORT
         client.protocol = mock.sentinel.PROTOCOL
+        client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
+        mock_async.reset_mock()
+        assert not client.connected
+
+        client.connected = True
         with mock.patch('pymodbus.client.asynchronous.async_io.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
+
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
             if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
@@ -275,7 +278,7 @@ class TestAsyncioClient(object):
             assert protocol.factory.protocol_lost_connection.call_count == 1
 
     @pytest.mark.parametrize("protocol", protocols)
-    def testClientProtocolDataReceived(self, protocol):
+    async def test_client_protocol_data_received(self, protocol):
         ''' Test the client protocol data received '''
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
@@ -289,7 +292,7 @@ class TestAsyncioClient(object):
         if isinstance(protocol, ModbusUdpClientProtocol):
             protocol.datagram_received(data, None)
         else:
-            protocol.data_received(data)
+             protocol.data_received(data)
         result = d.result()
         assert isinstance(result, ReadCoilsResponse)
 
@@ -316,7 +319,7 @@ class TestAsyncioClient(object):
         assert d == f
 
     @pytest.mark.parametrize("protocol", protocols)
-    def testClientProtocolHandleResponse(self, protocol):
+    async def test_client_protocol_handle_response(self, protocol):
         ''' Test the client protocol handles responses '''
         protocol = protocol()
         transport = mock.MagicMock()
@@ -337,7 +340,7 @@ class TestAsyncioClient(object):
         assert result == reply
 
     @pytest.mark.parametrize("protocol", protocols)
-    def testClientProtocolBuildResponse(self, protocol):
+    async def test_client_protocol_build_response(self, protocol):
         ''' Test the udp client protocol builds responses '''
         protocol = protocol()
         # if isinstance(protocol.create_future, mock.MagicMock):

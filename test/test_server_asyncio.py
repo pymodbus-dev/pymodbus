@@ -79,7 +79,7 @@ class AsyncioServerTest(asynctest.TestCase):
         ''' Test StartTcpServer without deferred start (immediate execution of server) '''
         with patch('asyncio.base_events.Server.serve_forever', new_callable=asynctest.CoroutineMock) as serve:
             server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop, defer_start=False)
-            server.assert_awaited()
+            serve.assert_awaited()
 
     async def testTcpServerServeForeverTwice(self):
         ''' Call on serve_forever() twice should result in a runtime error '''

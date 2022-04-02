@@ -4,6 +4,7 @@ Requirements
 * Python 3.7 or later.
 * Python Twisted or Tornado (if not using asyncio for async client and server),
 remark Twisted and Tornado are in maintenance mode, and might be either dropped or supplied as plugins in the future.
+
 * Pyserial
 
 On Windows pywin32 is recommended (this is built in to ActivePython,

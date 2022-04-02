@@ -1,6 +1,7 @@
-from distutils.core import Command
-import sys, os, shutil
-
+import os
+import shutil
+import sys
+from setuptools import Command
 # --------------------------------------------------------------------------- #
 # Extra Commands
 # --------------------------------------------------------------------------- #
@@ -12,7 +13,7 @@ class BuildApiDocsCommand(Command):
     build.py script underneath trying to build the api
     documentation for the given format.
     """
-    description  = "build all the projects api documents"
+    description = "build all the project's api documents"
     user_options = []
 
     def initialize_options(self):
@@ -39,7 +40,7 @@ class DeepCleanCommand(Command):
     Helper command to return the directory to a completely
     clean state.
     """
-    description  = "clean everything that we don't want"
+    description = "clean everything that we don't want"
     user_options = []
     trash = ['build', 'dist', 'pymodbus.egg-info',
              os.path.join(os.path.join('doc', 'sphinx'), 'build'),
@@ -70,7 +71,7 @@ class DeepCleanCommand(Command):
         for root, dirs, files in os.walk('.'):
             for file in files:
                 if file.endswith('.pyc'):
-                    os.remove(os.path.join(root,file))
+                    os.remove(os.path.join(root, file))
 
 
 class LintCommand(Command):
@@ -111,7 +112,8 @@ class LintCommand(Command):
             sys.argv = """pychecker pymodbus/*.py""".split()
             main()
             return True
-        except: return False
+        except Exception:
+            return False
 
     def _try_pylint(self):
         try:
@@ -119,7 +121,8 @@ class LintCommand(Command):
             sys.argv = """pylint pymodbus/*.py""".split()
             main()
             return True
-        except: return False
+        except Exception:
+            return False
 
 
 class Python3Command(Command):
@@ -150,7 +153,8 @@ class Python3Command(Command):
             sys.argv = ['2to3'] + self.directories
             main("lib2to3.fixes")
             return True
-        except: return False
+        except Exception:
+            return False
 
 
 class Pep8Command(Command):

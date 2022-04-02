@@ -1,3 +1,32 @@
+version 3.0.0dev3
+----------------------------------------------------------
+* Remove python2 compatibility code (#564)
+* Remove Python2 checks and Python2 code snippets
+* Misc co-routines related fixes
+* Fix CI for python3 and remove PyPI from CI
+
+
+version 3.0.0dev2
+----------------------------------------------------------
+* Fix mask_write_register call. (#685)
+* Add support for byte strings in the device information fields (#693)
+* Catch socket going away. (#722)
+* Misc typo errors (#718)
+
+version 3.0.0dev1
+----------------------------------------------------------
+* Support python3.10
+* Implement asyncio ModbusSerialServer
+* ModbusTLS updates (tls handshake, default framer)
+* Support broadcast messages with asyncio client
+* Fix for lazy loading serial module with asyncio clients.
+* Updated examples and tests
+
+version 3.0.0dev0
+----------------------------------------------------------
+* Support python3.7 and above
+* Support creating asyncio clients from with in coroutines.
+
 version 2.5.3
 ----------------------------------------------------------
 * Fix retries on tcp client failing randomly.

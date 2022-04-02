@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import unittest
 from pymodbus.exceptions import *
 from pymodbus.constants import ModbusPlusOperation
@@ -106,36 +106,36 @@ class SimpleDataStoreTest(unittest.TestCase):
     def testReturnQueryDataRequest(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataRequest([0x0000]*2)
-        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataRequest(0x0000)
-        self.assertEqual(message.encode(), b'\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
     def testReturnQueryDataResponse(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataResponse([0x0000]*2)
-        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataResponse(0x0000)
-        self.assertEqual(message.encode(), b'\x00\x00\x00\x00');
+        self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
     def testRestartCommunicationsOption(self):
         ''' Testing diagnostic message execution '''
-        request = RestartCommunicationsOptionRequest(True);
+        request = RestartCommunicationsOptionRequest(True)
         self.assertEqual(request.encode(), b'\x00\x01\xff\x00')
-        request = RestartCommunicationsOptionRequest(False);
+        request = RestartCommunicationsOptionRequest(False)
         self.assertEqual(request.encode(), b'\x00\x01\x00\x00')
 
-        response = RestartCommunicationsOptionResponse(True);
+        response = RestartCommunicationsOptionResponse(True)
         self.assertEqual(response.encode(), b'\x00\x01\xff\x00')
-        response = RestartCommunicationsOptionResponse(False);
+        response = RestartCommunicationsOptionResponse(False)
         self.assertEqual(response.encode(), b'\x00\x01\x00\x00')
 
     def testGetClearModbusPlusRequestExecute(self):
         ''' Testing diagnostic message execution '''
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics);
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics)
         response = request.execute()
         self.assertEqual(response.message, ModbusPlusOperation.ClearStatistics)
 
-        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GetStatistics);
+        request = GetClearModbusPlusRequest(data=ModbusPlusOperation.GetStatistics)
         response = request.execute()
         resp = [ModbusPlusOperation.GetStatistics]
         self.assertEqual(response.message, resp+[0x00] * 55)

@@ -1,23 +1,24 @@
-from pymodbus.compat import IS_PYTHON3, PYTHON_VERSION
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.compat import PYTHON_VERSION
 import pytest
-if IS_PYTHON3 and PYTHON_VERSION >= (3, 4):
-    from unittest import mock
-    from pymodbus.client.asynchronous.async_io import (
-        BaseModbusAsyncClientProtocol,
-        ReconnectingAsyncioModbusTcpClient,
-        ModbusClientProtocol, ModbusUdpClientProtocol)
-    from test.asyncio_test_helper import return_as_coroutine, run_coroutine
-    from pymodbus.factory import ClientDecoder
-    from pymodbus.exceptions import ConnectionException
-    from pymodbus.transaction import ModbusSocketFramer
-    from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-    protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
-else:
-    import mock
-    protocols = [None, None]
+from unittest import mock
+from pymodbus.client.asynchronous.async_io import (
+    BaseModbusAsyncClientProtocol,
+    ReconnectingAsyncioModbusTcpClient,
+    ModbusClientProtocol, ModbusUdpClientProtocol)
+from test.asyncio_test_helper import return_as_coroutine, run_coroutine
+from pymodbus.factory import ClientDecoder
+from pymodbus.exceptions import ConnectionException
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 
-@pytest.mark.skipif(not IS_PYTHON3, reason="requires python3.4 or above")
+
 class TestAsyncioClient(object):
     def test_base_modbus_async_client_protocol(self):
         protocol = BaseModbusAsyncClientProtocol()
@@ -68,6 +69,41 @@ class TestAsyncioClient(object):
         assert client.loop is mock_loop
         assert client.protocol_class is mock_protocol_class
 
+    @pytest.mark.asyncio
+    async def test_initialization_tcp_in_loop(self):
+        _, client = AsyncModbusTCPClient(schedulers.ASYNC_IO,
+                                         port=5020)
+        client = await client
+
+        assert not client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    async def test_initialization_udp_in_loop(self):
+        _, client = AsyncModbusUDPClient(schedulers.ASYNC_IO, port=5020)
+        client = await client
+
+        assert client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    async def test_initialization_tls_in_loop(self):
+        _, client = AsyncModbusTLSClient(schedulers.ASYNC_IO, port=5020)
+        client = await client
+
+        assert not client.connected
+        assert client.port == 5020
+        assert client.delay_ms < client.DELAY_MAX_MS
+
+    @pytest.mark.asyncio
+    def test_initialization_serial_in_loop(self):
+        _, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu')
+
+        assert client.port == '/tmp/ptyp0'
+        assert client.baudrate == 9600
+
     def test_factory_reset_wait_before_reconnect(self):
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
@@ -79,7 +115,6 @@ class TestAsyncioClient(object):
         assert client.delay_ms > initial_delay
         client.reset_delay()
         assert client.delay_ms == initial_delay
-
 
     def test_factory_stop(self):
         mock_protocol_class = mock.MagicMock()
@@ -131,7 +166,7 @@ class TestAsyncioClient(object):
         with mock.patch('pymodbus.client.asynchronous.async_io.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
         assert not client.connected
         assert client.protocol is None
@@ -161,18 +196,19 @@ class TestAsyncioClient(object):
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
-            if PYTHON_VERSION <= (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 
+    # @pytest.mark.asyncio
     @mock.patch('pymodbus.client.asynchronous.async_io.asyncio.sleep')
     def test_factory_reconnect(self, mock_sleep):
         mock_protocol_class = mock.MagicMock()
+        mock_sleep.side_effect = return_as_coroutine()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class, loop=mock_loop)
 
         client.delay_ms = 5000
 
-        mock_sleep.side_effect = return_as_coroutine()
         run_coroutine(client._reconnect())
         mock_sleep.assert_called_once_with(5)
         assert mock_loop.create_connection.call_count == 1

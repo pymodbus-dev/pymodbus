@@ -29,7 +29,7 @@ requested functionality)::
     response = client.read_holding_registers(index, size)
     decoder = BinaryModbusDecoder.fromRegisters(response.registers)
     while index < size:
-        print "[{}]\t{}".format(i, mapping[i]['type'](decoder))
+        print( "[{}]\t{}".format(i, mapping[i]['type'](decoder)))
         index += mapping[i]['size']
 
 Also, using the same input mapping parsers, we can generate
@@ -51,14 +51,10 @@ import json
 from collections import defaultdict
 
 from tokenize import generate_tokens
-from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.datastore.store import ModbusSparseDataBlock
-from pymodbus.compat import IS_PYTHON3
 from pymodbus.datastore.context import ModbusSlaveContext
-if IS_PYTHON3:
-    from io import StringIO
-else:
-    from StringIO import StringIO
+
+from io import StringIO
+
 
 # --------------------------------------------------------------------------- # 
 # raw mapping input parsers

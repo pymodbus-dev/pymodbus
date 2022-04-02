@@ -39,3 +39,4 @@ test/__pycache__/
 **/.pymodhis
 /build/
 /dist/
+**/.DS_Store

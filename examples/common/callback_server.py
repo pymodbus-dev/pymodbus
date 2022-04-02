@@ -15,7 +15,6 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 
 # --------------------------------------------------------------------------- #
@@ -88,7 +87,8 @@ def device_writer(queue):
         device, value = queue.get()
         scaled = rescale_value(value[0])
         log.debug("Write(%s) = %s" % (device, value))
-        if not device: continue
+        if not device:
+            continue
         # do any logic here to update your devices
 
 # --------------------------------------------------------------------------- #
@@ -100,8 +100,8 @@ def read_device_map(path):
     """ A helper method to read the device
     path to address mapping from file::
 
-       0x0001,/dev/device1 
-       0x0002,/dev/device2 
+       0x0001,/dev/device1
+       0x0002,/dev/device2
 
     :param path: The path to the input file
     :returns: The input mapping file
@@ -145,4 +145,3 @@ def run_callback_server():
 
 if __name__ == "__main__":
     run_callback_server()
-

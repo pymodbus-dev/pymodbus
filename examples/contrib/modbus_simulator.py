@@ -6,10 +6,9 @@ with read/write data as well as user configurable base data
 
 import pickle
 from optparse import OptionParser
-from twisted.internet import reactor
 
 from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.datastore import ModbusServerContext,ModbusSlaveContext
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
 # -------------------------------------------------------------------------- #
 # Logging
@@ -25,13 +24,13 @@ protocol_log = logging.getLogger("pymodbus.protocol")
 # -------------------------------------------------------------------------- #
 # These are extra helper functions that don't belong in a class
 # -------------------------------------------------------------------------- #
-import getpass
+# import getpass
 
 
 def root_test():
     """ Simple test to see if we are running as root """
     return True  # removed for the time being as it isn't portable
-    #return getpass.getuser() == "root"
+    # return getpass.getuser() == "root"
 
 # -------------------------------------------------------------------------- #
 # Helper Classes
@@ -55,7 +54,6 @@ class ConfigurationException(Exception):
         :returns: A string representation of the object
         """
         return 'Configuration Error: %s' % self.string
-
 
 
 class Configuration:
@@ -116,7 +114,7 @@ def main():
         try:
             server_log.setLevel(logging.DEBUG)
             protocol_log.setLevel(logging.DEBUG)
-        except Exception as e:
+        except Exception:
             print("Logging is not supported on this system")
 
     # parse configuration file and run

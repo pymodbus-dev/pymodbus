@@ -31,7 +31,7 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 # The following is simply a read coil request that always reads 16 coils.
 # Since the function code is already registered with the decoder factory,
-# this will be decoded as a read coil response. If you implement a new 
+# this will be decoded as a read coil response. If you implement a new
 # method that is not currently implemented, you must register the request
 # and response with a ClientDecoder factory.
 # --------------------------------------------------------------------------- #
@@ -44,7 +44,7 @@ class CustomModbusResponse(ModbusResponse):
     def __init__(self, values=None, **kwargs):
         ModbusResponse.__init__(self, **kwargs)
         self.values = values or []
-    
+
     def encode(self):
         """ Encodes response pdu
 

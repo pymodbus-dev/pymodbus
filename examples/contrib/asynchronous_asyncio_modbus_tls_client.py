@@ -29,7 +29,7 @@ sslctx.check_hostname = True
 async def start_async_test(client):
     result = await client.read_coils(1, 8)
     print(result.bits)
-    await client.write_coils(1, [False]*3)
+    await client.write_coils(1, [False] * 3)
     result = await client.read_coils(1, 8)
     print(result.bits)
 

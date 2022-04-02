@@ -7,18 +7,18 @@ We basically set the context for the tcp serial server to be that of a
 serial client! This is just an example of how clever you can be with
 the data context (basically anything can become a modbus device).
 """
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # import the various server implementations
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 from pymodbus.server.sync import StartTcpServer as StartServer
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 from pymodbus.datastore.remote import RemoteSlaveContext
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.datastore import ModbusServerContext
 
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 # configure the service logging
-# --------------------------------------------------------------------------- # 
+# --------------------------------------------------------------------------- #
 import logging
 logging.basicConfig()
 log = logging.getLogger()

@@ -27,6 +27,7 @@ STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
 UNIT = 0x01
 
+
 class ExampleProtocol(ModbusClientProtocol):
 
     def __init__(self, framer):
@@ -77,12 +78,10 @@ class ExampleProtocol(ModbusClientProtocol):
 if __name__ == "__main__":
     import time
     proto, client = AsyncModbusSerialClient(schedulers.REACTOR,
-                                            method="rtu", 
-                                            port=SERIAL_PORT, 
-                                            timeout=2, 
+                                            method="rtu",
+                                            port=SERIAL_PORT,
+                                            timeout=2,
                                             proto_cls=ExampleProtocol)
     proto.start()
     time.sleep(10)  # Wait for operation to complete
     # proto.stop()
-
-

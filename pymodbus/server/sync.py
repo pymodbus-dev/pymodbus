@@ -576,7 +576,7 @@ class ModbusSerialServer(object):
         if self._connect():
             _logger.debug("Started thread to serve client")
             if not self.handler:
-                self._build_handler()
+                self._build_handler(self.handler)
             while self.is_running:
                 if hasattr(self.handler, "response_manipulator"):
                     self.handler.response_manipulator()

@@ -54,17 +54,25 @@ class Decoder(object):
 
         :param message: The message to decode
         """
+<<<<<<< HEAD
         value = message if self.encode else c.encode(message, 'hex_codec')
         print("="*80)
+=======
+        if IS_PYTHON3:
+            value = message if self.encode else c.encode(message, 'hex_codec')
+        else:
+            value = message if self.encode else message.encode('hex')
+        print("=" * 80)
+>>>>>>> 12f99ef9f (lint /examples per PEP8)
         print("Decoding Message %s" % value)
-        print("="*80)
+        print("=" * 80)
         decoders = [
             self.framer(ServerDecoder(), client=None),
             self.framer(ClientDecoder(), client=None)
         ]
         for decoder in decoders:
             print("%s" % decoder.decoder.__class__.__name__)
-            print("-"*80)
+            print("-" * 80)
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
@@ -73,7 +81,7 @@ class Decoder(object):
                     decoder.processIncomingPacket(message, self.report, unit)
                 else:
                     self.check_errors(decoder, message)
-            except Exception as ex:
+            except Exception:
                 self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
@@ -93,12 +101,12 @@ class Decoder(object):
         for (k, v) in message.__dict__.items():
             if isinstance(v, dict):
                 print("%-15s =" % k)
-                for kk,vv in v.items():
+                for kk, vv in v.items():
                     print("  %-12s => %s" % (kk, vv))
 
             elif isinstance(v, collections.Iterable):
                 print("%-15s =" % k)
-                value = str([int(x) for x  in v])
+                value = str([int(x) for x in v])
                 for line in textwrap.wrap(value, 60):
                     print("%-15s . %s" % ("", line))
             else:
@@ -177,7 +185,8 @@ def get_messages(option):
     elif option.file:
         with open(option.file, "r") as handle:
             for line in handle:
-                if line.startswith('#'): continue
+                if line.startswith('#'):
+                    continue
                 if not option.ascii:
                     line = line.strip()
                     line = line.decode('hex')
@@ -197,10 +206,10 @@ def main():
             print("Logging is not supported on this system- {}".format(e))
 
     framer = lookup = {
-        'tcp':    ModbusSocketFramer,
-        'rtu':    ModbusRtuFramer,
+        'tcp':    ModbusSocketFramer,  # noqa E221
+        'rtu':    ModbusRtuFramer,  # noqa E221
         'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer,
+        'ascii':  ModbusAsciiFramer,  # noqa E221
     }.get(option.framer or option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer, option.ascii)

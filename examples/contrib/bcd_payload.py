@@ -3,10 +3,10 @@ Modbus BCD Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
-that can be used in the pymodbus library. Below is a 
+that can be used in the pymodbus library. Below is a
 simple binary coded decimal builder and decoder.
 """
-from struct import pack, unpack
+from struct import pack
 from pymodbus.constants import Endian
 from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.utilities import pack_bitstring
@@ -77,7 +77,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         :param endian: The endianess of the payload
         """
         self._payload = payload or []
-        self._endian  = endian
+        self._endian = endian
 
     def __str__(self):
         """ Return the payload buffer as a string
@@ -102,7 +102,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         string = str(self)
         length = len(string)
         string = string + ('\x00' * (length % 2))
-        return [string[i:i+2] for i in range(0, length, 2)]
+        return [string[i:i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         """ Adds a collection of bits to be encoded
@@ -171,7 +171,7 @@ class BcdPayloadDecoder(object):
         :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
-        if isinstance(registers, list): # repack into flat binary
+        if isinstance(registers, list):  # repack into flat binary
             payload = ''.join(pack('>H', x) for x in registers)
             return BinaryPayloadDecoder(payload, endian)
         raise ParameterException('Invalid collection of registers supplied')

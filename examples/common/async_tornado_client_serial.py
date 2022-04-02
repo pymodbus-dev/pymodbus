@@ -40,7 +40,7 @@ def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value  
+        assert value
 
     def on_done(f):
         exc = f.exception()
@@ -85,12 +85,12 @@ def beginAsynchronousTest(client, protocol):
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
     dassert(rr, _print)          # test the expected value
 
-    rq = client.write_coils(1, [False]*8, unit=UNIT)
+    rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
     dassert(rr, _print)         # test the expected value
 
-    rq = client.write_coils(1, [False]*8, unit=UNIT)
+    rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_discrete_inputs(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
     dassert(rr, _print)         # test the expected value
@@ -100,20 +100,20 @@ def beginAsynchronousTest(client, protocol):
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
     dassert(rr, _print)       # test the expected value
 
-    rq = client.write_registers(1, [10]*8, unit=UNIT)
+    rq = client.write_registers(1, [10] * 8, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
     dassert(rr, _print)      # test the expected value
 
     arguments = {
-        'read_address':    1,
-        'read_count':      8,
-        'write_address':   1,
-        'write_registers': [20]*8,
+        'read_address': 1,
+        'read_count': 8,
+        'write_address': 1,
+        'write_registers': [20] * 8,
     }
     rq = client.readwrite_registers(**arguments, unit=UNIT)
-    rr = client.read_input_registers(1,8, unit=UNIT)
-    dassert(rq, lambda r: r.registers == [20]*8)      # test the expected value
+    rr = client.read_input_registers(1, 8, unit=UNIT)
+    dassert(rq, lambda r: r.registers == [20] * 8)      # test the expected value
     dassert(rr, _print)      # test the expected value
 
     # -----------------------------------------------------------------------#

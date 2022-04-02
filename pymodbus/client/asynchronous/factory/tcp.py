@@ -92,7 +92,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     from pymodbus.client.asynchronous.async_io import init_tcp_client
 
     try:
-        loop = kwargs.pop("loop") or asyncio.get_running_loop()
+        loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
 

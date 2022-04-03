@@ -9,7 +9,7 @@ from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsCl
 from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
 
 import platform
-from pkg_resources import parse_version
+
 
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
@@ -25,22 +25,9 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusBinaryFramer
 from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
+from test.conftest import SERIAL_PORT
 
 import ssl
-
-IS_DARWIN = platform.system().lower() == "darwin"
-IS_WINDOWS = platform.system().lower() == "windows"
-OSX_SIERRA = parse_version("10.12")
-if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
-else:
-    IS_HIGH_SIERRA_OR_ABOVE = False
-    if IS_WINDOWS:
-        # the use is mocked out
-        SERIAL_PORT = ""
-    else:
-        SERIAL_PORT = "/dev/ptmx"
 
 # ---------------------------------------------------------------------------#
 # Fixture

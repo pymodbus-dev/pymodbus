@@ -11,21 +11,11 @@ from pymodbus.client.asynchronous.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from test.conftest import SERIAL_PORT
 
 # ---------------------------------------------------------------------------#
 # Fixture
 # ---------------------------------------------------------------------------#
-import platform
-from pkg_resources import parse_version
-
-IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = parse_version("10.12")
-if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
-else:
-    IS_HIGH_SIERRA_OR_ABOVE = False
-    SERIAL_PORT = "/dev/ptmx"
 
 
 class AsynchronousClientTest(unittest.TestCase):

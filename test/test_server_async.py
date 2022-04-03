@@ -2,6 +2,7 @@
 import unittest
 import pytest
 from unittest.mock import patch, Mock, MagicMock
+import platform
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
@@ -13,22 +14,13 @@ from pymodbus.server.asynchronous import (
 from pymodbus.compat import byte2int
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
+from test.conftest import SERIAL_PORT
 
 import sys
 # --------------------------------------------------------------------------- #
 # Fixture
 # --------------------------------------------------------------------------- #
-import platform
-from pkg_resources import parse_version
 
-IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = parse_version("10.12")
-if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
-else:
-    IS_HIGH_SIERRA_OR_ABOVE = False
-    SERIAL_PORT = "/dev/ptmx"
 
 no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
     sys.platform == 'win32' and platform.python_implementation() == 'PyPy',

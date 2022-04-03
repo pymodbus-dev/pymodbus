@@ -17,23 +17,14 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 
 from pymodbus.exceptions import NoSuchSlaveException
+from test.conftest import IS_WINDOWS, SERIAL_PORT
 
 # ---------------------------------------------------------------------------#
 # Fixture
 # ---------------------------------------------------------------------------#
 import platform
 import ssl
-from pkg_resources import parse_version
 _logger = logging.getLogger()
-
-IS_DARWIN = platform.system().lower() == "darwin"
-OSX_SIERRA = parse_version("10.12")
-if IS_DARWIN:
-    IS_HIGH_SIERRA_OR_ABOVE = OSX_SIERRA < parse_version(platform.mac_ver()[0])
-    SERIAL_PORT = '/dev/ptyp0' if not IS_HIGH_SIERRA_OR_ABOVE else '/dev/ttyp0'
-else:
-    IS_HIGH_SIERRA_OR_ABOVE = False
-    SERIAL_PORT = "/dev/ptmx"
 
 
 class AsyncioServerTest(asynctest.TestCase):
@@ -121,7 +112,7 @@ class AsyncioServerTest(asynctest.TestCase):
             self.assertTrue( process.call_args[1]["data"] == data )
             server.server_close()
 
-    
+    @pytest.mark.skipif(IS_WINDOWS, reason="To fix")    
     async def testTcpServerRoundtrip(self):
         ''' Test sending and receiving data on tcp socket '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
@@ -159,8 +150,10 @@ class AsyncioServerTest(asynctest.TestCase):
         await asyncio.sleep(0)
         server.server_close()
     
+    @pytest.mark.skipif(IS_WINDOWS, reason="To fix")    
     async def testTcpServerConnectionLost(self):
         """ Test tcp stream interruption """
+
         data = b"\x01\x00\x00\x00\x00\x06\x01\x01\x00\x00\x00\x01"
         server = await StartTcpServer(context=self.context, address=("127.0.0.1", 0), loop=self.loop)
 
@@ -218,12 +211,12 @@ class AsyncioServerTest(asynctest.TestCase):
 
         # On Windows we seem to need to give this an extra chance to finish,
         # otherwise there ends up being an active connection at the assert.
-        await asyncio.sleep(0.0)
+        await asyncio.sleep(0.5)
         server.server_close()
 
         # close isn't synchronous and there's no notification that it's done
         # so we have to wait a bit
-        await asyncio.sleep(0.0)
+        await asyncio.sleep(0.5)
         self.assertTrue( len(server.active_connections) == 0 )
 
     

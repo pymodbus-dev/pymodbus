@@ -2,8 +2,7 @@
 PyModbus - A Python Modbus Stack
 ================================
 
-.. image:: https://travis-ci.org/riptideio/pymodbus.svg?branch=master
-   :target: https://travis-ci.org/riptideio/pymodbus 
+.. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby 
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
@@ -13,21 +12,35 @@ PyModbus - A Python Modbus Stack
    :target: http://pepy.tech/project/pymodbus 
    :alt: Downloads
    
+------------------------------------------------------------
+Supported versions
+------------------------------------------------------------
+
+Version 2.5.3 is the last 2.x release and in in maintenance mode.
+
+Version 3.0.0Dev3 is the current prerelease of 3.0.0
+
 .. important::
-   **Note This is a Major release and might affect your existing Async client implementation. Refer examples on how to use the latest async clients.**
+   **Note 3.0.0 is a major release with a number of incompatible changes.
 
 ------------------------------------------------------------
 Summary
 ------------------------------------------------------------
 
-Pymodbus is a full Modbus protocol implementation using twisted/tornado/asyncio for its
-asynchronous communications core.  It can also be used without any third
-party dependencies (aside from pyserial) if a more lightweight project is
-needed.  Furthermore, it should work fine under any python version >= 3.7
-=======
-(including python 3+)
->>>>>>> 3.0.0
+Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous core. The preferred mode for asynchronous communication is asyncio, however for the moment twisted and tornado are also supported (due to be removed or converted to a plugin in a later version).
 
+Supported modbus communication modes:
+- tcp
+- rtuovertcp
+- udp
+- serial
+- tls
+
+Pymodbus can be used without any third party dependencies (aside from pyserial) and are this a very lightweight projects.
+
+It works on python >= 3.7
+
+For the moment we test python version 3.7, 3.8 and 3.9.
 
 ------------------------------------------------------------
 Features
@@ -39,24 +52,25 @@ Client Features
 
   * Full read/write protocol on discrete and register
   * Most of the extended protocol (diagnostic/file/pipe/setting/information)
-  * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by twisted/tornado/asyncio) and synchronous versions
+  * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
+  * asynchronous(powered by asyncio/twisted/tornado) and synchronous versions
   * Payload builder/decoder utilities
   * Pymodbus REPL for quick tests
+  * Customable framer to allow for custom implementations
 
 ~~~~~~~~~~~~~~~~~~~~
 Server Features
 ~~~~~~~~~~~~~~~~~~~~
 
   * Can function as a fully implemented modbus server
-  * TCP, UDP, Serial ASCII, Serial RTU, and Serial Binary
+  * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
   * asynchronous(powered by twisted) and synchronous versions
   * Full server control context (device information, counters, etc)
   * A number of backing contexts (database, redis, sqlite, a slave device)
 
-------------------------------------------------------------
+^^^^^^^^^^^
 Use Cases
-------------------------------------------------------------
+^^^^^^^^^^^
 
 Although most system administrators will find little need for a Modbus
 server on any modern hardware, they may find the need to query devices on
@@ -66,9 +80,10 @@ solutions.
 
 Continuing, most monitoring software needs to be stress tested against
 hundreds or even thousands of devices (why this was originally written), but
-getting access to that many is unwieldy at best.  The pymodbus server will allow
-a user to test as many devices as their base operating system will allow (*allow*
-in this case means how many Virtual IP addresses are allowed).
+getting access to that many is unwieldy at best.
+
+The pymodbus server will allow a user to test as many devices as their
+base operating system will allow (*allow* in this case means how many Virtual IP addresses are allowed).
 
 For more information please browse the project documentation:
 
@@ -114,7 +129,7 @@ get lost in the noise: http://groups.google.com/group/pymodbus or
 at gitter:  https://gitter.im/pymodbus_dev/Lobby
 
 .. important::
-   **Note For async clients, it is recommended to use `asyncio` as the async facilitator (Python 3.7 and above).**
+   **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
    **If using tornado make sure the tornado version is `4.5.3`.Other versions of tornado can break the implementation**
 
 
@@ -141,6 +156,11 @@ permissions or a virtualenv currently running)::
     easy_install -U pymodbus
     pip install  -U pymodbus
 
+Or to install a specific release::
+
+    pip install  -U pymodbus==X.Y.Z
+    easy_install -U pymodbus==X.Y.Z
+
 To Install pymodbus with twisted support run::
 
     pip install -U pymodbus[twisted]
@@ -157,34 +177,57 @@ Otherwise you can pull the trunk source and install from there::
 
     git clone git://github.com/bashwork/pymodbus.git
     cd pymodbus
+    
+To get latest release (for now v2.5.3 with python 2.7 support)::
+
+    git checkout master
+
+To get bleeding edge::
+
+    git checkout dev
+
+To get a specific version:
+
+    git checkout tags/vX.Y.Z -b vX.Y.Z    
+
+Then::
     python setup.py install
 
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
 
-If you would like to install pymodbus without the twisted dependency,
-simply edit the setup.py file before running easy_install and comment
-out all mentions of twisted.  It should be noted that without twisted,
-one will only be able to run the synchronized version as the
-asynchronous versions uses twisted for its event loop.
+------------------------------------------------------------
+Repository structure
+------------------------------------------------------------
+The repository contains a number of important branches and tags.
+  * **dev** is where all development happens, this branch is not always stable.
+  * **master** is where are releases are kept.
+  * All releases are tagged with **vX.Y.Z** (e.g. v2.5.3)
+  * All prereleases are tagged with **vX.Y.ZrcQ** (e.g. v3.0.0.0rc1)
+ 
+If a maintenance release of an old version is needed (e.g. v2.5.4),
+the release tag is used to create a branch with the same name,
+and maintenance development is merged here.
 
 ------------------------------------------------------------
 Current Work In Progress
 ------------------------------------------------------------
 
-Since I don't have access to any live modbus devices anymore
-it is a bit hard to test on live hardware. However, if you would
-like your device tested, I accept devices via mail or by IP address.
+The maintenance team is very small with limited capacity
+and few modbus devices.
 
-That said, the current work mainly involves polishing the library as
-I get time doing such tasks as:
+However, if you would like your device tested,
+we accept devices via mail or by IP address.
 
-  * Make PEP-8 compatible and flake8 ready
+That said, the current work mainly involves polishing the library and
+solving issues:
+
+  * Get version 3.0.0 released
+  * Make PEP-8 compatible and pylint, flake8, black and mypy ready
   * Fixing bugs/feature requests
   * Architecture documentation
-  * Functional testing against any reference I can find
-  * The remaining edges of the protocol (that I think no one uses)
-  * Asynchronous clients with support to tornado , asyncio  
+  * Functional testing against any reference we can find
+  * The remaining edges of the protocol (that we think no one uses)
 
 ------------------------------------------------------------
 Development Instructions
@@ -210,6 +253,9 @@ Use make to perform a range of activities
 Contributing
 ------------------------------------------------------------
 Just fork the repo and raise your PR against `dev` branch.
+
+Here are some of the items waiting to be done:
+   https://github.com/riptideio/pymodbus/blob/3.0.0/doc/TODO
 
 ------------------------------------------------------------
 License Information

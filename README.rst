@@ -16,12 +16,12 @@ PyModbus - A Python Modbus Stack
 Supported versions
 ------------------------------------------------------------
 
-Version 2.5.3 is the last 2.x release and in in maintenance mode.
+Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release with support to python2.7.x and in in maintenance mode.
 
-Version 3.0.0Dev3 is the current prerelease of 3.0.0
+Version `3.0.0dev3 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0dev3>`_ is the current prerelease of 3.0.0 (Supports only Python >=3.7)
 
 .. important::
-   **Note 3.0.0 is a major release with a number of incompatible changes.
+   **Note 3.0.0 is a major release with a number of incompatible changes.**
 
 ------------------------------------------------------------
 Summary
@@ -31,16 +31,16 @@ Pymodbus is a full Modbus protocol implementation using a synchronous or asynchr
 
 Supported modbus communication modes:
 - tcp
-- rtuovertcp
+- rtu-over-tcp
 - udp
 - serial
 - tls
 
-Pymodbus can be used without any third party dependencies (aside from pyserial) and are this a very lightweight projects.
+Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.
 
-It works on python >= 3.7
+Requires Python >= 3.7
 
-For the moment we test python version 3.7, 3.8 and 3.9.
+The tests are run against Python 3.7, 3.8, 3.9 and 3.10.
 
 ------------------------------------------------------------
 Features
@@ -125,8 +125,8 @@ If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptide
 Also, if you have questions, please ask them on the mailing list
 so that others can benefit from the results and so that I can
 trace them. I get a lot of email and sometimes these requests
-get lost in the noise: http://groups.google.com/group/pymodbus or 
-at gitter:  https://gitter.im/pymodbus_dev/Lobby
+get lost in the noise: `pymodbus google group <http://groups.google.com/group/pymodbus>`_ or 
+at `gitter <https://gitter.im/pymodbus_dev/Lobby>`_ or `github discussions <https://github.com/riptideio/pymodbus/discussions>`_
 
 .. important::
    **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**

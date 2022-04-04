@@ -300,7 +300,11 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
         self.receive_queue.put_nowait(data)
 
     async def _recv_(self):
-        return await self.receive_queue.get()
+        try:
+            result = await self.receive_queue.get()
+        except RuntimeError:
+            result = None
+        return result
 
     def _send_(self, data):
         """ tcp send """

@@ -20,7 +20,8 @@ jobs:
     name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.python.docker] }}
-    # present runtime seems to be about 1 minute 30 seconds
+    # present runtime seems to be about 2 minutes
+    # with pypy being the exception (10 minutes)
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -37,6 +38,7 @@ jobs:
               3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
+              3.10: docker://python:3.10-buster
               pypy3: docker://pypy:3-stretch
           - name: macOS
             runs-on: macos-latest
@@ -65,6 +67,12 @@ jobs:
             action: 3.9
             docker: 3.9
             matrix: 3.9
+            implementation: cpython
+          - name: CPython 3.10
+            tox: py310
+            action: '3.10'
+            docker: '3.10'
+            matrix: '3.10'
             implementation: cpython
           - name: PyPy 3.7
             tox: pypy37

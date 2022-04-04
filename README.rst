@@ -3,6 +3,7 @@ PyModbus - A Python Modbus Stack
 ================================
 
 .. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
+   :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby 
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
@@ -16,7 +17,7 @@ PyModbus - A Python Modbus Stack
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release with support to python2.7.x and in in maintenance mode.
+Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release with support to python2.7.x and is in maintenance mode.
 
 Version `3.0.0dev3 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0dev3>`_ is the current prerelease of 3.0.0 (Supports only Python >=3.7)
 

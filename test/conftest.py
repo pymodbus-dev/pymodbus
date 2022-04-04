@@ -12,8 +12,4 @@ if IS_DARWIN:
     else:
         SERIAL_PORT = '/dev/ttyp0'
 else:
-    if IS_WINDOWS:
-        # the use is mocked out
-        SERIAL_PORT = ""
-    else:
-        SERIAL_PORT = "/dev/ptmx"
+    SERIAL_PORT = "/dev/ptmx"

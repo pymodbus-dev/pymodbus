@@ -68,8 +68,8 @@ jobs:
             docker: 3.9
             matrix: 3.9
             implementation: cpython
-          - name: CPython 3.10
-            tox: py310
+          - name: 'CPython 3.10'
+            tox: 'py310'
             action: '3.10'
             docker: '3.10'
             matrix: '3.10'
@@ -79,6 +79,27 @@ jobs:
             action: pypy-3.7
             docker: pypy3.7
             matrix: 3.7
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: PyPy 3.8
+            tox: pypy38
+            action: pypy-3.8
+            docker: pypy3.8
+            matrix: 3.8
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: PyPy 3.9
+            tox: pypy39
+            action: pypy-3.9
+            docker: pypy3.9
+            matrix: 3.9
+            implementation: pypy
+            openssl_msvc_version: 2019
+          - name: 'PyPy 3.10'
+            tox: 'pypy310'
+            action: 'pypy-3.10'
+            docker: 'pypy3.10'
+            matrix: '3.10'
             implementation: pypy
             openssl_msvc_version: 2019
         arch:
@@ -103,6 +124,11 @@ jobs:
               implementation: pypy
             arch:
               matrix: x64
+          - os:
+              matrix: windows
+            python:
+              implementation: pypy
+              matrix: 3.8
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}

@@ -17,7 +17,6 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 
 from pymodbus.exceptions import NoSuchSlaveException
-from test.conftest import IS_WINDOWS, SERIAL_PORT
 
 # ---------------------------------------------------------------------------#
 # Fixture
@@ -112,7 +111,7 @@ class AsyncioServerTest(asynctest.TestCase):
             self.assertTrue( process.call_args[1]["data"] == data )
             server.server_close()
 
-    @pytest.mark.skipif(IS_WINDOWS, reason="To fix")    
+    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="To fix")    
     async def testTcpServerRoundtrip(self):
         ''' Test sending and receiving data on tcp socket '''
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
@@ -150,7 +149,7 @@ class AsyncioServerTest(asynctest.TestCase):
         await asyncio.sleep(0)
         server.server_close()
     
-    @pytest.mark.skipif(IS_WINDOWS, reason="To fix")    
+    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="To fix")    
     async def testTcpServerConnectionLost(self):
         """ Test tcp stream interruption """
 

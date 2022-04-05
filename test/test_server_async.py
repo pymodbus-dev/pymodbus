@@ -14,7 +14,6 @@ from pymodbus.server.asynchronous import (
 from pymodbus.compat import byte2int
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
-from test.conftest import SERIAL_PORT
 
 import sys
 # --------------------------------------------------------------------------- #
@@ -183,7 +182,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def testSerialServerStartup(self, mock_sp):
         ''' Test that the modbus serial asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None, port=SERIAL_PORT)
+            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
     @no_twisted_serial_on_windows_with_pypy
@@ -194,7 +193,7 @@ class AsynchronousServerTest(unittest.TestCase):
         :return:
         """
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None, port=SERIAL_PORT)
+            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
             StopServer()
             self.assertEqual(mock_reactor.stop.call_count, 1)
@@ -209,7 +208,7 @@ class AsynchronousServerTest(unittest.TestCase):
         from threading import Thread
         import time
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartSerialServer(context=None, port=SERIAL_PORT)
+            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
             t = Thread(target=StopServer)
             t.start()

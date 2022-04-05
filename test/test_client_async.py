@@ -25,7 +25,6 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer
 from pymodbus.transaction import ModbusAsciiFramer, ModbusBinaryFramer
 from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
-from test.conftest import SERIAL_PORT
 
 import ssl
 
@@ -191,7 +190,7 @@ class TestAsynchronousClient(object):
 
                     protocol, client = AsyncModbusSerialClient(schedulers.REACTOR,
                                                                method=method,
-                                                               port=SERIAL_PORT,
+                                                               port=pytest.SERIAL_PORT,
                                                                proto_cls=ModbusSerClientProtocol)
 
                     assert (isinstance(client, SerialPort))
@@ -219,12 +218,12 @@ class TestAsynchronousClient(object):
         """ Test the serial tornado client client initialize """
         from serial import Serial
         with maybe_manage(sys.platform in ('darwin', 'win32'), patch.object(Serial, "open")):
-            protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=SERIAL_PORT)
+            protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT)
             client = future.result()
             assert(isinstance(client, AsyncTornadoModbusSerialClient))
             assert(0 == len(list(client.transaction)))
             assert(isinstance(client.framer, framer))
-            assert(client.port == SERIAL_PORT)
+            assert(client.port == pytest.SERIAL_PORT)
             assert(client._connected)
 
             def handle_failure(failure):
@@ -251,11 +250,11 @@ class TestAsynchronousClient(object):
         """
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False
-        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=SERIAL_PORT, loop=loop,
+        loop, client = AsyncModbusSerialClient(schedulers.ASYNC_IO, method=method, port=pytest.SERIAL_PORT, loop=loop,
                                                baudrate=19200, parity='E', stopbits=2, bytesize=7)
         assert(isinstance(client, AsyncioModbusSerialClient))
         assert(isinstance(client.framer, framer))
-        assert(client.port == SERIAL_PORT)
+        assert(client.port == pytest.SERIAL_PORT)
         assert(client.baudrate == 19200)
         assert(client.parity == 'E')
         assert(client.stopbits == 2)

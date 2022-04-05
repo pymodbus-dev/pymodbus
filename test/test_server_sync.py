@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 from unittest.mock import patch, Mock
-
+import pytest
 import serial
 import socket
 import ssl
@@ -20,7 +20,6 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.transaction import ModbusTlsFramer
 
 from pymodbus.compat import socketserver
-from test.conftest import SERIAL_PORT
 
 
 # --------------------------------------------------------------------------- #
@@ -400,7 +399,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302
     def testStartSerialServer(self):
         ''' Test the serial server starting factory '''
         with patch.object(ModbusSerialServer, 'serve_forever') as mock_server:
-            StartSerialServer(port=SERIAL_PORT)
+            StartSerialServer(port=pytest.SERIAL_PORT)
 
 
 # --------------------------------------------------------------------------- #

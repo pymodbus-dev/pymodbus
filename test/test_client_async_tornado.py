@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 from unittest.mock import patch, Mock
+import pytest
 
 from pymodbus.client.asynchronous.tornado import (BaseTornadoClient,
                                                   AsyncModbusSerialClient, AsyncModbusUDPClient, AsyncModbusTCPClient
@@ -11,7 +12,6 @@ from pymodbus.client.asynchronous.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from test.conftest import SERIAL_PORT
 
 # ---------------------------------------------------------------------------#
 # Fixture
@@ -166,7 +166,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=pytest.SERIAL_PORT)
         self.assertEqual(0, len(list(client.transaction)))
         self.assertTrue(isinstance(client.framer, ModbusRtuFramer))
 
@@ -182,8 +182,8 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
-        self.assertTrue(client.port, SERIAL_PORT)
+                                         port=pytest.SERIAL_PORT)
+        self.assertTrue(client.port, pytest.SERIAL_PORT)
         self.assertFalse(client._connected)
         client.connect()
         self.assertTrue(client._connected)
@@ -197,7 +197,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=pytest.SERIAL_PORT)
         client.connect()
         self.assertTrue(client._connected)
 
@@ -217,7 +217,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT,
+                                         port=pytest.SERIAL_PORT,
                                          timeout=0)
         client.connect()
         client.stream = Mock()
@@ -237,7 +237,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=pytest.SERIAL_PORT)
         client.connect()
         out = []
         reply = ReadCoilsRequest(1, 1)
@@ -261,7 +261,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),
-                                         port=SERIAL_PORT)
+                                         port=pytest.SERIAL_PORT)
         self.assertEqual(0, len(list(client.transaction)))
 
         def handle_failure(failure):

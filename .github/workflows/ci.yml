@@ -88,20 +88,6 @@ jobs:
             matrix: 3.8
             implementation: pypy
             openssl_msvc_version: 2019
-          - name: PyPy 3.9
-            tox: pypy39
-            action: pypy-3.9
-            docker: pypy3.9
-            matrix: 3.9
-            implementation: pypy
-            openssl_msvc_version: 2019
-          - name: 'PyPy 3.10'
-            tox: 'pypy310'
-            action: 'pypy-3.10'
-            docker: 'pypy3.10'
-            matrix: '3.10'
-            implementation: pypy
-            openssl_msvc_version: 2019
         arch:
           - name: x86
             action: x86

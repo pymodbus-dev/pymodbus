@@ -2,6 +2,7 @@
 *.swp
 build/
 dist/
+venv/
 pymodbus.egg-info/
 .coverage
 .vscode

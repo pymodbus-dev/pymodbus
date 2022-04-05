@@ -303,6 +303,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
         try:
             result = await self.receive_queue.get()
         except RuntimeError:
+            _logger.error("Event loop is closed")
             result = None
         return result
 

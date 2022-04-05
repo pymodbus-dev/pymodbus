@@ -18,6 +18,7 @@ General
 - convert twister to a plugin
 - get coverage > 98%
 - clean raise to be at frame level
+- solve "TO FIX" in code
 
 ---------------------------------------------------------------------------
 Protocols

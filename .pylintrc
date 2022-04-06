@@ -1,5 +1,0 @@
-[BASIC]
-
-# Good variable names which should always be accepted, separated by a comma
-good-names=rr,rq
-

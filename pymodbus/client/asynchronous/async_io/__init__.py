@@ -1,20 +1,21 @@
 """
 Asynchronous framework adapter for asyncio.
 """
+import logging
 import socket
 import asyncio
 import functools
 import ssl
+from serial_asyncio import create_serial_connection
 from pymodbus.exceptions import ConnectionException
 from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.client.tls_helper import sslctx_provider
 from pymodbus.utilities import hexlify_packets
 from pymodbus.transaction import FifoTransactionManager
-import logging
 
 _logger = logging.getLogger(__name__)
 
-DGRAM_TYPE = socket.SocketKind.SOCK_DGRAM
+DGRAM_TYPE = socket.SOCK_DGRAM
 
 
 class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
@@ -26,7 +27,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
     factory = None
     transport = None
 
-    async def execute(self, request=None):
+    async def execute(self, request=None): # pylint: disable=invalid-overridden-method
         """
         Executes requests asynchronously
         :param request:
@@ -50,7 +51,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :return:
         """
         self.transport = transport
-        self._connectionMade()
+        self._connection_made()
 
         if self.factory:
             self.factory.protocol_made_connection(self)
@@ -64,7 +65,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :return:
         """
         self.transport = None
-        self._connectionLost(reason)
+        self._connection_lost(reason)
 
         if self.factory:
             self.factory.protocol_lost_connection(self)
@@ -76,16 +77,16 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :param data:
         :return:
         """
-        self._dataReceived(data)
+        self._data_received(data)
 
-    def create_future(self):
+    def create_future(self): # pylint: disable=no-self-use
         """
         Helper function to create asyncio Future object
         :return:
         """
         return asyncio.Future()
 
-    def resolve_future(self, f, result):
+    def resolve_future(self, f, result): # pylint: disable=no-self-use
         """
         Resolves the completed future and sets the result
         :param f:
@@ -95,7 +96,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         if not f.done():
             f.set_result(result)
 
-    def raise_future(self, f, exc):
+    def raise_future(self, f, exc): # pylint: disable=no-self-use
         """
         Sets exception of a future if not done
         :param f:
@@ -105,21 +106,21 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         if not f.done():
             f.set_exception(exc)
 
-    def _connectionMade(self):
+    def _connection_made(self):
         """
         Called upon a successful client connection.
         """
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
-    def _connectionLost(self, reason):
+    def _connection_lost(self, reason):
         """
         Called upon a client disconnect
 
         :param reason: The reason for the disconnect
         """
-        _logger.debug(
-            "Client disconnected from modbus server: %s" % reason)
+        txt = f"Client disconnected from modbus server: {reason}"
+        _logger.debug(txt)
         self._connected = False
         for tid in list(self.transaction):
             self.raise_future(self.transaction.getTransaction(tid),
@@ -134,29 +135,32 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         return self._connected
 
     def write_transport(self, packet):
+        """Write transport."""
         return self.transport.write(packet)
 
-    def _execute(self, request, **kwargs):
+    def _execute(self, request, **kwargs): #NOSONAR pylint: disable=unused-argument
         """
         Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        _logger.debug("send: " + hexlify_packets(packet))
+        txt = f"send: {hexlify_packets(packet)}"
+        _logger.debug(txt)
         self.write_transport(packet)
-        return self._buildResponse(request.transaction_id)
+        return self._build_response(request.transaction_id)
 
-    def _dataReceived(self, data):
+    def _data_received(self, data):
         ''' Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         '''
-        _logger.debug("recv: " + hexlify_packets(data))
+        txt = f"recv: {hexlify_packets(data)}"
+        _logger.debug(txt)
         unit = self.framer.decode_data(data).get("unit", 0)
-        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
+        self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
-    def _handleResponse(self, reply, **kwargs):
+    def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
         """
         Handle the processed response and link to correct deferred
 
@@ -168,9 +172,10 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             if handler:
                 self.resolve_future(handler, reply)
             else:
-                _logger.debug("Unrequested message: " + str(reply))
+                txt = f"Unrequested message: {str(reply)}"
+                _logger.debug(txt)
 
-    def _buildResponse(self, tid):
+    def _build_response(self, tid):
         """
         Helper method to return a deferred response
         for the current request.
@@ -207,7 +212,7 @@ class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
         :param data:
         :return:
         """
-        self._dataReceived(data)
+        self._data_received(data)
 
 
 class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
@@ -222,16 +227,16 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
     def __init__(self, host=None, port=0, **kwargs):
         self.host = host
         self.port = port
-        super(self.__class__, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def datagram_received(self, data, addr):
-        self._dataReceived(data)
+        self._data_received(data)
 
     def write_transport(self, packet):
         return self.transport.sendto(packet)
 
 
-class ReconnectingAsyncioModbusTcpClient(object):
+class ReconnectingAsyncioModbusTcpClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device repeatedly over TCP/IP."
     """
@@ -275,7 +280,8 @@ class ReconnectingAsyncioModbusTcpClient(object):
         # force reconnect if required:
         self.stop()
 
-        _logger.debug('Connecting to %s:%s.' % (host, port))
+        txt = f"Connecting to {host}:{port}."
+        _logger.debug(txt)
         self.host = host
         self.port = port
         return await self._connect()
@@ -307,11 +313,13 @@ class ReconnectingAsyncioModbusTcpClient(object):
             transport, protocol = await self.loop.create_connection(
                 self._create_protocol, self.host, self.port)
             return transport, protocol
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
             asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+            txt = f"Connected to {self.host}:{self.port}."
+            _logger.info(txt)
             self.reset_delay()
 
     def protocol_made_connection(self, protocol):
@@ -345,14 +353,14 @@ class ReconnectingAsyncioModbusTcpClient(object):
 
 
     async def _reconnect(self):
-        _logger.debug('Waiting %d ms before next '
-                      'connection attempt.' % self.delay_ms)
+        txt = f"Waiting {self.delay_ms} ms before next connection attempt."
+        _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
 
         return await self._connect()
 
-class AsyncioModbusTcpClient(object):
+class AsyncioModbusTcpClient():
     """Client to connect to modbus device over TCP/IP."""
 
     def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
@@ -403,10 +411,12 @@ class AsyncioModbusTcpClient(object):
         try:
             transport, protocol = await self.loop.create_connection(
                 self._create_protocol, self.host, self.port)
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+            txt = f"Connected to {self.host}:{self.port}."
+            _logger.info(txt)
             return transport, protocol
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
             # asyncio.asynchronous(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
@@ -451,6 +461,8 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         :param loop: Event loop to use
         """
         self.framer = framer
+        self.server_hostname = None
+        self.sslctx = None
         ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop, **kwargs)
 
     async def start(self, host, port=802, sslctx=None, server_hostname=None):
@@ -484,11 +496,13 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
                                       ssl=self.sslctx,
                                       server_hostname=self.host
             )
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
             asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
+            txt = f"Connected to {self.host}:{self.port}."
+            _logger.info(txt)
             self.reset_delay()
 
     def _create_protocol(self):
@@ -500,7 +514,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         protocol.factory = self
         return protocol
 
-class ReconnectingAsyncioModbusUdpClient(object):
+class ReconnectingAsyncioModbusUdpClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device repeatedly over UDP.
     """
@@ -547,7 +561,8 @@ class ReconnectingAsyncioModbusUdpClient(object):
         # force reconnect if required:
         self.stop()
 
-        _logger.debug('Connecting to %s:%s.' % (host, port))
+        txt = f"Connecting to {host}:{port}."
+        _logger.debug(txt)
 
         # getaddrinfo returns a list of tuples
         # - [(family, type, proto, canonname, sockaddr),]
@@ -587,16 +602,18 @@ class ReconnectingAsyncioModbusUdpClient(object):
     async def _connect(self):
         _logger.debug('Connecting.')
         try:
-            ep = await self.loop.create_datagram_endpoint(
+            endpoint = await self.loop.create_datagram_endpoint(
                 functools.partial(self._create_protocol,
                                   host=self.host,
                                   port=self.port),
                 remote_addr=(self.host, self.port)
             )
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
-            return ep
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
+            txt = f"Connected to {self.host}:{self.port}."
+            _logger.info(txt)
+            return endpoint
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
             asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
@@ -630,14 +647,14 @@ class ReconnectingAsyncioModbusUdpClient(object):
                           'callback called while not connected.')
 
     async def _reconnect(self):
-        _logger.debug('Waiting %d ms before next '
-                      'connection attempt.' % self.delay_ms)
+        txt = f"Waiting {self.delay_ms} ms before next connection attempt."
+        _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
         return await self._connect()
 
 
-class AsyncioModbusUdpClient(object):
+class AsyncioModbusUdpClient():
     """
     Client to connect to modbus device over UDP.
     """
@@ -687,6 +704,7 @@ class AsyncioModbusUdpClient(object):
         return protocol
 
     async def connect(self):
+        """Connect."""
         _logger.debug('Connecting.')
         try:
             addrinfo = await self.loop.getaddrinfo(
@@ -695,15 +713,17 @@ class AsyncioModbusUdpClient(object):
                 type=DGRAM_TYPE)
             _host, _port = addrinfo[0][-1]
 
-            ep = await self.loop.create_datagram_endpoint(
+            endpoint = await self.loop.create_datagram_endpoint(
                 functools.partial(self._create_protocol,
                                   host=_host, port=_port),
                 remote_addr=(self.host, self.port)
             )
-            _logger.info('Connected to %s:%s.' % (self.host, self.port))
-            return ep
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s' % ex)
+            txt = f"Connected to {self.host}:{self.port}."
+            _logger.info(txt)
+            return endpoint
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
             # asyncio.asynchronous(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
@@ -737,14 +757,14 @@ class AsyncioModbusUdpClient(object):
                           'callback called while not connected.')
 
 
-class AsyncioModbusSerialClient(object):
+class AsyncioModbusSerialClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device over serial.
     """
     transport = None
     framer = None
 
-    def __init__(self, port, protocol_class=None, framer=None,  loop=None,
+    def __init__(self, port, protocol_class=None, framer=None,  loop=None, # pylint: disable=too-many-arguments
                  baudrate=9600, bytesize=8, parity='N', stopbits=1, **serial_kwargs):
         """
         Initializes Asyncio Modbus Serial Client
@@ -794,16 +814,17 @@ class AsyncioModbusSerialClient(object):
         """
         _logger.debug('Connecting.')
         try:
-            from serial_asyncio import create_serial_connection
-
             await create_serial_connection(
                 self.loop, self._create_protocol, self.port, baudrate=self.baudrate,
-                bytesize=self.bytesize, stopbits=self.stopbits, parity=self.parity, **self._extra_serial_kwargs
+                bytesize=self.bytesize, stopbits=self.stopbits,
+                parity=self.parity, **self._extra_serial_kwargs
             )
             await self._connected_event.wait()
-            _logger.info('Connected to %s', self.port)
-        except Exception as ex:
-            _logger.warning('Failed to connect: %s', ex)
+            txt = f"Connected to {self.port}"
+            _logger.info(txt)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Failed to connect: {exc}"
+            _logger.warning(txt)
 
     def protocol_made_connection(self, protocol):
         """
@@ -853,7 +874,7 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     return client
 
 
-async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
+async def init_tls_client(proto_cls, loop, host, port, sslctx=None,  # pylint: disable=too-many-arguments
                     server_hostname=None, framer=None, **kwargs):
     """
     Helper function to initialize tcp client

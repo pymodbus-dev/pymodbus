@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Asynchronous Client Examples
+""" Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus
@@ -9,6 +8,7 @@ client implementation from pymodbus.
 # --------------------------------------------------------------------------- #
 # import needed libraries
 # --------------------------------------------------------------------------- #
+import logging
 
 from twisted.internet import reactor
 
@@ -17,18 +17,11 @@ from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.client.asynchronous import schedulers
 
 # --------------------------------------------------------------------------- #
-# choose the requested modbus protocol
-# --------------------------------------------------------------------------- #
-
-from twisted.internet import protocol
-
-# --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT)
+logging.basicConfig(format=FORMAT) #NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -38,12 +31,15 @@ log.setLevel(logging.DEBUG)
 
 
 def err(*args, **kwargs):
-    logging.error("Err-{}-{}".format(args, kwargs))
+    """ Error. """
+    txt = f"Err-{args}-{kwargs}"
+    logging.error(txt)
 
 
-def dassert(deferred, callback):
+def dassert(deferred, callback): # pylint: disable=redefined-outer-name
+    """ Dassert. """
     def _assertor(value):
-        assert value
+        assert value #nosec
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(err)
 
@@ -59,20 +55,22 @@ def dassert(deferred, callback):
 UNIT = 0x01
 
 
-def processResponse(result):
+def process_response(result):
+    """ Process response. """
     log.debug(result)
 
 
-def exampleRequests(client):
+def example_requests(client):
+    """ Example requests. """
     rr = client.read_coils(1, 1, unit=0x02)
-    rr.addCallback(processResponse)
+    rr.addCallback(process_response)
     rr = client.read_holding_registers(1, 1, unit=0x02)
-    rr.addCallback(processResponse)
+    rr.addCallback(process_response)
     rr = client.read_discrete_inputs(1, 1, unit=0x02)
-    rr.addCallback(processResponse)
+    rr.addCallback(process_response)
     rr = client.read_input_registers(1, 1, unit=0x02)
-    rr.addCallback(processResponse)
-    stopAsynchronousTest(client)
+    rr.addCallback(process_response)
+    stop_asynchronous_test(client)
 
 # --------------------------------------------------------------------------- #
 # example requests
@@ -86,15 +84,17 @@ def exampleRequests(client):
 # --------------------------------------------------------------------------- #
 
 
-def stopAsynchronousTest(client):
+def stop_asynchronous_test(client):
+    """ Stop async test. """
     # ----------------------------------------------------------------------- #
     # close the client at some time later
     # ----------------------------------------------------------------------- #
-    reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop)
+    reactor.callLater(1, client.transport.loseConnection) # pylint: disable=no-member
+    reactor.callLater(2, reactor.stop) # pylint: disable=no-member
 
 
-def beginAsynchronousTest(client):
+def begin_asynchronous_test(client):
+    """ Begin async test. """
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: not r.isError())     # test for no error
@@ -130,13 +130,13 @@ def beginAsynchronousTest(client):
     rr = client.read_input_registers(1, 8, unit=UNIT)
     dassert(rq, lambda r: r.registers == [20] * 8)      # test the expected value
     dassert(rr, lambda r: r.registers == [17] * 8)      # test the expected value
-    stopAsynchronousTest(client)
+    stop_asynchronous_test(client)
 
     # ----------------------------------------------------------------------- #
     # close the client at some time later
     # ----------------------------------------------------------------------- #
     # reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop)
+    reactor.callLater(2, reactor.stop) # pylint: disable=no-member
 
 # --------------------------------------------------------------------------- #
 # extra requests
@@ -164,6 +164,6 @@ def beginAsynchronousTest(client):
 
 
 if __name__ == "__main__":
-    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
-    deferred.addCallback(beginAsynchronousTest)
+    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020) #NOSONAR pylint: disable=unpacking-non-sequence
+    deferred.addCallback(begin_asynchronous_test)
     deferred.addErrback(err)

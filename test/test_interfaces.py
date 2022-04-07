@@ -1,67 +1,74 @@
 #!/usr/bin/env python3
+""" Test interfaces. """
 import unittest
-from pymodbus.interfaces import *
+
+from pymodbus.interfaces import (
+    IPayloadBuilder,
+    IModbusSlaveContext,
+    IModbusFramer,
+    IModbusDecoder,
+    Singleton,
+)
 from pymodbus.exceptions import NotImplementedException
 
-class _SingleInstance(Singleton):
-    pass
+class _SingleInstance(Singleton): # pylint: disable=too-few-public-methods
+    """ Single instance. """
 
 class ModbusInterfaceTestsTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.interfaces module
-    '''
+    """ Unittest for the pymodbus.interfaces module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
-        pass
+        """ Initializes the test environment """
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
+        """ Cleans up the test environment """
 
-    def testSingletonInterface(self):
-        ''' Test that the singleton interface works '''
+    def test_singleton_interface(self):
+        """ Test that the singleton interface works """
         first  = _SingleInstance()
         second = _SingleInstance()
         self.assertEqual(first, second)
 
-    def testModbusDecoderInterface(self):
-        ''' Test that the base class isn't implemented '''
-        x = None
+    def test_modbus_decoder_interface(self):
+        """ Test that the base class isn't implemented """
+        x_base = None
         instance = IModbusDecoder()
-        self.assertRaises(NotImplementedException, lambda: instance.decode(x))
+        self.assertRaises(NotImplementedException, lambda: instance.decode(x_base))
         self.assertRaises(NotImplementedException,
-                          lambda: instance.lookupPduClass(x))
+                          lambda: instance.lookupPduClass(x_base))
         self.assertRaises(NotImplementedException,
-                          lambda: instance.register(x))
+                          lambda: instance.register(x_base))
 
-    def testModbusFramerInterface(self):
-        ''' Test that the base class isn't implemented '''
-        x = None
+    def test_modbus_framer_interface(self):
+        """ Test that the base class isn't implemented """
+        x_base = None
         instance = IModbusFramer()
         self.assertRaises(NotImplementedException, instance.checkFrame)
         self.assertRaises(NotImplementedException, instance.advanceFrame)
         self.assertRaises(NotImplementedException, instance.isFrameReady)
         self.assertRaises(NotImplementedException, instance.getFrame)
-        self.assertRaises(NotImplementedException, lambda: instance.addToFrame(x))
-        self.assertRaises(NotImplementedException, lambda: instance.populateResult(x))
-        self.assertRaises(NotImplementedException, lambda: instance.processIncomingPacket(x,x))
-        self.assertRaises(NotImplementedException, lambda: instance.buildPacket(x))
+        self.assertRaises(NotImplementedException, lambda:
+                instance.addToFrame(x_base))
+        self.assertRaises(NotImplementedException, lambda:
+                instance.populateResult(x_base))
+        self.assertRaises(NotImplementedException, lambda:
+                instance.processIncomingPacket(x_base,x_base))
+        self.assertRaises(NotImplementedException, lambda:
+                instance.buildPacket(x_base))
 
-    def testModbusSlaveContextInterface(self):
-        ''' Test that the base class isn't implemented '''
-        x = None
+    def test_modbus_slave_context_interface(self):
+        """ Test that the base class isn't implemented """
+        x_base = None
         instance = IModbusSlaveContext()
         self.assertRaises(NotImplementedException, instance.reset)
-        self.assertRaises(NotImplementedException, lambda: instance.validate(x,x,x))
-        self.assertRaises(NotImplementedException, lambda: instance.getValues(x,x,x))
-        self.assertRaises(NotImplementedException, lambda: instance.setValues(x,x,x))
+        self.assertRaises(NotImplementedException, lambda: instance.validate(x_base,x_base,x_base))
+        self.assertRaises(NotImplementedException, lambda: instance.getValues(x_base,x_base,x_base))
+        self.assertRaises(NotImplementedException, lambda: instance.setValues(x_base,x_base,x_base))
 
-    def testModbusPayloadBuilderInterface(self):
-        ''' Test that the base class isn't implemented '''
-        x = None
+    def test_modbus_payload_builder_interface(self):
+        """ Test that the base class isn't implemented """
         instance = IPayloadBuilder()
-        self.assertRaises(NotImplementedException, lambda: instance.build())
+        self.assertRaises(NotImplementedException, lambda: instance.build()) # pylint: disable=unnecessary-lambda
 
 #---------------------------------------------------------------------------#
 # Main

@@ -1,58 +1,61 @@
 #!/usr/bin/env python3
+""" Test other messages. """
 import unittest
-from pymodbus.other_message import *
 import mock
+
+import pymodbus.other_message as pymodbus_message
 
 
 class ModbusOtherMessageTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.other_message module
-    '''
+    """ Unittest for the pymodbus.other_message module. """
 
     def setUp(self):
         self.requests = [
-            ReadExceptionStatusRequest,
-            GetCommEventCounterRequest,
-            GetCommEventLogRequest,
-            ReportSlaveIdRequest,
+            pymodbus_message.ReadExceptionStatusRequest,
+            pymodbus_message.GetCommEventCounterRequest,
+            pymodbus_message.GetCommEventLogRequest,
+            pymodbus_message.ReportSlaveIdRequest,
         ]
 
         self.responses = [
-            lambda: ReadExceptionStatusResponse(0x12),
-            lambda: GetCommEventCounterResponse(0x12),
-            GetCommEventLogResponse,
-            lambda: ReportSlaveIdResponse(0x12),
+            lambda: pymodbus_message.ReadExceptionStatusResponse(0x12),
+            lambda: pymodbus_message.GetCommEventCounterResponse(0x12),
+                pymodbus_message.GetCommEventLogResponse,
+            lambda: pymodbus_message.ReportSlaveIdResponse(0x12),
         ]
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.requests
         del self.responses
 
-    def testOtherMessagesToString(self):
+    def test_other_messages_to_string(self):
+        """ Test other messages to string. """
         for message in self.requests:
             self.assertNotEqual(str(message()), None)
         for message in self.responses:
             self.assertNotEqual(str(message()), None)
 
-    def testReadExceptionStatus(self):
-        request = ReadExceptionStatusRequest()
+    def test_read_exception_status(self):
+        """ Test read exception status. """
+        request = pymodbus_message.ReadExceptionStatusRequest()
         request.decode(b'\x12')
         self.assertEqual(request.encode(), b'')
         self.assertEqual(request.execute().function_code, 0x07)
 
-        response = ReadExceptionStatusResponse(0x12)
+        response = pymodbus_message.ReadExceptionStatusResponse(0x12)
         self.assertEqual(response.encode(), b'\x12')
         response.decode(b'\x12')
         self.assertEqual(response.status, 0x12)
 
-    def testGetCommEventCounter(self):
-        request = GetCommEventCounterRequest()
+    def test_get_comm_event_counter(self):
+        """ Test get comm event counter. """
+        request = pymodbus_message.GetCommEventCounterRequest()
         request.decode(b'\x12')
         self.assertEqual(request.encode(), b'')
         self.assertEqual(request.execute().function_code, 0x0b)
 
-        response = GetCommEventCounterResponse(0x12)
+        response = pymodbus_message.GetCommEventCounterResponse(0x12)
         self.assertEqual(response.encode(), b'\x00\x00\x00\x12')
         response.decode(b'\x00\x00\x00\x12')
         self.assertEqual(response.status, True)
@@ -61,13 +64,14 @@ class ModbusOtherMessageTest(unittest.TestCase):
         response.status = False
         self.assertEqual(response.encode(), b'\xFF\xFF\x00\x12')
 
-    def testGetCommEventLog(self):
-        request = GetCommEventLogRequest()
+    def test_get_comm_event_log(self):
+        """ Test get comm event log. """
+        request = pymodbus_message.GetCommEventLogRequest()
         request.decode(b'\x12')
         self.assertEqual(request.encode(), b'')
         self.assertEqual(request.execute().function_code, 0x0c)
 
-        response = GetCommEventLogResponse()
+        response = pymodbus_message.GetCommEventLogResponse()
         self.assertEqual(response.encode(), b'\x06\x00\x00\x00\x00\x00\x00')
         response.decode(b'\x06\x00\x00\x00\x12\x00\x12')
         self.assertEqual(response.status, True)
@@ -78,8 +82,9 @@ class ModbusOtherMessageTest(unittest.TestCase):
         response.status = False
         self.assertEqual(response.encode(), b'\x06\xff\xff\x00\x12\x00\x12')
 
-    def testGetCommEventLogWithEvents(self):
-        response = GetCommEventLogResponse(events=[0x12,0x34,0x56])
+    def test_get_comm_event_log_with_events(self):
+        """ Test get comm event log with events. """
+        response = pymodbus_message.GetCommEventLogResponse(events=[0x12,0x34,0x56])
         self.assertEqual(response.encode(), b'\x09\x00\x00\x00\x00\x00\x00\x12\x34\x56')
         response.decode(b'\x09\x00\x00\x00\x12\x00\x12\x12\x34\x56')
         self.assertEqual(response.status, True)
@@ -87,7 +92,8 @@ class ModbusOtherMessageTest(unittest.TestCase):
         self.assertEqual(response.event_count, 0x12)
         self.assertEqual(response.events, [0x12,0x34,0x56])
 
-    def testReportSlaveIdRequest(self):
+    def test_report_slave_id_request(self):
+        """ Test report slave id request. """
         with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
             # First test regular identity strings
             identity = {
@@ -104,7 +110,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
             dif.get.return_value = identity
             expected_identity = "-".join(identity.values()).encode()
 
-            request = ReportSlaveIdRequest()
+            request = pymodbus_message.ReportSlaveIdRequest()
             response = request.execute()
             self.assertEqual(response.identifier, expected_identity)
 
@@ -122,19 +128,20 @@ class ModbusOtherMessageTest(unittest.TestCase):
             }
             dif.get.return_value = identity
 
-            request = ReportSlaveIdRequest()
+            request = pymodbus_message.ReportSlaveIdRequest()
             response = request.execute()
             self.assertEqual(response.identifier, expected_identity)
 
-    def testReportSlaveId(self):
+    def test_report_slave_id(self):
+        """ Test report slave id. """
         with mock.patch("pymodbus.other_message.DeviceInformationFactory") as dif:
-            dif.get.return_value = dict()
-            request = ReportSlaveIdRequest()
+            dif.get.return_value = {}
+            request = pymodbus_message.ReportSlaveIdRequest()
             request.decode(b'\x12')
             self.assertEqual(request.encode(), b'')
             self.assertEqual(request.execute().function_code, 0x11)
 
-            response = ReportSlaveIdResponse(request.execute().identifier, True)
+            response = pymodbus_message.ReportSlaveIdResponse(request.execute().identifier, True)
 
             self.assertEqual(response.encode(), b'\tPymodbus\xff')
             response.decode(b'\x03\x12\x00')

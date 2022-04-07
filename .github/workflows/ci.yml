@@ -179,6 +179,15 @@ jobs:
       fail-fast: false
       matrix:
         task:
+          - name: pylint
+            tox: pylint
+            # continue_on_error: true
+          - name: codespell
+            tox: codespell
+            # continue_on_error: true
+          - name: bandit
+            tox: bandit
+            # continue_on_error: true
           - name: flake8
             tox: flake8
             continue_on_error: true
@@ -258,7 +267,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-          pip install --upgrade six
       - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage

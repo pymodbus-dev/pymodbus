@@ -1,3 +1,4 @@
+"""Sync diag."""
 import socket
 import logging
 import time
@@ -29,8 +30,7 @@ LOG_MSGS = {
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
-    """
-    Variant of pymodbus.client.sync.ModbusTcpClient with additional
+    """ Variant of pymodbus.client.sync.ModbusTcpClient with additional
     logging to diagnose network issues.
 
     The following events are logged:
@@ -74,13 +74,13 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         """
         self.warn_delay_limit = kwargs.get('warn_delay_limit', True)
-        super(ModbusTcpDiagClient, self).__init__(host, port, framer, **kwargs)
+        super().__init__(host, port, framer, **kwargs)
         if self.warn_delay_limit is True:
             self.warn_delay_limit = self.timeout / 2
 
         # Set logging messages, defaulting to LOG_MSGS
-        for (k, v) in LOG_MSGS.items():
-            self.__dict__[k] = kwargs.get(k, v)
+        for (k_item, v_item) in LOG_MSGS.items():
+            self.__dict__[k_item] = kwargs.get(k_item, v_item)
 
     def connect(self):
         """ Connect to the modbus tcp server
@@ -112,7 +112,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         try:
             start = time.time()
 
-            result = super(ModbusTcpDiagClient, self)._recv(size)
+            result = super()._recv(size)
 
             delay = time.time() - start
             if self.warn_delay_limit is not None and delay >= self.warn_delay_limit:
@@ -123,17 +123,18 @@ class ModbusTcpDiagClient(ModbusTcpClient):
                 _logger.debug(self.read_msg, delay, len(result), size)
 
             return result
-        except ConnectionException as ex:
+        except ConnectionException as exc:
             # Only log actual network errors, "if not self.socket" then it's a internal code issue
-            if 'Connection unexpectedly closed' in ex.string:
-                _logger.error(self.unexpected_dc_msg, self, ex)
-            raise ex
+            if 'Connection unexpectedly closed' in exc.string:
+                _logger.error(self.unexpected_dc_msg, self, exc)
+            raise ConnectionException from exc
 
     def _log_delayed_response(self, result_len, size, delay):
+        """ Internal log delayed response. """
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
-        elif (result_len == 0 or (size and result_len < size)) and delay >= self.timeout:
-            read_type = ("of %i expected" % size) if size else "in timelimit read"
+        elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
+            read_type = f"of {size if size else 'in timelimit read'} expected"
             _logger.warning(self.timeout_msg, delay, result_len, read_type)
         else:
             _logger.warning(self.delay_msg, delay, result_len, size)
@@ -143,7 +144,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
         :returns: The string representation
         """
-        return "ModbusTcpDiagClient(%s:%s)" % (self.host, self.port)
+        return f"ModbusTcpDiagClient({self.host}:{self.port})"
 
 
 def get_client():

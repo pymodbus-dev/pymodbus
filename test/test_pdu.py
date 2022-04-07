@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
+""" Test pdu. """
 import unittest
-from pymodbus.pdu import *
-from pymodbus.exceptions import *
-from pymodbus.compat import iteritems
+from pymodbus.pdu import (
+    ModbusResponse,
+    ModbusRequest,
+    IllegalFunctionRequest,
+    ModbusExceptions,
+    ExceptionResponse,
+)
+from pymodbus.exceptions import (
+    NotImplementedException,
+)
 
 class SimplePduTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymod.pdu module
-    '''
+    """ Unittest for the pymod.pdu module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
-        self.badRequests = (
-        #       ModbusPDU(),
+        """ Initializes the test environment """
+        self.bad_requests = (
                 ModbusRequest(),
                 ModbusResponse(),
         )
@@ -20,21 +25,21 @@ class SimplePduTest(unittest.TestCase):
         self.exception = ExceptionResponse(1,1)
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
-        del self.badRequests
+        """ Cleans up the test environment """
+        del self.bad_requests
         del self.illegal
         del self.exception
 
-    def testNotImpelmented(self):
-        ''' Test a base classes for not implemented funtions '''
-        for r in self.badRequests:
-            self.assertRaises(NotImplementedException, r.encode)
+    def test_not_impelmented(self):
+        """ Test a base classes for not implemented functions """
+        for request in self.bad_requests:
+            self.assertRaises(NotImplementedException, request.encode)
 
-        for r in self.badRequests:
-            self.assertRaises(NotImplementedException, r.decode, None)
+        for request in self.bad_requests:
+            self.assertRaises(NotImplementedException, request.decode, None)
 
-    def testErrorMethods(self):
-        ''' Test all error methods '''
+    def test_error_methods(self):
+        """ Test all error methods """
         self.illegal.decode("12345")
         self.illegal.execute(None)
 
@@ -43,39 +48,39 @@ class SimplePduTest(unittest.TestCase):
         self.assertEqual(result, b'\x01')
         self.assertEqual(self.exception.exception_code, 1)
 
-    def testRequestExceptionFactory(self):
-        ''' Test all error methods '''
+    def test_request_exception_factory(self):
+        """ Test all error methods """
         request = ModbusRequest()
         request.function_code = 1
         errors = dict((ModbusExceptions.decode(c), c) for c in range(1,20))
-        for error, code in iteritems(errors):
+        for error, code in iter(errors.items()):
             result = request.doException(code)
-            self.assertEqual(str(result), "Exception Response(129, 1, %s)" % error)
+            self.assertEqual(str(result), f"Exception Response(129, 1, {error})")
 
-    def testCalculateRtuFrameSize(self):
-        ''' Test the calculation of Modbus/RTU frame sizes '''
+    def test_calculate_rtu_frame_size(self):
+        """ Test the calculation of Modbus/RTU frame sizes """
         self.assertRaises(NotImplementedException,
                           ModbusRequest.calculateRtuFrameSize, b'')
-        ModbusRequest._rtu_frame_size = 5
+        ModbusRequest._rtu_frame_size = 5 # pylint: disable=protected-access
         self.assertEqual(ModbusRequest.calculateRtuFrameSize(b''), 5)
         del ModbusRequest._rtu_frame_size
 
-        ModbusRequest._rtu_byte_count_pos = 2
+        ModbusRequest._rtu_byte_count_pos = 2 # pylint: disable=protected-access
         self.assertEqual(ModbusRequest.calculateRtuFrameSize(
             b'\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6'), 0x05 + 5)
         del ModbusRequest._rtu_byte_count_pos
-        
+
         self.assertRaises(NotImplementedException,
                           ModbusResponse.calculateRtuFrameSize, b'')
-        ModbusResponse._rtu_frame_size = 12
+        ModbusResponse._rtu_frame_size = 12 # pylint: disable=protected-access
         self.assertEqual(ModbusResponse.calculateRtuFrameSize(b''), 12)
         del ModbusResponse._rtu_frame_size
-        ModbusResponse._rtu_byte_count_pos = 2
+        ModbusResponse._rtu_byte_count_pos = 2 # pylint: disable=protected-access
         self.assertEqual(ModbusResponse.calculateRtuFrameSize(
             b'\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6'), 0x05 + 5)
         del ModbusResponse._rtu_byte_count_pos
-        
-        
+
+
 #---------------------------------------------------------------------------#
 # Main
 #---------------------------------------------------------------------------#

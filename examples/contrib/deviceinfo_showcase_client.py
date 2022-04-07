@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Synchronous Client Example to showcase Device Information
+""" Pymodbus Synchronous Client Example to showcase Device Information
 --------------------------------------------------------------------------
 
 This client demonstrates the use of Device Information to get information
 about servers connected to the client. This is part of the MODBUS specification,
 and uses the MEI 0x2B 0x0E request / response.
 """
+import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
@@ -23,10 +23,9 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s '
           '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT)
+logging.basicConfig(format=FORMAT) #NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -34,6 +33,7 @@ UNIT = 0x1
 
 
 def run_sync_client():
+    """ Run sync client. """
     # ------------------------------------------------------------------------#
     # choose the client you want
     # ------------------------------------------------------------------------#
@@ -90,7 +90,7 @@ def run_sync_client():
         log.debug(rr)
 
     print("Device Information : ")
-    for key in information.keys():
+    for key in information.keys(): # pylint: disable=consider-iterating-dictionary,consider-using-dict-items
         print(key, information[key])
 
     # ----------------------------------------------------------------------- #
@@ -99,8 +99,8 @@ def run_sync_client():
     # to access the Basic and Regular device information objects which are
     # specifically listed in the Modbus specification
     # ----------------------------------------------------------------------- #
-    di = ModbusDeviceIdentification(info=information)
-    print('Product Name : ', di.ProductName)
+    device_id = ModbusDeviceIdentification(info=information)
+    print('Product Name : ', device_id.ProductName)
 
     # ----------------------------------------------------------------------- #
     # close the client

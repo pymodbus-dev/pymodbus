@@ -1,3 +1,4 @@
+""" Document configuration. """
 # -*- coding: utf-8 -*-
 #
 # PyModbus documentation build configuration file, created by
@@ -18,8 +19,6 @@
 #
 import os
 import sys
-import recommonmark
-from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 from pymodbus import __version__
 parent_dir = os.path.abspath(os.pardir)
@@ -35,7 +34,7 @@ sys.path.append(example_gui)
 # sys.path.extend([examples, example_common, example_contrib, example_gui])
 # sys.path.insert(0, os.path.abspath('../'))
 
-github_doc_root = 'https://github.com/riptideio/pymodbus/tree/master/doc/'
+github_doc_root = 'https://github.com/riptideio/pymodbus/tree/master/doc/' # pylint: disable=invalid-name
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -63,12 +62,12 @@ source_suffix = ['.rst', '.md']
 # source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'index' # pylint: disable=invalid-name
 
 # General information about the project.
-project = u'PyModbus'
-copyright = u'2017, Sanjay'
-author = u'Sanjay'
+project = 'PyModbus' # pylint: disable=invalid-name
+copyright = '2017, Sanjay' # pylint: disable=redefined-builtin,invalid-name
+author = 'Sanjay' # pylint: disable=invalid-name
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -84,7 +83,7 @@ release = __version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = None # pylint: disable=invalid-name
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -92,10 +91,10 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'sphinx' # pylint: disable=invalid-name
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
+todo_include_todos = False # pylint: disable=invalid-name
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -103,7 +102,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme' # pylint: disable=invalid-name
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -133,7 +132,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyModbusdoc'
+htmlhelp_basename = 'PyModbusdoc' # pylint: disable=invalid-name
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -159,9 +158,9 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'PyModbus.tex', u'PyModbus Documentation',
-     u'Sanjay', 'manual'),
+latex_documents = [ #NOSONAR
+    (master_doc, 'PyModbus.tex', 'PyModbus Documentation', #NOSONAR
+     'Sanjay', 'manual'),
 ]
 
 
@@ -170,7 +169,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pymodbus', u'PyModbus Documentation',
+    (master_doc, 'pymodbus', 'PyModbus Documentation',
      [author], 1)
 ]
 
@@ -181,16 +180,16 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PyModbus', u'PyModbus Documentation',
+    (master_doc, 'PyModbus', 'PyModbus Documentation',
      author, 'PyModbus', 'One line description of project.',
      'Miscellaneous'),
 ]
 
 
 def setup(app):
+    """ Setup. """
     app.add_config_value('recommonmark_config', {
             'url_resolver': lambda url: github_doc_root + url,
             'auto_toc_tree_section': 'Contents',
             }, True)
     app.add_transform(AutoStructify)
-

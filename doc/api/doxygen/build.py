@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
-'''
-Doxygen API Builder
+""" Doxygen API Builder
 ---------------------
-'''
-import os, shutil
+"""
+import os
+import shutil
 
 def is_exe(path):
-    ''' Returns if the program is executable
+    """ Returns if the program is executable
     :param path: The path to the file
     :return: True if it is, False otherwise
-    '''
+    """
     return os.path.exists(path) and os.access(path, os.X_OK)
 
 def which(program):
-    ''' Check to see if an executable exists
+    """ Check to see if an executable exists
     :param program: The program to check for
     :return: The full path of the executable or None if not found
-    '''
-    fpath, name = os.path.split(program)
+    """
+    fpath, _ = os.path.split(program)
     if fpath:
         if is_exe(program):
             return program
@@ -30,7 +30,7 @@ def which(program):
 
 if which('doxygen') is not None:
     print("Building Doxygen API Documentation")
-    os.system("doxygen .doxygen")
+    os.system("doxygen .doxygen") #nosec
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/doxygen")
 else: print("Doxygen not available...not building")

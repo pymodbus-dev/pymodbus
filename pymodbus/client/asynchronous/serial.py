@@ -1,18 +1,23 @@
+""" SERIAL communication. """
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
+from pymodbus.transaction import (
+    ModbusRtuFramer,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusSocketFramer
+)
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient(object):
-    """
-    Actual Async Serial Client to be used.
+class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
+    """ Actual Async Serial Client to be used.
 
     To use do::
 
@@ -20,8 +25,7 @@ class AsyncModbusSerialClient(object):
     """
     @classmethod
     def _framer(cls, method):
-        """
-        Returns the requested framer
+        """ Returns the requested framer
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
@@ -29,18 +33,17 @@ class AsyncModbusSerialClient(object):
         method = method.lower()
         if method == 'ascii':
             return ModbusAsciiFramer(ClientDecoder())
-        elif method == 'rtu':
+        if method == 'rtu':
             return ModbusRtuFramer(ClientDecoder())
-        elif method == 'binary':
+        if method == 'binary':
             return ModbusBinaryFramer(ClientDecoder())
-        elif method == 'socket':
+        if method == 'socket':
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")
 
     def __new__(cls, scheduler, method, port,  **kwargs):
-        """
-        Scheduler to use:
+        """ Scheduler to use:
             - reactor (Twisted)
             - io_loop (Tornado)
             - async_io (asyncio)

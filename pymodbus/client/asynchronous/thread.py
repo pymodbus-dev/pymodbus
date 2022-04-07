@@ -1,3 +1,4 @@
+"""Thread setup."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -5,10 +6,10 @@ from threading import Thread
 
 import logging
 
-LOGGER = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
-class EventLoopThread(object):
+class EventLoopThread():
     """
     Event loop controlling the backend event loops (io_loop for tornado,
     reactor for twisted and event_loop for Asyncio)
@@ -42,7 +43,8 @@ class EventLoopThread(object):
         Starts the backend event loop
         :return:
         """
-        LOGGER.info("Starting Event Loop: 'PyModbus_{}'".format(self._name))
+        txt = f"Starting Event Loop: 'PyModbus_{self._name}"
+        _logger.info(txt)
         self._event_loop.start()
 
     def stop(self):
@@ -50,5 +52,6 @@ class EventLoopThread(object):
         Stops the backend event loop
         :return:
         """
-        LOGGER.info("Stopping Event Loop: 'PyModbus_{}'".format(self._name))
+        txt = f"Stopping Event Loop: 'PyModbus_{self._name}"
+        _logger.info(txt)
         self._stop_loop()

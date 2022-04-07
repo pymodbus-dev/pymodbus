@@ -199,7 +199,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
 
         clear_after = self._manipulator_config.get("clear_after")
         if clear_after and self._counter > clear_after:
-            txt = f"Resetting manipulator {clear_after} responses"
+            txt = f"Resetting manipulator after {clear_after} responses"
             logger.info(txt)
             self.update_manipulator_config(dict(DEFAULT_MANIPULATOR))
             return response
@@ -217,7 +217,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             delay_by = self._manipulator_config.get("delay_by")
             txt = f"Delaying response by {delay_by}s for all incoming requests"
             logger.warning(txt)
-            time.sleep(delay_by)
+            time.sleep(delay_by) #change to async TODO pylint: disable:fixme
             self._counter += 1
         elif response_type == "empty":
             logger.warning("Sending empty response")

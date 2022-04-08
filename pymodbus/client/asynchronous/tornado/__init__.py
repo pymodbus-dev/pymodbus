@@ -28,7 +28,7 @@ from pymodbus.utilities import (hexlify_packets,
 from pymodbus.constants import Defaults
 
 
-LOGGER = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class BaseTornadoClient(AsyncModbusClientMixin):
@@ -46,7 +46,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :param kwargs:
         """
         self.io_loop = kwargs.pop("ioloop", None)
-        super(BaseTornadoClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @abc.abstractmethod
     def get_socket(self):
@@ -68,7 +68,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         self.stream.read_until_close(None,
                                      streaming_callback=self.on_receive)
         self._connected = True
-        LOGGER.debug("Client connected")
+        _logger.debug("Client connected")
 
         raise gen.Return(self)
 
@@ -82,7 +82,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
 
         if not data:
             return
-        LOGGER.debug("recv: " + hexlify_packets(data))
+        txt = f"recv: {hexlify_packets(data)}"
+        _logger.debug(txt)
         unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
@@ -94,11 +95,12 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        LOGGER.debug("send: " + hexlify_packets(packet))
+        txt = f"send: {hexlify_packets(packet)}"
+        _logger.debug(txt)
         self.stream.write(packet)
         return self._build_response(request.transaction_id)
 
-    def _handle_response(self, reply, **kwargs):
+    def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
         """
         Handle response received
         :param reply:
@@ -111,7 +113,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
             if future:
                 future.set_result(reply)
             else:
-                LOGGER.debug("Unrequested message: {}".format(reply))
+                txt = f"Unrequested message: {reply}"
+                _logger.debug(txt)
 
     def _build_response(self, tid):
         """
@@ -132,7 +135,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         """
         Closes the underlying IOStream
         """
-        LOGGER.debug("Client disconnected")
+        _logger.debug("Client disconnected")
         if self.stream:
             self.stream.close_fd()
 
@@ -155,7 +158,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         :param kwargs:
         """
         self.io_loop = kwargs.pop("ioloop", None)
-        super(BaseTornadoSerialClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @abc.abstractmethod
     def get_socket(self):
@@ -164,8 +167,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         """
 
     def on_receive(self, *args):
-        # Will be handled ine execute method
-        pass
+        """ To be handled in the execute method."""
 
     def execute(self, request=None):
         """
@@ -175,14 +177,15 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         """
         request.transaction_id = self.transaction.getNextTID()
 
-        def callback(*args):
-            LOGGER.debug("in callback - {}".format(request.transaction_id))
+        def callback(*args): # pylint: disable=unused-argument
+            txt = f"in callback - {request.transaction_id}"
+            _logger.debug(txt)
             while True:
                 waiting = self.stream.connection.in_waiting
                 if waiting:
                     data = self.stream.connection.read(waiting)
-                    LOGGER.debug(
-                        "recv: " + hexlify_packets(data))
+                    txt = f"recv: {hexlify_packets(data)}"
+                    _logger.debug(txt)
                     unit = self.framer.decode_data(data).get("uid", 0)
                     self.framer.processIncomingPacket(
                         data,
@@ -193,12 +196,13 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
                     break
 
         packet = self.framer.buildPacket(request)
-        LOGGER.debug("send: " + hexlify_packets(packet))
+        txt = f"send: {hexlify_packets(packet)}"
+        _logger.debug(txt)
         self.stream.write(packet, callback=callback)
         f = self._build_response(request.transaction_id)
         return f
 
-    def _handle_response(self, reply, **kwargs):
+    def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
         """
         Handles a received response and updates a future
         :param reply: Reply received
@@ -211,7 +215,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
             if future:
                 future.set_result(reply)
             else:
-                LOGGER.debug("Unrequested message: {}".format(reply))
+                txt = f"Unrequested message: {reply}"
+                _logger.debug(txt)
 
     def _build_response(self, tid):
         """
@@ -232,7 +237,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         """
         Closes the underlying IOStream
         """
-        LOGGER.debug("Client disconnected")
+        _logger.debug("Client disconnected")
         if self.stream:
             self.stream.close_fd()
 
@@ -253,7 +258,7 @@ class SerialIOStream(BaseIOStream):
         :param kwargs:
         """
         self.connection = connection
-        super(SerialIOStream, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def fileno(self):
         """
@@ -278,7 +283,7 @@ class SerialIOStream(BaseIOStream):
         """
         try:
             chunk = self.connection.readline()
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             return None
 
         return chunk
@@ -291,11 +296,12 @@ class SerialIOStream(BaseIOStream):
         """
         try:
             return self.connection.write(data)
-        except  Exception as e:
-            LOGGER.error(e)
+        except  Exception as exc: # pylint: disable=broad-except
+            _logger.error(exc)
+        return None
 
 
-class AsyncModbusSerialClient(BaseTornadoSerialClient):
+class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-many-instance-attributes
     """
     Tornado based asynchronous serial client
     """
@@ -315,7 +321,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.silent_interval = 3.5 * self._t0
         self.silent_interval = round(self.silent_interval, 6)
         self.last_frame_end = 0.0
-        super(AsyncModbusSerialClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_socket(self):
         """
@@ -336,15 +342,15 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.io_loop = IOLoop.current()
         try:
             self.stream = SerialIOStream(conn, io_loop=self.io_loop)
-        except Exception as e:
-            LOGGER.exception(e)
+        except Exception as exc: # pylint: disable=broad-except
+            _logger.exception(exc)
 
         self._connected = True
-        LOGGER.debug("Client connected")
+        _logger.debug("Client connected")
 
         raise gen.Return(self)
 
-    def execute(self, request):
+    def execute(self, request=None): #NOSONAR pylint: disable=signature-differs
         """
         Executes a transaction
         :param request: Request to be written on to the bus
@@ -358,13 +364,13 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             """
             if self.timeout_handle:
                 self.io_loop.remove_timeout(self.timeout_handle)
-                self.timeout_handle = None
+                self.timeout_handle = None # pylint: disable=attribute-defined-outside-init
 
         def _on_timeout():
             """
             Got timeout while waiting data from serial port
             """
-            LOGGER.warning("serial receive timeout")
+            _logger.warning("serial receive timeout")
             _clear_timer()
             if self.stream:
                 self.io_loop.remove_handler(self.stream.fileno())
@@ -373,11 +379,11 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             if transaction:
                 transaction.set_exception(TimeOutException())
 
-        def _on_write_done(*args):
+        def _on_write_done():
             """
             Set up reader part after sucessful write to the serial
             """
-            LOGGER.debug("frame sent, waiting for a reply")
+            _logger.debug("frame sent, waiting for a reply")
             self.last_frame_end = round(time.time(), 6)
             self.state = ModbusTransactionState.WAITING_FOR_REPLY
             self.io_loop.add_handler(self.stream.fileno(), _on_receive, IOLoop.READ)
@@ -386,7 +392,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             _clear_timer()
             self.io_loop.remove_handler(fd)
             self.close()
-            self.transaction.getTransaction(request.transaction_id).set_exception(ModbusIOException(*args))
+            self.transaction.getTransaction(request.transaction_id).set_exception(
+                                            ModbusIOException(*args))
 
         def _on_receive(fd, events):
             """
@@ -400,11 +407,11 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 waiting = self.stream.connection.in_waiting
                 if waiting:
                     data = self.stream.connection.read(waiting)
-                    LOGGER.debug(
-                        "recv: " + hexlify_packets(data))
+                    txt = f"recv: {hexlify_packets(data)}"
+                    _logger.debug(txt)
                     self.last_frame_end = round(time.time(), 6)
-            except OSError as ex:
-                _on_fd_error(fd, ex)
+            except OSError as exc:
+                _on_fd_error(fd, exc)
                 return
 
             self.framer.addToFrame(data)
@@ -431,18 +438,20 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
         f = self._build_response(request.transaction_id)
 
         response_pdu_size = request.get_response_pdu_size()
-        expected_response_length = self.transaction._calculate_response_length(response_pdu_size)
-        LOGGER.debug("expected_response_length = %d", expected_response_length)
+        expected_response_length = self.transaction._calculate_response_length(response_pdu_size) # pylint: disable=protected-access
+        txt = f"expected_response_length = {expected_response_length}"
+        _logger.debug(txt)
 
-        exception_response_length = self.transaction._calculate_exception_length() # TODO: calculate once
+        #NOSONAR TODO: calculate once # pylint: disable=fixme
+        exception_response_length = self.transaction._calculate_exception_length() # pylint: disable=protected-access
 
         if self.timeout:
-            self.timeout_handle = self.io_loop.add_timeout(time.time() + self.timeout, _on_timeout)
-        self._sendPacket(packet, callback=_on_write_done)
+            self.timeout_handle = self.io_loop.add_timeout(time.time() + self.timeout, _on_timeout) # pylint: disable=attribute-defined-outside-init
+        self._send_packet(packet, callback=_on_write_done)
 
         return f
 
-    def _sendPacket(self, message, callback):
+    def _send_packet(self, message, callback):
         """
         Sends packets on the bus with 3.5char delay between frames
         :param message: Message to be sent over the bus
@@ -456,22 +465,24 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             waiting = self.stream.connection.in_waiting
             if waiting:
                 result = self.stream.connection.read(waiting)
-                LOGGER.info(
-                    "Cleanup recv buffer before send: " + hexlify_packets(result))
-        except OSError as e:
+                txt = f"Cleanup recv buffer before send: {hexlify_packets(result)}"
+                _logger.info(txt)
+        except OSError as exc:
             self.transaction.getTransaction(
-                message.transaction_id).set_exception(ModbusIOException(e))
+                message.transaction_id).set_exception(ModbusIOException(exc))
             return
 
         start = time.time()
         if self.last_frame_end:
             waittime = self.last_frame_end + self.silent_interval - start
             if waittime > 0:
-                LOGGER.debug("Waiting for 3.5 char before next send - %f ms", waittime)
+                txt = f"Waiting for 3.5 char before next send - {waittime} ms"
+                _logger.debug(txt)
                 sleep(waittime)
 
         self.state = ModbusTransactionState.SENDING
-        LOGGER.debug("send: " + hexlify_packets(message))
+        txt = f"send: {hexlify_packets(message)}"
+        _logger.debug(txt)
         self.stream.write(message, callback)
 
 class AsyncModbusTCPClient(BaseTornadoClient):

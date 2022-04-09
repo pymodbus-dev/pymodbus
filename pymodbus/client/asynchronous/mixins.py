@@ -13,7 +13,7 @@ from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
 
 
-_logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class BaseAsyncModbusClient(BaseModbusClient):
@@ -31,7 +31,7 @@ class BaseAsyncModbusClient(BaseModbusClient):
         self._connected = False
         self._timeout = timeout
 
-        super().__init__(
+        super(BaseAsyncModbusClient, self).__init__(
             framer or ModbusSocketFramer(ClientDecoder()), **kwargs
         )
 
@@ -40,7 +40,7 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
     """
     Async Modbus client mixing for UDP and TCP clients
     """
-    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None, # pylint: disable=too-many-arguments
+    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None,
                  source_address=None, timeout=None, **kwargs):
         """
         Initializes a Modbus TCP/UDP asynchronous client
@@ -51,7 +51,7 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
         :param timeout: Timeout in seconds
         :param kwargs: Extra arguments
         """
-        super().__init__(framer=framer, **kwargs)
+        super(AsyncModbusClientMixin, self).__init__(framer=framer, **kwargs)
         self.host = host
         self.port = port
         self.source_address = source_address or ("", 0)
@@ -69,6 +69,7 @@ class AsyncModbusSerialClientMixin(BaseAsyncModbusClient):
         :param port: Serial port to use
         :param kwargs: Extra arguments if any
         """
-        super().__init__(framer=framer)
+        super(AsyncModbusSerialClientMixin, self).__init__(framer=framer)
         self.port = port
         self.serial_settings = kwargs
+

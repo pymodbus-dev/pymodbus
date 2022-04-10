@@ -6,9 +6,9 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 """
 from __future__ import absolute_import, unicode_literals
 import json
-import pygments
-import inspect
 from collections import OrderedDict
+import inspect
+import pygments
 from pygments.lexers.data import JsonLexer
 from prompt_toolkit.formatted_text import PygmentsTokens, HTML
 from prompt_toolkit import print_formatted_text
@@ -55,7 +55,7 @@ CLIENT_METHODS = [
 CLIENT_ATTRIBUTES = []
 
 
-class Command(object):
+class Command():
     """
     Class representing Commands to be consumed by Completer.
     """
@@ -92,8 +92,8 @@ class Command(object):
         params = list(filter(lambda d: d.strip().startswith(":param"),
                              self.doc))
         for param in params:
-            param, help = param.split(":param")[1].strip().split(":")
-            param_dict[param] = help
+            param, param_help = param.split(":param")[1].strip().split(":")
+            param_dict[param] = param_help
         return param_dict
 
     def create_completion(self):
@@ -107,8 +107,9 @@ class Command(object):
         def _create(entry, default):
             if entry not in ['self', 'kwargs']:
                 if isinstance(default, (int, string_types)):
-                    entry += "={}".format(default)
+                    entry += f"={default}"
                 return entry
+            return None
 
         for arg in self._params.values():
             entry = _create(arg.name, arg.default)
@@ -139,8 +140,8 @@ class Command(object):
 
     def __str__(self):
         if self.doc:
-            return "Command {:>50}{:<20}".format(self.name, self.doc)
-        return "Command {}".format(self.name)
+            return "Command {:>50}{:<20}".format(self.name, self.doc) # pylint: disable=consider-using-f-string
+        return f"Command {self.name}"
 
 
 def _get_requests(members):
@@ -149,8 +150,8 @@ def _get_requests(members):
                                       and callable(x[1])),
                            members))
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]),
+        f"client.{c[0]}":
+            Command(f"client.{c[0]}",
                     argspec(c[1]), inspect.getdoc(c[1]), unit=True)
         for c in commands if not c[0].startswith("_")
     }
@@ -162,8 +163,8 @@ def _get_client_methods(members):
                                       and x[0] in CLIENT_METHODS),
                            members))
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]),
+        "client.{c[0]}":
+            Command("client.{c[0]}",
                     argspec(c[1]), inspect.getdoc(c[1]), unit=False)
         for c in commands if not c[0].startswith("_")
     }
@@ -171,15 +172,15 @@ def _get_client_methods(members):
 
 
 def _get_client_properties(members):
-    global CLIENT_ATTRIBUTES
+    global CLIENT_ATTRIBUTES # pylint: disable=global-variable-not-assigned
     commands = list(filter(lambda x: not callable(x[1]), members))
     commands = {
-        "client.{}".format(c[0]):
-            Command("client.{}".format(c[0]), None, "Read Only!", unit=False)
+        f"client.{c[0]}":
+            Command(f"client.{c[0]}", None, "Read Only!", unit=False)
         for c in commands if (not c[0].startswith("_")
                               and isinstance(c[1], (string_types, int, float)))
     }
-    CLIENT_ATTRIBUTES.extend(list(commands.keys()))
+    CLIENT_ATTRIBUTES.extend(list(commands.keys())) # pylint: disable=global-variable-not-assigned
     return commands
 
 
@@ -191,7 +192,7 @@ def get_commands(client):
     :param client: Modbus Client object.
     :return:
     """
-    commands = dict()
+    commands = {}
     members = inspect.getmembers(client)
     requests = _get_requests(members)
     client_methods = _get_client_methods(members)
@@ -199,8 +200,8 @@ def get_commands(client):
 
     result_commands = inspect.getmembers(Result, predicate=predicate)
     result_commands = {
-        "result.{}".format(c[0]):
-            Command("result.{}".format(c[0]), argspec(c[1]),
+        f"result.{c[0]}":
+            Command(f"result.{c[0]}", argspec(c[1]),
                     inspect.getdoc(c[1]))
         for c in result_commands if (not c[0].startswith("_")
                                      and c[0] != "print_result")
@@ -212,7 +213,7 @@ def get_commands(client):
     return commands
 
 
-class Result(object):
+class Result():
     """
     Represent result command.
     """
@@ -259,8 +260,7 @@ class Result(object):
             formatter = FORMATTERS.get(formatter)
             if not formatter:
                 print_formatted_text(
-                    HTML("<red>Invalid Formatter - {}"
-                         "!!</red>".format(formatter)))
+                    HTML(f"<red>Invalid Formatter - {formatter}!!</red>"))
                 return
             decoded = getattr(decoder, formatter)()
             self.print_result(decoded)
@@ -273,9 +273,9 @@ class Result(object):
         """
         self.print_result()
 
-    def _process_dict(self, d):
+    def _process_dict(self, use_dict):
         new_dict = OrderedDict()
-        for k, v in d.items():
+        for k, v in use_dict.items():
             if isinstance(v, bytes):
                 v = v.decode('utf-8')
             elif isinstance(v, dict):

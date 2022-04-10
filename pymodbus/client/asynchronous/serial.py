@@ -1,16 +1,22 @@
+"""SERIAL communication."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
+from pymodbus.transaction import (
+    ModbusRtuFramer,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusSocketFramer
+)
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient(object):
+class AsyncModbusSerialClient(): # pylint: disable=too-few-public-methods
     """
     Actual Async Serial Client to be used.
 
@@ -29,11 +35,11 @@ class AsyncModbusSerialClient(object):
         method = method.lower()
         if method == 'ascii':
             return ModbusAsciiFramer(ClientDecoder())
-        elif method == 'rtu':
+        if method == 'rtu':
             return ModbusRtuFramer(ClientDecoder())
-        elif method == 'binary':
+        if method == 'binary':
             return ModbusBinaryFramer(ClientDecoder())
-        elif method == 'socket':
+        if method == 'socket':
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")

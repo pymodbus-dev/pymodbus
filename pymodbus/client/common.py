@@ -6,18 +6,28 @@ This is a common client mixin that can be used by
 both the synchronous and asynchronous clients to
 simplify the interface.
 '''
-from pymodbus.bit_read_message import *
-from pymodbus.bit_write_message import *
-from pymodbus.register_read_message import *
-from pymodbus.register_write_message import *
-from pymodbus.diag_message import *
-from pymodbus.file_message import *
-from pymodbus.other_message import *
-
+from pymodbus.bit_read_message import (
+    ReadCoilsRequest,
+    ReadDiscreteInputsRequest,
+)
+from pymodbus.bit_write_message import (
+    WriteSingleCoilRequest,
+    WriteMultipleCoilsRequest,
+)
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersRequest,
+    ReadInputRegistersRequest,
+    ReadWriteMultipleRegistersRequest,
+)
+from pymodbus.register_write_message import (
+    WriteSingleRegisterRequest,
+    WriteMultipleRegistersRequest,
+    MaskWriteRegisterRequest,
+)
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusClientMixin(object):
+class ModbusClientMixin():
     '''
     This is a modbus client mixin that provides additional factory
     methods for all the current modbus methods. This can be used

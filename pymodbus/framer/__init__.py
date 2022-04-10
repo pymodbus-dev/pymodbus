@@ -1,5 +1,6 @@
-from pymodbus.interfaces import IModbusFramer
+"""Framer start."""
 import struct
+from pymodbus.interfaces import IModbusFramer
 
 # Unit ID, Function Code
 BYTE_ORDER = '>'
@@ -25,25 +26,24 @@ class ModbusFramer(IModbusFramer):
 
         if single:
             return True
-        else:
-            if 0 in units or 0xFF in units:
-                # Handle Modbus TCP unit identifier (0x00 0r 0xFF)
-                # in asynchronous requests
-                return True
-            return self._header['uid'] in units
+        if 0 in units or 0xFF in units:
+            # Handle Modbus TCP unit identifier (0x00 0r 0xFF)
+            # in asynchronous requests
+            return True
+        return self._header['uid'] in units # pylint: disable=no-member
 
-    def sendPacket(self, message):
+    def sendPacket(self, message): # pylint: disable=invalid-name
         """
         Sends packets on the bus with 3.5char delay between frames
         :param message: Message to be sent over the bus
         :return:
         """
-        return self.client.send(message)
+        return self.client.send(message) # pylint: disable=no-member
 
-    def recvPacket(self, size):
+    def recvPacket(self, size): # pylint: disable=invalid-name
         """
         Receives packet from the bus with specified len
         :param size: Number of bytes to read
         :return:
         """
-        return self.client.recv(size)
+        return self.client.recv(size) # pylint: disable=no-member

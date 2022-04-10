@@ -1,3 +1,5 @@
+"""Ascii_framer."""
+import logging
 import struct
 from binascii import b2a_hex, a2b_hex
 
@@ -11,7 +13,6 @@ ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -50,12 +51,13 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
-    def decode_data(self, data):
+    def decode_data(self, data): # pylint: disable=no-self-use
+        """Decode data."""
         if len(data) > 1:
             uid = int(data[1:3], 16)
             fcode = int(data[3:5], 16)
             return dict(unit=uid, fcode=fcode)
-        return dict()
+        return {}
 
     def checkFrame(self):
         """ Check and decode the next frame
@@ -117,7 +119,7 @@ class ModbusAsciiFramer(ModbusFramer):
             return a2b_hex(buffer)
         return b''
 
-    def resetFrame(self):
+    def resetFrame(self): # pylint: disable=invalid-name
         """ Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
@@ -141,7 +143,7 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
         """
         The new packet processing pattern
 
@@ -176,8 +178,8 @@ class ModbusAsciiFramer(ModbusFramer):
                     self.advanceFrame()
                     callback(result)  # defer this
                 else:
-                    _logger.error("Not a valid unit id - {}, "
-                                  "ignoring!!".format(self._header['uid']))
+                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
+                    _logger.error(txt)
                     self.resetFrame()
             else:
                 break
@@ -197,12 +199,10 @@ class ModbusAsciiFramer(ModbusFramer):
         packet = bytearray()
         params = (message.unit_id, message.function_code)
         packet.extend(self._start)
-        packet.extend(('%02x%02x' % params).encode())
+        packet.extend(('%02x%02x' % params).encode()) # pylint: disable=consider-using-f-string
         packet.extend(b2a_hex(encoded))
-        packet.extend(('%02x' % checksum).encode())
+        packet.extend(('%02x' % checksum).encode())# pylint: disable=consider-using-f-string
         packet.extend(self._end)
         return bytes(packet).upper()
 
-
 # __END__
-

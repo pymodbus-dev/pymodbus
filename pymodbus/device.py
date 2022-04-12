@@ -6,12 +6,13 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+from collections import OrderedDict
+
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 from pymodbus.compat import iteritems, itervalues, izip, int2byte
 
-from collections import OrderedDict
 
 #---------------------------------------------------------------------------#
 # Network Access Control
@@ -32,7 +33,7 @@ class ModbusAccessControl(Singleton):
     ]
 
     def __iter__(self):
-        ''' Iterater over the network access table
+        ''' Iterater over the network access tablek
 
         :returns: An iterator of the network access table
         '''
@@ -78,7 +79,7 @@ class ModbusAccessControl(Singleton):
 #---------------------------------------------------------------------------#
 # Modbus Plus Statistics
 #---------------------------------------------------------------------------#
-class ModbusPlusStatistics(object):
+class ModbusPlusStatistics():
     '''
     This is used to maintain the current modbus plus statistics count. As of
     right now this is simply a stub to complete the modbus implementation.
@@ -172,15 +173,15 @@ class ModbusPlusStatistics(object):
         :returns: 54 16-bit words representing the status
         '''
         total, values = [], sum(self.__data.values(), [])
-        for c in range(0, len(values), 2):
-            total.append((values[c] << 8) | values[c+1])
+        for i in range(0, len(values), 2):
+            total.append((values[i] << 8) | values[i+1])
         return total
 
 
 #---------------------------------------------------------------------------#
 # Device Information Control
 #---------------------------------------------------------------------------#
-class ModbusDeviceIdentification(object):
+class ModbusDeviceIdentification():
     '''
     This is used to supply the device identification
     for the readDeviceIdentification function
@@ -271,30 +272,30 @@ class ModbusDeviceIdentification(object):
     #-------------------------------------------------------------------------#
     # Properties
     #-------------------------------------------------------------------------#
-    VendorName          = dict_property(lambda s: s.__data, 0)
-    ProductCode         = dict_property(lambda s: s.__data, 1)
-    MajorMinorRevision  = dict_property(lambda s: s.__data, 2)
-    VendorUrl           = dict_property(lambda s: s.__data, 3)
-    ProductName         = dict_property(lambda s: s.__data, 4)
-    ModelName           = dict_property(lambda s: s.__data, 5)
-    UserApplicationName = dict_property(lambda s: s.__data, 6)
+    VendorName          = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access
+    ProductCode         = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access
+    MajorMinorRevision  = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access
+    VendorUrl           = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access
+    ProductName         = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access
+    ModelName           = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access
+    UserApplicationName = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access
 
 
-class DeviceInformationFactory(Singleton):
+class DeviceInformationFactory(Singleton): # pylint: disable=too-few-public-methods
     ''' This is a helper factory that really just hides
     some of the complexity of processing the device information
     requests (function code 0x2b 0x0e).
     '''
 
     __lookup = {
-        DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))),
-        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))
-            if c.__get(r, i)[i] else list(range(0, 0x07))),
-        DeviceInformation.Extended: lambda c, r, i: c.__gets(r,
+        DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))), # pylint: disable=protected-access
+        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07)) # pylint: disable=protected-access
+            if c.__get(r, i)[i] else list(range(0, 0x07))), # pylint: disable=protected-access
+        DeviceInformation.Extended: lambda c, r, i: c.__gets(r, # pylint: disable=protected-access
             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]
-            if c.__get(r, i)[i] else
+            if c.__get(r, i)[i] else # pylint: disable=protected-access
             [x for x in range(0, 0x100) if x not in range(0x07, 0x80)]),
-        DeviceInformation.Specific: lambda c, r, i: c.__get(r, i),
+        DeviceInformation.Specific: lambda c, r, i: c.__get(r, i), # pylint: disable=protected-access
     }
 
     @classmethod
@@ -310,7 +311,7 @@ class DeviceInformationFactory(Singleton):
         return cls.__lookup[read_code](cls, identity, object_id)
 
     @classmethod
-    def __get(cls, identity, object_id):
+    def __get(cls, identity, object_id): #NOSONAR pylint: disable=unused-private-member
         ''' Read a single object_id from the device information
 
         :param identity: The identity block to pull data from
@@ -320,7 +321,7 @@ class DeviceInformationFactory(Singleton):
         return { object_id:identity[object_id] }
 
     @classmethod
-    def __gets(cls, identity, object_ids):
+    def __gets(cls, identity, object_ids): #NOSONAR pylint: disable=unused-private-member
         ''' Read multiple object_ids from the device information
 
         :param identity: The identity block to pull data from
@@ -333,7 +334,7 @@ class DeviceInformationFactory(Singleton):
 #---------------------------------------------------------------------------#
 # Counters Handler
 #---------------------------------------------------------------------------#
-class ModbusCountersHandler(object):
+class ModbusCountersHandler():
     '''
     This is a helper class to simplify the properties for the counters::
 
@@ -402,7 +403,7 @@ class ModbusCountersHandler(object):
 
     .. note:: I threw the event counter in here for convinience
     '''
-    __data = dict([(i, 0x0000) for i in range(9)])
+    __data = dict([(i, 0x0000) for i in range(9)]) # pylint: disable=consider-using-dict-comprehension
     __names   = [
         'BusMessage',
         'BusCommunicationError',
@@ -435,7 +436,7 @@ class ModbusCountersHandler(object):
     def reset(self):
         ''' This clears all of the system counters
         '''
-        self.__data = dict([(i, 0x0000) for i in range(9)])
+        self.__data = dict([(i, 0x0000) for i in range(9)]) # pylint: disable=consider-using-dict-comprehension
 
     def summary(self):
         ''' Returns a summary of the counters current status
@@ -444,22 +445,23 @@ class ModbusCountersHandler(object):
         '''
         count, result = 0x01, 0x00
         for i in itervalues(self.__data):
-            if i != 0x00: result |= count
+            if i != 0x00:
+                result |= count
             count <<= 1
         return result
 
     #-------------------------------------------------------------------------#
     # Properties
-    #-------------------------------------------------------------------------#
-    BusMessage            = dict_property(lambda s: s.__data, 0)
-    BusCommunicationError = dict_property(lambda s: s.__data, 1)
-    BusExceptionError     = dict_property(lambda s: s.__data, 2)
-    SlaveMessage          = dict_property(lambda s: s.__data, 3)
-    SlaveNoResponse       = dict_property(lambda s: s.__data, 4)
-    SlaveNAK              = dict_property(lambda s: s.__data, 5)
-    SlaveBusy             = dict_property(lambda s: s.__data, 6)
-    BusCharacterOverrun   = dict_property(lambda s: s.__data, 7)
-    Event                 = dict_property(lambda s: s.__data, 8)
+    #---------k----------------------------------------------------------------#
+    BusMessage            = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access
+    BusCommunicationError = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access
+    BusExceptionError     = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access
+    SlaveMessage          = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access
+    SlaveNoResponse       = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access
+    SlaveNAK              = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access
+    SlaveBusy             = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access
+    BusCharacterOverrun   = dict_property(lambda s: s.__data, 7) #NOSONAR pylint: disable=protected-access
+    Event                 = dict_property(lambda s: s.__data, 8) #NOSONAR pylint: disable=protected-access
 
 
 #---------------------------------------------------------------------------#
@@ -503,7 +505,7 @@ class ModbusControlBlock(Singleton):
     #-------------------------------------------------------------------------#
     # Events
     #-------------------------------------------------------------------------#
-    def addEvent(self, event):
+    def addEvent(self, event): # pylint: disable=invalid-name
         ''' Adds a new event to the event log
 
         :param event: A new event to add to the log
@@ -512,7 +514,7 @@ class ModbusControlBlock(Singleton):
         self.__events = self.__events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
-    def getEvents(self):
+    def getEvents(self): # pylint: disable=invalid-name
         ''' Returns an encoded collection of the event log.
 
         :returns: The encoded events packet
@@ -520,7 +522,7 @@ class ModbusControlBlock(Singleton):
         events = [event.encode() for event in self.__events]
         return b''.join(events)
 
-    def clearEvents(self):
+    def clearEvents(self): # pylint: disable=invalid-name
         ''' Clears the current list of events
         '''
         self.__events = []
@@ -544,49 +546,49 @@ class ModbusControlBlock(Singleton):
     #-------------------------------------------------------------------------#
     # Listen Properties
     #-------------------------------------------------------------------------#
-    def _setListenOnly(self, value):
+    def _setListenOnly(self, value): # pylint: disable=invalid-name
         ''' This toggles the listen only status
 
         :param value: The value to set the listen status to
         '''
-        self.__listen_only = bool(value)
+        self.__listen_only = bool(value) # pylint: disable=unused-private-member
 
     ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 
     #-------------------------------------------------------------------------#
     # Mode Properties
     #-------------------------------------------------------------------------#
-    def _setMode(self, mode):
+    def _setMode(self, mode): # pylint: disable=invalid-name
         ''' This toggles the current serial mode
 
         :param mode: The data transfer method in (RTU, ASCII)
         '''
         if mode in ['ASCII', 'RTU']:
-            self.__mode = mode
+            self.__mode = mode # pylint: disable=unused-private-member
 
     Mode = property(lambda s: s.__mode, _setMode)
 
     #-------------------------------------------------------------------------#
     # Delimiter Properties
     #-------------------------------------------------------------------------#
-    def _setDelimiter(self, char):
+    def _setDelimiter(self, char): # pylint: disable=invalid-name
         ''' This changes the serial delimiter character
 
         :param char: The new serial delimiter character
         '''
         if isinstance(char, str):
-            self.__delimiter = char.encode()
+            self.__delimiter = char.encode() # pylint: disable=unused-private-member
         if isinstance(char, bytes):
-            self.__delimiter = char
+            self.__delimiter = char # pylint: disable=unused-private-member
         elif isinstance(char, int):
-            self.__delimiter = int2byte(char)
+            self.__delimiter = int2byte(char) # pylint: disable=unused-private-member
 
     Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
     #-------------------------------------------------------------------------#
     # Diagnostic Properties
     #-------------------------------------------------------------------------#
-    def setDiagnostic(self, mapping):
+    def setDiagnostic(self, mapping): # pylint: disable=invalid-name
         ''' This sets the value in the diagnostic register
 
         :param mapping: Dictionary of key:value pairs to set
@@ -595,7 +597,7 @@ class ModbusControlBlock(Singleton):
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
                 self.__diagnostic[entry[0]] = (entry[1] != 0)
 
-    def getDiagnostic(self, bit):
+    def getDiagnostic(self, bit): # pylint: disable=invalid-name
         ''' This gets the value in the diagnostic register
 
         :param bit: The bit to get
@@ -604,10 +606,11 @@ class ModbusControlBlock(Singleton):
         try:
             if bit and 0 <= bit < len(self.__diagnostic):
                 return self.__diagnostic[bit]
-        except Exception:
-            return None
+        except Exception: # pylint: disable=broad-except
+            pass
+        return None
 
-    def getDiagnosticRegister(self):
+    def getDiagnosticRegister(self): # pylint: disable=invalid-name
         ''' This gets the entire diagnostic register
 
         :returns: The diagnostic register collection

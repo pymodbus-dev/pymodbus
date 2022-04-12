@@ -11,16 +11,17 @@ from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ModbusEvent(object):
+class ModbusEvent():
+    """Define modbus events."""
 
-    def encode(self):
+    def encode(self): # pylint: disable=no-self-use
         ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
         '''
         raise NotImplementedException()
 
-    def decode(self, event):
+    def decode(self, event): # pylint: disable=no-self-use
         ''' Decodes the event message to its status bits
 
         :param event: The event to decode
@@ -125,7 +126,7 @@ class RemoteSendEvent(ModbusEvent):
 
         :param event: The event to decode
         '''
-        # todo fix the start byte count
+        #NOSONAR todo fix the start byte count # pylint: disable=fixme
         bits = unpack_bitstring(event)
         self.read          = bits[0]
         self.slave_abort   = bits[1]

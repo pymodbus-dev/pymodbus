@@ -42,7 +42,7 @@ class ReadRegistersRequestBase(ModbusRequest):
     def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
-        :return: 
+        :return:
         """
         return 1 + 1 + 2 * self.count
 
@@ -51,7 +51,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
         :returns: A string representation of the instance
         '''
-        return "ReadRegisterRequest (%d,%d)" % (self.address, self.count)
+        return f"ReadRegisterRequest ({self.address},{self.count})"
 
 
 class ReadRegistersResponseBase(ModbusResponse):
@@ -89,7 +89,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack('>H', data[i:i + 2])[0])
 
-    def getRegister(self, index):
+    def getRegister(self, index): # pylint: disable=(invalid-name
         ''' Get the requested register
 
         :param index: The indexed register to retrieve
@@ -102,7 +102,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "%s (%d)" % (self.__class__.__name__, len(self.registers))
+        return f"{self.__class__.__name__} ({len(self.registers)})"
 
 
 class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
@@ -129,7 +129,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        if not (1 <= self.count <= 0x7d):
+        if not 1 <= self.count <= 0x7d:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -179,7 +179,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        if not (1 <= self.count <= 0x7d):
+        if not 1 <= self.count <= 0x7d:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -271,11 +271,11 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        if not (1 <= self.read_count <= 0x07d):
+        if not 1 <= self.read_count <= 0x07d:
             return self.doException(merror.IllegalValue)
-        if not (1 <= self.write_count <= 0x079):
+        if not 1 <= self.write_count <= 0x079:
             return self.doException(merror.IllegalValue)
-        if (self.write_byte_count != self.write_count * 2):
+        if self.write_byte_count != self.write_count * 2:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.write_address,
                                 self.write_count):
@@ -292,7 +292,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Byte Count(1 byte) + 2 * Quantity of Coils (n Bytes)
-        :return: 
+        :return:
         """
         return 1 + 1 + 2 * self.read_count
 
@@ -303,7 +303,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         '''
         params = (self.read_address, self.read_count, self.write_address,
                   self.write_count)
-        return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params
+        return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params # pylint: disable=consider-using-f-string
 
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):
@@ -347,7 +347,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return "ReadWriteNRegisterResponse (%d)" % len(self.registers)
+        return f"ReadWriteNRegisterResponse ({len(self.registers)})"
 
 #---------------------------------------------------------------------------#
 # Exported symbols

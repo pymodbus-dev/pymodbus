@@ -1,6 +1,8 @@
 """
 Contains base classes for modbus request/response/error packets
 """
+import logging
+
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
@@ -10,14 +12,13 @@ from pymodbus.compat import iteritems, int2byte, byte2int
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
 # Base PDU's
 # --------------------------------------------------------------------------- #
-class ModbusPDU(object):
+class ModbusPDU():
     """
     Base class for all Modbus messages
 
@@ -60,14 +61,14 @@ class ModbusPDU(object):
         self.skip_encode = kwargs.get('skip_encode', False)
         self.check = 0x0000
 
-    def encode(self):
+    def encode(self): # pylint: disable=no-self-use
         """ Encodes the message
 
         :raises: A not implemented exception
         """
         raise NotImplementedException()
 
-    def decode(self, data):
+    def decode(self, data): # pylint: disable=no-self-use
         """ Decodes data part of the message.
 
         :param data: is a string object
@@ -76,7 +77,7 @@ class ModbusPDU(object):
         raise NotImplementedException()
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):
+    def calculateRtuFrameSize(cls, buffer): #NOSONAR pylint: disable=invalid-name
         """ Calculates the size of a PDU.
 
         :param buffer: A buffer containing the data that have been received.
@@ -84,10 +85,10 @@ class ModbusPDU(object):
         """
         if hasattr(cls, '_rtu_frame_size'):
             return cls._rtu_frame_size
-        elif hasattr(cls, '_rtu_byte_count_pos'):
+        if hasattr(cls, '_rtu_byte_count_pos'):
             return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
-        else: raise NotImplementedException(
-            "Cannot determine RTU frame size for %s" % cls.__name__)
+        raise NotImplementedException(
+            f"Cannot determine RTU frame size for {cls.__name__}")
 
 
 class ModbusRequest(ModbusPDU):
@@ -97,13 +98,13 @@ class ModbusRequest(ModbusPDU):
         """ Proxy to the lower level initializer """
         ModbusPDU.__init__(self, **kwargs)
 
-    def doException(self, exception):
+    def doException(self, exception): # pylint: disable=invalid-name
         """ Builds an error response based on the function
 
         :param exception: The exception to return
         :raises: An exception response
         """
-        exc = ExceptionResponse(self.function_code, exception)
+        exc = ExceptionResponse(self.function_code, exception) # pylint: disable=no-member
         _logger.error(exc)
         return exc
 
@@ -128,15 +129,15 @@ class ModbusResponse(ModbusPDU):
         """ Proxy to the lower level initializer """
         ModbusPDU.__init__(self, **kwargs)
 
-    def isError(self):
+    def isError(self): # pylint: disable=invalid-name
         """Checks if the error is a success or failure"""
-        return self.function_code > 0x80
+        return self.function_code > 0x80 # pylint: disable=no-member
 
 
 # --------------------------------------------------------------------------- #
 # Exception PDU's
 # --------------------------------------------------------------------------- #
-class ModbusExceptions(Singleton):
+class ModbusExceptions(Singleton): # pylint: disable=too-few-public-methods
     """
     An enumeration of the valid modbus exceptions
     """
@@ -199,7 +200,7 @@ class ExceptionResponse(ModbusResponse):
         """
         message = ModbusExceptions.decode(self.exception_code)
         parameters = (self.function_code, self.original_code, message)
-        return "Exception Response(%d, %d, %s)" % parameters
+        return "Exception Response(%d, %d, %s)" % parameters # pylint: disable=consider-using-f-string
 
 
 class IllegalFunctionRequest(ModbusRequest):
@@ -225,9 +226,8 @@ class IllegalFunctionRequest(ModbusRequest):
 
         :param data: Not used
         """
-        pass
 
-    def execute(self, context):
+    def execute(self, context): # pylint: disable=unused-argument
         """ Builds an illegal function request error response
 
         :param context: The current context for the message
@@ -242,6 +242,4 @@ class IllegalFunctionRequest(ModbusRequest):
 
 __all__ = [
     'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
-    'ExceptionResponse', 'IllegalFunctionRequest',
-]
-
+    'ExceptionResponse', 'IllegalFunctionRequest',]

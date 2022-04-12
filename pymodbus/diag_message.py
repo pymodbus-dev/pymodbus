@@ -21,7 +21,7 @@ _MCB = ModbusControlBlock()
 # Diagnostic Function Codes Base Classes
 # diagnostic 08, 00-18,20
 #---------------------------------------------------------------------------#
-# TODO Make sure all the data is decoded from the response
+# TODO Make sure all the data is decoded from the response # pylint: disable=fixme
 #---------------------------------------------------------------------------#
 class DiagnosticStatusRequest(ModbusRequest):
     '''
@@ -62,12 +62,12 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :param data: The data to decode into the function code
         '''
-        self.sub_function_code, self.message = struct.unpack('>HH', data)
-    
+        self.sub_function_code, self.message = struct.unpack('>HH', data) # pylint: disable=attribute-defined-outside-init
+
     def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
-        :return: 
+        :return:
         """
         if not isinstance(self.message,list):
             self.message = [self.message]
@@ -122,7 +122,7 @@ class DiagnosticStatusResponse(ModbusResponse):
             word_len += 1
             data = data + b'0'
         data = struct.unpack('>' + 'H'*word_len, data)
-        self.sub_function_code, self.message = data[0], data[1:]
+        self.sub_function_code, self.message = data[0], data[1:] # pylint: disable=attribute-defined-outside-init
 
 
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
@@ -148,7 +148,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, **kwargs)
         self.message = data
 
-    def execute(self, *args):
+    def execute(self, *args): # pylint: disable=no-self-use
         ''' Base function to raise if not implemented '''
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 
@@ -192,7 +192,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         else:
             self.message = [message]
 
-    def execute(self, *args):
+    def execute(self, *args): # pylint: disable=unused-argument
         ''' Executes the loopback request (builds the response)
 
         :returns: The populated loopback response message
@@ -243,7 +243,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
             self.message   = [ModbusStatus.On]
         else: self.message = [ModbusStatus.Off]
 
-    def execute(self, *args):
+    def execute(self, *args): # pylint: disable=unused-argument
         ''' Clear event log and restart
 
         :returns: The initialized response message
@@ -713,7 +713,7 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
     sub_function_code = 0x0015
 
     def __init__(self, **kwargs):
-        super(GetClearModbusPlusRequest, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_response_pdu_size(self):
         """

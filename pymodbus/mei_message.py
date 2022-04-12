@@ -28,6 +28,7 @@ class _OutOfSpaceException(Exception):
     # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
     def __init__(self, oid):
         self.oid = oid
+        super().__init__()
 
 
 #---------------------------------------------------------------------------#
@@ -74,15 +75,15 @@ class ReadDeviceInformationRequest(ModbusRequest):
         params = struct.unpack('>BBB', data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    def execute(self, context):
+    def execute(self, context): #NOSONAR pylint: disable=unused-argument
         ''' Run a read exeception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        if not (0x00 <= self.object_id <= 0xff):
+        if not 0x00 <= self.object_id <= 0xff:
             return self.doException(merror.IllegalValue)
-        if not (0x00 <= self.read_code <= 0x04):
+        if not 0x00 <= self.read_code <= 0x04:
             return self.doException(merror.IllegalValue)
 
         information = DeviceInformationFactory.get(_MCB,
@@ -95,12 +96,11 @@ class ReadDeviceInformationRequest(ModbusRequest):
         :returns: The string representation of the request
         '''
         params = (self.read_code, self.object_id)
-        return "ReadDeviceInformationRequest(%d,%d)" % params
+        return "ReadDeviceInformationRequest(%d,%d)" % params # pylint: disable=consider-using-f-string
 
 
-class ReadDeviceInformationResponse(ModbusResponse):
-    '''
-    '''
+class ReadDeviceInformationResponse(ModbusResponse): # pylint: disable=too-many-instance-attributes
+    """Read device information response."""
     function_code = 0x2b
     sub_function_code = 0x0e
 
@@ -163,8 +163,8 @@ class ReadDeviceInformationResponse(ModbusResponse):
                         objects += self._encode_object(object_id, item)
                 else:
                     objects += self._encode_object(object_id, data)
-        except _OutOfSpaceException as e:
-            self.next_object_id = e.oid
+        except _OutOfSpaceException as exc:
+            self.next_object_id = exc.oid
             self.more_follows = MoreData.KeepReading
 
         packet += struct.pack('>BBB', self.more_follows, self.next_object_id,
@@ -200,7 +200,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         :returns: The string representation of the response
         '''
-        return "ReadDeviceInformationResponse(%d)" % self.read_code
+        return f"ReadDeviceInformationResponse({self.read_code})"
 
 #---------------------------------------------------------------------------#
 # Exported symbols

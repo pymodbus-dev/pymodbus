@@ -14,7 +14,7 @@ from pymodbus.compat import byte2int
 #---------------------------------------------------------------------------#
 # File Record Types
 #---------------------------------------------------------------------------#
-class FileRecord(object):
+class FileRecord():
     ''' Represents a file record and its relevant data.
     '''
 
@@ -54,7 +54,7 @@ class FileRecord(object):
         ''' Gives a representation of the file record
         '''
         params = (self.file_number, self.record_number, self.record_length)
-        return 'FileRecord(file=%d, record=%d, length=%d)' % params
+        return 'FileRecord(file=%d, record=%d, length=%d)' % params # pylint: disable=consider-using-f-string
 
 
 #---------------------------------------------------------------------------#
@@ -115,15 +115,16 @@ class ReadFileRecordRequest(ModbusRequest):
             decoded = struct.unpack('>BHHH', data[count:count+7])
             record  = FileRecord(file_number=decoded[1],
                 record_number=decoded[2], record_length=decoded[3])
-            if decoded[0] == 0x06: self.records.append(record)
+            if decoded[0] == 0x06:
+                self.records.append(record)
 
-    def execute(self, context):
+    def execute(self, context): #NOSONAR pylint: disable=unused-argument,no-self-use
         ''' Run a read exeception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        # TODO do some new context operation here
+        # TODO do some new context operation here #NOSONAR pylint: disable=fixme
         # if file number, record number, or address + length
         # is too big, return an error.
         files = []
@@ -172,7 +173,8 @@ class ReadFileRecordResponse(ModbusResponse):
             count += response_length + 1 # the count is not included
             record = FileRecord(response_length=response_length,
                 record_data=data[count - response_length + 1:count])
-            if reference_type == 0x06: self.records.append(record)
+            if reference_type == 0x06:
+                self.records.append(record)
 
 
 class WriteFileRecordRequest(ModbusRequest):
@@ -200,6 +202,7 @@ class WriteFileRecordRequest(ModbusRequest):
         '''
         total_length = sum((record.record_length * 2) + 7 for record in self.records)
         packet = struct.pack('B', total_length)
+
         for record in self.records:
             packet += struct.pack('>BHHH', 0x06, record.file_number,
                 record.record_number, record.record_length)
@@ -211,8 +214,8 @@ class WriteFileRecordRequest(ModbusRequest):
 
         :param data: The data to decode into the address
         '''
-        count, self.records = 1, []
         byte_count = byte2int(data[0])
+        count, self.records = 1, []
         while count < byte_count:
             decoded = struct.unpack('>BHHH', data[count:count+7])
             response_length = decoded[3] * 2
@@ -220,15 +223,16 @@ class WriteFileRecordRequest(ModbusRequest):
             record  = FileRecord(record_length=decoded[3],
                 file_number=decoded[1], record_number=decoded[2],
                 record_data=data[count - response_length:count])
-            if decoded[0] == 0x06: self.records.append(record)
+            if decoded[0] == 0x06:
+                self.records.append(record)
 
-    def execute(self, context):
+    def execute(self, context): #NOSONAR pylint: disable=unused-argument
         ''' Run the write file record request against the context
 
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        # TODO do some new context operation here
+        # TODO do some new context operation here #NOSONAR pylint: disable=fixme
         # if file number, record number, or address + length
         # is too big, return an error.
         return WriteFileRecordResponse(self.records)
@@ -276,7 +280,8 @@ class WriteFileRecordResponse(ModbusResponse):
             record  = FileRecord(record_length=decoded[3],
                 file_number=decoded[1], record_number=decoded[2],
                 record_data=data[count - response_length:count])
-            if decoded[0] == 0x06: self.records.append(record)
+            if decoded[0] == 0x06:
+                self.records.append(record)
 
 
 class ReadFifoQueueRequest(ModbusRequest):
@@ -317,17 +322,17 @@ class ReadFifoQueueRequest(ModbusRequest):
         '''
         self.address = struct.unpack('>H', data)[0]
 
-    def execute(self, context):
+    def execute(self, context): #NOSONAR pylint: disable=unused-argument
         ''' Run a read exeception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        if not (0x0000 <= self.address <= 0xffff):
+        if not 0x0000 <= self.address <= 0xffff:
             return self.doException(merror.IllegalValue)
         if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
-        # TODO pull the values from some context
+        # TODO pull the values from some context #NOSONAR pylint: disable=fixme
         return ReadFifoQueueResponse(self.values)
 
 

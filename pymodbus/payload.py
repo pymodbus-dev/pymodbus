@@ -7,6 +7,8 @@ modbus messages payloads.
 
 
 """
+import logging
+
 from struct import pack, unpack
 from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.constants import Endian
@@ -17,7 +19,6 @@ from pymodbus.exceptions import ParameterException
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -318,7 +319,7 @@ class BinaryPayloadDecoder(object):
         return chunks
 
     @classmethod
-    def fromCoils(klass, coils, byteorder=Endian.Little, wordorder=Endian.Big):
+    def fromCoils(cls, coils, byteorder=Endian.Little, wordorder=Endian.Big): #NOSONAR
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 
@@ -334,10 +335,10 @@ class BinaryPayloadDecoder(object):
             if padding:    # Pad zero's
                 extra = [False] * padding
                 coils = extra + coils
-            chunks = klass.bit_chunks(coils)
+            chunks = cls.bit_chunks(coils)
             for chunk in chunks:
                 payload += pack_bitstring(chunk[::-1])
-            return klass(payload, byteorder)
+            return cls(payload, byteorder)
         raise ParameterException('Invalid collection of coils supplied')
 
     def _unpack_words(self, fstring, handle):
@@ -353,15 +354,13 @@ class BinaryPayloadDecoder(object):
         :return:
         """
         handle = make_byte_string(handle)
-        wc = WC.get(fstring.lower()) // 2
-        up = "!{}H".format(wc)
-        handle = unpack(up, handle)
+        wc_value = WC.get(fstring.lower()) // 2
+        handle = unpack(f"!{wc_value}H", handle)
         if self._wordorder == Endian.Little:
             handle = list(reversed(handle))
 
         # Repack as unsigned Integer
-        pk = self._byteorder + 'H'
-        handle = [pack(pk, p) for p in handle]
+        handle = [pack(self._byteorder + 'H', p) for p in handle]
         _logger.debug(handle)
         handle = b''.join(handle)
         return handle
@@ -487,8 +486,7 @@ class BinaryPayloadDecoder(object):
         :param size: The size of the string to decode
         """
         self._pointer += size
-        s = self._payload[self._pointer - size:self._pointer]
-        return s
+        return self._payload[self._pointer - size:self._pointer]
 
     def skip_bytes(self, nbytes):
         """ Skip n bytes in the buffer
@@ -496,7 +494,6 @@ class BinaryPayloadDecoder(object):
         :param nbytes: The number of bytes to skip
         """
         self._pointer += nbytes
-        return None
 
 #---------------------------------------------------------------------------#
 # Exported Identifiers

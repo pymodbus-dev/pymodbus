@@ -8,7 +8,7 @@ values for the servers and clients.
 from pymodbus.interfaces import Singleton
 
 
-class Defaults(Singleton):
+class Defaults(Singleton): # pylint: disable=too-few-public-methods
     ''' A collection of modbus default values
 
     .. attribute:: Port
@@ -132,7 +132,7 @@ class Defaults(Singleton):
     ReadSize            = 1024
     broadcast_enable    = False
 
-class ModbusStatus(Singleton):
+class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
     '''
     These represent various status codes in the modbus
     protocol.
@@ -171,7 +171,7 @@ class ModbusStatus(Singleton):
     SlaveOff = 0x00
 
 
-class Endian(Singleton):
+class Endian(Singleton): # pylint: disable=too-few-public-methods
     ''' An enumeration representing the various byte endianess.
 
     .. attribute:: Auto
@@ -195,7 +195,7 @@ class Endian(Singleton):
     Little = '<'
 
 
-class ModbusPlusOperation(Singleton):
+class ModbusPlusOperation(Singleton): # pylint: disable=too-few-public-methods
     ''' Represents the type of modbus plus request
 
     .. attribute:: GetStatistics
@@ -212,7 +212,7 @@ class ModbusPlusOperation(Singleton):
     ClearStatistics = 0x0004
 
 
-class DeviceInformation(Singleton):
+class DeviceInformation(Singleton): # pylint: disable=too-few-public-methods
     ''' Represents what type of device information to read
 
     .. attribute:: Basic
@@ -244,7 +244,7 @@ class DeviceInformation(Singleton):
     Specific = 0x04
 
 
-class MoreData(Singleton):
+class MoreData(Singleton): # pylint: disable=too-few-public-methods
     ''' Represents the more follows condition
 
     .. attribute:: Nothing

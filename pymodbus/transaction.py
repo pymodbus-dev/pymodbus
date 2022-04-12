@@ -31,7 +31,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
-class ModbusTransactionManager(): # pylint: disable=too-many-instance-attributes
+class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
     """ Implements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::

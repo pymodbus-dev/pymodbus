@@ -9,7 +9,7 @@ from six import string_types
 from pymodbus.compat import int2byte, byte2int
 
 
-class ModbusTransactionState(): # pylint: disable=too-few-public-methods
+class ModbusTransactionState: # pylint: disable=too-few-public-methods
     """
     Modbus Client States
     """

@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # Base PDU's
 # --------------------------------------------------------------------------- #
-class ModbusPDU():
+class ModbusPDU:
     """
     Base class for all Modbus messages
 

@@ -7,7 +7,7 @@ the svn version as well using the local .entries file.
 """
 
 
-class Version():
+class Version:
     """Manage version."""
 
     def __init__(self, package, major, minor, micro, pre=None): # pylint: disable=too-many-arguments

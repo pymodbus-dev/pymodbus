@@ -11,7 +11,7 @@ from pymodbus.exceptions import NotImplementedException
 # --------------------------------------------------------------------------- #
 # Generic
 # --------------------------------------------------------------------------- #
-class Singleton(): # pylint: disable=too-few-public-methods
+class Singleton: # pylint: disable=too-few-public-methods
     """
     Singleton base class
     http://mail.python.org/pipermail/python-list/2007-July/450681.html
@@ -26,7 +26,7 @@ class Singleton(): # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Project Specific
 # --------------------------------------------------------------------------- #
-class IModbusDecoder():
+class IModbusDecoder:
     """ Modbus Decoder Base Class
 
     This interface must be implemented by a modbus message
@@ -63,7 +63,7 @@ class IModbusDecoder():
             "Method not implemented by derived class")
 
 
-class IModbusFramer():
+class IModbusFramer:
     """
     A framer strategy interface. The idea is that we abstract away all the
     detail about how to detect if a current message frame exists, decoding
@@ -160,7 +160,7 @@ class IModbusFramer():
             "Method not implemented by derived class")
 
 
-class IModbusSlaveContext():
+class IModbusSlaveContext:
     """
     Interface for a modbus slave data context
 
@@ -217,7 +217,7 @@ class IModbusSlaveContext():
         raise NotImplementedException("set context values")
 
 
-class IPayloadBuilder(): # pylint: disable=too-few-public-methods
+class IPayloadBuilder: # pylint: disable=too-few-public-methods
     """
     This is an interface to a class that can build a payload
     for a modbus register write command. It should abstract

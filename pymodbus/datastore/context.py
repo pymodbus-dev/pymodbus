@@ -105,7 +105,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self._IModbusSlaveContext__fx_mapper[function_code] = fc_as_hex # pylint: disable=no-member
 
 
-class ModbusServerContext():
+class ModbusServerContext:
     ''' This represents a master collection of slave contexts.
     If single is set to true, it will be treated as a single
     context so every unit-id returns the same context. If single

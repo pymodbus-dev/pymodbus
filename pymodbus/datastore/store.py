@@ -60,7 +60,7 @@ _logger = logging.getLogger(__name__)
 #---------------------------------------------------------------------------#
 # Datablock Storage
 #---------------------------------------------------------------------------#
-class BaseModbusDataBlock():
+class BaseModbusDataBlock:
     '''
     Base class for a modbus datastore
 

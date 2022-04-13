@@ -3,7 +3,8 @@
 Doxygen API Builder
 ---------------------
 '''
-import os, shutil
+import os
+import shutil
 
 def is_exe(path):
     ''' Returns if the program is executable
@@ -17,7 +18,7 @@ def which(program):
     :param program: The program to check for
     :return: The full path of the executable or None if not found
     '''
-    fpath, name = os.path.split(program)
+    fpath, _ = os.path.split(program)
     if fpath:
         if is_exe(program):
             return program

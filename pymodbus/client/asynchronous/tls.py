@@ -11,7 +11,7 @@ from pymodbus.transaction import ModbusTlsFramer
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTLSClient(): # pylint: disable=too-few-public-methods
+class AsyncModbusTLSClient: # pylint: disable=too-few-public-methods
     """
     Actual Async TLS Client to be used.
 

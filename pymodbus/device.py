@@ -79,7 +79,7 @@ class ModbusAccessControl(Singleton):
 #---------------------------------------------------------------------------#
 # Modbus Plus Statistics
 #---------------------------------------------------------------------------#
-class ModbusPlusStatistics():
+class ModbusPlusStatistics:
     '''
     This is used to maintain the current modbus plus statistics count. As of
     right now this is simply a stub to complete the modbus implementation.
@@ -181,7 +181,7 @@ class ModbusPlusStatistics():
 #---------------------------------------------------------------------------#
 # Device Information Control
 #---------------------------------------------------------------------------#
-class ModbusDeviceIdentification():
+class ModbusDeviceIdentification:
     '''
     This is used to supply the device identification
     for the readDeviceIdentification function
@@ -334,7 +334,7 @@ class DeviceInformationFactory(Singleton): # pylint: disable=too-few-public-meth
 #---------------------------------------------------------------------------#
 # Counters Handler
 #---------------------------------------------------------------------------#
-class ModbusCountersHandler():
+class ModbusCountersHandler:
     '''
     This is a helper class to simplify the properties for the counters::
 

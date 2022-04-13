@@ -14,7 +14,7 @@ from pymodbus.compat import byte2int
 #---------------------------------------------------------------------------#
 # File Record Types
 #---------------------------------------------------------------------------#
-class FileRecord():
+class FileRecord:
     ''' Represents a file record and its relevant data.
     '''
 

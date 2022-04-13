@@ -1,9 +1,11 @@
-import pytest
+"""Configure pytest."""
 import platform
+import pytest
 from pkg_resources import parse_version
 
 
 def pytest_configure():
+    """Configure pytest."""
     pytest.IS_DARWIN = platform.system().lower() == "darwin"
     pytest.IS_WINDOWS = platform.system().lower() == "windows"
 

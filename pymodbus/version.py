@@ -7,9 +7,10 @@ the svn version as well using the local .entries file.
 """
 
 
-class Version(object):
+class Version:
+    """Manage version."""
 
-    def __init__(self, package, major, minor, micro, pre=None):
+    def __init__(self, package, major, minor, micro, pre=None): # pylint: disable=too-many-arguments
         """
 
         :param package: Name of the package that this is a version of.
@@ -29,20 +30,19 @@ class Version(object):
         <major>.<minor>.<micro>.<pre>
         """
         if self.pre:
-            return '%d.%d.%d.%s' % (self.major, self.minor, self.micro, self.pre)
-        else:
-            return '%d.%d.%d' % (self.major, self.minor, self.micro)
+            return f'{self.major}.{self.minor}.{self.micro}.{self.pre}'
+        return f'{self.major}.{self.minor}.{self.micro}'
 
     def __str__(self):
         """ Returns a string representation of the object
 
         :returns: A string representation of this object
         """
-        return '[%s, version %s]' % (self.package, self.short())
+        return f'[{self.package}, version {self.short()}]'
 
- 
+
 version = Version('pymodbus', 3, 0, 0, 'dev4')
-version.__name__ = 'pymodbus'  # fix epydoc error
+version.__name__ = 'pymodbus'  # fix epydoc error # pylint: disable=attribute-defined-outside-init
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

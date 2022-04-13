@@ -19,7 +19,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     '''
     function_code = 6
     _rtu_frame_size = 8
-    
+
     def __init__(self, address=None, value=None, **kwargs):
         ''' Initializes a new instance
 
@@ -48,14 +48,14 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param data: The request to decode
         '''
         self.address, self.value = struct.unpack('>HH', data)
-    
+
     def execute(self, context):
         ''' Run a write single register request against a datastore
 
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        if not (0 <= self.value <= 0xffff):
+        if not 0 <= self.value <= 0xffff:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
@@ -64,19 +64,19 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self): # pylint: disable=no-self-use
         """
         Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
-        :return: 
+        :return:
         """
         return 1 + 2 + 2
-    
+
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        return "WriteRegisterRequest %d" % self.address
+        return f"WriteRegisterRequest {self.address}"
 
 
 class WriteSingleRegisterResponse(ModbusResponse):
@@ -117,7 +117,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
         :returns: A string representation of the instance
         '''
         params = (self.address, self.value)
-        return "WriteRegisterResponse %d => %d" % params
+        return "WriteRegisterResponse %d => %d" % params # pylint: disable=consider-using-f-string
 
 
 #---------------------------------------------------------------------------#
@@ -159,7 +159,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
         if self.skip_encode:
             return packet + b''.join(self.values)
-        
+
         for value in self.values:
             packet += struct.pack('>H', value)
 
@@ -182,9 +182,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         '''
-        if not (1 <= self.count <= 0x07b):
+        if not 1 <= self.count <= 0x07b:
             return self.doException(merror.IllegalValue)
-        if (self.byte_count != self.count * 2):
+        if self.byte_count != self.count * 2:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -192,7 +192,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleRegistersResponse(self.address, self.count)
 
-    def get_response_pdu_size(self):
+    def get_response_pdu_size(self): # pylint: disable=no-self-use
         """
         Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)
         :return:
@@ -205,7 +205,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :returns: A string representation of the instance
         '''
         params = (self.address, self.count)
-        return "WriteMultipleRegisterRequest %d => %d" % params
+        return "WriteMultipleRegisterRequest %d => %d" % params # pylint: disable=consider-using-f-string
 
 
 class WriteMultipleRegistersResponse(ModbusResponse):
@@ -246,7 +246,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         :returns: A string representation of the instance
         '''
         params = (self.address, self.count)
-        return "WriteMultipleRegisterResponse (%d,%d)" % params
+        return "WriteMultipleRegisterResponse (%d,%d)" % params # pylint: disable=consider-using-f-string
 
 class MaskWriteRegisterRequest(ModbusRequest):
     '''
@@ -293,9 +293,9 @@ class MaskWriteRegisterRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         '''
-        if not (0x0000 <= self.and_mask <= 0xffff):
+        if not 0x0000 <= self.and_mask <= 0xffff:
             return self.doException(merror.IllegalValue)
-        if not (0x0000 <= self.or_mask <= 0xffff):
+        if not 0x0000 <= self.or_mask <= 0xffff:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)

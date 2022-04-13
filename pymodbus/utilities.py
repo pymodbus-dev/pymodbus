@@ -5,11 +5,11 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
-from pymodbus.compat import int2byte, byte2int
 from six import string_types
+from pymodbus.compat import int2byte, byte2int
 
 
-class ModbusTransactionState(object):
+class ModbusTransactionState: # pylint: disable=too-few-public-methods
     """
     Modbus Client States
     """
@@ -25,6 +25,7 @@ class ModbusTransactionState(object):
 
     @classmethod
     def to_string(cls, state):
+        """Convert to string."""
         states = {
             ModbusTransactionState.IDLE: "IDLE",
             ModbusTransactionState.SENDING: "SENDING",
@@ -126,15 +127,15 @@ def unpack_bitstring(string):
     return bits
 
 
-def make_byte_string(s):
+def make_byte_string(byte_string):
     """
     Returns byte string from a given string, python3 specific fix
     :param s:
     :return:
     """
-    if isinstance(s, string_types):
-        s = s.encode()
-    return s
+    if isinstance(byte_string, string_types):
+        byte_string = byte_string.encode()
+    return byte_string
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
@@ -157,7 +158,7 @@ def __generate_crc16_table():
 __crc16_table = __generate_crc16_table()
 
 
-def computeCRC(data):
+def computeCRC(data): #NOSONAR pylint: disable=invalid-name
     """ Computes a crc16 on the passed in string. For modbus,
     this is only used on the binary serial protocols (in this
     case RTU).
@@ -169,14 +170,14 @@ def computeCRC(data):
     :returns: The calculated CRC
     """
     crc = 0xffff
-    for a in data:
-        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff]
+    for data_byte in data:
+        idx = __crc16_table[(crc ^ byte2int(data_byte)) & 0xff]
         crc = ((crc >> 8) & 0xff) ^ idx
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped
 
 
-def checkCRC(data, check):
+def checkCRC(data, check): #NOSONAR pylint: disable=invalid-name
     """ Checks if the data matches the passed in CRC
 
     :param data: The data to create a crc16 of
@@ -186,7 +187,7 @@ def checkCRC(data, check):
     return computeCRC(data) == check
 
 
-def computeLRC(data):
+def computeLRC(data): #NOSONAR pylint: disable=invalid-name
     """ Used to compute the longitudinal redundancy check
     against a string. This is only used on the serial ASCII
     modbus protocol. A full description of this implementation
@@ -201,7 +202,7 @@ def computeLRC(data):
     return lrc & 0xff
 
 
-def checkLRC(data, check):
+def checkLRC(data, check): #NOSONAR pylint: disable=invalid-name
     """ Checks if the passed in data matches the LRC
 
     :param data: The data to calculate
@@ -211,7 +212,7 @@ def checkLRC(data, check):
     return computeLRC(data) == check
 
 
-def rtuFrameSize(data, byte_count_pos):
+def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
     """ Calculates the size of the frame based on the byte count.
 
     :param data: The buffer containing the frame.

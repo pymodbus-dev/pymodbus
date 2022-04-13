@@ -76,10 +76,10 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         :param value: Value to be packed
         :return:
         """
-        value = pack("!{}".format(fstring), value)
-        wc = WC.get(fstring.lower())//2
-        up = "!{}H".format(wc)
-        payload = unpack(up, value)
+        value = pack("!{}".format(fstring), value) # pylint: disable=consider-using-f-string
+        wordorder = WC.get(fstring.lower())//2
+        upperbyte = f"!{wordorder}H"
+        payload = unpack(upperbyte, value)
 
         if self._wordorder == Endian.Little:
             payload = list(reversed(payload))
@@ -268,7 +268,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         self._payload.append(pack(fstring, value))
 
 
-class BinaryPayloadDecoder(object):
+class BinaryPayloadDecoder:
     """
     A utility that helps decode payload messages from a modbus
     response message.  It really is just a simple wrapper around
@@ -293,7 +293,7 @@ class BinaryPayloadDecoder(object):
         self._wordorder = wordorder
 
     @classmethod
-    def fromRegisters(klass, registers, byteorder=Endian.Little,
+    def fromRegisters(cls, registers, byteorder=Endian.Little, # pylint: disable=invalid-name
                       wordorder=Endian.Big):
         """ Initialize a payload decoder with the result of
         reading a collection of registers from a modbus device.
@@ -310,16 +310,17 @@ class BinaryPayloadDecoder(object):
         _logger.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
             payload = b''.join(pack('!H', x) for x in registers)
-            return klass(payload, byteorder, wordorder)
+            return cls(payload, byteorder, wordorder)
         raise ParameterException('Invalid collection of registers supplied')
 
     @classmethod
     def bit_chunks(cls, coils, size=8):
+        """Return bit chunks."""
         chunks = [coils[i: i + size] for i in range(0, len(coils), size)]
         return chunks
 
     @classmethod
-    def fromCoils(cls, coils, byteorder=Endian.Little, wordorder=Endian.Big): #NOSONAR
+    def fromCoils(cls, coils, byteorder=Endian.Little, wordorder=Endian.Big): #NOSONAR pylint: disable=unused-argument,invalid-name
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 

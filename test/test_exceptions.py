@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
+""" Test exceptions. """
 import unittest
-from pymodbus.exceptions import *
+
+from pymodbus.exceptions import (
+    ModbusException,
+    ConnectionException,
+    NotImplementedException,
+    ParameterException,
+    ModbusIOException,
+)
 
 class SimpleExceptionsTest(unittest.TestCase):
     '''
@@ -19,15 +27,14 @@ class SimpleExceptionsTest(unittest.TestCase):
 
     def tearDown(self):
         ''' Cleans up the test environment '''
-        pass
 
-    def testExceptions(self):
+    def test_exceptions(self):
         ''' Test all module exceptions '''
-        for ex in self.exceptions:
+        for exc in self.exceptions:
             try:
-                raise ex
-            except ModbusException as ex:
-                self.assertTrue("Modbus Error:" in str(ex))
+                raise exc
+            except ModbusException as exc:
+                self.assertTrue("Modbus Error:" in str(exc))
                 return
             self.fail("Excepted a ModbusExceptions")
 

@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
+""" Test events. """
 import unittest
-from pymodbus.events import *
+from pymodbus.events import (
+    CommunicationRestartEvent,
+    EnteredListenModeEvent,
+    RemoteSendEvent,
+    RemoteReceiveEvent,
+    ModbusEvent,
+)
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 
@@ -11,25 +18,26 @@ class ModbusEventsTest(unittest.TestCase):
 
     def setUp(self):
         ''' Sets up the test environment '''
-        pass
 
     def tearDown(self):
         ''' Cleans up the test environment '''
-        pass
 
-    def testModbusEventBaseClass(self):
+    def test_modbus_event_base_class(self):
+        """ Test modbus event base class. """
         event = ModbusEvent()
         self.assertRaises(NotImplementedException, event.encode)
         self.assertRaises(NotImplementedException, lambda: event.decode(None))
 
-    def testRemoteReceiveEvent(self):
+    def test_remote_receive_event(self):
+        """ Test remove receive event. """
         event = RemoteReceiveEvent()
         event.decode(b'\x70')
         self.assertTrue(event.overrun)
         self.assertTrue(event.listen)
         self.assertTrue(event.broadcast)
 
-    def testRemoteSentEvent(self):
+    def test_remote_sent_event(self):
+        """ Test remote sent event. """
         event = RemoteSendEvent()
         result = event.encode()
         self.assertEqual(result, b'\x40')
@@ -41,7 +49,8 @@ class ModbusEventsTest(unittest.TestCase):
         self.assertTrue(event.write_timeout)
         self.assertTrue(event.listen)
 
-    def testRemoteSentEventEncode(self):
+    def test_remote_sent_event_encode(self):
+        """ Test remote sent event encode. """
         arguments = {
             'read'          : True,
             'slave_abort'   : True,
@@ -54,7 +63,8 @@ class ModbusEventsTest(unittest.TestCase):
         result = event.encode()
         self.assertEqual(result, b'\x7f')
 
-    def testEnteredListenModeEvent(self):
+    def test_entered_listen_mode_event(self):
+        """ Test entered listen mode event. """
         event = EnteredListenModeEvent()
         result = event.encode()
         self.assertEqual(result, b'\x04')
@@ -62,7 +72,8 @@ class ModbusEventsTest(unittest.TestCase):
         self.assertEqual(event.value, 0x04)
         self.assertRaises(ParameterException, lambda: event.decode(b'\x00'))
 
-    def testCommunicationRestartEvent(self):
+    def test_communication_restart_event(self):
+        """ Test communication restart event. """
         event = CommunicationRestartEvent()
         result = event.encode()
         self.assertEqual(result, b'\x00')

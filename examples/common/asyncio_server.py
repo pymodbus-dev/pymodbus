@@ -11,10 +11,11 @@ twisted is just not feasible. What follows is an example of its use:
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
+import logging
 import asyncio
+
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
-
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
@@ -22,7 +23,6 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -31,6 +31,7 @@ log.setLevel(logging.DEBUG)
 
 
 async def run_server():
+    """ Run server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -111,7 +112,8 @@ async def run_server():
     # ----------------------------------------------------------------------- #
     # Tcp:
     # immediately start serving:
-    # await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), allow_reuse_address=True,
+    # await StartTcpServer(context, identity=identity,
+    #                      address=("0.0.0.0", 5020), allow_reuse_address=True,
     #                      defer_start=False)
 
     # 	deferred start:
@@ -132,8 +134,10 @@ async def run_server():
     #                      defer_start=False)
 
     # Tls and force require client's certificate for TLS full handshake:
-    # await StartTlsServer(context, identity=identity, address=("localhost", 8020),
-    #                      certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
+    # await StartTlsServer(context, identity=identity,
+    #                      address=("localhost", 8020),
+    #                      certfile="server.crt", keyfile="server.key",
+    #                      password="pwd", reqclicert=True,
     #                      allow_reuse_address=True, allow_reuse_port=True,
     #                      defer_start=False)
 

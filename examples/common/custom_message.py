@@ -10,7 +10,9 @@ implementation from pymodbus.
         result = client.read_coils(1,10)
         print result
 """
+import logging
 import struct
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
@@ -18,10 +20,10 @@ from pymodbus.pdu import ModbusRequest, ModbusResponse, ModbusExceptions
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.bit_read_message import ReadCoilsRequest
 from pymodbus.compat import int2byte, byte2int
+
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -38,6 +40,7 @@ log.setLevel(logging.DEBUG)
 
 
 class CustomModbusResponse(ModbusResponse):
+    """ Custom modbus response. """
     function_code = 55
     _rtu_byte_count_pos = 2
 
@@ -50,10 +53,10 @@ class CustomModbusResponse(ModbusResponse):
 
         :returns: The encoded packet message
         """
-        result = int2byte(len(self.values) * 2)
+        res = int2byte(len(self.values) * 2)
         for register in self.values:
-            result += struct.pack('>H', register)
-        return result
+            res += struct.pack('>H', register)
+        return res
 
     def decode(self, data):
         """ Decodes response pdu
@@ -67,23 +70,29 @@ class CustomModbusResponse(ModbusResponse):
 
 
 class CustomModbusRequest(ModbusRequest):
+    """ Custom modbus request. """
 
     function_code = 55
     _rtu_frame_size = 8
 
     def __init__(self, address=None, **kwargs):
+        """ Init. """
+
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = 16
 
     def encode(self):
+        """ Encode. """
         return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
+        """ Decode. """
         self.address, self.count = struct.unpack('>HH', data)
 
     def execute(self, context):
-        if not (1 <= self.count <= 0x7d0):
+        """ Execute. """
+        if not 1 <= self.count <= 0x7d0:
             return self.doException(ModbusExceptions.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(ModbusExceptions.IllegalAddress)
@@ -97,6 +106,7 @@ class CustomModbusRequest(ModbusRequest):
 
 
 class Read16CoilsRequest(ReadCoilsRequest):
+    """ Read 16 coils in one request. """
 
     def __init__(self, address, **kwargs):
         """ Initializes a new instance

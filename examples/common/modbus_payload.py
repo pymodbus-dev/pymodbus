@@ -5,18 +5,19 @@ Pymodbus Payload Building/Decoding Example
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
+import logging
+from collections import OrderedDict
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.compat import iteritems
-from collections import OrderedDict
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -29,7 +30,8 @@ ORDER_DICT = {
 }
 
 
-def run_binary_payload_ex():
+def run_binary_payload_ex(): # pylint: disable=too-many-statements
+    """ Run binary payload. """
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
@@ -85,13 +87,13 @@ def run_binary_payload_ex():
 
     # ----------------------------------------------------------------------- #
     combos = [(wo, bo) for wo in [Endian.Big, Endian.Little] for bo in [Endian.Big, Endian.Little]]
-    for wo, bo in combos:
+    for word_order, byte_order in combos:
         print("-" * 60)
-        print("Word Order: {}".format(ORDER_DICT[wo]))
-        print("Byte Order: {}".format(ORDER_DICT[bo]))
+        print(f"Word Order: {ORDER_DICT[word_order]}")
+        print(f"Byte Order: {ORDER_DICT[byte_order]}")
         print()
-        builder = BinaryPayloadBuilder(byteorder=bo,
-                                       wordorder=wo)
+        builder = BinaryPayloadBuilder(byteorder=byte_order,
+                                       wordorder=word_order)
         strng = "abcdefgh"
         builder.add_string(strng)
         builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
@@ -162,10 +164,10 @@ def run_binary_payload_ex():
                                                      wordorder=wo)
 
         assert decoder._byteorder == builder._byteorder, \
-               "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
+                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder" # pylint: disable=protected-access,line-too-long
 
         assert decoder._wordorder == builder._wordorder, \
-               "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
+                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"  # pylint: disable=protected-access,line-too-long
 
         decoded = OrderedDict([
             ('string', decoder.decode_string(len(strng))),
@@ -191,7 +193,7 @@ def run_binary_payload_ex():
         print("Decoded Data")
         print("-" * 60)
         for name, value in iteritems(decoded):
-            print("%s\t" % name, hex(value) if isinstance(value, int) else value)
+            print("%s\t" % name, hex(value) if isinstance(value, int) else value) # pylint: disable=consider-using-f-string
 
     # ----------------------------------------------------------------------- #
     # close the client

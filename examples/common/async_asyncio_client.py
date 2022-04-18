@@ -10,6 +10,9 @@ The example is only valid on Python3.4 and above
 """
 import asyncio
 import logging
+import time
+from threading import Thread
+
 # ----------------------------------------------------------------------- #
 # Import the required asynchronous client
 # ----------------------------------------------------------------------- #
@@ -19,15 +22,13 @@ from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClien
 from pymodbus.client.asynchronous import schedulers
 
 
-from threading import Thread
-import time
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
 logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+_logger = logging.getLogger()
+_logger.setLevel(logging.DEBUG)
 
 # --------------------------------------------------------------------------- #
 # specify slave to query
@@ -42,6 +43,7 @@ UNIT = 0x01
 
 
 async def start_async_test(client):
+    """ Start async test. """
     # ----------------------------------------------------------------------- #
     # specify slave to query
     # ----------------------------------------------------------------------- #
@@ -49,7 +51,7 @@ async def start_async_test(client):
     # individual request. This can be done by specifying the `unit` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
-    log.debug("Reading Coils")
+    _logger.debug("Reading Coils")
     rr = await client.read_coils(1, 1, unit=0x01)
 
     # ----------------------------------------------------------------------- #
@@ -64,17 +66,17 @@ async def start_async_test(client):
     # Keep both of these cases in mind when testing as the following will
     # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
-    log.debug("Write to a Coil and read back")
+    _logger.debug("Write to a Coil and read back")
     rq = await client.write_coil(0, True, unit=UNIT)
     rr = await client.read_coils(0, 1, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
-    assert(rr.bits[0])          # test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits[0]          # test the expected value
 
-    log.debug("Write to multiple coils and read back- test 1")
+    _logger.debug("Write to multiple coils and read back- test 1")
     rq = await client.write_coils(1, [True] * 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
     rr = await client.read_coils(1, 21, unit=UNIT)
-    assert(rr.function_code < 0x80)     # test that we are not an error
+    assert rr.function_code < 0x80     # test that we are not an error
     resp = [True] * 21
 
     # If the returned output quantity is not a multiple of eight,
@@ -82,33 +84,33 @@ async def start_async_test(client):
     # (toward the high order end of the byte).
 
     resp.extend([False] * 3)
-    assert(rr.bits == resp)         # test the expected value
+    assert rr.bits == resp         # test the expected value
 
-    log.debug("Write to multiple coils and read back - test 2")
+    _logger.debug("Write to multiple coils and read back - test 2")
     rq = await client.write_coils(1, [False] * 8, unit=UNIT)
     rr = await client.read_coils(1, 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
-    assert(rr.bits == [False] * 8)         # test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits == [False] * 8         # test the expected value
 
-    log.debug("Read discrete inputs")
+    _logger.debug("Read discrete inputs")
     rr = await client.read_discrete_inputs(0, 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
 
-    log.debug("Write to a holding register and read back")
+    _logger.debug("Write to a holding register and read back")
     rq = await client.write_register(1, 10, unit=UNIT)
     rr = await client.read_holding_registers(1, 1, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
-    assert(rr.registers[0] == 10)       # test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.registers[0] == 10       # test the expected value
 
-    log.debug("Write to multiple holding registers and read back")
+    _logger.debug("Write to multiple holding registers and read back")
     rq = await client.write_registers(1, [10] * 8, unit=UNIT)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
-    assert(rr.registers == [10] * 8)      # test the expected value
+    assert rq.function_code < 0x80      # test that we are not an error
+    assert rr.registers == [10] * 8       # test the expected value
 
-    log.debug("Read input registers")
+    _logger.debug("Read input registers")
     rr = await client.read_input_registers(1, 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
+    assert rq.function_code < 0x80      # test that we are not an error
 
     arguments = {
         'read_address': 1,
@@ -116,12 +118,12 @@ async def start_async_test(client):
         'write_address': 1,
         'write_registers': [20] * 8,
     }
-    log.debug("Read write registeres simulataneously")
+    _logger.debug("Read write registeres simulataneously")
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert(rq.function_code < 0x80)     # test that we are not an error
-    assert(rq.registers == [20] * 8)      # test the expected value
-    assert(rr.registers == [20] * 8)      # test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rq.registers == [20] * 8      # test the expected value
+    assert rr.registers == [20] * 8     # test the expected value
     await asyncio.sleep(1)
 
 
@@ -131,16 +133,16 @@ def run_with_not_running_loop():
 
     :return:
     """
-    log.debug("Running Async client with asyncio loop not yet started")
-    log.debug("------------------------------------------------------")
+    _logger.debug("Running Async client with asyncio loop not yet started")
+    _logger.debug("------------------------------------------------------")
     loop = asyncio.new_event_loop()
     assert not loop.is_running()
     asyncio.set_event_loop(loop)
-    new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)
+    new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence,unused-variable
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
-    log.debug("--------------RUN_WITH_NOT_RUNNING_LOOP---------------")
-    log.debug("")
+    _logger.debug("--------------RUN_WITH_NOT_RUNNING_LOOP---------------")
+    _logger.debug("")
 
 
 async def run_with_already_running_loop():
@@ -148,11 +150,12 @@ async def run_with_already_running_loop():
     An already running loop is passed to ModbusClient Factory
     :return:
     """
-    log.debug("Running Async client with asyncio loop already started")
-    log.debug("------------------------------------------------------")
+    _logger.debug("Running Async client with asyncio loop already started")
+    _logger.debug("------------------------------------------------------")
 
-    def done(future):
-        log.info("Done !!!")
+    def done(future): # pylint: disable=unused-argument
+        """ Done. """
+        _logger.info("Done !!!")
 
     def start_loop(loop):
         """
@@ -164,22 +167,22 @@ async def run_with_already_running_loop():
         loop.run_forever()
 
     loop = asyncio.new_event_loop()
-    t = Thread(target=start_loop, args=[loop])
-    t.daemon = True
+    mythread = Thread(target=start_loop, args=[loop])
+    mythread.daemon = True
     # Start the loop
-    t.start()
+    mythread.start()
     asyncio.sleep(1)
     assert loop.is_running()
     asyncio.set_event_loop(loop)
-    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop)
+    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence
     future = asyncio.run_coroutine_threadsafe(
         start_async_test(client.protocol), loop=loop)
     future.add_done_callback(done)
     while not future.done():
         time.sleep(0.1)
     loop.stop()
-    log.debug("--------DONE RUN_WITH_ALREADY_RUNNING_LOOP-------------")
-    log.debug("")
+    _logger.debug("--------DONE RUN_WITH_ALREADY_RUNNING_LOOP-------------")
+    _logger.debug("")
 
 
 def run_with_no_loop():
@@ -187,18 +190,18 @@ def run_with_no_loop():
     ModbusClient Factory creates a loop.
     :return:
     """
-    log.debug("---------------------RUN_WITH_NO_LOOP-----------------")
-    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020)
+    _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
+    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020) #NOSONAR pylint: disable=unpacking-non-sequence
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
-    log.debug("--------DONE RUN_WITH_NO_LOOP-------------")
-    log.debug("")
+    _logger.debug("--------DONE RUN_WITH_NO_LOOP-------------")
+    _logger.debug("")
 
 
 if __name__ == '__main__':
     # Run with No loop
-    log.debug("Running Async client")
-    log.debug("------------------------------------------------------")
+    _logger.debug("Running Async client")
+    _logger.debug("------------------------------------------------------")
     # run_with_no_loop()
 
     # Run with loop not yet started
@@ -207,4 +210,4 @@ if __name__ == '__main__':
     # Run with already running loop
     asyncio.run(run_with_already_running_loop())
 
-    log.debug("")
+    _logger.debug("")

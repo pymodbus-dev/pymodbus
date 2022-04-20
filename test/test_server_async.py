@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
-import unittest
-import pytest
-from unittest.mock import patch, Mock, MagicMock
+""" Test server async. """
+import sys
 import platform
+from threading import Thread
+import time
+import unittest
+from unittest.mock import patch, MagicMock
+import pytest
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.asynchronous import ModbusServerFactory
 from pymodbus.server.asynchronous import (
-    StartTcpServer, StartUdpServer, StartSerialServer, StopServer,
+    StartTcpServer,
+    StartUdpServer,
+    StartSerialServer,
+    StopServer,
     _is_main_thread
 )
 from pymodbus.compat import byte2int
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
-import sys
 # --------------------------------------------------------------------------- #
 # Fixture
 # --------------------------------------------------------------------------- #
@@ -27,7 +33,7 @@ no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
 )
 
 
-class AsynchronousServerTest(unittest.TestCase):
+class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-public-methods
     '''
     This is the unittest for the pymodbus.server.asynchronous module
     '''
@@ -40,16 +46,16 @@ class AsynchronousServerTest(unittest.TestCase):
         Initializes the test environment
         '''
         values = dict((i, '') for i in range(10))
-        identity = ModbusDeviceIdentification(info=values)
+        ModbusDeviceIdentification(info=values)
 
     def tearDown(self):
         ''' Cleans up the test environment '''
-        pass
+
 
     # ----------------------------------------------------------------------- #
     # Test ModbusTcpProtocol
     # ----------------------------------------------------------------------- #
-    def testTcpServerStartup(self):
+    def test_tcp_server_startup(self):
         ''' Test that the modbus tcp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             console = False
@@ -58,7 +64,8 @@ class AsynchronousServerTest(unittest.TestCase):
             self.assertEqual(mock_reactor.listenTCP.call_count, call_count)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
-    def testConnectionMade(self):
+    def test_connection_made(self):
+        """ Test connection made. """
         protocol = ModbusTcpProtocol()
         protocol.transport = MagicMock()
         protocol.factory = MagicMock()
@@ -66,11 +73,13 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.connectionMade()
         self.assertIsInstance(protocol.framer, ModbusSocketFramer)
 
-    def testConnectionLost(self):
+    def test_connection_lost(self): # pylint: disable=no-self-use
+        """ Test connection lost. """
         protocol = ModbusTcpProtocol()
         protocol.connectionLost("What ever reason")
 
-    def testDataReceived(self):
+    def test_data_received(self):
+        """ Test data received. """
         protocol = ModbusTcpProtocol()
         # mock_data = "Hellow world!"
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
@@ -88,43 +97,47 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.factory.control.ListenOnly = False
         self.assertEqual(protocol.dataReceived(mock_data), None)
 
-    def testTcpExecuteSuccess(self):
+    def test_tcp_execute_success(self):
+        """ Test tcp execute. """
         protocol = ModbusTcpProtocol()
         protocol.store = MagicMock()
         request = MagicMock()
-        protocol._send = MagicMock()
+        protocol._send = MagicMock() # pylint: disable=protected-access
 
         # test if _send being called
-        protocol._execute(request)
-        self.assertTrue(protocol._send.called)
+        protocol._execute(request) # pylint: disable=protected-access
+        self.assertTrue(protocol._send.called) # pylint: disable=protected-access
 
-    def testTcpExecuteFailure(self):
+    def test_tcp_execute_failure(self):
+        """ Test tcp execute. """
         protocol = ModbusTcpProtocol()
         protocol.factory = MagicMock()
         protocol.factory.store = MagicMock()
         protocol.store = MagicMock()
         protocol.factory.ignore_missing_slaves = False
         request = MagicMock()
-        protocol._send = MagicMock()
+        protocol._send = MagicMock() # pylint: disable=protected-access
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        protocol._execute(request)
+        protocol._execute(request) # pylint: disable=protected-access
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
         protocol.ignore_missing_slaves = True
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertEqual(protocol._execute(request), None)
+        self.assertEqual(protocol._execute(request), None) # pylint: disable=protected-access
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        protocol._execute(request)
-        self.assertTrue(protocol._send.called)
+        protocol._execute(request) # pylint: disable=protected-access
+        self.assertTrue(protocol._send.called) # pylint: disable=protected-access
 
-    def testSendTcp(self):
+    def test_send_tcp(self):
+        """ Test send tcp. """
 
-        class MockMsg(object):
+        class MockMsg: # pylint: disable=too-few-public-methods
+            """ Mock message. """
             def __init__(self, msg, resp=False):
                 self.should_respond = resp
                 self.msg = msg
@@ -139,18 +152,18 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.framer.buildPacket = MagicMock(return_value=mock_msg)
         protocol.transport = MagicMock()
 
-        protocol._send(mock_data)
+        protocol._send(mock_data) # pylint: disable=protected-access
 
         self.assertTrue(protocol.framer.buildPacket.called)
         self.assertTrue(protocol.transport.write.called)
 
         mock_data = MockMsg(resp=False, msg="helloworld")
-        self.assertEqual(protocol._send(mock_data), None)
+        self.assertEqual(protocol._send(mock_data), None) # pylint: disable=protected-access
 
     # ----------------------------------------------------------------------- #
     # Test ModbusServerFactory
     # ----------------------------------------------------------------------- #
-    def testModbusServerFactory(self):
+    def test_modbus_server_factory(self):
         ''' Test the base class for all the clients '''
         factory = ModbusServerFactory(store=None)
         self.assertEqual(factory.control.Identity.VendorName, '')
@@ -162,7 +175,8 @@ class AsynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     # Test ModbusUdpProtocol
     # ----------------------------------------------------------------------- #
-    def testUdpServerInitialize(self):
+    def test_udp_server_initialize(self):
+        """ Test UDP server. """
         protocol = ModbusUdpProtocol(store=None)
         self.assertEqual(protocol.control.Identity.VendorName, '')
 
@@ -170,7 +184,7 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol = ModbusUdpProtocol(store=None, identity=identity)
         self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
 
-    def testUdpServerStartup(self):
+    def test_udp_server_startup(self):
         ''' Test that the modbus udp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             StartUdpServer(context=None)
@@ -179,19 +193,16 @@ class AsynchronousServerTest(unittest.TestCase):
 
     @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
-    def testSerialServerStartup(self, mock_sp):
-        ''' Test that the modbus serial asynchronous server starts correctly '''
+    def test_serial_server_startup(self, mock_sp): # pylint: disable=unused-argument
+        """ Test that the modbus serial asynchronous server starts correctly """
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
     @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
-    def testStopServerFromMainThread(self, mock_sp):
-        """
-        Stop asynchronous server
-        :return:
-        """
+    def test_stop_server_from_main_thread(self, mock_sp): # pylint: disable=unused-argument
+        """ Stop asynchronous server. """
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
@@ -200,33 +211,33 @@ class AsynchronousServerTest(unittest.TestCase):
 
     @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
-    def testStopServerFromThread(self, mock_sp):
+    def test_stop_server_from_thread(self, mock_sp): # pylint: disable=unused-argument
         """
         Stop asynchronous server from child thread
         :return:
         """
-        from threading import Thread
-        import time
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
-            t = Thread(target=StopServer)
-            t.start()
+            mythread = Thread(target=StopServer)
+            mythread.start()
             time.sleep(2)
             self.assertEqual(mock_reactor.callFromThread.call_count, 1)
 
-    def testDatagramReceived(self):
+    def test_datagram_received(self):
+        """ Test datagram received. """
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         mock_addr = 0x01
         protocol = ModbusUdpProtocol(store=None)
         protocol.framer.processIncomingPacket = MagicMock()
         protocol.control.ListenOnly = False
-        protocol._execute = MagicMock()
+        protocol._execute = MagicMock() # pylint: disable=protected-access
 
         protocol.datagramReceived(mock_data, mock_addr)
         self.assertTrue(protocol.framer.processIncomingPacket.called)
 
-    def testSendUdp(self):
+    def test_send_udp(self):
+        """ Test send UDP. """
         protocol = ModbusUdpProtocol(store=None)
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         mock_addr = 0x01
@@ -236,52 +247,56 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.framer.buildPacket = MagicMock(return_value=mock_data)
         protocol.transport = MagicMock()
 
-        protocol._send(mock_data, mock_addr)
+        protocol._send(mock_data, mock_addr) # pylint: disable=protected-access
 
         self.assertTrue(protocol.framer.buildPacket.called)
         self.assertTrue(protocol.transport.write.called)
 
-    def testUdpExecuteSuccess(self):
+    def test_udp_execute_success(self):
+        """ Test UDP execute success. """
         protocol = ModbusUdpProtocol(store=None)
         mock_addr = 0x01
         protocol.store = MagicMock()
         request = MagicMock()
-        protocol._send = MagicMock()
+        protocol._send = MagicMock() # pylint: disable=protected-access
 
         # test if _send being called
-        protocol._execute(request, mock_addr)
-        self.assertTrue(protocol._send.called)
+        protocol._execute(request, mock_addr) # pylint: disable=protected-access
+        self.assertTrue(protocol._send.called) # pylint: disable=protected-access
 
-    def testUdpExecuteFailure(self):
+    def test_udp_execute_failure(self):
+        """ Test UDP execute failure. """
         protocol = ModbusUdpProtocol(store=None)
         mock_addr = 0x01
         protocol.store = MagicMock()
         request = MagicMock()
-        protocol._send = MagicMock()
+        protocol._send = MagicMock() # pylint: disable=protected-access
 
         # CASE-1: test NoSuchSlaveException exceptions
         request.execute.side_effect = NoSuchSlaveException()
-        protocol._execute(request, mock_addr)
+        protocol._execute(request, mock_addr) # pylint: disable=protected-access
         self.assertTrue(request.doException.called)
 
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
         protocol.ignore_missing_slaves = True
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertEqual(protocol._execute(request, mock_addr), None)
+        self.assertEqual(protocol._execute(request, mock_addr), None) # pylint: disable=protected-access
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
-        protocol._execute(request, mock_addr)
-        self.assertTrue(protocol._send.called)
+        protocol._execute(request, mock_addr) # pylint: disable=protected-access
+        self.assertTrue(protocol._send.called) # pylint: disable=protected-access
 
-    def testStopServer(self):
-        from twisted.internet import reactor
+    def test_stop_server(self):
+        """ Test stop server. """
+        from twisted.internet import reactor # pylint: disable=import-outside-toplevel
         reactor.stop = MagicMock()
         StopServer()
 
         self.assertTrue(reactor.stop.called)
 
-    def testIsMainThread(self):
+    def test_is_main_thread(self):
+        """ Test is main thread. """
         self.assertTrue(_is_main_thread())
 
 

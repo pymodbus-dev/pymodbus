@@ -42,4 +42,4 @@ if __name__ == "__main__":
         Handlers.SysLogHandler(facility="daemon"),
         Handlers.DatagramHandler('localhost', 12345),
     ]
-    [log.addHandler(h) for h in handlers]
+    [log.addHandler(h) for h in handlers] # pylint: disable=expression-not-assigned

@@ -12,9 +12,13 @@ a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
+import logging
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
+from twisted.internet.task import LoopingCall
+
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
@@ -24,12 +28,10 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 # import the twisted libraries we need
 # --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -39,7 +41,7 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
-def updating_writer(a):
+def updating_writer(extra):
     """ A worker process that runs every so often and
     updates live values of the context. It should be noted
     that there is a race condition for the update.
@@ -47,17 +49,19 @@ def updating_writer(a):
     :param arguments: The input arguments to the call
     """
     log.debug("updating the context")
-    context = a[0]
+    context = extra[0]
     register = 3
     slave_id = 0x00
     address = 0x10
     values = context[slave_id].getValues(register, address, count=5)
     values = [v + 1 for v in values]
-    log.debug("new values: " + str(values))
+    txt = f"new values: {str(values)}"
+    log.debug(txt)
     context[slave_id].setValues(register, address, values)
 
 
 def run_updating_server():
+    """ Run updating server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #

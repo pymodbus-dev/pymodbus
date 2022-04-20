@@ -8,11 +8,11 @@ party libraries (unless you need to use the serial protocols which require
 pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
+import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -20,7 +20,6 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -29,6 +28,7 @@ log.setLevel(logging.DEBUG)
 
 
 def run_server():
+    """ Run server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -89,7 +89,7 @@ def run_server():
         hr=ModbusSequentialDataBlock(0, [17] * 100),
         ir=ModbusSequentialDataBlock(0, [17] * 100))
 
-    context = ModbusServerContext(slaves=store, single=True)
+    ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
@@ -127,7 +127,8 @@ def run_server():
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
 
-    # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
+    # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
+    #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     # Ascii:
     # StartSerialServer(context, identity=identity,
     #                    port='/dev/ttyp0', timeout=1)

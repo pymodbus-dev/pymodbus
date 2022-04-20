@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
+""" Test register read messages. """
 import unittest
-from pymodbus.register_read_message import *
+
+from pymodbus.register_read_message import (
+    ReadWriteMultipleRegistersRequest,
+    ReadInputRegistersRequest,
+    ReadHoldingRegistersRequest,
+    ReadWriteMultipleRegistersResponse,
+    ReadInputRegistersResponse,
+    ReadHoldingRegistersResponse,
+)
 from pymodbus.register_read_message import ReadRegistersRequestBase
 from pymodbus.register_read_message import ReadRegistersResponseBase
-from pymodbus.exceptions import *
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.compat import iteritems, iterkeys, get_next
 
@@ -16,9 +24,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
     '''
     Register Message Test Fixture
     --------------------------------
-    This fixture tests the functionality of all the 
+    This fixture tests the functionality of all the
     register based request/response messages:
-    
+
     * Read/Write Input Registers
     * Read Holding Registers
     '''
@@ -39,7 +47,8 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             ReadHoldingRegistersRequest(1, 5)               :b'\x00\x01\x00\x05',
             ReadInputRegistersRequest(1,5)                  :b'\x00\x01\x00\x05',
             ReadWriteMultipleRegistersRequest(**arguments)  :b'\x00\x01\x00\x05\x00\x01\x00'
-                                                             b'\x05\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+                                                             b'\x05\x0a\x00\x00\x00\x00\x00'
+                                                             b'\x00\x00\x00\x00\x00',
         }
         self.response_read  = {
             ReadRegistersResponseBase(self.values)          :b'\x06\x00\x0a\x00\x0b\x00\x0c',
@@ -53,33 +62,37 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         del self.request_read
         del self.response_read
 
-    def testReadRegisterResponseBase(self):
+    def test_read_register_response_base(self):
+        """ Test read register response. """
         response = ReadRegistersResponseBase(list(range(10)))
         for index in range(10):
             self.assertEqual(response.getRegister(index), index)
 
-    def testRegisterReadRequests(self):
+    def test_register_read_requests(self):
+        """ Test register read requests. """
         for request, response in iteritems(self.request_read):
             self.assertEqual(request.encode(), response)
 
-    def testRegisterReadResponses(self):
+    def test_register_read_responses(self):
+        """ Test register read response. """
         for request, response in iteritems(self.response_read):
             self.assertEqual(request.encode(), response)
 
-    def testRegisterReadResponseDecode(self):
+    def test_register_read_response_decode(self):
+        """ Test register read response. """
         registers = [
             [0x0a,0x0b,0x0c],
             [0x0a,0x0b,0x0c],
             [0x0a,0x0b,0x0c],
             [0x0a,0x0b,0x0c, 0x0a,0x0b,0x0c],
         ]
-        values = sorted(self.response_read.items(), key=lambda x: str(x))
+        values = sorted(self.response_read.items(), key=lambda x: str(x)) # pylint: disable=unnecessary-lambda
         for packet, register in zip(values, registers):
             request, response = packet
             request.decode(response)
             self.assertEqual(request.registers, register)
 
-    def testRegisterReadRequestsCountErrors(self):
+    def test_register_read_requests_count_errors(self):
         '''
         This tests that the register request messages
         will break on counts that are out of range
@@ -98,7 +111,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             self.assertEqual(ModbusExceptions.IllegalValue,
                 result.exception_code)
 
-    def testRegisterReadRequestsValidateErrors(self):
+    def test_register_read_requests_validate_errors(self):
         '''
         This tests that the register request messages
         will break on counts that are out of range
@@ -115,7 +128,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             self.assertEqual(ModbusExceptions.IllegalAddress,
                 result.exception_code)
 
-    def testRegisterReadRequestsExecute(self):
+    def test_register_read_requests_execute(self):
         '''
         This tests that the register request messages
         will break on counts that are out of range
@@ -129,14 +142,16 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             response = request.execute(context)
             self.assertEqual(request.function_code, response.function_code)
 
-    def testReadWriteMultipleRegistersRequest(self):
+    def test_read_write_multiple_registers_request(self):
+        """ Test read/write multiple registers. """
         context = MockContext(True)
         request = ReadWriteMultipleRegistersRequest(read_address=1,
             read_count=10, write_address=1, write_registers=[0x00])
         response = request.execute(context)
         self.assertEqual(request.function_code, response.function_code)
 
-    def testReadWriteMultipleRegistersValidate(self):
+    def test_read_write_multiple_registers_validate(self):
+        """ Test read/write multiple registers. """
         context = MockContext()
         context.validate = lambda f,a,c: a == 1
         request = ReadWriteMultipleRegistersRequest(read_address=1,
@@ -152,7 +167,8 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         response = request.execute(context)
         self.assertEqual(response.exception_code, ModbusExceptions.IllegalValue)
 
-    def testReadWriteMultipleRegistersRequestDecode(self):
+    def test_read_write_multiple_registers_request_decode(self):
+        """ Test read/write multiple registers. """
         request, response = get_next((k,v) for k,v in self.request_read.items()
             if getattr(k, 'function_code', 0) == 23)
         request.decode(response)
@@ -163,11 +179,12 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         self.assertEqual(request.write_byte_count, 0x0a)
         self.assertEqual(request.write_registers, [0x00]*5)
 
-    def testSerializingToString(self):
+    def test_serializing_to_string(self):
+        """ Test serializing to string. """
         for request in iterkeys(self.request_read):
-            self.assertTrue(str(request) != None)
+            self.assertTrue(str(request) is not None) #NOSONAR
         for request in iterkeys(self.response_read):
-            self.assertTrue(str(request) != None)
+            self.assertTrue(str(request) is not None) #NOSONAR
 
 #---------------------------------------------------------------------------#
 # Main

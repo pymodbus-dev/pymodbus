@@ -69,8 +69,8 @@ class ExampleProtocol(ModbusClientProtocol):
         """ Defer fetching holding registers
         """
         log.debug("Starting the next cycle")
-        data = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
-        data.addCallbacks(self.send_holding_registers, self.error_handler)
+        d = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
+        d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
         """ Write values of holding registers, defer fetching coils

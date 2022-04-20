@@ -139,7 +139,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         self._payload.append(value)
 
 
-class BcdPayloadDecoder(object):
+class BcdPayloadDecoder:
     """
     A utility that helps decode binary coded decimal payload
     messages from a modbus response message. What follows is
@@ -159,7 +159,7 @@ class BcdPayloadDecoder(object):
         self._pointer = 0x00
 
     @staticmethod
-    def fromRegisters(registers, endian=Endian.Little):
+    def fromRegisters(registers, endian=Endian.Little): # pylint: disable=invalid-name
         """ Initialize a payload decoder with the result of
         reading a collection of registers from a modbus device.
 
@@ -177,7 +177,7 @@ class BcdPayloadDecoder(object):
         raise ParameterException('Invalid collection of registers supplied')
 
     @staticmethod
-    def fromCoils(coils, endian=Endian.Little):
+    def fromCoils(coils, endian=Endian.Little): # pylint: disable=invalid-name
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 

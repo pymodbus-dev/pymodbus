@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+""" Test fixes. """
+import logging
 import unittest
 
 class ModbusFixesTest(unittest.TestCase):
@@ -6,18 +8,16 @@ class ModbusFixesTest(unittest.TestCase):
     This is the unittest for the pymodbus._version code
     '''
 
-    def testTrueFalseDefined(self):
+    def test_true_false_defined(self):
         ''' Test that True and False are defined on all versions'''
         try:
             True,False
         except NameError:
-            import pymodbus
             self.assertEqual(True, 1)
             self.assertEqual(False, 1)
 
-    def testNullLoggerAttached(self):
+    def test_null_logger_attached(self):
         ''' Test that the null logger is attached'''
-        import logging
         logger = logging.getLogger('pymodbus')
         self.assertEqual(len(logger.handlers), 1)
 

@@ -267,7 +267,7 @@ def main():
     if options.debug:
         try:
             log.setLevel(logging.DEBUG)
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             print("Logging is not supported on this system")
 
     # split the query into a starting and ending range

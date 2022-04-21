@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # This will simply send everything logged to console
     # ----------------------------------------------------------------------- #
-q    log = logging.getLogger()
+    log = logging.getLogger()
     log.setLevel(logging.DEBUG)
 
     # ----------------------------------------------------------------------- #

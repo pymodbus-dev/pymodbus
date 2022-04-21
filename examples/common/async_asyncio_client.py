@@ -26,7 +26,6 @@ from pymodbus.client.asynchronous import schedulers
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
-logging.basicConfig()
 _logger = logging.getLogger()
 _logger.setLevel(logging.DEBUG)
 

@@ -34,7 +34,6 @@ from pymodbus.datastore.database import SqlSlaveContext
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -58,8 +57,8 @@ def updating_writer(parm1):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999)
-    rand_addr = random.randint(0, 65000)
+    rand_value = random.randint(0, 9999) #NOSONAR
+    rand_addr = random.randint(0, 65000) #NOSONAR
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()
@@ -87,7 +86,7 @@ def run_dbstore_update_server():
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'pymodbus'
     identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
     identity.ProductName = 'pymodbus Server'
     identity.ModelName = 'pymodbus Server'
     identity.MajorMinorRevision = version.short()

@@ -28,7 +28,6 @@ from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 

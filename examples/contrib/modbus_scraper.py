@@ -254,7 +254,6 @@ def main():
     if options.debug:
         try:
             log.setLevel(logging.DEBUG)
-            logging.basicConfig()
         except Exception:
             print("Logging is not supported on this system")
 

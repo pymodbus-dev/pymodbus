@@ -30,7 +30,7 @@ from pymodbus.transaction import ModbusRtuFramer
 # -------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT)
+logging.basicConfig(format=FORMAT) #NOSONAR
 log = logging.getLogger()
 
 
@@ -194,7 +194,6 @@ def main():
     if option.debug:
         try:
             log.setLevel(logging.DEBUG)
-            logging.basicConfig()
         except Exception as exc: # pylint: disable=broad-except
             print(f"Logging is not supported on this system- {exc}")
 

@@ -10,6 +10,7 @@ implementation from pymodbus.
         result = client.read_coils(1,10)
         print result
 """
+# pylint: disable=R0801
 import logging
 
 # --------------------------------------------------------------------------- #

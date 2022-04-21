@@ -7,6 +7,7 @@ This is an example of adding callbacks to a running modbus server
 when a value is written to it. In order for this to work, it needs
 a device-mapping file.
 """
+# pylint: disable=R0801
 import logging
 from multiprocessing import Queue, Process
 

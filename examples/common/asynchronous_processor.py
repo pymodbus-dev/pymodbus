@@ -6,6 +6,7 @@ Pymodbus Asynchronous Processor Example
 The following is a full example of a continuous client processor. Feel
 free to use it as a skeleton guide in implementing your own.
 """
+# pylint: disable=R0801
 # --------------------------------------------------------------------------- #
 # import the necessary modules
 # --------------------------------------------------------------------------- #

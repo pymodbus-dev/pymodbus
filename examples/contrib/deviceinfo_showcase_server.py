@@ -8,20 +8,25 @@ to clients about the device. This is part of the MODBUS specification, and
 uses the MEI 0x2B 0x0E request / response. This example creates an otherwise
 empty server.
 """
-import logging
-from serial import __version__ as pyserial_version
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
+
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
+# --------------------------------------------------------------------------- #
+# import versions of libraries which we will use later on for the example
+# --------------------------------------------------------------------------- #
 from pymodbus import __version__ as pymodbus_version
+from serial import __version__ as pyserial_version
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -30,7 +35,6 @@ log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -77,8 +81,8 @@ def run_server():
     # response", if you use repeated OIDs, apply that rule to the entire
     # grouping of objects with the repeated OID.
     # ----------------------------------------------------------------------- #
-    identity[0x81] = [f'pymodbus {pymodbus_version}',
-                      f'pyserial {pyserial_version}']
+    identity[0x81] = ['pymodbus {0}'.format(pymodbus_version),
+                      'pyserial {0}'.format(pyserial_version)]
 
     # ----------------------------------------------------------------------- #
     # run the server you want

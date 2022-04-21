@@ -4,28 +4,30 @@ This is a simple scraper that can be pointed at a
 modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """
+import logging
 import pickle
-from optparse import OptionParser
+from optparse import OptionParser # pylint: disable=deprecated-module
+
 from twisted.internet import serialport, reactor
 from twisted.internet.protocol import ClientFactory
+
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
-
-# -------------------------------------------------------------------------- #
-# Configure the client logging
-# -------------------------------------------------------------------------- #
-import logging
-log = logging.getLogger("pymodbus")
-
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol # pylint: disable=no-name-in-module
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use
 # --------------------------------------------------------------------------- #
 # from pymodbus.transaction import ModbusBinaryFramer
 # from pymodbus.transaction import ModbusAsciiFramer
 # from pymodbus.transaction import ModbusRtuFramer
-# from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer
+
+# -------------------------------------------------------------------------- #
+# Configure the client logging
+# -------------------------------------------------------------------------- #
+log = logging.getLogger("pymodbus")
+
 
 # --------------------------------------------------------------------------- #
 # Define some constants
@@ -43,6 +45,7 @@ SLAVE = 0x01  # The slave unit id to read from
 
 
 class ScraperProtocol(ModbusClientProtocol):
+    """ Scraper protocol. """
 
     address = None
 
@@ -55,71 +58,76 @@ class ScraperProtocol(ModbusClientProtocol):
         ModbusClientProtocol.__init__(self, framer)
         self.endpoint = endpoint
 
-    def connectionMade(self):
+    def connection_made(self):
         """ Callback for when the client has connected
         to the remote server.
         """
-        super(ScraperProtocol, self).connectionMade()
+        super().connectionMade()
         log.debug("Beginning the processing loop")
         self.address = self.factory.starting
-        reactor.callLater(DELAY, self.scrape_holding_registers)
+        reactor.callLater(DELAY, self.scrape_holding_registers) # pylint: disable=no-member
 
-    def connectionLost(self, reason):
+    def connection_lost(self, reason): # pylint: disable=no-self-use,unused-argument
         """ Callback for when the client disconnects from the
         server.
 
         :param reason: The reason for the disconnection
         """
-        reactor.callLater(DELAY, reactor.stop)
+        reactor.callLater(DELAY, reactor.stop) # pylint: disable=no-member
 
     def scrape_holding_registers(self):
         """ Defer fetching holding registers
         """
-        log.debug("reading holding registers: %d" % self.address)
-        d = self.read_holding_registers(self.address, count=COUNT, unit=SLAVE)
-        d.addCallbacks(self.scrape_discrete_inputs, self.error_handler)
+        txt = f"reading holding registers: {self.address}"
+        log.debug(txt)
+        data = self.read_holding_registers(self.address, count=COUNT, unit=SLAVE)
+        data.addCallbacks(self.scrape_discrete_inputs, self.error_handler)
 
     def scrape_discrete_inputs(self, response):
         """ Defer fetching holding registers
         """
-        log.debug("reading discrete inputs: %d" % self.address)
+        txt = f"reading discrete inputs: {self.address}"
+        log.debug(txt)
         self.endpoint.write((3, self.address, response.registers))
-        d = self.read_discrete_inputs(self.address, count=COUNT, unit=SLAVE)
-        d.addCallbacks(self.scrape_input_registers, self.error_handler)
+        data = self.read_discrete_inputs(self.address, count=COUNT, unit=SLAVE)
+        data.addCallbacks(self.scrape_input_registers, self.error_handler)
 
     def scrape_input_registers(self, response):
         """ Defer fetching holding registers
         """
-        log.debug("reading discrete inputs: %d" % self.address)
+        txt = f"reading discrete inputs: {self.address}"
+        log.debug(txt)
         self.endpoint.write((2, self.address, response.bits))
-        d = self.read_input_registers(self.address, count=COUNT, unit=SLAVE)
-        d.addCallbacks(self.scrape_coils, self.error_handler)
+        data = self.read_input_registers(self.address, count=COUNT, unit=SLAVE)
+        data.addCallbacks(self.scrape_coils, self.error_handler)
 
     def scrape_coils(self, response):
         """ Write values of holding registers, defer fetching coils
 
         :param response: The response to process
         """
-        log.debug("reading coils: %d" % self.address)
+        txt = f"reading coils: {self.address}"
+        log.debug(txt)
         self.endpoint.write((4, self.address, response.registers))
-        d = self.read_coils(self.address, count=COUNT, unit=SLAVE)
-        d.addCallbacks(self.start_next_cycle, self.error_handler)
+        data = self.read_coils(self.address, count=COUNT, unit=SLAVE)
+        data.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
         """ Write values of coils, trigger next cycle
 
         :param response: The response to process
         """
-        log.debug("starting next round: %d" % self.address)
+        txt = f"starting next round: {self.addres}"
+        log.debug(txt)
         self.endpoint.write((1, self.address, response.bits))
         self.address += COUNT
         if self.address >= self.factory.ending:
             self.endpoint.finalize()
             self.transport.loseConnection()
         else:
-            reactor.callLater(DELAY, self.scrape_holding_registers)
+            reactor.callLater(DELAY, self.scrape_holding_registers) # pylint: disable=no-member
 
-    def error_handler(self, failure):
+    def error_handler(self, failure): # pylint: disable=no-self-use
         """ Handle any twisted errors
 
         :param failure: The error to handle
@@ -139,6 +147,7 @@ class ScraperProtocol(ModbusClientProtocol):
 # It also persists data between client instances (think protocol singelton).
 # --------------------------------------------------------------------------- #
 class ScraperFactory(ClientFactory):
+    """ Scraper factory. """
 
     protocol = ScraperProtocol
 
@@ -165,7 +174,8 @@ class ScraperFactory(ClientFactory):
 #
 # How you start your client is really up to you.
 # --------------------------------------------------------------------------- #
-class SerialModbusClient(serialport.SerialPort):
+class SerialModbusClient(serialport.SerialPort): # pylint: disable=abstract-method
+    """ Serial modbus client. """
 
     def __init__(self, factory, *args, **kwargs):
         """ Setup the client and start listening on the serial port
@@ -185,7 +195,8 @@ class SerialModbusClient(serialport.SerialPort):
 # - a context recorder
 # - a database or file recorder
 # --------------------------------------------------------------------------- #
-class LoggingContextReader(object):
+class LoggingContextReader:
+    """ Logging context reader. """
 
     def __init__(self, output):
         """ Initialize a new instance of the logger
@@ -204,12 +215,14 @@ class LoggingContextReader(object):
 
         :param response: The response to process
         """
-        log.info("Read Data: %s" % str(response))
-        fx, address, values = response
-        self.context.setValues(fx, address, values)
+        txt = f"Read Data: {str(response)}"
+        log.info(txt)
+        file_ptr, address, values = response
+        self.context.setValues(file_ptr, address, values)
 
     def finalize(self):
-        with open(self.output, "w") as handle:
+        """ Finalize. """
+        with open(self.output, "w") as handle: # pylint: disable=unspecified-encoding
             pickle.dump(self.context, handle)
 
 
@@ -243,7 +256,7 @@ def get_options():
                       help="Enable debug tracing",
                       action="store_true", dest="debug", default=False)
 
-    (opt, arg) = parser.parse_args()
+    (opt, _) = parser.parse_args()
     return opt
 
 
@@ -268,15 +281,15 @@ def main():
 
         # how to connect based on TCP vs Serial clients
         if isinstance(framer, ModbusSocketFramer):
-            reactor.connectTCP(options.host, options.port, factory)
+            reactor.connectTCP(options.host, options.port, factory) # pylint: disable=no-member
         else:
             SerialModbusClient(factory, options.port, reactor)
 
         log.debug("Starting the client")
-        reactor.run()
+        reactor.run() # pylint: disable=no-member
         log.debug("Finished scraping the client")
-    except Exception as ex:
-        print(ex)
+    except Exception as exc: # pylint: disable=broad-except
+        print(exc)
 
 # --------------------------------------------------------------------------- #
 # Main jumper

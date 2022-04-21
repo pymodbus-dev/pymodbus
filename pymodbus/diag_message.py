@@ -319,7 +319,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
         :returns: The initialized response message
         '''
         char = (self.message & 0xff00) >> 8
-        _MCB.Delimiter = char
+        _MCB._setDelimiter(char) # pylint: disable=protected-access
         return ChangeAsciiInputDelimiterResponse(self.message)
 
 
@@ -350,7 +350,7 @@ class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
 
         :returns: The initialized response message
         '''
-        _MCB.ListenOnly = True
+        _MCB._setListenOnly(True) # pylint: disable=protected-access
         return ForceListenOnlyModeResponse()
 
 

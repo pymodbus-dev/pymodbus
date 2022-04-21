@@ -3,6 +3,7 @@ Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 """
+# pylint: disable=R0801
 import logging
 import threading
 from binascii import b2a_hex

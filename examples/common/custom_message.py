@@ -24,7 +24,6 @@ from pymodbus.compat import int2byte, byte2int
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 

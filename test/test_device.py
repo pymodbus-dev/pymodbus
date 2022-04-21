@@ -28,7 +28,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
             0x00: 'Bashwork',               # VendorName
             0x01: 'PTM',                    # ProductCode
             0x02: '1.0',                    # MajorMinorRevision
-            0x03: 'http://internets.com',   # VendorUrl
+            0x03: 'http://internets.com',   #NOSONAR VendorUrl
             0x04: 'pymodbus',               # ProductName
             0x05: 'bashwork',               # ModelName
             0x06: 'unittest',               # UserApplicationName
@@ -56,7 +56,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
         self.assertEqual(self.control.Identity.VendorName, 'Bashwork')
         self.assertEqual(self.control.Identity.ProductCode, 'PTM')
         self.assertEqual(self.control.Identity.MajorMinorRevision, '1.0')
-        self.assertEqual(self.control.Identity.VendorUrl, 'http://internets.com')
+        self.assertEqual(self.control.Identity.VendorUrl, 'http://internets.com') #NOSONAR
         self.assertEqual(self.control.Identity.ProductName, 'pymodbus')
         self.assertEqual(self.control.Identity.ModelName, 'bashwork')
         self.assertEqual(self.control.Identity.UserApplicationName, 'unittest')
@@ -76,7 +76,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
         self.assertEqual(result[0x00], 'Bashwork')
         self.assertEqual(result[0x01], 'PTM')
         self.assertEqual(result[0x02], '1.0')
-        self.assertEqual(result[0x03], 'http://internets.com')
+        self.assertEqual(result[0x03], 'http://internets.com') #NOSONAR
         self.assertEqual(result[0x04], 'pymodbus')
         self.assertEqual(result[0x05], 'bashwork')
         self.assertEqual(result[0x06], 'unittest')
@@ -118,7 +118,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
         self.assertEqual(self.ident[0x00], 'Bashwork')
         self.assertEqual(self.ident[0x01], 'PTM')
         self.assertEqual(self.ident[0x02], '1.0')
-        self.assertEqual(self.ident[0x03], 'http://internets.com')
+        self.assertEqual(self.ident[0x03], 'http://internets.com') #NOSONAR
         self.assertEqual(self.ident[0x04], 'pymodbus')
         self.assertEqual(self.ident[0x05], 'bashwork')
         self.assertEqual(self.ident[0x06], 'unittest')

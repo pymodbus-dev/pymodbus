@@ -11,7 +11,6 @@ from pymodbus.factory import ClientDecoder
 # ----------------------------------------------------------------------- #
 # configure the client logging
 # ----------------------------------------------------------------------- #
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 

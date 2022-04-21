@@ -1,4 +1,5 @@
 """ Test client asyncio. """
+# pylint: disable=R0801
 from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 import asyncio

@@ -10,15 +10,18 @@ writing/reading from one or more client handles at once.
 # -------------------------------------------------------------------------- #
 # import system libraries
 # -------------------------------------------------------------------------- #
-import logging
 import multiprocessing
 import threading
-from threading import Thread, Event
-from queue import Queue as qQueue
 import itertools
-from multiprocessing import Queue as mQueue, Event as mEvent, Process as mProcess
 from collections import namedtuple
-from concurrent.futures import Future
+
+# we are using the future from the concurrent.futures released with
+# python3. Alternatively we will try the backported library::
+#   pip install futures
+try:
+    from concurrent.futures import Future
+except ImportError:
+    from futures import Future
 
 # -------------------------------------------------------------------------- #
 # import necessary modbus libraries
@@ -28,6 +31,7 @@ from pymodbus.client.common import ModbusClientMixin
 # -------------------------------------------------------------------------- #
 # configure the client logging
 # -------------------------------------------------------------------------- #
+import logging
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
 logging.basicConfig()
@@ -36,7 +40,7 @@ logging.basicConfig()
 # -------------------------------------------------------------------------- #
 # Initialize out concurrency primitives
 # -------------------------------------------------------------------------- #
-class _Primitives: # pylint: disable=too-few-public-methods)
+class _Primitives(object):
     """ This is a helper class used to group the
     threading primitives depending on the type of
     worker situation we want to run (threads or processes).
@@ -56,8 +60,15 @@ class _Primitives: # pylint: disable=too-few-public-methods)
         :returns: An initialized instance of concurrency primitives
         """
         if in_process:
-            return cls(queue=qQueue, event=Event, worker=Thread)
-        return cls(queue=mQueue, event=mEvent, worker=mProcess)
+            from queue import Queue
+            from threading import Thread
+            from threading import Event
+            return cls(queue=Queue, event=Event, worker=Thread)
+        else:
+            from multiprocessing import Queue
+            from multiprocessing import Event
+            from multiprocessing import Process
+            return cls(queue=Queue, event=Event, worker=Process)
 
 
 # -------------------------------------------------------------------------- #
@@ -88,7 +99,7 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
     :param is_shutdown: Condition variable marking process shutdown
     """
     log.info("starting up worker : %s", threading.current_thread())
-    my_client = factory()
+    client = factory()
     while not is_shutdown.is_set():
         try:
             workitem = input_queue.get(timeout=1)
@@ -97,20 +108,19 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                 continue
             try:
                 log.debug("executing request on thread: %s", workitem)
-                result = my_client.execute(workitem.request)
+                result = client.execute(workitem.request)
                 output_queue.put(WorkResponse(False, workitem.work_id, result))
-            except Exception as exc: # pylint: disable=broad-except
-                txt = f"error in worker thread: {threading.current_thread()}"
-                log.exception(txt)
+            except Exception as exception:
+                log.exception("error in worker "
+                              "thread: %s", threading.current_thread())
                 output_queue.put(WorkResponse(True,
-                                              workitem.work_id, exc))
-        except Exception: # pylint: disable=broad-except
+                                              workitem.work_id, exception))
+        except Exception:
             pass
-
     log.info("request worker shutting down: %s", threading.current_thread())
 
 
-def _manager_worker_process(output_queue, my_futures, is_shutdown):
+def _manager_worker_process(output_queue, futures, is_shutdown):
     """ This worker process manages taking output responses and
     tying them back to the future keyed on the initial transaction id.
     Basically this can be thought of as the delivery worker.
@@ -127,27 +137,25 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
     while not is_shutdown.is_set():
         try:
             workitem = output_queue.get()
-            my_future = my_futures.get(workitem.work_id, None)
+            future = futures.get(workitem.work_id, None)
             log.debug("dequeue manager response: %s", workitem)
-            if not my_future:
+            if not future:
                 continue
             if workitem.is_exception:
-                my_future.set_exception(workitem.response)
+                future.set_exception(workitem.response)
             else:
-                my_future.set_result(workitem.response)
-            txt = f"updated future result: {my_future}"
-            log.debug(txt)
+                future.set_result(workitem.response)
+            log.debug("updated future result: %s", future)
             del futures[workitem.work_id]
-        except Exception: # pylint: disable=broad-except
+        except Exception:
             log.exception("error in manager")
-    txt = f"manager worker shutting down: {threading.current_thread()}"
-    log.info(txt)
+    log.info("manager worker shutting down: %s", threading.current_thread())
 
 
 # -------------------------------------------------------------------------- #
 # Define our concurrent client
 # -------------------------------------------------------------------------- #
-class ConcurrentClient(ModbusClientMixin): # pylint: disable=too-many-instance-attributes
+class ConcurrentClient(ModbusClientMixin):
     """ This is a high performance client that can be used
     to read/write a large number of reqeusts at once asyncronously.
     This operates with a backing worker pool of processes or threads
@@ -176,7 +184,7 @@ class ConcurrentClient(ModbusClientMixin): # pylint: disable=too-many-instance-a
         self.workers.append(self.manager)
 
         # creating the request workers
-        for i in range(worker_count): #NOSONAR pylint: disable=unused-variable
+        for i in range(worker_count):
             worker = primitives.worker(
                 target=_client_worker_process,
                 args=(self.factory, self.input_queue, self.output_queue,
@@ -224,10 +232,9 @@ if __name__ == "__main__":
     from pymodbus.client.sync import ModbusTcpClient
 
     def client_factory():
-        """ Client factory. """
         log.debug("creating client for: %s", threading.current_thread())
-        my_client = ModbusTcpClient('127.0.0.1', port=5020)
-        my_client.connect()
+        client = ModbusTcpClient('127.0.0.1', port=5020)
+        client.connect()
         return client
 
     client = ConcurrentClient(factory=client_factory)

@@ -8,6 +8,7 @@ party libraries (unless you need to use the serial protocols which require
 pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
+# pylint: disable=R0801
 import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations

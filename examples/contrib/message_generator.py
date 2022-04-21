@@ -11,6 +11,7 @@ for the supplied modbus format:
 * rtu    - `./generate-messages.py -f rtu -m rx -b`
 * binary - `./generate-messages.py -f binary -m tx -b`
 """
+# pylint: disable=R0801
 import logging
 from optparse import OptionParser # pylint: disable=deprecated-module
 import codecs as c

@@ -6,6 +6,7 @@ Pymodbus Asynchronous Client Examples
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus using Tornado.
 """
+# pylint: disable=R0801
 import logging
 import functools
 from tornado.ioloop import IOLoop

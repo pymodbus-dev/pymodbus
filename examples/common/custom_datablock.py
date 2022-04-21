@@ -6,6 +6,7 @@ Pymodbus Server With Custom Datablock Side Effect
 This is an example of performing custom logic after a value has been
 written to the datastore.
 """
+# pylint: disable=R0801
 from __future__ import print_function
 import logging
 

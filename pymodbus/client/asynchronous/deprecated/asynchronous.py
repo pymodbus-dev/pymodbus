@@ -32,6 +32,7 @@ Another example::
        reactor.callLater(1, process)
        reactor.run()
 """
+# pylint: disable=R0801
 import logging
 from twisted.internet import defer, protocol
 from twisted.python.failure import Failure

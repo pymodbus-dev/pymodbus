@@ -4,6 +4,7 @@ Modbus Clients to be used with REPL.
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+# pylint: disable=R0801
 from __future__ import absolute_import, unicode_literals
 import functools
 from pymodbus.pdu import ModbusExceptions, ExceptionResponse

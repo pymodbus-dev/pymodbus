@@ -9,7 +9,7 @@ from pymodbus.client.asynchronous.async_io import (
     ReconnectingAsyncioModbusTcpClient,
     ModbusClientProtocol, ModbusUdpClientProtocol)
 from pymodbus.client.asynchronous import schedulers
-from pymodbus.compat import PYTHON_VERSION
+from pymodbus.constants import PYTHON_VERSION
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer

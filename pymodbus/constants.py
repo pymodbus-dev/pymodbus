@@ -5,6 +5,7 @@ Constants For Modbus Server/Client
 This is the single location for storing default
 values for the servers and clients.
 '''
+from sys import version_info
 from pymodbus.interfaces import Singleton
 
 
@@ -266,3 +267,8 @@ __all__ = [
     "ModbusPlusOperation",
     "DeviceInformation", "MoreData",
 ]
+
+# --------------------------------------------------------------------------- #
+# python version checks
+# --------------------------------------------------------------------------- #
+PYTHON_VERSION = version_info

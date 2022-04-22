@@ -5,7 +5,7 @@ from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.constants import Defaults
-from pymodbus.compat import iteritems, itervalues
+from pymodbus.compat import itervalues
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -130,7 +130,7 @@ class ModbusServerContext:
 
         :returns: An iterator over the slave contexts
         '''
-        return iteritems(self._slaves)
+        return iter(self._slaves.items())
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list

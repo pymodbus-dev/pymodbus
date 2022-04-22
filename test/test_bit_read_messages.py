@@ -14,7 +14,6 @@ from pymodbus.bit_read_message import ReadDiscreteInputsRequest, ReadCoilsReques
 from pymodbus.bit_read_message import ReadBitsRequestBase
 from pymodbus.bit_read_message import ReadBitsResponseBase
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.compat import iteritems
 
 from .modbus_mocks import MockContext
 res = [True] * 21
@@ -82,7 +81,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadBitsRequestBase(12, 14)        : b'\x00\x0c\x00\x0e',
             ReadBitsResponseBase([1,0,1,1,0])  : b'\x01\x0d'
         }
-        for request, expected in iteritems(messages):
+        for request, expected in iter(messages.items()):
             self.assertEqual(request.encode(), expected)
 
     def test_bit_read_message_execute_value_errors(self):
@@ -130,7 +129,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadDiscreteInputsRequest(1, 24): 5,
             ReadDiscreteInputsRequest(1, 1900): 240,
         }
-        for request, expected in iteritems(requests):
+        for request, expected in iter(requests.items()):
             pdu_len = request.get_response_pdu_size()
             self.assertEqual(pdu_len, expected)
 

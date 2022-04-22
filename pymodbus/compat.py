@@ -14,23 +14,8 @@ import importlib.util
 import socketserver
 import struct
 
-# --------------------------------------------------------------------------- #
-# python version checks
-# --------------------------------------------------------------------------- #
-PYTHON_VERSION = sys.version_info
-IS_PYPY = hasattr(sys, 'pypy_translation_info')
-IS_JYTHON = sys.platform.startswith('java')
 
-# --------------------------------------------------------------------------- #
-# python > 3.3 compatibility layer
-# --------------------------------------------------------------------------- #
-# ----------------------------------------------------------------------- #
-# portable builtins
-# ----------------------------------------------------------------------- #
 int2byte = struct.Struct(">B").pack
-#NOT USED unichr = six.unichr
-#NOT USED range_type = six.moves.range # pylint: disable=invalid-name
-#NOT USED text_type = six.string_types
 string_types = str
 
 def iterkeys(d, **kw):
@@ -42,16 +27,6 @@ def itervalues(d, **kw):
 def iteritems(d, **kw):
     return iter(d.items(**kw))
 
-def iterlists(d, **kw):
-    return iter(d.lists(**kw))
-
-get_next = next
-#NOT USED unicode_string = six.u
-
-#NOT USED NativeStringIO = six.StringIO
-#NOT USED ifilter = six.moves.filter # pylint: disable=invalid-name
-#NOT USED imap = six.moves.map # pylint: disable=invalid-name
-izip = zip # pylint: disable=invalid-name
 intern = sys
 
 # ----------------------------------------------------------------------- #
@@ -63,8 +38,6 @@ socketserver.ThreadingMixIn.daemon_threads = True
 # ----------------------------------------------------------------------- #
 # decorators
 # ----------------------------------------------------------------------- #
-implements_to_string = lambda x: x
-
 byte2int = lambda b: b
 
 def is_installed(module):

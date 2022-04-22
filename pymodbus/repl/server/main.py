@@ -6,7 +6,7 @@ import logging
 import asyncio
 import json
 import click
-from pymodbus.compat import PYTHON_VERSION
+from pymodbus.constants import PYTHON_VERSION
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
     ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)

@@ -35,7 +35,6 @@ jobs:
             runs-on: ubuntu-latest
             matrix: linux
             container:
-              3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
               3.10: docker://python:3.10-buster
@@ -50,12 +49,6 @@ jobs:
               x86: win32
               x64: win64
         python:
-          - name: CPython 3.7
-            tox: py37
-            action: 3.7
-            docker: 3.7
-            matrix: 3.7
-            implementation: cpython
           - name: CPython 3.8
             tox: py38
             action: 3.8
@@ -74,13 +67,6 @@ jobs:
             docker: '3.10'
             matrix: '3.10'
             implementation: cpython
-          - name: PyPy 3.7
-            tox: pypy37
-            action: pypy-3.7
-            docker: pypy3.7
-            matrix: 3.7
-            implementation: pypy
-            openssl_msvc_version: 2019
           - name: PyPy 3.8
             tox: pypy38
             action: pypy-3.8

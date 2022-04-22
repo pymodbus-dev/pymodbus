@@ -49,7 +49,6 @@ based on their preference.
 import logging
 
 from pymodbus.exceptions import NotImplementedException, ParameterException
-from pymodbus.compat import iteritems, iterkeys
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -128,7 +127,7 @@ class BaseModbusDataBlock:
         :returns: An iterator of the data block data
         '''
         if isinstance(self.values, dict):
-            return iteritems(self.values)
+            return iter(self.values.items())
         return enumerate(self.values, self.address)
 
 
@@ -229,7 +228,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()
-        self.address = next(iterkeys(self.values), None)
+        self.address = next(iter(self.values.keys()), None)
 
     @classmethod
     def create(cls, values=None):
@@ -255,7 +254,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         if count == 0:
             return False
         handle = set(range(address, address + count))
-        return handle.issubset(set(iterkeys(self.values)))
+        return handle.issubset(set(iter(self.values.keys())))
 
     def getValues(self, address, count=1):
         ''' Returns the requested values of the datastore
@@ -268,7 +267,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
 
     def _process_values(self, values):
         def _process_as_dict(values):
-            for idx, val in iteritems(values):
+            for idx, val in iter(values.items()):
                 if isinstance(val, (list, tuple)):
                     for i, v in enumerate(val):
                         self.values[idx + i] = v
@@ -306,7 +305,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                     raise ParameterException("Offset {address+idx} not in range")
                 self.values[address + idx] = val
         if not self.address:
-            self.address = next(iterkeys(self.values), None)
+            self.address = next(iter(self.values.keys()), None)
         if use_as_default:
-            for idx, val in iteritems(self.values):
+            for idx, val in iter(self.values.items()):
                 self.default_value[idx] = val

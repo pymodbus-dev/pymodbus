@@ -13,7 +13,6 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-from pymodbus.compat import iteritems
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
@@ -195,7 +194,7 @@ def run_binary_payload_ex(): # pylint: disable=too-many-statements
         print("-" * 60)
         print("Decoded Data")
         print("-" * 60)
-        for name, value in iteritems(decoded):
+        for name, value in iter(decoded.items()):
             print("%s\t" % name, hex(value) if isinstance(value, int) else value) # pylint: disable=consider-using-f-string
 
     # ----------------------------------------------------------------------- #

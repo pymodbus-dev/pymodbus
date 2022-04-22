@@ -49,7 +49,7 @@ based on their preference.
 import logging
 
 from pymodbus.exceptions import NotImplementedException, ParameterException
-from pymodbus.compat import iteritems, iterkeys, get_next
+from pymodbus.compat import iteritems, iterkeys
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -229,7 +229,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         self._process_values(values)
         self.mutable = mutable
         self.default_value = self.values.copy()
-        self.address = get_next(iterkeys(self.values), None)
+        self.address = next(iterkeys(self.values), None)
 
     @classmethod
     def create(cls, values=None):
@@ -306,7 +306,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                     raise ParameterException("Offset {address+idx} not in range")
                 self.values[address + idx] = val
         if not self.address:
-            self.address = get_next(iterkeys(self.values), None)
+            self.address = next(iterkeys(self.values), None)
         if use_as_default:
             for idx, val in iteritems(self.values):
                 self.default_value[idx] = val

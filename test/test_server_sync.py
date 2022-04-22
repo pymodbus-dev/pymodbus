@@ -29,7 +29,7 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.transaction import ModbusTlsFramer
-from pymodbus.compat import socketserver
+import socketserver
 
 
 # --------------------------------------------------------------------------- #
@@ -276,7 +276,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
 
     def test_tcp_server_process(self):
         ''' test that the synchronous TCP server processes requests '''
-        with patch('pymodbus.compat.socketserver.ThreadingTCPServer') as mock_server:
+        with patch('socketserver.ThreadingTCPServer') as mock_server:
             server = ModbusTcpServer(None)
             server.process_request('request', 'client')
             self.assertTrue(mock_server.process_request.called)
@@ -324,7 +324,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
 
     def test_tls_server_process(self):
         ''' test that the synchronous TLS server processes requests '''
-        with patch('pymodbus.compat.socketserver.ThreadingTCPServer') as mock_server:
+        with patch('socketserver.ThreadingTCPServer') as mock_server:
             with patch.object(ssl.SSLContext, 'load_cert_chain'):
                 server = ModbusTlsServer(None)
                 server.process_request('request', 'client')
@@ -346,7 +346,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
 
     def test_udp_server_process(self):
         ''' test that the synchronous UDP server processes requests '''
-        with patch('pymodbus.compat.socketserver.ThreadingUDPServer') as mock_server:
+        with patch('socketserver.ThreadingUDPServer') as mock_server:
             server = ModbusUdpServer(None)
             request = ('data', 'socket')
             server.process_request(request, 'client')

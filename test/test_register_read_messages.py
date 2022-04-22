@@ -13,7 +13,7 @@ from pymodbus.register_read_message import (
 from pymodbus.register_read_message import ReadRegistersRequestBase
 from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.pdu import ModbusExceptions
-from pymodbus.compat import iteritems, iterkeys, get_next
+from pymodbus.compat import iteritems, iterkeys
 
 from .modbus_mocks import MockContext, FakeList
 
@@ -169,7 +169,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
 
     def test_read_write_multiple_registers_request_decode(self):
         """ Test read/write multiple registers. """
-        request, response = get_next((k,v) for k,v in self.request_read.items()
+        request, response = next((k,v) for k,v in self.request_read.items()
             if getattr(k, 'function_code', 0) == 23)
         request.decode(response)
         self.assertEqual(request.read_address, 0x01)

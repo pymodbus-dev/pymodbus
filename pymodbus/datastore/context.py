@@ -5,7 +5,6 @@ from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.constants import Defaults
-from pymodbus.compat import iteritems, itervalues
 
 #---------------------------------------------------------------------------#
 # Logging
@@ -49,7 +48,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         ''' Resets all the datastores to their default values '''
-        for datastore in itervalues(self.store):
+        for datastore in iter(self.store.values()):
             datastore.reset()
 
     def validate(self, fc_as_hex, address, count=1): # pylint: disable=arguments-renamed
@@ -130,7 +129,7 @@ class ModbusServerContext:
 
         :returns: An iterator over the slave contexts
         '''
-        return iteritems(self._slaves)
+        return iter(self._slaves.items())
 
     def __contains__(self, slave):
         ''' Check if the given slave is in this list

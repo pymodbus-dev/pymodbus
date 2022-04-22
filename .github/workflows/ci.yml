@@ -272,7 +272,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-          pip install --upgrade six
       - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage

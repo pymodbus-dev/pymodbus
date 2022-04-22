@@ -20,7 +20,6 @@ from tornado.iostream import BaseIOStream
 from pymodbus.client.asynchronous.mixins import (AsyncModbusClientMixin,
                                                  AsyncModbusSerialClientMixin)
 
-from pymodbus.compat import byte2int
 from pymodbus.exceptions import (ConnectionException,
                                  ModbusIOException,
                                  TimeOutException)

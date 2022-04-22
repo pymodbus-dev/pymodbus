@@ -22,7 +22,6 @@ from pymodbus.transaction import (
     ModbusBinaryFramer
 )
 from pymodbus.factory import ServerDecoder
-from pymodbus.compat import byte2int
 from pymodbus.exceptions import (
     ModbusIOException,
     InvalidMessageReceivedException,
@@ -548,7 +547,7 @@ class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-publi
 
         header_dict = self._rtu._header # pylint: disable=protected-access
         self.assertEqual(len(msg), header_dict['len'])
-        self.assertEqual(byte2int(msg[0]), header_dict['uid'])
+        self.assertEqual(int(msg[0]), header_dict['uid'])
         self.assertEqual(msg[-2:], header_dict['crc'])
 
         self.assertEqual(0x00, request.unit_id)

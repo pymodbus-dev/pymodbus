@@ -8,7 +8,6 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.utilities import checkCRC, computeCRC
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
-from pymodbus.compat import byte2int
 from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 
 # --------------------------------------------------------------------------- #
@@ -75,8 +74,8 @@ class ModbusRtuFramer(ModbusFramer):
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
-            uid = byte2int(data[0])
-            fcode = byte2int(data[1])
+            uid = int(data[0])
+            fcode = int(data[1])
             return dict(unit=uid, fcode=fcode)
         return {}
 
@@ -93,7 +92,7 @@ class ModbusRtuFramer(ModbusFramer):
             frame_size = self._header['len']
             data = self._buffer[:frame_size - 2]
             crc = self._header['crc']
-            crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
             return checkCRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
             return False
@@ -157,8 +156,8 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header['uid'] = byte2int(data[0])
-        func_code = byte2int(data[1])
+        self._header['uid'] = int(data[0])
+        func_code = int(data[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         size = pdu_class.calculateRtuFrameSize(data)
         self._header['len'] = size

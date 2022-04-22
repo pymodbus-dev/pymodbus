@@ -18,7 +18,6 @@ from pymodbus.server.asynchronous import (
     StopServer,
     _is_main_thread
 )
-from pymodbus.compat import byte2int
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
@@ -87,7 +86,7 @@ class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-publ
         protocol.factory.control.ListenOnly = False
         protocol.factory.store.slaves = MagicMock()
         protocol.factory.store.single = True
-        protocol.factory.store.slaves.return_value = [byte2int(mock_data[6])]
+        protocol.factory.store.slaves.return_value = [int(mock_data[6])]
         protocol.framer = protocol._execute = MagicMock()
 
         protocol.dataReceived(mock_data)

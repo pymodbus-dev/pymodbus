@@ -10,7 +10,6 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import byte2int
 
 _MCB = ModbusControlBlock()
 
@@ -112,7 +111,7 @@ class ReadDeviceInformationResponse(ModbusResponse): # pylint: disable=too-many-
         :returns: The number of bytes in the response.
         '''
         size  = 8 # skip the header information
-        count = byte2int(buffer[7])
+        count = int(buffer[7])
 
         while count > 0:
             _, object_length = struct.unpack('>BB', buffer[size:size+2])

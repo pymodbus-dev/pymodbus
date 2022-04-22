@@ -7,6 +7,8 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 from __future__ import absolute_import, unicode_literals
 import logging
 import sys
+import os.path
+
 try:
     import click
 except ImportError:
@@ -111,6 +113,7 @@ class NumericChoice(click.Choice):
 def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
     """Client definition."""
     use_keys = KeyBindings()
+    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis")
 
     @use_keys.add('c-space')
     def _(event):
@@ -178,7 +181,7 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
                             key_bindings=use_keys,
-                            history=FileHistory('.pymodhis'),
+                            history=FileHistory(history_file),
                             auto_suggest=AutoSuggestFromHistory())
     click.secho(f"{TITLE}", fg='green')
     result = None

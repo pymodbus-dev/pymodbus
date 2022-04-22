@@ -4,9 +4,7 @@ Python 3.x Compatibility Layer
 
 This is mostly based on the jinja2 compat code:
 
-    Some py2/py3 compatibility support based on a stripped down
-    version of six so we don't have to depend on a specific version
-    of it.
+    Some py2/py3 compatibility support
 
     :copyright: Copyright 2013 by the Jinja team, see AUTHORS.
     :license: BSD, see LICENSE for details.
@@ -14,7 +12,7 @@ This is mostly based on the jinja2 compat code:
 import sys
 import importlib.util
 import socketserver
-import six
+import struct
 
 # --------------------------------------------------------------------------- #
 # python version checks
@@ -29,22 +27,32 @@ IS_JYTHON = sys.platform.startswith('java')
 # ----------------------------------------------------------------------- #
 # portable builtins
 # ----------------------------------------------------------------------- #
-int2byte = six.int2byte
-unichr = six.unichr
-range_type = six.moves.range # pylint: disable=invalid-name
-text_type = six.string_types
-string_types = six.string_types
-iterkeys = six.iterkeys
-itervalues = six.itervalues
-iteritems = six.iteritems
-get_next = six.next
-unicode_string = six.u
+int2byte = struct.Struct(">B").pack
+#NOT USED unichr = six.unichr
+#NOT USED range_type = six.moves.range # pylint: disable=invalid-name
+#NOT USED text_type = six.string_types
+string_types = str
 
-NativeStringIO = six.StringIO
-ifilter = six.moves.filter # pylint: disable=invalid-name
-imap = six.moves.map # pylint: disable=invalid-name
-izip = six.moves.zip # pylint: disable=invalid-name
-intern = six.moves.intern
+def iterkeys(d, **kw):
+    return iter(d.keys(**kw))
+
+def itervalues(d, **kw):
+    return iter(d.values(**kw))
+
+def iteritems(d, **kw):
+    return iter(d.items(**kw))
+
+def iterlists(d, **kw):
+    return iter(d.lists(**kw))
+
+get_next = next
+#NOT USED unicode_string = six.u
+
+#NOT USED NativeStringIO = six.StringIO
+#NOT USED ifilter = six.moves.filter # pylint: disable=invalid-name
+#NOT USED imap = six.moves.map # pylint: disable=invalid-name
+izip = zip # pylint: disable=invalid-name
+intern = sys
 
 # ----------------------------------------------------------------------- #
 # module renames

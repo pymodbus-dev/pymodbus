@@ -96,7 +96,7 @@ class ReadBitsResponseBase(ModbusResponse):
         :param address: The bit to set
         :param value: The value to set the bit to
         '''
-        self.bits[address] = (value != 0)
+        self.bits[address] = bool(value)
 
     def resetBit(self, address): # pylint: disable=invalid-name
         ''' Helper function to set the specified bit to 0

@@ -28,7 +28,7 @@ load-plugins=
 #NOT WANTED pylint.extensions.broad_try_clause,
     pylint.extensions.check_elif,
 #default    pylint.extensions.code_style,
-#           pylint.extensions.comparetozero,
+    pylint.extensions.comparetozero,
     pylint.extensions.comparison_placement,
     pylint.extensions.confusing_elif,
 #           pylint.extensions.consider_ternary_expression,

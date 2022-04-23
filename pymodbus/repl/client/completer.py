@@ -123,7 +123,7 @@ class CmdCompleter(Completer):
         words = document.text.strip().split()
         meta = None
         commands = []
-        if len(words) == 0:
+        if not words:
             # yield commands
             pass
         if self.completing_command(words, word_before_cursor):

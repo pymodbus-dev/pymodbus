@@ -35,7 +35,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         req = self._execute(request)
         broadcast = (self.broadcast_enable
-                     and request.unit_id == 0)
+                     and not request.unit_id)
         if broadcast:
             resp = b'Broadcast write sent - no response expected'
         else:

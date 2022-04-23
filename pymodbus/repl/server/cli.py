@@ -159,15 +159,14 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statement
                             continue
                         if "=" in arg:
                             arg, value = arg.split("=")
-                        else:
-                            if arg in COMMAND_ARGS:
-                                try:
-                                    value = args[index+1]
-                                    skip_next = True
-                                except IndexError:
-                                    error(f"Missing value for argument - {arg}")
-                                    warning("Usage: '{USAGE}'")
-                                    break
+                        elif arg in COMMAND_ARGS:
+                            try:
+                                value = args[index+1]
+                                skip_next = True
+                            except IndexError:
+                                error(f"Missing value for argument - {arg}")
+                                warning("Usage: '{USAGE}'")
+                                break
                         valid = True
                         if arg == "response_type":
                             if value not in RESPONSE_TYPES:

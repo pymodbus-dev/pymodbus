@@ -77,23 +77,22 @@ class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
             err = {
                 "message": "Broadcast message, ignoring errors!!!"
             }
+        elif isinstance(resp, ExceptionResponse):
+            err = {
+                'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
+                'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",
+                'exception code': resp.exception_code,
+                'message': ModbusExceptions.decode(resp.exception_code)
+            }
+        elif isinstance(resp, ModbusIOException):
+            err = {
+                'original_function_code': f"{resp.fcode} ({hex(resp.fcode)})",
+                'error': resp.message
+            }
         else:
-            if isinstance(resp, ExceptionResponse):
-                err = {
-                    'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
-                    'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",
-                    'exception code': resp.exception_code,
-                    'message': ModbusExceptions.decode(resp.exception_code)
-                }
-            elif isinstance(resp, ModbusIOException):
-                err = {
-                    'original_function_code': f"{resp.fcode} ({hex(resp.fcode)})",
-                    'error': resp.message
-                }
-            else:
-                err = {
-                    'error': str(resp)
-                }
+            err = {
+                'error': str(resp)
+            }
         return err
 
     def read_coils(self, address, count=1, **kwargs):

@@ -291,14 +291,13 @@ class ModbusRtuFramer(ModbusFramer):
                 # To check for higher baudrates
                 time.sleep(self.client.timeout)
                 break
+            elif time.time() > timeout:
+                _logger.debug("Spent more time than the read time out, "
+                              "resetting the transaction to IDLE")
+                self.client.state = ModbusTransactionState.IDLE
             else:
-                if time.time() > timeout:
-                    _logger.debug("Spent more time than the read time out, "
-                                  "resetting the transaction to IDLE")
-                    self.client.state = ModbusTransactionState.IDLE
-                else:
-                    _logger.debug("Sleeping")
-                    time.sleep(self.client.silent_interval)
+                _logger.debug("Sleeping")
+                time.sleep(self.client.silent_interval)
         size = self.client.send(message)
         self.client.last_frame_end = round(time.time(), 6)
         return size

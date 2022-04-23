@@ -107,7 +107,6 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterResponse,
     MaskWriteRegisterResponse,
 )
-from pymodbus.compat import byte2int
 
 
 # --------------------------------------------------------------------------- #
@@ -205,7 +204,7 @@ class ServerDecoder(IModbusDecoder):
         :param data: The request packet to decode
         :returns: The decoded request or illegal function request object
         """
-        function_code = byte2int(data[0])
+        function_code = int(data[0])
         request = self.__lookup.get(function_code, lambda: None)()
         if not request:
             txt = f"Factory Request[{function_code}]"
@@ -341,7 +340,7 @@ class ClientDecoder(IModbusDecoder):
         :param data: The response packet to decode
         :returns: The decoded request or an exception response object
         """
-        fc_string = function_code = byte2int(data[0])
+        fc_string = function_code = int(data[0])
         if function_code in self.__lookup:
             fc_string = "%s: %s" % ( # pylint: disable=consider-using-f-string
                 str(self.__lookup[function_code]).split('.')[-1].rstrip("'>"), # pylint: disable=use-maxsplit-arg

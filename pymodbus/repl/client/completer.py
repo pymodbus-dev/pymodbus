@@ -11,7 +11,6 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.application.current import get_app
 from pymodbus.repl.client.helper import get_commands
-from pymodbus.compat import string_types
 
 
 @Condition
@@ -131,7 +130,7 @@ class CmdCompleter(Completer):
             commands = self._command_names
             c_meta = {
                 k: v.help_text
-                if not isinstance(v, string_types)
+                if not isinstance(v, str)
                 else v for k, v in self._commands.items()
             }
             meta = lambda x: (x, c_meta.get(x, ''))

@@ -19,7 +19,6 @@ import struct
 from pymodbus.pdu import ModbusRequest, ModbusResponse, ModbusExceptions
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from pymodbus.bit_read_message import ReadCoilsRequest
-from pymodbus.compat import int2byte, byte2int
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
@@ -52,7 +51,7 @@ class CustomModbusResponse(ModbusResponse):
 
         :returns: The encoded packet message
         """
-        res = int2byte(len(self.values) * 2)
+        res = struct.pack(">B", len(self.values) * 2)
         for register in self.values:
             res += struct.pack('>H', register)
         return res
@@ -62,7 +61,7 @@ class CustomModbusResponse(ModbusResponse):
 
         :param data: The packet data to decode
         """
-        byte_count = byte2int(data[0])
+        byte_count = int(data[0])
         self.values = []
         for i in range(1, byte_count + 1, 2):
             self.values.append(struct.unpack('>H', data[i:i + 2])[0])

@@ -14,7 +14,6 @@ from prompt_toolkit.formatted_text import PygmentsTokens, HTML
 from prompt_toolkit import print_formatted_text
 
 from pymodbus.payload import BinaryPayloadDecoder, Endian
-from pymodbus.compat import string_types
 
 
 predicate = inspect.isfunction
@@ -106,7 +105,7 @@ class Command:
 
         def _create(entry, default):
             if entry not in ['self', 'kwargs']:
-                if isinstance(default, (int, string_types)):
+                if isinstance(default, (int, str)):
                     entry += f"={default}"
                 return entry
             return None
@@ -178,7 +177,7 @@ def _get_client_properties(members):
         f"client.{c[0]}":
             Command(f"client.{c[0]}", None, "Read Only!", unit=False)
         for c in commands if (not c[0].startswith("_")
-                              and isinstance(c[1], (string_types, int, float)))
+                              and isinstance(c[1], (str, int, float)))
     }
     CLIENT_ATTRIBUTES.extend(list(commands.keys())) # pylint: disable=global-variable-not-assigned
     return commands

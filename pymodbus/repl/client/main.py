@@ -104,7 +104,7 @@ class NumericChoice(click.Choice):
 def cli(client): #NOSONAR pylint: disable=too-complex
     """Client definition."""
     use_keys = KeyBindings()
-    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis")
+    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
 
     @use_keys.add('c-space')
     def _(event):

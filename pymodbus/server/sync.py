@@ -7,8 +7,8 @@ import logging
 import traceback
 from binascii import b2a_hex
 import socket
-import serial
 import socketserver
+import serial
 
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets

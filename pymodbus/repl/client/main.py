@@ -5,6 +5,10 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
 from __future__ import absolute_import, unicode_literals
+import logging
+import sys
+import os.path
+
 try:
     import click
 except ImportError:
@@ -100,8 +104,15 @@ class NumericChoice(click.Choice):
                   (value, ', '.join(self.choices)), param, ctx)
 
 
+<<<<<<< HEAD
 def cli(client):
     kb = KeyBindings()
+=======
+def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
+    """Client definition."""
+    use_keys = KeyBindings()
+    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis")
+>>>>>>> 3eab910 (Fix #716 (#805))
 
     @kb.add('c-space')
     def _(event):
@@ -168,8 +179,13 @@ def cli(client):
                             completer=CmdCompleter(client), style=style,
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
+<<<<<<< HEAD
                             key_bindings=kb,
                             history=FileHistory('../.pymodhis'),
+=======
+                            key_bindings=use_keys,
+                            history=FileHistory(history_file),
+>>>>>>> 3eab910 (Fix #716 (#805))
                             auto_suggest=AutoSuggestFromHistory())
     click.secho("{}".format(TITLE), fg='green')
     result = None

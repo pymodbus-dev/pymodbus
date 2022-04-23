@@ -1,0 +1,19 @@
+1) add .pre-commit and commit-hook
+
+2) new checks
+- codespell
+- flake8 addons:
+    pycodestyle
+    pyflakes
+    pydocstyle
+    flake8-comprehensions
+    flake8-noqa
+    mccabe
+
+- bandit
+- prettier
+- mypy
+- pylint
+   useless-disable
+   allow CamelCase
+

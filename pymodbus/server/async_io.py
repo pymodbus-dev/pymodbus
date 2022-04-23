@@ -476,7 +476,6 @@ class ModbusTcpServer:
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
-        # start_serving is new in version 3.7
         self.server_factory = self.loop.create_server(
             lambda: self.handler(self),
             *self.address,

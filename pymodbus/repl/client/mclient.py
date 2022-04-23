@@ -57,7 +57,7 @@ def handle_brodcast(func):
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
-        if kwargs.get("unit") == 0 and self.broadcast_enable:
+        if not kwargs.get("unit") and self.broadcast_enable:
             return {
                 'broadcasted': True
             }
@@ -73,7 +73,7 @@ class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
     @staticmethod
     def _process_exception(resp, **kwargs):
         unit = kwargs.get("unit")
-        if unit == 0:
+        if not unit:
             err = {
                 "message": "Broadcast message, ignoring errors!!!"
             }

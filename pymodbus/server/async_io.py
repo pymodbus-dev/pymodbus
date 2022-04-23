@@ -202,7 +202,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         """
         broadcast = False
         try:
-            if self.server.broadcast_enable and request.unit_id == 0:
+            if self.server.broadcast_enable and not request.unit_id:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored

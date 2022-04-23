@@ -139,7 +139,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                     _logger.debug(txt)
                     self.client.framer.resetFrame()
                 broadcast = (self.client.broadcast_enable
-                             and request.unit_id == 0)
+                             and not request.unit_id)
                 if broadcast:
                     self._transact(request, None, broadcast=True)
                     response = b'Broadcast write sent - no response expected'
@@ -365,7 +365,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                           f"Expected {total} bytes Recieved "
                           f"{actual} bytes !!!!")
             _logger.debug(txt)
-        elif actual == 0:
+        elif not actual:
             # If actual == 0 and total is not None then the above
             # should be triggered, so total must be None here
             _logger.debug("No response received to unbounded read !!!!")

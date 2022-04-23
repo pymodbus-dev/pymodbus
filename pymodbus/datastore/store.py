@@ -251,7 +251,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         '''
-        if count == 0:
+        if not count:
             return False
         handle = set(range(address, address + count))
         return handle.issubset(set(iter(self.values.keys())))

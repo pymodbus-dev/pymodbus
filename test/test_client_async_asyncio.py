@@ -44,13 +44,13 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
         assert protocol.transport is mock.sentinel.TRANSPORT
         protocol.factory.protocol_made_connection.assert_called_once_with( # pylint: disable=no-member
             protocol)
-        assert protocol.factory.protocol_lost_connection.call_count == 0 # pylint: disable=no-member
+        assert not protocol.factory.protocol_lost_connection.call_count # pylint: disable=no-member
 
         protocol.factory.reset_mock()
 
         protocol.connection_lost(mock.sentinel.REASON)
         assert protocol.transport is None
-        assert protocol.factory.protocol_made_connection.call_count == 0 # pylint: disable=no-member
+        assert not protocol.factory.protocol_made_connection.call_count # pylint: disable=no-member
         protocol.factory.protocol_lost_connection.assert_called_once_with( # pylint: disable=no-member
             protocol)
         protocol.raise_future = mock.MagicMock()

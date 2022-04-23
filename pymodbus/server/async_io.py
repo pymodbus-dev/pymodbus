@@ -109,10 +109,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             self.handler_task.cancel()
             if call_exc is None:
                 self._log_exception()
-            else:  # pragma: no cover
-                if hasattr(self, "client_address"):  # TCP connection
-                    txt = f"Client Disconnection {self.client_address} due to {call_exc}"
-                    _logger.debug(txt)
+            elif hasattr(self, "client_address"):  # TCP connection
+                txt = f"Client Disconnection {self.client_address} due to {call_exc}"
+                _logger.debug(txt)
 
             self.running = False
 

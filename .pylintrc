@@ -25,26 +25,26 @@ persistent=no
 # List of plugins
 load-plugins=
     pylint.extensions.bad_builtin, # default
-#           pylint.extensions.broad_try_clause
+#NOT WANTED pylint.extensions.broad_try_clause,
     pylint.extensions.check_elif,
 #default    pylint.extensions.code_style,
-#           pylint.extensions.comparetozero
+#           pylint.extensions.comparetozero,
     pylint.extensions.comparison_placement,
-#           pylint.extensions.confusing_elif
-#           pylint.extensions.consider_ternary_expression
+    pylint.extensions.confusing_elif,
+#           pylint.extensions.consider_ternary_expression,
 #default    pylint.extensions.docparams,
-#           pylint.extensions.docstyle
-#           pylint.extensions.emptystring
-#           pylint.extensions.empty_comment
-#           pylint.extensions.eq_without_hash
-#default    pylint.extensions.for_any_all,
-#           pylint.extensions.mccabe
-#default    pylint.extensions.overlapping_exceptions,
-#           pylint.extensions.private_import
+#           pylint.extensions.docstyle,
+    pylint.extensions.emptystring,
+#NOT WANTED pylint.extensions.empty_comment,
+    pylint.extensions.eq_without_hash,
+    pylint.extensions.for_any_all,
+#           pylint.extensions.mccabe,
+    pylint.extensions.overlapping_exceptions,
+    pylint.extensions.private_import,
 #default    pylint.extensions.redefined_variable_type,
 #default    pylint.extensions.set_membership,
-#default    pylint.extensions.typing,
-#           pylint.extensions.while_used
+    pylint.extensions.typing,
+#NOT WANTED pylint.extensions.while_used,
 
 # Use multiple processes to speed up Pylint, 0 will auto-detect.
 #jobs=1

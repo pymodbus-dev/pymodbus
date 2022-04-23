@@ -173,7 +173,7 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statement
                                 warning(f"Invalid response type request - {value}")
                                 warning(f"Choose from {RESPONSE_TYPES}")
                                 valid = False
-                        elif arg in ["error_code", "delay_by",
+                        elif arg in ["error_code", "delay_by", # pylint: disable=confusing-consecutive-elif
                                      "clear_after", "data_len"]:
                             try:
                                 value = int(value)

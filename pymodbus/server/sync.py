@@ -163,7 +163,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     the client handler for a connected protocol (TCP).
     """
 
-    def handle(self): # pylint: disable=too-many-branches,too-complex
+    def handle(self): # pylint: disable=too-complex
         """ Callback when we receive any data, until self.running becomes False.
         Blocks indefinitely awaiting data.  If shutdown is required, then the
         global socket.settimeout(<seconds>) may be used, to allow timely
@@ -296,7 +296,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
 # --------------------------------------------------------------------------- #
 # Server Implementations
 # --------------------------------------------------------------------------- #
-class ModbusTcpServer(socketserver.ThreadingTCPServer): # pylint: disable=too-many-instance-attributes
+class ModbusTcpServer(socketserver.ThreadingTCPServer):
     """ A modbus threaded tcp socket server
 
     We inherit and overload the socket server so that we
@@ -304,7 +304,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer): # pylint: disable=too-ma
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, # pylint: disable=too-many-arguments
+    def __init__(self, context, framer=None, identity=None,
                  address=None, handler=None, allow_reuse_address=False,
                  **kwargs):
         """ Overloaded initializer for the socket server
@@ -422,7 +422,7 @@ class ModbusTlsServer(ModbusTcpServer):
         socketserver.ThreadingTCPServer.server_activate(self)
 
 
-class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-many-instance-attributes
+class ModbusUdpServer(socketserver.ThreadingUDPServer):
     """ A modbus threaded udp socket server
 
     We inherit and overload the socket server so that we
@@ -430,7 +430,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-ma
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None, # pylint: disable=too-many-arguments
+    def __init__(self, context, framer=None, identity=None, address=None,
                  handler=None, **kwargs):
         """ Overloaded initializer for the socket server
 
@@ -623,7 +623,7 @@ def StartTcpServer(context=None, identity=None, address=None, # pylint: disable=
     server.serve_forever()
 
 
-def StartTlsServer(context=None, identity=None, address=None, sslctx=None, # pylint: disable=too-many-arguments,invalid-name,dangerous-default-value
+def StartTlsServer(context=None, identity=None, address=None, sslctx=None, # pylint: disable=invalid-name,dangerous-default-value
                    certfile=None, keyfile=None, password=None, reqclicert=False,
                    custom_functions=[], **kwargs):
     """ A factory to start and run a tls modbus server

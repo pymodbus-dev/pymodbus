@@ -85,7 +85,7 @@ curl -X POST http://{}:{} -d '{{"response_type": "error", "error_code": 4}}'
 """
 
 
-class ReactiveServer: # pylint: disable=too-many-instance-attributes
+class ReactiveServer:
     """ Modbus Asynchronous Server which can manipulate the response dynamically.
     Useful for testing
     """
@@ -249,7 +249,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             logger.error(exc)
 
     @classmethod
-    def create_identity(cls, vendor="Pymodbus", product_code="PM", # pylint: disable=too-many-arguments
+    def create_identity(cls, vendor="Pymodbus", product_code="PM",
                         vendor_url='http://github.com/riptideio/pymodbus/', #NOSONAR
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
@@ -274,7 +274,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
         return identity
 
     @classmethod
-    def create_context(cls, data_block=None, unit=1, # pylint: disable=too-many-locals
+    def create_context(cls, data_block=None, unit=1,
                        single=False):
         """ Create Modbus context.
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK

@@ -9,7 +9,6 @@ it does help keep things organized).
 Regardless of how many functions are added to the lookup, O(1) behavior is
 kept as a result of a pre-computed lookup dictionary.
 """
-# pylint: disable=R0801
 import logging
 
 from pymodbus.pdu import IllegalFunctionRequest

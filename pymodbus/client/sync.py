@@ -1,5 +1,4 @@
 """ Sync client. """
-# pylint: disable=R0801
 import logging
 import socket
 import select
@@ -357,7 +356,7 @@ class ModbusTcpClient(BaseModbusClient):
 class ModbusTlsClient(ModbusTcpClient):
     """ Implementation of a modbus tls client. """
 
-    def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None, # pylint: disable=too-many-arguments
+    def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None,
         certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
         **kwargs):
         """ Initialize a client instance

@@ -1,5 +1,4 @@
 """Ascii_framer."""
-# pylint: disable=R0801
 import logging
 import struct
 from binascii import b2a_hex, a2b_hex

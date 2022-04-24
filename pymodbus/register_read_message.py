@@ -1,7 +1,6 @@
 """ Register Reading Request/Response
 ---------------------------------
 """
-# pylint: disable=R0801
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse

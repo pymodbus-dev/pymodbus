@@ -66,9 +66,9 @@ class ModbusBitMessageTests(unittest.TestCase):
         """ Test the extra methods on a ReadBitsResponseBase """
         data  = [False] * 8
         handle = ReadBitsResponseBase(data)
-        for i in [1,3,5]:
+        for i in (1,3,5):
             handle.setBit(i, True)
-        for i in [1,3,5]:
+        for i in (1,3,5):
             handle.resetBit(i)
         for i in range(8):
             self.assertEqual(handle.getBit(i), False)

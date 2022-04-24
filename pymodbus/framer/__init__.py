@@ -1,4 +1,4 @@
-"""Framer start."""
+""" Framer start. """
 import struct
 from pymodbus.interfaces import IModbusFramer
 
@@ -13,13 +13,10 @@ SOCKET_FRAME_HEADER = BYTE_ORDER + 'HHH' + FRAME_HEADER
 TLS_FRAME_HEADER = BYTE_ORDER + 'B'
 
 class ModbusFramer(IModbusFramer):
-    """
-    Base Framer class
-    """
+    """ Base Framer class. """
 
     def _validate_unit_id(self, units, single):
-        """
-        Validates if the received data is valid for the client
+        """ Validates if the received data is valid for the client
         :param units: list of unit id for which the transaction is valid
         :param single: Set to true to treat this as a single context
         :return:         """
@@ -33,16 +30,14 @@ class ModbusFramer(IModbusFramer):
         return self._header['uid'] in units # pylint: disable=no-member
 
     def sendPacket(self, message): # pylint: disable=invalid-name
-        """
-        Sends packets on the bus with 3.5char delay between frames
+        """ Sends packets on the bus with 3.5char delay between frames
         :param message: Message to be sent over the bus
         :return:
         """
         return self.client.send(message) # pylint: disable=no-member
 
     def recvPacket(self, size): # pylint: disable=invalid-name
-        """
-        Receives packet from the bus with specified len
+        """ Receives packet from the bus with specified len
         :param size: Number of bytes to read
         :return:
         """

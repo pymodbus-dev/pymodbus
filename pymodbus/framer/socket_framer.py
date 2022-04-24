@@ -1,4 +1,4 @@
-"""Socket framer."""
+""" Socket framer. """
 # pylint: disable=R0801
 import logging
 import struct
@@ -51,9 +51,7 @@ class ModbusSocketFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def checkFrame(self):
-        """
-        Check and decode the next frame Return true if we were successful
-        """
+        """ Check and decode the next frame Return true if we were successful. """
         if self.isFrameReady():
             (self._header['tid'], self._header['pid'],
              self._header['len'], self._header['uid']) = struct.unpack(
@@ -103,8 +101,7 @@ class ModbusSocketFramer(ModbusFramer):
         return self._buffer[self._hsize:length]
 
     def populateResult(self, result):
-        """
-        Populates the modbus result with the transport specific header
+        """ Populates the modbus result with the transport specific header
         information (pid, tid, uid, checksum, etc)
 
         :param result: The response packet
@@ -117,7 +114,7 @@ class ModbusSocketFramer(ModbusFramer):
     # Public Member Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """Decode data."""
+        """ Decode data. """
         if len(data) > self._hsize:
             tid, pid, length, uid, fcode = struct.unpack(SOCKET_FRAME_HEADER,
                                                          data[0:self._hsize+1])
@@ -125,8 +122,7 @@ class ModbusSocketFramer(ModbusFramer):
         return {}
 
     def processIncomingPacket(self, data, callback, unit, **kwargs): #NOSONAR pylint: disable=arguments-differ
-        """
-        The new packet processing pattern
+        """ The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -170,9 +166,7 @@ class ModbusSocketFramer(ModbusFramer):
                 break
 
     def _process(self, callback, error=False):
-        """
-        Process incoming packets irrespective error condition
-        """
+        """ Process incoming packets irrespective error condition. """
         data = self.getRawFrame() if error else self.getFrame()
         result = self.decoder.decode(data)
         if result is None:
@@ -184,8 +178,7 @@ class ModbusSocketFramer(ModbusFramer):
         callback(result)  # defer or push to a thread?
 
     def resetFrame(self): # pylint: disable=invalid-name
-        """
-        Reset the entire message frame.
+        """ Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
@@ -196,9 +189,7 @@ class ModbusSocketFramer(ModbusFramer):
         self._header = {'tid': 0, 'pid': 0, 'len': 0, 'uid': 0}
 
     def getRawFrame(self): # pylint: disable=invalid-name
-        """
-        Returns the complete buffer
-        """
+        """ Returns the complete buffer. """
         return self._buffer
 
     def buildPacket(self, message):

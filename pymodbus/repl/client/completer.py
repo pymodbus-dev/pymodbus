@@ -1,5 +1,4 @@
-"""
-Command Completion for pymodbus REPL.
+""" Command Completion for pymodbus REPL.
 
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
@@ -30,12 +29,10 @@ style = Style.from_dict({
 
 
 class CmdCompleter(Completer):
-    """
-    Completer for Pymodbus REPL.
-    """
+    """ Completer for Pymodbus REPL. """
 
     def __init__(self, client=None, commands=None, ignore_case=True):
-        """
+        """ Initialize.
 
         :param client: Modbus Client
         :param commands: Commands to be added for Completion (list)
@@ -48,17 +45,16 @@ class CmdCompleter(Completer):
 
     @property
     def commands(self):
-        """Return commands."""
+        """ Return commands. """
         return self._commands
 
     @property
     def command_names(self):
-        """Return command names."""
+        """ Return command names. """
         return self._commands.keys()
 
     def completing_command(self, words, word_before_cursor): # pylint: disable=no-self-use
-        """
-        Determine if we are dealing with supported command.
+        """ Determine if we are dealing with supported command.
 
         :param words: Input text broken in to word tokens.
         :param word_before_cursor: The current word before the cursor, \
@@ -68,8 +64,7 @@ class CmdCompleter(Completer):
         return len(words) == 1 and len(word_before_cursor)
 
     def completing_arg(self, words, word_before_cursor): # pylint: disable=no-self-use
-        """
-        Determine if we are currently completing an argument.
+        """ Determine if we are currently completing an argument.
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word before the cursor, \
@@ -79,8 +74,7 @@ class CmdCompleter(Completer):
         return len(words) > 1 and len(word_before_cursor)
 
     def arg_completions(self, words, word_before_cursor): # pylint: disable=unused-argument
-        """
-        Generates arguments completions based on the input.
+        """ Generates arguments completions based on the input.
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word  before the cursor, \
@@ -97,8 +91,7 @@ class CmdCompleter(Completer):
         return self.word_matches(word, word_before_cursor)
 
     def word_matches(self, word, word_before_cursor):
-        """
-        Match the word and word before cursor
+        """ Match the word and word before cursor
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word before the cursor, \
@@ -111,8 +104,7 @@ class CmdCompleter(Completer):
         return word.startswith(word_before_cursor)
 
     def get_completions(self, document, complete_event):
-        """
-        Get completions for the current scope.
+        """ Get completions for the current scope.
 
         :param document: An instance of `prompt_toolkit.Document`.
         :param complete_event: (Unused).

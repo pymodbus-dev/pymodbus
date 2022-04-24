@@ -1,5 +1,4 @@
-"""
-Copyright (c) 2020 by RiptideIO
+""" Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import logging
@@ -80,29 +79,29 @@ CUSTOM_FORMATTERS = [
 
 
 def info(message):
-    """Show info."""
+    """ Show info. """
     if not isinstance(message, str):
         message = str(message)
     click.secho(message, fg="green")
 
 
 def warning(message):
-    """Show warning."""
+    """ Show warning. """
     click.secho(str(message), fg="yellow")
 
 
 def error(message):
-    """Show error."""
+    """ Show error. """
     click.secho(str(message), fg="red")
 
 
 def get_terminal_width():
-    """Get terminal width."""
+    """ Get terminal width. """
     return shutil.get_terminal_size()[0]
 
 
 def print_help():
-    """Print help."""
+    """ Print help. """
     print_formatted_text(HTML("<u>Available commands:</u>"))
     for cmd, hlp in sorted(COMMAND_HELPS.items()):
         print_formatted_text(
@@ -111,9 +110,7 @@ def print_help():
 
 
 async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statements,too-many-branches
-    """
-    CLI interactive shell
-    """
+    """ CLI interactive shell. """
     col = get_terminal_width()
     max_len = max([len(t) for t in TITLE.split("\n")])
     if col > max_len:

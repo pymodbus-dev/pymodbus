@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Performance Example
+""" Pymodbus Performance Example
 --------------------------------------------------------------------------
 
 The following is an quick performance check of the synchronous

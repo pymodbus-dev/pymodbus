@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Server With Custom Datablock Side Effect
+""" Pymodbus Server With Custom Datablock Side Effect
 --------------------------------------------------------------------------
 
 This is an example of performing custom logic after a value has been

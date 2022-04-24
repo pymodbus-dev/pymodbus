@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-This is a simple scraper that can be pointed at a
+""" This is a simple scraper that can be pointed at a
 modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """

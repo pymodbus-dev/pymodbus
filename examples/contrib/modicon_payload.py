@@ -1,5 +1,4 @@
-"""
-Modbus Modicon Payload Builder
+""" Modbus Modicon Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
@@ -15,8 +14,7 @@ from pymodbus.exceptions import ParameterException
 
 
 class ModiconPayloadBuilder(IPayloadBuilder):
-    """
-    A utility that helps build modicon encoded payload
+    """ A utility that helps build modicon encoded payload
     messages to be written with the various modbus messages.
     example::
 
@@ -145,8 +143,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
 
 class ModiconPayloadDecoder:
-    """
-    A utility that helps decode modicon encoded payload
+    """ A utility that helps decode modicon encoded payload
     messages from a modbus response message. What follows is
     a simple example::
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Libmodbus Protocol Wrapper
+""" Libmodbus Protocol Wrapper
 ------------------------------------------------------------
 
 What follows is an example wrapper of the libmodbus library
@@ -234,7 +233,7 @@ class LibmodbusLevel1Client:
         return result
 
     def read_bits(self, address, count=1):
-        """
+        """ Read bits.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
@@ -245,7 +244,7 @@ class LibmodbusLevel1Client:
         return result
 
     def read_input_bits(self, address, count=1):
-        """
+        """ Read input bits.
 
         :param address: The starting address to read from
         :param count: The number of discretes to read
@@ -256,7 +255,7 @@ class LibmodbusLevel1Client:
         return result
 
     def write_bit(self, address, value):
-        """
+        """ Write bit.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
@@ -265,7 +264,7 @@ class LibmodbusLevel1Client:
         return self.__execute(LIB.modbus_write_bit, address, value)
 
     def write_bits(self, address, values):
-        """
+        """ Write bits.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
@@ -275,7 +274,7 @@ class LibmodbusLevel1Client:
         return self.__execute(LIB.modbus_write_bits, address, count, values)
 
     def write_register(self, address, value):
-        """
+        """ Write register.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
@@ -284,7 +283,7 @@ class LibmodbusLevel1Client:
         return self.__execute(LIB.modbus_write_register, address, value)
 
     def write_registers(self, address, values):
-        """
+        """ Write registers.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
@@ -294,7 +293,7 @@ class LibmodbusLevel1Client:
         return self.__execute(LIB.modbus_write_registers, address, count, values)
 
     def read_registers(self, address, count=1):
-        """
+        """ Read registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
@@ -305,7 +304,7 @@ class LibmodbusLevel1Client:
         return result
 
     def read_input_registers(self, address, count=1):
-        """
+        """ Read input registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
@@ -316,7 +315,7 @@ class LibmodbusLevel1Client:
         return result
 
     def read_and_write_registers(self, read_address, read_count, write_address, write_registers):
-        """
+        """ Read/write registers.
 
         :param read_address: The address to start reading from
         :param read_count: The number of registers to read from address

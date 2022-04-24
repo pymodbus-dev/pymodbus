@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Simple Asynchronous Modbus TCP over TLS client
+"""Simple Asynchronous Modbus TCP over TLS client
 ---------------------------------------------------------------------------
 
 This is a simple example of writing a asynchronous modbus TCP over TLS client

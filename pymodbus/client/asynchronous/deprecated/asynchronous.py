@@ -1,5 +1,4 @@
-"""
-Implementation of a Modbus Client Using Twisted
+""" Implementation of a Modbus Client Using Twisted
 --------------------------------------------------
 
 Example run::
@@ -56,11 +55,9 @@ _logger = logging.getLogger(__name__)
 # Connected Client Protocols
 # --------------------------------------------------------------------------- #
 class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no cover
-    """
-    This represents the base modbus client protocol.  All the application
+    """ This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
-
     def __init__(self, framer=None, **kwargs):
         """ Initializes the framer module
 
@@ -152,8 +149,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
 # Not Connected Client Protocol
 # --------------------------------------------------------------------------- #
 class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # pragma: no cover
-    """
-    This represents the base modbus client protocol.  All the application
+    """ This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
 

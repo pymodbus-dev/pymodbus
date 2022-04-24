@@ -30,8 +30,7 @@ LOG_MSGS = {
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
-    """
-    Variant of pymodbus.client.sync.ModbusTcpClient with additional
+    """ Variant of pymodbus.client.sync.ModbusTcpClient with additional
     logging to diagnose network issues.
 
     The following events are logged:

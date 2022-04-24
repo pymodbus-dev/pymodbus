@@ -21,8 +21,7 @@ _logger = logging.getLogger(__name__)
 # Modbus ASCII Message
 # --------------------------------------------------------------------------- #
 class ModbusAsciiFramer(ModbusFramer):
-    """
-    Modbus ASCII Frame Controller::
+    """ Modbus ASCII Frame Controller::
 
         [ Start ][Address ][ Function ][ Data ][ LRC ][ End ]
           1c        2c         2c         Nc     2c      2c
@@ -145,8 +144,7 @@ class ModbusAsciiFramer(ModbusFramer):
     # Public Member Functions
     # ----------------------------------------------------------------------- #
     def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """
-        The new packet processing pattern
+        """ The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks

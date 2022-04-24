@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Synchronous Server Example
+""" Pymodbus Synchronous Server Example
 --------------------------------------------------------------------------
 
 The synchronous server is implemented in pure python without any third

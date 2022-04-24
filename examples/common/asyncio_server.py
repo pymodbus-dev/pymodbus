@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Asyncio Server Example
+""" Pymodbus Asyncio Server Example
 --------------------------------------------------------------------------
 
 The asyncio server is implemented in pure python without any third

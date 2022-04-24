@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Client Framer Overload
+""" Pymodbus Client Framer Overload
 --------------------------------------------------------------------------
 
 All of the modbus clients are designed to have pluggable framers

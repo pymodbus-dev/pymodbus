@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Logging Examples
+""" Pymodbus Logging Examples
 --------------------------------------------------------------------------
 """
 import logging

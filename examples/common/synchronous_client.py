@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Synchronous Client Examples
+""" Pymodbus Synchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the synchronous modbus client

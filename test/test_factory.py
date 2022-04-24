@@ -10,12 +10,10 @@ def _raise_exception(_):
     raise ModbusException('something')
 
 class SimpleFactoryTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymod.exceptions module
-    '''
+    """ Unittest for the pymod.exceptions module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         self.client  = ClientDecoder()
         self.server  = ServerDecoder()
         self.request = (
@@ -84,13 +82,13 @@ class SimpleFactoryTest(unittest.TestCase):
         )
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.bad
         del self.request
         del self.response
 
     def test_exception_lookup(self):
-        ''' Test that we can look up exception messages '''
+        """ Test that we can look up exception messages """
         for func, _ in self.exception:
             response = self.client.lookupPduClass(func)
             self.assertNotEqual(response, None)
@@ -100,19 +98,19 @@ class SimpleFactoryTest(unittest.TestCase):
             self.assertNotEqual(response, None)
 
     def test_response_lookup(self):
-        ''' Test a working response factory lookup '''
+        """ Test a working response factory lookup """
         for func, _ in self.response:
             response = self.client.lookupPduClass(func)
             self.assertNotEqual(response, None)
 
     def test_request_ookup(self):
-        ''' Test a working request factory lookup '''
+        """ Test a working request factory lookup """
         for func, _ in self.request:
             request = self.client.lookupPduClass(func)
             self.assertNotEqual(request, None)
 
     def test_response_working(self):
-        ''' Test a working response factory decoders '''
+        """ Test a working response factory decoders """
         for func, msg in self.response:
             try:
                 self.client.decode(msg)
@@ -120,13 +118,13 @@ class SimpleFactoryTest(unittest.TestCase):
                 self.fail("Failed to Decode Response Message", func) # pylint: disable=too-many-function-args
 
     def test_response_errors(self):
-        ''' Test a response factory decoder exceptions '''
+        """ Test a response factory decoder exceptions """
         self.assertRaises(ModbusException, self.client._helper, self.bad[0][1]) # pylint: disable=protected-access
         self.assertEqual(self.client.decode(self.bad[1][1]).function_code, self.bad[1][0],
                 "Failed to decode error PDU")
 
     def test_requests_working(self):
-        ''' Test a working request factory decoders '''
+        """ Test a working request factory decoders """
         for func, msg in self.request:
             try:
                 self.server.decode(msg)
@@ -134,13 +132,13 @@ class SimpleFactoryTest(unittest.TestCase):
                 self.fail("Failed to Decode Request Message", func) # pylint: disable=too-many-function-args
 
     def test_client_factory_fails(self):
-        ''' Tests that a client factory will fail to decode a bad message '''
+        """ Tests that a client factory will fail to decode a bad message """
         self.client._helper = _raise_exception # pylint: disable=protected-access
         actual = self.client.decode(None)
         self.assertEqual(actual, None)
 
     def test_server_factory_fails(self):
-        ''' Tests that a server factory will fail to decode a bad message '''
+        """ Tests that a server factory will fail to decode a bad message """
         self.server._helper = _raise_exception # pylint: disable=protected-access
         actual = self.server.decode(None)
         self.assertEqual(actual, None)
@@ -171,7 +169,7 @@ class SimpleFactoryTest(unittest.TestCase):
 # since the high bit is set, it will simply echo the resulting message
 #---------------------------------------------------------------------------#
     def test_request_errors(self):
-        ''' Test a request factory decoder exceptions '''
+        """ Test a request factory decoder exceptions """
         for func, msg in self.bad:
             result = self.server.decode(msg)
             self.assertEqual(result.ErrorCode, 1,

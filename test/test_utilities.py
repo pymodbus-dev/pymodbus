@@ -23,23 +23,21 @@ class DictPropertyTester: # pylint: disable=too-few-public-methods
 
 
 class SimpleUtilityTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymod.utilities module
-    '''
+    """ Unittest for the pymod.utilities module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         self.data = struct.pack('>HHHH', 0x1234, 0x2345, 0x3456, 0x4567)
         self.string = b"test the computation"
         self.bits = [True, False, True, False, True, False, True, False]
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.bits
         del self.string
 
     def test_dict_property(self):
-        ''' Test all string <=> bit packing functions '''
+        """ Test all string <=> bit packing functions """
         result = DictPropertyTester()
         self.assertEqual(result.l1, 'a')
         self.assertEqual(result.l2, 'b')
@@ -59,7 +57,7 @@ class SimpleUtilityTest(unittest.TestCase):
         self.assertEqual(result.g1, 'x')
 
     def test_default_value(self):
-        ''' Test all string <=> bit packing functions '''
+        """ Test all string <=> bit packing functions """
         self.assertEqual(default(1), 0)
         self.assertEqual(default(1.1), 0.0)
         self.assertEqual(default(1+1j), 0j)
@@ -69,17 +67,17 @@ class SimpleUtilityTest(unittest.TestCase):
         self.assertEqual(default(True), False)
 
     def test_bit_packing(self):
-        ''' Test all string <=> bit packing functions '''
+        """ Test all string <=> bit packing functions """
         self.assertEqual(unpack_bitstring(b'\x55'), self.bits)
         self.assertEqual(pack_bitstring(self.bits), b'\x55')
 
     def test_longitudinal_redundancycheck(self):
-        ''' Test the longitudinal redundancy check code '''
+        """ Test the longitudinal redundancy check code """
         self.assertTrue(checkLRC(self.data, 0x1c))
         self.assertTrue(checkLRC(self.string, 0x0c))
 
     def test_cyclic_redundancy_check(self):
-        ''' Test the cyclic redundancy check code '''
+        """ Test the cyclic redundancy check code """
         self.assertTrue(checkCRC(self.data, 0xe2db))
         self.assertTrue(checkCRC(self.string, 0x889e))
 

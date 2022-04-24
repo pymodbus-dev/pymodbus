@@ -20,21 +20,19 @@ from .modbus_mocks import MockContext, FakeList
 # Fixture
 #---------------------------------------------------------------------------#
 class ReadRegisterMessagesTest(unittest.TestCase):
-    '''
-    Register Message Test Fixture
+    """ Register Message Test Fixture
     --------------------------------
     This fixture tests the functionality of all the
     register based request/response messages:
 
     * Read/Write Input Registers
     * Read Holding Registers
-    '''
+    """
 
     def setUp(self):
-        '''
-        Initializes the test environment and builds request/result
+        """ Initializes the test environment and builds request/result
         encoding pairs
-        '''
+        """
         arguments = {
             'read_address':  1, 'read_count': 5,
             'write_address': 1, 'write_registers': [0x00]*5,
@@ -57,7 +55,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         }
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.request_read
         del self.response_read
 
@@ -92,10 +90,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             self.assertEqual(request.registers, register)
 
     def test_register_read_requests_count_errors(self):
-        '''
-        This tests that the register request messages
+        """ This tests that the register request messages
         will break on counts that are out of range
-        '''
+        """
         mock = FakeList(0x800)
         requests = [
             ReadHoldingRegistersRequest(1, 0x800),
@@ -111,10 +108,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
                 result.exception_code)
 
     def test_register_read_requests_validate_errors(self):
-        '''
-        This tests that the register request messages
+        """ This tests that the register request messages
         will break on counts that are out of range
-        '''
+        """
         context = MockContext()
         requests = [
             ReadHoldingRegistersRequest(-1, 5),
@@ -128,10 +124,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
                 result.exception_code)
 
     def test_register_read_requests_execute(self):
-        '''
-        This tests that the register request messages
+        """ This tests that the register request messages
         will break on counts that are out of range
-        '''
+        """
         context = MockContext(True)
         requests = [
             ReadHoldingRegistersRequest(-1, 5),

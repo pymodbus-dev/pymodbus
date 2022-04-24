@@ -19,21 +19,19 @@ from .modbus_mocks import MockContext
 # Fixture
 #---------------------------------------------------------------------------#
 class WriteRegisterMessagesTest(unittest.TestCase):
-    '''
-    Register Message Test Fixture
+    """ Register Message Test Fixture
     --------------------------------
     This fixture tests the functionality of all the
     register based request/response messages:
 
     * Read/Write Input Registers
     * Read Holding Registers
-    '''
+    """
 
     def setUp(self):
-        '''
-        Initializes the test environment and builds request/result
+        """ Initializes the test environment and builds request/result
         encoding pairs
-        '''
+        """
         self.value  = 0xabcd
         self.values = [0xa, 0xb, 0xc]
         builder = BinaryPayloadBuilder(byteorder=Endian.Big)
@@ -56,7 +54,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         }
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.write
 
     def test_register_write_requests_encode(self):
@@ -123,13 +121,13 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         # -----------------------------------------------------------------------#
 
     def test_mask_write_register_request_encode(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = handle.encode()
         self.assertEqual(result, b'\x00\x00\x01\x01\x10\x10')
 
     def test_mask_write_register_request_decode(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         request = b'\x00\x04\x00\xf2\x00\x25'
         handle = MaskWriteRegisterRequest()
         handle.decode(request)
@@ -138,14 +136,14 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         self.assertEqual(handle.or_mask, 0x0025)
 
     def test_mask_write_register_request_execute(self):
-        ''' Test write register request valid execution '''
+        """ Test write register request valid execution """
         context = MockContext(valid=True, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = handle.execute(context)
         self.assertTrue(isinstance(result, MaskWriteRegisterResponse))
 
     def test_mask_write_register_request_invalid_execute(self):
-        ''' Test write register request execute with invalid data '''
+        """ Test write register request execute with invalid data """
         context = MockContext(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
         result = handle.execute(context)
@@ -167,13 +165,13 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         # -----------------------------------------------------------------------#
 
     def test_mask_write_register_response_encode(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         handle = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
         result = handle.encode()
         self.assertEqual(result, b'\x00\x00\x01\x01\x10\x10')
 
     def test_mask_write_register_response_decode(self):
-        ''' Test basic bit message encoding/decoding '''
+        """ Test basic bit message encoding/decoding """
         request = b'\x00\x04\x00\xf2\x00\x25'
         handle = MaskWriteRegisterResponse()
         handle.decode(request)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Payload Utilities Test Fixture
+""" Payload Utilities Test Fixture
 --------------------------------
 This fixture tests the functionality of the payload
 utilities.
@@ -24,8 +23,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
     # ----------------------------------------------------------------------- #
 
     def setUp(self):
-        """
-        Initializes the test environment and builds request/result
+        """ Initializes the test environment and builds request/result
         encoding pairs
         """
         self.little_endian_payload = \

@@ -12,15 +12,13 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 
 class ModbusEventsTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.device module
-    '''
+    """ Unittest for the pymodbus.device module. """
 
     def setUp(self):
-        ''' Sets up the test environment '''
+        """ Sets up the test environment """
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
 
     def test_modbus_event_base_class(self):
         """ Test modbus event base class. """

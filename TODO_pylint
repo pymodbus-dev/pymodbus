@@ -37,7 +37,6 @@ invalid-name
 invalid-overridden-method
 line-too-long
 no-member
-no-name-in-module
 no-self-use
 no-value-for-parameter
 non-iterator-returned

@@ -112,8 +112,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
         """
         while self.running:
             try:
-                data = self.request.recv(1024)
-                if data:
+                if data := self.request.recv(1024):
                     units = self.server.context.slaves()
                     if not isinstance(units, (list, tuple)):
                         units = [units]
@@ -185,8 +184,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         while self.running: # pylint: disable=too-many-nested-blocks
             try:
                 units = self.server.context.slaves()
-                data = self.request.recv(1024)
-                if not data:
+                if not (data := self.request.recv(1024)):
                     self.running = False
                 else:
                     if not isinstance(units, (list, tuple)):

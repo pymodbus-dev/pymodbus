@@ -116,8 +116,7 @@ class ModbusClientProtocol(protocol.Protocol,
         """
         if reply is not None:
             tid = reply.transaction_id
-            handler = self.transaction.getTransaction(tid)
-            if handler:
+            if handler := self.transaction.getTransaction(tid):
                 handler.callback(reply)
             else:
                 txt = f"Unrequested message: {str(reply)}"
@@ -201,8 +200,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         """
         if reply is not None:
             tid = reply.transaction_id
-            handler = self.transaction.getTransaction(tid)
-            if handler:
+            if handler := self.transaction.getTransaction(tid):
                 handler.callback(reply)
             else:
                 txt = f"Unrequested message: {str(reply)}"

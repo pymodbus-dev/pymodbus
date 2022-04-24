@@ -107,8 +107,7 @@ class Command:
             return None
 
         for arg in self._params.values():
-            entry = _create(arg.name, arg.default)
-            if entry:
+            if (entry := _create(arg.name, arg.default)):
                 entry, meta = self.get_meta(entry)
                 words[entry] = meta
 
@@ -246,8 +245,7 @@ class Result:
                                                      byteorder=byte_order,
                                                      wordorder=word_order)
         for formatter in formatters:
-            formatter = FORMATTERS.get(formatter)
-            if not formatter:
+            if not (formatter := FORMATTERS.get(formatter)):
                 print_formatted_text(
                     HTML(f"<red>Invalid Formatter - {formatter}!!</red>"))
                 return

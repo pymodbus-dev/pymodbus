@@ -32,9 +32,7 @@ Example run::
 """
 import importlib.util
 
-installed = importlib.util.find_spec('twisted')
-
-if installed:
+if installed := importlib.util.find_spec('twisted'):
     # Import deprecated async client only if twisted is installed #338
     from pymodbus.client.asynchronous.deprecated.asynchronous import *
     import logging

@@ -71,8 +71,7 @@ class ModbusAsciiFramer(ModbusFramer):
             self._buffer = self._buffer[start:]
             start = 0
 
-        end = self._buffer.find(self._end)
-        if end != -1:
+        if (end := self._buffer.find(self._end)) != -1:
             self._header['len'] = end
             self._header['uid'] = int(self._buffer[1:3], 16)
             self._header['lrc'] = int(self._buffer[end - 2:end], 16)
@@ -170,8 +169,7 @@ class ModbusAsciiFramer(ModbusFramer):
             if self.checkFrame():
                 if self._validate_unit_id(unit, single):
                     frame = self.getFrame()
-                    result = self.decoder.decode(frame)
-                    if result is None:
+                    if (result := self.decoder.decode(frame)) is None:
                         raise ModbusIOException("Unable to decode response")
                     self.populateResult(result)
                     self.advanceFrame()

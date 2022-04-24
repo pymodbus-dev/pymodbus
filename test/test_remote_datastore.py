@@ -10,18 +10,16 @@ from pymodbus.pdu import ExceptionResponse
 from .modbus_mocks import mock
 
 class RemoteModbusDataStoreTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.datastore.remote module
-    '''
+    """ Unittest for the pymodbus.datastore.remote module. """
 
     def test_remote_slave_context(self):
-        ''' Test a modbus remote slave context '''
+        """ Test a modbus remote slave context """
         context = RemoteSlaveContext(None)
         self.assertNotEqual(str(context), None)
         self.assertRaises(NotImplementedException, lambda: context.reset()) # pylint: disable=unnecessary-lambda
 
     def test_remote_slave_set_values(self): # pylint: disable=no-self-use
-        ''' Test setting values against a remote slave context '''
+        """ Test setting values against a remote slave context """
         client  = mock()
         client.write_coils = lambda a,b: WriteMultipleCoilsResponse()
 
@@ -29,7 +27,7 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
         context.setValues(1, 0, [1])
 
     def test_remote_slave_get_values(self):
-        ''' Test getting values from a remote slave context '''
+        """ Test getting values from a remote slave context """
         client  = mock()
         client.read_coils = lambda a,b: ReadCoilsResponse([1]*10)
         client.read_input_registers = lambda a,b: ReadInputRegistersResponse([10]*10)
@@ -46,7 +44,7 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
         self.assertNotEqual(result, [10]*10)
 
     def test_remote_slave_validate_values(self):
-        ''' Test validating against a remote slave context '''
+        """ Test validating against a remote slave context """
         client  = mock()
         client.read_coils = lambda a,b: ReadCoilsResponse([1]*10)
         client.read_input_registers = lambda a,b: ReadInputRegistersResponse([10]*10)

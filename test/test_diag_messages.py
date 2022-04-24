@@ -46,9 +46,7 @@ from pymodbus.diag_message import DiagnosticStatusSimpleRequest
 from pymodbus.diag_message import DiagnosticStatusSimpleResponse
 
 class SimpleDataStoreTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.diag_message module
-    '''
+    """ Unittest for the pymodbus.diag_message module. """
 
     def setUp(self):
         self.requests = [
@@ -112,19 +110,19 @@ class SimpleDataStoreTest(unittest.TestCase):
         ]
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.requests
         del self.responses
 
     def test_diagnostic_requests_decode(self):
-        ''' Testing diagnostic request messages encoding '''
+        """ Testing diagnostic request messages encoding """
         for msg,enc,_ in self.requests:
             handle = DiagnosticStatusRequest()
             handle.decode(enc)
             self.assertEqual(handle.sub_function_code, msg.sub_function_code)
 
     def test_diagnostic_simple_requests(self):
-        ''' Testing diagnostic request messages encoding '''
+        """ Testing diagnostic request messages encoding """
         request = DiagnosticStatusSimpleRequest(b'\x12\x34')
         request.sub_function_code = 0x1234
         self.assertRaises(NotImplementedException, lambda: request.execute()) # pylint: disable=unnecessary-lambda
@@ -132,39 +130,39 @@ class SimpleDataStoreTest(unittest.TestCase):
         DiagnosticStatusSimpleResponse(None)
 
     def test_diagnostic_response_decode(self):
-        ''' Testing diagnostic request messages encoding '''
+        """ Testing diagnostic request messages encoding """
         for msg,enc,_ in self.requests:
             handle = DiagnosticStatusResponse()
             handle.decode(enc)
             self.assertEqual(handle.sub_function_code, msg.sub_function_code)
 
     def test_diagnostic_requests_encode(self):
-        ''' Testing diagnostic request messages encoding '''
+        """ Testing diagnostic request messages encoding """
         for msg,enc,_ in self.requests:
             self.assertEqual(msg().encode(), enc)
 
     def test_diagnostic_execute(self):
-        ''' Testing diagnostic message execution '''
+        """ Testing diagnostic message execution """
         for message, encoded, executed in self.requests:
             encoded = message().execute().encode()
             self.assertEqual(encoded, executed)
 
     def test_return_query_data_request(self):
-        ''' Testing diagnostic message execution '''
+        """ Testing diagnostic message execution """
         message = ReturnQueryDataRequest([0x0000]*2)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataRequest(0x0000)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
     def test_return_query_data_response(self):
-        ''' Testing diagnostic message execution '''
+        """ Testing diagnostic message execution """
         message = ReturnQueryDataResponse([0x0000]*2)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataResponse(0x0000)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
     def test_restart_cmmunications_option(self):
-        ''' Testing diagnostic message execution '''
+        """ Testing diagnostic message execution """
         request = RestartCommunicationsOptionRequest(True)
         self.assertEqual(request.encode(), b'\x00\x01\xff\x00')
         request = RestartCommunicationsOptionRequest(False)
@@ -176,7 +174,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         self.assertEqual(response.encode(), b'\x00\x01\x00\x00')
 
     def test_get_clear_modbus_plus_request_execute(self):
-        ''' Testing diagnostic message execution '''
+        """ Testing diagnostic message execution """
         request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics)
         response = request.execute()
         self.assertEqual(response.message, ModbusPlusOperation.ClearStatistics)

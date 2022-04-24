@@ -27,8 +27,7 @@ _logger = logging.getLogger()
 
 
 class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-methods
-    """
-    This is the unittest for the pymodbus.server.asyncio module
+    """ Unittest for the pymodbus.server.asyncio module.
 
     The scope of this unit test is the life-cycle management of the network
     connections and server objects.
@@ -40,9 +39,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
     # Setup/TearDown
     # -----------------------------------------------------------------------#
     def setUp(self):
-        """
-        Initialize the test environment by setting up a dummy store and context
-        """
+        """ Initialize the test environment by setting up a dummy store and context. """
         self.store = ModbusSlaveContext(di=ModbusSequentialDataBlock(0, [17] * 100),
                                         co=ModbusSequentialDataBlock(0, [17] * 100),
                                         hr=ModbusSequentialDataBlock(0, [17] * 100),
@@ -57,7 +54,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
     #-----------------------------------------------------------------------#
 
     async def test_start_tcp_server(self):
-        ''' Test that the modbus tcp asyncio server starts correctly '''
+        """ Test that the modbus tcp asyncio server starts correctly """
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         self.loop = asynctest.Mock(self.loop) # pylint: disable=attribute-defined-outside-init
         server = await StartTcpServer(context=self.context,loop=self.loop,identity=identity)
@@ -65,7 +62,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         self.loop.create_server.assert_called_once()
 
     async def test_tcp_server_serve_no_defer(self):
-        ''' Test StartTcpServer without deferred start (immediate execution of server) '''
+        """ Test StartTcpServer without deferred start (immediate execution of server) """
         with patch('asyncio.base_events.Server.serve_forever', #NOSONAR
                 new_callable=asynctest.CoroutineMock) as serve:
             await StartTcpServer(context=self.context,address=("127.0.0.1",
@@ -73,7 +70,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
             serve.assert_awaited()
 
     async def test_tcp_server_serve_forever_twice(self):
-        ''' Call on serve_forever() twice should result in a runtime error '''
+        """ Call on serve_forever() twice should result in a runtime error """
         server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
         asyncio.create_task(server.serve_forever())
         await server.serving
@@ -83,7 +80,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         server.server_close()
 
     async def test_tcp_server_receive_data(self):
-        ''' Test data sent on socket is received by internals - doesn't not process data '''
+        """ Test data sent on socket is received by internals - doesn't not process data """
         data = b'\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
         server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
         asyncio.create_task(server.serve_forever())
@@ -120,7 +117,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
     @pytest.mark.skipif(pytest.IS_WINDOWS, reason="To fix")
     async def test_tcp_server_roundtrip(self):
-        ''' Test sending and receiving data on tcp socket '''
+        """ Test sending and receiving data on tcp socket """
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
         expected_response = b'\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11'
                 # value of 17 as per context
@@ -197,7 +194,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_tcp_server_close_active_connection(self):
-        ''' Test server_close() while there are active TCP connections '''
+        """ Test server_close() while there are active TCP connections """
         server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
         asyncio.create_task(server.serve_forever())
 
@@ -231,7 +228,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_tcp_server_no_slave(self):
-        ''' Test unknown slave unit exception '''
+        """ Test unknown slave unit exception """
         context = ModbusServerContext(slaves={0x01: self.store, 0x02: self.store  }, single=False)
         data = b"\x01\x00\x00\x00\x00\x06\x05\x03\x00\x00\x00\x01"
                 # get slave 5 function 3 (holding register)
@@ -270,7 +267,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_tcp_server_modbus_error(self):
-        ''' Test sending garbage data on a TCP socket should drop the connection '''
+        """ Test sending garbage data on a TCP socket should drop the connection """
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"
             # get slave 5 function 3 (holding register)
         server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
@@ -312,7 +309,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_tcp_server_internal_exception(self):
-        ''' Test sending garbage data on a TCP socket should drop the connection '''
+        """ Test sending garbage data on a TCP socket should drop the connection """
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01"
             # get slave 5 function 3 (holding register)
         server = await StartTcpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
@@ -393,7 +390,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
     # -----------------------------------------------------------------------#
 
     async def test_start_udp_server(self):
-        ''' Test that the modbus udp asyncio server starts correctly '''
+        """ Test that the modbus udp asyncio server starts correctly """
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         self.loop = asynctest.Mock(self.loop) # pylint: disable=attribute-defined-outside-init
         server = await StartUdpServer(context=self.context,loop=self.loop,identity=identity)
@@ -401,7 +398,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         self.loop.create_datagram_endpoint.assert_called_once()
 
     async def test_udp_server_serve_forever_start(self):
-        ''' Test StartUdpServer serve_forever() method '''
+        """ Test StartUdpServer serve_forever() method """
         with patch('asyncio.base_events.Server.serve_forever',
             new_callable=asynctest.CoroutineMock) as serve:
             server = await StartTcpServer(context=self.context,
@@ -411,7 +408,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_udp_server_serve_forever_close(self):
-        ''' Test StartUdpServer serve_forever() method '''
+        """ Test StartUdpServer serve_forever() method """
         server = await StartUdpServer(context=self.context,address=("127.0.0.1", 0), loop=self.loop)
         asyncio.create_task(server.serve_forever())
 
@@ -424,7 +421,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         assert server.protocol.is_closing()
 
     async def test_udp_server_serve_forever_twice(self):
-        ''' Call on serve_forever() twice should result in a runtime error '''
+        """ Call on serve_forever() twice should result in a runtime error """
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         server = await StartUdpServer(context=self.context,address=("127.0.0.1", 0),
                                       loop=self.loop,identity=identity)
@@ -436,7 +433,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_udp_server_receive_data(self):
-        ''' Test that the sending data on datagram socket gets data pushed to framer '''
+        """ Test that the sending data on datagram socket gets data pushed to framer """
         server = await StartUdpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
         asyncio.create_task(server.serve_forever())
         await server.serving
@@ -452,7 +449,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_udp_server_send_data(self):
-        ''' Test that the modbus udp asyncio server correctly sends data outbound '''
+        """ Test that the modbus udp asyncio server correctly sends data outbound """
         ModbusDeviceIdentification(info={0x00: 'VendorName'})
         data = b'x\01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
         server = await StartUdpServer(context=self.context,address=("127.0.0.1", 0))
@@ -493,7 +490,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
 
     async def test_udp_server_roundtrip(self):
-        ''' Test sending and receiving data on udp socket'''
+        """ Test sending and receiving data on udp socket"""
         data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x01" # unit 1, read register
         expected_response = b'\x01\x00\x00\x00\x00\x05'\
                             b'\x01\x03\x02\x00\x11' # value of 17 as per context
@@ -531,7 +528,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         server.server_close()
 
     async def test_udp_server_exception(self):
-        ''' Test sending garbage data on a TCP socket should drop the connection '''
+        """ Test sending garbage data on a TCP socket should drop the connection """
         garbage = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
         server = await StartUdpServer(context=self.context,address=("127.0.0.1", 0),loop=self.loop)
         asyncio.create_task(server.serve_forever())

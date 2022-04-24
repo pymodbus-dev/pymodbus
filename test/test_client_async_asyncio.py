@@ -240,10 +240,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
 
     @pytest.mark.parametrize("protocol", protocols)
     def test_client_protocol_connection_made(self, protocol): # pylint: disable=no-self-use
-        """
-        Test the client protocol close
-        :return:
-        """
+        """ Test the client protocol close. """
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
         factory = mock.MagicMock()
@@ -257,10 +254,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
 
     @pytest.mark.parametrize("protocol", protocols)
     def test_client_protocol_close(self, protocol): # pylint: disable=no-self-use
-        """
-        Test the client protocol close
-        :return:
-        """
+        """ Test the client protocol close. """
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
         factory = mock.MagicMock()
@@ -276,7 +270,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
     @pytest.mark.skip("To fix")
     @pytest.mark.parametrize("protocol", protocols)
     def test_client_protocol_connection_lost(self, protocol): # pylint: disable=no-self-use
-        ''' Test the client protocol connection lost'''
+        """ Test the client protocol connection lost"""
         framer = ModbusSocketFramer(None)
         protocol = protocol(framer=framer, timeout=0)
         protocol.execute = mock.MagicMock()
@@ -301,7 +295,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
 
     @pytest.mark.parametrize("protocol", protocols)
     async def test_client_protocol_data_received(self, protocol): # pylint: disable=no-self-use
-        ''' Test the client protocol data received '''
+        """ Test the client protocol data received """
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
         protocol.connection_made(transport)
@@ -322,7 +316,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
     @pytest.mark.asyncio
     @pytest.mark.parametrize("protocol", protocols)
     async def test_client_protocol_execute(self, protocol): # pylint: disable=no-self-use
-        ''' Test the client protocol execute method '''
+        """ Test the client protocol execute method """
         framer = ModbusSocketFramer(None)
         protocol = protocol(framer=framer)
         protocol.create_future = mock.MagicMock()
@@ -341,7 +335,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
 
     @pytest.mark.parametrize("protocol", protocols)
     async def test_client_protocol_handle_response(self, protocol): # pylint: disable=no-self-use
-        ''' Test the client protocol handles responses '''
+        """ Test the client protocol handles responses """
         protocol = protocol()
         transport = mock.MagicMock()
         protocol.connection_made(transport=transport)
@@ -362,7 +356,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
 
     @pytest.mark.parametrize("protocol", protocols)
     async def test_client_protocol_build_response(self, protocol): # pylint: disable=no-self-use
-        ''' Test the udp client protocol builds responses '''
+        """ Test the udp client protocol builds responses """
         protocol = protocol()
         assert not len(list(protocol.transaction)) # pylint: disable=use-implicit-booleaness-not-len
 

@@ -29,6 +29,7 @@ from pymodbus.utilities import hexlify_packets
 class mockSocket: #NOSONAR pylint: disable=invalid-name
     """ Mock socket. """
     timeout = 2
+
     def close(self): # pylint: disable=no-self-use
         """ Close. """
         return True
@@ -80,16 +81,14 @@ inet_pton_skipif = pytest.mark.skipif(
 # Fixture
 # ---------------------------------------------------------------------------#
 class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-public-methods
-    '''
-    This is the unittest for the pymodbus.client.sync module
-    '''
+    """ Unittest for the pymodbus.client.sync module. """
 
     # -----------------------------------------------------------------------#
     # Test Base Client
     # -----------------------------------------------------------------------#
 
     def test_base_modbus_client(self):
-        ''' Test the base class for all the clients '''
+        """ Test the base class for all the clients """
 
         client = BaseModbusClient(None)
         client.transaction = None
@@ -138,7 +137,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertNotEqual(client, None)
 
     def tes_basic_sync_udp_client(self):
-        ''' Test the basic methods for the udp sync client'''
+        """ Test the basic methods for the udp sync client"""
 
         # receive/send
         client = ModbusUdpClient()
@@ -159,7 +158,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @inet_pton_skipif
     def test_udp_client_address_family(self):
-        ''' Test the Udp client get address family method'''
+        """ Test the Udp client get address family method"""
         client = ModbusUdpClient()
         self.assertEqual(socket.AF_INET,
                          client._get_address_family('127.0.0.1')) # pylint: disable=protected-access
@@ -167,7 +166,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @inet_pton_skipif
     def test_udp_client_connect(self):
-        ''' Test the Udp client connection method'''
+        """ Test the Udp client connection method"""
         with patch.object(socket, 'socket') as mock_method:
             class DummySocket: # pylint: disable=too-few-public-methods
                 """ Dummy socket. """
@@ -185,12 +184,12 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @inet_pton_skipif
     def test_udp_client_is_socket_open(self):
-        ''' Test the udp client is_socket_open method'''
+        """ Test the udp client is_socket_open method"""
         client = ModbusUdpClient()
         self.assertTrue(client.is_socket_open())
 
     def test_udp_client_send(self):
-        ''' Test the udp client send method'''
+        """ Test the udp client send method"""
         client = ModbusUdpClient()
         self.assertRaises(ConnectionException, lambda: client._send(None)) # pylint: disable=protected-access
 
@@ -199,7 +198,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertEqual(4, client._send('1234')) # pylint: disable=protected-access
 
     def test_udp_client_recv(self):
-        ''' Test the udp client receive method'''
+        """ Test the udp client receive method"""
         client = ModbusUdpClient()
         self.assertRaises(ConnectionException, lambda: client._recv(1024)) # pylint: disable=protected-access
 
@@ -225,7 +224,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch('pymodbus.client.sync.select')
     def test_basic_sync_tcp_client(self, mock_select):
-        ''' Test the basic methods for the tcp sync client'''
+        """ Test the basic methods for the tcp sync client"""
 
         # receive/send
         mock_select.select.return_value = [True]
@@ -246,7 +245,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertEqual("ModbusTcpClient(127.0.0.1:502)", str(client))
 
     def test_tcp_client_connect(self):
-        ''' Test the tcp client connection method'''
+        """ Test the tcp client connection method"""
         with patch.object(socket, 'create_connection') as mock_method:
             _socket = MagicMock()
             mock_method.return_value = _socket
@@ -260,12 +259,12 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
             self.assertFalse(client.connect())
 
     def test_tcp_client_is_socket_open(self):
-        ''' Test the tcp client is_socket_open method'''
+        """ Test the tcp client is_socket_open method"""
         client = ModbusTcpClient()
         self.assertFalse(client.is_socket_open())
 
     def test_tcp_client_send(self):
-        ''' Test the tcp client send method'''
+        """ Test the tcp client send method"""
         client = ModbusTcpClient()
         self.assertRaises(ConnectionException, lambda: client._send(None)) # pylint: disable=protected-access
 
@@ -276,7 +275,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
     @patch('pymodbus.client.sync.time')
     @patch('pymodbus.client.sync.select')
     def test_tcp_client_recv(self, mock_select, mock_time):
-        ''' Test the tcp client receive method'''
+        """ Test the tcp client receive method"""
 
         mock_select.select.return_value = [True]
         mock_time.time.side_effect = count()
@@ -331,7 +330,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
     # -----------------------------------------------------------------------#
 
     def test_tls_sslctx_provider(self):
-        ''' test that sslctx_provider() produce SSLContext correctly '''
+        """ test that sslctx_provider() produce SSLContext correctly """
         with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
             sslctx1 = sslctx_provider(certfile="cert.pem")
             self.assertIsNotNone(sslctx1)
@@ -361,7 +360,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertTrue(client.sslctx)
 
     def test_basic_sync_tls_client(self):
-        ''' Test the basic methods for the tls sync client'''
+        """ Test the basic methods for the tls sync client"""
 
         # receive/send
         client = ModbusTlsClient()
@@ -381,7 +380,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertEqual("ModbusTlsClient(localhost:802)", str(client))
 
     def test_tls_client_connect(self):
-        ''' Test the tls client connection method'''
+        """ Test the tls client connection method"""
         with patch.object(ssl.SSLSocket, 'connect') as mock_method:
             client = ModbusTlsClient()
             self.assertTrue(client.connect())
@@ -392,7 +391,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
             self.assertFalse(client.connect())
 
     def test_tls_client_send(self):
-        ''' Test the tls client send method'''
+        """ Test the tls client send method"""
         client = ModbusTlsClient()
         self.assertRaises(ConnectionException, lambda: client._send(None)) # pylint: disable=protected-access
 
@@ -402,7 +401,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch('pymodbus.client.sync.time')
     def test_tls_client_recv(self, mock_time):
-        ''' Test the tls client receive method'''
+        """ Test the tls client receive method"""
         client = ModbusTlsClient()
         self.assertRaises(ConnectionException, lambda: client._recv(1024)) # pylint: disable=protected-access
 
@@ -469,7 +468,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch("serial.Serial")
     def test_basic_sync_serial_client(self, mock_serial):
-        ''' Test the basic methods for the serial sync client'''
+        """ Test the basic methods for the serial sync client"""
 
         # receive/send
         mock_serial.in_waiting = 0
@@ -501,7 +500,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertEqual('ModbusSerialClient(ascii baud[19200])', str(client))
 
     def test_serial_client_connect(self):
-        ''' Test the serial client connection method'''
+        """ Test the serial client connection method"""
         with patch.object(serial, 'Serial') as mock_method:
             mock_method.return_value = MagicMock()
             client = ModbusSerialClient()
@@ -514,7 +513,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch("serial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
-        ''' Test the serial client is_socket_open method'''
+        """ Test the serial client is_socket_open method"""
         client = ModbusSerialClient()
         self.assertFalse(client.is_socket_open())
         client.socket = mock_serial
@@ -522,7 +521,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch("serial.Serial")
     def test_serial_client_send(self, mock_serial):
-        ''' Test the serial client send method'''
+        """ Test the serial client send method"""
         mock_serial.in_waiting = None
         mock_serial.write = lambda x: len(x) # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient()
@@ -536,7 +535,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     @patch("serial.Serial")
     def test_serial_client_cleanup_buffer_before_send(self, mock_serial):
-        ''' Test the serial client send method'''
+        """ Test the serial client send method"""
         mock_serial.in_waiting = 4
         mock_serial.read = lambda x: b'1' * x
         mock_serial.write = lambda x: len(x) # pylint: disable=unnecessary-lambda
@@ -550,7 +549,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertEqual(4, client._send('1234')) # pylint: disable=protected-access
 
     def test_serial_client_recv(self):
-        ''' Test the serial client receive method'''
+        """ Test the serial client receive method"""
         client = ModbusSerialClient()
         self.assertRaises(ConnectionException, lambda: client._recv(1024)) # pylint: disable=protected-access
 

@@ -13,12 +13,10 @@ from pymodbus.exceptions import (
 )
 
 class SimplePduTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymod.pdu module
-    '''
+    """ Unittest for the pymod.pdu module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         self.bad_requests = (
                 ModbusRequest(),
                 ModbusResponse(),
@@ -27,13 +25,13 @@ class SimplePduTest(unittest.TestCase):
         self.exception = ExceptionResponse(1,1)
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
         del self.bad_requests
         del self.illegal
         del self.exception
 
     def test_not_impelmented(self):
-        ''' Test a base classes for not implemented funtions '''
+        """ Test a base classes for not implemented funtions """
         for request in self.bad_requests:
             self.assertRaises(NotImplementedException, request.encode)
 
@@ -41,7 +39,7 @@ class SimplePduTest(unittest.TestCase):
             self.assertRaises(NotImplementedException, request.decode, None)
 
     def test_error_methods(self):
-        ''' Test all error methods '''
+        """ Test all error methods """
         self.illegal.decode("12345")
         self.illegal.execute(None)
 
@@ -51,7 +49,7 @@ class SimplePduTest(unittest.TestCase):
         self.assertEqual(self.exception.exception_code, 1)
 
     def test_request_exception_factory(self):
-        ''' Test all error methods '''
+        """ Test all error methods """
         request = ModbusRequest()
         request.function_code = 1
         errors = dict((ModbusExceptions.decode(c), c) for c in range(1,20))
@@ -60,7 +58,7 @@ class SimplePduTest(unittest.TestCase):
             self.assertEqual(str(result), f"Exception Response(129, 1, {error})")
 
     def test_calculate_rtu_frame_size(self):
-        ''' Test the calculation of Modbus/RTU frame sizes '''
+        """ Test the calculation of Modbus/RTU frame sizes """
         self.assertRaises(NotImplementedException,
                           ModbusRequest.calculateRtuFrameSize, b'')
         ModbusRequest._rtu_frame_size = 5 # pylint: disable=protected-access

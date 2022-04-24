@@ -19,18 +19,16 @@ from pymodbus.exceptions import ParameterException
 
 
 class ModbusDataStoreTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.datastore module
-    '''
+    """ Unittest for the pymodbus.datastore module. """
 
     def setUp(self):
         pass
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
 
     def test_modbus_data_block(self):
-        ''' Test a base data block store '''
+        """ Test a base data block store """
         block = BaseModbusDataBlock()
         block.default(10, True)
 
@@ -43,7 +41,7 @@ class ModbusDataStoreTest(unittest.TestCase):
         self.assertEqual(block.values, [False]*10)
 
     def test_modbus_data_block_iterate(self):
-        ''' Test a base data block store '''
+        """ Test a base data block store """
         block = BaseModbusDataBlock()
         block.default(10, False)
         for _,value in block:
@@ -54,14 +52,14 @@ class ModbusDataStoreTest(unittest.TestCase):
             self.assertEqual(value, False)
 
     def test_modbus_data_block_other(self):
-        ''' Test a base data block store '''
+        """ Test a base data block store """
         block = BaseModbusDataBlock()
         self.assertRaises(NotImplementedException, lambda: block.validate(1,1))
         self.assertRaises(NotImplementedException, lambda: block.getValues(1,1))
         self.assertRaises(NotImplementedException, lambda: block.setValues(1,1))
 
     def test_modbus_sequential_data_block(self):
-        ''' Test a sequential data block store '''
+        """ Test a sequential data block store """
         block = ModbusSequentialDataBlock(0x00, [False]*10)
         self.assertFalse(block.validate(-1, 0))
         self.assertFalse(block.validate(0, 20))
@@ -75,14 +73,14 @@ class ModbusDataStoreTest(unittest.TestCase):
         self.assertEqual(block.getValues(0x00, 10), [True]*10)
 
     def test_modbus_sequential_data_block_factory(self):
-        ''' Test the sequential data block store factory '''
+        """ Test the sequential data block store factory """
         block = ModbusSequentialDataBlock.create()
         self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
         block = ModbusSequentialDataBlock(0x00, 0x01)
         self.assertEqual(block.values, [0x01])
 
     def test_modbus_sparse_data_block(self):
-        ''' Test a sparse data block store '''
+        """ Test a sparse data block store """
         values = dict(enumerate([True]*10))
         block = ModbusSparseDataBlock(values)
         self.assertFalse(block.validate(-1, 0))
@@ -138,7 +136,7 @@ class ModbusDataStoreTest(unittest.TestCase):
 
 
     def test_modbus_sparse_data_block_factory(self):
-        ''' Test the sparse data block store factory '''
+        """ Test the sparse data block store factory """
         block = ModbusSparseDataBlock.create([0x00]*65536)
         self.assertEqual(block.getValues(0x00, 65536), [False]*65536)
 
@@ -151,7 +149,7 @@ class ModbusDataStoreTest(unittest.TestCase):
 
 
     def test_modbus_slave_context(self):
-        ''' Test a modbus slave context '''
+        """ Test a modbus slave context """
         store = {
             'di' : ModbusSequentialDataBlock(0, [False]*10),
             'co' : ModbusSequentialDataBlock(0, [False]*10),
@@ -172,7 +170,7 @@ class ModbusDataStoreTest(unittest.TestCase):
             self.assertEqual(context.getValues(i, 0,10), [False]*10)
 
     def test_modbus_server_context(self):
-        ''' Test a modbus server context '''
+        """ Test a modbus server context """
         def _set(ctx):
             ctx[0xffff] = None
         context = ModbusServerContext(single=False)
@@ -181,15 +179,13 @@ class ModbusDataStoreTest(unittest.TestCase):
 
 
 class RedisDataStoreTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.datastore.database.redis module
-    '''
+    """ Unittest for the pymodbus.datastore.database.redis module. """
 
     def setUp(self):
         self.slave = RedisSlaveContext()
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
 
     def test_str(self):
         """ Test string. """
@@ -291,10 +287,7 @@ class MockSqlResult: # pylint: disable=too-few-public-methods
 
 
 class SqlDataStoreTest(unittest.TestCase): # pylint: disable=too-many-instance-attributes
-    '''
-    This is the unittest for the pymodbus.datastore.database.SqlSlaveContesxt
-    module
-    '''
+    """ Unittest for the pymodbus.datastore.database.SqlSlaveContext module. """
 
     def setUp(self):
         self.slave = SqlSlaveContext()
@@ -315,7 +308,7 @@ class SqlDataStoreTest(unittest.TestCase): # pylint: disable=too-many-instance-a
         self.function_map.update([(i, 'c') for i in [1, 5, 15]])
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
 
     def test_str(self):
         """ Test string. """

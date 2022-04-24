@@ -4,15 +4,13 @@ import unittest
 from pymodbus.version import Version
 
 class ModbusVersionTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus._version code
-    '''
+    """ Unittest for the pymodbus._version code. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
+        """ Cleans up the test environment """
 
     def test_version_class(self):
         """ Test version class. """

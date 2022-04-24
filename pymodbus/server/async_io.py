@@ -116,7 +116,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
             _logger.error(txt)
 
-    async def handle(self): #NOSONAR pylint: disable=too-many-branches
+    async def handle(self): #NOSONAR pylint: disable=too-many-branches,too-complex
         """ Asyncio coroutine which represents a single conversation between
         the modbus slave and master
 

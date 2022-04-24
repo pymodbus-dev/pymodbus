@@ -109,7 +109,7 @@ def print_help():
         )
 
 
-async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statements,too-many-branches
+async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
     """ CLI interactive shell. """
     col = get_terminal_width()
     max_len = max([len(t) for t in TITLE.split("\n")])

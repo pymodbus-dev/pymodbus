@@ -24,7 +24,7 @@ persistent=no
 
 # List of plugins
 load-plugins=
-    pylint.extensions.bad_builtin, # default
+    pylint.extensions.bad_builtin,
 #NOT WANTED pylint.extensions.broad_try_clause,
     pylint.extensions.check_elif,
     pylint.extensions.code_style,
@@ -32,13 +32,13 @@ load-plugins=
     pylint.extensions.comparison_placement,
     pylint.extensions.confusing_elif,
 #NOT WANTED pylint.extensions.consider_ternary_expression,
-#default    pylint.extensions.docparams,
+#NOT WANTED pylint.extensions.docparams,
     pylint.extensions.docstyle,
     pylint.extensions.emptystring,
 #NOT WANTED pylint.extensions.empty_comment,
     pylint.extensions.eq_without_hash,
     pylint.extensions.for_any_all,
-#           pylint.extensions.mccabe,
+    pylint.extensions.mccabe,
     pylint.extensions.overlapping_exceptions,
     pylint.extensions.private_import,
 #NOT WANTED pylint.extensions.redefined_variable_type,

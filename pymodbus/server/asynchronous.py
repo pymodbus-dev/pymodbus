@@ -1,5 +1,4 @@
-"""
-Implementation of a Twisted Modbus Server
+""" Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 """
@@ -112,8 +111,7 @@ class ModbusTcpProtocol(protocol.Protocol):
 
 
 class ModbusServerFactory(ServerFactory):
-    """
-    Builder class for a modbus server
+    """ Builder class for a modbus server
 
     This also holds the server datastore so that it is
     persisted between connections
@@ -239,8 +237,7 @@ def _is_main_thread():
 def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disable=dangerous-default-value,invalid-name,too-many-arguments
                    console=False, defer_reactor_run=False, custom_functions=[], #NOSONAR pylint: disable=,unused-argument
                    **kwargs):
-    """
-    Helper method to start the Modbus Async TCP server
+    """ Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -270,8 +267,7 @@ def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
 
 def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disable=invalid-name,dangerous-default-value
                    defer_reactor_run=False, custom_functions=[], **kwargs):
-    """
-    Helper method to start the Modbus Async Udp server
+    """ Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -300,8 +296,7 @@ def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
 
 def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-locals
                       defer_reactor_run=False, custom_functions=[], **kwargs):
-    """
-    Helper method to start the Modbus Async Serial server
+    """ Helper method to start the Modbus Async Serial server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -345,9 +340,7 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR
 
 
 def StopServer(): #NOSONAR pylint: disable=invalid-name
-    """
-    Helper method to stop Async Server
-    """
+    """ Helper method to stop Async Server. """
     from twisted.internet import reactor as local_reactor # pylint: disable=import-outside-toplevel,reimported
     if _is_main_thread():
         local_reactor.stop()

@@ -5,13 +5,12 @@
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus with twisted.
 """
-# pylint: disable=R0801
 import logging
 
 from twisted.internet import reactor
 from pymodbus.client.asynchronous import schedulers
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient # pylint: disable=no-name-in-module
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol # pylint: disable=no-name-in-module
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)

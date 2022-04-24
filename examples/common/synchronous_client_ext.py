@@ -6,7 +6,6 @@ The following is an example of how to use the synchronous modbus client
 implementation from pymodbus to perform the extended portions of the
 modbus protocol.
 """
-# pylint: disable=R0801
 import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
@@ -54,7 +53,7 @@ log.setLevel(logging.DEBUG)
 UNIT = 0x01
 
 
-def execute_extended_requests(): # pylint: disable=too-many-statements
+def execute_extended_requests():
     """ Execute extended requests. """
     # ------------------------------------------------------------------------#
     # choose the client you want

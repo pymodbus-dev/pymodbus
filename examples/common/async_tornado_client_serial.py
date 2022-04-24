@@ -5,7 +5,6 @@
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus using tornado.
 """
-# pylint: disable=R0801
 # ---------------------------------------------------------------------------#
 # import needed libraries
 # ---------------------------------------------------------------------------#
@@ -19,7 +18,7 @@ from pymodbus.client.asynchronous import schedulers
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient # pylint: disable=no-name-in-module
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging

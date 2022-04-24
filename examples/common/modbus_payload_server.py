@@ -5,7 +5,6 @@
 If you want to initialize a server context with a complicated memory
 layout, you can actually use the payload builder.
 """
-# pylint: disable=R0801
 import logging
 
 # --------------------------------------------------------------------------- #

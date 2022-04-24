@@ -555,7 +555,7 @@ class ModbusControlBlock(Singleton):
 
         :param mode: The data transfer method in (RTU, ASCII)
         """
-        if mode in ['ASCII', 'RTU']:
+        if mode in set(['ASCII', 'RTU']):
             self.__mode = mode # pylint: disable=unused-private-member
 
     Mode = property(lambda s: s.__mode, _setMode)

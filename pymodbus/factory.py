@@ -1,5 +1,4 @@
-"""
-Modbus Request/Response Decoder Factories
+""" Modbus Request/Response Decoder Factories
 -------------------------------------------
 
 The following factories make it easy to decode request/response messages.
@@ -166,8 +165,7 @@ class ServerDecoder(IModbusDecoder):
     ]
 
     def __init__(self):
-        """ Initializes the client lookup tables
-        """
+        """ Initializes the client lookup tables. """
         functions = set(f.function_code for f in self.__function_table)
         self.__lookup = dict([(f.function_code, f) for f in self.__function_table]) # pylint: disable=consider-using-dict-comprehension
         self.__sub_lookup = dict((f, {}) for f in functions)
@@ -196,8 +194,7 @@ class ServerDecoder(IModbusDecoder):
         return self.__lookup.get(function_code, ExceptionResponse)
 
     def _helper(self, data):
-        """
-        This factory is used to generate the correct request object
+        """ This factory is used to generate the correct request object
         from a valid request packet. This decodes from a list of the
         currently implemented request types.
 
@@ -229,8 +226,7 @@ class ServerDecoder(IModbusDecoder):
         return request
 
     def register(self, function=None):
-        """
-        Registers a function and sub function class with the decoder
+        """ Registers a function and sub function class with the decoder
         :param function: Custom function class to register
         :return:
         """
@@ -298,8 +294,7 @@ class ClientDecoder(IModbusDecoder):
     ]
 
     def __init__(self):
-        """ Initializes the client lookup tables
-        """
+        """ Initializes the client lookup tables. """
         functions = set(f.function_code for f in self.__function_table)
         self.__lookup = dict([(f.function_code, f) # pylint: disable=consider-using-dict-comprehension
                               for f in self.__function_table])
@@ -332,8 +327,7 @@ class ClientDecoder(IModbusDecoder):
         return None
 
     def _helper(self, data):
-        """
-        This factory is used to generate the correct response object
+        """ This factory is used to generate the correct response object
         from a valid response packet. This decodes from a list of the
         currently implemented request types.
 
@@ -365,8 +359,7 @@ class ClientDecoder(IModbusDecoder):
         return response
 
     def register(self, function=None, sub_function=None, force=False): # pylint: disable=unused-argument
-        """
-        Registers a function and sub function class with the decoder
+        """ Registers a function and sub function class with the decoder
         :param function: Custom function class to register
         :param sub_function: Custom sub function class to register
         :param force: Force update the existing class

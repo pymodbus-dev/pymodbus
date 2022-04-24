@@ -1,15 +1,14 @@
-'''
-Constants For Modbus Server/Client
+""" Constants For Modbus Server/Client
 ----------------------------------
 
 This is the single location for storing default
 values for the servers and clients.
-'''
+"""
 from pymodbus.interfaces import Singleton
 
 
 class Defaults(Singleton): # pylint: disable=too-few-public-methods
-    ''' A collection of modbus default values
+    """ A collection of modbus default values
 
     .. attribute:: Port
 
@@ -111,7 +110,7 @@ class Defaults(Singleton): # pylint: disable=too-few-public-methods
       response. Default value False does not conform to Modbus spec but maintains
       legacy behavior for existing pymodbus users.
 
-    '''
+    """
     Port                = 502
     TLSPort             = 802
     Backoff             = 0.3
@@ -133,8 +132,7 @@ class Defaults(Singleton): # pylint: disable=too-few-public-methods
     broadcast_enable    = False
 
 class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
-    '''
-    These represent various status codes in the modbus
+    """ These represent various status codes in the modbus
     protocol.
 
     .. attribute:: Waiting
@@ -162,7 +160,7 @@ class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
     .. attribute:: SlaveOff
 
        This indicates that the given modbus slave is not running
-    '''
+    """
     Waiting  = 0xffff
     Ready    = 0x0000
     On       = 0xff00
@@ -172,7 +170,7 @@ class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
 
 
 class Endian(Singleton): # pylint: disable=too-few-public-methods
-    ''' An enumeration representing the various byte endianess.
+    """ An enumeration representing the various byte endianess.
 
     .. attribute:: Auto
 
@@ -189,14 +187,14 @@ class Endian(Singleton): # pylint: disable=too-few-public-methods
 
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.
-    '''
+    """
     Auto   = '@'
     Big    = '>'
     Little = '<'
 
 
 class ModbusPlusOperation(Singleton): # pylint: disable=too-few-public-methods
-    ''' Represents the type of modbus plus request
+    """ Represents the type of modbus plus request
 
     .. attribute:: GetStatistics
 
@@ -207,13 +205,13 @@ class ModbusPlusOperation(Singleton): # pylint: disable=too-few-public-methods
 
        Operation requesting that the current modbus plus statistics
        be cleared and not returned in the response.
-    '''
+    """
     GetStatistics   = 0x0003
     ClearStatistics = 0x0004
 
 
 class DeviceInformation(Singleton): # pylint: disable=too-few-public-methods
-    ''' Represents what type of device information to read
+    """ Represents what type of device information to read
 
     .. attribute:: Basic
 
@@ -237,7 +235,7 @@ class DeviceInformation(Singleton): # pylint: disable=too-few-public-methods
     .. attribute:: Specific
 
        Request to return a single data object.
-    '''
+    """
     Basic    = 0x01
     Regular  = 0x02
     Extended = 0x03
@@ -245,7 +243,7 @@ class DeviceInformation(Singleton): # pylint: disable=too-few-public-methods
 
 
 class MoreData(Singleton): # pylint: disable=too-few-public-methods
-    ''' Represents the more follows condition
+    """ Represents the more follows condition
 
     .. attribute:: Nothing
 
@@ -254,7 +252,7 @@ class MoreData(Singleton): # pylint: disable=too-few-public-methods
     .. attribute:: KeepReading
 
        This indicates that there are more objects to be returned.
-    '''
+    """
     Nothing     = 0x00
     KeepReading = 0xFF
 

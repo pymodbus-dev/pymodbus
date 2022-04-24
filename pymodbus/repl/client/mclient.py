@@ -71,8 +71,7 @@ class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
 
     @staticmethod
     def _process_exception(resp, **kwargs):
-        unit = kwargs.get("unit")
-        if not unit:
+        if not (unit := kwargs.get("unit")):
             err = {
                 "message": "Broadcast message, ignoring errors!!!"
             }

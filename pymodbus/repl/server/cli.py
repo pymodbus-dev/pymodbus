@@ -137,8 +137,7 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statement
             if result == "clear":
                 clear()
                 continue
-            command = result.split()
-            if command:
+            if command := result.split():
                 if command[0] not in COMMANDS:
                     invalid_command = True
                 if invalid_command:

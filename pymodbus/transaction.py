@@ -131,8 +131,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                 request.transaction_id = self.getNextTID()
                 txt = f"Running transaction {request.transaction_id}"
                 _logger.debug(txt)
-                _buffer = hexlify_packets(self.client.framer._buffer) # pylint: disable=protected-access
-                if _buffer:
+                if (_buffer := hexlify_packets(self.client.framer._buffer)): # pylint: disable=protected-access
                     txt = f"Clearing current Frame: - {_buffer}"
                     _logger.debug(txt)
                     self.client.framer.resetFrame()
@@ -198,8 +197,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                     self.client.framer.processIncomingPacket(response,
                                                              addTransaction,
                                                              request.unit_id)
-                    response = self.getTransaction(request.transaction_id)
-                    if not response:
+                    if not (response := self.getTransaction(request.transaction_id)):
                         if len(self.transactions):
                             response = self.getTransaction(tid=0)
                         else:
@@ -240,8 +238,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
             _logger.debug(txt)
         self.client.connect()
         if hasattr(self.client, "_in_waiting"):
-            in_waiting = self.client._in_waiting() # pylint: disable=protected-access
-            if in_waiting:
+            if (in_waiting := self.client._in_waiting()): # pylint: disable=protected-access
                 if response_length == in_waiting:
                     result = self._recv(response_length, full)
                     return result, None
@@ -280,8 +277,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                               "to 'WAITING FOR REPLY'")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
             if hasattr(self.client, "handle_local_echo") and self.client.handle_local_echo is True:
-                local_echo_packet = self._recv(size, full)
-                if local_echo_packet != packet:
+                if (local_echo_packet := self._recv(size, full)) != packet:
                     return b'', "Wrong local echo"
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)

@@ -2,7 +2,7 @@
 All rights reserved.
 """
 
-DEFUALT_CONFIG = {
+DEFUALT_CONFIG = { # pylint: disable=consider-using-namedtuple-or-dataclass
   "tcp": {
     "handler": "ModbusConnectedRequestHandler",
     "allow_reuse_address": True,

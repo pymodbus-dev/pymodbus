@@ -70,12 +70,12 @@ class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-publi
 
     def test_calculate_exception_length(self):
         """ Test calculate exception length. """
-        for framer, exception_length in [('ascii', 11),
+        for framer, exception_length in (('ascii', 11),
                                          ('binary', 7),
                                          ('rtu', 5),
                                          ('tcp', 9),
                                          ('tls', 2),
-                                         ('dummy', None)]:
+                                         ('dummy', None)):
             self._tm.client = MagicMock()
             if framer == "ascii":
                 self._tm.client.framer = self._ascii
@@ -342,7 +342,7 @@ class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertTrue(self._tcp.checkFrame())
         actual = ModbusRequest()
         self._tcp.populateResult(actual)
-        for name in ['transaction_id', 'protocol_id', 'unit_id']:
+        for name in ('transaction_id', 'protocol_id', 'unit_id'):
             self.assertEqual(getattr(expected, name), getattr(actual, name))
         self._tcp.advanceFrame()
 

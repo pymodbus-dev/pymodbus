@@ -166,8 +166,8 @@ class IModbusSlaveContext:
             setValues(self, fx, address, values)
     """
     __fx_mapper = {2: 'd', 4: 'i'}
-    __fx_mapper.update([(i, 'h') for i in [3, 6, 16, 22, 23]])
-    __fx_mapper.update([(i, 'c') for i in [1, 5, 15]])
+    __fx_mapper.update([(i, 'h') for i in (3, 6, 16, 22, 23)])
+    __fx_mapper.update([(i, 'c') for i in (1, 5, 15)])
 
     def decode(self, fx): # pylint: disable=invalid-name
         """ Converts the function code to the datastore to

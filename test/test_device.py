@@ -217,7 +217,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
     def test_modbus_control_block_diagnostic(self):
         """ Tests the MCB delimiter setting methods """
         self.assertEqual([False] * 16, self.control.getDiagnosticRegister())
-        for i in [1,3,4,6]:
+        for i in (1,3,4,6):
             self.control.setDiagnostic({i:True})
         self.assertEqual(True, self.control.getDiagnostic(1))
         self.assertEqual(False, self.control.getDiagnostic(2))

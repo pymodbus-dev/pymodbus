@@ -1,5 +1,4 @@
-"""
-Helper Module for REPL actions.
+""" Helper Module for REPL actions.
 
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
@@ -55,11 +54,9 @@ CLIENT_ATTRIBUTES = []
 
 
 class Command:
-    """
-    Class representing Commands to be consumed by Completer.
-    """
+    """ Class representing Commands to be consumed by Completer. """
     def __init__(self, name, signature, doc, unit=False):
-        """
+        """ Initialize
 
         :param name: Name of the command
         :param signature: inspect object
@@ -96,8 +93,7 @@ class Command:
         return param_dict
 
     def create_completion(self):
-        """
-        Create command completion meta data.
+        """ Create command completion meta data.
 
         :return:
         """
@@ -119,16 +115,14 @@ class Command:
         return words
 
     def get_completion(self):
-        """
-        Gets a list of completions.
+        """ Gets a list of completions.
 
         :return:
         """
         return self.args.keys()
 
     def get_meta(self, cmd):
-        """
-        Get Meta info of a given command.
+        """ Get Meta info of a given command.
 
         :param cmd: Name of command.
         :return: Dict containing meta info.
@@ -184,8 +178,7 @@ def _get_client_properties(members):
 
 
 def get_commands(client):
-    """
-    Helper method to retrieve all required methods and attributes of a client \
+    """ Helper method to retrieve all required methods and attributes of a client \
     object and convert it to commands.
 
     :param client: Modbus Client object.
@@ -213,14 +206,12 @@ def get_commands(client):
 
 
 class Result:
-    """
-    Represent result command.
-    """
+    """ Represent result command. """
     function_code = None
     data = None
 
     def __init__(self, result):
-        """
+        """ Initialize.
         :param result: Response of a modbus command.
         """
         if isinstance(result, dict):  # Modbus response
@@ -230,8 +221,7 @@ class Result:
             self.data = result
 
     def decode(self, formatters, byte_order='big', word_order='big'):
-        """
-        Decode the register response to known formatters.
+        """ Decode the register response to known formatters.
 
         :param formatters: int8/16/32/64, uint8/16/32/64, float32/64
         :param byte_order: little/big
@@ -265,8 +255,7 @@ class Result:
             self.print_result(decoded)
 
     def raw(self):
-        """
-        Return raw result dict.
+        """ Return raw result dict.
 
         :return:
         """
@@ -286,8 +275,7 @@ class Result:
         return new_dict
 
     def print_result(self, data=None):
-        """
-        Prettu print result object.
+        """ Prettu print result object.
 
         :param data: Data to be printed.
         :return:

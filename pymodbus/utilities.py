@@ -1,5 +1,4 @@
-"""
-Modbus Utilities
+""" Modbus Utilities
 -----------------
 
 A collection of utilities for packing data, unpacking
@@ -9,9 +8,7 @@ import struct
 
 
 class ModbusTransactionState: # pylint: disable=too-few-public-methods
-    """
-    Modbus Client States
-    """
+    """ Modbus Client States. """
     IDLE = 0
     SENDING = 1
     WAITING_FOR_REPLY = 2
@@ -43,8 +40,7 @@ class ModbusTransactionState: # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 
 def default(value):
-    """
-    Given a python object, return the default value
+    """ Given a python object, return the default value
     of that object.
 
     :param value: The value to get the default of
@@ -127,8 +123,7 @@ def unpack_bitstring(string):
 
 
 def make_byte_string(byte_string):
-    """
-    Returns byte string from a given string, python3 specific fix
+    """ Returns byte string from a given string, python3 specific fix
     :param s:
     :return:
     """
@@ -235,8 +230,7 @@ def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
 
 
 def hexlify_packets(packet):
-    """
-    Returns hex representation of bytestring received
+    """ Returns hex representation of bytestring received
     :param packet:
     :return:
     """

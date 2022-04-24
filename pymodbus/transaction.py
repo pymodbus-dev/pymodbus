@@ -1,5 +1,4 @@
-"""
-Collection of transaction based abstractions
+""" Collection of transaction based abstractions
 
 """
 
@@ -102,8 +101,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
         return None
 
     def _validate_response(self, request, response, exp_resp_len):
-        """
-        Validate Incoming response against request
+        """ Validate Incoming response against request
         :param request: Request sent
         :param response: Response received
         :param exp_resp_len: Expected response length
@@ -251,8 +249,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
 
     def _transact(self, packet, response_length,
                   full=False, broadcast=False):
-        """
-        Does a Write and Read transaction
+        """ Does a Write and Read transaction
         :param packet: packet to be sent
         :param response_length:  Expected response length
         :param full: the target device was notorious for its no response. Dont

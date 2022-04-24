@@ -1,5 +1,4 @@
-"""
-Pymodbus Exceptions
+""" Pymodbus Exceptions
 --------------------
 
 Custom exceptions to be used in the Modbus code.
@@ -85,9 +84,7 @@ class ConnectionException(ModbusException):
 
 
 class InvalidMessageReceivedException(ModbusException):
-    """
-    Error resulting from invalid response received or decoded
-    """
+    """ Error resulting from invalid response received or decoded. """
 
     def __init__(self, string=""):
         """ Initialize the exception
@@ -99,9 +96,7 @@ class InvalidMessageReceivedException(ModbusException):
 
 
 class MessageRegisterException(ModbusException):
-    """
-    Error resulting from failing to register a custom message request/response
-    """
+    """ Error resulting from failing to register a custom message request/response. """
     def __init__(self, string=""):
         message = f'[Error registering message] {string}'
         ModbusException.__init__(self, message)

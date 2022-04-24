@@ -1,5 +1,4 @@
-"""
-Implementation of a Threaded Modbus Server
+""" Implementation of a Threaded Modbus Server
 ------------------------------------------
 
 """
@@ -41,8 +40,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     framer = None
 
     def setup(self):
-        """ Callback for when a client connects
-        """
+        """ Callback for when a client connects."""
         txt = f"Client Connected [{self.client_address}]"
         _logger.debug(txt)
         self.running = True
@@ -50,8 +48,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         self.server.threads.append(self)
 
     def finish(self):
-        """ Callback for when a client disconnects
-        """
+        """ Callback for when a client disconnects. """
         txt = f"Client Disconnected [{self.client_address}]"
         _logger.debug(txt)
         self.server.threads.remove(self)
@@ -91,8 +88,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     # Base class implementations
     # ----------------------------------------------------------------------- #
     def handle(self):
-        """ Callback when we receive any data
-        """
+        """ Callback when we receive any data. """
         raise NotImplementedException("Method not implemented"
                                       " by derived class")
 
@@ -169,7 +165,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     """
 
     def handle(self): # pylint: disable=too-many-branches
-        """Callback when we receive any data, until self.running becomes False.
+        """ Callback when we receive any data, until self.running becomes False.
         Blocks indefinitely awaiting data.  If shutdown is required, then the
         global socket.settimeout(<seconds>) may be used, to allow timely
         checking of self.running.  However, since this also affects socket
@@ -251,8 +247,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
     socket = None
 
     def handle(self):
-        """ Callback when we receive any data
-        """
+        """ Callback when we receive any data. """
         reset_frame = False
         while self.running:
             try:
@@ -304,8 +299,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
 # Server Implementations
 # --------------------------------------------------------------------------- #
 class ModbusTcpServer(socketserver.ThreadingTCPServer): # pylint: disable=too-many-instance-attributes
-    """
-    A modbus threaded tcp socket server
+    """ A modbus threaded tcp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -382,8 +376,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer): # pylint: disable=too-ma
 
 
 class ModbusTlsServer(ModbusTcpServer):
-    """
-    A modbus threaded TLS server
+    """ A modbus threaded TLS server
 
     We inherit and overload the ModbusTcpServer so that we
     can control the client threads as well as have a single
@@ -426,15 +419,13 @@ class ModbusTlsServer(ModbusTcpServer):
                                  handler, allow_reuse_address, **kwargs)
 
     def server_activate(self):
-        """ Callback for starting listening over TLS connection
-        """
+        """ Callback for starting listening over TLS connection. """
         self.socket = self.sslctx.wrap_socket(self.socket, server_side=True)
         socketserver.ThreadingTCPServer.server_activate(self)
 
 
 class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-many-instance-attributes
-    """
-    A modbus threaded udp socket server
+    """ A modbus threaded udp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -490,8 +481,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-ma
         socketserver.ThreadingUDPServer.process_request(self, request, client_address)
 
     def server_close(self):
-        """ Callback for stopping the running server
-        """
+        """ Callback for stopping the running server. """
         _logger.debug("Modbus server stopped")
         self.socket.close()
         for thread in self.threads:
@@ -499,8 +489,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-ma
 
 
 class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
-    """
-    A modbus threaded serial socket server
+    """ A modbus threaded serial socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single

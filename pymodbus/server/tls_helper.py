@@ -1,5 +1,4 @@
-"""
-TLS helper for Modbus TLS Server
+""" TLS helper for Modbus TLS Server
 ------------------------------------------
 
 """

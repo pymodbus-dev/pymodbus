@@ -1,4 +1,4 @@
-"""Sync client."""
+""" Sync client. """
 # pylint: disable=R0801
 import logging
 import socket
@@ -30,8 +30,7 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseModbusClient(ModbusClientMixin):
-    """
-    Inteface for a modbus synchronous client. Defined here are all the
+    """ Inteface for a modbus synchronous client. Defined here are all the
     methods for performing the related request methods.  Derived classes
     simply need to implement the transport methods and set the correct
     framer.
@@ -58,12 +57,10 @@ class BaseModbusClient(ModbusClientMixin):
         raise NotImplementedException("Method not implemented by derived class")
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """ Closes the underlying socket connection. """
 
     def is_socket_open(self):
-        """
-        Check whether the underlying socket/serial is open or not.
+        """ Check whether the underlying socket/serial is open or not.
 
         :returns: True if socket/serial is open, False otherwise
         """
@@ -101,7 +98,7 @@ class BaseModbusClient(ModbusClientMixin):
     # Modbus client methods
     # ----------------------------------------------------------------------- #
     def execute(self, request=None):
-        """
+        """ Execute.
         :param request: The request to process
         :returns: The result of the request execution
         """
@@ -126,8 +123,7 @@ class BaseModbusClient(ModbusClientMixin):
         self.close()
 
     def idle_time(self):
-        """
-        Bus Idle Time to initiate next transaction
+        """ Bus Idle Time to initiate next transaction
         :return: time stamp
         """
         if self.last_frame_end is None or self.silent_interval is None:
@@ -135,19 +131,15 @@ class BaseModbusClient(ModbusClientMixin):
         return self.last_frame_end + self.silent_interval
 
     def debug_enabled(self):
-        """
-        Returns a boolean indicating if debug is enabled.
-        """
+        """ Returns a boolean indicating if debug is enabled. """
         return self._debug
 
     def set_debug(self, debug):
-        """
-        Sets the current debug flag.
-        """
+        """ Sets the current debug flag. """
         self._debug = debug
 
     def trace(self, writeable):
-        """Show trace."""
+        """ Show trace. """
         if writeable:
             self.set_debug(True)
         self._debugfd = writeable
@@ -161,8 +153,7 @@ class BaseModbusClient(ModbusClientMixin):
             _logger.exception(exc)
 
     def register(self, function):
-        """
-        Registers a function and sub function class with the decoder
+        """ Registers a function and sub function class with the decoder
         :param function: Custom function class to register
         :return:
         """
@@ -180,8 +171,7 @@ class BaseModbusClient(ModbusClientMixin):
 # Modbus TCP Client Transport Implementation
 # --------------------------------------------------------------------------- #
 class ModbusTcpClient(BaseModbusClient):
-    """ Implementation of a modbus tcp client
-    """
+    """ Implementation of a modbus tcp client. """
 
     def __init__(self, host='127.0.0.1', port=Defaults.Port,
         framer=ModbusSocketFramer, **kwargs):
@@ -223,8 +213,7 @@ class ModbusTcpClient(BaseModbusClient):
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """ Closes the underlying socket connection. """
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -368,8 +357,7 @@ class ModbusTcpClient(BaseModbusClient):
 
 
 class ModbusTlsClient(ModbusTcpClient):
-    """ Implementation of a modbus tls client
-    """
+    """ Implementation of a modbus tls client. """
 
     def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None, # pylint: disable=too-many-arguments
         certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
@@ -476,8 +464,7 @@ class ModbusTlsClient(ModbusTcpClient):
 
 
 class ModbusUdpClient(BaseModbusClient):
-    """ Implementation of a modbus udp client
-    """
+    """ Implementation of a modbus udp client. """
 
     def __init__(self, host='127.0.0.1', port=Defaults.Port,
                  framer=ModbusSocketFramer, **kwargs):
@@ -526,8 +513,7 @@ class ModbusUdpClient(BaseModbusClient):
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """ Closes the underlying socket connection. """
         self.socket = None
 
     def _send(self, request):
@@ -576,8 +562,8 @@ class ModbusUdpClient(BaseModbusClient):
 
 
 class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-attributes
-    """ Implementation of a modbus serial client
-    """
+    """ Implementation of a modbus serial client. """
+
     state = ModbusTransactionState.IDLE
     inter_char_timeout = 0
     silent_interval = 0
@@ -667,8 +653,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """ Closes the underlying socket connection. """
         if self.socket:
             self.socket.close()
         self.socket = None

@@ -1,4 +1,4 @@
-"""SERIAL communication."""
+""" SERIAL communication. """
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -17,8 +17,7 @@ _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
-    """
-    Actual Async Serial Client to be used.
+    """ Actual Async Serial Client to be used.
 
     To use do::
 
@@ -26,8 +25,7 @@ class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
     """
     @classmethod
     def _framer(cls, method):
-        """
-        Returns the requested framer
+        """ Returns the requested framer
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
@@ -45,8 +43,7 @@ class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
         raise ParameterException("Invalid framer method requested")
 
     def __new__(cls, scheduler, method, port,  **kwargs):
-        """
-        Scheduler to use:
+        """ Scheduler to use:
             - reactor (Twisted)
             - io_loop (Tornado)
             - async_io (asyncio)

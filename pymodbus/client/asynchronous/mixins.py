@@ -1,4 +1,4 @@
-"""Mix ins."""
+""" Mix ins. """
 import logging
 from pymodbus.client.sync import BaseModbusClient
 from pymodbus.constants import Defaults
@@ -11,9 +11,7 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseAsyncModbusClient(BaseModbusClient):
-    """
-    This represents the base ModbusAsyncClient.
-    """
+    """ This represents the base ModbusAsyncClient. """
 
     def __init__(self, framer=None, timeout=2, **kwargs):
         """ Initializes the framer module
@@ -31,13 +29,11 @@ class BaseAsyncModbusClient(BaseModbusClient):
 
 
 class AsyncModbusClientMixin(BaseAsyncModbusClient):
-    """
-    Async Modbus client mixing for UDP and TCP clients
-    """
+    """ Async Modbus client mixing for UDP and TCP clients. """
+
     def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None, # pylint: disable=too-many-arguments
                  source_address=None, timeout=None, **kwargs):
-        """
-        Initializes a Modbus TCP/UDP asynchronous client
+        """ Initializes a Modbus TCP/UDP asynchronous client
         :param host: Host IP address
         :param port: Port
         :param framer: Framer to use
@@ -53,12 +49,10 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
 
 
 class AsyncModbusSerialClientMixin(BaseAsyncModbusClient):
-    """
-    Async Modbus Serial Client Mixing
-    """
+    """ Async Modbus Serial Client Mixing. """
+
     def __init__(self, framer=None, port=None, **kwargs):
-        """
-        Initializes a Async Modbus Serial Client
+        """ Initializes a Async Modbus Serial Client
         :param framer:  Modbus Framer
         :param port: Serial port to use
         :param kwargs: Extra arguments if any

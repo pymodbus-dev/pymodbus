@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Modbus Message Parser
+""" Modbus Message Parser
 --------------------------------------------------------------------------
 
 The following is an example of how to parse modbus messages

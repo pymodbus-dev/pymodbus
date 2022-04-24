@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Synchronous Server Example to showcase Device Information
+""" Pymodbus Synchronous Server Example to showcase Device Information
 --------------------------------------------------------------------------
 
 This server demonstrates the use of Device Information to provide information

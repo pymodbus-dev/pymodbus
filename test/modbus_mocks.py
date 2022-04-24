@@ -15,11 +15,11 @@ class MockContext(IModbusSlaveContext):
         self.valid = valid
         self.default = default
 
-    def validate(self, fx, address, count=0): # pylint: disable=signature-differs
+    def validate(self, fx, address, count=0):
         """Validate values."""
         return self.valid
 
-    def getValues(self, fx, address, count=0): # pylint: disable=signature-differs
+    def getValues(self, fx, address, count=0):
         """Get values."""
         return [self.default] * count
 

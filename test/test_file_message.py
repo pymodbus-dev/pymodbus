@@ -25,7 +25,7 @@ from .modbus_mocks import MockContext
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
-class ModbusBitMessageTests(unittest.TestCase): # pylint: disable=too-many-public-methods
+class ModbusBitMessageTests(unittest.TestCase):
     """ Modbus bit message tests. """
     #-----------------------------------------------------------------------#
     # Setup/TearDown

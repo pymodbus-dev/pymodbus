@@ -32,7 +32,7 @@ requested functionality)::
         index += mapping[i]['size']
 
 Also, using the same input mapping parsers, we can generate
-populated slave contexts that can be run behing a modbus server::
+populated slave contexts that can be run behind a modbus server::
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import modbus_context_decoder

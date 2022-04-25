@@ -108,7 +108,7 @@ class ExampleProtocol(ModbusClientProtocol):
 #
 #     Factory(Protocol) -> ProtocolInstance
 #
-# It also persists data between client instances (think protocol singelton).
+# It also persists data between client instances (think protocol singleton).
 # --------------------------------------------------------------------------- #
 class ExampleFactory(ClientFactory):
     """ Example factory. """

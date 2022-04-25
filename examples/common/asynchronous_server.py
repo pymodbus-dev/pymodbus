@@ -58,7 +58,7 @@ def run_async_server():
     #     store = ModbusSlaveContext()
     #
     # Finally, you are allowed to use the same DataBlock reference for every
-    # table or you you may use a seperate DataBlock for each table.
+    # table or you you may use a separate DataBlock for each table.
     # This depends if you would like functions to be able to access and modify
     # the same data or not::
     #

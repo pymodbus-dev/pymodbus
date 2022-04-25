@@ -132,7 +132,7 @@ def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefine
 # ---------------------------------------------------------------------------#
 
 def err(*args, **kwargs):
-    """" Errror. """
+    """" handle error. """
     txt = f"Err {args} {kwargs}"
     log.error(txt)
 

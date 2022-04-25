@@ -148,7 +148,7 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
 # -------------------------------------------------------------------------- #
 class ConcurrentClient(ModbusClientMixin):
     """ This is a high performance client that can be used
-    to read/write a large number of reqeusts at once asyncronously.
+    to read/write a large number of requests at once asynchronously.
     This operates with a backing worker pool of processes or threads
     to achieve its performance.
     """

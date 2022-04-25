@@ -6,7 +6,7 @@ from pymodbus.datastore.store import BaseModbusDataBlock
 
 class ContextWrapper:
     """ This is a simple wrapper around enter
-    and exit functions that conforms to the pyhton
+    and exit functions that conforms to the python
     context manager protocol:
 
     with ContextWrapper(enter, leave):
@@ -29,7 +29,7 @@ class ContextWrapper:
 
 
 class ReadWriteLock:
-    """ This reader writer lock gurantees write order, but not
+    """ This reader writer lock guarantees write order, but not
     read order and is generally biased towards allowing writes
     if they are available to prevent starvation.
 

@@ -72,10 +72,10 @@ class BcdPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
-        :param endian: The endianess of the payload
+        :param endian: The endianness of the payload
         """
-        self._payload = payload or []
         self._endian = endian
+        self._payload = payload or []
 
     def __str__(self):
         """ Return the payload buffer as a string
@@ -165,7 +165,7 @@ class BcdPayloadDecoder:
         been decoded by the rest of the library.
 
         :param registers: The register results to initialize with
-        :param endian: The endianess of the payload
+        :param endian: The endianness of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
@@ -181,7 +181,7 @@ class BcdPayloadDecoder:
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param endian: The endianess of the payload
+        :param endian: The endianness of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):

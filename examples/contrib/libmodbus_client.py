@@ -102,7 +102,7 @@ compiler.cdef("""
 LIB = compiler.dlopen('modbus')  # create our bindings
 
 # -------------------------------------------------------------------------- #
-# helper utilites
+# helper utilities
 # -------------------------------------------------------------------------- #
 
 
@@ -172,7 +172,7 @@ class LibmodbusLevel1Client:
         return cls(my_client)
 
     def __init__(self, my_client):
-        """ Initalize a new instance of the LibmodbusLevel1Client. This
+        """ Initialize a new instance of the LibmodbusLevel1Client. This
         method should not be used, instead new instances should be created
         using the two supplied factory methods:
 
@@ -395,7 +395,7 @@ class LibmodbusClient(ModbusClientMixin):
     }
 
     def __init__(self, my_client):
-        """ Initalize a new instance of the LibmodbusClient. This should
+        """ Initialize a new instance of the LibmodbusClient. This should
         be initialized with one of the LibmodbusLevel1Client instances:
 
         * LibmodbusLevel1Client.create_rtu_client(...)

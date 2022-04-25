@@ -119,7 +119,7 @@ class SunspecModel: # pylint: disable=too-few-public-methods
     OutbackSystemControl                     = 64120  # noqa E221
 
     # ---------------------------------------------
-    # 64xxx Vender Extension Block
+    # 64xxx Vendor Extension Block
     # ---------------------------------------------
     EndOfSunSpecMap                          = 65535  # noqa E221
 

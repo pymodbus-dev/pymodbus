@@ -65,7 +65,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         raise gen.Return(self)
 
     def on_receive(self, *args):
-        """ On data recieve call back
+        """ On data receive call back
         :param args: data received
         :return:
         """
@@ -337,7 +337,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 transaction.set_exception(TimeOutException())
 
         def _on_write_done():
-            """ Set up reader part after sucessful write to the serial. """
+            """ Set up reader part after successful write to the serial. """
             _logger.debug("frame sent, waiting for a reply")
             self.last_frame_end = round(time.time(), 6)
             self.state = ModbusTransactionState.WAITING_FOR_REPLY

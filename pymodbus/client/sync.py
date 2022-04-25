@@ -29,7 +29,7 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseModbusClient(ModbusClientMixin):
-    """ Inteface for a modbus synchronous client. Defined here are all the
+    """ Interface for a modbus synchronous client. Defined here are all the
     methods for performing the related request methods.  Derived classes
     simply need to implement the transport methods and set the correct
     framer.
@@ -259,7 +259,7 @@ class ModbusTcpClient(BaseModbusClient):
         # socket.recv(size) waits until it gets some data from the host but
         # not necessarily the entire response that can be fragmented in
         # many packets.
-        # To avoid the splitted responses to be recognized as invalid
+        # To avoid split responses to be recognized as invalid
         # messages and to be discarded, loops socket.recv until full data
         # is received or timeout is expired.
         # If timeout expires returns the read data, also if its length is
@@ -408,7 +408,7 @@ class ModbusTlsClient(ModbusTcpClient):
         # socket.recv(size) waits until it gets some data from the host but
         # not necessarily the entire response that can be fragmented in
         # many packets.
-        # To avoid the splitted responses to be recognized as invalid
+        # To avoid split responses to be recognized as invalid
         # messages and to be discarded, loops socket.recv until full data
         # is received or timeout is expired.
         # If timeout expires returns the read data, also if its length is
@@ -709,12 +709,12 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
         while condition(start):
-            avaialble = self._in_waiting()
-            if (more_data and not avaialble) or (more_data and avaialble == size):
+            available = self._in_waiting()
+            if (more_data and not available) or (more_data and available == size):
                 break
-            if avaialble and avaialble != size:
+            if available and available != size:
                 more_data = True
-                size = avaialble
+                size = available
             time.sleep(0.01)
         return size
 

@@ -334,7 +334,7 @@ class ModbusTransactionManager:
 
                 if func_code < 0x80:    # Not an error
                     if isinstance(self.client.framer, ModbusSocketFramer):
-                        # Ommit UID, which is included in header size
+                        # Omit UID, which is included in header size
                         h_size = self.client.framer._hsize # pylint: disable=protected-access
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = h_size + length
@@ -355,7 +355,7 @@ class ModbusTransactionManager:
         if total is not None and actual != total:
             msg_start = "Incomplete message" if actual else "No response"
             txt = ("{msg_start} received, "
-                          f"Expected {total} bytes Recieved "
+                          f"Expected {total} bytes Received "
                           f"{actual} bytes !!!!")
             _logger.debug(txt)
         elif not actual:
@@ -413,7 +413,7 @@ class ModbusTransactionManager:
 
 
 class DictTransactionManager(ModbusTransactionManager):
-    """ Impelements a transaction for a manager where the
+    """ Implements a transaction for a manager where the
     results are keyed based on the supplied transaction id.
     """
 
@@ -426,7 +426,7 @@ class DictTransactionManager(ModbusTransactionManager):
         super().__init__(client, **kwargs)
 
     def __iter__(self):
-        """ Iterater over the current managed transactions
+        """ Iterator over the current managed transactions
 
         :returns: An iterator of the managed transactions
         """
@@ -471,7 +471,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
 
 class FifoTransactionManager(ModbusTransactionManager):
-    """ Impelements a transaction for a manager where the
+    """ Implements a transaction for a manager where the
     results are returned in a FIFO manner.
     """
 
@@ -484,7 +484,7 @@ class FifoTransactionManager(ModbusTransactionManager):
         self.transactions = []
 
     def __iter__(self):
-        """ Iterater over the current managed transactions
+        """ Iterator over the current managed transactions
 
         :returns: An iterator of the managed transactions
         """

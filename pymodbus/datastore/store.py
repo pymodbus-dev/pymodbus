@@ -13,7 +13,7 @@ Datastore Implementation
 
 There are two ways that the server datastore can be implemented.
 The first is a complete range from 'address' start to 'count'
-number of indecies.  This can be thought of as a straight array::
+number of indices.  This can be thought of as a straight array::
 
     data = range(1, 1 + count)
     [1,2,3,...,count]
@@ -39,7 +39,7 @@ company will dictate a modbus data mapping such that registers::
 
 Using this, layout, the first device will implement n, n+1, and n+2,
 however, the second device may set the latter two values to 0 or
-will simply not implmented the registers thus causing a single read
+will simply not implemented the registers thus causing a single read
 or a range read to fail.
 
 I have both methods implemented, and leave it up to the user to change
@@ -120,7 +120,7 @@ class BaseModbusDataBlock:
         return f"DataStore({len(self.values)}, {self.default_value})"
 
     def __iter__(self):
-        """ Iterater over the data block data
+        """ Iterator over the data block data
 
         :returns: An iterator of the data block data
         """

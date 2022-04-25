@@ -122,7 +122,7 @@ class ModbusServerContext:
             self._slaves = {Defaults.UnitId: self._slaves}
 
     def __iter__(self):
-        """ Iterater over the current collection of slave
+        """ Iterator over the current collection of slave
         contexts.
 
         :returns: An iterator over the slave contexts

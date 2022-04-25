@@ -7,7 +7,6 @@ client implementation from pymodbus with asyncio.
 
 The example is only valid on Python3.4 and above
 """
-# pylint: disable=R0801
 import asyncio
 import logging
 import time
@@ -133,7 +132,7 @@ def run_with_not_running_loop():
     loop = asyncio.new_event_loop()
     assert not loop.is_running()
     asyncio.set_event_loop(loop)
-    new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence,unused-variable
+    new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------------RUN_WITH_NOT_RUNNING_LOOP---------------")

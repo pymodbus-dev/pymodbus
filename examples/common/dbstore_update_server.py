@@ -12,7 +12,6 @@ This can also be done with a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
-# pylint: disable=R0801
 import logging
 import random
 

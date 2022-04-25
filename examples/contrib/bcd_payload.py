@@ -5,7 +5,6 @@ This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a
 simple binary coded decimal builder and decoder.
 """
-# pylint: disable=R0801
 from struct import pack
 from pymodbus.constants import Endian
 from pymodbus.interfaces import IPayloadBuilder

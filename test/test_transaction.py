@@ -28,7 +28,7 @@ from pymodbus.exceptions import (
 )
 
 
-class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-public-methods,too-many-instance-attributes
+class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-public-methods
     """ Unittest for the pymodbus.transaction module. """
 
     # ----------------------------------------------------------------------- #
@@ -95,7 +95,7 @@ class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-publi
                              exception_length)
 
     @patch('pymodbus.transaction.time')
-    def test_execute(self, mock_time):  # pylint: disable=too-many-statements
+    def test_execute(self, mock_time):
         """ Test execute. """
         mock_time.time.side_effect = count()
 

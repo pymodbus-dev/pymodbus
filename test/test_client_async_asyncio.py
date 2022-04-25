@@ -1,5 +1,4 @@
 """ Test client asyncio. """
-# pylint: disable=R0801
 import sys
 from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
@@ -22,7 +21,7 @@ from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
 
 
-class TestAsyncioClient: # pylint: disable=too-many-public-methods
+class TestAsyncioClient:
     """ Test asyncio client. """
     def test_base_modbus_async_client_protocol(self): # pylint: disable=no-self-use
         """ Test base modbus async client protocol. """
@@ -112,7 +111,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
     def test_initialization_serial_in_loop(self): # pylint: disable=no-self-use
         """ Test initialization serial in loop. """
         _, client = AsyncModbusSerialClient( #NOSONAR pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu') #NOSONAR pylint: disable=unpacking-non-sequence
+            schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu') #NOSONAR
 
         assert client.port == '/tmp/ptyp0'
         assert client.baudrate == 9600

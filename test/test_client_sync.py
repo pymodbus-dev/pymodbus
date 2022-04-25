@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ Test client sync. """
-# pylint: disable=R0801
 import socket
 import ssl
 import sys
@@ -93,8 +92,8 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         client = BaseModbusClient(None)
         client.transaction = None
         self.assertRaises(NotImplementedException, lambda: client.connect()) # pylint: disable=unnecessary-lambda
-        self.assertRaises(NotImplementedException, lambda: client.send(None)) # pylint: disable=unnecessary-lambda
-        self.assertRaises(NotImplementedException, lambda: client.recv(None)) # pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: client.send(None))
+        self.assertRaises(NotImplementedException, lambda: client.recv(None))
         self.assertRaises(NotImplementedException, lambda: client.__enter__()) # pylint: disable=unnecessary-lambda
         self.assertRaises(NotImplementedException, lambda: client.execute()) # pylint: disable=unnecessary-lambda
         self.assertRaises(NotImplementedException, lambda: client.is_socket_open()) # pylint: disable=unnecessary-lambda
@@ -131,7 +130,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
     # Test UDP Client
     # -----------------------------------------------------------------------#
 
-    def test_sync_udp_client_instantiation(self): # pylint: disable=protected-access
+    def test_sync_udp_client_instantiation(self):
         """ Test sync udp clientt. """
         client = ModbusUdpClient()
         self.assertNotEqual(client, None)

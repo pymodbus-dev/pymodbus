@@ -165,7 +165,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
         self.assertEqual(0, self.control.Counter.SlaveMessage)
 
     def test_modbus_control_block_update(self):
-        """ Tests the MCB counters upate methods """
+        """ Tests the MCB counters update methods """
         values = {'SlaveMessage':5, 'BusMessage':5}
         self.control.Counter.BusMessage += 1
         self.control.Counter.SlaveMessage += 1

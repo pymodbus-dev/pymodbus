@@ -262,6 +262,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         return [self.values[i] for i in range(address, address + count)]
 
     def _process_values(self, values):
+        """ Internal process values. """
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
                 if isinstance(val, (list, tuple)):

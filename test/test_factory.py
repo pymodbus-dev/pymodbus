@@ -7,6 +7,7 @@ from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusResponse, ModbusRequest
 
 def _raise_exception(_):
+    """ Raise exception. """
     raise ModbusException('something')
 
 class SimpleFactoryTest(unittest.TestCase):

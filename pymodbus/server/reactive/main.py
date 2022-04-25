@@ -119,6 +119,7 @@ class ReactiveServer:
             self._manipulator_config.update(**value)
 
     def _add_routes(self):
+        """ Internal add routes. """
         self._web_app.add_routes([
             web.post('/', self._response_manipulator)])
 

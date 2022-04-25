@@ -130,6 +130,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             raise ConnectionException from exc
 
     def _log_delayed_response(self, result_len, size, delay):
+        """ Internal log delayed response. """
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
         elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:

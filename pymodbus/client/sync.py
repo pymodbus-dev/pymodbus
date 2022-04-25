@@ -144,6 +144,7 @@ class BaseModbusClient(ModbusClientMixin):
         self._debugfd = writeable
 
     def _dump(self, data):
+        """ Internal dump. """
         fd = self._debugfd if self._debugfd else sys.stdout
         try:
             fd.write(hexlify_packets(data))
@@ -218,6 +219,7 @@ class ModbusTcpClient(BaseModbusClient):
         self.socket = None
 
     def _check_read_buffer(self):
+        """ Internal check read buffer. """
         time_ = time.time()
         end = time_ + self.timeout
         data = None
@@ -656,6 +658,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         self.socket = None
 
     def _in_waiting(self):
+        """ Internal _in_waiting. """
         in_waiting = ("in_waiting" if hasattr(
             self.socket, "in_waiting") else "inWaiting")
 
@@ -699,6 +702,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return 0
 
     def _wait_for_data(self):
+        """ Internal wait for data. """
         size = 0
         more_data = False
         if self.timeout is not None and self.timeout:

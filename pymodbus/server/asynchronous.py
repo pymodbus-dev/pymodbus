@@ -226,6 +226,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 # Starting Factories
 # --------------------------------------------------------------------------- #
 def _is_main_thread():
+    """ Internal is main thread. """
     if threading.current_thread() != threading.main_thread():
         _logger.debug("Running in spawned thread")
         return False

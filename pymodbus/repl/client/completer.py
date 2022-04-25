@@ -85,6 +85,7 @@ class CmdCompleter(Completer):
         return cmd if cmd else None
 
     def _get_completions(self, word, word_before_cursor):
+        """ Internal get completions. """
         if self.ignore_case:
             word_before_cursor = word_before_cursor.lower()
         return self.word_matches(word, word_before_cursor)

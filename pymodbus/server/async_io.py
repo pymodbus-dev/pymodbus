@@ -54,6 +54,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.handler_task = None  # coroutine to be run on asyncio loop
 
     def _log_exception(self):
+        """ Internal log exception. """
         if isinstance(self, ModbusConnectedRequestHandler):
             txt = f"Handler for stream [{self.client_address[:2]}] has been canceled"
             _logger.error(txt)
@@ -746,13 +747,16 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
 
 
     def _protocol_factory(self):
+        """ Internal protocol factory. """
         return self.handler(self)
 
     async def _delayed_connect(self):
+        """ Internal delayed connect. """
         await asyncio.sleep(self.reconnect_delay)
         await self._connect()
 
     async def _connect(self):
+        """ Internal connect. """
         if self.reconnecting_task is not None:
             self.reconnecting_task = None
         try:
@@ -786,6 +790,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
         self._check_reconnect()
 
     def _check_reconnect(self):
+        """ Internal check reconnect. """
         txt = f"checking autoreconnect {self.auto_reconnect} {self.reconnecting_task}"
         _logger.debug(txt)
         if self.auto_reconnect and (self.reconnecting_task is None):

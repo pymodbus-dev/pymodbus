@@ -67,6 +67,7 @@ class ModbusTransactionManager:
             self._set_adu_size()
 
     def _set_adu_size(self):
+        """ Internal set adu size. """
         # base ADU size of modbus frame in bytes
         if isinstance(self.client.framer, ModbusSocketFramer):
             self.base_adu_size = 7  # tid(2), pid(2), length(2), uid(1)
@@ -82,6 +83,7 @@ class ModbusTransactionManager:
             self.base_adu_size = -1
 
     def _calculate_response_length(self, expected_pdu_size):
+        """ Internal calculate response length. """
         if self.base_adu_size == -1:
             return None
         return self.base_adu_size + expected_pdu_size
@@ -226,6 +228,7 @@ class ModbusTransactionManager:
 
     def _retry_transaction(self, retries, reason,
                            packet, response_length, full=False):
+        """ Internal retry transaction. """
         txt = f"Retry on {reason} response - {retries}"
         _logger.debug(txt)
         _logger.debug("Changing transaction state from "
@@ -296,9 +299,11 @@ class ModbusTransactionManager:
         return result, last_exception
 
     def _send(self, packet, retrying=False): #NOSONAR pylint: disable=unused-argument
+        """ Internal send. """
         return self.client.framer.sendPacket(packet)
 
     def _recv(self, expected_response_length, full): #NOSONAR pylint: disable=too-complex
+        """ Internal receive. """
         total = None
         if not full:
             exception_length = self._calculate_exception_length()

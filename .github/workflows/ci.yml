@@ -182,6 +182,9 @@ jobs:
           - name: pylint
             tox: pylint
             # continue_on_error: true
+          - name: codespell
+            tox: codespell
+            # continue_on_error: true
           - name: flake8
             tox: flake8
             continue_on_error: true

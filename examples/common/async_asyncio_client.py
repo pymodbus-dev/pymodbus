@@ -116,7 +116,7 @@ async def start_async_test(client):
         'write_address': 1,
         'write_registers': [20] * 8,
     }
-    _logger.debug("Read write registeres simulataneously")
+    _logger.debug("Read write registers simultaneously")
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
     assert rq.function_code < 0x80     # test that we are not an error

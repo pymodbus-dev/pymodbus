@@ -1,5 +1,4 @@
 """TCP communication."""
-# pylint: disable=R0801
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -17,7 +16,7 @@ class AsyncModbusTCPClient: # pylint: disable=too-few-public-methods
 
         from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port, # pylint: disable=too-many-arguments
+    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
                 framer=None, source_address=None, timeout=None, **kwargs):
         """ Scheduler to use:
             - reactor (Twisted)

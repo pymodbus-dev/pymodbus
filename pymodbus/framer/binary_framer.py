@@ -17,7 +17,7 @@ BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # --------------------------------------------------------------------------- #
 
 
-class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attributes
+class ModbusBinaryFramer(ModbusFramer):
     """ Modbus Binary Frame Controller::
 
         [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]

@@ -13,7 +13,7 @@ from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
 if sys.version_info > (3, 7):
-    CANCELLED_ERROR = asyncio.exceptions.CancelledError # pylint: disable=invalid-name
+    CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
     CANCELLED_ERROR = asyncio.CancelledError # pylint: disable=invalid-name
 
@@ -30,7 +30,7 @@ _logger = logging.getLogger(__name__)
 @click.option("--verbose", is_flag=True,
               help="Run with debug logs enabled for pymodbus")
 @click.pass_context
-def server(ctx, host, web_port, broadcast_support, repl, verbose): # pylint: disable=too-many-arguments
+def server(ctx, host, web_port, broadcast_support, repl, verbose):
     """Server code."""
     FORMAT = ('%(asctime)-15s %(threadName)-15s' # pylint: disable=invalid-name
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -64,7 +64,7 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose): # pylint: dis
                                                    "and so on. "
                                                    "Applicable IR and DI.")
 @click.pass_context
-def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, # pylint: disable=too-many-arguments
+def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         modbus_config, randomize):
     """ Run Reactive Modbus server exposing REST endpoint
     for response manipulation.

@@ -1,5 +1,4 @@
 """ Socket framer. """
-# pylint: disable=R0801
 import logging
 import struct
 from pymodbus.exceptions import ModbusIOException

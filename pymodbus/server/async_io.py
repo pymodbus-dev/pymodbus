@@ -2,7 +2,6 @@
 ------------------------------------------
 
 """
-# pylint: disable=R0801,too-many-lines
 import logging
 import warnings
 from binascii import b2a_hex
@@ -95,7 +94,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
             _logger.error(txt)
 
-    def connection_lost(self, call_exc): # pylint: disable=arguments-renamed
+    def connection_lost(self, call_exc):
         """ asyncio.BaseProtocol callback for socket tear down
 
         For streamed protocols any break in the network connection will
@@ -116,7 +115,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
             _logger.error(txt)
 
-    async def handle(self): #NOSONAR pylint: disable=too-many-branches,too-complex
+    async def handle(self): #NOSONAR pylint: disable=too-complex
         """ Asyncio coroutine which represents a single conversation between
         the modbus slave and master
 
@@ -353,7 +352,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler,
     async def _recv_(self):
         return await self.receive_queue.get()
 
-    def _send_(self, data, addr=None): # pylint: disable=arguments-differ
+    def _send_(self, data, addr=None):
         self.transport.sendto(data, addr=addr)
 
 
@@ -508,7 +507,7 @@ class ModbusTlsServer(ModbusTcpServer): # pylint: disable=too-many-instance-attr
     server context instance.
     """
 
-    def __init__(self, #NOSONAR pylint: disable=too-many-locals,too-many-arguments,super-init-not-called
+    def __init__(self, #NOSONAR pylint: disable=too-many-arguments,super-init-not-called
                  context,
                  framer=None,
                  identity=None,
@@ -794,7 +793,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
             loop = asyncio.get_event_loop()
             self.reconnecting_task = loop.create_task(self._delayed_connect())
 
-    async def serve_forever(self): # pylint: disable=no-self-use
+    async def serve_forever(self):
         """ Start endless loop. """
         while True:
             await asyncio.sleep(360)
@@ -846,7 +845,7 @@ async def StartTcpServer(context=None, identity=None, address=None, #NOSONAR pyl
     return server
 
 
-async def StartTlsServer(context=None, identity=None, address=None, #NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-locals,too-many-arguments
+async def StartTlsServer(context=None, identity=None, address=None, #NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
                          sslctx=None,
                          certfile=None, keyfile=None, password=None,
                          reqclicert=False,

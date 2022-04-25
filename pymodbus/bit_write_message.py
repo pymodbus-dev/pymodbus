@@ -3,7 +3,6 @@
 
 TODO write mask request/response
 """
-# pylint: disable=R0801
 import struct
 from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest

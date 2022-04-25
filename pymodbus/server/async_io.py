@@ -82,7 +82,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 txt = f"Serial connection opened on port: {transport.serial.port}"
                 _logger.debug(txt)
             else:
-                txt = f"Unabel to get information about transport {transport}"
+                txt = f"Unable to get information about transport {transport}"
                 _logger.warning(txt)
             self.transport = transport # pylint: disable=attribute-defined-outside-init
             self.running = True
@@ -171,11 +171,11 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                     unit=units, single=single)
 
             except asyncio.CancelledError:
-                # catch and ignore cancelation errors
+                # catch and ignore cancellation errors
                 self._log_exception()
             except Exception as exc: # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
-                # should handle applicaiton layer errors
+                # should handle application layer errors
                 # for UDP sockets, simply reset the frame
                 if isinstance(self, ModbusConnectedRequestHandler):
                     client_addr = self.client_address[:2]
@@ -381,7 +381,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 
     def connection_lost(self, call_exc):
         super().connection_lost(call_exc)
-        _logger.debug("Serial conection lost")
+        _logger.debug("Serial connection lost")
         if hasattr(self.server, 'on_connection_lost'):
             self.server.on_connection_lost()
 

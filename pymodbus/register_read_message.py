@@ -48,7 +48,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
 
 class ReadRegistersResponseBase(ModbusResponse):
-    """ Base class for responsing to a modbus register read. """
+    """ Base class for responding to a modbus register read. """
 
     _rtu_byte_count_pos = 2
 

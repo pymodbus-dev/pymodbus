@@ -28,7 +28,7 @@ Example run::
     event_loop, client = Client(schedulers.ASYNC_IO, port=5020)
 
     # Here event_loop is a thread which would control the backend and future is
-    # a Future/deffered object which would be used to
+    # a Future/deferred object which would be used to
     # add call backs to run asynchronously.
 
     # The Actual client could be accessed with future.result() with Tornado

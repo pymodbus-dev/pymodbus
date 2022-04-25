@@ -168,7 +168,7 @@ class ReadCoilsResponse(ReadBitsResponseBase):
     function_code = 1
 
     def __init__(self, values=None, **kwargs):
-        """ Intializes a new instance
+        """ Initializes a new instance
 
         :param values: The request values to respond with
         """
@@ -185,7 +185,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     function_code = 2
 
     def __init__(self, address=None, count=None, **kwargs):
-        """ Intializes a new instance
+        """ Initializes a new instance
 
         :param address: The address to start reading from
         :param count: The number of bits to read
@@ -225,7 +225,7 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
     function_code = 2
 
     def __init__(self, values=None, **kwargs):
-        """ Intializes a new instance
+        """ Initializes a new instance
 
         :param values: The request values to respond with
         """

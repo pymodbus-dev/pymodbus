@@ -245,7 +245,7 @@ def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
     :param ignore_missing_slaves: True to not send errors on a request \
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
@@ -274,7 +274,7 @@ def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
     :param ignore_missing_slaves: True to not send errors on a request \
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
@@ -306,7 +306,7 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR
     :param ignore_missing_slaves: True to not send errors on a request to a
            missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
-           of starting server, to be explictly started by the user
+           of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
 

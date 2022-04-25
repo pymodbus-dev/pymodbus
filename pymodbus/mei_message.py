@@ -73,7 +73,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         self.sub_function_code, self.read_code, self.object_id = params
 
     def execute(self, context): #NOSONAR pylint: disable=unused-argument
-        """ Run a read exeception status request against the store
+        """ Run a read exception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response

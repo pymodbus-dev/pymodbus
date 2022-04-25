@@ -14,7 +14,7 @@ from pymodbus.exceptions import ConnectionException
 # Fixture
 # ---------------------------------------------------------------------------#
 class SynchronousDiagnosticClientTest(unittest.TestCase):
-    """ Unittest for the pymodbus.client.sync_diag module. 
+    """ Unittest for the pymodbus.client.sync_diag module.
     It is a copy of parts of the test for the TCP class in the pymodbus.client.sync
     module, as it should operate identically and only log some additional
     lines.

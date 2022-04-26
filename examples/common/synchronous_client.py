@@ -100,15 +100,15 @@ def run_sync_client():
     log.debug("Write to a Coil and read back")
     rq = client.write_coil(0, True, unit=UNIT)
     rr = client.read_coils(0, 1, unit=UNIT)
-    assert not rq.isError()     # test that we are not an error
-    assert not rr.isError()     # test that we are not an error
-    assert rr.bits[0]          # test the expected value
+    assert not rq.isError()     #nosec test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
+    assert rr.bits[0]          #nosec test the expected value
 
     log.debug("Write to multiple coils and read back- test 1")
     rq = client.write_coils(1, [True] * 8, unit=UNIT)
     rr = client.read_coils(1, 21, unit=UNIT)
-    assert not rq.isError()     # test that we are not an error
-    assert not rr.isError()     # test that we are not an error
+    assert not rq.isError()     #nosec test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
     resp = [True] * 21
 
     # If the returned output quantity is not a multiple of eight,
@@ -116,36 +116,36 @@ def run_sync_client():
     # (toward the high order end of the byte).
 
     resp.extend([False] * 3)
-    assert rr.bits == resp         # test the expected value
+    assert rr.bits == resp         #nosec test the expected value
 
     log.debug("Write to multiple coils and read back - test 2")
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
-    assert not rq.isError()     # test that we are not an error
-    assert not rr.isError()     # test that we are not an error
-    assert rr.bits == [False] * 8         # test the expected value
+    assert not rq.isError()     #nosec test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
+    assert rr.bits == [False] * 8         #nosec test the expected value
 
     log.debug("Read discrete inputs")
     rr = client.read_discrete_inputs(0, 8, unit=UNIT)
-    assert not rr.isError()     # test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
 
     log.debug("Write to a holding register and read back")
     rq = client.write_register(1, 10, unit=UNIT)
     rr = client.read_holding_registers(1, 1, unit=UNIT)
-    assert not rq.isError()     # test that we are not an error
-    assert not rr.isError()     # test that we are not an error
-    assert rr.registers[0] == 10       # test the expected value
+    assert not rq.isError()     #nosec test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
+    assert rr.registers[0] == 10       #nosec test the expected value
 
     log.debug("Write to multiple holding registers and read back")
     rq = client.write_registers(1, [10] * 8, unit=UNIT)
     rr = client.read_holding_registers(1, 8, unit=UNIT)
-    assert not rq.isError()     # test that we are not an error
-    assert not rr.isError()     # test that we are not an error
-    assert rr.registers == [10] * 8      # test the expected value
+    assert not rq.isError()     #nosec test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
+    assert rr.registers == [10] * 8      #nosec test the expected value
 
     log.debug("Read input registers")
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    assert not rr.isError()     # test that we are not an error
+    assert not rr.isError()     #nosec test that we are not an error
 
     arguments = {
         'read_address':    1, # noqa E221
@@ -156,10 +156,10 @@ def run_sync_client():
     log.debug("Read write registers simultaneously")
     rq = client.readwrite_registers(unit=UNIT, **arguments)
     rr = client.read_holding_registers(1, 8, unit=UNIT)
-    assert not rq.isError()      # test that we are not an error
-    assert not rr.isError()      # test that we are not an error
-    assert rq.registers == [20] * 8       # test the expected value
-    assert rr.registers == [20] * 8       # test the expected value
+    assert not rq.isError()      #nosec test that we are not an error
+    assert not rr.isError()      #nosec test that we are not an error
+    assert rq.registers == [20] * 8       #nosec test the expected value
+    assert rr.registers == [20] * 8       #nosec test the expected value
 
     # ----------------------------------------------------------------------- #
     # close the client

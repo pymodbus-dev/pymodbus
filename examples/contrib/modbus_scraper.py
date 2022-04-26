@@ -4,7 +4,7 @@ modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """
 import logging
-import pickle
+import pickle #nosec
 from optparse import OptionParser # pylint: disable=deprecated-module
 
 from twisted.internet import serialport, reactor

@@ -39,7 +39,7 @@ def err(*args, **kwargs):
 def dassert(deferred, callback): # pylint: disable=redefined-outer-name
     """ Dassert. """
     def _assertor(value):
-        assert value
+        assert value #nosec
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(err)
 

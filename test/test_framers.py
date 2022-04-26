@@ -183,7 +183,7 @@ def test_populate_result(rtu_framer): # pylint: disable=redefined-outer-name
     (b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03', 17, False, True),
         # good frame + part of next frame
 ])
-def test_rtu_process_incoming_packet(rtu_framer, data): # pylint: disable=redefined-outer-name
+def test_rtu_incoming_packet(rtu_framer, data): # pylint: disable=redefined-outer-name
     """ Test rtu process incoming packet. """
     buffer, units, reset_called, process_called = data
 

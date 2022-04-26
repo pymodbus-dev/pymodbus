@@ -107,14 +107,14 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :param tid:
         :return:
         """
-        f = Future()
+        my_future = Future()
 
         if not self._connected:
-            f.set_exception(ConnectionException("Client is not connected"))
-            return f
+            my_future.set_exception(ConnectionException("Client is not connected"))
+            return my_future
 
-        self.transaction.addTransaction(f, tid)
-        return f
+        self.transaction.addTransaction(my_future, tid)
+        return my_future
 
     def close(self):
         """ Closes the underlying IOStream. """
@@ -176,8 +176,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         txt = f"send: {hexlify_packets(packet)}"
         _logger.debug(txt)
         self.stream.write(packet, callback=callback)
-        f = self._build_response(request.transaction_id)
-        return f
+        response = self._build_response(request.transaction_id)
+        return response
 
     def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
         """ Handles a received response and updates a future
@@ -198,14 +198,14 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         :param tid:
         :return: Future
         """
-        f = Future()
+        my_future = Future()
 
         if not self._connected:
-            f.set_exception(ConnectionException("Client is not connected"))
-            return f
+            my_future.set_exception(ConnectionException("Client is not connected"))
+            return my_future
 
-        self.transaction.addTransaction(f, tid)
-        return f
+        self.transaction.addTransaction(my_future, tid)
+        return my_future
 
     def close(self):
         """ Closes the underlying IOStream. """
@@ -387,7 +387,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 )
 
         packet = self.framer.buildPacket(request)
-        f = self._build_response(request.transaction_id)
+        response = self._build_response(request.transaction_id)
 
         response_pdu_size = request.get_response_pdu_size()
         expected_response_length = self.transaction._calculate_response_length(response_pdu_size) # pylint: disable=protected-access
@@ -401,7 +401,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.timeout_handle = self.io_loop.add_timeout(time.time() + self.timeout, _on_timeout) # pylint: disable=attribute-defined-outside-init
         self._send_packet(packet, callback=_on_write_done)
 
-        return f
+        return response
 
     def _send_packet(self, message, callback):
         """ Sends packets on the bus with 3.5char delay between frames

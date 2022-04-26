@@ -104,19 +104,19 @@ class SunspecModel: # pylint: disable=too-few-public-methods
     PanelInteger                             = 502  # noqa E221
 
     # ---------------------------------------------
-    # 641xx Outback Blocks
+    # 641xx outback_ Blocks
     # ---------------------------------------------
-    OutbackDeviceIdentifier                  = 64110  # noqa E221
-    OutbackChargeController                  = 64111  # noqa E221
-    OutbackFMSeriesChargeController          = 64112  # noqa E221
-    OutbackFXInverterRealTime                = 64113  # noqa E221
-    OutbackFXInverterConfiguration           = 64114  # noqa E221
-    OutbackSplitPhaseRadianInverter          = 64115  # noqa E221
-    OutbackRadianInverterConfiguration       = 64116  # noqa E221
-    OutbackSinglePhaseRadianInverterRealTime = 64117  # noqa E221
-    OutbackFLEXNetDCRealTime                 = 64118  # noqa E221
-    OutbackFLEXNetDCConfiguration            = 64119  # noqa E221
-    OutbackSystemControl                     = 64120  # noqa E221
+    outback_device_identifier       = 64110  # noqa E221
+    outback_charge_controller       = 64111  # noqa E221
+    outback_fm_charge_controller    = 64112  # noqa E221
+    outback_fx_inv_realtime         = 64113  # noqa E221
+    outback_fx_inv_conf             = 64114  # noqa E221
+    outback_split_phase_rad_inv     = 64115  # noqa E221
+    outback_radian_inv_conf         = 64116  # noqa E221
+    outback_single_phase_rad_inv_rt = 64117  # noqa E221
+    outback_flexnet_dc_realtime     = 64118  # noqa E221
+    outback_flexnet_dc_conf         = 64119  # noqa E221
+    outback_system_control          = 64120  # noqa E221
 
     # ---------------------------------------------
     # 64xxx Vendor Extension Block

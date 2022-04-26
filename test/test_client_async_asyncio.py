@@ -329,8 +329,8 @@ class TestAsyncioClient:
         request = ReadCoilsRequest(1, 1)
         response = await protocol.execute(request)
         tid = request.transaction_id
-        f = protocol.transaction.getTransaction(tid)
-        assert response == f #nosec
+        f_trans = protocol.transaction.getTransaction(tid)
+        assert response == f_trans #nosec
 
     @pytest.mark.parametrize("protocol", protocols)
     async def test_client_protocol_handle_response(self, protocol): # pylint: disable=no-self-use

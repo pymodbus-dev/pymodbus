@@ -30,7 +30,7 @@ def which(program):
 
 if which('doxygen') is not None:
     print("Building Doxygen API Documentation")
-    os.system("doxygen .doxygen")
+    os.system("doxygen .doxygen") #nosec
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/doxygen")
 else: print("Doxygen not available...not building")

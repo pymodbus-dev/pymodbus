@@ -150,7 +150,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
                 host='127.0.0.1', port=random_port)
         await asyncio.wait_for(done, timeout=0.1)
 
-        assert received_value == expected_response
+        self.assertEqual(received_value, expected_response)
 
         transport.close()
         await asyncio.sleep(0)
@@ -182,13 +182,13 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         # On Windows we seem to need to give this an extra chance to finish,
         # otherwise there ends up being an active connection at the assert.
         await asyncio.sleep(0.2)
-        assert len(server.active_connections) == 1
+        self.assertEqual(len(server.active_connections), 1)
 
         protocol.transport.close()
             # close isn't synchronous and there's no
             # notification that it's done
         await asyncio.sleep(0.2)  # so we have to wait a bit
-        assert not server.active_connections
+        self.assertFalse(server.active_connections)
 
         server.server_close()
 
@@ -360,8 +360,8 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
             identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
             self.loop = asynctest.Mock(self.loop) # pylint: disable=attribute-defined-outside-init
             server = await StartTlsServer(context=self.context, loop=self.loop, identity=identity)
-            assert server.control.Identity.VendorName == 'VendorName'
-            assert server.sslctx is not None
+            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+            self.assertTrue(server.sslctx is not None)
             self.loop.create_server.assert_called_once()
 
     async def test_tls_server_serve_forever(self):
@@ -414,11 +414,11 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
         await server.serving
 
-        assert asyncio.isfuture(server.on_connection_terminated)
-        assert not server.on_connection_terminated.done()
+        self.assertTrue(asyncio.isfuture(server.on_connection_terminated))
+        self.assertFalse(server.on_connection_terminated.done())
 
         server.server_close()
-        assert server.protocol.is_closing()
+        self.assertTrue(server.protocol.is_closing())
 
     async def test_udp_server_serve_forever_twice(self):
         """ Call on serve_forever() twice should result in a runtime error """
@@ -521,7 +521,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
                                                 remote_addr=('127.0.0.1', random_port))
         await asyncio.wait_for(done, timeout=0.1)
 
-        assert received_value == expected_response
+        self.assertEqual(received_value, expected_response)
 
         transport.close()
         await asyncio.sleep(0)

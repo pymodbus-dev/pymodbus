@@ -296,8 +296,8 @@ class SqlDataStoreTest(unittest.TestCase):
         self.slave._table.select = MagicMock() # pylint: disable=protected-access
         self.slave._connection = MagicMock() # pylint: disable=protected-access
 
-        self.mock_addr = random.randint(0, 65000) #NOSONAR
-        self.mock_values = random.sample(range(1, 100), 5) #NOSONAR
+        self.mock_addr = random.randint(0, 65000) #NOSONAR # nosec
+        self.mock_values = random.sample(range(1, 100), 5) #NOSONAR # nosec
         self.mock_function = 0x01
         self.mock_type = 'h'
         self.mock_offset = 0

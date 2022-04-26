@@ -116,7 +116,7 @@ async def run_server():
     #                      defer_start=False)
 
     # 	deferred start:
-    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),
+    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), #nosec
                                   allow_reuse_address=True, defer_start=True)
 
     asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)

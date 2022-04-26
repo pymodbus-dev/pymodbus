@@ -42,8 +42,8 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     rq = client.write_coil(1, True)
     rr = client.read_coils(1, 1)
-    assert not rq.isError()    # test that we are not an error
-    assert rr.bits[0]          # test the expected value
+    assert not rq.isError()    #nosec test that we are not an error
+    assert rr.bits[0]          #nosec test the expected value
 
     # ----------------------------------------------------------------------- #
     # close the client

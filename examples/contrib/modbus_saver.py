@@ -26,7 +26,7 @@ and supply the needed callbacks for your given format:
 * handle_save_end(self)
 """
 import json
-import xml.etree.ElementTree as xml
+import xml.etree.ElementTree as xml #nosec
 
 
 class ModbusDatastoreSaver:

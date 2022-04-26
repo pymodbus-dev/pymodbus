@@ -3,7 +3,7 @@
 with read/write data as well as user configurable base data
 """
 import logging
-import pickle
+import pickle #nosec
 from optparse import OptionParser # pylint: disable=deprecated-module
 
 from pymodbus.server.asynchronous import StartTcpServer
@@ -77,7 +77,7 @@ class Configuration: # pylint: disable=too-few-public-methods
     def parse(self):
         """ Parses the config file and creates a server context
         """
-        handle = pickle.load(self.file)
+        handle = pickle.load(self.file) #nosec
         try:  # test for existence, or bomb
             dsd = handle['di']
             csd = handle['ci']

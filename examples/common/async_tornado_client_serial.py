@@ -41,7 +41,7 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value
+        assert value #nosec
 
     def on_done(f):
         if (exc := f.exception()):
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # Rtu
     protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, # pylint: disable=unpacking-non-sequence
                                                method="rtu",
-                                               port="/tmp/ptyp0",
+                                               port="/tmp/ptyp0", #nosec
                                                baudrate=9600,
                                                timeout=2)
 

@@ -19,7 +19,7 @@ log.setLevel(logging.DEBUG)
 # state a few constants
 # ---------------------------------------------------------------------------#
 
-SERIAL_PORT = "/tmp/ptyp0"
+SERIAL_PORT = "/tmp/ptyp0" #nosec
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1

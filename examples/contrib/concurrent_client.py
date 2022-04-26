@@ -103,9 +103,8 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                 log.exception(txt)
                 output_queue.put(WorkResponse(True,
                                               workitem.work_id, exc))
-        except Exception: # pylint: disable=broad-except
+        except Exception: #nosec pylint: disable=broad-except
             pass
-
     log.info("request worker shutting down: %s", threading.current_thread())
 
 

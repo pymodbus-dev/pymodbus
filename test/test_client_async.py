@@ -73,24 +73,24 @@ class TestAsynchronousClient:
         protocol, future = AsyncModbusTCPClient( # pylint: disable=unpacking-non-sequence
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
         client = future.result()
-        assert isinstance(client, AsyncTornadoModbusTcpClient)
-        assert not list(client.transaction)
-        assert isinstance(client.framer, ModbusSocketFramer)
-        assert client.port == 502
-        assert client._connected # pylint: disable=protected-access
-        assert client.stream.connect.call_count == 1
-        assert client.stream.read_until_close.call_count == 1
+        assert isinstance(client, AsyncTornadoModbusTcpClient) #nosec
+        assert not list(client.transaction) #nosec
+        assert isinstance(client.framer, ModbusSocketFramer) #nosec
+        assert client.port == 502 #nosec
+        assert client._connected #nosec pylint: disable=protected-access
+        assert client.stream.connect.call_count == 1 #nosec
+        assert client.stream.read_until_close.call_count == 1 #nosec
 
         def handle_failure(failure):
-            assert isinstance(failure.exception(), ConnectionException)
+            assert isinstance(failure.exception(), ConnectionException) #nosec
 
         response = client._build_response(0x00) # pylint: disable=protected-access
         response.add_done_callback(handle_failure)
 
-        assert client._connected # pylint: disable=protected-access
+        assert client._connected #nosec pylint: disable=protected-access
         client.close()
         protocol.stop()
-        assert not client._connected # pylint: disable=protected-access
+        assert not client._connected #nosec pylint: disable=protected-access
 
 
     @patch("asyncio.get_event_loop")
@@ -107,13 +107,13 @@ class TestAsynchronousClient:
     def test_tls_asyncio_client(self): # pylint: disable=no-self-use
         """ Test the TLS AsyncIO client. """
         _, client = AsyncModbusTLSClient(schedulers.ASYNC_IO) #NOSONAR pylint: disable=unpacking-non-sequence
-        assert isinstance(client, ReconnectingAsyncioModbusTlsClient)
-        assert isinstance(client.framer, ModbusTlsFramer)
-        assert isinstance(client.sslctx, ssl.SSLContext)
-        assert client.port == 802
+        assert isinstance(client, ReconnectingAsyncioModbusTlsClient) #nosec
+        assert isinstance(client.framer, ModbusTlsFramer) #nosec
+        assert isinstance(client.sslctx, ssl.SSLContext) #nosec
+        assert client.port == 802 #nosec
 
         client.stop()
-        assert client.host is None
+        assert client.host is None #nosec
 
     # -----------------------------------------------------------------------#
     # Test UDP client
@@ -126,22 +126,22 @@ class TestAsynchronousClient:
         protocol, future = AsyncModbusUDPClient( #NOSONAR pylint: disable=unpacking-non-sequence
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
         client = future.result()
-        assert isinstance(client, AsyncTornadoModbusUdoClient)
-        assert not list(client.transaction)
-        assert isinstance(client.framer, ModbusSocketFramer)
-        assert client.port == 502
-        assert client._connected # pylint: disable=protected-access
+        assert isinstance(client, AsyncTornadoModbusUdoClient) #nosec
+        assert not list(client.transaction) #nosec
+        assert isinstance(client.framer, ModbusSocketFramer) #nosec
+        assert client.port == 502 #nosec
+        assert client._connected #nosec pylint: disable=protected-access
 
         def handle_failure(failure):
-            assert isinstance(failure.exception(), ConnectionException)
+            assert isinstance(failure.exception(), ConnectionException) #nosec
 
         response = client._build_response(0x00) # pylint: disable=protected-access
         response.add_done_callback(handle_failure)
 
-        assert client._connected # pylint: disable=protected-access
+        assert client._connected #nosec pylint: disable=protected-access
         client.close()
         protocol.stop()
-        assert not client._connected # pylint: disable=protected-access
+        assert not client._connected #nosec pylint: disable=protected-access
 
     def test_udp_twisted_client(self): # pylint: disable=no-self-use
         """ Test the udp twisted client client initialize """
@@ -180,22 +180,22 @@ class TestAsynchronousClient:
                                                                port=pytest.SERIAL_PORT,
                                                                proto_cls=ModbusSerClientProtocol)
 
-                    assert isinstance(client, SerialPort)
-                    assert isinstance(client.protocol, ModbusSerClientProtocol)
-                    assert not list(client.protocol.transaction)
-                    assert isinstance(client.protocol.framer, framer)
-                    assert client.protocol._connected # pylint: disable=protected-access
+                    assert isinstance(client, SerialPort) #nosec
+                    assert isinstance(client.protocol, ModbusSerClientProtocol) #nosec
+                    assert not list(client.protocol.transaction) #nosec
+                    assert isinstance(client.protocol.framer, framer) #nosec
+                    assert client.protocol._connected #nosec pylint: disable=protected-access
 
                     def handle_failure(failure):
-                        assert (isinstance(failure.exception(), ConnectionException))
+                        assert (isinstance(failure.exception(), ConnectionException)) #nosec
 
                     response = client.protocol._buildResponse(0x00) # pylint: disable=protected-access
                     response.addCallback(handle_failure)
 
-                    assert client.protocol._connected # pylint: disable=protected-access
+                    assert client.protocol._connected #nosec pylint: disable=protected-access
                     client.protocol.close()
                     protocol.stop()
-                    assert not client.protocol._connected # pylint: disable=protected-access
+                    assert not client.protocol._connected #nosec pylint: disable=protected-access
 
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                                 ("socket", ModbusSocketFramer),
@@ -207,22 +207,22 @@ class TestAsynchronousClient:
             protocol, future = AsyncModbusSerialClient( #NOSONAR pylint: disable=unpacking-non-sequence
                 schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT)
             client = future.result()
-            assert isinstance(client, AsyncTornadoModbusSerialClient)
-            assert not list(client.transaction)
-            assert isinstance(client.framer, framer)
-            assert client.port == pytest.SERIAL_PORT
-            assert client._connected # pylint: disable=protected-access
+            assert isinstance(client, AsyncTornadoModbusSerialClient) #nosec
+            assert not list(client.transaction) #nosec
+            assert isinstance(client.framer, framer) #nosec
+            assert client.port == pytest.SERIAL_PORT #nosec
+            assert client._connected #nosec pylint: disable=protected-access
 
             def handle_failure(failure):
-                assert isinstance(failure.exception(), ConnectionException)
+                assert isinstance(failure.exception(), ConnectionException) #nosec
 
             response = client._build_response(0x00) # pylint: disable=protected-access
             response.add_done_callback(handle_failure)
 
-            assert client._connected # pylint: disable=protected-access
+            assert client._connected #nosec pylint: disable=protected-access
             client.close()
             protocol.stop()
-            assert not client._connected # pylint: disable=protected-access
+            assert not client._connected #nosec pylint: disable=protected-access
 
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
@@ -239,13 +239,13 @@ class TestAsynchronousClient:
         loop, client = AsyncModbusSerialClient( #NOSONAR pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO, method=method, port=pytest.SERIAL_PORT, loop=loop,
             baudrate=19200, parity='E', stopbits=2, bytesize=7)
-        assert isinstance(client, AsyncioModbusSerialClient)
-        assert isinstance(client.framer, framer)
-        assert client.port == pytest.SERIAL_PORT
-        assert client.baudrate == 19200
-        assert client.parity == 'E'
-        assert client.stopbits == 2
-        assert client.bytesize == 7
+        assert isinstance(client, AsyncioModbusSerialClient) #nosec
+        assert isinstance(client.framer, framer) #nosec
+        assert client.port == pytest.SERIAL_PORT #nosec
+        assert client.baudrate == 19200 #nosec
+        assert client.parity == 'E' #nosec
+        assert client.stopbits == 2 #nosec
+        assert client.bytesize == 7 #nosec
         client.stop()
         loop.stop()
 

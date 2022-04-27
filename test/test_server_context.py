@@ -51,7 +51,7 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         actual = self.context[0x00]
         self.assertEqual(slave, actual)
 
-    def test_single_context_register(self): # pylint: disable=no-self-use
+    def test_single_context_register(self):
         """ Test single context register. """
         request_db = [1, 2, 3]
         slave = ModbusSlaveContext()

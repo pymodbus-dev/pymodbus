@@ -163,7 +163,7 @@ class AsynchronousServerTest(unittest.TestCase):
         factory = ModbusServerFactory(store=None)
         self.assertEqual(factory.control.Identity.VendorName, '')
 
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        identity = ModbusDeviceIdentification(info_name={'VendorName': 'VendorName'})
         factory = ModbusServerFactory(store=None, identity=identity)
         self.assertEqual(factory.control.Identity.VendorName, 'VendorName')
 

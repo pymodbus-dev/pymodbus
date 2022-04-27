@@ -82,13 +82,14 @@ def run_dbstore_update_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    identity = ModbusDeviceIdentification(info_name= {
+        'VendorName': 'pymodbus',
+        'ProductCode': 'PM',
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'ProductName': 'pymodbus Server',
+        'ModelName': 'pymodbus Server',
+        'MajorMinorRevision': version.short(),
+    })
 
     # ----------------------------------------------------------------------- #
     # run the server you want

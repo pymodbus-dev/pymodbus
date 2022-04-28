@@ -81,17 +81,17 @@ fail-on=
 enable=
     attribute-defined-outside-init,
     fixme,
+    invalid-name,
     missing-docstring,
     no-self-use,
     protected-access,
     too-few-public-methods,
-    useless-suppression
 
 disable= 
     duplicate-code,
-    invalid-name,
     logging-too-many-args,
     use-symbolic-message-instead,
+    useless-suppression,
     format # handled by black
 
 

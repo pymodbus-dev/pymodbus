@@ -14,12 +14,12 @@ class DictPropertyTester: # pylint: disable=too-few-public-methods
         self._test  = {2 : 'b'}
         self.__test = {3 : 'c'} #NOSONAR pylint: disable=unused-private-member
 
-    l1 = dict_property(lambda s: s.test, 1)
-    l2 = dict_property(lambda s: s._test, 2) # pylint: disable=protected-access
-    l3 = dict_property(lambda s: s.__test, 3) # pylint: disable=protected-access
-    s1 = dict_property('test', 1)
-    s2 = dict_property('_test', 2)
-    g1 = dict_property(_test_master, 4)
+    l_1 = dict_property(lambda s: s.test, 1)
+    l_2 = dict_property(lambda s: s._test, 2) # pylint: disable=protected-access
+    l_3 = dict_property(lambda s: s.__test, 3) # pylint: disable=protected-access
+    s_1 = dict_property('test', 1)
+    s_2 = dict_property('_test', 2)
+    g_1 = dict_property(_test_master, 4)
 
 
 class SimpleUtilityTest(unittest.TestCase):
@@ -39,22 +39,22 @@ class SimpleUtilityTest(unittest.TestCase):
     def test_dict_property(self):
         """ Test all string <=> bit packing functions """
         result = DictPropertyTester()
-        self.assertEqual(result.l1, 'a')
-        self.assertEqual(result.l2, 'b')
-        self.assertEqual(result.l3, 'c')
-        self.assertEqual(result.s1, 'a')
-        self.assertEqual(result.s2, 'b')
-        self.assertEqual(result.g1, 'd')
+        self.assertEqual(result.l_1, 'a')
+        self.assertEqual(result.l_2, 'b')
+        self.assertEqual(result.l_3, 'c')
+        self.assertEqual(result.s_1, 'a')
+        self.assertEqual(result.s_2, 'b')
+        self.assertEqual(result.g_1, 'd')
 
-        for store in 'l1 l2 l3 s1 s2 g1'.split(' '):
+        for store in 'l_1 l_2 l_3 s_1 s_2 g_1'.split(' '):
             setattr(result, store, 'x')
 
-        self.assertEqual(result.l1, 'x')
-        self.assertEqual(result.l2, 'x')
-        self.assertEqual(result.l3, 'x')
-        self.assertEqual(result.s1, 'x')
-        self.assertEqual(result.s2, 'x')
-        self.assertEqual(result.g1, 'x')
+        self.assertEqual(result.l_1, 'x')
+        self.assertEqual(result.l_2, 'x')
+        self.assertEqual(result.l_3, 'x')
+        self.assertEqual(result.s_1, 'x')
+        self.assertEqual(result.s_2, 'x')
+        self.assertEqual(result.g_1, 'x')
 
     def test_default_value(self):
         """ Test all string <=> bit packing functions """

@@ -36,12 +36,12 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
         # by pass assertion, an error here stops the write callbacks
         assert value #nosec
 
-    def on_done(f):
-        if (exc := f.exception()):
+    def on_done(f_trans):
+        if (exc := f_trans.exception()):
             _logger.debug(exc)
             return _assertor(False)
 
-        return _assertor(callback(f.result()))
+        return _assertor(callback(f_trans.result()))
 
     future.add_done_callback(on_done)
 

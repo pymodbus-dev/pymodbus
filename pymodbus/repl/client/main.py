@@ -240,7 +240,7 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
     if verbose:
         use_format = ('%(asctime)-15s %(threadName)-15s '
                   '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-        _logger.basicConfig(format=use_format)
+        logging.basicConfig(format=use_format) #NOSONAR
         _logger.setLevel(logging.DEBUG)
     ctx.obj = {
         "broadcast": broadcast_support,

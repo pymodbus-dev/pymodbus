@@ -15,10 +15,16 @@ from custom_message import CustomModbusRequest # pylint: disable=import-error
 
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
+# from pymodbus.server.asynchronous import StartUdpServer #NOSONAR
+# from pymodbus.server.asynchronous import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-
+#from pymodbus.transaction import ( #NOSONAR
+#    ModbusRtuFramer, #NOSONAR
+#    ModbusAsciiFramer, #NOSONAR
+#    ModbusBinaryFramer, #NOSONAR
+#) #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

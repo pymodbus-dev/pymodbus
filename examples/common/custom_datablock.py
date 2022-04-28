@@ -16,6 +16,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

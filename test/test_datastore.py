@@ -2,7 +2,7 @@
 """Test datastore."""
 import unittest
 import random
-from mock import MagicMock
+from unittest.mock import MagicMock
 import redis
 from pymodbus.datastore import (
     ModbusServerContext,

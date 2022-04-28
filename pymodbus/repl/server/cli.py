@@ -12,7 +12,7 @@ from prompt_toolkit.shortcuts.progress_bar import formatters
 from prompt_toolkit.styles import Style
 
 from prompt_toolkit import PromptSession, print_formatted_text
-from prompt_toolkit.completion import NestedCompleter
+from prompt_toolkit.completion import NestedCompleter  # pylint: disable=no-name-in-module
 from prompt_toolkit.formatted_text import HTML
 
 
@@ -130,7 +130,7 @@ async def interactive_shell(server):  # NOSONAR pylint: disable=too-complex
     while True:  # pylint: disable=too-many-nested-blocks
         try:
             invalid_command = False
-            result = await session.prompt_async()
+            result = await session.prompt_async()  # pylint: disable=no-member
             if result == "exit":
                 await server.web_app.shutdown()
                 break

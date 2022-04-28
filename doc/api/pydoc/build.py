@@ -98,7 +98,7 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
     """Default formatter."""
 
-    def docmodule(self, object, name=None, mod=None, packageContext = None, *ignored):
+    def docmodule(self, object, name=None, mod=None, packageContext = None, *ignored):  # noqa C901
         """Produce HTML documentation for a module object."""
         my_name = object.__name__  # ignore the passed-in name
         parts = split(my_name, '.')

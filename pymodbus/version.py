@@ -9,7 +9,7 @@ the svn version as well using the local .entries file.
 class Version:
     """Manage version."""
 
-    def __init__(self, package, major, minor, micro, pre=None):
+    def __init__(self, package, major, minor, micro, pre=None): # pylint: disable=too-many-arguments
         """ Initialize
 
         :param package: Name of the package that this is a version of.

@@ -16,7 +16,7 @@ class AsyncModbusUDPClient: # pylint: disable=too-few-public-methods
 
         from pymodbus.client.asynchronous.tcp import AsyncModbusUDPClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
+    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port, # pylint: disable=too-many-arguments
                 framer=None, source_address=None, timeout=None, **kwargs):
         """ Scheduler to use:
             - reactor (Twisted)

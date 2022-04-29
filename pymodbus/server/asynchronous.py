@@ -2,6 +2,7 @@
 ------------------------------------------
 
 """
+# pylint: disable=R0801
 import logging
 import threading
 from binascii import b2a_hex
@@ -233,7 +234,7 @@ def _is_main_thread():
     return True
 
 
-def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disable=dangerous-default-value,invalid-name
+def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disable=dangerous-default-value,invalid-name,too-many-arguments
                    console=False, defer_reactor_run=False, custom_functions=[], #NOSONAR pylint: disable=,unused-argument
                    **kwargs):
     """ Helper method to start the Modbus Async TCP server
@@ -293,7 +294,7 @@ def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
         local_reactor.run(installSignalHandlers=_is_main_thread()) # pylint: disable=no-member
 
 
-def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-locals
                       defer_reactor_run=False, custom_functions=[], **kwargs):
     """ Helper method to start the Modbus Async Serial server
 

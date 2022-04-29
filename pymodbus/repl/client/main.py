@@ -101,7 +101,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def cli(client): #NOSONAR pylint: disable=too-complex
+def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
     """Client definition."""
     use_keys = KeyBindings()
     history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
@@ -234,7 +234,7 @@ def cli(client): #NOSONAR pylint: disable=too-complex
 @click.option("--retries", default=3, help="Retry count")
 @click.option("--reset-socket/--no-reset-socket", default=True, help="Reset client socket on error")
 @click.pass_context
-def main(ctx, verbose, broadcast_support, retry_on_empty,
+def main(ctx, verbose, broadcast_support, retry_on_empty, # pylint: disable=too-many-arguments
          retry_on_error, retries, reset_socket):
     """Main function."""
     if verbose:

@@ -1,5 +1,6 @@
 """ Factory to create asynchronous tcp clients based on twisted/tornado/asyncio
 """
+# pylint: disable=R0801
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
@@ -47,7 +48,7 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None, # pylint:
     return protocol, deferred
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
+def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None, # pylint: disable=unused-argument
                     source_address=None, timeout=None, **kwargs):
     """ Factory to create Tornado based asynchronous tcp clients
     :param host: Host IP address

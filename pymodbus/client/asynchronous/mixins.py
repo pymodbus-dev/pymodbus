@@ -31,7 +31,7 @@ class BaseAsyncModbusClient(BaseModbusClient):
 class AsyncModbusClientMixin(BaseAsyncModbusClient):
     """ Async Modbus client mixing for UDP and TCP clients. """
 
-    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None,
+    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None, # pylint: disable=too-many-arguments
                  source_address=None, timeout=None, **kwargs):
         """ Initializes a Modbus TCP/UDP asynchronous client
         :param host: Host IP address

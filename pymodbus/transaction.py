@@ -29,7 +29,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # The Global Transaction Manager
 # --------------------------------------------------------------------------- #
-class ModbusTransactionManager:
+class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
     """ Implements a transaction for a manager
 
     The transaction protocol can be represented by the following pseudo code::
@@ -118,12 +118,12 @@ class ModbusTransactionManager:
             return mbap.get('length') == exp_resp_len
         return True
 
-    def execute(self, request): #NOSONAR pylint: disable=too-complex
+    def execute(self, request): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         with self._transaction_lock:
-            try:
+            try: # pylint: disable=too-many-nested-blocks
                 txt = ("Current transaction state - "
                     f"{ModbusTransactionState.to_string(self.client.state)}")
                 _logger.debug(txt)
@@ -224,7 +224,7 @@ class ModbusTransactionManager:
                     self.client.close()
                 return exc
 
-    def _retry_transaction(self, retries, reason,
+    def _retry_transaction(self, retries, reason, # pylint: disable=too-many-arguments
                            packet, response_length, full=False):
         txt = f"Retry on {reason} response - {retries}"
         _logger.debug(txt)
@@ -298,7 +298,7 @@ class ModbusTransactionManager:
     def _send(self, packet, retrying=False): #NOSONAR pylint: disable=unused-argument
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full): #NOSONAR pylint: disable=too-complex
+    def _recv(self, expected_response_length, full): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
         total = None
         if not full:
             exception_length = self._calculate_exception_length()

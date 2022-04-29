@@ -17,12 +17,12 @@ from prompt_toolkit.formatted_text import HTML
 _logger = logging.getLogger(__name__)
 
 TITLE = (
-"__________                          .______.                    _________"
-"\______   \___.__. _____   ____   __| _/\_ |__  __ __  ______  /   _____/ ______________  __ ___________" # pylint: disable=anomalous-backslash-in-string
-" |     ___<   |  |/     \ /  _ \ / __ |  | __ \|  |  \/  ___/  \_____  \_/ __ \_  __ \  \/ // __ \_  __ \\" # pylint: disable=anomalous-backslash-in-string
-" |    |    \___  |  Y Y  (  <_> ) /_/ |  | \_\ \  |  /\___ \   /        \  ___/|  | \/\   /\  ___/|  | \/" # pylint: disable=anomalous-backslash-in-string
-" |____|    / ____|__|_|  /\____/\____ |  |___  /____//____  > /_______  /\___  >__|    \_/  \___  >__|" # pylint: disable=anomalous-backslash-in-string
-"           \/          \/            \/      \/           \/          \/     \/                 \/" # pylint: disable=anomalous-backslash-in-string
+"__________                          .______.                    _________" # pylint: disable=anomalous-backslash-in-string,line-too-long
+"\______   \___.__. _____   ____   __| _/\_ |__  __ __  ______  /   _____/ ______________  __ ___________" # pylint: disable=anomalous-backslash-in-string,line-too-long
+" |     ___<   |  |/     \ /  _ \ / __ |  | __ \|  |  \/  ___/  \_____  \_/ __ \_  __ \  \/ // __ \_  __ \\" # pylint: disable=anomalous-backslash-in-string,line-too-long
+" |    |    \___  |  Y Y  (  <_> ) /_/ |  | \_\ \  |  /\___ \   /        \  ___/|  | \/\   /\  ___/|  | \/" # pylint: disable=anomalous-backslash-in-string,line-too-long
+" |____|    / ____|__|_|  /\____/\____ |  |___  /____//____  > /_______  /\___  >__|    \_/  \___  >__|" # pylint: disable=anomalous-backslash-in-string,line-too-long
+"           \/          \/            \/      \/           \/          \/     \/                 \/" # pylint: disable=anomalous-backslash-in-string,line-too-long
 "                                                                                                1.0.0"
 )
 
@@ -109,7 +109,7 @@ def print_help():
         )
 
 
-async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
+async def interactive_shell(server): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
     """ CLI interactive shell. """
     col = get_terminal_width()
     max_len = max([len(t) for t in TITLE.split("\n")])

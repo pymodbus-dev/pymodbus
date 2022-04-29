@@ -172,7 +172,7 @@ def _get_client_properties(members):
         for c in commands if (not c[0].startswith("_")
                               and isinstance(c[1], (str, int, float)))
     }
-    CLIENT_ATTRIBUTES.extend(list(commands.keys()))
+    CLIENT_ATTRIBUTES.extend(list(commands.keys())) # pylint: disable=global-variable-not-assigned
     return commands
 
 

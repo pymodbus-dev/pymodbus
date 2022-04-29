@@ -50,7 +50,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         for datastore in iter(self.store.values()):
             datastore.reset()
 
-    def validate(self, fc_as_hex, address, count=1):
+    def validate(self, fc_as_hex, address, count=1): # pylint: disable=arguments-renamed
         """ Validates the request to make sure it is in range
 
         :param fx: The function we are working with
@@ -64,7 +64,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         _logger.debug(txt)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
-    def getValues(self, fc_as_hex, address, count=1):
+    def getValues(self, fc_as_hex, address, count=1): # pylint: disable=arguments-renamed
         """ Get `count` values from datastore
 
         :param fx: The function we are working with
@@ -78,7 +78,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         _logger.debug(txt)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
-    def setValues(self, fc_as_hex, address, values):
+    def setValues(self, fc_as_hex, address, values): # pylint: disable=arguments-renamed
         """ Sets the datastore with the supplied values
 
         :param fx: The function we are working with

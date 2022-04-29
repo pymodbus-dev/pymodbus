@@ -96,7 +96,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         return "ReadDeviceInformationRequest(%d,%d)" % params # pylint: disable=consider-using-f-string
 
 
-class ReadDeviceInformationResponse(ModbusResponse):
+class ReadDeviceInformationResponse(ModbusResponse): # pylint: disable=too-many-instance-attributes
     """Read device information response."""
     function_code = 0x2b
     sub_function_code = 0x0e

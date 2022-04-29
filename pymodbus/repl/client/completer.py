@@ -3,6 +3,7 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+# pylint: disable=R0801
 from __future__ import absolute_import, unicode_literals
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.styles import Style

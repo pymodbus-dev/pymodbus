@@ -1,4 +1,5 @@
 """ Asynchronous framework adapter for tornado. """
+# pylint: disable=R0801
 from __future__ import unicode_literals
 
 import abc
@@ -267,7 +268,7 @@ class SerialIOStream(BaseIOStream):
         return None
 
 
-class AsyncModbusSerialClient(BaseTornadoSerialClient):
+class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-many-instance-attributes
     """ Tornado based asynchronous serial client. """
 
     def __init__(self, *args, **kwargs):
@@ -313,7 +314,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
 
         raise gen.Return(self)
 
-    def execute(self, request=None): #NOSONAR pylint: disable=too-complex
+    def execute(self, request=None): #NOSONAR pylint: disable=signature-differs,too-complex
         """ Executes a transaction
         :param request: Request to be written on to the bus
         :return:
@@ -394,7 +395,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
         txt = f"expected_response_length = {expected_response_length}"
         _logger.debug(txt)
 
-        #NOSONAR TODO: calculate once
+        #NOSONAR TODO: calculate once # pylint: disable=fixme
         exception_response_length = self.transaction._calculate_exception_length() # pylint: disable=protected-access
 
         if self.timeout:

@@ -1,4 +1,5 @@
 """ RTU framer. """
+# pylint: disable=R0801
 import logging
 import struct
 import time

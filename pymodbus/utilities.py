@@ -69,7 +69,7 @@ def dict_property(store, index):
         getter = lambda self: store[index]
         setter = lambda self, value: store.__setitem__(index, value)
 
-    return property(getter, setter)
+    return property(getter, setter) # pylint: disable=unused-variable
 
 
 # --------------------------------------------------------------------------- #

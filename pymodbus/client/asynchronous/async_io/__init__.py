@@ -209,7 +209,7 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
         return self.transport.sendto(packet)
 
 
-class ReconnectingAsyncioModbusTcpClient:
+class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-attributes
     """ Client to connect to modbus device repeatedly over TCP/IP. """
     #: Minimum delay in milli seconds before reconnect is attempted.
     DELAY_MIN_MS = 100
@@ -453,7 +453,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         protocol.factory = self
         return protocol
 
-class ReconnectingAsyncioModbusUdpClient:
+class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-attributes
     """ Client to connect to modbus device repeatedly over UDP. """
 
     #: Reconnect delay in milli seconds.
@@ -669,12 +669,12 @@ class AsyncioModbusUdpClient:
                           'callback called while not connected.')
 
 
-class AsyncioModbusSerialClient:
+class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
     """ Client to connect to modbus device over serial. """
     transport = None
     framer = None
 
-    def __init__(self, port, protocol_class=None, framer=None,  loop=None,
+    def __init__(self, port, protocol_class=None, framer=None,  loop=None, # pylint: disable=too-many-arguments
                  baudrate=9600, bytesize=8, parity='N', stopbits=1, **serial_kwargs):
         """ Initializes Asyncio Modbus Serial Client
         :param port: Port to connect
@@ -772,7 +772,7 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
     return client
 
 
-async def init_tls_client(proto_cls, loop, host, port, sslctx=None,
+async def init_tls_client(proto_cls, loop, host, port, sslctx=None,  # pylint: disable=too-many-arguments
                     server_hostname=None, framer=None, **kwargs):
     """ Helper function to initialize tcp client
     :param proto_cls:

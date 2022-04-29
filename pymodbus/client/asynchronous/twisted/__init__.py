@@ -98,7 +98,7 @@ class ModbusClientProtocol(protocol.Protocol,
         self.framer.processIncomingPacket(data, self._handleResponse,
                                           unit=unit)
 
-    def execute(self, request=None):
+    def execute(self, request=None): # pylint: disable=signature-differs
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
@@ -184,7 +184,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         unit = self.framer.decode_data(datagram).get("uid", 0)
         self.framer.processIncomingPacket(datagram, self._handleResponse, unit=unit)
 
-    def execute(self, request=None):
+    def execute(self, request=None): # pylint: disable=signature-differs
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """

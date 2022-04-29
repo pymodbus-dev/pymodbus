@@ -185,9 +185,6 @@ jobs:
           - name: codespell
             tox: codespell
             # continue_on_error: true
-          - name: bandit
-            tox: bandit
-            # continue_on_error: true
           - name: flake8
             tox: flake8
             continue_on_error: true

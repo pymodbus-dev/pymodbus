@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-""" Test client async twisted. """
 import unittest
 from unittest.mock import Mock
 
 from pymodbus.client.asynchronous.twisted import (
-    ModbusClientProtocol,
-    ModbusUdpClientProtocol,
-    ModbusSerClientProtocol,
-    ModbusTcpClientProtocol
+    ModbusClientProtocol, ModbusUdpClientProtocol, ModbusSerClientProtocol, ModbusTcpClientProtocol
 )
 from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.twisted import ModbusClientFactory
@@ -28,42 +24,42 @@ class AsynchronousClientTest(unittest.TestCase):
     # Test Client Protocol
     #-----------------------------------------------------------------------#
 
-    def test_client_protocol_init(self):
+    def testClientProtocolInit(self):
         ''' Test the client protocol initialize '''
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
-        self.assertFalse(protocol._connected) # pylint: disable=protected-access
+        self.assertFalse(protocol._connected)
         self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
 
         framer = object()
         protocol = ModbusClientProtocol(framer=framer)
         self.assertEqual(0, len(list(protocol.transaction)))
-        self.assertFalse(protocol._connected) # pylint: disable=protected-access
+        self.assertFalse(protocol._connected)
         self.assertTrue(framer is protocol.framer)
 
-    def test_client_protocol_connect(self):
+    def testClientProtocolConnect(self):
         ''' Test the client protocol connect '''
         decoder = object()
         framer = ModbusSocketFramer(decoder)
         protocol = ModbusClientProtocol(framer=framer)
-        self.assertFalse(protocol._connected) # pylint: disable=protected-access
+        self.assertFalse(protocol._connected)
         protocol.connectionMade()
-        self.assertTrue(protocol._connected) # pylint: disable=protected-access
+        self.assertTrue(protocol._connected)
 
-    def test_client_protocol_disconnect(self):
+    def testClientProtocolDisconnect(self):
         ''' Test the client protocol disconnect '''
         protocol = ModbusClientProtocol()
         protocol.connectionMade()
         def handle_failure(failure):
             self.assertTrue(isinstance(failure.value, ConnectionException))
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addErrback(handle_failure)
+        d = protocol._buildResponse(0x00)
+        d.addErrback(handle_failure)
 
-        self.assertTrue(protocol._connected) # pylint: disable=protected-access
+        self.assertTrue(protocol._connected)
         protocol.connectionLost('because')
-        self.assertFalse(protocol._connected) # pylint: disable=protected-access
+        self.assertFalse(protocol._connected)
 
-    def test_client_protocol_data_received(self):
+    def testClientProtocolDataReceived(self):
         ''' Test the client protocol data received '''
         protocol = ModbusClientProtocol(ModbusSocketFramer(ClientDecoder()))
         protocol.connectionMade()
@@ -71,13 +67,13 @@ class AsynchronousClientTest(unittest.TestCase):
         data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
 
         # setup existing request
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v)) # pylint: disable=unnecessary-lambda
+        d = protocol._buildResponse(0x00)
+        d.addCallback(lambda v: out.append(v))
 
         protocol.dataReceived(data)
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
 
-    def test_client_protocol_execute(self):
+    def testClientProtocolExecute(self):
         ''' Test the client protocol execute method '''
         framer = ModbusSocketFramer(None)
         protocol = ModbusClientProtocol(framer=framer)
@@ -86,11 +82,11 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol.transport.write = Mock()
 
         request = ReadCoilsRequest(1, 1)
-        response = protocol.execute(request)
+        d = protocol.execute(request)
         tid = request.transaction_id
-        self.assertEqual(response, protocol.transaction.getTransaction(tid))
+        self.assertEqual(d, protocol.transaction.getTransaction(tid))
 
-    def test_client_protocol_handle_response(self):
+    def testClientProtocolHandleResponse(self):
         ''' Test the client protocol handles responses '''
         protocol = ModbusClientProtocol()
         protocol.connectionMade()
@@ -99,34 +95,34 @@ class AsynchronousClientTest(unittest.TestCase):
         reply.transaction_id = 0x00
 
         # handle skipped cases
-        protocol._handleResponse(None) # pylint: disable=protected-access
-        protocol._handleResponse(reply) # pylint: disable=protected-access
+        protocol._handleResponse(None)
+        protocol._handleResponse(reply)
 
         # handle existing cases
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v)) # pylint: disable=unnecessary-lambda
-        protocol._handleResponse(reply) # pylint: disable=protected-access
+        d = protocol._buildResponse(0x00)
+        d.addCallback(lambda v: out.append(v))
+        protocol._handleResponse(reply)
         self.assertEqual(out[0], reply)
 
-    def test_client_protocol_build_response(self):
+    def testClientProtocolBuildResponse(self):
         ''' Test the udp client protocol builds responses '''
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
 
         def handle_failure(failure):
             self.assertTrue(isinstance(failure.value, ConnectionException))
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addErrback(handle_failure)
+        d = protocol._buildResponse(0x00)
+        d.addErrback(handle_failure)
         self.assertEqual(0, len(list(protocol.transaction)))
 
-        protocol._connected = True # pylint: disable=protected-access
-        protocol._buildResponse(0x00) # pylint: disable=protected-access
+        protocol._connected = True
+        d = protocol._buildResponse(0x00)
         self.assertEqual(1, len(list(protocol.transaction)))
 
     #-----------------------------------------------------------------------#
     # Test TCP Client Protocol
     #-----------------------------------------------------------------------#
-    def test_tcp_client_protocol_init(self):
+    def testTcpClientProtocolInit(self):
         ''' Test the udp client protocol initialize '''
         protocol = ModbusTcpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
@@ -139,7 +135,7 @@ class AsynchronousClientTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
     # Test Serial Client Protocol
     #-----------------------------------------------------------------------#
-    def test_serial_client_protocol_init(self):
+    def testSerialClientProtocolInit(self):
         ''' Test the udp client protocol initialize '''
         protocol = ModbusSerClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
@@ -153,7 +149,7 @@ class AsynchronousClientTest(unittest.TestCase):
     # Test Udp Client Protocol
     #-----------------------------------------------------------------------#
 
-    def test_udp_client_protocol_init(self):
+    def testUdpClientProtocolInit(self):
         ''' Test the udp client protocol initialize '''
         protocol = ModbusUdpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
@@ -163,7 +159,7 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol = ModbusClientProtocol(framer=framer)
         self.assertTrue(framer is protocol.framer)
 
-    def test_udp_client_protocol_data_received(self):
+    def testUdpClientProtocolDataReceived(self):
         ''' Test the udp client protocol data received '''
         protocol = ModbusUdpClientProtocol()
         out = []
@@ -171,24 +167,24 @@ class AsynchronousClientTest(unittest.TestCase):
         server = ('127.0.0.1', 12345)
 
         # setup existing request
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v)) # pylint: disable=unnecessary-lambda
+        d = protocol._buildResponse(0x00)
+        d.addCallback(lambda v: out.append(v))
 
         protocol.datagramReceived(data, server)
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
 
-    def test_udp_client_protocol_execute(self):
+    def testUdpClientProtocolExecute(self):
         ''' Test the udp client protocol execute method '''
         protocol = ModbusUdpClientProtocol()
         protocol.transport = Mock()
         protocol.transport.write = Mock()
 
         request = ReadCoilsRequest(1, 1)
-        response = protocol.execute(request)
+        d = protocol.execute(request)
         tid = request.transaction_id
-        self.assertEqual(response, protocol.transaction.getTransaction(tid))
+        self.assertEqual(d, protocol.transaction.getTransaction(tid))
 
-    def test_udp_client_protocol_handle_response(self):
+    def testUdpClientProtocolHandleResponse(self):
         ''' Test the udp client protocol handles responses '''
         protocol = ModbusUdpClientProtocol()
         out = []
@@ -196,28 +192,28 @@ class AsynchronousClientTest(unittest.TestCase):
         reply.transaction_id = 0x00
 
         # handle skipped cases
-        protocol._handleResponse(None) # pylint: disable=protected-access
-        protocol._handleResponse(reply) # pylint: disable=protected-access
+        protocol._handleResponse(None)
+        protocol._handleResponse(reply)
 
         # handle existing cases
-        response = protocol._buildResponse(0x00) # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v)) # pylint: disable=unnecessary-lambda
-        protocol._handleResponse(reply) # pylint: disable=protected-access
+        d = protocol._buildResponse(0x00)
+        d.addCallback(lambda v: out.append(v))
+        protocol._handleResponse(reply)
         self.assertEqual(out[0], reply)
 
-    def test_udp_client_protocol_build_response(self):
+    def testUdpClientProtocolBuildResponse(self):
         ''' Test the udp client protocol builds responses '''
         protocol = ModbusUdpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
 
-        protocol._buildResponse(0x00) # pylint: disable=protected-access
+        d = protocol._buildResponse(0x00)
         self.assertEqual(1, len(list(protocol.transaction)))
 
     #-----------------------------------------------------------------------#
     # Test Client Factories
     #-----------------------------------------------------------------------#
 
-    def test_modbus_client_factory(self):
+    def testModbusClientFactory(self):
         ''' Test the base class for all the clients '''
         factory = ModbusClientFactory()
         self.assertTrue(factory is not None)

@@ -99,6 +99,11 @@ def execute_extended_requests():
     rq = ReadDeviceInformationRequest(unit=UNIT)
     rr = client.execute(rq)
     log.debug(rr)
+    # assert(rr == None)              # not supported by reference
+    # assert (not rr.isError())  # test that we are not an error
+    # assert (rr.information[0] == b'Pymodbus')  # test the vendor name
+    # assert (rr.information[1] == b'PM')  # test the product code
+    # assert (rr.information[2] == b'1.0')  # test the code revision
 
     log.debug("Running ReportSlaveIdRequest")
     rq = ReportSlaveIdRequest(unit=UNIT)

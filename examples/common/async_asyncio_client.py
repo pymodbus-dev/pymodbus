@@ -67,14 +67,14 @@ async def start_async_test(client):
     _logger.debug("Write to a Coil and read back")
     rq = await client.write_coil(0, True, unit=UNIT)
     rr = await client.read_coils(0, 1, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.bits[0]          #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits[0]          # test the expected value
 
     _logger.debug("Write to multiple coils and read back- test 1")
     rq = await client.write_coils(1, [True] * 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
     rr = await client.read_coils(1, 21, unit=UNIT)
-    assert rr.function_code < 0x80     #nosec test that we are not an error
+    assert rr.function_code < 0x80     # test that we are not an error
     resp = [True] * 21
 
     # If the returned output quantity is not a multiple of eight,
@@ -82,33 +82,33 @@ async def start_async_test(client):
     # (toward the high order end of the byte).
 
     resp.extend([False] * 3)
-    assert rr.bits == resp         #nosec test the expected value
+    assert rr.bits == resp         # test the expected value
 
     _logger.debug("Write to multiple coils and read back - test 2")
     rq = await client.write_coils(1, [False] * 8, unit=UNIT)
     rr = await client.read_coils(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.bits == [False] * 8         #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits == [False] * 8         # test the expected value
 
     _logger.debug("Read discrete inputs")
     rr = await client.read_discrete_inputs(0, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
 
     _logger.debug("Write to a holding register and read back")
     rq = await client.write_register(1, 10, unit=UNIT)
     rr = await client.read_holding_registers(1, 1, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.registers[0] == 10       #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.registers[0] == 10       # test the expected value
 
     _logger.debug("Write to multiple holding registers and read back")
     rq = await client.write_registers(1, [10] * 8, unit=UNIT)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80      #nosec test that we are not an error
-    assert rr.registers == [10] * 8       #nosec test the expected value
+    assert rq.function_code < 0x80      # test that we are not an error
+    assert rr.registers == [10] * 8       # test the expected value
 
     _logger.debug("Read input registers")
     rr = await client.read_input_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80      #nosec test that we are not an error
+    assert rq.function_code < 0x80      # test that we are not an error
 
     arguments = {
         'read_address': 1,
@@ -119,9 +119,9 @@ async def start_async_test(client):
     _logger.debug("Read write registers simultaneously")
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rq.registers == [20] * 8      #nosec test the expected value
-    assert rr.registers == [20] * 8     #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rq.registers == [20] * 8      # test the expected value
+    assert rr.registers == [20] * 8     # test the expected value
     await asyncio.sleep(1)
 
 
@@ -130,7 +130,7 @@ def run_with_not_running_loop():
     _logger.debug("Running Async client with asyncio loop not yet started")
     _logger.debug("------------------------------------------------------")
     loop = asyncio.new_event_loop()
-    assert not loop.is_running() #nosec
+    assert not loop.is_running()
     asyncio.set_event_loop(loop)
     new_loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence
     loop.run_until_complete(start_async_test(client.protocol))
@@ -162,7 +162,7 @@ async def run_with_already_running_loop():
     # Start the loop
     mythread.start()
     asyncio.sleep(1)
-    assert loop.is_running() #nosec
+    assert loop.is_running()
     asyncio.set_event_loop(loop)
     loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020, loop=loop) #NOSONAR pylint: disable=unpacking-non-sequence
     future = asyncio.run_coroutine_threadsafe(

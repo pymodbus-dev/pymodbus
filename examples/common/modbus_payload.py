@@ -163,11 +163,11 @@ def run_binary_payload_ex():
                                                      byteorder=byte_endian,
                                                      wordorder=word_endian)
 
-        assert decoder._byteorder == (builder._byteorder, #nosec pylint: disable=protected-access
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._byteorder == builder._byteorder, \
+                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder" # pylint: disable=protected-access
 
-        assert decoder._wordorder == (builder._wordorder, #nosec pylint: disable=protected-access
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._wordorder == builder._wordorder, \
+                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"  # pylint: disable=protected-access
 
         decoded = OrderedDict([
             ('string', decoder.decode_string(len(my_string))),

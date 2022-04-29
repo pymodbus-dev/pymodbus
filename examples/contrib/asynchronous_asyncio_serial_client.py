@@ -44,38 +44,38 @@ async def start_async_test(client):
     log.debug("Write to a Coil and read back")
     rq = await client.write_coil(0, True, unit=UNIT)
     rr = await client.read_coils(0, 1, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.bits[0]          #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits[0]          # test the expected value
 
     log.debug("Write to multiple coils and read back- test 1")
     rq = await client.write_coils(1, [True] * 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
     rr = await client.read_coils(1, 21, unit=UNIT)
-    assert rr.function_code < 0x80     #nosec test that we are not an error
+    assert rr.function_code < 0x80     # test that we are not an error
     resp = [True] * 21
     resp.extend([False] * 3)
-    assert rr.bits == resp         #nosec test the expected value
+    assert rr.bits == resp         # test the expected value
 
     rq = await client.write_coils(1, [False] * 8, unit=UNIT)
     rr = await client.read_coils(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.bits == [False] * 8         #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.bits == [False] * 8         # test the expected value
 
     rr = await client.read_discrete_inputs(0, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
 
     rq = await client.write_register(1, 10, unit=UNIT)
     rr = await client.read_holding_registers(1, 1, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.registers[0] == 10       #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.registers[0] == 10       # test the expected value
 
     rq = await client.write_registers(1, [10] * 8, unit=UNIT)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rr.registers == [10] * 8      #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rr.registers == [10] * 8      # test the expected value
 
     rr = await client.read_input_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
+    assert rq.function_code < 0x80     # test that we are not an error
 
     arguments = {
         'read_address':    1,  # noqa E221
@@ -85,9 +85,9 @@ async def start_async_test(client):
     }
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
-    assert rq.function_code < 0x80     #nosec test that we are not an error
-    assert rq.registers == [20] * 8      #nosec test the expected value
-    assert rr.registers == [20] * 8      #nosec test the expected value
+    assert rq.function_code < 0x80     # test that we are not an error
+    assert rq.registers == [20] * 8      # test the expected value
+    assert rr.registers == [20] * 8      # test the expected value
 
 
 # create_serial_connection doesn't allow to pass arguments
@@ -99,7 +99,7 @@ def make_protocol():
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    coro = create_serial_connection(loop, make_protocol, '/tmp/ttyp0', #nosec
+    coro = create_serial_connection(loop, make_protocol, '/tmp/ttyp0',
                                     baudrate=9600)
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     loop.run_until_complete(start_async_test(protocol))

@@ -56,8 +56,8 @@ def updating_writer(parm1):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999) #NOSONAR #nosec
-    rand_addr = random.randint(0, 65000) #NOSONAR #nosec
+    rand_value = random.randint(0, 9999) #NOSONAR
+    rand_addr = random.randint(0, 65000) #NOSONAR
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()

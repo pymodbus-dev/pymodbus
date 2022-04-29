@@ -66,7 +66,7 @@ def handle_brodcast(func):
     return _wrapper
 
 
-class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
+class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
     """Extended request support."""
 
     @staticmethod

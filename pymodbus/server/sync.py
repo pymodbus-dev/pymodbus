@@ -498,7 +498,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer): # pylint: disable=too-ma
             thread.running = False
 
 
-class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
+class ModbusSerialServer(): # pylint: disable=too-many-instance-attributes
     """
     A modbus threaded serial socket server
 

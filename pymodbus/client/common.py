@@ -27,7 +27,7 @@ from pymodbus.register_write_message import (
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusClientMixin:
+class ModbusClientMixin():
     '''
     This is a modbus client mixin that provides additional factory
     methods for all the current modbus methods. This can be used

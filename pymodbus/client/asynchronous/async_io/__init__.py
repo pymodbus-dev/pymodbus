@@ -236,7 +236,7 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
         return self.transport.sendto(packet)
 
 
-class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-attributes
+class ReconnectingAsyncioModbusTcpClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device repeatedly over TCP/IP."
     """
@@ -360,7 +360,7 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
 
         return await self._connect()
 
-class AsyncioModbusTcpClient:
+class AsyncioModbusTcpClient():
     """Client to connect to modbus device over TCP/IP."""
 
     def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
@@ -514,7 +514,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         protocol.factory = self
         return protocol
 
-class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-attributes
+class ReconnectingAsyncioModbusUdpClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device repeatedly over UDP.
     """
@@ -654,7 +654,7 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
         return await self._connect()
 
 
-class AsyncioModbusUdpClient:
+class AsyncioModbusUdpClient():
     """
     Client to connect to modbus device over UDP.
     """
@@ -757,7 +757,7 @@ class AsyncioModbusUdpClient:
                           'callback called while not connected.')
 
 
-class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
+class AsyncioModbusSerialClient(): # pylint: disable=too-many-instance-attributes
     """
     Client to connect to modbus device over serial.
     """

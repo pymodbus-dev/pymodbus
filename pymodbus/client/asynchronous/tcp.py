@@ -9,7 +9,7 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTCPClient: # pylint: disable=too-few-public-methods
+class AsyncModbusTCPClient(): # pylint: disable=too-few-public-methods
     """
     Actual Async Serial Client to be used.
 

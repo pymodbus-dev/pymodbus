@@ -55,7 +55,7 @@ CLIENT_METHODS = [
 CLIENT_ATTRIBUTES = []
 
 
-class Command:
+class Command():
     """
     Class representing Commands to be consumed by Completer.
     """
@@ -213,7 +213,7 @@ def get_commands(client):
     return commands
 
 
-class Result:
+class Result():
     """
     Represent result command.
     """

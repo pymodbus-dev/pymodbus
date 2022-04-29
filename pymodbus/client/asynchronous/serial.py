@@ -16,7 +16,7 @@ from pymodbus.exceptions import ParameterException
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
+class AsyncModbusSerialClient(): # pylint: disable=too-few-public-methods
     """
     Actual Async Serial Client to be used.
 

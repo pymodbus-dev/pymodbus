@@ -11,7 +11,7 @@ from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ModbusEvent:
+class ModbusEvent():
     """Define modbus events."""
 
     def encode(self): # pylint: disable=no-self-use

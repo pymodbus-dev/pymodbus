@@ -9,7 +9,7 @@ from pymodbus.client.asynchronous.factory.udp import get_factory
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusUDPClient: # pylint: disable=too-few-public-methods
+class AsyncModbusUDPClient(): # pylint: disable=too-few-public-methods
     """
     Actual Async UDP Client to be used.
 

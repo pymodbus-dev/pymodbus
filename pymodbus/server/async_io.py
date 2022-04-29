@@ -694,7 +694,7 @@ class ModbusUdpServer: # pylint: disable=too-many-instance-attributes
         self.protocol.close()
 
 
-class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
+class ModbusSerialServer(): # pylint: disable=too-many-instance-attributes
     """
     A modbus threaded serial socket server
     We inherit and overload the socket server so that we

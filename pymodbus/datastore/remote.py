@@ -104,9 +104,9 @@ class RemoteSlaveContext(IModbusSlaveContext):
         a response.  TODO make this consistent (values?)
         """
         if not result.isError():
-            if fc_as_hex in set(['d', 'c']):
+            if fc_as_hex in ['d', 'c']:
                 return result.bits
-            if fc_as_hex in set(['h', 'i']):
+            if fc_as_hex in ['h', 'i']:
                 return result.registers
         else:
             return result

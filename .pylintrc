@@ -42,7 +42,7 @@ load-plugins=
     pylint.extensions.overlapping_exceptions,
     pylint.extensions.private_import,
 #NOT WANTED pylint.extensions.redefined_variable_type,
-    pylint.extensions.set_membership,
+#default    pylint.extensions.set_membership,
     pylint.extensions.typing,
 #NOT WANTED pylint.extensions.while_used,
 

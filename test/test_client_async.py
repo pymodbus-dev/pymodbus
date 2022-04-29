@@ -203,7 +203,7 @@ class TestAsynchronousClient:
                                                 ("ascii", ModbusAsciiFramer)])
     def test_serial_tornado_client(self, method, framer): # pylint: disable=no-self-use
         """ Test the serial tornado client client initialize """
-        with maybe_manage(sys.platform in set(('darwin', 'win32')),patch.object(Serial, "open")):
+        with maybe_manage(sys.platform in ('darwin', 'win32'), patch.object(Serial, "open")):
             protocol, future = AsyncModbusSerialClient( #NOSONAR pylint: disable=unpacking-non-sequence
                 schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT)
             client = future.result()

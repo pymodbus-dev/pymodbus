@@ -55,7 +55,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
 
     async def test_start_tcp_server(self):
         """ Test that the modbus tcp asyncio server starts correctly """
-        identity = ModbusDeviceIdentification(info_name={'VendorName': 'VendorName'})
+        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         self.loop = asynctest.Mock(self.loop) # pylint: disable=attribute-defined-outside-init
         server = await StartTcpServer(context=self.context,loop=self.loop,identity=identity)
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')

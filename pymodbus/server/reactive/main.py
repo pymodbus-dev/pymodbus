@@ -264,14 +264,13 @@ class ReactiveServer:
         :param version:
         :return: ModbusIdentity object
         """
-        identity = ModbusDeviceIdentification(info_name= {
-            'VendorName': vendor,
-            'ProductCode': product_code,
-            'VendorUrl': vendor_url,
-            'ProductName': product_name,
-            'ModelName': model_name,
-            'MajorMinorRevision': version,
-        })
+        identity = ModbusDeviceIdentification()
+        identity.VendorName = vendor
+        identity.ProductCode = product_code
+        identity.VendorUrl = vendor_url
+        identity.ProductName = product_name
+        identity.ModelName = model_name
+        identity.MajorMinorRevision = version
 
         return identity
 

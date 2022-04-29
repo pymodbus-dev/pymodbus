@@ -194,7 +194,7 @@ class ModbusDeviceIdentification:
         0x06: '',  # UserApplicationName
         0x07: '',  # reserved
         0x08: '',  # reserved
-        # 0x80 -> 0xFF are privatek
+        # 0x80 -> 0xFF are private
     }
 
     __names = [
@@ -207,19 +207,12 @@ class ModbusDeviceIdentification:
         'UserApplicationName',
     ]
 
-    def __init__(self, info=None, info_name=None):
+    def __init__(self, info=None):
         """ Initialize the datastore with the elements you need.
         (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
 
-        :param info: A dictionary of {int:string} of values
-        :param set: A dictionary of {name:string} of values
+        :param information: A dictionary of {int:string} of values
         """
-
-        if isinstance(info_name, dict):
-            for key in info_name:
-                inx = self.__names.index(key)
-                self.__data[inx] = info_name[key]
-
         if isinstance(info, dict):
             for key in info:
                 if (0x06 >= key >= 0x00) or (0xFF >= key >= 0x80):

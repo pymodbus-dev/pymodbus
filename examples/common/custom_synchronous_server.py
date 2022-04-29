@@ -100,14 +100,13 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification()
+    identity.VendorName = 'Pymodbus'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
+    identity.ProductName = 'Pymodbus Server'
+    identity.ModelName = 'Pymodbus Server'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want

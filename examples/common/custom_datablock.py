@@ -61,14 +61,13 @@ def run_custom_db_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
 
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'pymodbus Server',
-        'ModelName': 'pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification()
+    identity.VendorName = 'pymodbus'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
+    identity.ProductName = 'pymodbus Server'
+    identity.ModelName = 'pymodbus Server'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want

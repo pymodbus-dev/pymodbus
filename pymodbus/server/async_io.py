@@ -1,4 +1,5 @@
-""" Implementation of a Threaded Modbus Server
+"""
+Implementation of a Threaded Modbus Server
 ------------------------------------------
 
 """
@@ -67,7 +68,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             _logger.error(txt)
 
     def connection_made(self, transport):
-        """ asyncio.BaseProtocol callback for socket establish
+        """
+        asyncio.BaseProtocol callback for socket establish
 
         For streamed protocols (TCP) this will also correspond to an
         entire conversation; however for datagram protocols (UDP) this
@@ -96,7 +98,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             _logger.error(txt)
 
     def connection_lost(self, call_exc): # pylint: disable=arguments-renamed
-        """ asyncio.BaseProtocol callback for socket tear down
+        """
+        asyncio.BaseProtocol callback for socket tear down
 
         For streamed protocols any break in the network connection will
         be reported here; for datagram protocols, only a teardown of the
@@ -117,7 +120,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             _logger.error(txt)
 
     async def handle(self): #NOSONAR pylint: disable=too-many-branches
-        """ Asyncio coroutine which represents a single conversation between
+        """Asyncio coroutine which represents a single conversation between
         the modbus slave and master
 
         Once the client connection is established, the data chunks will be
@@ -228,7 +231,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             self.send(response, *addr, skip_encoding=skip_encoding)
 
     def send(self, message, *addr, **kwargs):
-        """ Send message. """
+        """Send message."""
         def __send(msg, *addr):
             if _logger.isEnabledFor(logging.DEBUG):
                 txt = f"send: [{message}]- {b2a_hex(msg)}"
@@ -285,7 +288,9 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
         _logger.debug(txt)
 
     def connection_lost(self, call_exc):
-        """ asyncio.BaseProtocol: Called when the connection is lost or closed. """
+        """
+        asyncio.BaseProtocol: Called when the connection is lost or closed.
+        """
         super().connection_lost(call_exc)
         client_addr = self.client_address[:2]
         txt = f"TCP client disconnected [{client_addr}]"
@@ -294,7 +299,8 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler,asyncio.Protocol):
             self.server.active_connections.pop(self.client_address)
 
     def data_received(self, data):
-        """ asyncio.Protocol: (TCP) Called when some data is received.
+        """
+        asyncio.Protocol: (TCP) Called when some data is received.
         data is a non-empty bytes object containing the incoming data.
         """
         self.receive_queue.put_nowait(data)
@@ -331,7 +337,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler,
         self.server.on_connection_terminated.set_result(True)
 
     def datagram_received(self,data, addr):
-        """ asyncio.DatagramProtocol: Called when a datagram is received.
+        """
+        asyncio.DatagramProtocol: Called when a datagram is received.
          data is a bytes object containing the incoming data. addr
          is the address of the peer sending the data; the exact
          format depends on the transport.
@@ -339,7 +346,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler,
         self.receive_queue.put_nowait((data, addr))
 
     def error_received(self,exc): # pragma: no cover
-        """ asyncio.DatagramProtocol: Called when a previous send
+        """
+        asyncio.DatagramProtocol: Called when a previous send
         or receive operation raises an OSError. exc is the
         OSError instance.
 
@@ -359,7 +367,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler,
 
 
 class ModbusServerFactory: # pylint: disable=too-few-public-methods
-    """ Builder class for a modbus server
+    """
+    Builder class for a modbus server
 
     This also holds the server datastore so that it is persisted between connections
     """
@@ -402,7 +411,8 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 # --------------------------------------------------------------------------- #
 
 class ModbusTcpServer: # pylint: disable=too-many-instance-attributes
-    """ A modbus threaded tcp socket server
+    """
+    A modbus threaded tcp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -482,7 +492,7 @@ class ModbusTcpServer: # pylint: disable=too-many-instance-attributes
             )
 
     async def serve_forever(self):
-        """ Start endless loop. """
+        """Start endless loop."""
         if self.server is None:
             self.server = await self.server_factory
             self.serving.set_result(True)
@@ -492,7 +502,7 @@ class ModbusTcpServer: # pylint: disable=too-many-instance-attributes
                                "an already running server object")
 
     def server_close(self):
-        """ Close server. """
+        """Close server."""
         for k, v in self.active_connections.items():
             txt = f"aborting active session {k}"
             _logger.warning(txt)
@@ -502,7 +512,8 @@ class ModbusTcpServer: # pylint: disable=too-many-instance-attributes
 
 
 class ModbusTlsServer(ModbusTcpServer): # pylint: disable=too-many-instance-attributes
-    """ A modbus threaded tls socket server
+    """
+    A modbus threaded tls socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -599,7 +610,8 @@ class ModbusTlsServer(ModbusTcpServer): # pylint: disable=too-many-instance-attr
         )
 
 class ModbusUdpServer: # pylint: disable=too-many-instance-attributes
-    """ A modbus threaded udp socket server
+    """
+    A modbus threaded udp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -662,7 +674,7 @@ class ModbusUdpServer: # pylint: disable=too-many-instance-attributes
         )
 
     async def serve_forever(self):
-        """ Start endless loop. """
+        """Start endless loop."""
         if self.protocol is None:
             self.protocol, self.endpoint = await self.server_factory
             self.serving.set_result(True)
@@ -672,7 +684,7 @@ class ModbusUdpServer: # pylint: disable=too-many-instance-attributes
                                "already running server object")
 
     def server_close(self):
-        """ Close server. """
+        """Close server."""
         self.stop_serving.set_result(True)
         if self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()
@@ -681,7 +693,8 @@ class ModbusUdpServer: # pylint: disable=too-many-instance-attributes
 
 
 class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
-    """ A modbus threaded serial socket server
+    """
+    A modbus threaded serial socket server
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
     server context instance.
@@ -743,7 +756,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
 
 
     async def start(self):
-        """ Start connecting. """
+        """Start connecting."""
         await self._connect()
 
 
@@ -779,7 +792,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
             _logger.debug(txt)
 
     def on_connection_lost(self):
-        """ Lost connection. """
+        """Lost connection."""
         if self.transport is not None:
             self.transport.close()
             self.transport = None
@@ -804,11 +817,11 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
         self.transport = None
 
     def _protocol_factory(self):
-        """ Run protocol factory. """
+        """Run protocol factory."""
         return self.handler(self)
 
     def _check_reconnect(self):
-        """ Check if reconnect. """
+        """Check if reconnect."""
         txt = f"checking auto-reconnect {self.auto_reconnect} {self.reconnecting_task}"
         _logger.debug(txt)
         if self.auto_reconnect and (self.reconnecting_task is None):
@@ -944,7 +957,9 @@ async def StartSerialServer(context=None, identity=None, #NOSONAR pylint: disabl
 
 
 def StopServer(): #NOSONAR pylint: disable=invalid-name
-    """ Helper method to stop Async Server """
+    """
+    Helper method to stop Async Server
+    """
     warnings.warn("deprecated API for asyncio. Call server_close() on "
                   "server object returned by StartXxxServer",
                   DeprecationWarning)

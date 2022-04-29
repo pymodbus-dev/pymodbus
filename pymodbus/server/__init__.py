@@ -1,1 +1,2 @@
-""" Nothing special. """
+''' Nothing special.
+'''

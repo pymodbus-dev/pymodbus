@@ -1,4 +1,5 @@
-""" Copyright (c) 2020 by RiptideIO
+"""
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 

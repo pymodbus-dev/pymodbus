@@ -1,4 +1,5 @@
-""" Copyright (c) 2020 by RiptideIO
+"""
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import os
@@ -86,7 +87,8 @@ curl -X POST http://{}:{} -d '{{"response_type": "error", "error_code": 4}}'
 
 
 class ReactiveServer: # pylint: disable=too-many-instance-attributes
-    """ Modbus Asynchronous Server which can manipulate the response dynamically.
+    """
+    Modbus Asynchronous Server which can manipulate the response dynamically.
     Useful for testing
     """
     def __init__(self, host, port, modbus_server, loop=None):
@@ -123,7 +125,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             web.post('/', self._response_manipulator)])
 
     async def start_modbus_server(self, app):
-        """ Start Modbus server as asyncio task after startup
+        """
+        Start Modbus server as asyncio task after startup
         :param app: Webapp
         :return:
         """
@@ -148,7 +151,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             logger.error(exc)
 
     async def stop_modbus_server(self, app):
-        """ Stop modbus server
+        """
+        Stop modbus server
         :param app: Webapp
         :return:
         """
@@ -160,7 +164,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
         logger.info("Modbus server Stopped")
 
     async def _response_manipulator(self, request):
-        """ POST request Handler for response manipulation end point
+        """
+        POST request Handler for response manipulation end point
         Payload is a dict with following fields
             :response_type : One among (normal, delayed, error, empty, stray)
             :error_code: Modbus error code for error response
@@ -174,7 +179,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
         return web.json_response(data=data)
 
     def update_manipulator_config(self, config):
-        """ Updates manipulator config. Resets previous counters
+        """
+        Updates manipulator config. Resets previous counters
         :param config: Manipulator config (dict)
         :return:
         """
@@ -182,7 +188,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
         self._manipulator_config = config
 
     def manipulate_response(self, response):
-        """ Manipulates the actual response according to the required error state.
+        """
+        Manipulates the actual response according to the required error state.
         :param response: Modbus response object
         :return: Modbus response
         """
@@ -228,7 +235,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
         return response, skip_encoding
 
     def run(self):
-        """ Run Web app
+        """
+        Run Web app
         :return:
         """
         def _info(message):
@@ -239,7 +247,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
                     print=_info)
 
     async def run_async(self):
-        """ Run Web app
+        """
+        Run Web app
         :return:
         """
         try:
@@ -255,7 +264,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
                         version=pymodbus_version.short()):
-        """ Create modbus identity
+        """
+        Create modbus identity
         :param vendor:
         :param product_code:
         :param vendor_url:
@@ -277,7 +287,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
     @classmethod
     def create_context(cls, data_block=None, unit=1, # pylint: disable=too-many-locals
                        single=False):
-        """ Create Modbus context.
+        """
+        Create Modbus context.
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
         :param unit: Unit id for the slave
         :param single: To run as a single slave
@@ -317,7 +328,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
     def factory(cls, server, framer=None, context=None, unit=1, single=False, # pylint: disable=dangerous-default-value,too-many-arguments
                 host="localhost", modbus_port=5020, web_port=8080,
                 data_block=DEFAULT_DATA_BLOCK, identity=None, loop=None, **kwargs):
-        """ Factory to create ReactiveModbusServer
+        """
+        Factory to create ReactiveModbusServer
         :param server: Modbus server type (tcp, rtu, tls, udp)
         :param framer: Modbus framer (ModbusSocketFramer, ModbusRTUFramer, ModbusTLSFramer)
         :param context: Modbus server context to use

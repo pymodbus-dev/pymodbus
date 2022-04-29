@@ -1,4 +1,3 @@
-"""TLS communication."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -8,10 +7,10 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusTlsFramer
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTLSClient(): # pylint: disable=too-few-public-methods
+class AsyncModbusTLSClient(object):
     """
     Actual Async TLS Client to be used.
 
@@ -19,7 +18,7 @@ class AsyncModbusTLSClient(): # pylint: disable=too-few-public-methods
 
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort, # pylint: disable=too-many-arguments
+    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort,
                 framer=None, sslctx=None, certfile=None, keyfile=None,
                 password=None, source_address=None, timeout=None, **kwargs):
         """
@@ -46,3 +45,4 @@ class AsyncModbusTLSClient(): # pylint: disable=too-few-public-methods
                                   source_address=source_address,
                                   timeout=timeout, **kwargs)
         return yieldable
+

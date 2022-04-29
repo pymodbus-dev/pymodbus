@@ -96,7 +96,7 @@ class Decoder:
                 for k_item, v_item in v.items():
                     print("  %-12s => %s" % (k_item, v_item)) # pylint: disable=consider-using-f-string
 
-            elif isinstance(v, collections.Iterable): # pylint: disable=no-member
+            elif isinstance(v, collections.Iterable):
                 print("%-15s =" % k) # pylint: disable=consider-using-f-string
                 value = str([int(x) for x in v])
                 for line in textwrap.wrap(value, 60):

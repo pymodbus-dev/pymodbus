@@ -314,7 +314,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
               f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
         self.assertEqual(repr(client), rep)
 
-    def test_tcp_client_register(self):
+    def test_tcp_client_register(self): # pylint: disable=no-self-use
         """ Test tcp client. """
         class CustomRequest: # pylint: disable=too-few-public-methods
             """ Dummy custom request. """
@@ -429,7 +429,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
               f"timeout={client.timeout}>"
         self.assertEqual(repr(client), rep)
 
-    def test_tls_client_register(self):
+    def test_tls_client_register(self): # pylint: disable=no-self-use
         """ Test tls client. """
         class CustomeRequest: # pylint: disable=too-few-public-methods
             """ Dummy custom request. """
@@ -458,7 +458,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         self.assertRaises(ParameterException,
                           lambda: ModbusSerialClient(method='something'))
 
-    def test_sync_serial_rtu_client_timeouts(self):
+    def test_sync_serial_rtu_client_timeouts(self): # pylint: disable=no-self-use
         """ Test sync serial rtu. """
         client = ModbusSerialClient(method="rtu", baudrate=9600)
         self.assertEqual(client.silent_interval, round((3.5 * 11 / 9600), 6))

@@ -82,7 +82,6 @@ enable=
     attribute-defined-outside-init,
     fixme,
     missing-docstring,
-    no-self-use,
     protected-access,
     too-few-public-methods,
     useless-suppression

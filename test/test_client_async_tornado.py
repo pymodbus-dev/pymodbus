@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ Test client tornado. """
-# pylint: disable=R0801
 import unittest
 from unittest.mock import patch, Mock
 import pytest

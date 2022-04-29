@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ Test client sync. """
-# pylint: disable=R0801
 import socket
 import ssl
 import sys

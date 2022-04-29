@@ -24,9 +24,9 @@ persistent=no
 
 # List of plugins
 load-plugins=
-    pylint.extensions.bad_builtin, # default
+#default    pylint.extensions.bad_builtin,
 #           pylint.extensions.broad_try_clause
-    pylint.extensions.check_elif,
+#default    pylint.extensions.check_elif,
 #default    pylint.extensions.code_style,
 #           pylint.extensions.comparetozero
 #default    pylint.extensions.comparison_placement,

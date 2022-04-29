@@ -187,11 +187,12 @@ class ReadDeviceInformationResponse(ModbusResponse): # pylint: disable=too-many-
             count += object_length + 2
             if object_id not in self.information.keys():
                 self.information[object_id] = data[count-object_length:count]
-            elif isinstance(self.information[object_id], list):
-                self.information[object_id].append(data[count-object_length:count])
             else:
-                self.information[object_id] = [self.information[object_id],
-                                               data[count - object_length:count]]
+                if isinstance(self.information[object_id], list):
+                    self.information[object_id].append(data[count-object_length:count])
+                else:
+                    self.information[object_id] = [self.information[object_id],
+                                                   data[count - object_length:count]]
 
     def __str__(self):
         ''' Builds a representation of the response

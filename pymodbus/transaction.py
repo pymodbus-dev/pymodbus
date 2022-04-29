@@ -187,13 +187,14 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                             else:
                                 # No response received and retries not enabled
                                 break
-                        elif self.retry_on_invalid:
-                            response, last_exception = self._retry_transaction(
-                            retries, "invalid",
-                            request, expected_response_length, full=full)
-                            retries -= 1
                         else:
-                            break
+                            if self.retry_on_invalid:
+                                response, last_exception = self._retry_transaction(
+                                    retries, "invalid",
+                                    request, expected_response_length, full=full)
+                                retries -= 1
+                            else:
+                                break
                         # full = False
                     addTransaction = partial(self.addTransaction, #NOSONAR pylint: disable=invalid-name
                                              tid=request.transaction_id)

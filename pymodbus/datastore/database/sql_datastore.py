@@ -18,12 +18,14 @@ _logger = logging.getLogger(__name__)
 # Context
 # --------------------------------------------------------------------------- #
 class SqlSlaveContext(IModbusSlaveContext):
-    """ This creates a modbus data model with each data access
-    stored in its own personal block.
+    """
+    This creates a modbus data model with each data access
+    stored in its own personal block
     """
 
     def __init__(self, *args, **kwargs): # pylint: disable=unused-argument
         """ Initializes the datastores
+
         :param kwargs: Each element is a ModbusDataBlock
         """
         self.table = kwargs.get('table', 'pymodbus')
@@ -32,6 +34,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def __str__(self):
         """ Returns a string representation of the context
+
         :returns: A string representation of the context
         """
         return "Modbus Slave Context"
@@ -43,6 +46,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def validate(self, fx, address, count=1):
         """ Validates the request to make sure it is in range
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
@@ -55,6 +59,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def getValues(self, fx, address, count=1):
         """ Get `count` values from datastore
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
@@ -67,6 +72,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def setValues(self, fx, address, values, update=True):
         """ Sets the datastore with the supplied values
+
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
@@ -85,6 +91,7 @@ class SqlSlaveContext(IModbusSlaveContext):
     # ----------------------------------------------------------------------- #
     def _db_create(self, table, database):
         """ A helper method to initialize the database and handles
+
         :param table: The table name to create
         :param database: The database uri to use
         """
@@ -99,7 +106,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._connection = self._engine.connect()
 
     def _get(self, type, offset, count): # pylint: disable=redefined-builtin
-        """ Internal get.
+        """
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
@@ -116,6 +123,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def _build_set(self, type, offset, values, prefix=''): # pylint: disable=no-self-use,redefined-builtin
         """ A helper method to generate the sql update context
+
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -135,7 +143,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         return False if len(result) > 0 else True # pylint: disable=simplifiable-if-expression
 
     def _set(self, type, offset, values): # pylint: disable=redefined-builtin
-        """ Internal set.
+        """
+
         :param key: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -148,7 +157,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         return False
 
     def _update(self, type, offset, values): # pylint: disable=redefined-builtin
-        """ Internal update.
+        """
+
         :param type: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -162,8 +172,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         return result.rowcount == len(values)
 
     def _validate(self, type, offset, count): # pylint: disable=redefined-builtin
-        """ Internal validate.
-        :param type: The key prefix to use
+        """
+        :param key: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
         :returns: The result of the validation

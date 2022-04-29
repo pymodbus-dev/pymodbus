@@ -1,4 +1,5 @@
-""" Modbus Server Datastore
+"""
+Modbus Server Datastore
 -------------------------
 
 For each server, you will create a ModbusServerContext and pass
@@ -59,7 +60,8 @@ _logger = logging.getLogger(__name__)
 # Datablock Storage
 #---------------------------------------------------------------------------#
 class BaseModbusDataBlock:
-    """ Base class for a modbus datastore
+    '''
+    Base class for a modbus datastore
 
     Derived classes must create the following fields:
             @address The starting address point
@@ -70,74 +72,74 @@ class BaseModbusDataBlock:
             validate(self, address, count=1)
             getValues(self, address, count=1)
             setValues(self, address, values)
-    """
+    '''
 
     def default(self, count, value=False):
-        """ Used to initialize a store to one value
+        ''' Used to initialize a store to one value
 
         :param count: The number of fields to set
         :param value: The default value to set to the fields
-        """
+        '''
         self.default_value = value # pylint: disable=attribute-defined-outside-init
         self.values = [self.default_value] * count # pylint: disable=attribute-defined-outside-init
         self.address = 0x00 # pylint: disable=attribute-defined-outside-init
 
     def reset(self):
-        """ Resets the datastore to the initialized default value """
+        ''' Resets the datastore to the initialized default value '''
         self.values = [self.default_value] * len(self.values) # pylint: disable=attribute-defined-outside-init
 
     def validate(self, address, count=1): # pylint: disable=no-self-use
-        """ Checks to see if the request is in range
+        ''' Checks to see if the request is in range
 
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
-        """
+        '''
         raise NotImplementedException("Datastore Address Check")
 
     def getValues(self, address, count=1):  #NOSONAR pylint: disable=invalid-name,no-self-use
-        """ Returns the requested values from the datastore
+        ''' Returns the requested values from the datastore
 
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
-        """
+        '''
         raise NotImplementedException("Datastore Value Retrieve")
 
     def setValues(self, address, values): #NOSONAR pylint: disable=invalid-name,no-self-use
-        """ Returns the requested values from the datastore
+        ''' Returns the requested values from the datastore
 
         :param address: The starting address
         :param values: The values to store
-        """
+        '''
         raise NotImplementedException("Datastore Value Retrieve")
 
     def __str__(self):
-        """ Build a representation of the datastore
+        ''' Build a representation of the datastore
 
         :returns: A string representation of the datastore
-        """
+        '''
         return f"DataStore({len(self.values)}, {self.default_value})"
 
     def __iter__(self):
-        """ Iterater over the data block data
+        ''' Iterater over the data block data
 
         :returns: An iterator of the data block data
-        """
+        '''
         if isinstance(self.values, dict):
             return iter(self.values.items())
         return enumerate(self.values, self.address)
 
 
 class ModbusSequentialDataBlock(BaseModbusDataBlock):
-    """ Creates a sequential modbus datastore """
+    ''' Creates a sequential modbus datastore '''
 
     def __init__(self, address, values):
-        """ Initializes the datastore
+        ''' Initializes the datastore
 
         :param address: The starting address of the datastore
         :param values: Either a list or a dictionary of values
-        """
+        '''
         self.address = address
         if hasattr(values, '__iter__'):
             self.values = list(values)
@@ -147,40 +149,40 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
 
     @classmethod
     def create(cls):
-        """ Factory method to create a datastore with the
+        ''' Factory method to create a datastore with the
         full address space initialized to 0x00
 
         :returns: An initialized datastore
-        """
+        '''
         return cls(0x00, [0x00] * 65536)
 
     def validate(self, address, count=1):
-        """ Checks to see if the request is in range
+        ''' Checks to see if the request is in range
 
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
-        """
+        '''
         result  = (self.address <= address)
         result &= ((self.address + len(self.values)) >= (address + count))
         return result
 
     def getValues(self, address, count=1):
-        """ Returns the requested values of the datastore
+        ''' Returns the requested values of the datastore
 
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
-        """
+        '''
         start = address - self.address
         return self.values[start:start + count]
 
     def setValues(self, address, values):
-        """ Sets the requested values of the datastore
+        ''' Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
-        """
+        '''
         if not isinstance(values, list):
             values = [values]
         start = address - self.address
@@ -188,7 +190,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
 
 
 class ModbusSparseDataBlock(BaseModbusDataBlock):
-    """ Creates a sparse modbus datastore
+    """
+    Creates a sparse modbus datastore
 
     E.g Usage.
     sparse = ModbusSparseDataBlock({10: [3, 5, 6, 8], 30: 1, 40: [0]*20})
@@ -208,7 +211,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
     """
 
     def __init__(self, values=None, mutable=True):
-        """ Initializes a sparse datastore. Will only answer to addresses
+        """
+        Initializes a sparse datastore. Will only answer to addresses
         registered, either initially here, or later via setValues()
 
         :param values: Either a list or a dictionary of values
@@ -228,37 +232,37 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
 
     @classmethod
     def create(cls, values=None):
-        """ Factory method to create sparse datastore.
+        ''' Factory method to create sparse datastore.
         Use setValues to initialize registers.
 
         :param values: Either a list or a dictionary of values
         :returns: An initialized datastore
-        """
+        '''
         return cls(values)
 
     def reset(self):
-        """ Reset the store to the initially provided defaults"""
+        ''' Reset the store to the initially provided defaults'''
         self.values = self.default_value.copy()
 
     def validate(self, address, count=1):
-        """ Checks to see if the request is in range
+        ''' Checks to see if the request is in range
 
         :param address: The starting address
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
-        """
+        '''
         if not count:
             return False
         handle = set(range(address, address + count))
         return handle.issubset(set(iter(self.values.keys())))
 
     def getValues(self, address, count=1):
-        """ Returns the requested values of the datastore
+        ''' Returns the requested values of the datastore
 
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
-        """
+        '''
         return [self.values[i] for i in range(address, address + count)]
 
     def _process_values(self, values):
@@ -282,12 +286,12 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         _process_as_dict(values)
 
     def setValues(self, address, values, use_as_default=False):
-        """ Sets the requested values of the datastore
+        ''' Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
         :param use_as_default: Use the values as default
-        """
+        '''
         if isinstance(values, dict):
             new_offsets = list(set(list(values.keys())) - set(list(self.values.keys())))
             if new_offsets and not self.mutable:

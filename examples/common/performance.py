@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # any(p.join() for p in procs)   # wait for the workers to finish
     # start = multiprocessing_test(single_client_test, args)
     # start = thread_pool_exe_test(single_client_test, args)
-    for tester in (multiprocessing_test, thread_test, thread_pool_exe_test):
+    for tester in [multiprocessing_test, thread_test, thread_pool_exe_test]:
         print(tester.__name__)
         start = tester(single_client_test, args)
         stop = time()

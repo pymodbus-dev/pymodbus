@@ -86,8 +86,8 @@ def run_binary_payload_ex(): # pylint: disable=too-many-statements
 
     # ----------------------------------------------------------------------- #
     combos = [(word_endian, byte_endian)
-        for word_endian in (Endian.Big, Endian.Little)
-            for byte_endian in (Endian.Big, Endian.Little)]
+        for word_endian in [Endian.Big, Endian.Little]
+            for byte_endian in [Endian.Big, Endian.Little]]
     for word_endian, byte_endian in combos:
         print("-" * 60)
         print(f"Word Order: {ORDER_DICT[word_endian]}")

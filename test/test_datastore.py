@@ -159,13 +159,13 @@ class ModbusDataStoreTest(unittest.TestCase):
         context = ModbusSlaveContext(**store)
         self.assertNotEqual(str(context), None)
 
-        for i in (1,2,3,4):
+        for i in [1,2,3,4]:
             context.setValues(i, 0, [True]*10)
             self.assertTrue(context.validate(i, 0,10))
             self.assertEqual(context.getValues(i, 0,10), [True]*10)
         context.reset()
 
-        for i in (1,2,3,4):
+        for i in [1,2,3,4]:
             self.assertTrue(context.validate(i, 0,10))
             self.assertEqual(context.getValues(i, 0,10), [False]*10)
 
@@ -248,7 +248,7 @@ class RedisDataStoreTest(unittest.TestCase):
         self.slave.client.mset = MagicMock()
         self.slave.client.mget = MagicMock()
 
-        for key in ('c', 'd'):
+        for key in ['c', 'd']:
             self.slave._set_callbacks[key](mock_offset, [3]) # pylint: disable=protected-access
             k = f"pymodbus:{key}:{mock_offset}"
             self.slave.client.mset.assert_called_with(
@@ -304,8 +304,8 @@ class SqlDataStoreTest(unittest.TestCase): # pylint: disable=too-many-instance-a
         self.mock_count = 1
 
         self.function_map = {2: 'd', 4: 'i'}
-        self.function_map.update([(i, 'h') for i in (3, 6, 16, 22, 23)])
-        self.function_map.update([(i, 'c') for i in (1, 5, 15)])
+        self.function_map.update([(i, 'h') for i in [3, 6, 16, 22, 23]])
+        self.function_map.update([(i, 'c') for i in [1, 5, 15]])
 
     def tearDown(self):
         """ Cleans up the test environment """

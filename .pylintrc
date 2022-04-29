@@ -79,19 +79,20 @@ fail-on=
 
 # Enable/Disable the message/report/category/checker with the given id(s).
 enable=
-    attribute-defined-outside-init,
     fixme,
+    attribute-defined-outside-init,
     protected-access,
     too-few-public-methods,
-    useless-suppression
-
 disable= 
     duplicate-code,
     invalid-name,
     logging-too-many-args,
     missing-docstring,
+    useless-suppression,
     use-symbolic-message-instead,
-    format # handled by black
+
+    # real disable:
+    format, # handled by black
 
 
 [REPORTS]

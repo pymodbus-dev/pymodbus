@@ -14,5 +14,6 @@
 - prettier
 - mypy
 - pylint
-   Activate disabled checks.
+   useless-disable
+   allow CamelCase
 

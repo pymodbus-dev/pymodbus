@@ -10,20 +10,18 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-import logging
-
-from custom_message import CustomModbusRequest
-
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
+
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-
+from custom_message import CustomModbusRequest
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -32,7 +30,6 @@ log.setLevel(logging.DEBUG)
 
 
 def run_async_server():
-    """ Run async server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #

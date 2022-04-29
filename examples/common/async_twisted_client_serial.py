@@ -6,13 +6,13 @@ Pymodbus Asynchronous Client Examples
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus with twisted.
 """
-import logging
 
 from twisted.internet import reactor
 from pymodbus.client.asynchronous import schedulers
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient # pylint: disable=no-name-in-module
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol # pylint: disable=no-name-in-module
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 
+import logging
 logging.basicConfig()
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
@@ -29,7 +29,6 @@ UNIT = 0x01
 
 
 class ExampleProtocol(ModbusClientProtocol):
-    """ Example protocol. """
 
     def __init__(self, framer):
         """ Initializes our custom protocol
@@ -39,14 +38,14 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         ModbusClientProtocol.__init__(self, framer)
         log.debug("Beginning the processing loop")
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def fetch_holding_registers(self):
         """ Defer fetching holding registers
         """
         log.debug("Starting the next cycle")
-        result = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
-        result.addCallbacks(self.send_holding_registers, self.error_handler)
+        d = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
+        d.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
         """ Write values of holding registers, defer fetching coils
@@ -55,8 +54,8 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         log.info(response.getRegister(0))
         log.info(response.getRegister(1))
-        result = self.read_coils(*STATUS_COILS, unit=UNIT)
-        result.addCallbacks(self.start_next_cycle, self.error_handler)
+        d = self.read_coils(*STATUS_COILS, unit=UNIT)
+        d.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
         """ Write values of coils, trigger next cycle
@@ -66,9 +65,9 @@ class ExampleProtocol(ModbusClientProtocol):
         log.info(response.getBit(0))
         log.info(response.getBit(1))
         log.info(response.getBit(2))
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
-    def error_handler(self, failure): # pylint: disable=no-self-use
+    def error_handler(self, failure):
         """ Handle any twisted errors
 
         :param failure: The error to handle

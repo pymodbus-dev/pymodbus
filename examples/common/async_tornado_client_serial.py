@@ -9,7 +9,6 @@ client implementation from pymodbus using tornado.
 # ---------------------------------------------------------------------------#
 # import needed libraries
 # ---------------------------------------------------------------------------#
-import logging
 import functools
 
 from tornado.ioloop import IOLoop
@@ -19,11 +18,12 @@ from pymodbus.client.asynchronous import schedulers
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient # pylint: disable=no-name-in-module
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging
 # ---------------------------------------------------------------------------#
+import logging
 
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -31,15 +31,12 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-UNIT = 0x01
-
 # ---------------------------------------------------------------------------#
 # helper method to test deferred callbacks
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
@@ -58,15 +55,14 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
 
 def _print(value):
     if hasattr(value, "bits"):
-        result = value.bits
+        t = value.bits
     elif hasattr(value, "registers"):
-        result = value.registers
+        t = value.registers
     else:
         log.error(value)
-        return None
-    txt = f"Printing : -- {result}"
-    log.info(txt)
-    return result
+        return
+    log.info("Printing : -- {}".format(t))
+    return t
 
 
 # ---------------------------------------------------------------------------#
@@ -80,9 +76,10 @@ def _print(value):
 # deferred assert helper(dassert).
 # ---------------------------------------------------------------------------#
 
+UNIT = 0x01
 
-def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefined-outer-name
-    """ Begin async test. """
+
+def beginAsynchronousTest(client, protocol):
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
@@ -135,20 +132,17 @@ def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefine
 # ---------------------------------------------------------------------------#
 
 def err(*args, **kwargs):
-    """" Errror. """
-    txt = f"Err {args} {kwargs}"
-    log.error(txt)
+    log.error("Err", args, kwargs)
 
 
-def callback(protocol, future): # pylint: disable=redefined-outer-name
-    """ Callback. """
+def callback(protocol, future):
     log.debug("Client connected")
     exp = future.exception()
     if exp:
         return err(exp)
 
     client = future.result()
-    return begin_asynchronous_test(client, protocol)
+    return beginAsynchronousTest(client, protocol)
 
 
 if __name__ == "__main__":

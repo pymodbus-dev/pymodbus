@@ -7,7 +7,6 @@ The asynchronous server is a high performance implementation using the
 twisted library as its backend.  This allows it to scale to many thousands
 of nodes which can be helpful for testing monitoring software.
 """
-# pylint: disable=R0801
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #

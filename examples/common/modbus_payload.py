@@ -5,7 +5,6 @@ Pymodbus Payload Building/Decoding Example
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
-# pylint: disable=R0801
 import logging
 from collections import OrderedDict
 

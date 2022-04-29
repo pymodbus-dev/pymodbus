@@ -6,7 +6,6 @@ Pymodbus Asynchronous Client Examples
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus with twisted.
 """
-# pylint: disable=R0801
 import logging
 
 from twisted.internet import reactor

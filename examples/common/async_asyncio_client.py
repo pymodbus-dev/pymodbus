@@ -8,7 +8,6 @@ client implementation from pymodbus with asyncio.
 
 The example is only valid on Python3.4 and above
 """
-# pylint: disable=R0801
 import asyncio
 import logging
 import time

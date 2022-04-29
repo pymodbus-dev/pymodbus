@@ -33,25 +33,29 @@ no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
 
 
 class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-public-methods
-    """ Unittest for the pymodbus.server.asynchronous module. """
+    '''
+    This is the unittest for the pymodbus.server.asynchronous module
+    '''
 
     # ----------------------------------------------------------------------- #
     # Setup/TearDown
     # ----------------------------------------------------------------------- #
     def setUp(self):
-        """ Initializes the test environment. """
+        '''
+        Initializes the test environment
+        '''
         values = dict((i, '') for i in range(10))
         ModbusDeviceIdentification(info=values)
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        ''' Cleans up the test environment '''
 
 
     # ----------------------------------------------------------------------- #
     # Test ModbusTcpProtocol
     # ----------------------------------------------------------------------- #
     def test_tcp_server_startup(self):
-        """ Test that the modbus tcp asynchronous server starts correctly """
+        ''' Test that the modbus tcp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             console = False
             call_count = 1
@@ -159,7 +163,7 @@ class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-publ
     # Test ModbusServerFactory
     # ----------------------------------------------------------------------- #
     def test_modbus_server_factory(self):
-        """ Test the base class for all the clients """
+        ''' Test the base class for all the clients '''
         factory = ModbusServerFactory(store=None)
         self.assertEqual(factory.control.Identity.VendorName, '')
 
@@ -180,7 +184,7 @@ class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-publ
         self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
 
     def test_udp_server_startup(self):
-        """ Test that the modbus udp asynchronous server starts correctly """
+        ''' Test that the modbus udp asynchronous server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
             StartUdpServer(context=None)
             self.assertEqual(mock_reactor.listenUDP.call_count, 1)
@@ -207,7 +211,10 @@ class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-publ
     @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
     def test_stop_server_from_thread(self, mock_sp): # pylint: disable=unused-argument
-        """ Stop asynchronous server from child thread. """
+        """
+        Stop asynchronous server from child thread
+        :return:
+        """
         with patch('twisted.internet.reactor') as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)

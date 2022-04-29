@@ -11,10 +11,12 @@ from pymodbus.exceptions import (
 )
 
 class SimpleExceptionsTest(unittest.TestCase):
-    """ Unittest for the pymodbus.exceptions module. """
+    '''
+    This is the unittest for the pymodbus.exceptions module
+    '''
 
     def setUp(self):
-        """ Initializes the test environment """
+        ''' Initializes the test environment '''
         self.exceptions = [
                 ModbusException("bad base"),
                 ModbusIOException("bad register"),
@@ -24,10 +26,10 @@ class SimpleExceptionsTest(unittest.TestCase):
         ]
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        ''' Cleans up the test environment '''
 
     def test_exceptions(self):
-        """ Test all module exceptions """
+        ''' Test all module exceptions '''
         for exc in self.exceptions:
             try:
                 raise exc

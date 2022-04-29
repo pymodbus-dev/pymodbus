@@ -14,11 +14,12 @@ from pymodbus.exceptions import ConnectionException
 # Fixture
 # ---------------------------------------------------------------------------#
 class SynchronousDiagnosticClientTest(unittest.TestCase):
-    """ Unittest for the pymodbus.client.sync_diag module. 
-    It is a copy of parts of the test for the TCP class in the pymodbus.client.sync
+    '''
+    This is the unittest for the pymodbus.client.sync_diag module. It is
+    a copy of parts of the test for the TCP class in the pymodbus.client.sync
     module, as it should operate identically and only log some additional
     lines.
-    """
+    '''
 
     # -----------------------------------------------------------------------#
     # Test TCP Diagnostic Client
@@ -30,7 +31,7 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         self.assertNotEqual(client, None)
 
     def test_basic_sync_tcp_diag_client(self):
-        """ Test the basic methods for the tcp sync diag client"""
+        ''' Test the basic methods for the tcp sync diag client'''
 
         # connect/disconnect
         client = ModbusTcpDiagClient()
@@ -39,7 +40,7 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         client.close()
 
     def test_tcp_diag_client_connect(self):
-        """ Test the tcp sync diag client connection method"""
+        ''' Test the tcp sync diag client connection method'''
         with patch.object(socket, 'create_connection') as mock_method:
             mock_method.return_value = object()
             client = ModbusTcpDiagClient()
@@ -54,7 +55,7 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
     @patch('pymodbus.client.sync_diag.time')
     @patch('pymodbus.client.sync.select')
     def test_tcp_diag_client_recv(self, mock_select, mock_diag_time, mock_time):
-        """ Test the tcp sync diag client receive method"""
+        ''' Test the tcp sync diag client receive method'''
 
         mock_select.select.return_value = [True]
         mock_time.time.side_effect = count()

@@ -41,20 +41,21 @@ class ModbusCommonClientTests(unittest.TestCase):
     # Setup/TearDown
     #-----------------------------------------------------------------------#
     def setUp(self):
-        """ Initializes the test environment and builds request/result
+        '''
+        Initializes the test environment and builds request/result
         encoding pairs
-        """
+        '''
         self.client = MockClient()
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        ''' Cleans up the test environment '''
         del self.client
 
     #-----------------------------------------------------------------------#
     # Tests
     #-----------------------------------------------------------------------#
     def test_modbus_client_mixin_methods(self):
-        """ This tests that the mixing returns the correct request object """
+        ''' This tests that the mixing returns the correct request object '''
         arguments = {
             'read_address': 1, 'read_count': 1,
             'write_address': 1, 'write_registers': 1

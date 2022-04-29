@@ -6,14 +6,16 @@ import unittest
 # Fixture
 #---------------------------------------------------------------------------#
 class TwistedInternalCodeTest(unittest.TestCase):
-    """ Unittest for the pymodbus.internal.ptwisted code. """
+    '''
+    This is the unittest for the pymodbus.internal.ptwisted code
+    '''
 
     #-----------------------------------------------------------------------#
     # Setup/TearDown
     #-----------------------------------------------------------------------#
 
     def test_install_conch(self):
-        """ Test that we can install the conch backend """
+        ''' Test that we can install the conch backend '''
 
 #---------------------------------------------------------------------------#
 # Main

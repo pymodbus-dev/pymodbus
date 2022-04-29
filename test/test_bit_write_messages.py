@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-""" Bit Message Test Fixture
+'''
+Bit Message Test Fixture
 --------------------------------
 This fixture tests the functionality of all the
 bit based request/response messages:
 
 * Read/Write Discretes
 * Read Coils
-"""
+'''
 import unittest
 from pymodbus.bit_write_message import (
     WriteMultipleCoilsResponse,
@@ -29,12 +30,13 @@ class ModbusBitMessageTests(unittest.TestCase):
     #-----------------------------------------------------------------------#
 
     def setUp(self):
-        """ Initializes the test environment and builds request/result
+        '''
+        Initializes the test environment and builds request/result
         encoding pairs
-        """
+        '''
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        ''' Cleans up the test environment '''
 
     def test_bit_write_base_requests(self):
         """ Test bit write base. """

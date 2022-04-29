@@ -20,14 +20,16 @@ from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 #---------------------------------------------------------------------------#
 
 class AsynchronousClientTest(unittest.TestCase):
-    """ Unittest for the pymodbus.client.asynchronous module. """
+    '''
+    This is the unittest for the pymodbus.client.asynchronous module
+    '''
 
     #-----------------------------------------------------------------------#
     # Test Client Protocol
     #-----------------------------------------------------------------------#
 
     def test_client_protocol_init(self):
-        """ Test the client protocol initialize """
+        ''' Test the client protocol initialize '''
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertFalse(protocol._connected) # pylint: disable=protected-access
@@ -40,7 +42,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertTrue(framer is protocol.framer)
 
     def test_client_protocol_connect(self):
-        """ Test the client protocol connect """
+        ''' Test the client protocol connect '''
         decoder = object()
         framer = ModbusSocketFramer(decoder)
         protocol = ModbusClientProtocol(framer=framer)
@@ -49,7 +51,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertTrue(protocol._connected) # pylint: disable=protected-access
 
     def test_client_protocol_disconnect(self):
-        """ Test the client protocol disconnect """
+        ''' Test the client protocol disconnect '''
         protocol = ModbusClientProtocol()
         protocol.connectionMade()
         def handle_failure(failure):
@@ -62,7 +64,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertFalse(protocol._connected) # pylint: disable=protected-access
 
     def test_client_protocol_data_received(self):
-        """ Test the client protocol data received """
+        ''' Test the client protocol data received '''
         protocol = ModbusClientProtocol(ModbusSocketFramer(ClientDecoder()))
         protocol.connectionMade()
         out = []
@@ -76,7 +78,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
 
     def test_client_protocol_execute(self):
-        """ Test the client protocol execute method """
+        ''' Test the client protocol execute method '''
         framer = ModbusSocketFramer(None)
         protocol = ModbusClientProtocol(framer=framer)
         protocol.connectionMade()
@@ -89,7 +91,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertEqual(response, protocol.transaction.getTransaction(tid))
 
     def test_client_protocol_handle_response(self):
-        """ Test the client protocol handles responses """
+        ''' Test the client protocol handles responses '''
         protocol = ModbusClientProtocol()
         protocol.connectionMade()
         out = []
@@ -107,7 +109,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertEqual(out[0], reply)
 
     def test_client_protocol_build_response(self):
-        """ Test the udp client protocol builds responses """
+        ''' Test the udp client protocol builds responses '''
         protocol = ModbusClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
 
@@ -125,7 +127,7 @@ class AsynchronousClientTest(unittest.TestCase):
     # Test TCP Client Protocol
     #-----------------------------------------------------------------------#
     def test_tcp_client_protocol_init(self):
-        """ Test the udp client protocol initialize """
+        ''' Test the udp client protocol initialize '''
         protocol = ModbusTcpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
@@ -138,7 +140,7 @@ class AsynchronousClientTest(unittest.TestCase):
     # Test Serial Client Protocol
     #-----------------------------------------------------------------------#
     def test_serial_client_protocol_init(self):
-        """ Test the udp client protocol initialize """
+        ''' Test the udp client protocol initialize '''
         protocol = ModbusSerClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertTrue(isinstance(protocol.framer, ModbusRtuFramer))
@@ -152,7 +154,7 @@ class AsynchronousClientTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
 
     def test_udp_client_protocol_init(self):
-        """ Test the udp client protocol initialize """
+        ''' Test the udp client protocol initialize '''
         protocol = ModbusUdpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
         self.assertTrue(isinstance(protocol.framer, ModbusSocketFramer))
@@ -162,7 +164,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertTrue(framer is protocol.framer)
 
     def test_udp_client_protocol_data_received(self):
-        """ Test the udp client protocol data received """
+        ''' Test the udp client protocol data received '''
         protocol = ModbusUdpClientProtocol()
         out = []
         data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
@@ -176,7 +178,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
 
     def test_udp_client_protocol_execute(self):
-        """ Test the udp client protocol execute method """
+        ''' Test the udp client protocol execute method '''
         protocol = ModbusUdpClientProtocol()
         protocol.transport = Mock()
         protocol.transport.write = Mock()
@@ -187,7 +189,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertEqual(response, protocol.transaction.getTransaction(tid))
 
     def test_udp_client_protocol_handle_response(self):
-        """ Test the udp client protocol handles responses """
+        ''' Test the udp client protocol handles responses '''
         protocol = ModbusUdpClientProtocol()
         out = []
         reply = ReadCoilsRequest(1, 1)
@@ -204,7 +206,7 @@ class AsynchronousClientTest(unittest.TestCase):
         self.assertEqual(out[0], reply)
 
     def test_udp_client_protocol_build_response(self):
-        """ Test the udp client protocol builds responses """
+        ''' Test the udp client protocol builds responses '''
         protocol = ModbusUdpClientProtocol()
         self.assertEqual(0, len(list(protocol.transaction)))
 
@@ -216,7 +218,7 @@ class AsynchronousClientTest(unittest.TestCase):
     #-----------------------------------------------------------------------#
 
     def test_modbus_client_factory(self):
-        """ Test the base class for all the clients """
+        ''' Test the base class for all the clients '''
         factory = ModbusClientFactory()
         self.assertTrue(factory is not None)
 

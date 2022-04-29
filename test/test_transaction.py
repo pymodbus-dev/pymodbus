@@ -29,7 +29,9 @@ from pymodbus.exceptions import (
 
 
 class ModbusTransactionTest(unittest.TestCase): # pylint: disable=too-many-public-methods,too-many-instance-attributes
-    """ Unittest for the pymodbus.transaction module. """
+    """
+    This is the unittest for the pymodbus.transaction module
+    """
 
     # ----------------------------------------------------------------------- #
     # Test Construction

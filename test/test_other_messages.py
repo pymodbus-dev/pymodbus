@@ -7,7 +7,9 @@ import pymodbus.other_message as pymodbus_message
 
 
 class ModbusOtherMessageTest(unittest.TestCase):
-    """ Unittest for the pymodbus.other_message module. """
+    '''
+    This is the unittest for the pymodbus.other_message module
+    '''
 
     def setUp(self):
         self.requests = [
@@ -25,7 +27,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         ]
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        ''' Cleans up the test environment '''
         del self.requests
         del self.responses
 

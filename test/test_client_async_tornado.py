@@ -24,7 +24,9 @@ from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 
 
 class AsynchronousClientTest(unittest.TestCase):
-    """ Unittest for the pymodbus.client.asynchronous module. """
+    """
+    This is the unittest for the pymodbus.client.asynchronous module
+    """
 
     # -----------------------------------------------------------------------#
     # Test Client client

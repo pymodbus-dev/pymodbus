@@ -50,13 +50,18 @@ def maybe_manage(condition, manager):
 
 
 class TestAsynchronousClient:
-    """ Unittest for the pymodbus.client.asynchronous module. """
+    """
+    This is the unittest for the pymodbus.client.asynchronous module
+    """
 
     # -----------------------------------------------------------------------#
     # Test TCP Client client
     # -----------------------------------------------------------------------#
     def test_tcp_twisted_client(self): # pylint: disable=no-self-use
-        """ Test the TCP Twisted client. """
+        """
+        Test the TCP Twisted client
+        :return:
+        """
         with patch("twisted.internet.reactor"):
             def test_callback(client): # pylint: disable=unused-argument
                 pass
@@ -96,7 +101,10 @@ class TestAsynchronousClient:
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather")
     def test_tcp_asyncio_client(self, mock_gather, mock_loop): # pylint: disable=no-self-use,unused-argument
-        """ Test the TCP Twisted client. """
+        """
+        Test the TCP Twisted client
+        :return:
+        """
         pytest.skip("TBD")
 
     # -----------------------------------------------------------------------#
@@ -105,7 +113,9 @@ class TestAsynchronousClient:
 
 
     def test_tls_asyncio_client(self): # pylint: disable=no-self-use
-        """ Test the TLS AsyncIO client. """
+        """
+        Test the TLS AsyncIO client
+        """
         _, client = AsyncModbusTLSClient(schedulers.ASYNC_IO) #NOSONAR pylint: disable=unpacking-non-sequence
         assert isinstance(client, ReconnectingAsyncioModbusTlsClient)
         assert isinstance(client.framer, ModbusTlsFramer)
@@ -231,8 +241,10 @@ class TestAsynchronousClient:
                                                 ("binary", ModbusBinaryFramer),
                                                 ("ascii", ModbusAsciiFramer)])
     def test_serial_asyncio_client(self, mock_gather, mock_event_loop, method, framer): # pylint: disable=no-self-use,unused-argument
-        """ Test that AsyncModbusSerialClient instantiates
+        """
+        Test that AsyncModbusSerialClient instantiates
         AsyncioModbusSerialClient for asyncio scheduler.
+        :return:
         """
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False

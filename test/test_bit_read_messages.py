@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Bit Message Test Fixture
+"""
+Bit Message Test Fixture
 --------------------------------
 This fixture tests the functionality of all the
 bit based request/response messages:
@@ -28,7 +29,8 @@ class ModbusBitMessageTests(unittest.TestCase):
     #-----------------------------------------------------------------------#
 
     def setUp(self):
-        """ Initializes the test environment and builds request/result
+        """
+        Initializes the test environment and builds request/result
         encoding pairs
         """
 

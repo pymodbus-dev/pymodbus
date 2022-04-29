@@ -1,4 +1,3 @@
-"""UDP comminication."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -6,10 +5,10 @@ import logging
 from pymodbus.constants import Defaults
 from pymodbus.client.asynchronous.factory.udp import get_factory
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class AsyncModbusUDPClient(): # pylint: disable=too-few-public-methods
+class AsyncModbusUDPClient(object):
     """
     Actual Async UDP Client to be used.
 
@@ -17,7 +16,7 @@ class AsyncModbusUDPClient(): # pylint: disable=too-few-public-methods
 
         from pymodbus.client.asynchronous.tcp import AsyncModbusUDPClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port, # pylint: disable=too-many-arguments
+    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
                 framer=None, source_address=None, timeout=None, **kwargs):
         """
         Scheduler to use:
@@ -38,3 +37,4 @@ class AsyncModbusUDPClient(): # pylint: disable=too-few-public-methods
                                   source_address=source_address,
                                   timeout=timeout, **kwargs)
         return yieldable
+

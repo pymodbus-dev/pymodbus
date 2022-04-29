@@ -1,4 +1,4 @@
-""" RTU framer. """
+"""RTU framer."""
 # pylint: disable=R0801
 import logging
 import struct
@@ -22,7 +22,8 @@ RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # Modbus RTU Message
 # --------------------------------------------------------------------------- #
 class ModbusRtuFramer(ModbusFramer):
-    """ Modbus RTU Frame controller::
+    """
+    Modbus RTU Frame controller::
 
         [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
           3.5 chars     1b         1b               Nb      2b      3.5 chars
@@ -71,7 +72,7 @@ class ModbusRtuFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """ Decode data. """
+        """Decode data."""
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
@@ -79,7 +80,8 @@ class ModbusRtuFramer(ModbusFramer):
         return {}
 
     def checkFrame(self):
-        """ Check if the next frame is available.
+        """
+        Check if the next frame is available.
         Return True if we were successful.
 
         1. Populate header
@@ -96,7 +98,8 @@ class ModbusRtuFramer(ModbusFramer):
             return False
 
     def advanceFrame(self):
-        """ Skip over the current framed message
+        """
+        Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
@@ -107,7 +110,8 @@ class ModbusRtuFramer(ModbusFramer):
         self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
 
     def resetFrame(self): # pylint: disable=invalid-name
-        """ Reset the entire message frame.
+        """
+        Reset the entire message frame.
         This allows us to skip over errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
@@ -121,7 +125,8 @@ class ModbusRtuFramer(ModbusFramer):
         self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
 
     def isFrameReady(self):
-        """ Check if we should continue decode logic
+        """
+        Check if we should continue decode logic
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
 
@@ -141,7 +146,8 @@ class ModbusRtuFramer(ModbusFramer):
         return True
 
     def populateHeader(self, data=None): # pylint: disable=invalid-name
-        """ Try to set the headers `uid`, `len` and `crc`.
+        """
+        Try to set the headers `uid`, `len` and `crc`.
 
         This method examines `self._buffer` and writes meta
         information into `self._header`.
@@ -162,7 +168,8 @@ class ModbusRtuFramer(ModbusFramer):
         self._header['crc'] = data[size - 2:size]
 
     def addToFrame(self, message):
-        """ This should be used before the decoding while loop to add the received
+        """
+        This should be used before the decoding while loop to add the received
         data to the buffer handle.
 
         :param message: The most recent packet
@@ -170,7 +177,8 @@ class ModbusRtuFramer(ModbusFramer):
         self._buffer += message
 
     def getFrame(self):
-        """ Get the next frame from the buffer
+        """
+        Get the next frame from the buffer
 
         :returns: The frame data or ''
         """
@@ -184,7 +192,8 @@ class ModbusRtuFramer(ModbusFramer):
         return b''
 
     def populateResult(self, result):
-        """ Populates the modbus result header
+        """
+        Populates the modbus result header
 
         The serial packets do not have any header information
         that is copied.
@@ -198,7 +207,8 @@ class ModbusRtuFramer(ModbusFramer):
     # Public Member Functions
     # ----------------------------------------------------------------------- #
     def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """ The new packet processing pattern
+        """
+        The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -236,7 +246,8 @@ class ModbusRtuFramer(ModbusFramer):
             _logger.debug(txt)
 
     def buildPacket(self, message):
-        """ Creates a ready to send modbus packet
+        """
+        Creates a ready to send modbus packet
 
         :param message: The populated request/response to send
         """
@@ -250,7 +261,8 @@ class ModbusRtuFramer(ModbusFramer):
         return packet
 
     def sendPacket(self, message):
-        """ Sends packets on the bus with 3.5char delay between frames
+        """
+        Sends packets on the bus with 3.5char delay between frames
         :param message: Message to be sent over the bus
         :return:
         """
@@ -291,7 +303,8 @@ class ModbusRtuFramer(ModbusFramer):
         return size
 
     def recvPacket(self, size):
-        """ Receives packet from the bus with specified len
+        """
+        Receives packet from the bus with specified len
         :param size: Number of bytes to read
         :return:
         """
@@ -300,7 +313,9 @@ class ModbusRtuFramer(ModbusFramer):
         return result
 
     def _process(self, callback, error=False):
-        """ Process incoming packets irrespective error condition. """
+        """
+        Process incoming packets irrespective error condition
+        """
         data = self.getRawFrame() if error else self.getFrame()
         result = self.decoder.decode(data)
         if result is None:
@@ -312,7 +327,9 @@ class ModbusRtuFramer(ModbusFramer):
         callback(result)  # defer or push to a thread?
 
     def getRawFrame(self): # pylint: disable=invalid-name
-        """ Returns the complete buffer. """
+        """
+        Returns the complete buffer
+        """
         txt = f"Getting Raw Frame - {hexlify_packets(self._buffer)}"
         _logger.debug(txt)
         return self._buffer

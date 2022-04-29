@@ -1,4 +1,4 @@
-""" Binary framer. """
+"""Binary framer."""
 import logging
 import struct
 from pymodbus.exceptions import ModbusIOException
@@ -18,7 +18,8 @@ BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 
 class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attributes
-    """ Modbus Binary Frame Controller::
+    """
+    Modbus Binary Frame Controller::
 
         [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
           1b        1b         1b         Nb     2b     1b
@@ -59,7 +60,7 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """ Decode data. """
+        """Decode data."""
         if len(data) > self._hsize:
             uid = struct.unpack('>B', data[1:2])[0]
             fcode = struct.unpack('>B', data[2:3])[0]
@@ -139,7 +140,8 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
     # Public Member Functions
     # ----------------------------------------------------------------------- #
     def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """ The new packet processing pattern
+        """
+        The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -196,7 +198,8 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
         return packet
 
     def _preflight(self, data):
-        """ Preflight buffer test
+        """
+        Preflight buffer test
 
         This basically scans the buffer for start and end
         tags and if found, escapes them.

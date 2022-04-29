@@ -34,7 +34,7 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
     """Server code."""
     FORMAT = ('%(asctime)-15s %(threadName)-15s' # pylint: disable=invalid-name
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-    logging.basicConfig(format=FORMAT) #NOSONAR
+    _logger.basicConfig(format=FORMAT)
     if verbose:
         _logger.setLevel(logging.DEBUG)
     else:

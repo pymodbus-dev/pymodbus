@@ -14,7 +14,7 @@ _MCB = ModbusControlBlock()
 
 
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial # pylint: disable=fixme
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class ReadExceptionStatusRequest(ModbusRequest):
     '''
@@ -41,8 +41,9 @@ class ReadExceptionStatusRequest(ModbusRequest):
 
         :param data: The incoming data
         '''
+        pass
 
-    def execute(self, context=None): #NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -55,7 +56,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
 
         :returns: The string representation of the request
         '''
-        return f"ReadExceptionStatusRequest({self.function_code})"
+        return "ReadExceptionStatusRequest(%d)" % (self.function_code)
 
 
 class ReadExceptionStatusResponse(ModbusResponse):
@@ -97,14 +98,14 @@ class ReadExceptionStatusResponse(ModbusResponse):
         :returns: The string representation of the response
         '''
         arguments = (self.function_code, self.status)
-        return "ReadExceptionStatusResponse(%d, %s)" % arguments # pylint: disable=consider-using-f-string
+        return "ReadExceptionStatusResponse(%d, %s)" % arguments
 
 # Encapsulate interface transport 43, 14
 # CANopen general reference 43, 13
 
 
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class GetCommEventCounterRequest(ModbusRequest):
     '''
@@ -141,8 +142,9 @@ class GetCommEventCounterRequest(ModbusRequest):
 
         :param data: The incoming data
         '''
+        pass
 
-    def execute(self, context=None):  #NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -155,7 +157,7 @@ class GetCommEventCounterRequest(ModbusRequest):
 
         :returns: The string representation of the request
         '''
-        return f"GetCommEventCounterRequest({self.function_code})"
+        return "GetCommEventCounterRequest(%d)" % (self.function_code)
 
 
 class GetCommEventCounterResponse(ModbusResponse):
@@ -183,8 +185,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        if self.status:
-            ready = ModbusStatus.Ready
+        if self.status: ready = ModbusStatus.Ready
         else: ready = ModbusStatus.Waiting
         return struct.pack('>HH', ready, self.count)
 
@@ -202,11 +203,11 @@ class GetCommEventCounterResponse(ModbusResponse):
         :returns: The string representation of the response
         '''
         arguments = (self.function_code, self.count, self.status)
-        return "GetCommEventCounterResponse(%d, %d, %d)" % arguments # pylint: disable=consider-using-f-string
+        return "GetCommEventCounterResponse(%d, %d, %d)" % arguments
 
 
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class GetCommEventLogRequest(ModbusRequest):
     '''
@@ -246,8 +247,9 @@ class GetCommEventLogRequest(ModbusRequest):
 
         :param data: The incoming data
         '''
+        pass
 
-    def execute(self, context=None): #NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(self, context=None):
         ''' Run a read exeception status request against the store
 
         :returns: The populated response
@@ -265,7 +267,7 @@ class GetCommEventLogRequest(ModbusRequest):
 
         :returns: The string representation of the request
         '''
-        return f"GetCommEventLogRequest({self.function_code})"
+        return "GetCommEventLogRequest(%d)" % self.function_code
 
 
 class GetCommEventLogResponse(ModbusResponse):
@@ -297,8 +299,7 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :returns: The byte encoded message
         '''
-        if self.status:
-            ready = ModbusStatus.Ready
+        if self.status: ready = ModbusStatus.Ready
         else: ready = ModbusStatus.Waiting
         packet  = struct.pack('>B', 6 + len(self.events))
         packet += struct.pack('>H', ready)
@@ -318,8 +319,8 @@ class GetCommEventLogResponse(ModbusResponse):
         self.message_count = struct.unpack('>H', data[5:7])[0]
 
         self.events = []
-        for i in range(7, length + 1):
-            self.events.append(byte2int(data[i]))
+        for e in range(7, length + 1):
+            self.events.append(byte2int(data[e]))
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -327,11 +328,11 @@ class GetCommEventLogResponse(ModbusResponse):
         :returns: The string representation of the response
         '''
         arguments = (self.function_code, self.status, self.message_count, self.event_count)
-        return "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments # pylint: disable=consider-using-f-string
+        return "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments
 
 
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 class ReportSlaveIdRequest(ModbusRequest):
     '''
@@ -356,16 +357,17 @@ class ReportSlaveIdRequest(ModbusRequest):
 
         :param data: The incoming data
         '''
+        pass
 
-    def execute(self, context=None): # pylint: disable=no-self-use
+    def execute(self, context=None):
         ''' Run a report slave id request against the store
 
         :returns: The populated response
         '''
-        report_slave_id_data = None
+        reportSlaveIdData = None
         if context:
-            report_slave_id_data = getattr(context, 'reportSlaveIdData', None)
-        if not report_slave_id_data:
+            reportSlaveIdData = getattr(context, 'reportSlaveIdData', None)
+        if not reportSlaveIdData:
             information = DeviceInformationFactory.get(_MCB)
 
             # Support identity values as bytes data and regular str data
@@ -378,15 +380,15 @@ class ReportSlaveIdRequest(ModbusRequest):
 
             identifier = b"-".join(id_data)
             identifier = identifier or b'Pymodbus'
-            report_slave_id_data = identifier
-        return ReportSlaveIdResponse(report_slave_id_data)
+            reportSlaveIdData = identifier
+        return ReportSlaveIdResponse(reportSlaveIdData)
 
     def __str__(self):
         ''' Builds a representation of the request
 
         :returns: The string representation of the request
         '''
-        return f"ReportSlaveIdRequest({self.function_code})"
+        return "ReportSlaveIdRequest(%d)" % self.function_code
 
 
 class ReportSlaveIdResponse(ModbusResponse):
@@ -442,10 +444,10 @@ class ReportSlaveIdResponse(ModbusResponse):
         :returns: The string representation of the response
         '''
         arguments = (self.function_code, self.identifier, self.status)
-        return "ReportSlaveIdResponse(%s, %s, %s)" % arguments # pylint: disable=consider-using-f-string
+        return "ReportSlaveIdResponse(%s, %s, %s)" % arguments
 
 #---------------------------------------------------------------------------#
-# TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+# TODO Make these only work on serial
 #---------------------------------------------------------------------------#
 # report device identification 43, 14
 

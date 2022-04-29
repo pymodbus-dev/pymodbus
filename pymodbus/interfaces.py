@@ -5,19 +5,21 @@ Pymodbus Interfaces
 A collection of base classes that are used throughout
 the pymodbus library.
 """
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import (NotImplementedException,
+                                 MessageRegisterException)
 
 
 # --------------------------------------------------------------------------- #
 # Generic
 # --------------------------------------------------------------------------- #
-class Singleton(): # pylint: disable=too-few-public-methods
+class Singleton(object):
     """
     Singleton base class
     http://mail.python.org/pipermail/python-list/2007-July/450681.html
     """
-    def __new__(cls, *args, **kwargs): # pylint: disable=unused-argument
-        """ Create a new instance"""
+    def __new__(cls, *args, **kwargs):
+        """ Create a new instance
+        """
         if '_inst' not in vars(cls):
             cls._inst = object.__new__(cls)
         return cls._inst
@@ -26,7 +28,7 @@ class Singleton(): # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Project Specific
 # --------------------------------------------------------------------------- #
-class IModbusDecoder():
+class IModbusDecoder(object):
     """ Modbus Decoder Base Class
 
     This interface must be implemented by a modbus message
@@ -35,7 +37,7 @@ class IModbusDecoder():
     message object.
     """
 
-    def decode(self, message): # pylint: disable=no-self-use
+    def decode(self, message):
         """ Wrapper to decode a given packet
 
         :param message: The raw modbus request packet
@@ -44,7 +46,7 @@ class IModbusDecoder():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def lookupPduClass(self, function_code): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def lookupPduClass(self, function_code):
         """ Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
@@ -53,7 +55,7 @@ class IModbusDecoder():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def register(self, function=None): # pylint: disable=no-self-use
+    def register(self, function=None):
         """
         Registers a function and sub function class with the decoder
         :param function: Custom function class to register
@@ -63,7 +65,7 @@ class IModbusDecoder():
             "Method not implemented by derived class")
 
 
-class IModbusFramer():
+class IModbusFramer(object):
     """
     A framer strategy interface. The idea is that we abstract away all the
     detail about how to detect if a current message frame exists, decoding
@@ -71,7 +73,7 @@ class IModbusFramer():
     rtu, ascii).
     """
 
-    def checkFrame(self): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def checkFrame(self):
         """ Check and decode the next frame
 
         :returns: True if we successful, False otherwise
@@ -79,7 +81,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def advanceFrame(self): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def advanceFrame(self):
         """ Skip over the current framed message
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
@@ -88,7 +90,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def addToFrame(self, message): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def addToFrame(self, message):
         """ Add the next message to the frame buffer
 
         This should be used before the decoding while loop to add the received
@@ -99,7 +101,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def isFrameReady(self): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def isFrameReady(self):
         """ Check if we should continue decode logic
 
         This is meant to be used in a while loop in the decoding phase to let
@@ -110,7 +112,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def getFrame(self): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def getFrame(self):
         """ Get the next frame from the buffer
 
         :returns: The frame data or ''
@@ -118,7 +120,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def populateResult(self, result): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def populateResult(self, result):
         """ Populates the modbus result with current frame header
 
         We basically copy the data back over from the current header
@@ -129,7 +131,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def processIncomingPacket(self, data, callback): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def processIncomingPacket(self, data, callback):
         """ The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
@@ -147,7 +149,7 @@ class IModbusFramer():
         raise NotImplementedException(
             "Method not implemented by derived class")
 
-    def buildPacket(self, message): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def buildPacket(self, message):
         """ Creates a ready to send modbus packet
 
         The raw packet is built off of a fully populated modbus
@@ -160,7 +162,7 @@ class IModbusFramer():
             "Method not implemented by derived class")
 
 
-class IModbusSlaveContext():
+class IModbusSlaveContext(object):
     """
     Interface for a modbus slave data context
 
@@ -174,7 +176,7 @@ class IModbusSlaveContext():
     __fx_mapper.update([(i, 'h') for i in [3, 6, 16, 22, 23]])
     __fx_mapper.update([(i, 'c') for i in [1, 5, 15]])
 
-    def decode(self, fx): # pylint: disable=invalid-name
+    def decode(self, fx):
         """ Converts the function code to the datastore to
 
         :param fx: The function we are working with
@@ -182,12 +184,12 @@ class IModbusSlaveContext():
         """
         return self.__fx_mapper[fx]
 
-    def reset(self): # pylint: disable=no-self-use
+    def reset(self):
         """ Resets all the datastores to their default values
         """
         raise NotImplementedException("Context Reset")
 
-    def validate(self, fx, address, count=1): # pylint: disable=no-self-use,invalid-name
+    def validate(self, fx, address, count=1):
         """ Validates the request to make sure it is in range
 
         :param fx: The function we are working with
@@ -197,7 +199,7 @@ class IModbusSlaveContext():
         """
         raise NotImplementedException("validate context values")
 
-    def getValues(self, fx, address, count=1): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def getValues(self, fx, address, count=1):
         """ Get `count` values from datastore
 
         :param fx: The function we are working with
@@ -207,7 +209,7 @@ class IModbusSlaveContext():
         """
         raise NotImplementedException("get context values")
 
-    def setValues(self, fx, address, values): #NOSONAR pylint: disable=no-self-use,invalid-name
+    def setValues(self, fx, address, values):
         """ Sets the datastore with the supplied values
 
         :param fx: The function we are working with
@@ -217,7 +219,7 @@ class IModbusSlaveContext():
         raise NotImplementedException("set context values")
 
 
-class IPayloadBuilder(): # pylint: disable=too-few-public-methods
+class IPayloadBuilder(object):
     """
     This is an interface to a class that can build a payload
     for a modbus register write command. It should abstract
@@ -225,7 +227,7 @@ class IPayloadBuilder(): # pylint: disable=too-few-public-methods
     (bcd, binary, char, etc).
     """
 
-    def build(self): # pylint: disable=no-self-use
+    def build(self):
         """ Return the payload buffer as a list
 
         This list is two bytes per element and can

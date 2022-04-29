@@ -1,6 +1,5 @@
 """ Test client asyncio. """
 # pylint: disable=R0801
-import sys
 from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 import asyncio
@@ -10,6 +9,7 @@ from pymodbus.client.asynchronous.async_io import (
     ReconnectingAsyncioModbusTcpClient,
     ModbusClientProtocol, ModbusUdpClientProtocol)
 from pymodbus.client.asynchronous import schedulers
+from pymodbus.compat import PYTHON_VERSION
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
@@ -57,7 +57,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
         request = mock.MagicMock()
         protocol.transaction.addTransaction(request, 1)
         protocol.connection_lost(mock.sentinel.REASON)
-        if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+        if PYTHON_VERSION.major == 3 and PYTHON_VERSION.minor >= 8:
             call_args = protocol.raise_future.call_args.args
         else:
             call_args = protocol.raise_future.call_args[0]
@@ -190,7 +190,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
-            if sys.version_info == (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(
                     mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
         assert not client.connected
@@ -219,7 +219,7 @@ class TestAsyncioClient: # pylint: disable=too-many-public-methods
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
-            if sys.version_info == (3, 7):
+            if PYTHON_VERSION == (3, 7):
                 mock_async.assert_called_once_with(
                     mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 

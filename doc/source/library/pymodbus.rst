@@ -38,6 +38,14 @@ pymodbus\.bit\_write\_message module
     :undoc-members:
     :show-inheritance:
 
+pymodbus\.compat module
+-----------------------
+
+.. automodule:: pymodbus.compat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pymodbus\.constants module
 --------------------------
 

@@ -2,18 +2,18 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
-import sys
 import logging
 import asyncio
 import json
 import click
+from pymodbus.compat import PYTHON_VERSION
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
     ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
-if sys.version_info > (3, 7):
+if PYTHON_VERSION > (3, 7):
     CANCELLED_ERROR = asyncio.exceptions.CancelledError # pylint: disable=invalid-name
 else:
     CANCELLED_ERROR = asyncio.CancelledError # pylint: disable=invalid-name

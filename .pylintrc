@@ -29,7 +29,7 @@ load-plugins=
     pylint.extensions.check_elif,
 #default    pylint.extensions.code_style,
 #           pylint.extensions.comparetozero
-    pylint.extensions.comparison_placement,
+#default    pylint.extensions.comparison_placement,
 #           pylint.extensions.confusing_elif
 #           pylint.extensions.consider_ternary_expression
 #default    pylint.extensions.docparams,

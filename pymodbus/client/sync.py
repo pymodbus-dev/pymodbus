@@ -1,5 +1,4 @@
 """Sync client."""
-# pylint: disable=R0801
 import logging
 import socket
 import select

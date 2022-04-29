@@ -3,7 +3,7 @@ Implementation of a Threaded Modbus Server
 ------------------------------------------
 
 """
-# pylint: disable=R0801,too-many-lines
+# pylint: disable=too-many-lines
 import logging
 import warnings
 from binascii import b2a_hex

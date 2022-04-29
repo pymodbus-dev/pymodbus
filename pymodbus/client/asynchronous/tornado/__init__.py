@@ -1,7 +1,6 @@
 """
 Asynchronous framework adapter for tornado.
 """
-# pylint: disable=R0801
 from __future__ import unicode_literals
 
 import abc

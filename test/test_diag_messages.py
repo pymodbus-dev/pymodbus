@@ -1,45 +1,8 @@
 #!/usr/bin/env python3
-""" Test diag messages. """
 import unittest
-
-from pymodbus.exceptions import NotImplementedException
+from pymodbus.exceptions import *
 from pymodbus.constants import ModbusPlusOperation
-from pymodbus.diag_message import (
-    GetClearModbusPlusRequest,
-    RestartCommunicationsOptionResponse,
-    ReturnQueryDataResponse,
-    RestartCommunicationsOptionRequest,
-    ReturnQueryDataRequest,
-    GetClearModbusPlusResponse,
-    ClearOverrunCountResponse,
-    ReturnIopOverrunCountResponse,
-    ReturnSlaveBusyCountResponse,
-    ReturnSlaveNAKCountResponse,
-    ReturnSlaveBusCharacterOverrunCountResponse,
-    ReturnSlaveNoReponseCountResponse,
-    ReturnBusExceptionErrorCountResponse,
-    ReturnBusMessageCountResponse,
-    ClearCountersResponse,
-    ForceListenOnlyModeResponse,
-    ChangeAsciiInputDelimiterResponse,
-    ReturnDiagnosticRegisterResponse,
-    ReturnSlaveMessageCountResponse,
-    ReturnBusCommunicationErrorCountResponse,
-    ClearOverrunCountRequest,
-    ReturnIopOverrunCountRequest,
-    ReturnSlaveBusCharacterOverrunCountRequest,
-    ReturnSlaveBusyCountRequest,
-    ReturnSlaveNAKCountRequest,
-    ReturnSlaveNoResponseCountRequest,
-    ReturnBusExceptionErrorCountRequest,
-    ReturnBusCommunicationErrorCountRequest,
-    ReturnBusMessageCountRequest,
-    ClearCountersRequest,
-    ReturnSlaveMessageCountRequest,
-    ForceListenOnlyModeRequest,
-    ChangeAsciiInputDelimiterRequest,
-    ReturnDiagnosticRegisterRequest,
-)
+from pymodbus.diag_message import *
 from pymodbus.diag_message import DiagnosticStatusRequest
 from pymodbus.diag_message import DiagnosticStatusResponse
 from pymodbus.diag_message import DiagnosticStatusSimpleRequest
@@ -52,40 +15,25 @@ class SimpleDataStoreTest(unittest.TestCase):
 
     def setUp(self):
         self.requests = [
-            (RestartCommunicationsOptionRequest,
-                b'\x00\x01\x00\x00', b'\x00\x01\xff\x00'),
-            (ReturnDiagnosticRegisterRequest,
-                b'\x00\x02\x00\x00', b'\x00\x02\x00\x00'),
-            (ChangeAsciiInputDelimiterRequest,
-                b'\x00\x03\x00\x00', b'\x00\x03\x00\x00'),
-            (ForceListenOnlyModeRequest,
-                b'\x00\x04\x00\x00', b'\x00\x04'),
-            (ReturnQueryDataRequest,
-                b'\x00\x00\x00\x00', b'\x00\x00\x00\x00'),
-            (ClearCountersRequest,
-                b'\x00\x0a\x00\x00', b'\x00\x0a\x00\x00'),
-            (ReturnBusMessageCountRequest,
-                b'\x00\x0b\x00\x00', b'\x00\x0b\x00\x00'),
-            (ReturnBusCommunicationErrorCountRequest,
-                b'\x00\x0c\x00\x00', b'\x00\x0c\x00\x00'),
-            (ReturnBusExceptionErrorCountRequest,
-                b'\x00\x0d\x00\x00', b'\x00\x0d\x00\x00'),
-            (ReturnSlaveMessageCountRequest,
-                b'\x00\x0e\x00\x00', b'\x00\x0e\x00\x00'),
-            (ReturnSlaveNoResponseCountRequest,
-                b'\x00\x0f\x00\x00', b'\x00\x0f\x00\x00'),
-            (ReturnSlaveNAKCountRequest,
-                b'\x00\x10\x00\x00', b'\x00\x10\x00\x00'),
-            (ReturnSlaveBusyCountRequest,
-                b'\x00\x11\x00\x00', b'\x00\x11\x00\x00'),
-            (ReturnSlaveBusCharacterOverrunCountRequest,
-                b'\x00\x12\x00\x00', b'\x00\x12\x00\x00'),
-            (ReturnIopOverrunCountRequest,
-                b'\x00\x13\x00\x00', b'\x00\x13\x00\x00'),
-            (ClearOverrunCountRequest,
-                b'\x00\x14\x00\x00', b'\x00\x14\x00\x00'),
-            (GetClearModbusPlusRequest,
-                b'\x00\x15\x00\x00', b'\x00\x15\x00\x00' + b'\x00\x00' * 55),
+            #(DiagnosticStatusRequest,                      b'\x00\x00\x00\x00'),
+            #(DiagnosticStatusSimpleRequest,                b'\x00\x00\x00\x00'),
+            (RestartCommunicationsOptionRequest,            b'\x00\x01\x00\x00', b'\x00\x01\xff\x00'),
+            (ReturnDiagnosticRegisterRequest,               b'\x00\x02\x00\x00', b'\x00\x02\x00\x00'),
+            (ChangeAsciiInputDelimiterRequest,              b'\x00\x03\x00\x00', b'\x00\x03\x00\x00'),
+            (ForceListenOnlyModeRequest,                    b'\x00\x04\x00\x00', b'\x00\x04'),
+            (ReturnQueryDataRequest,                        b'\x00\x00\x00\x00', b'\x00\x00\x00\x00'),
+            (ClearCountersRequest,                          b'\x00\x0a\x00\x00', b'\x00\x0a\x00\x00'),
+            (ReturnBusMessageCountRequest,                  b'\x00\x0b\x00\x00', b'\x00\x0b\x00\x00'),
+            (ReturnBusCommunicationErrorCountRequest,       b'\x00\x0c\x00\x00', b'\x00\x0c\x00\x00'),
+            (ReturnBusExceptionErrorCountRequest,           b'\x00\x0d\x00\x00', b'\x00\x0d\x00\x00'),
+            (ReturnSlaveMessageCountRequest,                b'\x00\x0e\x00\x00', b'\x00\x0e\x00\x00'),
+            (ReturnSlaveNoResponseCountRequest,             b'\x00\x0f\x00\x00', b'\x00\x0f\x00\x00'),
+            (ReturnSlaveNAKCountRequest,                    b'\x00\x10\x00\x00', b'\x00\x10\x00\x00'),
+            (ReturnSlaveBusyCountRequest,                   b'\x00\x11\x00\x00', b'\x00\x11\x00\x00'),
+            (ReturnSlaveBusCharacterOverrunCountRequest,    b'\x00\x12\x00\x00', b'\x00\x12\x00\x00'),
+            (ReturnIopOverrunCountRequest,                  b'\x00\x13\x00\x00', b'\x00\x13\x00\x00'),
+            (ClearOverrunCountRequest,                      b'\x00\x14\x00\x00', b'\x00\x14\x00\x00'),
+            (GetClearModbusPlusRequest,                     b'\x00\x15\x00\x00', b'\x00\x15\x00\x00' + b'\x00\x00' * 55),
         ]
 
         self.responses = [
@@ -116,54 +64,60 @@ class SimpleDataStoreTest(unittest.TestCase):
         del self.requests
         del self.responses
 
-    def test_diagnostic_requests_decode(self):
+    def testDiagnosticRequestsDecode(self):
         ''' Testing diagnostic request messages encoding '''
-        for msg,enc,_ in self.requests:
+        for msg,enc,exe in self.requests:
             handle = DiagnosticStatusRequest()
             handle.decode(enc)
             self.assertEqual(handle.sub_function_code, msg.sub_function_code)
 
-    def test_diagnostic_simple_requests(self):
+    def testDiagnosticSimpleRequests(self):
         ''' Testing diagnostic request messages encoding '''
         request = DiagnosticStatusSimpleRequest(b'\x12\x34')
         request.sub_function_code = 0x1234
-        self.assertRaises(NotImplementedException, lambda: request.execute()) # pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: request.execute())
         self.assertEqual(request.encode(), b'\x12\x34\x12\x34')
-        DiagnosticStatusSimpleResponse(None)
 
-    def test_diagnostic_response_decode(self):
+        response = DiagnosticStatusSimpleResponse(None)
+
+    def testDiagnosticResponseDecode(self):
         ''' Testing diagnostic request messages encoding '''
-        for msg,enc,_ in self.requests:
+        for msg,enc,exe in self.requests:
             handle = DiagnosticStatusResponse()
             handle.decode(enc)
             self.assertEqual(handle.sub_function_code, msg.sub_function_code)
 
-    def test_diagnostic_requests_encode(self):
+    def testDiagnosticRequestsEncode(self):
         ''' Testing diagnostic request messages encoding '''
-        for msg,enc,_ in self.requests:
+        for msg,enc,exe in self.requests:
             self.assertEqual(msg().encode(), enc)
 
-    def test_diagnostic_execute(self):
+    #def testDiagnosticResponse(self):
+    #    ''' Testing diagnostic request messages '''
+    #    for msg,enc in self.responses:
+    #        self.assertEqual(msg().encode(), enc)
+
+    def testDiagnosticExecute(self):
         ''' Testing diagnostic message execution '''
         for message, encoded, executed in self.requests:
             encoded = message().execute().encode()
             self.assertEqual(encoded, executed)
 
-    def test_return_query_data_request(self):
+    def testReturnQueryDataRequest(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataRequest([0x0000]*2)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataRequest(0x0000)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
-    def test_return_query_data_response(self):
+    def testReturnQueryDataResponse(self):
         ''' Testing diagnostic message execution '''
         message = ReturnQueryDataResponse([0x0000]*2)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00\x00\x00')
         message = ReturnQueryDataResponse(0x0000)
         self.assertEqual(message.encode(), b'\x00\x00\x00\x00')
 
-    def test_restart_cmmunications_option(self):
+    def testRestartCommunicationsOption(self):
         ''' Testing diagnostic message execution '''
         request = RestartCommunicationsOptionRequest(True)
         self.assertEqual(request.encode(), b'\x00\x01\xff\x00')
@@ -175,7 +129,7 @@ class SimpleDataStoreTest(unittest.TestCase):
         response = RestartCommunicationsOptionResponse(False)
         self.assertEqual(response.encode(), b'\x00\x01\x00\x00')
 
-    def test_get_clear_modbus_plus_request_execute(self):
+    def testGetClearModbusPlusRequestExecute(self):
         ''' Testing diagnostic message execution '''
         request = GetClearModbusPlusRequest(data=ModbusPlusOperation.ClearStatistics)
         response = request.execute()

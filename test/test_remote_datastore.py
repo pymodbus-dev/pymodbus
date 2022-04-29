@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-""" Test remote datastore. """
 import unittest
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.datastore.remote import RemoteSlaveContext
-from pymodbus.bit_read_message import ReadCoilsResponse
-from pymodbus.bit_write_message import WriteMultipleCoilsResponse
-from pymodbus.register_read_message import ReadInputRegistersResponse
+from pymodbus.bit_read_message import *
+from pymodbus.bit_write_message import *
+from pymodbus.register_read_message import *
 from pymodbus.pdu import ExceptionResponse
 from .modbus_mocks import mock
 
@@ -14,21 +13,22 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
     This is the unittest for the pymodbus.datastore.remote module
     '''
 
-    def test_remote_slave_context(self):
+    def testRemoteSlaveContext(self):
         ''' Test a modbus remote slave context '''
         context = RemoteSlaveContext(None)
         self.assertNotEqual(str(context), None)
-        self.assertRaises(NotImplementedException, lambda: context.reset()) # pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: context.reset())
 
-    def test_remote_slave_set_values(self): # pylint: disable=no-self-use
+    def testRemoteSlaveSetValues(self):
         ''' Test setting values against a remote slave context '''
         client  = mock()
         client.write_coils = lambda a,b: WriteMultipleCoilsResponse()
 
         context = RemoteSlaveContext(client)
-        context.setValues(1, 0, [1])
+        result  = context.setValues(1, 0, [1])
+        self.assertTrue(True)
 
-    def test_remote_slave_get_values(self):
+    def testRemoteSlaveGetValues(self):
         ''' Test getting values from a remote slave context '''
         client  = mock()
         client.read_coils = lambda a,b: ReadCoilsResponse([1]*10)
@@ -45,7 +45,7 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
         result  = context.getValues(3, 0, 10)
         self.assertNotEqual(result, [10]*10)
 
-    def test_remote_slave_validate_values(self):
+    def testRemoteSlaveValidateValues(self):
         ''' Test validating against a remote slave context '''
         client  = mock()
         client.read_coils = lambda a,b: ReadCoilsResponse([1]*10)

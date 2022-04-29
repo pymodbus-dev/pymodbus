@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-""" Test ptwisted. """
 import unittest
 
 #---------------------------------------------------------------------------#
@@ -14,8 +13,9 @@ class TwistedInternalCodeTest(unittest.TestCase):
     # Setup/TearDown
     #-----------------------------------------------------------------------#
 
-    def test_install_conch(self):
+    def testInstallConch(self):
         ''' Test that we can install the conch backend '''
+        pass
 
 #---------------------------------------------------------------------------#
 # Main

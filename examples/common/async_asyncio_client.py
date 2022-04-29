@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
+"""
+Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus
@@ -127,7 +128,11 @@ async def start_async_test(client):
 
 
 def run_with_not_running_loop():
-    """ A loop is created and is passed to ModbusClient factory to be used. """
+    """
+    A loop is created and is passed to ModbusClient factory to be used.
+
+    :return:
+    """
     _logger.debug("Running Async client with asyncio loop not yet started")
     _logger.debug("------------------------------------------------------")
     loop = asyncio.new_event_loop()
@@ -141,7 +146,10 @@ def run_with_not_running_loop():
 
 
 async def run_with_already_running_loop():
-    """ An already running loop is passed to ModbusClient Factory. """
+    """
+    An already running loop is passed to ModbusClient Factory
+    :return:
+    """
     _logger.debug("Running Async client with asyncio loop already started")
     _logger.debug("------------------------------------------------------")
 
@@ -150,7 +158,8 @@ async def run_with_already_running_loop():
         _logger.info("Done !!!")
 
     def start_loop(loop):
-        """ Start Loop
+        """
+        Start Loop
         :param loop:
         :return:
         """
@@ -177,7 +186,8 @@ async def run_with_already_running_loop():
 
 
 def run_with_no_loop():
-    """ ModbusClient Factory creates a loop.
+    """
+    ModbusClient Factory creates a loop.
     :return:
     """
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")

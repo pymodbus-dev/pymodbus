@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Processor Example
+"""
+Pymodbus Asynchronous Processor Example
 --------------------------------------------------------------------------
 
 The following is a full example of a continuous client processor. Feel

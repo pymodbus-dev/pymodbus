@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Server With Callbacks
+"""
+Pymodbus Server With Callbacks
 --------------------------------------------------------------------------
 
 This is an example of adding callbacks to a running modbus server
@@ -38,7 +39,8 @@ class CallbackDataBlock(ModbusSparseDataBlock):
     """
 
     def __init__(self, devices, queue):
-        """ Initialize. """
+        """
+        """
         self.devices = devices
         self.queue = queue
 

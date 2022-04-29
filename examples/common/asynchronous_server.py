@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Server Example
+"""
+Pymodbus Asynchronous Server Example
 --------------------------------------------------------------------------
 
 The asynchronous server is a high performance implementation using the

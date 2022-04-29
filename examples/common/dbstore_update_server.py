@@ -1,4 +1,5 @@
-""" Pymodbus Server With Updating Thread
+"""
+Pymodbus Server With Updating Thread
 --------------------------------------------------------------------------
 This is an example of having a background thread updating the
 context in an SQLite4 database while the server is operating.

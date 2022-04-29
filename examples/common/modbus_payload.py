@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Payload Building/Decoding Example
+"""
+Pymodbus Payload Building/Decoding Example
 --------------------------------------------------------------------------
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior

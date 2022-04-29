@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Server Example with Custom functions
+"""
+Pymodbus Synchronous Server Example with Custom functions
 --------------------------------------------------------------------------
 
 Implements a custom function code not in standard modbus function code list

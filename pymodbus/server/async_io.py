@@ -492,10 +492,10 @@ class ModbusTcpServer: # pylint: disable=too-many-instance-attributes
 
     def server_close(self):
         """ Close server. """
-        for k_item, v_item in self.active_connections.items():
-            txt = f"aborting active session {k_item}"
+        for k, v in self.active_connections.items():
+            txt = f"aborting active session {k}"
             _logger.warning(txt)
-            v_item.handler_task.cancel()
+            v.handler_task.cancel()
         self.active_connections = {}
         self.server.close()
 
@@ -841,8 +841,8 @@ async def StartTcpServer(context=None, identity=None, address=None, #NOSONAR pyl
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusTcpServer(context, framer, identity, address, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func)  # pragma: no cover
+    for f in custom_functions:
+        server.decoder.register(f)  # pragma: no cover
 
     if not defer_start:
         await server.serve_forever()
@@ -886,8 +886,8 @@ async def StartTlsServer(context=None, identity=None, address=None, #NOSONAR pyl
                              allow_reuse_address=allow_reuse_address,
                              allow_reuse_port=allow_reuse_port, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func) # pragma: no cover
+    for f in custom_functions:
+        server.decoder.register(f) # pragma: no cover
 
     if not defer_start:
         await server.serve_forever()
@@ -911,8 +911,8 @@ async def StartUdpServer(context=None, identity=None, address=None, #NOSONAR pyl
     framer = kwargs.pop('framer', ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func) # pragma: no cover
+    for f in custom_functions:
+        server.decoder.register(f) # pragma: no cover
 
     if not defer_start:
         await server.serve_forever() # pragma: no cover
@@ -940,8 +940,8 @@ async def StartSerialServer(context=None, identity=None, #NOSONAR pylint: disabl
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     await server.start()
     await server.serve_forever()
 

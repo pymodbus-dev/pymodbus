@@ -355,11 +355,11 @@ class ReportSlaveIdRequest(ModbusRequest):
 
             # Support identity values as bytes data and regular str data
             id_data = []
-            for v_item in information.values():
-                if isinstance(v_item, bytes):
-                    id_data.append(v_item)
+            for v in information.values():
+                if isinstance(v, bytes):
+                    id_data.append(v)
                 else:
-                    id_data.append(v_item.encode())
+                    id_data.append(v.encode())
 
             identifier = b"-".join(id_data)
             identifier = identifier or b'Pymodbus'

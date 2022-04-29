@@ -255,8 +255,8 @@ def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    for func in custom_functions:
-        factory.decoder.register(func)
+    for f in custom_functions:
+        factory.decoder.register(f)
 
     txt = f"Starting Modbus TCP Server on {address}"
     _logger.info(txt)
@@ -284,8 +284,8 @@ def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disabl
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpProtocol(context, framer, identity, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
 
     txt = f"Starting Modbus UDP Server on {address}"
     _logger.info(txt)
@@ -327,8 +327,8 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR
     txt = f"Starting Modbus Serial Server on {port}"
     _logger.info(txt)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    for func in custom_functions:
-        factory.decoder.register(func)
+    for f in custom_functions:
+        factory.decoder.register(f)
 
     local_protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging

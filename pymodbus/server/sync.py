@@ -618,8 +618,8 @@ def StartTcpServer(context=None, identity=None, address=None, # pylint: disable=
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusTcpServer(context, framer, identity, address, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
@@ -645,8 +645,8 @@ def StartTlsServer(context=None, identity=None, address=None, sslctx=None, # pyl
     server = ModbusTlsServer(context, framer, identity, address, sslctx,
                              certfile, keyfile, password, reqclicert, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
@@ -665,8 +665,8 @@ def StartUdpServer(context=None, identity=None, address=None, # pylint: disable=
     """
     framer = kwargs.pop('framer', ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
@@ -690,8 +690,8 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[], # pylin
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 # --------------------------------------------------------------------------- #

@@ -273,13 +273,13 @@ class ModbusDeviceIdentification:
     #-------------------------------------------------------------------------#
     # Properties
     #-------------------------------------------------------------------------#
-    VendorName          = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access,invalid-name
-    ProductCode         = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access,invalid-name
-    MajorMinorRevision  = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access,invalid-name
-    VendorUrl           = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access,invalid-name
-    ProductName         = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access,invalid-name
-    ModelName           = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access,invalid-name
-    UserApplicationName = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access,invalid-name
+    VendorName          = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access
+    ProductCode         = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access
+    MajorMinorRevision  = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access
+    VendorUrl           = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access
+    ProductName         = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access
+    ModelName           = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access
+    UserApplicationName = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access
 
 
 class DeviceInformationFactory(Singleton): # pylint: disable=too-few-public-methods
@@ -429,9 +429,9 @@ class ModbusCountersHandler:
 
         :param values: The value to copy values from
         """
-        for k, v_item in iter(values.items()):
-            v_item += self.__getattribute__(k)
-            self.__setattr__(k, v_item)
+        for k, v in iter(values.items()):
+            v += self.__getattribute__(k)
+            self.__setattr__(k, v)
 
     def reset(self):
         """ This clears all of the system counters

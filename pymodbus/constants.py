@@ -163,7 +163,7 @@ class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
     """
     Waiting  = 0xffff
     Ready    = 0x0000
-    On       = 0xff00 # pylint: disable=invalid-name
+    On       = 0xff00
     Off      = 0x0000
     SlaveOn  = 0xff
     SlaveOff = 0x00

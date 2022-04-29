@@ -267,15 +267,15 @@ class Result:
     def _process_dict(self, use_dict):
         """ Internal process dict. """
         new_dict = OrderedDict()
-        for k, v_item in use_dict.items():
-            if isinstance(v_item, bytes):
-                v_item = v_item.decode('utf-8')
-            elif isinstance(v_item, dict):
-                v_item = self._process_dict(v_item)
-            elif isinstance(v_item, (list, tuple)):
-                v_item = [v1.decode('utf-8') if isinstance(v1, bytes) else v1
-                     for v1 in v_item ]
-            new_dict[k] = v_item
+        for k, v in use_dict.items():
+            if isinstance(v, bytes):
+                v = v.decode('utf-8')
+            elif isinstance(v, dict):
+                v = self._process_dict(v)
+            elif isinstance(v, (list, tuple)):
+                v = [v1.decode('utf-8') if isinstance(v1, bytes) else v1
+                     for v1 in v ]
+            new_dict[k] = v
         return new_dict
 
     def print_result(self, data=None):

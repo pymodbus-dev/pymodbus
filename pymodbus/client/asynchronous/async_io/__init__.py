@@ -75,26 +75,23 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """ Helper function to create asyncio Future object. """
         return asyncio.Future()
 
-    def resolve_future(self, my_future, result):
+    def resolve_future(self, f, result): # pylint: disable=no-self-use
         """ Resolves the completed future and sets the result
         :param f:
         :param result:
         :return:
         """
+        if not f.done():
+            f.set_result(result)
 
-    def resolve_future(self, my_future, result): # pylint: disable=no-self-use
-        """ Resolve future. """
-        if not my_future.done():
-            my_future.set_result(result)
-
-    def raise_future(self, my_future, exc): # pylint: disable=no-self-use
+    def raise_future(self, f, exc): # pylint: disable=no-self-use
         """ Sets exception of a future if not done
         :param f:
         :param exc:
         :return:
         """
-        if not my_future.done():
-            my_future.set_exception(exc)
+        if not f.done():
+            f.set_exception(exc)
 
     def _connection_made(self):
         """ Called upon a successful client connection. """
@@ -164,13 +161,13 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
         """
-        my_future = self.create_future()
+        f = self.create_future()
         if not self._connected:
-            self.raise_future(my_future, ConnectionException(
+            self.raise_future(f, ConnectionException(
                 'Client is not connected'))
         else:
-            self.transaction.addTransaction(my_future, tid)
-        return my_future
+            self.transaction.addTransaction(f, tid)
+        return f
 
     def close(self):
         self.transport.close()

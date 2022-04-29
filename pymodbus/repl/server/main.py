@@ -74,8 +74,8 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
     if modbus_config:
-        with open(modbus_config) as my_file: # pylint: disable=unspecified-encoding
-            modbus_config = json.load(my_file)
+        with open(modbus_config) as f: # pylint: disable=unspecified-encoding
+            modbus_config = json.load(f)
     else:
         modbus_config = DEFUALT_CONFIG
     modbus_config = modbus_config.get(modbus_server, {})

@@ -266,8 +266,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
                 if isinstance(val, (list, tuple)):
-                    for i, v_item in enumerate(val):
-                        self.values[idx + i] = v_item
+                    for i, v in enumerate(val):
+                        self.values[idx + i] = v
                 else:
                     self.values[idx] = int(val)
         if isinstance(values, dict):

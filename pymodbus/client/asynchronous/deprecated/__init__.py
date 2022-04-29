@@ -1,4 +1,3 @@
-"""Deprecated work."""
 import warnings
 warnings.simplefilter('always', DeprecationWarning)
 
@@ -45,5 +44,4 @@ https://pymodbus.readthedocs.io/en/dev/source/example/async_asyncio_client.html
 
 
 def deprecated(name):  # pragma: no cover
-    """"Use deprecated."""
     warnings.warn(WARNING.format(name), DeprecationWarning)

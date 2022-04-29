@@ -26,7 +26,7 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -88,8 +88,8 @@ def run_async_server():
     #     store = ModbusSlaveContext(..., zero_mode=True)
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
-        co=ModbusSequentialDataBlock(0, [17] * 100),
         di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
         ir=ModbusSequentialDataBlock(0, [17] * 100))
     store.register(CustomModbusRequest.function_code, 'cm',
@@ -103,11 +103,11 @@ def run_async_server():
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
+    identity.ProductName = 'Pymodbus Server'
     identity.ModelName = 'Pymodbus Server'
     identity.MajorMinorRevision = version.short()
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR 
-    identity.ProductName = 'Pymodbus Server'
 
     # ----------------------------------------------------------------------- #
     # run the server you want

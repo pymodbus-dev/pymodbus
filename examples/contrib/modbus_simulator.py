@@ -14,6 +14,7 @@ from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 # Logging
 # -------------------------------------------------------------------------- #
 import logging
+logging.basicConfig()
 
 server_log = logging.getLogger("pymodbus.server")
 protocol_log = logging.getLogger("pymodbus.protocol")

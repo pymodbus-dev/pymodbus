@@ -20,6 +20,7 @@ from pymodbus.client.sync import ModbusTcpClient
 try:
     from multiprocessing import Process as mWorker, log_to_stderr
 except ImportError:
+    logging.basicConfig()
     log_to_stderr = logging.getLogger
 
 # --------------------------------------------------------------------------- #

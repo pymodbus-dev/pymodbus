@@ -256,6 +256,7 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
+            logging.basicConfig()
         except Exception: # pylint: disable=broad-except
             print("Logging is not supported on this system")
 

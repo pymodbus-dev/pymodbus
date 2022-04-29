@@ -20,6 +20,7 @@ from pymodbus.datastore import ModbusServerContext
 # configure the service logging
 # --------------------------------------------------------------------------- #
 import logging
+logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 

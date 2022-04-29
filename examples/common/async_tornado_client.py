@@ -21,6 +21,7 @@ from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClien
 # ---------------------------------------------------------------------------#
 # configure the client logging
 # ---------------------------------------------------------------------------#
+logging.basicConfig()
 _logger = logging.getLogger()
 _logger.setLevel(logging.DEBUG)
 

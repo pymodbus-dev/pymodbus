@@ -13,6 +13,7 @@ from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient # pylint: disable=no-name-in-module
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol # pylint: disable=no-name-in-module
 
+logging.basicConfig()
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
 

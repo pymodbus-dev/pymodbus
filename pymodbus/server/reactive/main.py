@@ -260,7 +260,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
 
     @classmethod
     def create_identity(cls, vendor="Pymodbus", product_code="PM", # pylint: disable=too-many-arguments
-                        vendor_url='http://github.com/riptideio/pymodbus/', #NOSONAR
+                        vendor_url='http://github.com/riptideio/pymodbus/',
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
                         version=pymodbus_version.short()):
@@ -306,7 +306,7 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             if sparse:
                 address_map = block_desc.get("address_map")
                 if not address_map:
-                    address_map = random.sample( #NOSONAR
+                    address_map = random.sample(
                         range(start_address+1, default_count), default_count-1)
                     address_map.insert(0, 0)
                 block[modbus_entity] = {add: val for add in sorted(address_map)

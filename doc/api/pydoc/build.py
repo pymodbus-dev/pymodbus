@@ -200,7 +200,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
 			for key, value in data:
 				try:
 					contents.append(self.document(value, key))
-				except Exception: #nosec
+				except Exception:
 					pass
 			result = result + self.bigsection(
 				'Data', '#ffffff', '#55aa55', join(contents, '<br>\n'))

@@ -109,7 +109,7 @@ async def start_async_test(client): # pylint: disable=redefined-outer-name
             'write_address': 1,
             'write_registers': [20] * 8,
         }
-        log.debug("Read write registers simultaneously")
+        log.debug("Read write registers simulataneously")
         rq = await client.readwrite_registers(unit=UNIT, **arguments)
         rr = await client.read_holding_registers(1, 8, unit=UNIT)
         assert rq.function_code < 0x80     # test that we are not an error

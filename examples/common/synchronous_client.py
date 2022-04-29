@@ -153,7 +153,7 @@ def run_sync_client():
         'write_address':   1, # noqa E221
         'write_registers': [20] * 8,
     }
-    log.debug("Read write registers simultaneously")
+    log.debug("Read write registeres simulataneously")
     rq = client.readwrite_registers(unit=UNIT, **arguments)
     rr = client.read_holding_registers(1, 8, unit=UNIT)
     assert not rq.isError()      # test that we are not an error

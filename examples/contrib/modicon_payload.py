@@ -28,7 +28,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         """
         self._payload = payload or []
         self._endian = endian
@@ -172,7 +172,7 @@ class ModiconPayloadDecoder:
         been decoded by the rest of the library.
 
         :param registers: The register results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
@@ -188,7 +188,7 @@ class ModiconPayloadDecoder:
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):

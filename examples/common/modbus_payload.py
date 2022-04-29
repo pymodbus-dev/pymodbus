@@ -94,8 +94,8 @@ def run_binary_payload_ex():
         print()
         builder = BinaryPayloadBuilder(byteorder=byte_endian,
                                        wordorder=word_endian)
-        my_string = "abcdefgh"
-        builder.add_string(my_string)
+        strng = "abcdefgh"
+        builder.add_string(strng)
         builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
         builder.add_8bit_int(-0x12)
         builder.add_8bit_uint(0x12)
@@ -170,7 +170,7 @@ def run_binary_payload_ex():
                 "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"  # pylint: disable=protected-access
 
         decoded = OrderedDict([
-            ('string', decoder.decode_string(len(my_string))),
+            ('string', decoder.decode_string(len(strng))),
             ('bits', decoder.decode_bits()),
             ('8int', decoder.decode_8bit_int()),
             ('8uint', decoder.decode_8bit_uint()),

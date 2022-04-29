@@ -143,7 +143,7 @@ class ScraperProtocol(ModbusClientProtocol):
 #
 #     Factory(Protocol) -> ProtocolInstance
 #
-# It also persists data between client instances (think protocol singleton).
+# It also persists data between client instances (think protocol singelton).
 # --------------------------------------------------------------------------- #
 class ScraperFactory(ClientFactory):
     """ Scraper factory. """

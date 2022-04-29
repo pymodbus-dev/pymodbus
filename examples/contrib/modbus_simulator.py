@@ -63,7 +63,7 @@ class Configuration: # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, config):
-        """ Tries to load a configuration file, lets the file not
+        """ Trys to load a configuration file, lets the file not
         found exception fall through
 
         :param config: The pickled datastore

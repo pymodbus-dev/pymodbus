@@ -31,9 +31,9 @@ import xml.etree.ElementTree as xml
 
 class ModbusDatastoreSaver:
     """ An abstract base class that can be used to implement
-    a persistence format for the modbus server context. In
+    a persistance format for the modbus server context. In
     order to use it, just complete the necessary callbacks
-    (SAX style) that your persistence format needs.
+    (SAX style) that your persistance format needs.
     """
 
     def __init__(self, context, path=None):

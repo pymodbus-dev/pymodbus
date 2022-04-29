@@ -165,7 +165,7 @@ class RemoteServerContext:
         return f"Remote Server Context{self._client}"
 
     def __iter__(self):
-        """ Iterator over the current collection of slave
+        """ Iterater over the current collection of slave
         contexts.
 
         :returns: An iterator over the slave contexts

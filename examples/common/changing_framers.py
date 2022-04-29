@@ -8,7 +8,7 @@ to define or plug in their custom protocols into existing transports
 (like a binary framer over a serial connection).
 
 It should be noted that although you are not limited to trying whatever
-you would like, the library makes no guarantees that all framers with
+you would like, the library makes no gurantees that all framers with
 all transports will produce predictable or correct results (for example
 tcp transport with an RTU framer). However, please let us know of any
 success cases that are not documented!

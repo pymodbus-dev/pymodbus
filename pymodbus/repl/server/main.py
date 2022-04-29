@@ -2,7 +2,6 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
-import logging
 import asyncio
 import json
 import click
@@ -14,11 +13,9 @@ from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
 if PYTHON_VERSION > (3, 7):
-    CANCELLED_ERROR = asyncio.exceptions.CancelledError # pylint: disable=invalid-name
+    CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
-    CANCELLED_ERROR = asyncio.CancelledError # pylint: disable=invalid-name
-
-_logger = logging.getLogger(__name__)
+    CANCELLED_ERROR = asyncio.CancelledError
 
 
 @click.group("ReactiveModbusServer")
@@ -31,15 +28,20 @@ _logger = logging.getLogger(__name__)
 @click.option("--verbose", is_flag=True,
               help="Run with debug logs enabled for pymodbus")
 @click.pass_context
-def server(ctx, host, web_port, broadcast_support, repl, verbose): # pylint: disable=too-many-arguments
-    """Server code."""
-    FORMAT = ('%(asctime)-15s %(threadName)-15s' # pylint: disable=invalid-name
+def server(ctx, host, web_port, broadcast_support, repl, verbose):
+    global logger
+    import logging
+    FORMAT = ('%(asctime)-15s %(threadName)-15s'
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-    _logger.basicConfig(format=FORMAT)
+    pymodbus_logger = logging.getLogger("pymodbus")
+    logging.basicConfig(format=FORMAT)
+    logger = logging.getLogger(__name__)
     if verbose:
-        _logger.setLevel(logging.DEBUG)
+        pymodbus_logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
-        _logger.setLevel(logging.ERROR)
+        pymodbus_logger.setLevel(logging.ERROR)
+        logger.setLevel(logging.ERROR)
 
     ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
                "broadcast": broadcast_support}
@@ -65,7 +67,7 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose): # pylint: dis
                                                    "and so on. "
                                                    "Applicable IR and DI.")
 @click.pass_context
-def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, # pylint: disable=too-many-arguments
+def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         modbus_config, randomize):
     """
     Run Reactive Modbus server exposing REST endpoint
@@ -76,7 +78,7 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, # pylint
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
     if modbus_config:
-        with open(modbus_config) as f: # pylint: disable=unspecified-encoding
+        with open(modbus_config) as f:
             modbus_config = json.load(f)
     else:
         modbus_config = DEFUALT_CONFIG
@@ -109,4 +111,4 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, # pylint
 
 
 if __name__ == '__main__':
-    server() # pylint: disable=no-value-for-parameter
+    server()

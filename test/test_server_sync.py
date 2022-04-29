@@ -1,45 +1,32 @@
 #!/usr/bin/env python3
-""" Test server sync. """
-import ssl
-import socket
 import unittest
 from unittest.mock import patch, Mock
 import pytest
 import serial
+import socket
+import ssl
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.sync import ModbusBaseRequestHandler
 from pymodbus.server.sync import ModbusSingleRequestHandler
 from pymodbus.server.sync import ModbusConnectedRequestHandler
 from pymodbus.server.sync import ModbusDisconnectedRequestHandler
-from pymodbus.server.sync import (
-    ModbusTcpServer,
-    ModbusTlsServer,
-    ModbusUdpServer,
-    ModbusSerialServer,
-)
-from pymodbus.server.sync import (
-    StartTcpServer,
-    StartTlsServer,
-    StartUdpServer,
-    StartSerialServer,
-)
+from pymodbus.server.sync import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer, ModbusSerialServer
+from pymodbus.server.sync import StartTcpServer, StartTlsServer, StartUdpServer, StartSerialServer
 from pymodbus.server.tls_helper import sslctx_provider
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.transaction import ModbusTlsFramer
+
 from pymodbus.compat import socketserver
 
 
 # --------------------------------------------------------------------------- #
 # Mock Classes
 # --------------------------------------------------------------------------- #
-class MockServer:  # noqa: E302 pylint: disable=too-few-public-methods
-    """ Mock server. """
-
+class MockServer(object):  # noqa: E302
     def __init__(self):
-        """ Init. """
         self.framer = lambda _, client=None: "framer"
         self.decoder = "decoder"
         self.threads = []
@@ -47,7 +34,7 @@ class MockServer:  # noqa: E302 pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Fixture
 # --------------------------------------------------------------------------- #
-class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=too-many-public-methods
+class SynchronousServerTest(unittest.TestCase):  # noqa: E302
     '''
     This is the unittest for the pymodbus.server.sync module
     '''
@@ -56,14 +43,14 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # Test Base Request Handler
     # ----------------------------------------------------------------------- #
 
-    def test_base_handler_undefined_methods(self):
+    def testBaseHandlerUndefinedMethods(self):
         ''' Test the base handler undefined methods'''
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusBaseRequestHandler
-        self.assertRaises(NotImplementedException, lambda: handler.send(None)) # pylint: disable=no-member
-        self.assertRaises(NotImplementedException, lambda: handler.handle()) # pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: handler.send(None))
+        self.assertRaises(NotImplementedException, lambda: handler.handle())
 
-    def test_base_handler_methods(self):
+    def testBaseHandlerMethods(self):
         ''' Test the base class for all the clients '''
         request = ReadCoilsRequest(1, 1)
         address = ('server', 12345)
@@ -86,23 +73,21 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test Single Request Handler
     # ----------------------------------------------------------------------- #
-    def test_modbus_single_request_handler_send(self):
-        """ Test modbus single request handler. """
+    def testModbusSingleRequestHandlerSend(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusSingleRequestHandler
         handler.framer = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
         request = ReadCoilsResponse([1])
-        handler.send(request) # pylint: disable=no-member
+        handler.send(request)
         self.assertEqual(handler.request.send.call_count, 1)
 
         request.should_respond = False
-        handler.send(request) # pylint: disable=no-member
+        handler.send(request)
         self.assertEqual(handler.request.send.call_count, 1)
 
-    def test_modbus_single_request_handler_handle(self):
-        """ Test modbus single request handler. """
+    def testModbusSingleRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusSingleRequestHandler
         handler.framer = Mock()
@@ -118,7 +103,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback1(parm1, parm2, *args, **kwargs): # pylint: disable=unused-argument
+        def _callback1(a, b, *args, **kwargs):
             handler.running = False  # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback1
         handler.running = True
@@ -129,11 +114,11 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 1)
 
         # exceptions are simply ignored
-        def _callback2(parm1, parm2, *args, **kwargs): # pylint: disable=unused-argument
+        def _callback2(a, b, *args, **kwargs):
             if handler.framer.processIncomingPacket.call_count == 2:
                 raise Exception("example exception")
-            handler.running = False  # stop infinite loop
-
+            else:
+                handler.running = False  # stop infinite loop
         handler.framer.processIncomingPacket.side_effect = _callback2
         handler.running = True
         handler.handle()
@@ -142,26 +127,26 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test Connected Request Handler
     # ----------------------------------------------------------------------- #
-    def test_modbus_connected_request_handler_send(self):
-        """ Test modbus connected request handler. """
+    def testModbusConnectedRequestHandlerSend(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusConnectedRequestHandler
         handler.framer = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
         request = ReadCoilsResponse([1])
-        handler.send(request) # pylint: disable=no-member
+        handler.send(request)
         self.assertEqual(handler.request.send.call_count, 1)
 
         request.should_respond = False
-        handler.send(request) # pylint: disable=no-member
+        handler.send(request)
         self.assertEqual(handler.request.send.call_count, 1)
 
-    def test_modbus_connected_request_handler_handle(self):
-        """ Test modbus connected request handler. """
+    def testModbusConnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusConnectedRequestHandler
         handler.server = Mock()
+        # handler.server.context.slaves = Mock()
+        # protocol.factory.store.single = True
         handler.framer = Mock()
         handler.framer.buildPacket.return_value = b"message"
         handler.request = Mock()
@@ -173,9 +158,8 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback(parm1, parm2, *args, **kwargs): # pylint: disable=unused-argument
+        def _callback(a, b, *args, **kwargs):
             handler.running = False  # stop infinite loop
-
         handler.framer.processIncomingPacket.side_effect = _callback
         handler.running = True
         handler.handle()
@@ -202,8 +186,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test Disconnected Request Handler
     # ----------------------------------------------------------------------- #
-    def test_modbus_disconnected_request_handler_send(self):
-        """ Test modbus disconnect request handler. """
+    def testModbusDisconnectedRequestHandlerSend(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer = Mock()
@@ -212,15 +195,14 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         handler.request = Mock()
         handler.socket = Mock()
         request = ReadCoilsResponse([1])
-        handler.send(request) # pylint: disable=no-member
+        handler.send(request)
         self.assertEqual(handler.socket.sendto.call_count, 1)
 
-        request.should_respond = False # pylint: disable=no-member
-        handler.send(request) # pylint: disable=no-member
+        request.should_respond = False
+        handler.send(request)
         self.assertEqual(handler.socket.sendto.call_count, 1)
 
-    def test_modbus_disconnected_request_handler_handle(self):
-        """ Test modbus disconned request handler. """
+    def testModbusDisconnectedRequestHandlerHandle(self):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusDisconnectedRequestHandler
         handler.framer = Mock()
@@ -234,9 +216,8 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(handler.framer.processIncomingPacket.call_count, 0)
 
         # run forever if we are running
-        def _callback(parm1, parm2): # pylint: disable=unused-argument
+        def _callback(a, b):
             handler.running = False  # stop infinite loop
-
         handler.framer.processIncomingPacket.side_effect = _callback
         handler.running = True
         handler.handle()
@@ -265,7 +246,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test TCP Server
     # ----------------------------------------------------------------------- #
-    def test_tcp_server_close(self):
+    def testTcpServerClose(self):
         ''' test that the synchronous TCP server closes correctly '''
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         server = ModbusTcpServer(context=None, identity=identity, bind_and_activate=False)
@@ -274,7 +255,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
         self.assertFalse(server.threads[0].running)
 
-    def test_tcp_server_process(self):
+    def testTcpServerProcess(self):
         ''' test that the synchronous TCP server processes requests '''
         with patch('pymodbus.compat.socketserver.ThreadingTCPServer') as mock_server:
             server = ModbusTcpServer(None)
@@ -284,7 +265,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test TLS Server
     # ----------------------------------------------------------------------- #
-    def test_tls_ssl_ctx_provider(self):
+    def testTlsSSLCTX_Provider(self):
         ''' test that sslctx_provider() produce SSLContext correctly '''
         with patch.object(ssl.SSLContext, 'load_cert_chain'):
             sslctx = sslctx_provider(reqclicert=True)
@@ -296,10 +277,10 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
             sslctx_new = sslctx_provider(sslctx=sslctx_old)
             self.assertEqual(sslctx_new, sslctx_old)
 
-    def test_tls_server_init(self):
+    def testTlsServerInit(self):
         ''' test that the synchronous TLS server initial correctly '''
         with patch.object(socketserver.TCPServer, 'server_activate'):
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
                 server = ModbusTlsServer(context=None, identity=identity,
                                          reqclicert=True,
@@ -311,9 +292,9 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
                 self.assertEqual(type(server.socket), ssl.SSLSocket)
                 server.server_close()
 
-    def test_tls_server_close(self):
+    def testTlsServerClose(self):
         ''' test that the synchronous TLS server closes correctly '''
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
             identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
             server = ModbusTlsServer(context=None, identity=identity,
                                      bind_and_activate=False)
@@ -322,10 +303,10 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
             self.assertEqual(server.control.Identity.VendorName, 'VendorName')
             self.assertFalse(server.threads[0].running)
 
-    def test_tls_server_process(self):
+    def testTlsServerProcess(self):
         ''' test that the synchronous TLS server processes requests '''
         with patch('pymodbus.compat.socketserver.ThreadingTCPServer') as mock_server:
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 server = ModbusTlsServer(None)
                 server.process_request('request', 'client')
                 self.assertTrue(mock_server.process_request.called)
@@ -333,7 +314,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test UDP Server
     # ----------------------------------------------------------------------- #
-    def test_udp_server_close(self):
+    def testUdpServerClose(self):
         ''' test that the synchronous UDP server closes correctly '''
         identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
         server = ModbusUdpServer(context=None, identity=identity,
@@ -344,7 +325,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
         self.assertEqual(server.control.Identity.VendorName, 'VendorName')
         self.assertFalse(server.threads[0].running)
 
-    def test_udp_server_process(self):
+    def testUdpServerProcess(self):
         ''' test that the synchronous UDP server processes requests '''
         with patch('pymodbus.compat.socketserver.ThreadingUDPServer') as mock_server:
             server = ModbusUdpServer(None)
@@ -355,28 +336,31 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test Serial Server
     # ----------------------------------------------------------------------- #
-    def test_serial_server_connect(self):
-        """ Test serial server connect. """
+    def testSerialServerConnect(self):
         with patch.object(serial, 'Serial') as mock_serial:
-            mock_serial.write = lambda x: len(x) # pylint: disable=unnecessary-lambda
+            # mock_serial.return_value = "socket"
+            mock_serial.write = lambda x: len(x)
             mock_serial.read = lambda size: '\x00' * size
             identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
             server = ModbusSerialServer(context=None, identity=identity, port="dummy")
-            self.assertEqual(server.handler.__class__.__name__, "CustomSingleRequestHandler")
+            # # mock_serial.return_value = "socket"
+            # self.assertEqual(server.socket.port, "dummy")
+            self.assertEquals(server.handler.__class__.__name__, "CustomSingleRequestHandler")
             self.assertEqual(server.control.Identity.VendorName, 'VendorName')
 
-            server._connect() # pylint: disable=protected-access
+            server._connect()
+            # self.assertEqual(server.socket, "socket")
 
         with patch.object(serial, 'Serial') as mock_serial:
-            mock_serial.write = lambda x: len(x) # pylint: disable=unnecessary-lambda
+            mock_serial.write = lambda x: len(x)
             mock_serial.read = lambda size: '\x00' * size
             mock_serial.side_effect = serial.SerialException()
             server = ModbusSerialServer(None, port="dummy")
             self.assertEqual(server.socket, None)
 
-    def test_serial_server_serve_forever(self): # pylint: disable=no-self-use
+    def testSerialServerServeForever(self):
         ''' test that the synchronous serial server closes correctly '''
-        with patch.object(serial, 'Serial'):
+        with patch.object(serial, 'Serial') as mock_serial:
             with patch('pymodbus.server.sync.CustomSingleRequestHandler') as mock_handler:
                 server = ModbusSerialServer(None)
                 instance = mock_handler.return_value
@@ -384,7 +368,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
                 server.serve_forever()
                 instance.response_manipulator.assert_any_call()
 
-    def test_serial_server_close(self): # pylint: disable=no-self-use
+    def testSerialServerClose(self):
         ''' test that the synchronous serial server closes correctly '''
         with patch.object(serial, 'Serial') as mock_serial:
             instance = mock_serial.return_value
@@ -395,26 +379,26 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=to
     # ----------------------------------------------------------------------- #
     # Test Synchronous Factories
     # ----------------------------------------------------------------------- #
-    def test_start_tcp_server(self): # pylint: disable=no-self-use
+    def testStartTcpServer(self):
         ''' Test the tcp server starting factory '''
-        with patch.object(ModbusTcpServer, 'serve_forever'):
+        with patch.object(ModbusTcpServer, 'serve_forever') as mock_server:
             StartTcpServer(bind_and_activate=False)
 
-    def test_start_tls_server(self): # pylint: disable=no-self-use
+    def testStartTlsServer(self):
         ''' Test the tls server starting factory '''
-        with patch.object(ModbusTlsServer, 'serve_forever'):
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ModbusTlsServer, 'serve_forever') as mock_server:
+            with patch.object(ssl.SSLContext, 'load_cert_chain') as mock_method:
                 StartTlsServer(bind_and_activate=False)
 
-    def test_start_udp_server(self): # pylint: disable=no-self-use
+    def testStartUdpServer(self):
         ''' Test the udp server starting factory '''
-        with patch.object(ModbusUdpServer, 'serve_forever'):
-            with patch.object(socketserver.UDPServer, 'server_bind'):
+        with patch.object(ModbusUdpServer, 'serve_forever') as mock_server:
+            with patch.object(socketserver.UDPServer, 'server_bind') as mock_binder:
                 StartUdpServer()
 
-    def test_start_serial_server(self): # pylint: disable=no-self-use
+    def testStartSerialServer(self):
         ''' Test the serial server starting factory '''
-        with patch.object(ModbusSerialServer, 'serve_forever'):
+        with patch.object(ModbusSerialServer, 'serve_forever') as mock_server:
             StartSerialServer(port=pytest.SERIAL_PORT)
 
 

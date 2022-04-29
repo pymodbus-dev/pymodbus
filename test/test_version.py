@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-""" Test version. """
 import unittest
 from pymodbus.version import Version
 
@@ -10,13 +9,15 @@ class ModbusVersionTest(unittest.TestCase):
 
     def setUp(self):
         ''' Initializes the test environment '''
+        pass
 
     def tearDown(self):
         ''' Cleans up the test environment '''
+        pass
 
-    def test_version_class(self):
-        """ Test version class. """
+    def testVersionClass(self):
         version = Version('test', 1,2,3, "sometag")
+        short = version.short()
         self.assertEqual(version.short(), '1.2.3.sometag')
         self.assertEqual(str(version), '[test, version 1.2.3.sometag]')
 

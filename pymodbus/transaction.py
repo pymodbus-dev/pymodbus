@@ -19,6 +19,7 @@ from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
+from pymodbus.compat import byte2int
 
 
 # --------------------------------------------------------------------------- #
@@ -330,13 +331,13 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                 )
             if read_min:
                 if isinstance(self.client.framer, ModbusSocketFramer):
-                    func_code = int(read_min[-1])
+                    func_code = byte2int(read_min[-1])
                 elif isinstance(self.client.framer, ModbusRtuFramer):
-                    func_code = int(read_min[-1])
+                    func_code = byte2int(read_min[-1])
                 elif isinstance(self.client.framer, ModbusAsciiFramer):
                     func_code = int(read_min[3:5], 16)
                 elif isinstance(self.client.framer, ModbusBinaryFramer):
-                    func_code = int(read_min[-1])
+                    func_code = byte2int(read_min[-1])
                 else:
                     func_code = -1
 

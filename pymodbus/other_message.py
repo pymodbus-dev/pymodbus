@@ -8,6 +8,7 @@ from pymodbus.constants import ModbusStatus
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock, DeviceInformationFactory
+from pymodbus.compat import byte2int, int2byte
 
 _MCB = ModbusControlBlock()
 
@@ -88,7 +89,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.status = int(data[0])
+        self.status = byte2int(data[0])
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -310,7 +311,7 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        length = int(data[0])
+        length = byte2int(data[0])
         status = struct.unpack('>H', data[1:3])[0]
         self.status = (status == ModbusStatus.Ready)
         self.event_count = struct.unpack('>H', data[3:5])[0]
@@ -318,7 +319,7 @@ class GetCommEventLogResponse(ModbusResponse):
 
         self.events = []
         for i in range(7, length + 1):
-            self.events.append(int(data[i]))
+            self.events.append(byte2int(data[i]))
 
     def __str__(self):
         ''' Builds a representation of the response
@@ -417,9 +418,9 @@ class ReportSlaveIdResponse(ModbusResponse):
         else:
             status = ModbusStatus.SlaveOff
         length  = len(self.identifier) + 1
-        packet  = struct.pack(">B", length)
+        packet  = int2byte(length)
         packet += self.identifier  # we assume it is already encoded
-        packet += struct.pack(">B", status)
+        packet += int2byte(status)
         return packet
 
     def decode(self, data):
@@ -430,9 +431,9 @@ class ReportSlaveIdResponse(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.byte_count = int(data[0])
+        self.byte_count = byte2int(data[0])
         self.identifier = data[1:self.byte_count + 1]
-        status = int(data[-1])
+        status = byte2int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
     def __str__(self):

@@ -7,11 +7,11 @@ maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
 from collections import OrderedDict
-import struct
 
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
+from pymodbus.compat import int2byte
 
 
 #---------------------------------------------------------------------------#
@@ -581,7 +581,7 @@ class ModbusControlBlock(Singleton):
         if isinstance(char, bytes):
             self.__delimiter = char # pylint: disable=unused-private-member
         elif isinstance(char, int):
-            self.__delimiter = struct.pack(">B", char) # pylint: disable=unused-private-member
+            self.__delimiter = int2byte(char) # pylint: disable=unused-private-member
 
     Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 

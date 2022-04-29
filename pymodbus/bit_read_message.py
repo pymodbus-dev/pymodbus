@@ -9,6 +9,7 @@ from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
+from pymodbus.compat import byte2int
 
 
 class ReadBitsRequestBase(ModbusRequest):
@@ -87,7 +88,7 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.byte_count = int(data[0]) # pylint: disable=attribute-defined-outside-init
+        self.byte_count = byte2int(data[0]) # pylint: disable=attribute-defined-outside-init
         self.bits = unpack_bitstring(data[1:])
 
     def setBit(self, address, value=1): # pylint: disable=invalid-name

@@ -2,12 +2,12 @@
 Contains base classes for modbus request/response/error packets
 """
 import logging
-import struct
 
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
 from pymodbus.utilities import rtuFrameSize
+from pymodbus.compat import int2byte, byte2int
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -184,14 +184,14 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The encoded exception packet
         """
-        return struct.pack('>B', self.exception_code)
+        return int2byte(self.exception_code)
 
     def decode(self, data):
         """ Decodes a modbus exception response
 
         :param data: The packet data to decode
         """
-        self.exception_code = int(data[0])
+        self.exception_code = byte2int(data[0])
 
     def __str__(self):
         """ Builds a representation of an exception response

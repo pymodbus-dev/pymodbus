@@ -5,7 +5,7 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
-import struct
+from pymodbus.compat import int2byte, byte2int
 
 
 class ModbusTransactionState: # pylint: disable=too-few-public-methods
@@ -96,13 +96,13 @@ def pack_bitstring(bits):
             packed += 128
         i += 1
         if i == 8:
-            ret += struct.pack('>B', packed)
+            ret += int2byte(packed)
             i = packed = 0
         else:
             packed >>= 1
     if 0 < i < 8:
         packed >>= (7 - i)
-        ret += struct.pack('>B', packed)
+        ret += int2byte(packed)
     return ret
 
 
@@ -119,7 +119,7 @@ def unpack_bitstring(string):
     byte_count = len(string)
     bits = []
     for byte in range(byte_count):
-        value = int(int(string[byte]))
+        value = byte2int(int(string[byte]))
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
@@ -170,7 +170,7 @@ def computeCRC(data): #NOSONAR pylint: disable=invalid-name
     """
     crc = 0xffff
     for data_byte in data:
-        idx = __crc16_table[(crc ^ int(data_byte)) & 0xff]
+        idx = __crc16_table[(crc ^ byte2int(data_byte)) & 0xff]
         crc = ((crc >> 8) & 0xff) ^ idx
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped
@@ -196,7 +196,7 @@ def computeLRC(data): #NOSONAR pylint: disable=invalid-name
     :returns: The calculated LRC
 
     """
-    lrc = sum(int(a) for a in data) & 0xff
+    lrc = sum(byte2int(a) for a in data) & 0xff
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff
 
@@ -231,7 +231,7 @@ def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
     field, and finally increment the sum by three (one byte for the
     byte count field, two for the CRC).
     """
-    return int(data[byte_count_pos]) + byte_count_pos + 3
+    return byte2int(data[byte_count_pos]) + byte_count_pos + 3
 
 
 def hexlify_packets(packet):
@@ -242,7 +242,7 @@ def hexlify_packets(packet):
     """
     if not packet:
         return ''
-    return " ".join([hex(int(x)) for x in packet])
+    return " ".join([hex(byte2int(x)) for x in packet])
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

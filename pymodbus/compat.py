@@ -11,6 +11,7 @@ This is mostly based on the jinja2 compat code:
 """
 import sys
 import importlib.util
+import struct
 
 # --------------------------------------------------------------------------- #
 # python version checks
@@ -18,8 +19,16 @@ import importlib.util
 PYTHON_VERSION = sys.version_info
 
 # ----------------------------------------------------------------------- #
+# portable builtins
+# ----------------------------------------------------------------------- #
+int2byte = struct.Struct(">B").pack
+string_types = str
+
+# ----------------------------------------------------------------------- #
 # decorators
 # ----------------------------------------------------------------------- #
+
+byte2int = lambda b: b
 
 def is_installed(module):
     """Check if module is installed."""

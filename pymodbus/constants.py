@@ -62,7 +62,7 @@ class Defaults(Singleton): # pylint: disable=too-few-public-methods
 
        The modbus slave addrss.  Currently this is set to 0x00 which
        means this request should be broadcast to all the slave devices
-       (really means that all the devices should respond).
+       (really means that all the devices should respons).
 
     .. attribute:: Baudrate
 
@@ -99,7 +99,7 @@ class Defaults(Singleton): # pylint: disable=too-few-public-methods
 
        In case a request is made to a missing slave, this defines if an error
        should be returned or simply ignored. This is useful for the case of a
-       serial server emulater where a request to a non-existent slave on a bus
+       serial server emulater where a request to a non-existant slave on a bus
        will never respond. The client in this case will simply timeout.
 
     .. attribute:: broadcast_enable
@@ -170,7 +170,7 @@ class ModbusStatus(Singleton): # pylint: disable=too-few-public-methods
 
 
 class Endian(Singleton): # pylint: disable=too-few-public-methods
-    """ An enumeration representing the various byte endianness.
+    """ An enumeration representing the various byte endianess.
 
     .. attribute:: Auto
 
@@ -247,7 +247,7 @@ class MoreData(Singleton): # pylint: disable=too-few-public-methods
 
     .. attribute:: Nothing
 
-       This indicates that no more objects are going to be returned.
+       This indiates that no more objects are going to be returned.
 
     .. attribute:: KeepReading
 

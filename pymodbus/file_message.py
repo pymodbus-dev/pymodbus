@@ -65,7 +65,7 @@ class ReadFileRecordRequest(ModbusRequest):
     12 is addressed as 12. The function can read multiple groups of
     references. The groups can be separating (non-contiguous), but the
     references within each group must be sequential. Each group is defined
-    in a separate 'sub-request' field that contains seven bytes::
+    in a seperate 'sub-request' field that contains seven bytes::
 
         The reference type: 1 byte (must be 0x06)
         The file number: 2 bytes
@@ -113,7 +113,7 @@ class ReadFileRecordRequest(ModbusRequest):
                 self.records.append(record)
 
     def execute(self, context): #NOSONAR pylint: disable=unused-argument,no-self-use
-        """ Run a read exception status request against the store
+        """ Run a read exeception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response
@@ -312,7 +312,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         self.address = struct.unpack('>H', data)[0]
 
     def execute(self, context): #NOSONAR pylint: disable=unused-argument
-        """ Run a read exception status request against the store
+        """ Run a read exeception status request against the store
 
         :param context: The datastore to request from
         :returns: The populated response

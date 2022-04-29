@@ -38,7 +38,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         """
 
     def execute(self, context=None): #NOSONAR pylint: disable=no-self-use,unused-argument
-        """ Run a read exception status request against the store
+        """ Run a read exeception status request against the store
 
         :returns: The populated response
         """
@@ -134,7 +134,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         """
 
     def execute(self, context=None):  #NOSONAR pylint: disable=no-self-use,unused-argument
-        """ Run a read exception status request against the store
+        """ Run a read exeception status request against the store
 
         :returns: The populated response
         """
@@ -235,7 +235,7 @@ class GetCommEventLogRequest(ModbusRequest):
         """
 
     def execute(self, context=None): #NOSONAR pylint: disable=no-self-use,unused-argument
-        """ Run a read exception status request against the store
+        """ Run a read exeception status request against the store
 
         :returns: The populated response
         """

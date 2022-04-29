@@ -169,7 +169,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         global socket.settimeout(<seconds>) may be used, to allow timely
         checking of self.running.  However, since this also affects socket
         connects, if there are outgoing socket connections used in the same
-        program, then these will be prevented, if the specified timeout is too
+        program, then these will be prevented, if the specfied timeout is too
         short.  Hence, this is unreliable.
 
         To respond to Modbus...Server.server_close() (which clears each

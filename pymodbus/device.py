@@ -31,7 +31,7 @@ class ModbusAccessControl(Singleton):
     ]
 
     def __iter__(self):
-        """ Iterator over the network access tablek
+        """ Iterater over the network access tablek
 
         :returns: An iterator of the network access table
         """
@@ -144,7 +144,7 @@ class ModbusPlusStatistics:
         self.reset()
 
     def __iter__(self):
-        """ Iterator over the statistics
+        """ Iterater over the statistics
 
         :returns: An iterator of the modbus plus statistics
         """
@@ -219,7 +219,7 @@ class ModbusDeviceIdentification:
                     self.__data[key] = info[key]
 
     def __iter__(self):
-        """ Iterator over the device information
+        """ Iterater over the device information
 
         :returns: An iterator of the device information
         """
@@ -394,7 +394,7 @@ class ModbusCountersHandler:
              overrun is caused by data characters arriving at the port faster
              than they can.
 
-    .. note:: I threw the event counter in here for convenience
+    .. note:: I threw the event counter in here for convinience
     """
     __data = dict([(i, 0x0000) for i in range(9)]) # pylint: disable=consider-using-dict-comprehension
     __names   = [
@@ -410,7 +410,7 @@ class ModbusCountersHandler:
     ]
 
     def __iter__(self):
-        """ Iterator over the device counters
+        """ Iterater over the device counters
 
         :returns: An iterator of the device counters
         """
@@ -488,7 +488,7 @@ class ModbusControlBlock(Singleton):
         return "ModbusControl"
 
     def __iter__(self):
-        """ Iterator over the device counters
+        """ Iterater over the device counters
 
         :returns: An iterator of the device counters
         """

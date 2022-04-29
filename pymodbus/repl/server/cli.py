@@ -56,7 +56,7 @@ USAGE = "manipulator response_type=|normal|error|delayed|empty|stray \n" \
         "   <ansiblue>manipulator response_type=delayed delay_by=5</ansiblue>\n\t" \
         "3. Send empty response\n\t" \
         "   <ansiblue>manipulator response_type=empty</ansiblue>\n\t" \
-        "4. Send stray response of length 12 and revert to normal after 2 responses\n\t" \
+        "4. Send stray response of lenght 12 and revert to normal after 2 responses\n\t" \
         "   <ansiblue>manipulator response_type=stray data_len=11 clear_after=2</ansiblue>\n\t" \
         "5. To disable response manipulation\n\t" \
         "   <ansiblue>manipulator response_type=normal</ansiblue>"

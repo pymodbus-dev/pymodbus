@@ -51,8 +51,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw binary payload data to initialize with
-        :param byteorder: The endianness of the bytes in the words
-        :param wordorder: The endianness of the word (when wordcount is >= 2)
+        :param byteorder: The endianess of the bytes in the words
+        :param wordorder: The endianess of the word (when wordcount is >= 2)
         :param repack: Repack the provided payload based on BO
         """
         self._payload = payload or []
@@ -279,8 +279,8 @@ class BinaryPayloadDecoder:
         """ Initialize a new payload decoder
 
         :param payload: The payload to decode with
-        :param byteorder: The endianness of the payload
-        :param wordorder: The endianness of the word (when wordcount is >= 2)
+        :param byteorder: The endianess of the payload
+        :param wordorder: The endianess of the word (when wordcount is >= 2)
         """
         self._payload = payload
         self._pointer = 0x00
@@ -299,7 +299,7 @@ class BinaryPayloadDecoder:
 
         :param registers: The register results to initialize with
         :param byteorder: The Byte order of each word
-        :param wordorder: The endianness of the word (when wordcount is >= 2)
+        :param wordorder: The endianess of the word (when wordcount is >= 2)
         :returns: An initialized PayloadDecoder
         """
         _logger.debug(registers)
@@ -322,7 +322,7 @@ class BinaryPayloadDecoder:
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param byteorder: The endianness of the payload
+        :param byteorder: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):

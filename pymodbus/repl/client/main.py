@@ -1,4 +1,5 @@
-""" Pymodbus REPL Entry point.
+"""
+Pymodbus REPL Entry point.
 
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
@@ -62,7 +63,8 @@ style = Style.from_dict({
 
 
 def bottom_toolbar():
-    """ Console toolbar.
+    """
+    Console toolbar.
     :return:
     """
     return HTML('Press <b><style bg="ansired">CTRL+D or exit </style></b>'
@@ -70,9 +72,14 @@ def bottom_toolbar():
 
 
 class CaseInsenstiveChoice(click.Choice):
-    """ Case Insensitive choice for click commands and options. """
+    """
+    Case Insensitive choice for click commands and options
+    """
     def convert(self, value, param, ctx):
-        """ Convert args to uppercase for evaluation. """
+        """
+        Convert args to uppercase for evaluation.
+
+        """
         if value is None:
             return None
         return super().convert(
@@ -80,7 +87,9 @@ class CaseInsenstiveChoice(click.Choice):
 
 
 class NumericChoice(click.Choice):
-    """ Numeric choice for click arguments and options. """
+    """
+    Numeric choice for click arguments and options.
+    """
     def __init__(self, choices, typ):
         self.typ = typ
         super().__init__(choices)
@@ -108,7 +117,9 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
 
     @use_keys.add('c-space')
     def _(event):
-        """ Initialize autocompletion, or select the next completion. """
+        """
+        Initialize autocompletion, or select the next completion.
+        """
         buff = event.app.current_buffer
         if buff.complete_state:
             buff.complete_next()
@@ -117,7 +128,9 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
 
     @use_keys.add('enter', filter=has_selected_completion)
     def _(event):
-        """ Makes the enter key work as the tab key only when showing the menu. """
+        """
+        Makes the enter key work as the tab key only when showing the menu.
+        """
 
         event.current_buffer.complete_state = None
         buffer = event.cli.current_buffer

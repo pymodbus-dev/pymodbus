@@ -1,4 +1,5 @@
-""" Copyright (c) 2020 by RiptideIO
+"""
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import sys
@@ -66,7 +67,8 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose): # pylint: dis
 @click.pass_context
 def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id, # pylint: disable=too-many-arguments
         modbus_config, randomize):
-    """ Run Reactive Modbus server exposing REST endpoint
+    """
+    Run Reactive Modbus server exposing REST endpoint
     for response manipulation.
     """
     repl = ctx.obj.pop("repl")

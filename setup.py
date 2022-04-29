@@ -51,6 +51,7 @@ setup(
     """,
     classifiers=[
         'Development Status :: 4 - Beta',
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -77,7 +78,7 @@ setup(
     platforms=['Linux', 'Mac OS X', 'Win'],
     include_package_data=True,
     zip_safe=True,
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     install_requires=install_requires,
     extras_require={
         'quality': [
@@ -100,7 +101,7 @@ setup(
         'tornado': [
             'tornado == 4.5.3'
         ],
-        'repl:python_version >= "3.8"': [
+        'repl:python_version >= "3.7"': [
             'click>=7.0',
             'prompt-toolkit>=3.0.8',
             'pygments>=2.2.0',

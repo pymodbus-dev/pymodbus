@@ -14,7 +14,6 @@ _MCB = ModbusControlBlock()
 
 
 class _OutOfSpaceException(Exception):
-    """ Internal out of space exception. """
     # This exception exists here as a simple, local way to manage response
     # length control for the only MODBUS command which requires it under
     # standard, non-error conditions. It and the structures associated with
@@ -134,7 +133,6 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.space_left = None
 
     def _encode_object(self, object_id, data):
-        """ Internal encode object. """
         self.space_left -= (2 + len(data))
         if self.space_left <= 0:
             raise _OutOfSpaceException(object_id)

@@ -47,7 +47,6 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
 
 
 def _print(value):
-    """ Internal print. """
     if hasattr(value, "bits"):
         result = value.bits
     elif hasattr(value, "registers"):

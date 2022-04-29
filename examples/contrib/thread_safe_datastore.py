@@ -51,7 +51,6 @@ class ReadWriteLock:
         self.writer = False                   # is there a current writer
 
     def __is_pending_writer(self):
-        """ Internal is pending writer. """
         return (self.writer                     # if there is a current writer
                 or (self.queue                    # or if there is a waiting writer
                     and (self.queue[0] != self.read_condition)))

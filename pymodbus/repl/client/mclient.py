@@ -70,7 +70,6 @@ class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
 
     @staticmethod
     def _process_exception(resp, **kwargs):
-        """ Internal process exception. """
         if not (unit := kwargs.get("unit")):
             err = {
                 "message": "Broadcast message, ignoring errors!!!"
@@ -358,7 +357,6 @@ class ExtendedRequestSupport: # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp)
 
     def _execute_diagnostic_request(self, request):
-        """ Internal execute diagnostic request. """
         resp = self.execute(request) # pylint: disable=no-member
         if not resp.isError():
             return {

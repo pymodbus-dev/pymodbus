@@ -131,7 +131,6 @@ class SqlSlaveContext(IModbusSlaveContext):
         return result
 
     def _check(self, type, offset, values): #NOSONAR pylint: disable=unused-argument,redefined-builtin
-        """ Internal check. """
         result = self._get(type, offset, count=1)
         return False if len(result) > 0 else True # pylint: disable=simplifiable-if-expression
 

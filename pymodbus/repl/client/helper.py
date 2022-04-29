@@ -77,7 +77,6 @@ class Command:
             self.args.update(**DEFAULT_KWARGS)
 
     def _create_help(self):
-        """ Internal create help. """
         doc = filter(lambda d: d, self.doc)
         cmd_help = list(filter(
             lambda x: not x.startswith(":param") and not x.startswith(
@@ -85,7 +84,6 @@ class Command:
         return " ".join(cmd_help).strip()
 
     def _create_arg_help(self):
-        """ Internal create arg help. """
         param_dict = {}
         params = list(filter(lambda d: d.strip().startswith(":param"),
                              self.doc))
@@ -139,7 +137,6 @@ class Command:
 
 
 def _get_requests(members):
-    """ Internal get requests. """
     commands = list(filter(lambda x: (x[0] not in EXCLUDE
                                       and x[0] not in CLIENT_METHODS
                                       and callable(x[1])),
@@ -154,7 +151,6 @@ def _get_requests(members):
 
 
 def _get_client_methods(members):
-    """ Internal get client methods. """
     commands = list(filter(lambda x: (x[0] not in EXCLUDE
                                       and x[0] in CLIENT_METHODS),
                            members))
@@ -168,7 +164,6 @@ def _get_client_methods(members):
 
 
 def _get_client_properties(members):
-    """ Internal get client properties. """
     global CLIENT_ATTRIBUTES # pylint: disable=global-variable-not-assigned
     commands = list(filter(lambda x: not callable(x[1]), members))
     commands = {
@@ -265,7 +260,6 @@ class Result:
         self.print_result()
 
     def _process_dict(self, use_dict):
-        """ Internal process dict. """
         new_dict = OrderedDict()
         for k, v in use_dict.items():
             if isinstance(v, bytes):

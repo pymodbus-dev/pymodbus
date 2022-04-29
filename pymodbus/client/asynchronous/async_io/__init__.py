@@ -270,7 +270,6 @@ class ReconnectingAsyncioModbusTcpClient:
         return protocol
 
     async def _connect(self):
-        """ Internal connect. """
         _logger.debug('Connecting.')
         try:
             transport, protocol = await self.loop.create_connection(
@@ -312,7 +311,6 @@ class ReconnectingAsyncioModbusTcpClient:
 
 
     async def _reconnect(self):
-        """ Internal reconnect. """
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
@@ -530,7 +528,6 @@ class ReconnectingAsyncioModbusUdpClient:
 
 
     async def _connect(self):
-        """ Internal connect. """
         _logger.debug('Connecting.')
         try:
             endpoint = await self.loop.create_datagram_endpoint(
@@ -574,7 +571,6 @@ class ReconnectingAsyncioModbusUdpClient:
                           'callback called while not connected.')
 
     async def _reconnect(self):
-        """ Internal reconnect. """
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
@@ -709,14 +705,12 @@ class AsyncioModbusSerialClient:
                     self.protocol.transport.close()
 
     def _create_protocol(self):
-        """ Internal create protocol. """
         protocol = self.protocol_class(framer=self.framer)
         protocol.factory = self
         return protocol
 
     @property
     def _connected(self):
-        """ Internal connected. """
         return self._connected_event.is_set()
 
     async def connect(self):

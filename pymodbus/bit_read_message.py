@@ -39,25 +39,25 @@ class ReadBitsRequestBase(ModbusRequest):
         :param data: The packet data to decode
         '''
         self.address, self.count = struct.unpack('>HH', data)
-
+    
     def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Byte Count(1 byte) + Quantity of Coils (n Bytes)/8,
         if the remainder is different of 0 then N = N+1
-        :return:
+        :return: 
         """
         count = self.count//8
         if self.count % 8:
             count += 1
 
         return 1 + 1 + count
-
+    
     def __str__(self):
         ''' Returns a string representation of the instance
 
         :returns: A string representation of the instance
         '''
-        return f"ReadBitRequest({self.address},{self.count})"
+        return "ReadBitRequest(%d,%d)" % (self.address, self.count)
 
 
 class ReadBitsResponseBase(ModbusResponse):
@@ -87,10 +87,10 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :param data: The packet data to decode
         '''
-        self.byte_count = byte2int(data[0]) # pylint: disable=attribute-defined-outside-init
+        self.byte_count = byte2int(data[0])
         self.bits = unpack_bitstring(data[1:])
 
-    def setBit(self, address, value=1): # pylint: disable=invalid-name
+    def setBit(self, address, value=1):
         ''' Helper function to set the specified bit
 
         :param address: The bit to set
@@ -98,14 +98,14 @@ class ReadBitsResponseBase(ModbusResponse):
         '''
         self.bits[address] = (value != 0)
 
-    def resetBit(self, address): # pylint: disable=invalid-name
+    def resetBit(self, address):
         ''' Helper function to set the specified bit to 0
 
         :param address: The bit to reset
         '''
         self.setBit(address, 0)
 
-    def getBit(self, address): # pylint: disable=invalid-name
+    def getBit(self, address):
         ''' Helper function to get the specified bit's value
 
         :param address: The bit to query
@@ -118,7 +118,7 @@ class ReadBitsResponseBase(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return f"{self.__class__.__name__}({len(self.bits)})"
+        return "%s(%d)" % (self.__class__.__name__, len(self.bits))
 
 
 class ReadCoilsRequest(ReadBitsRequestBase):
@@ -149,7 +149,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: The initializes response message, exception message otherwise
         '''
-        if not 1 <= self.count <= 0x7d0:
+        if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -208,7 +208,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: The initializes response message, exception message otherwise
         '''
-        if not 1 <= self.count <= 0x7d0:
+        if not (1 <= self.count <= 0x7d0):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)

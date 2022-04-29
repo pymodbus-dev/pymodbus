@@ -56,8 +56,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         :returns: The byte encoded message
         '''
         result  = struct.pack('>H', self.address)
-        if self.value:
-            result += _turn_coil_on
+        if self.value: result += _turn_coil_on
         else: result += _turn_coil_off
         return result
 
@@ -84,10 +83,10 @@ class WriteSingleCoilRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
-    def get_response_pdu_size(self): # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
-        :return:
+        :return: 
         """
         return 1 + 2 + 2
 
@@ -96,7 +95,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :return: A string representation of the instance
         '''
-        return f"WriteCoilRequest({self.address}, {self.value}) => "
+        return "WriteCoilRequest(%d, %s) => " % (self.address, self.value)
 
 
 class WriteSingleCoilResponse(ModbusResponse):
@@ -123,8 +122,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :return: The byte encoded message
         '''
         result  = struct.pack('>H', self.address)
-        if self.value:
-            result += _turn_coil_on
+        if self.value: result += _turn_coil_on
         else: result += _turn_coil_off
         return result
 
@@ -141,7 +139,7 @@ class WriteSingleCoilResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return f"WriteCoilResponse({self.address}) => {self.value}"
+        return "WriteCoilResponse(%d) => %d" % (self.address, self.value)
 
 
 class WriteMultipleCoilsRequest(ModbusRequest):
@@ -157,7 +155,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     '''
     function_code = 15
     _rtu_byte_count_pos = 6
-
+    
     def __init__(self, address=None, values=None, **kwargs):
         ''' Initializes a new instance
 
@@ -166,10 +164,8 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         '''
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
-        if not values:
-            values = []
-        elif not hasattr(values, '__iter__'):
-            values = [values]
+        if not values: values = []
+        elif not hasattr(values, '__iter__'): values = [values]
         self.values  = values
         self.byte_count = (len(self.values) + 7) // 8
 
@@ -200,9 +196,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: The populated response or exception message
         '''
         count = len(self.values)
-        if not 1 <= count <= 0x07b0:
+        if not (1 <= count <= 0x07b0):
             return self.doException(merror.IllegalValue)
-        if self.byte_count != (count + 7) // 8:
+        if (self.byte_count != (count + 7) // 8):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, count):
             return self.doException(merror.IllegalAddress)
@@ -216,9 +212,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: A string representation of the instance
         '''
         params = (self.address, len(self.values))
-        return "WriteNCoilRequest (%d) => %d " % params # pylint: disable=consider-using-f-string
+        return "WriteNCoilRequest (%d) => %d " % params
 
-    def get_response_pdu_size(self): # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """
         Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)
         :return:
@@ -263,7 +259,7 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 
         :returns: A string representation of the instance
         '''
-        return f"WriteNCoilResponse({self.address}, {self.count})"
+        return "WriteNCoilResponse(%d, %d)" % (self.address, self.count)
 
 #---------------------------------------------------------------------------#
 # Exported symbols

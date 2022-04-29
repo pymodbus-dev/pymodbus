@@ -12,7 +12,7 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 import logging
 
-from custom_message import CustomModbusRequest # pylint: disable=import-error
+from custom_message import CustomModbusRequest
 
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
@@ -106,7 +106,7 @@ def run_async_server():
     identity.ModelName = 'Pymodbus Server'
     identity.MajorMinorRevision = version.short()
     identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR 
     identity.ProductName = 'Pymodbus Server'
 
     # ----------------------------------------------------------------------- #

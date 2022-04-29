@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Client Example to showcase Device Information
+"""
+Pymodbus Synchronous Client Example to showcase Device Information
 --------------------------------------------------------------------------
 
 This client demonstrates the use of Device Information to get information

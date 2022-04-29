@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" An example of creating a fully implemented modbus server
+"""
+An example of creating a fully implemented modbus server
 with read/write data as well as user configurable base data
 """
 import logging
@@ -54,7 +55,8 @@ class ConfigurationException(Exception):
 
 
 class Configuration: # pylint: disable=too-few-public-methods
-    """ Class used to parse configuration file and create and modbus
+    """
+    Class used to parse configuration file and create and modbus
     datastore.
 
     The format of the configuration file is actually just a
@@ -63,7 +65,8 @@ class Configuration: # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, config):
-        """ Trys to load a configuration file, lets the file not
+        """
+        Trys to load a configuration file, lets the file not
         found exception fall through
 
         :param config: The pickled datastore

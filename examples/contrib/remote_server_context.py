@@ -1,4 +1,5 @@
-""" Although there is a remote server context already in the main library,
+"""
+Although there is a remote server context already in the main library,
 it works under the assumption that users would have a server context
 of the following form::
 

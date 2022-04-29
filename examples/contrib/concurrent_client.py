@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Concurrent Modbus Client
+"""
+Concurrent Modbus Client
 ---------------------------------------------------------------------------
 
 This is an example of writing a high performance modbus client that allows

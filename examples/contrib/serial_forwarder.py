@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Serial Forwarder
+"""
+Pymodbus Synchronous Serial Forwarder
 --------------------------------------------------------------------------
 
 We basically set the context for the tcp serial server to be that of a

@@ -1,4 +1,5 @@
-""" Modbus BCD Payload Builder
+"""
+Modbus BCD Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
@@ -59,7 +60,8 @@ def count_bcd_digits(bcd):
 
 
 class BcdPayloadBuilder(IPayloadBuilder):
-    """ A utility that helps build binary coded decimal payload
+    """
+    A utility that helps build binary coded decimal payload
     messages to be written with the various modbus messages.
     example::
 
@@ -139,7 +141,8 @@ class BcdPayloadBuilder(IPayloadBuilder):
 
 
 class BcdPayloadDecoder:
-    """ A utility that helps decode binary coded decimal payload
+    """
+    A utility that helps decode binary coded decimal payload
     messages from a modbus response message. What follows is
     a simple example::
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Modbus Message Generator
+"""
+Modbus Message Generator
 --------------------------------------------------------------------------
 
 The following is an example of how to generate example encoded messages

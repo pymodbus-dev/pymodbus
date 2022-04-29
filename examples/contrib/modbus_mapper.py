@@ -1,4 +1,5 @@
-""" Given a modbus mapping file, this is used to generate
+"""
+Given a modbus mapping file, this is used to generate
 decoder blocks so that non-programmers can define the
 register values and then decode a modbus device all
 without having to write a line of code for decoding.

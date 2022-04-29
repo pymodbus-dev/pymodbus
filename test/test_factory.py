@@ -150,10 +150,10 @@ class SimpleFactoryTest(unittest.TestCase):
             """ Custom request. """
             function_code = 0xff
         self.server.register(CustomRequest)
-        self.assertTrue(self.client.lookupPduClass(CustomRequest.function_code))
+        assert self.client.lookupPduClass(CustomRequest.function_code)
         CustomRequest.sub_function_code = 0xff
         self.server.register(CustomRequest)
-        self.assertTrue(self.server.lookupPduClass(CustomRequest.function_code))
+        assert self.server.lookupPduClass(CustomRequest.function_code)
 
     def test_client_register_custom_response(self):
         """ Test client register custom response. """
@@ -161,10 +161,10 @@ class SimpleFactoryTest(unittest.TestCase):
             """ Custom response. """
             function_code = 0xff
         self.client.register(CustomResponse)
-        self.assertTrue(self.client.lookupPduClass(CustomResponse.function_code))
+        assert self.client.lookupPduClass(CustomResponse.function_code)
         CustomResponse.sub_function_code = 0xff
         self.client.register(CustomResponse)
-        self.assertTrue(self.client.lookupPduClass(CustomResponse.function_code))
+        assert self.client.lookupPduClass(CustomResponse.function_code)
 #---------------------------------------------------------------------------#
 # I don't actually know what is supposed to be returned here, I assume that
 # since the high bit is set, it will simply echo the resulting message

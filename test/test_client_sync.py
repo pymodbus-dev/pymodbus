@@ -322,7 +322,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         client = ModbusTcpClient()
         client.framer = Mock()
         client.register(CustomRequest)
-        self.assertTrue(client.framer.decoder.register.called_once_with(CustomRequest))
+        assert client.framer.decoder.register.called_once_with(CustomRequest)
 
     # -----------------------------------------------------------------------#
     # Test TLS Client
@@ -437,7 +437,7 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
         client = ModbusTlsClient()
         client.framer = Mock()
         client.register(CustomeRequest)
-        self.assertTrue(client.framer.decoder.register.called_once_with(CustomeRequest))
+        assert client.framer.decoder.register.called_once_with(CustomeRequest)
 
     # -----------------------------------------------------------------------#
     # Test Serial Client
@@ -461,9 +461,9 @@ class SynchronousClientTest(unittest.TestCase): # pylint: disable=too-many-publi
     def test_sync_serial_rtu_client_timeouts(self): # pylint: disable=no-self-use
         """ Test sync serial rtu. """
         client = ModbusSerialClient(method="rtu", baudrate=9600)
-        self.assertEqual(client.silent_interval, round((3.5 * 11 / 9600), 6))
+        assert client.silent_interval == round((3.5 * 11 / 9600), 6)
         client = ModbusSerialClient(method="rtu", baudrate=38400)
-        self.assertEqual(client.silent_interval, round((1.75 / 1000), 6))
+        assert client.silent_interval == round((1.75 / 1000), 6)
 
     @patch("serial.Serial")
     def test_basic_sync_serial_client(self, mock_serial):

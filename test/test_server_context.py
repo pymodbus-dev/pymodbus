@@ -56,8 +56,8 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         request_db = [1, 2, 3]
         slave = ModbusSlaveContext()
         slave.register(0xff, 'custom_request', request_db)
-        self.assertEqual(slave.store["custom_request"],request_db)
-        self.assertEqual(slave.decode(0xff),'custom_request')
+        assert slave.store["custom_request"] == request_db
+        assert slave.decode(0xff) == 'custom_request'
 
 
 class ModbusServerMultipleContextTest(unittest.TestCase):

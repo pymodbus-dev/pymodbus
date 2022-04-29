@@ -114,7 +114,7 @@ class ModbusDataStoreTest(unittest.TestCase):
         block.setValues(0, {5: 32, 7: 43})
         self.assertEqual(block.getValues(5, 3), [32, 23, 43])
 
-        # assertEqual value is empty dict when initialized without params
+        # assert value is empty dict when initialized without params
         block = ModbusSparseDataBlock()
         self.assertEqual(block.values, {})
 
@@ -194,7 +194,7 @@ class RedisDataStoreTest(unittest.TestCase):
 
     def test_reset(self):
         """ Test reset. """
-        self.assertTrue(isinstance(self.slave.client, redis.Redis))
+        assert isinstance(self.slave.client, redis.Redis)
         self.slave.client = MagicMock()
         self.slave.reset()
         self.slave.client.flushall.assert_called_once_with()

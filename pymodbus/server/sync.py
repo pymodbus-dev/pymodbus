@@ -8,7 +8,6 @@ import traceback
 from binascii import b2a_hex
 import socket
 import serial
-import socketserver
 
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets
@@ -19,6 +18,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.transaction import ModbusAsciiFramer, ModbusSocketFramer, ModbusTlsFramer
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.compat import socketserver
 from pymodbus.server.tls_helper import sslctx_provider
 
 # --------------------------------------------------------------------------- #

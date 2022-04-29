@@ -11,7 +11,7 @@ from collections import OrderedDict
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
-from pymodbus.compat import iteritems, itervalues, int2byte
+from pymodbus.compat import iteritems, itervalues, izip, int2byte
 
 
 #---------------------------------------------------------------------------#
@@ -421,7 +421,7 @@ class ModbusCountersHandler:
 
         :returns: An iterator of the device counters
         '''
-        return zip(self.__names, itervalues(self.__data))
+        return izip(self.__names, itervalues(self.__data))
 
     def update(self, values):
         ''' Update the values of this identity

@@ -10,22 +10,21 @@ the data context (basically anything can become a modbus device).
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-import logging
-
 from pymodbus.server.sync import StartTcpServer as StartServer
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.datastore import ModbusServerContext
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_serial_forwarder():
-    """ Run serial forwarder. """
     # ----------------------------------------------------------------------- #
     # initialize the datastore(serial client)
     # Note this would send the requests on the serial client with address = 0

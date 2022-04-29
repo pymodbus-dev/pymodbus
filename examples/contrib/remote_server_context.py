@@ -19,14 +19,14 @@ slave for the client::
         0x02: client('host1.something.com', 0x02)
     }
 """
-import logging
-
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
 
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #
+
+import logging
 _logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------------- #
@@ -66,8 +66,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
-        txt = f"validate[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        _logger.debug("validate[%d] %d:%d" % (fx, address, count))
         result = self.context.get_callbacks[self.decode(fx)](address,
                                                              count,
                                                              self.unit_id)
@@ -81,8 +80,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        txt = f"get values[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        _logger.debug("get values[%d] %d:%d" % (fx, address, count))
         result = self.context.get_callbacks[self.decode(fx)](address,
                                                              count,
                                                              self.unit_id)
@@ -95,8 +93,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         """
-        txt = f"set values[{fx}] {address}:{len(values)}"
-        _logger.debug(txt)
+        _logger.debug("set values[%d] %d:%d" % (fx, address, len(values)))
         self.context.set_callbacks[self.decode(fx)](address,
                                                     values,
                                                     self.unit_id)
@@ -106,9 +103,9 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
 
         :returns: A string representation of the context
         """
-        return f"Remote Single Slave Context({self.unit_id})"
+        return "Remote Single Slave Context(%s)" % self.unit_id
 
-    def __extract_result(self, f_code, result): # pylint: disable=no-self-use
+    def __extract_result(self, fx, result):
         """ A helper method to extract the values out of
         a response. The future api should make the result
         consistent so we can just call `result.getValues()`.
@@ -117,12 +114,12 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param result: The resulting data
         """
         if not result.isError():
-            if f_code in ['d', 'c']:
+            if fx in ['d', 'c']:
                 return result.bits
-            if f_code in ['h', 'i']:
+            if fx in ['h', 'i']:
                 return result.registers
-            return None
-        return result
+        else:
+            return result
 
 # -------------------------------------------------------------------------- #
 # Server Context
@@ -131,7 +128,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
 # -------------------------------------------------------------------------- #
 
 
-class RemoteServerContext:
+class RemoteServerContext(object):
     """ This is a remote server context that allows one
     to create a server context backed by a single client that
     may be attached to many slave units. This can be used to
@@ -144,16 +141,16 @@ class RemoteServerContext:
         :param client: The client to retrieve values with
         """
         self.get_callbacks = {
-            'd': lambda a, c, s: client.read_discrete_inputs(a, c, s), # pylint: disable=unnecessary-lambda
-            'c': lambda a, c, s: client.read_coils(a, c, s), # pylint: disable=unnecessary-lambda
-            'h': lambda a, c, s: client.read_holding_registers(a, c, s), # pylint: disable=unnecessary-lambda
-            'i': lambda a, c, s: client.read_input_registers(a, c, s), # pylint: disable=unnecessary-lambda
+            'd': lambda a, c, s: client.read_discrete_inputs(a, c, s),
+            'c': lambda a, c, s: client.read_coils(a, c, s),
+            'h': lambda a, c, s: client.read_holding_registers(a, c, s),
+            'i': lambda a, c, s: client.read_input_registers(a, c, s),
         }
         self.set_callbacks = {
-            'd': lambda a, v, s: client.write_coils(a, v, s), # pylint: disable=unnecessary-lambda
-            'c': lambda a, v, s: client.write_coils(a, v, s), # pylint: disable=unnecessary-lambda
-            'h': lambda a, v, s: client.write_registers(a, v, s), # pylint: disable=unnecessary-lambda
-            'i': lambda a, v, s: client.write_registers(a, v, s), # pylint: disable=unnecessary-lambda
+            'd': lambda a, v, s: client.write_coils(a, v, s),
+            'c': lambda a, v, s: client.write_coils(a, v, s),
+            'h': lambda a, v, s: client.write_registers(a, v, s),
+            'i': lambda a, v, s: client.write_registers(a, v, s),
         }
         self._client = client
         self.slaves = {}  # simply a cache
@@ -163,7 +160,7 @@ class RemoteServerContext:
 
         :returns: A string representation of the context
         """
-        return f"Remote Server Context{self._client}"
+        return "Remote Server Context(%s)" % self._client
 
     def __iter__(self):
         """ Iterater over the current collection of slave

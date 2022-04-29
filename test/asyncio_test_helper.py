@@ -32,6 +32,9 @@ def return_as_coroutine(return_value=None):
         def test_it(mock_sleep):
             mock_sleep.side_effect = return_as_coroutine()
             result = run_coroutine(my_coro_under_test)
+            assert mock_sleep.call_count == 2
+            assert mock_sleep.call_args_list == [mock.call(1), mock.call(2)]
+            assert result == 42
     """
     return functools.partial(_yielded_return, return_value)
 

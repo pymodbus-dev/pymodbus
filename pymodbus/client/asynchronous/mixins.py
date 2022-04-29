@@ -1,6 +1,12 @@
-"""Mix ins."""
 import logging
 from pymodbus.client.sync import BaseModbusClient
+# from pymodbus.bit_read_message import *
+# from pymodbus.bit_write_message import *
+# from pymodbus.register_read_message import *
+# from pymodbus.register_write_message import *
+# from pymodbus.diag_message import *
+# from pymodbus.file_message import *
+# from pymodbus.other_message import *
 from pymodbus.constants import Defaults
 
 from pymodbus.factory import ClientDecoder

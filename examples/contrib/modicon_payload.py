@@ -140,11 +140,11 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         :param value: The value to add to the buffer
         """
         fstring = self._endian + 's'
-        for i in value:
-            self._payload.append(pack(fstring, i))
+        for c in value:
+            self._payload.append(pack(fstring, c))
 
 
-class ModiconPayloadDecoder:
+class ModiconPayloadDecoder(object):
     """
     A utility that helps decode modicon encoded payload
     messages from a modbus response message. What follows is
@@ -254,7 +254,7 @@ class ModiconPayloadDecoder:
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
-    def decode_32bit_float(self):
+    def decode_32bit_float(self, size=1):
         """ Decodes a float from the buffer
         """
         self._pointer += 4

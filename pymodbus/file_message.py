@@ -13,7 +13,7 @@ from pymodbus.pdu import ModbusExceptions as merror
 #---------------------------------------------------------------------------#
 # File Record Types
 #---------------------------------------------------------------------------#
-class FileRecord: # pylint: disable=eq-without-hash
+class FileRecord:
     ''' Represents a file record and its relevant data.
     '''
 

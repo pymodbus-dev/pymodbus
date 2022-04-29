@@ -65,7 +65,7 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return:
         """
-        return len(words) == 1 and len(word_before_cursor)
+        return len(words) == 1 and word_before_cursor != ''
 
     def completing_arg(self, words, word_before_cursor): # pylint: disable=no-self-use
         """
@@ -76,7 +76,7 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return: Specifies whether we are currently completing an arg.
         """
-        return len(words) > 1 and len(word_before_cursor)
+        return len(words) > 1 and word_before_cursor != ''
 
     def arg_completions(self, words, word_before_cursor): # pylint: disable=unused-argument
         """

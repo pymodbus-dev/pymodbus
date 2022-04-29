@@ -37,4 +37,4 @@ try:
         shutil.move("html", "../../../build/epydoc")
 except Exception: # pylint: disable=broad-except
     traceback.print_exc(file=sys.stdout)
-    print( "Epydoc not available...not building")
+    print( "Epydoc not avaliable...not building")

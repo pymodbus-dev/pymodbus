@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Test other messages. """
+""" Test other messsages. """
 import unittest
 import mock
 
@@ -30,7 +30,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         del self.responses
 
     def test_other_messages_to_string(self):
-        """ Test other messages to string. """
+        """ Test other messsages to string. """
         for message in self.requests:
             self.assertNotEqual(str(message()), None)
         for message in self.responses:

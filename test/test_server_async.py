@@ -76,7 +76,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def test_data_received(self):
         """ Test data received. """
         protocol = ModbusTcpProtocol()
-        # mock_data = "Hello world!"
+        # mock_data = "Hellow world!"
         mock_data = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         protocol.factory = MagicMock()
         protocol.factory.control.ListenOnly = False

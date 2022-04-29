@@ -18,7 +18,7 @@ class SimpleExceptionsTest(unittest.TestCase):
         self.exceptions = [
                 ModbusException("bad base"),
                 ModbusIOException("bad register"),
-                ParameterException("bad parameter"),
+                ParameterException("bad paramater"),
                 NotImplementedException("bad function"),
                 ConnectionException("bad connection"),
         ]

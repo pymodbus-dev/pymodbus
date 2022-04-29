@@ -2,5 +2,4 @@
 flake8 >= 2.6.0
 flake8-docstrings >= 0.2.8
 pyflakes >= 1.2.3
-pylint >= 2.13.3
-codespell >= 2.1.0
+pylint >=2.13.3

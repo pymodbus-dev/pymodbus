@@ -118,7 +118,7 @@ class ModbusDataStoreTest(unittest.TestCase):
         block = ModbusSparseDataBlock()
         self.assertEqual(block.values, {})
 
-        # mark block as unmutable and see if parameter exception
+        # mark block as unmutable and see if parameter exeception
         # is raised for invalid offset writes
         block = ModbusSparseDataBlock({1: 100}, mutable=False)
         self.assertRaises(ParameterException, block.setValues, 0, 1)
@@ -403,7 +403,7 @@ class SqlDataStoreTest(unittest.TestCase):
         )
 
     def test_update_success(self):
-        """ Test update success. """
+        """ Test update succcess. """
         self.slave._connection.execute = MagicMock( # pylint: disable=protected-access
             return_value=MockSqlResult(rowcount=len(self.mock_values))
         )

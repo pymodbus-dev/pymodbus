@@ -14,9 +14,6 @@ from serial import __version__ as pyserial_version
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
-# from pymodbus.server.sync import StartUdpServer #NOSONAR
-# from pymodbus.server.sync import StartSerialServer #NOSONAR
-# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus import __version__ as pymodbus_version

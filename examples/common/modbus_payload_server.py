@@ -16,7 +16,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.constants import Endian
-# from pymodbus.payload import BinaryPayloadDecoder #NOSONAR
 from pymodbus.payload import BinaryPayloadBuilder
 
 # --------------------------------------------------------------------------- #

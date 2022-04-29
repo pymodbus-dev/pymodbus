@@ -15,13 +15,9 @@ import asyncio
 
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
-# from pymodbus.server.async_io import StartTlsServer #NOSONAR
-# from pymodbus.server.async_io import StartUdpServer #NOSONAR
-# from pymodbus.server.async_io import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
-# from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

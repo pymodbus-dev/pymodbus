@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 # pylint: disable-all
+#!/usr/bin/env python3
 """
 Pydoc sub-class for generating documentation for entire packages.
 
@@ -51,7 +51,7 @@ def classify_class_attrs(cls):
 		else:
 			try:
 				obj = getattr(cls, name)
-			except AttributeError:
+			except AttributeError, err:
 				continue
 
 		# Figure out where it was defined.

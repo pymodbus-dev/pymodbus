@@ -6,16 +6,12 @@ Epydoc API Runner
 Using pkg_resources, we attempt to see if epydoc is installed,
 if so, we use its cli program to compile the documents
 '''
-import sys
-import os
-import shutil
-import traceback
-import pkg_resources
-
 try:
+    import sys, os, shutil
+    import pkg_resources
     pkg_resources.require("epydoc")
 
-    from epydoc.cli import cli # pylint: disable=import-error
+    from epydoc.cli import cli
     sys.argv = '''epydoc.py pymodbus
         --html --simple-term --quiet
         --include-log
@@ -36,6 +32,7 @@ try:
 
     if os.path.exists('../../../build'):
         shutil.move("html", "../../../build/epydoc")
-except Exception: # pylint: disable=broad-except
+except Exception as ex:
+    import traceback,sys
     traceback.print_exc(file=sys.stdout)
     print( "Epydoc not avaliable...not building")

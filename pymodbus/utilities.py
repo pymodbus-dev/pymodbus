@@ -5,6 +5,7 @@ Modbus Utilities
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+from six import string_types
 from pymodbus.compat import int2byte, byte2int
 
 
@@ -132,7 +133,7 @@ def make_byte_string(byte_string):
     :param s:
     :return:
     """
-    if isinstance(byte_string, str):
+    if isinstance(byte_string, string_types):
         byte_string = byte_string.encode()
     return byte_string
 # --------------------------------------------------------------------------- #

@@ -163,7 +163,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     the client handler for a connected protocol (TCP).
     """
 
-    def handle(self): # pylint: disable=too-many-branches,too-complex
+    def handle(self): # pylint: disable=too-many-branches
         """ Callback when we receive any data, until self.running becomes False.
         Blocks indefinitely awaiting data.  If shutdown is required, then the
         global socket.settimeout(<seconds>) may be used, to allow timely

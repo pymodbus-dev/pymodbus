@@ -118,7 +118,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
             return mbap.get('length') == exp_resp_len
         return True
 
-    def execute(self, request): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
+    def execute(self, request): #NOSONAR pylint: disable=too-many-statements,too-many-branches
         """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
@@ -244,7 +244,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, packet, response_length, # pylint: disable=too-complex
+    def _transact(self, packet, response_length,
                   full=False, broadcast=False):
         """ Does a Write and Read transaction
         :param packet: packet to be sent
@@ -298,7 +298,7 @@ class ModbusTransactionManager: # pylint: disable=too-many-instance-attributes
     def _send(self, packet, retrying=False): #NOSONAR pylint: disable=unused-argument
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
+    def _recv(self, expected_response_length, full): #NOSONAR pylint: disable=too-many-statements,too-many-branches
         total = None
         if not full:
             exception_length = self._calculate_exception_length()

@@ -101,7 +101,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches,too-complex
+def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
     """Client definition."""
     use_keys = KeyBindings()
     history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))

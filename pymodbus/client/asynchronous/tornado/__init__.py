@@ -314,7 +314,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
 
         raise gen.Return(self)
 
-    def execute(self, request=None): #NOSONAR pylint: disable=signature-differs,too-complex
+    def execute(self, request=None): #NOSONAR pylint: disable=signature-differs
         """ Executes a transaction
         :param request: Request to be written on to the bus
         :return:

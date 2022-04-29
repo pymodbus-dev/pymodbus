@@ -36,22 +36,21 @@ from pymodbus.diag_message import (
 
 
 def make_response_dict(resp):
-    """Make response dict."""
-    resp_dict = {
+    rd = {
         'function_code': resp.function_code,
         'address': resp.address
     }
     if hasattr(resp, "value"):
-        resp_dict['value'] = resp.value
+        rd['value'] = resp.value
     elif hasattr(resp, 'values'):
-        resp_dict['values'] = resp.values
+        rd['values'] = resp.values
     elif hasattr(resp, 'count'):
-        resp_dict['count'] = resp.count
-    return resp_dict
+        rd['count'] = resp.count
+
+    return rd
 
 
 def handle_brodcast(func):
-    """Handle broadcast."""
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
         self = args[0]
@@ -62,12 +61,12 @@ def handle_brodcast(func):
             }
         if not resp.isError():
             return make_response_dict(resp)
-        return ExtendedRequestSupport._process_exception(resp, **kwargs) # pylint: disable=protected-access
+        else:
+            return ExtendedRequestSupport._process_exception(resp, **kwargs)
     return _wrapper
 
 
-class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
-    """Extended request support."""
+class ExtendedRequestSupport(object):
 
     @staticmethod
     def _process_exception(resp, **kwargs):
@@ -79,14 +78,17 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         else:
             if isinstance(resp, ExceptionResponse):
                 err = {
-                    'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
-                    'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",
+                    'original_function_code': "{} ({})".format(
+                        resp.original_code, hex(resp.original_code)),
+                    'error_function_code': "{} ({})".format(
+                        resp.function_code, hex(resp.function_code)),
                     'exception code': resp.exception_code,
                     'message': ModbusExceptions.decode(resp.exception_code)
                 }
             elif isinstance(resp, ModbusIOException):
                 err = {
-                    'original_function_code': f"{resp.fcode} ({hex(resp.fcode)})",
+                    'original_function_code': "{} ({})".format(
+                        resp.fcode, hex(resp.fcode)),
                     'error': resp.message
                 }
             else:
@@ -104,14 +106,15 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :returns: List of register values
         """
-        resp = super().read_coils(address, # pylint: disable=no-member
-                                    count, **kwargs)
+        resp = super(ExtendedRequestSupport, self).read_coils(address,
+                                                              count, **kwargs)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'bits': resp.bits
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def read_discrete_inputs(self, address, count=1, **kwargs):
         """
@@ -122,13 +125,15 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return: List of bits
         """
-        resp = super().read_discrete_inputs(address, count, **kwargs) # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport,
+                     self).read_discrete_inputs(address, count, **kwargs)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'bits': resp.bits
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     @handle_brodcast
     def write_coil(self, address, value, **kwargs):
@@ -140,7 +145,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().write_coil( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).write_coil(
             address, value, **kwargs)
         return resp
 
@@ -154,7 +159,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().write_coils( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).write_coils(
             address, values, **kwargs)
         return resp
 
@@ -168,7 +173,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().write_register( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).write_register(
             address, value, **kwargs)
         return resp
 
@@ -182,7 +187,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().write_registers( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).write_registers(
             address, values, **kwargs)
         return resp
 
@@ -195,14 +200,15 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().read_holding_registers( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).read_holding_registers(
             address, count, **kwargs)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'registers': resp.registers
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def read_input_registers(self, address, count=1, **kwargs):
         """
@@ -213,14 +219,15 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().read_input_registers( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).read_input_registers(
             address, count, **kwargs)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'registers': resp.registers
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def readwrite_registers(self, read_address, read_count, write_address,
                             write_registers, **kwargs):
@@ -236,7 +243,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().readwrite_registers( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).readwrite_registers(
             read_address=read_address,
             read_count=read_count,
             write_address=write_address,
@@ -248,7 +255,8 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
                 'function_code': resp.function_code,
                 'registers': resp.registers
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def mask_write_register(self, address=0x0000,
                             and_mask=0xffff, or_mask=0x0000, **kwargs):
@@ -262,7 +270,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        resp = super().mask_write_register( # pylint: disable=no-member
+        resp = super(ExtendedRequestSupport, self).mask_write_register(
             address=address, and_mask=and_mask, or_mask=or_mask, **kwargs)
         if not resp.isError():
             return {
@@ -271,7 +279,8 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
                 'and mask': resp.and_mask,
                 'or mask': resp.or_mask
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def read_device_information(self, read_code=None,
                                         object_id=0x00, **kwargs):
@@ -284,7 +293,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ReadDeviceInformationRequest(read_code, object_id, **kwargs)
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
@@ -295,7 +304,8 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
                 'more follows': resp.more_follows,
                 'space left': resp.space_left
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def report_slave_id(self, **kwargs):
         """
@@ -305,7 +315,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ReportSlaveIdRequest(**kwargs)
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
@@ -313,7 +323,8 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
                 'status': resp.status,
                 'byte count': resp.byte_count
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def read_exception_status(self, **kwargs):
         """
@@ -321,18 +332,19 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
          device.
 
         :param unit: The slave unit this request is targeting
-
+        
         :return:
 
         """
         request = ReadExceptionStatusRequest(**kwargs)
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'status': resp.status
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def get_com_event_counter(self, **kwargs):
         """
@@ -345,14 +357,15 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
 
         """
         request = GetCommEventCounterRequest(**kwargs)
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
                 'status': resp.status,
                 'count': resp.count
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def get_com_event_log(self, **kwargs):
         """
@@ -363,7 +376,7 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :return:
         """
         request = GetCommEventLogRequest(**kwargs)
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function_code': resp.function_code,
@@ -372,17 +385,19 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
                 'event count': resp.event_count,
                 'events': resp.events,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def _execute_diagnostic_request(self, request):
-        resp = self.execute(request) # pylint: disable=no-member
+        resp = self.execute(request)
         if not resp.isError():
             return {
                 'function code': resp.function_code,
                 'sub function code': resp.sub_function_code,
                 'message': resp.message
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        else:
+            return ExtendedRequestSupport._process_exception(resp)
 
     def return_query_data(self, message=0, **kwargs):
         """
@@ -579,16 +594,13 @@ class ExtendedRequestSupport(): # pylint: disable=(too-many-public-methods
         :param unit: The slave unit this request is targeting
         :return:
         """
-        request = GetClearModbusPlusRequest(data, **kwargs) # pylint: disable=too-many-function-args
+        request = GetClearModbusPlusRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
 
 class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
-    """Modbus serial client."""
-
     def __init__(self, method, **kwargs):
-        """Setup class."""
-        super().__init__(method, **kwargs)
+        super(ModbusSerialClient, self).__init__(method, **kwargs)
 
     def get_port(self):
         """
@@ -718,6 +730,5 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
 
 class ModbusTcpClient(ExtendedRequestSupport, _ModbusTcpClient):
-    """TCP client."""
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(ModbusTcpClient, self).__init__(**kwargs)

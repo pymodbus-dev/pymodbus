@@ -15,7 +15,6 @@ from pymodbus.compat import string_types
 
 @Condition
 def has_selected_completion():
-    """Check for selected completion."""
     complete_state = get_app().current_buffer.complete_state
     return (complete_state is not None and
             complete_state.current_completion is not None)
@@ -48,15 +47,13 @@ class CmdCompleter(Completer):
 
     @property
     def commands(self):
-        """Return commands."""
         return self._commands
 
     @property
     def command_names(self):
-        """Return command names."""
         return self._commands.keys()
 
-    def completing_command(self, words, word_before_cursor): # pylint: disable=no-self-use
+    def completing_command(self, words, word_before_cursor):
         """
         Determine if we are dealing with supported command.
 
@@ -65,9 +62,12 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return:
         """
-        return len(words) == 1 and word_before_cursor != ''
+        if len(words) == 1 and word_before_cursor != '':
+            return True
+        else:
+            return False
 
-    def completing_arg(self, words, word_before_cursor): # pylint: disable=no-self-use
+    def completing_arg(self, words, word_before_cursor):
         """
         Determine if we are currently completing an argument.
 
@@ -76,9 +76,12 @@ class CmdCompleter(Completer):
             which might be one or more blank spaces.
         :return: Specifies whether we are currently completing an arg.
         """
-        return len(words) > 1 and word_before_cursor != ''
+        if len(words) > 1 and word_before_cursor != '':
+            return True
+        else:
+            return False
 
-    def arg_completions(self, words, word_before_cursor): # pylint: disable=unused-argument
+    def arg_completions(self, words, word_before_cursor):
         """
         Generates arguments completions based on the input.
 
@@ -89,7 +92,8 @@ class CmdCompleter(Completer):
         """
         cmd = words[0].strip()
         cmd = self._commands.get(cmd, None)
-        return cmd if cmd else None
+        if cmd:
+            return cmd
 
     def _get_completions(self, word, word_before_cursor):
         if self.ignore_case:
@@ -145,8 +149,8 @@ class CmdCompleter(Completer):
                 commands = list(command.get_completion())
                 commands = list(filter(lambda cmd: not(any(cmd in x for x in words)), commands))
                 meta = command.get_meta
-        for command in commands:
-            if self._get_completions(command, word_before_cursor):
-                _, display_meta = meta(command) if meta else ('', '')
-                yield Completion(command, -len(word_before_cursor),
+        for a in commands:
+            if self._get_completions(a, word_before_cursor):
+                cmd, display_meta = meta(a) if meta else ('', '')
+                yield Completion(a, -len(word_before_cursor),
                                  display_meta=display_meta)

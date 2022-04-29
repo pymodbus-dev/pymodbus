@@ -5,52 +5,45 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
 from __future__ import absolute_import, unicode_literals
-import logging
-import sys
 try:
     import click
 except ImportError:
     print("click not installed!! Install with 'pip install click'")
-    sys.exit(1)
+    exit(1)
 try:
     from prompt_toolkit import PromptSession, print_formatted_text
 except ImportError:
     print("prompt toolkit is not installed!! "
           "Install with 'pip install prompt_toolkit --upgrade'")
-    sys.exit(1)
+    exit(1)
 
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from prompt_toolkit.key_binding import KeyBindings
+
+from pygments.lexers.python import PythonLexer
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-
-
-from pygments.lexers.python import PythonLexer
-
 from pymodbus.version import version
 from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
 from pymodbus.repl.client.helper import Result, CLIENT_ATTRIBUTES
-from pymodbus.repl.client.mclient import ModbusSerialClient
-from pymodbus.repl.client.mclient import ModbusTcpClient
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
 
 click.disable_unicode_literals_warning = True
 
-TITLE = (
-'----------------------------------------------------------------------------'
-'__________          _____             .___  __________              .__   '
-'\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  ' # pylint: disable=anomalous-backslash-in-string
-' |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  ' # pylint: disable=anomalous-backslash-in-string
-' |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__' # pylint: disable=anomalous-backslash-in-string
-' |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/' # pylint: disable=anomalous-backslash-in-string
-'           \/            \/            \/ \/        \/     \/|__|' # pylint: disable=anomalous-backslash-in-string
-f'                                        v1.3.0 - {version}'
-'----------------------------------------------------------------------------'
-)
-_logger = logging.getLogger(__name__)
+TITLE = """
+----------------------------------------------------------------------------
+__________          _____             .___  __________              .__   
+\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  
+ |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  
+ |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
+ |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
+           \/            \/            \/ \/        \/     \/|__|
+                                        v{} - {}         
+----------------------------------------------------------------------------
+""".format("1.3.0", version)
 
+log = None
 
 style = Style.from_dict({
     'completion-menu.completion': 'bg:#008888 #ffffff',
@@ -80,7 +73,7 @@ class CaseInsenstiveChoice(click.Choice):
         """
         if value is None:
             return None
-        return super().convert(
+        return super(CaseInsenstiveChoice, self).convert(
             value.strip().upper(), param, ctx)
 
 
@@ -90,7 +83,7 @@ class NumericChoice(click.Choice):
     """
     def __init__(self, choices, typ):
         self.typ = typ
-        super().__init__(choices)
+        super(NumericChoice, self).__init__(choices)
 
     def convert(self, value, param, ctx):
         # Exact match
@@ -99,20 +92,18 @@ class NumericChoice(click.Choice):
 
         if ctx is not None and ctx.token_normalize_func is not None:
             value = ctx.token_normalize_func(value)
-            for choice in self.casted_choices: # pylint: disable=no-member
+            for choice in self.casted_choices:
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail('invalid choice: %s. (choose from %s)' % # pylint: disable=consider-using-f-string
+        self.fail('invalid choice: %s. (choose from %s)' %
                   (value, ', '.join(self.choices)), param, ctx)
-        return None
 
 
-def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
-    """Client definition."""
-    use_keys = KeyBindings()
+def cli(client):
+    kb = KeyBindings()
 
-    @use_keys.add('c-space')
+    @kb.add('c-space')
     def _(event):
         """
         Initialize autocompletion, or select the next completion.
@@ -123,15 +114,15 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
         else:
             buff.start_completion(select_first=False)
 
-    @use_keys.add('enter', filter=has_selected_completion)
+    @kb.add('enter', filter=has_selected_completion)
     def _(event):
         """
         Makes the enter key work as the tab key only when showing the menu.
         """
 
         event.current_buffer.complete_state = None
-        buffer = event.cli.current_buffer
-        buffer.complete_state = None
+        b = event.cli.current_buffer
+        b.complete_state = None
 
     def _process_args(args, string=True):
         kwargs = {}
@@ -142,16 +133,16 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                 continue
             arg = arg.strip()
             if "=" in arg:
-                arg_name, val = arg.split("=")
+                a, val = arg.split("=")
                 if not string:
                     if "," in val:
                         val = val.split(",")
                         val = [int(v) for v in val]
                     else:
                         val = int(val)
-                kwargs[arg_name] = val
+                kwargs[a] = val
             else:
-                arg_name, val = arg, args[i + 1]
+                a, val = arg, args[i + 1]
                 try:
                     if not string:
                         if "," in val:
@@ -159,7 +150,7 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                             val = [int(v) for v in val]
                         else:
                             val = int(val)
-                    kwargs[arg_name] = val
+                    kwargs[a] = val
                     skip_index = i + 1
                 except TypeError:
                     click.secho("Error parsing arguments!",
@@ -177,12 +168,12 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                             completer=CmdCompleter(client), style=style,
                             complete_while_typing=True,
                             bottom_toolbar=bottom_toolbar,
-                            key_bindings=use_keys,
+                            key_bindings=kb,
                             history=FileHistory('../.pymodhis'),
                             auto_suggest=AutoSuggestFromHistory())
-    click.secho(f"{TITLE}", fg='green')
+    click.secho("{}".format(TITLE), fg='green')
     result = None
-    while True: # pylint: disable=too-many-nested-blocks
+    while True:
         try:
 
             text = session.prompt('> ', complete_while_typing=True)
@@ -191,14 +182,14 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                 for cmd, obj in sorted(session.completer.commands.items()):
                     if cmd != 'help':
                         print_formatted_text(
-                            HTML("<skyblue>{:45s}</skyblue>" # pylint: disable=consider-using-f-string
+                            HTML("<skyblue>{:45s}</skyblue>"
                                  "<seagreen>{:100s}"
                                  "</seagreen>".format(cmd, obj.help_text)))
 
                 continue
-            if text.strip().lower() == 'exit':
+            elif text.strip().lower() == 'exit':
                 raise EOFError()
-            if text.strip().lower().startswith("client."):
+            elif text.strip().lower().startswith("client."):
                 try:
                     text = text.strip().split()
                     cmd = text[0].split(".")[1]
@@ -210,8 +201,8 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
                         else:
                             result = Result(getattr(client, cmd)(**kwargs))
                         result.print_result()
-                except Exception as exc:  # pylint: disable=broad-except
-                    click.secho(repr(exc), fg='red')
+                except Exception as e:
+                    click.secho(repr(e), fg='red')
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()
@@ -226,8 +217,8 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
             continue  # Control-C pressed. Try again.
         except EOFError:
             break  # Control-D pressed.
-        except Exception as exc:  # Handle all other exceptions pylint: disable=broad-except
-            click.secho(str(exc), fg='red')
+        except Exception as e:  # Handle all other exceptions
+            click.secho(str(e), fg='red')
 
     click.secho('GoodBye!', fg='blue')
 
@@ -244,14 +235,16 @@ def cli(client): #NOSONAR pylint: disable=too-many-statements,too-many-branches
 @click.option("--retries", default=3, help="Retry count")
 @click.option("--reset-socket/--no-reset-socket", default=True, help="Reset client socket on error")
 @click.pass_context
-def main(ctx, verbose, broadcast_support, retry_on_empty, # pylint: disable=too-many-arguments
+def main(ctx, verbose, broadcast_support, retry_on_empty,
          retry_on_error, retries, reset_socket):
-    """Main function."""
     if verbose:
-        use_format = ('%(asctime)-15s %(threadName)-15s '
+        global log
+        import logging
+        format = ('%(asctime)-15s %(threadName)-15s '
                   '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-        _logger.basicConfig(format=use_format)
-        _logger.setLevel(logging.DEBUG)
+        log = logging.getLogger('pymodbus')
+        logging.basicConfig(format=format)
+        log.setLevel(logging.DEBUG)
     ctx.obj = {
         "broadcast": broadcast_support,
         "retry_on_empty": retry_on_empty,
@@ -281,10 +274,11 @@ def main(ctx, verbose, broadcast_support, retry_on_empty, # pylint: disable=too-
     help="Override the default packet framer tcp|rtu",
 )
 def tcp(ctx, host, port, framer):
-    """Define TCP."""
+    from pymodbus.repl.client.mclient import ModbusTcpClient
     kwargs = dict(host=host, port=port)
     kwargs.update(**ctx.obj)
     if framer == 'rtu':
+        from pymodbus.framer.rtu_framer import ModbusRtuFramer
         kwargs['framer'] = ModbusRtuFramer
     client = ModbusTcpClient(**kwargs)
     cli(client)
@@ -368,9 +362,9 @@ def tcp(ctx, host, port, framer):
     default=2,
     type=float
 )
-def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff, # pylint: disable=too-many-arguments
+def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff,
            rtscts, dsrdtr, timeout, write_timeout):
-    """Define serial communication."""
+    from pymodbus.repl.client.mclient import ModbusSerialClient
     client = ModbusSerialClient(method=method,
                                 port=port,
                                 baudrate=baudrate,
@@ -387,4 +381,4 @@ def serial(ctx, method, port, baudrate, bytesize, parity, stopbits, xonxoff, # p
 
 
 if __name__ == "__main__":
-    main() # pylint: disable=no-value-for-parameter
+    main()

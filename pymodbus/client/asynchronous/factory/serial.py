@@ -1,4 +1,5 @@
-""" Factory to create asynchronous serial clients based on twisted/tornado/asyncio
+"""
+Factory to create asynchronous serial clients based on twisted/tornado/asyncio
 """
 # pylint: disable=R0801
 from __future__ import unicode_literals
@@ -17,7 +18,8 @@ _logger = logging.getLogger(__name__)
 
 
 def reactor_factory(port, framer, **kwargs):
-    """Factory to create twisted serial asynchronous client
+    """
+    Factory to create twisted serial asynchronous client
     :param port: Serial port
     :param framer: Modbus Framer
     :param kwargs:
@@ -30,12 +32,12 @@ def reactor_factory(port, framer, **kwargs):
     class SerialClientFactory(ClientFactory):
         """Define serial client factory."""
         def __init__(self, framer, proto_cls):
-            """ Remember things necessary for building a protocols """
+            ''' Remember things necessary for building a protocols '''
             self.proto_cls = proto_cls
             self.framer = framer
 
         def buildProtocol(self): # pylint: disable=arguments-differ
-            """ Create a protocol and start the reading cycle """
+            ''' Create a protocol and start the reading cycle '''
             proto = self.proto_cls(self.framer)
             proto.factory = self
             return proto
@@ -44,10 +46,10 @@ def reactor_factory(port, framer, **kwargs):
         """Define serial client."""
 
         def __init__(self, framer, *args, **kwargs):
-            """ Setup the client and start listening on the serial port
+            ''' Setup the client and start listening on the serial port
 
             :param factory: The factory to build clients with
-            """
+            '''
             self.decoder = ClientDecoder()
             proto_cls = kwargs.pop("proto_cls", None)
             proto = SerialClientFactory(framer, proto_cls).buildProtocol()
@@ -61,7 +63,8 @@ def reactor_factory(port, framer, **kwargs):
 
 
 def io_loop_factory(port=None, framer=None, **kwargs):
-    """ Factory to create Tornado based asynchronous serial clients
+    """
+    Factory to create Tornado based asynchronous serial clients
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs:
@@ -83,7 +86,8 @@ def io_loop_factory(port=None, framer=None, **kwargs):
 
 
 def async_io_factory(port=None, framer=None, **kwargs):
-    """ Factory to create asyncio based asynchronous serial clients
+    """
+    Factory to create asyncio based asynchronous serial clients
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs: Serial port options
@@ -108,7 +112,8 @@ def async_io_factory(port=None, framer=None, **kwargs):
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """
+    Gets protocol factory based on the backend scheduler being used
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
     :return:
     """

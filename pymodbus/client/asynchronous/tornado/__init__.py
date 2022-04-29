@@ -1,4 +1,6 @@
-""" Asynchronous framework adapter for tornado. """
+"""
+Asynchronous framework adapter for tornado.
+"""
 # pylint: disable=R0801
 from __future__ import unicode_literals
 
@@ -30,13 +32,15 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseTornadoClient(AsyncModbusClientMixin):
-    """ Base Tornado client. """
-    
+    """
+    Base Tornado client
+    """
     stream = None
     io_loop = None
 
     def __init__(self, *args, **kwargs):
-        """ Initializes BaseTornadoClient.
+        """
+        Initializes BaseTornadoClient.
         ioloop to be passed as part of kwargs ('ioloop')
         :param args:
         :param kwargs:
@@ -46,11 +50,14 @@ class BaseTornadoClient(AsyncModbusClientMixin):
 
     @abc.abstractmethod
     def get_socket(self):
-        """ Return instance of the socket to connect to. """
+        """
+        return instance of the socket to connect to
+        """
 
     @gen.coroutine
     def connect(self):
-        """ Connect to the socket identified by host and port
+        """
+        Connect to the socket identified by host and port
 
         :returns: Future
         :rtype: tornado.concurrent.Future
@@ -66,7 +73,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         raise gen.Return(self)
 
     def on_receive(self, *args):
-        """ On data recieve call back
+        """
+        On data recieve call back
         :param args: data received
         :return:
         """
@@ -80,7 +88,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
     def execute(self, request=None):
-        """ Executes a transaction
+        """
+        Executes a transaction
         :param request:
         :return:
         """
@@ -92,7 +101,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         return self._build_response(request.transaction_id)
 
     def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
-        """ Handle response received
+        """
+        Handle response received
         :param reply:
         :param kwargs:
         :return:
@@ -107,7 +117,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
                 _logger.debug(txt)
 
     def _build_response(self, tid):
-        """ Builds a future response
+        """
+        Builds a future response
         :param tid:
         :return:
         """
@@ -121,7 +132,9 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         return f
 
     def close(self):
-        """ Closes the underlying IOStream. """
+        """
+        Closes the underlying IOStream
+        """
         _logger.debug("Client disconnected")
         if self.stream:
             self.stream.close_fd()
@@ -131,13 +144,15 @@ class BaseTornadoClient(AsyncModbusClientMixin):
 
 
 class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
-    """ Base Tonado serial client. """
-
+    """
+    Base Tonado serial client
+    """
     stream = None
     io_loop = None
 
     def __init__(self, *args, **kwargs):
-        """ Initializes BaseTornadoSerialClient.
+        """
+        Initializes BaseTornadoSerialClient.
         ioloop to be passed as part of kwargs ('ioloop')
         :param args:
         :param kwargs:
@@ -147,13 +162,16 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
 
     @abc.abstractmethod
     def get_socket(self):
-        """ return instance of the socket to connect to. """
+        """
+        return instance of the socket to connect to
+        """
 
     def on_receive(self, *args):
         """ To be handled in the execute method."""
 
     def execute(self, request=None):
-        """ Executes a transaction
+        """
+        Executes a transaction
         :param request: Request to be written on to the bus
         :return:
         """
@@ -185,7 +203,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         return f
 
     def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
-        """ Handles a received response and updates a future
+        """
+        Handles a received response and updates a future
         :param reply: Reply received
         :param kwargs:
         :return:
@@ -200,7 +219,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
                 _logger.debug(txt)
 
     def _build_response(self, tid):
-        """ Prepare for a response, returns a future
+        """
+        Prepare for a response, returns a future
         :param tid:
         :return: Future
         """
@@ -214,7 +234,9 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         return f
 
     def close(self):
-        """ Closes the underlying IOStream. """
+        """
+        Closes the underlying IOStream
+        """
         _logger.debug("Client disconnected")
         if self.stream:
             self.stream.close_fd()
@@ -224,11 +246,13 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
 
 
 class SerialIOStream(BaseIOStream):
-    """ Serial IO Stream class to control and handle serial connections
+    """
+    Serial IO Stream class to control and handle serial connections
      over tornado
     """
     def __init__(self, connection, *args, **kwargs):
-        """ Initializes Serial IO Stream
+        """
+        Initializes Serial IO Stream
         :param connection: serial object
         :param args:
         :param kwargs:
@@ -237,13 +261,15 @@ class SerialIOStream(BaseIOStream):
         super().__init__(*args, **kwargs)
 
     def fileno(self):
-        """ Returns serial fd
+        """
+        Returns serial fd
         :return:
         """
         return self.connection.fileno()
 
     def close_fd(self):
-        """ Closes a serial Fd
+        """
+        Closes a serial Fd
         :return:
         """
         if self.connection:
@@ -251,7 +277,8 @@ class SerialIOStream(BaseIOStream):
             self.connection = None
 
     def read_from_fd(self):
-        """ Reads from a fd
+        """
+        Reads from a fd
         :return:
         """
         try:
@@ -262,7 +289,8 @@ class SerialIOStream(BaseIOStream):
         return chunk
 
     def write_to_fd(self, data):
-        """ Writes to a fd
+        """
+        Writes to a fd
         :param data:
         :return:
         """
@@ -274,10 +302,12 @@ class SerialIOStream(BaseIOStream):
 
 
 class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-many-instance-attributes
-    """ Tornado based asynchronous serial client. """
-
+    """
+    Tornado based asynchronous serial client
+    """
     def __init__(self, *args, **kwargs):
-        """ Initializes AsyncModbusSerialClient.
+        """
+        Initializes AsyncModbusSerialClient.
         :param args:
         :param kwargs:
         """
@@ -294,14 +324,15 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
         super().__init__(*args, **kwargs)
 
     def get_socket(self):
-        """ Creates Pyserial object
+        """
+        Creates Pyserial object
         :return: serial object
         """
         return Serial(port=self.port, **self.serial_settings)
 
     @gen.coroutine
     def connect(self):
-        """ Connect to the socket identified by host and port
+        """Connect to the socket identified by host and port
 
         :returns: Future
         :rtype: tornado.concurrent.Future
@@ -320,20 +351,25 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
         raise gen.Return(self)
 
     def execute(self, request=None): #NOSONAR pylint: disable=signature-differs
-        """ Executes a transaction
+        """
+        Executes a transaction
         :param request: Request to be written on to the bus
         :return:
         """
         request.transaction_id = self.transaction.getNextTID()
 
         def _clear_timer():
-            """ Clear serial waiting timeout. """
+            """
+            Clear serial waiting timeout
+            """
             if self.timeout_handle:
                 self.io_loop.remove_timeout(self.timeout_handle)
                 self.timeout_handle = None # pylint: disable=attribute-defined-outside-init
 
         def _on_timeout():
-            """ Got timeout while waiting data from serial port. """
+            """
+            Got timeout while waiting data from serial port
+            """
             _logger.warning("serial receive timeout")
             _clear_timer()
             if self.stream:
@@ -344,7 +380,9 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
                 transaction.set_exception(TimeOutException())
 
         def _on_write_done():
-            """ Set up reader part after sucessful write to the serial. """
+            """
+            Set up reader part after sucessful write to the serial
+            """
             _logger.debug("frame sent, waiting for a reply")
             self.last_frame_end = round(time.time(), 6)
             self.state = ModbusTransactionState.WAITING_FOR_REPLY
@@ -358,7 +396,9 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
                                             ModbusIOException(*args))
 
         def _on_receive(fd, events):
-            """ New data in serial buffer to read or serial port closed. """
+            """
+            New data in serial buffer to read or serial port closed
+            """
             if events & IOLoop.ERROR:
                 _on_fd_error(fd)
                 return
@@ -412,7 +452,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
         return f
 
     def _send_packet(self, message, callback):
-        """ Sends packets on the bus with 3.5char delay between frames
+        """
+        Sends packets on the bus with 3.5char delay between frames
         :param message: Message to be sent over the bus
         :return:
         """
@@ -445,18 +486,24 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
         self.stream.write(message, callback)
 
 class AsyncModbusTCPClient(BaseTornadoClient):
-    """ Tornado based Async tcp client. """
+    """
+    Tornado based Async tcp client
+    """
     def get_socket(self):
-        """ Creates socket object
+        """
+        Creates socket object
         :return: socket
         """
         return socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
 
 class AsyncModbusUDPClient(BaseTornadoClient):
-    """ Tornado based Async UDP client. """
+    """
+    Tornado based Async UDP client
+    """
     def get_socket(self):
-        """ Create socket object
+        """
+        Create socket object
         :return: socket
         """
         return socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)

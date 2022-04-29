@@ -1,4 +1,6 @@
-""" Asynchronous framework adapter for asyncio. """
+"""
+Asynchronous framework adapter for asyncio.
+"""
 import logging
 import socket
 import asyncio
@@ -17,14 +19,17 @@ DGRAM_TYPE = socket.SOCK_DGRAM
 
 
 class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
-    """ Asyncio specific implementation of asynchronous modbus client protocol. """
+    """
+    Asyncio specific implementation of asynchronous modbus client protocol.
+    """
 
     #: Factory that created this instance.
     factory = None
     transport = None
 
     async def execute(self, request=None): # pylint: disable=invalid-overridden-method
-        """ Executes requests asynchronously
+        """
+        Executes requests asynchronously
         :param request:
         :return:
         """
@@ -38,7 +43,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         return resp
 
     def connection_made(self, transport):
-        """ Called when a connection is made.
+        """
+        Called when a connection is made.
 
         The transport argument is the transport representing the connection.
         :param transport:
@@ -51,7 +57,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             self.factory.protocol_made_connection(self)
 
     def connection_lost(self, reason):
-        """ Called when the connection is lost or closed.
+        """
+        Called when the connection is lost or closed.
 
         The argument is either an exception object or None
         :param reason:
@@ -64,7 +71,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             self.factory.protocol_lost_connection(self)
 
     def data_received(self, data):
-        """ Called when some data is received.
+        """
+        Called when some data is received.
         data is a non-empty bytes object containing the incoming data.
         :param data:
         :return:
@@ -72,11 +80,15 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         self._data_received(data)
 
     def create_future(self): # pylint: disable=no-self-use
-        """ Helper function to create asyncio Future object. """
+        """
+        Helper function to create asyncio Future object
+        :return:
+        """
         return asyncio.Future()
 
     def resolve_future(self, f, result): # pylint: disable=no-self-use
-        """ Resolves the completed future and sets the result
+        """
+        Resolves the completed future and sets the result
         :param f:
         :param result:
         :return:
@@ -85,7 +97,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             f.set_result(result)
 
     def raise_future(self, f, exc): # pylint: disable=no-self-use
-        """ Sets exception of a future if not done
+        """
+        Sets exception of a future if not done
         :param f:
         :param exc:
         :return:
@@ -94,12 +107,15 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
             f.set_exception(exc)
 
     def _connection_made(self):
-        """ Called upon a successful client connection. """
+        """
+        Called upon a successful client connection.
+        """
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
     def _connection_lost(self, reason):
-        """ Called upon a client disconnect
+        """
+        Called upon a client disconnect
 
         :param reason: The reason for the disconnect
         """
@@ -113,15 +129,18 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
     @property
     def connected(self):
-        """ Return connection status. """
+        """
+        Return connection status.
+        """
         return self._connected
 
     def write_transport(self, packet):
-        """ Write transport. """
+        """Write transport."""
         return self.transport.write(packet)
 
     def _execute(self, request, **kwargs): #NOSONAR pylint: disable=unused-argument
-        """ Starts the producer to send the next request to
+        """
+        Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
@@ -132,17 +151,18 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         return self._build_response(request.transaction_id)
 
     def _data_received(self, data):
-        """ Get response, check for valid message, decode result
+        ''' Get response, check for valid message, decode result
 
         :param data: The data returned from the server
-        """
+        '''
         txt = f"recv: {hexlify_packets(data)}"
         _logger.debug(txt)
         unit = self.framer.decode_data(data).get("unit", 0)
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
     def _handle_response(self, reply, **kwargs): # pylint: disable=unused-argument
-        """ Handle the processed response and link to correct deferred
+        """
+        Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
         """
@@ -156,7 +176,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
                 _logger.debug(txt)
 
     def _build_response(self, tid):
-        """ Helper method to return a deferred response
+        """
+        Helper method to return a deferred response
         for the current request.
 
         :param tid: The transaction identifier for this response
@@ -176,14 +197,17 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
 
 class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
-    """ Asyncio specific implementation of asynchronous modbus client protocol. """
+    """
+    Asyncio specific implementation of asynchronous modbus client protocol.
+    """
 
     #: Factory that created this instance.
     factory = None
     transport = None
 
     def data_received(self, data):
-        """ Called when some data is received.
+        """
+        Called when some data is received.
         data is a non-empty bytes object containing the incoming data.
         :param data:
         :return:
@@ -193,7 +217,9 @@ class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
 
 class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
                               asyncio.DatagramProtocol):
-    """ Asyncio specific implementation of asynchronous modbus udp client protocol. """
+    """
+    Asyncio specific implementation of asynchronous modbus udp client protocol.
+    """
 
     #: Factory that created this instance.
     factory = None
@@ -211,14 +237,17 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol,
 
 
 class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-attributes
-    """ Client to connect to modbus device repeatedly over TCP/IP. """
+    """
+    Client to connect to modbus device repeatedly over TCP/IP."
+    """
     #: Minimum delay in milli seconds before reconnect is attempted.
     DELAY_MIN_MS = 100
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
     def __init__(self, protocol_class=None, loop=None, **kwargs):
-        """ Initialize ReconnectingAsyncioModbusTcpClient
+        """
+        Initialize ReconnectingAsyncioModbusTcpClient
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Event loop to use
         """
@@ -236,11 +265,14 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
         self._proto_args = kwargs
 
     def reset_delay(self):
-        """ Resets wait before next reconnect to minimal period. """
+        """
+        Resets wait before next reconnect to minimal period.
+        """
         self.delay_ms = self.DELAY_MIN_MS
 
     async def start(self, host, port=502):
-        """ Initiates connection to start client
+        """
+        Initiates connection to start client
         :param host:
         :param port:
         :return:
@@ -255,7 +287,10 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
         return await self._connect()
 
     def stop(self):
-        """ Stops client. """
+        """
+        Stops client
+        :return:
+        """
         # prevent reconnect:
         self.host = None
 
@@ -265,7 +300,9 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
                     self.protocol.transport.close()
 
     def _create_protocol(self):
-        """ Factory function to create initialized protocol instance. """
+        """
+        Factory function to create initialized protocol instance.
+        """
         protocol = self.protocol_class(**self._proto_args)
         protocol.factory = self
         return protocol
@@ -286,7 +323,9 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
             self.reset_delay()
 
     def protocol_made_connection(self, protocol):
-        """ Protocol notification of successful connection. """
+        """
+        Protocol notification of successful connection.
+        """
         _logger.info('Protocol made connection.')
         if not self.connected:
             self.connected = True
@@ -296,7 +335,9 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
                           'callback called while connected.')
 
     def protocol_lost_connection(self, protocol):
-        """ Protocol notification of lost connection. """
+        """
+        Protocol notification of lost connection.
+        """
         if self.connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
@@ -320,10 +361,11 @@ class ReconnectingAsyncioModbusTcpClient: # pylint: disable=too-many-instance-at
         return await self._connect()
 
 class AsyncioModbusTcpClient:
-    """ Client to connect to modbus device over TCP/IP. """
+    """Client to connect to modbus device over TCP/IP."""
 
     def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
-        """ Initializes Asyncio Modbus Tcp Client
+        """
+        Initializes Asyncio Modbus Tcp Client
         :param host: Host IP address
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
@@ -343,20 +385,28 @@ class AsyncioModbusTcpClient:
         self._proto_args = kwargs
 
     def stop(self):
-        """ Stops the client. """
+        """
+        Stops the client
+        :return:
+        """
         if self.connected:
             if self.protocol:
                 if self.protocol.transport:
                     self.protocol.transport.close()
 
     def _create_protocol(self):
-        """ Factory function to create initialized protocol instance. """
+        """
+        Factory function to create initialized protocol instance.
+        """
         protocol = self.protocol_class(**self._proto_args)
         protocol.factory = self
         return protocol
 
     async def connect(self):
-        """ Connect and start Async client. """
+        """
+        Connect and start Async client
+        :return:
+        """
         _logger.debug('Connecting.')
         try:
             transport, protocol = await self.loop.create_connection(
@@ -370,7 +420,9 @@ class AsyncioModbusTcpClient:
             # asyncio.asynchronous(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
-        """ Protocol notification of successful connection. """
+        """
+        Protocol notification of successful connection.
+        """
         _logger.info('Protocol made connection.')
         if not self.connected:
             self.connected = True
@@ -380,7 +432,9 @@ class AsyncioModbusTcpClient:
                           'callback called while connected.')
 
     def protocol_lost_connection(self, protocol):
-        """ Protocol notification of lost connection. """
+        """
+        Protocol notification of lost connection.
+        """
         if self.connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
@@ -397,9 +451,12 @@ class AsyncioModbusTcpClient:
 
 
 class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
-    """ Client to connect to modbus device repeatedly over TLS. """
+    """
+    Client to connect to modbus device repeatedly over TLS."
+    """
     def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
-        """ Initialize ReconnectingAsyncioModbusTcpClient
+        """
+        Initialize ReconnectingAsyncioModbusTcpClient
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Event loop to use
         """
@@ -409,7 +466,8 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         ReconnectingAsyncioModbusTcpClient.__init__(self, protocol_class, loop, **kwargs)
 
     async def start(self, host, port=802, sslctx=None, server_hostname=None):
-        """ Initiates connection to start client
+        """
+        Initiates connection to start client
         :param host:
         :param port:
         :param sslctx:
@@ -448,14 +506,18 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
             self.reset_delay()
 
     def _create_protocol(self):
-        """ Factory function to create initialized protocol instance. """
+        """
+        Factory function to create initialized protocol instance.
+        """
         protocol = self.protocol_class(framer=self.framer, **self._proto_args)
         protocol.transaction = FifoTransactionManager(self)
         protocol.factory = self
         return protocol
 
 class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-attributes
-    """ Client to connect to modbus device repeatedly over UDP. """
+    """
+    Client to connect to modbus device repeatedly over UDP.
+    """
 
     #: Reconnect delay in milli seconds.
     delay_ms = 0
@@ -464,7 +526,8 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
     DELAY_MAX_MS = 1000 * 60 * 5
 
     def __init__(self, protocol_class=None, loop=None, **kwargs):
-        """ Initializes ReconnectingAsyncioModbusUdpClient
+        """
+        Initializes ReconnectingAsyncioModbusUdpClient
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Asyncio Event loop
         """
@@ -483,11 +546,14 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
         self.reset_delay()
 
     def reset_delay(self):
-        """ Resets wait before next reconnect to minimal period. """
+        """
+        Resets wait before next reconnect to minimal period.
+        """
         self.delay_ms = 100
 
     async def start(self, host, port=502):
-        """ Start reconnecting asynchronous udp client
+        """
+        Start reconnecting asynchronous udp client
         :param host: Host IP to connect
         :param port: Host port to connect
         :return:
@@ -510,7 +576,10 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
 
 
     def stop(self):
-        """ Stops connection and prevents reconnect. """
+        """
+        Stops connection and prevents reconnect
+        :return:
+        """
         # prevent reconnect:
         self.host = None
 
@@ -520,7 +589,9 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
                     self.protocol.transport.close()
 
     def _create_protocol(self, host=None, port=0):
-        """ Factory function to create initialized protocol instance. """
+        """
+        Factory function to create initialized protocol instance.
+        """
         protocol = self.protocol_class(**self._proto_args)
         protocol.host = host
         protocol.port = port
@@ -546,7 +617,9 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
             asyncio.ensure_future(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
-        """ Protocol notification of successful connection. """
+        """
+        Protocol notification of successful connection.
+        """
         _logger.info('Protocol made connection.')
         if not self.connected:
             self.connected = True
@@ -556,7 +629,9 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
                           'called while connected.')
 
     def protocol_lost_connection(self, protocol):
-        """ Protocol notification of lost connection. """
+        """
+        Protocol notification of lost connection.
+        """
         if self.connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
@@ -580,10 +655,13 @@ class ReconnectingAsyncioModbusUdpClient: # pylint: disable=too-many-instance-at
 
 
 class AsyncioModbusUdpClient:
-    """ Client to connect to modbus device over UDP. """
+    """
+    Client to connect to modbus device over UDP.
+    """
 
     def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
-        """ Initializes Asyncio Modbus UDP Client
+        """
+        Initializes Asyncio Modbus UDP Client
         :param host: Host IP address
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
@@ -603,7 +681,10 @@ class AsyncioModbusUdpClient:
         self._proto_args = kwargs
 
     def stop(self):
-        """ Stops connection. """
+        """
+        Stops connection
+        :return:
+        """
         # prevent reconnect:
         # self.host = None
 
@@ -613,7 +694,9 @@ class AsyncioModbusUdpClient:
                     self.protocol.transport.close()
 
     def _create_protocol(self, host=None, port=0):
-        """ Factory function to create initialized protocol instance. """
+        """
+        Factory function to create initialized protocol instance.
+        """
         protocol = self.protocol_class(**self._proto_args)
         protocol.host = host
         protocol.port = port
@@ -621,7 +704,7 @@ class AsyncioModbusUdpClient:
         return protocol
 
     async def connect(self):
-        """ Connect. """
+        """Connect."""
         _logger.debug('Connecting.')
         try:
             addrinfo = await self.loop.getaddrinfo(
@@ -644,7 +727,9 @@ class AsyncioModbusUdpClient:
             # asyncio.asynchronous(self._reconnect(), loop=self.loop)
 
     def protocol_made_connection(self, protocol):
-        """ Protocol notification of successful connection. """
+        """
+        Protocol notification of successful connection.
+        """
         _logger.info('Protocol made connection.')
         if not self.connected:
             self.connected = True
@@ -654,7 +739,9 @@ class AsyncioModbusUdpClient:
                           'callback called while connected.')
 
     def protocol_lost_connection(self, protocol):
-        """ Protocol notification of lost connection. """
+        """
+        Protocol notification of lost connection.
+        """
         if self.connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
@@ -671,13 +758,16 @@ class AsyncioModbusUdpClient:
 
 
 class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
-    """ Client to connect to modbus device over serial. """
+    """
+    Client to connect to modbus device over serial.
+    """
     transport = None
     framer = None
 
     def __init__(self, port, protocol_class=None, framer=None,  loop=None, # pylint: disable=too-many-arguments
                  baudrate=9600, bytesize=8, parity='N', stopbits=1, **serial_kwargs):
-        """ Initializes Asyncio Modbus Serial Client
+        """
+        Initializes Asyncio Modbus Serial Client
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
         :param framer: Framer to use
@@ -699,7 +789,10 @@ class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
         self._connected_event = asyncio.Event()
 
     def stop(self):
-        """ Stops connection. """
+        """
+        Stops connection
+        :return:
+        """
         if self._connected:
             if self.protocol:
                 if self.protocol.transport:
@@ -715,7 +808,10 @@ class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
         return self._connected_event.is_set()
 
     async def connect(self):
-        """ Connect Async client. """
+        """
+        Connect Async client
+        :return:
+        """
         _logger.debug('Connecting.')
         try:
             await create_serial_connection(
@@ -731,7 +827,9 @@ class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
             _logger.warning(txt)
 
     def protocol_made_connection(self, protocol):
-        """ Protocol notification of successful connection. """
+        """
+        Protocol notification of successful connection.
+        """
         _logger.info('Protocol made connection.')
         if not self._connected:
             self._connected_event.set()
@@ -741,7 +839,9 @@ class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
                           'callback called while connected.')
 
     def protocol_lost_connection(self, protocol):
-        """ Protocol notification of lost connection. """
+        """
+        Protocol notification of lost connection.
+        """
         if self._connected:
             _logger.info('Protocol lost connection.')
             if protocol is not self.protocol:
@@ -758,7 +858,8 @@ class AsyncioModbusSerialClient: # pylint: disable=too-many-instance-attributes
 
 
 async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
-    """ Helper function to initialize tcp client
+    """
+    Helper function to initialize tcp client
     :param proto_cls:
     :param loop:
     :param host:
@@ -775,7 +876,8 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
 
 async def init_tls_client(proto_cls, loop, host, port, sslctx=None,  # pylint: disable=too-many-arguments
                     server_hostname=None, framer=None, **kwargs):
-    """ Helper function to initialize tcp client
+    """
+    Helper function to initialize tcp client
     :param proto_cls:
     :param loop:
     :param host:
@@ -795,7 +897,8 @@ async def init_tls_client(proto_cls, loop, host, port, sslctx=None,  # pylint: d
 
 
 async def init_udp_client(proto_cls, loop, host, port, **kwargs):
-    """ Helper function to initialize UDP client
+    """
+    Helper function to initialize UDP client
     :param proto_cls:
     :param loop:
     :param host:

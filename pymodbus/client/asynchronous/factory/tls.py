@@ -1,4 +1,6 @@
-""" Factory to create asynchronous tls clients based on asyncio. """
+"""
+Factory to create asynchronous tls clients based on asyncio
+"""
 # pylint: disable=R0801
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -13,7 +15,8 @@ _logger = logging.getLogger(__name__)
 
 def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
                      server_hostname=None, framer=None, **kwargs):
-    """ Factory to create asyncio based asynchronous tls clients
+    """
+    Factory to create asyncio based asynchronous tls clients
     :param host: Target server's name, also matched for certificate
     :param port: Port
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
@@ -51,7 +54,8 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """
+    Gets protocol factory based on the backend scheduler being used
     :param scheduler: ASYNC_IO
     :return
     """

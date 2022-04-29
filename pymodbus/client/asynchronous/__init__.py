@@ -1,4 +1,5 @@
-""" Async Modbus Client implementation based on Twisted, tornado and asyncio
+"""
+Async Modbus Client implementation based on Twisted, tornado and asyncio
 ------------------------------------------------------------------------
 
 Example run::

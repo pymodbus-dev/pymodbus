@@ -12,7 +12,8 @@ _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusTLSClient: # pylint: disable=too-few-public-methods
-    """ Actual Async TLS Client to be used.
+    """
+    Actual Async TLS Client to be used.
 
     To use do::
 
@@ -21,7 +22,8 @@ class AsyncModbusTLSClient: # pylint: disable=too-few-public-methods
     def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort, # pylint: disable=too-many-arguments
                 framer=None, sslctx=None, certfile=None, keyfile=None,
                 password=None, source_address=None, timeout=None, **kwargs):
-        """ Scheduler to use:
+        """
+        Scheduler to use:
             - async_io (asyncio)
         :param scheduler: Backend to use
         :param host: Target server's name, also matched for certificate

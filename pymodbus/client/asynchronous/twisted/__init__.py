@@ -1,4 +1,5 @@
-""" Implementation of a Modbus Client Using Twisted
+"""
+Implementation of a Modbus Client Using Twisted
 --------------------------------------------------
 
 Example run::
@@ -56,7 +57,8 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 class ModbusClientProtocol(protocol.Protocol,
                            AsyncModbusClientMixin):
-    """ This represents the base modbus client protocol.  All the application
+    """
+    This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
     framer = None
@@ -73,12 +75,15 @@ class ModbusClientProtocol(protocol.Protocol,
             self.transaction = FifoTransactionManager(self, **kwargs)
 
     def connectionMade(self):
-        """ Called upon a successful client connection. """
+        """
+        Called upon a successful client connection.
+        """
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
     def connectionLost(self, reason=None):
-        """ Called upon a client disconnect
+        """
+        Called upon a client disconnect
 
         :param reason: The reason for the disconnect
         """
@@ -90,7 +95,8 @@ class ModbusClientProtocol(protocol.Protocol,
                 ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
-        """ Get response, check for valid message, decode result
+        """
+        Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         """
@@ -99,7 +105,8 @@ class ModbusClientProtocol(protocol.Protocol,
                                           unit=unit)
 
     def execute(self, request=None): # pylint: disable=signature-differs
-        """ Starts the producer to send the next request to
+        """
+        Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
@@ -110,7 +117,8 @@ class ModbusClientProtocol(protocol.Protocol,
         return self._buildResponse(request.transaction_id)
 
     def _handleResponse(self, reply, **kwargs): # pylint: disable=invalid-name,unused-argument
-        """ Handle the processed response and link to correct deferred
+        """
+        Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
         """
@@ -124,7 +132,8 @@ class ModbusClientProtocol(protocol.Protocol,
                 _logger.debug(txt)
 
     def _buildResponse(self, tid): # pylint: disable=invalid-name,
-        """ Helper method to return a deferred response
+        """
+        Helper method to return a deferred response
         for the current request.
 
         :param tid: The transaction identifier for this response
@@ -139,7 +148,8 @@ class ModbusClientProtocol(protocol.Protocol,
         return deferred
 
     def close(self):
-        """ Closes underlying transport layer ,essentially closing the client
+        """
+        Closes underlying transport layer ,essentially closing the client
         :return:
         """
         if self.transport and hasattr(self.transport, "close"):
@@ -148,7 +158,8 @@ class ModbusClientProtocol(protocol.Protocol,
 
 
 class ModbusTcpClientProtocol(ModbusClientProtocol):
-    """ Async TCP Client protocol based on twisted.
+    """
+    Async TCP Client protocol based on twisted.
 
     Default framer: ModbusSocketFramer
     """
@@ -156,7 +167,8 @@ class ModbusTcpClientProtocol(ModbusClientProtocol):
 
 
 class ModbusSerClientProtocol(ModbusClientProtocol):
-    """ Async Serial Client protocol based on twisted
+    """
+    Async Serial Client protocol based on twisted
 
     Default framer: ModbusRtuFramer
     """
@@ -170,12 +182,14 @@ class ModbusSerClientProtocol(ModbusClientProtocol):
 # --------------------------------------------------------------------------- #
 class ModbusUdpClientProtocol(protocol.DatagramProtocol,
                               AsyncModbusClientMixin):
-    """ This represents the base modbus client protocol.  All the application
+    """
+    This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
 
     def datagramReceived(self, datagram, addr):
-        """ Get response, check for valid message, decode result
+        """
+        Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         :param params: The host parameters sending the datagram
@@ -186,7 +200,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         self.framer.processIncomingPacket(datagram, self._handleResponse, unit=unit)
 
     def execute(self, request=None): # pylint: disable=signature-differs
-        """ Starts the producer to send the next request to
+        """
+        Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
@@ -195,7 +210,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         return self._buildResponse(request.transaction_id)
 
     def _handleResponse(self, reply, **kwargs): # pylint: disable=invalid-name,unused-argument
-        """ Handle the processed response and link to correct deferred
+        """
+        Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
         """
@@ -209,7 +225,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
                 _logger.debug(txt)
 
     def _buildResponse(self, tid): # pylint: disable=invalid-name
-        """ Helper method to return a deferred response
+        """
+        Helper method to return a deferred response
         for the current request.
 
         :param tid: The transaction identifier for this response

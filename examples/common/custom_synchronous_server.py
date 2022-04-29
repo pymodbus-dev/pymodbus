@@ -57,22 +57,20 @@ Steps:
     ```
 
 """
-import logging
-
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from custom_message import CustomModbusRequest
-
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from custom_message import CustomModbusRequest
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
@@ -82,7 +80,6 @@ log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
     store = ModbusSlaveContext(
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),

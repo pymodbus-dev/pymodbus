@@ -7,9 +7,6 @@ This is an example of adding callbacks to a running modbus server
 when a value is written to it. In order for this to work, it needs
 a device-mapping file.
 """
-import logging
-from multiprocessing import Queue, Process
-
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
@@ -21,8 +18,14 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 
 # --------------------------------------------------------------------------- #
+# import the python libraries we need
+# --------------------------------------------------------------------------- #
+from multiprocessing import Queue, Process
+
+# --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -46,15 +49,15 @@ class CallbackDataBlock(ModbusSparseDataBlock):
 
         values = {k: 0 for k in devices.keys()}
         values[0xbeef] = len(values)  # the number of devices
-        super().__init__(values)
+        super(CallbackDataBlock, self).__init__(values)
 
-    def setValues(self, address, value): # pylint: disable=arguments-differ
+    def setValues(self, address, value):
         """ Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
         """
-        super().setValues(address, value)
+        super(CallbackDataBlock, self).setValues(address, value)
         self.queue.put((self.devices.get(address, None), value))
 
 # --------------------------------------------------------------------------- #
@@ -69,9 +72,9 @@ def rescale_value(value):
     :param value: The input value to scale
     :returns: The rescaled value
     """
-    scale = 1 if value >= 50 else -1
-    cur = value if value < 50 else (value - 50)
-    return scale * (cur * 64)
+    s = 1 if value >= 50 else -1
+    c = value if value < 50 else (value - 50)
+    return s * (c * 64)
 
 
 def device_writer(queue):
@@ -82,9 +85,8 @@ def device_writer(queue):
     """
     while True:
         device, value = queue.get()
-        rescale_value(value[0])
-        txt = f"Write({device}) = {value}"
-        log.debug(txt)
+        scaled = rescale_value(value[0])
+        log.debug("Write(%s) = %s" % (device, value))
         if not device:
             continue
         # do any logic here to update your devices
@@ -105,7 +107,7 @@ def read_device_map(path):
     :returns: The input mapping file
     """
     devices = {}
-    with open(path, 'r') as stream: # pylint: disable=unspecified-encoding
+    with open(path, 'r') as stream:
         for line in stream:
             piece = line.strip().split(',')
             devices[int(piece[0], 16)] = piece[1]
@@ -113,7 +115,6 @@ def read_device_map(path):
 
 
 def run_callback_server():
-    """ Run callback server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -137,8 +138,8 @@ def run_callback_server():
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
-    proc = Process(target=device_writer, args=(queue,))
-    proc.start()
+    p = Process(target=device_writer, args=(queue,))
+    p.start()
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 

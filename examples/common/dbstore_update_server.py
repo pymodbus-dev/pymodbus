@@ -13,14 +13,6 @@ This can also be done with a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
-import logging
-import random
-
-# --------------------------------------------------------------------------- #
-# import the twisted libraries we need
-# --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
-
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
@@ -30,10 +22,17 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
+import random
+
+# --------------------------------------------------------------------------- #
+# import the twisted libraries we need
+# --------------------------------------------------------------------------- #
+from twisted.internet.task import LoopingCall
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -43,14 +42,14 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
-def updating_writer(parm1):
+def updating_writer(a):
     """ A worker process that runs every so often and
     updates live values of the context which resides in an SQLite3 database.
     It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     """
     log.debug("Updating the database context")
-    context = parm1[0]
+    context = a[0]
     readfunction = 0x03  # read holding registers
     writefunction = 0x10
     slave_id = 0x01  # slave address
@@ -60,18 +59,15 @@ def updating_writer(parm1):
 
     rand_value = random.randint(0, 9999)
     rand_addr = random.randint(0, 65000)
-    txt = f"Writing to datastore: {rand_addr}, {rand_value}"
-    log.debug(txt)
+    log.debug("Writing to datastore: {}, {}".format(rand_addr, rand_value))
     # import pdb; pdb.set_trace()
     context[slave_id].setValues(writefunction, rand_addr, [rand_value],
                                 update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
-    txt = f"Values from datastore: {values}"
-    log.debug(txt)
+    log.debug("Values from datastore: " + str(values))
 
 
 def run_dbstore_update_server():
-    """ Run dbstore update server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #

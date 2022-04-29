@@ -6,8 +6,6 @@ Pymodbus Server Payload Example
 If you want to initialize a server context with a complicated memory
 layout, you can actually use the payload builder.
 """
-import logging
-
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
@@ -16,12 +14,18 @@ from pymodbus.server.sync import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
+# --------------------------------------------------------------------------- #
+# import the payload builder
+# --------------------------------------------------------------------------- #
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
+import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -30,7 +34,6 @@ log.setLevel(logging.DEBUG)
 
 
 def run_payload_server():
-    """ Run payload server. """
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #

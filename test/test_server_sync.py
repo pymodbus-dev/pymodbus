@@ -47,7 +47,7 @@ class MockServer:  # noqa: E302 pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Fixture
 # --------------------------------------------------------------------------- #
-class SynchronousServerTest(unittest.TestCase):  # noqa: E302
+class SynchronousServerTest(unittest.TestCase):  # noqa: E302 pylint: disable=too-many-public-methods
     """ Unittest for the pymodbus.server.sync module. """
 
     # ----------------------------------------------------------------------- #
@@ -213,8 +213,8 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302
         handler.send(request) # pylint: disable=no-member
         self.assertEqual(handler.socket.sendto.call_count, 1)
 
-        request.should_respond = False
-        handler.send(request) # pylint:disable=no-member
+        request.should_respond = False # pylint: disable=no-member
+        handler.send(request) # pylint: disable=no-member
         self.assertEqual(handler.socket.sendto.call_count, 1)
 
     def test_modbus_disconnected_request_handler_handle(self):

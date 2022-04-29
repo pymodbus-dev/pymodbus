@@ -32,7 +32,7 @@ no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
 )
 
 
-class AsynchronousServerTest(unittest.TestCase):
+class AsynchronousServerTest(unittest.TestCase): # pylint: disable=too-many-public-methods
     """ Unittest for the pymodbus.server.asynchronous module. """
 
     # ----------------------------------------------------------------------- #

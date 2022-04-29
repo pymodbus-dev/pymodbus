@@ -286,7 +286,7 @@ class MockSqlResult: # pylint: disable=too-few-public-methods
         self.value = value
 
 
-class SqlDataStoreTest(unittest.TestCase):
+class SqlDataStoreTest(unittest.TestCase): # pylint: disable=too-many-instance-attributes
     """ Unittest for the pymodbus.datastore.database.SqlSlaveContext module. """
 
     def setUp(self):

@@ -86,16 +86,14 @@ def run_binary_payload_ex(): # pylint: disable=too-many-statements
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
     # ----------------------------------------------------------------------- #
-    combos = [(word_endian, byte_endian)
-        for word_endian in [Endian.Big, Endian.Little]
-            for byte_endian in [Endian.Big, Endian.Little]]
-    for word_endian, byte_endian in combos:
+    combos = [(wo, bo) for wo in [Endian.Big, Endian.Little] for bo in [Endian.Big, Endian.Little]]
+    for word_order, byte_order in combos:
         print("-" * 60)
-        print(f"Word Order: {ORDER_DICT[word_endian]}")
-        print(f"Byte Order: {ORDER_DICT[byte_endian]}")
+        print(f"Word Order: {ORDER_DICT[word_order]}")
+        print(f"Byte Order: {ORDER_DICT[byte_order]}")
         print()
-        builder = BinaryPayloadBuilder(byteorder=byte_endian,
-                                       wordorder=word_endian)
+        builder = BinaryPayloadBuilder(byteorder=byte_order,
+                                       wordorder=word_order)
         strng = "abcdefgh"
         builder.add_string(strng)
         builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
@@ -162,8 +160,8 @@ def run_binary_payload_ex(): # pylint: disable=too-many-statements
         print(result.registers)
         print("\n")
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                     byteorder=byte_endian,
-                                                     wordorder=word_endian)
+                                                     byteorder=bo,
+                                                     wordorder=wo)
 
         assert decoder._byteorder == builder._byteorder, \
                 "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder" # pylint: disable=protected-access,line-too-long

@@ -148,7 +148,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         if reply is not None:
             tid = reply.transaction_id
-            if handler := self.transaction.getTransaction(tid):
+            handler = self.transaction.getTransaction(tid)
+            if handler:
                 self.resolve_future(handler, reply)
             else:
                 txt = f"Unrequested message: {str(reply)}"

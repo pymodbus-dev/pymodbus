@@ -217,7 +217,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             self._counter += 1
             response.should_respond = False
         elif response_type == "stray":
-            if (data_len := self._manipulator_config.get("data_len", 10)) <= 0:
+            data_len = self._manipulator_config.get("data_len", 10)
+            if data_len <= 0:
                 txt = f"Invalid data_len {data_len}, using default 10"
                 logger.warning(txt)
                 data_len = 10
@@ -292,7 +293,8 @@ class ReactiveServer: # pylint: disable=too-many-instance-attributes
             sparse = block_desc.get("sparse", False)
             db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
             if sparse:
-                if not (address_map := block_desc.get("address_map")):
+                address_map = block_desc.get("address_map")
+                if not address_map:
                     address_map = random.sample( #NOSONAR
                         range(start_address+1, default_count), default_count-1)
                     address_map.insert(0, 0)

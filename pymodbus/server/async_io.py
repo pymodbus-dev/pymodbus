@@ -237,7 +237,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self._send_(msg)
             else:
                 self._send_(msg, *addr)
-        if skip_encoding := kwargs.get("skip_encoding", False):
+        skip_encoding = kwargs.get("skip_encoding", False)
+        if skip_encoding:
             __send(message, *addr)
         elif message.should_respond:
             # self.server.control.Counter.BusMessage += 1

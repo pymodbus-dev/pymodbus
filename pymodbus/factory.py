@@ -202,7 +202,8 @@ class ServerDecoder(IModbusDecoder):
         :returns: The decoded request or illegal function request object
         """
         function_code = int(data[0])
-        if not (request := self.__lookup.get(function_code, lambda: None)()):
+        request = self.__lookup.get(function_code, lambda: None)()
+        if not request:
             txt = f"Factory Request[{function_code}]"
             _logger.debug(txt)
             request = IllegalFunctionRequest(function_code)
@@ -218,7 +219,8 @@ class ServerDecoder(IModbusDecoder):
 
         if hasattr(request, 'sub_function_code'):
             lookup = self.__sub_lookup.get(request.function_code, {})
-            if (subtype := lookup.get(request.sub_function_code, None)):
+            subtype = lookup.get(request.sub_function_code, None)
+            if subtype:
                 request.__class__ = subtype
 
         return request
@@ -350,7 +352,8 @@ class ClientDecoder(IModbusDecoder):
 
         if hasattr(response, 'sub_function_code'):
             lookup = self.__sub_lookup.get(response.function_code, {})
-            if (subtype := lookup.get(response.sub_function_code, None)):
+            subtype = lookup.get(response.sub_function_code, None)
+            if subtype:
                 response.__class__ = subtype
 
         return response

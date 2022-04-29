@@ -236,7 +236,8 @@ class ModbusTcpClient(BaseModbusClient):
         if not self.socket:
             raise ConnectionException(self.__str__())
         if self.state == ModbusTransactionState.RETRYING:
-            if data := self._check_read_buffer():
+            data = self._check_read_buffer()
+            if data:
                 return data
 
         if request:
@@ -286,7 +287,8 @@ class ModbusTcpClient(BaseModbusClient):
                 return self._handle_abrupt_socket_close(
                     size, data, time.time() - time_)
             if ready[0]:
-                if (recv_data := self.socket.recv(recv_size)) == b'':
+                recv_data = self.socket.recv(recv_size)
+                if recv_data == b'':
                     return self._handle_abrupt_socket_close(
                         size, data, time.time() - time_)
                 data.append(recv_data)
@@ -681,7 +683,8 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
             raise ConnectionException(self.__str__())
         if request:
             try:
-                if waitingbytes := self._in_waiting():
+                waitingbytes = self._in_waiting()
+                if waitingbytes:
                     result = self.socket.read(waitingbytes)
                     if self.state == ModbusTransactionState.RETRYING:
                         txt = f"Sending available data in recv buffer {hexlify_packets(result)}"

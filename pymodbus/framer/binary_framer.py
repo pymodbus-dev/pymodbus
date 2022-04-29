@@ -77,7 +77,8 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
         if start > 0:  # go ahead and skip old bad data
             self._buffer = self._buffer[start:]
 
-        if (end := self._buffer.find(self._end)) != -1:
+        end = self._buffer.find(self._end)
+        if end != -1:
             self._header['len'] = end
             self._header['uid'] = struct.unpack('>B', self._buffer[1:2])[0]
             self._header['crc'] = struct.unpack('>H', self._buffer[end - 2:end])[0]
@@ -163,7 +164,8 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
         while self.isFrameReady():
             if self.checkFrame():
                 if self._validate_unit_id(unit, single):
-                    if (result := self.decoder.decode(self.getFrame())) is None:
+                    result = self.decoder.decode(self.getFrame())
+                    if result is None:
                         raise ModbusIOException("Unable to decode response")
                     self.populateResult(result)
                     self.advanceFrame()

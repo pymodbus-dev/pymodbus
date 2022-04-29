@@ -168,7 +168,8 @@ class ModbusSocketFramer(ModbusFramer):
     def _process(self, callback, error=False):
         """ Process incoming packets irrespective error condition. """
         data = self.getRawFrame() if error else self.getFrame()
-        if (result := self.decoder.decode(data)) is None:
+        result = self.decoder.decode(data)
+        if result is None:
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
             raise InvalidMessageReceivedException(result)

@@ -226,7 +226,8 @@ class LibmodbusLevel1Client:
         :param *args: The arguments for the given command
         :returns: The result of the operation unless -1 which throws
         """
-        if (result := command(self.client, *args)) == -1:
+        result = command(self.client, *args)
+        if result == -1:
             message = LIB.modbus_strerror(compiler.errno)
             raise ModbusException(compiler.string(message))
         return result

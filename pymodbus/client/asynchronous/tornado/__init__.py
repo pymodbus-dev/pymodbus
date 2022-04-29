@@ -70,7 +70,9 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         :param args: data received
         :return:
         """
-        if not (data := args[0] if len(args) > 0 else None):
+        data = args[0] if len(args) > 0 else None
+
+        if not data:
             return
         txt = f"recv: {hexlify_packets(data)}"
         _logger.debug(txt)
@@ -97,7 +99,8 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         """
         if reply is not None:
             tid = reply.transaction_id
-            if future := self.transaction.getTransaction(tid):
+            future = self.transaction.getTransaction(tid)
+            if future:
                 future.set_result(reply)
             else:
                 txt = f"Unrequested message: {reply}"
@@ -160,7 +163,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
             txt = f"in callback - {request.transaction_id}"
             _logger.debug(txt)
             while True:
-                if waiting := self.stream.connection.in_waiting:
+                waiting = self.stream.connection.in_waiting
+                if waiting:
                     data = self.stream.connection.read(waiting)
                     txt = f"recv: {hexlify_packets(data)}"
                     _logger.debug(txt)
@@ -188,7 +192,8 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
         """
         if reply is not None:
             tid = reply.transaction_id
-            if future := self.transaction.getTransaction(tid):
+            future = self.transaction.getTransaction(tid)
+            if future:
                 future.set_result(reply)
             else:
                 txt = f"Unrequested message: {reply}"
@@ -334,7 +339,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
             if self.stream:
                 self.io_loop.remove_handler(self.stream.fileno())
             self.framer.resetFrame()
-            if transaction := self.transaction.getTransaction(request.transaction_id):
+            transaction = self.transaction.getTransaction(request.transaction_id)
+            if transaction:
                 transaction.set_exception(TimeOutException())
 
         def _on_write_done():
@@ -358,7 +364,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
                 return
 
             try:
-                if waiting := self.stream.connection.in_waiting:
+                waiting = self.stream.connection.in_waiting
+                if waiting:
                     data = self.stream.connection.read(waiting)
                     txt = f"recv: {hexlify_packets(data)}"
                     _logger.debug(txt)
@@ -414,7 +421,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
             yield gen.sleep(timeout)
 
         try:
-            if waiting := self.stream.connection.in_waiting:
+            waiting = self.stream.connection.in_waiting
+            if waiting:
                 result = self.stream.connection.read(waiting)
                 txt = f"Cleanup recv buffer before send: {hexlify_packets(result)}"
                 _logger.info(txt)
@@ -425,7 +433,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient): # pylint: disable=too-ma
 
         start = time.time()
         if self.last_frame_end:
-            if (waittime := self.last_frame_end + self.silent_interval - start) > 0:
+            waittime = self.last_frame_end + self.silent_interval - start
+            if waittime > 0:
                 txt = f"Waiting for 3.5 char before next send - {waittime} ms"
                 _logger.debug(txt)
                 sleep(waittime)

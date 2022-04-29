@@ -38,7 +38,8 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
         assert value
 
     def on_done(f):
-        if (exc := f.exception()):
+        exc = f.exception()
+        if exc:
             _logger.debug(exc)
             return _assertor(False)
 
@@ -136,7 +137,8 @@ def err(*args, **kwargs):
 def callback(protocol, future): # pylint: disable=redefined-outer-name
     """ Callback. """
     _logger.debug("Client connected")
-    if (exp := future.exception()):
+    exp = future.exception()
+    if exp:
         return err(exp)
 
     client = future.result()

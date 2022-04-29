@@ -114,7 +114,8 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
         :param reply: The reply to process
         """
         if reply is not None:
-            if handler := self.transaction.getTransaction(reply.transaction_id):
+            handler = self.transaction.getTransaction(reply.transaction_id)
+            if handler:
                 handler.callback(reply)
             else:
                 txt = f"Unrequested message: {str(reply)}"
@@ -191,7 +192,8 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # p
         """
         if reply is not None:
             tid = reply.transaction_id
-            if handler := self.transaction.getTransaction(tid):
+            handler = self.transaction.getTransaction(tid)
+            if handler:
                 handler.callback(reply)
             else:
                 txt = f"Unrequested message: {str(reply)}"

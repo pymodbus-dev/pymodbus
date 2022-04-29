@@ -72,12 +72,12 @@ def run_updating_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
-    identity.__setitem__('VendorName', 'pymodbus')
-    identity.__setitem__('ProductCode', 'PM')
-    identity.__setitem__('VendorUrl', 'http://github.com/riptideio/pymodbus/') #NOSONAR
-    identity.__setitem__('ProductName', 'pymodbus Server')
-    identity.__setitem__('ModelName', 'pymodbus Server')
-    identity.__setitem__('MajorMinorRevision', version.short())
+    identity.VendorName = 'pymodbus'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/' #NOSONAR
+    identity.ProductName = 'pymodbus Server'
+    identity.ModelName = 'pymodbus Server'
+    identity.MajorMinorRevision = version.short()
 
     # ----------------------------------------------------------------------- #
     # run the server you want

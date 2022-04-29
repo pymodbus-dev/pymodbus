@@ -117,7 +117,7 @@ class ScraperProtocol(ModbusClientProtocol):
 
         :param response: The response to process
         """
-        txt = f"starting next round: {self.address}"
+        txt = f"starting next round: {self.addres}"
         log.debug(txt)
         self.endpoint.write((1, self.address, response.bits))
         self.address += COUNT

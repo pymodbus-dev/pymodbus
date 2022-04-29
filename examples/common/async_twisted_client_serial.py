@@ -78,7 +78,7 @@ class ExampleProtocol(ModbusClientProtocol):
 
 if __name__ == "__main__":
     import time
-    proto, client = AsyncModbusSerialClient(schedulers.REACTOR, # pylint: disable=unpacking-non-sequence
+    proto, client = AsyncModbusSerialClient(schedulers.REACTOR,
                                             method="rtu",
                                             port=SERIAL_PORT,
                                             timeout=2,

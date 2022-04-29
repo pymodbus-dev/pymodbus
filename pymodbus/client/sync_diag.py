@@ -133,7 +133,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
     def _log_delayed_response(self, result_len, size, delay):
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
-        elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
+        elif (result_len == 0 or (size and result_len < size)) and delay >= self.timeout:
             read_type = f"of {size if size else 'in timelimit read'} expected"
             _logger.warning(self.timeout_msg, delay, result_len, read_type)
         else:

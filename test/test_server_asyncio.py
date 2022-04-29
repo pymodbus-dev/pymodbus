@@ -191,7 +191,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
             # close isn't synchronous and there's no
             # notification that it's done
         await asyncio.sleep(0.2)  # so we have to wait a bit
-        assert not server.active_connections
+        assert len(server.active_connections) == 0
 
         server.server_close()
 
@@ -227,7 +227,7 @@ class AsyncioServerTest(asynctest.TestCase): # pylint: disable=too-many-public-m
         # close isn't synchronous and there's no notification that it's done
         # so we have to wait a bit
         await asyncio.sleep(0.5)
-        self.assertTrue( not server.active_connections )
+        self.assertTrue( len(server.active_connections) == 0 )
 
 
     async def test_tcp_server_no_slave(self):

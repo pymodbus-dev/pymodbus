@@ -445,7 +445,7 @@ class ModbusCountersHandler:
         '''
         count, result = 0x01, 0x00
         for i in iter(self.__data.values()):
-            if i != 0x00: # pylint: disable=compare-to-zero
+            if i != 0x00:
                 result |= count
             count <<= 1
         return result
@@ -595,7 +595,7 @@ class ModbusControlBlock(Singleton):
         '''
         for entry in iter(mapping.items()):
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
-                self.__diagnostic[entry[0]] = bool(entry[1])
+                self.__diagnostic[entry[0]] = (entry[1] != 0)
 
     def getDiagnostic(self, bit): # pylint: disable=invalid-name
         ''' This gets the value in the diagnostic register

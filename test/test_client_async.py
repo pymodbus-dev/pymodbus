@@ -79,7 +79,7 @@ class TestAsynchronousClient:
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
         client = future.result()
         assert isinstance(client, AsyncTornadoModbusTcpClient)
-        assert not list(client.transaction)
+        assert len(list(client.transaction)) == 0
         assert isinstance(client.framer, ModbusSocketFramer)
         assert client.port == 502
         assert client._connected # pylint: disable=protected-access
@@ -137,7 +137,7 @@ class TestAsynchronousClient:
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
         client = future.result()
         assert isinstance(client, AsyncTornadoModbusUdoClient)
-        assert not list(client.transaction)
+        assert len(list(client.transaction)) == 0
         assert isinstance(client.framer, ModbusSocketFramer)
         assert client.port == 502
         assert client._connected # pylint: disable=protected-access
@@ -192,7 +192,7 @@ class TestAsynchronousClient:
 
                     assert isinstance(client, SerialPort)
                     assert isinstance(client.protocol, ModbusSerClientProtocol)
-                    assert not list(client.protocol.transaction)
+                    assert len(list(client.protocol.transaction)) == 0
                     assert isinstance(client.protocol.framer, framer)
                     assert client.protocol._connected # pylint: disable=protected-access
 
@@ -218,7 +218,7 @@ class TestAsynchronousClient:
                 schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT)
             client = future.result()
             assert isinstance(client, AsyncTornadoModbusSerialClient)
-            assert not list(client.transaction)
+            assert len(list(client.transaction)) == 0
             assert isinstance(client.framer, framer)
             assert client.port == pytest.SERIAL_PORT
             assert client._connected # pylint: disable=protected-access

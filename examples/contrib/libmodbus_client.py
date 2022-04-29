@@ -199,7 +199,7 @@ class LibmodbusLevel1Client:
 
         :returns: True if successful, throws otherwise
         """
-        return not self.__execute(LIB.modbus_connect)
+        return self.__execute(LIB.modbus_connect) == 0
 
     def flush(self):
         """ Discards the existing bytes on the wire.

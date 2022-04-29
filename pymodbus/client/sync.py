@@ -720,7 +720,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
     def _wait_for_data(self):
         size = 0
         more_data = False
-        if self.timeout is not None and self.timeout:
+        if self.timeout is not None and self.timeout != 0:
             condition = partial(lambda start, timeout:
                                 (time.time() - start) <= timeout,
                                 timeout=self.timeout)

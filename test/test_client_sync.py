@@ -95,7 +95,7 @@ class SynchronousClientTest(unittest.TestCase):
         self.assertEqual(False, client.debug_enabled())
         writable = StringIO()
         client.trace(writable)
-        client._dump(b'\x00\x01\x02')
+        client._dump(b'\x00\x01\x02', None)
         self.assertEqual(hexlify_packets(b'\x00\x01\x02'), writable.getvalue())
 
         # a successful execute

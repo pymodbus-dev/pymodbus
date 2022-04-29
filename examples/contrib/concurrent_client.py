@@ -146,7 +146,7 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
 # -------------------------------------------------------------------------- #
 # Define our concurrent client
 # -------------------------------------------------------------------------- #
-class ConcurrentClient(ModbusClientMixin):
+class ConcurrentClient(ModbusClientMixin): # pylint: disable=too-many-instance-attributes
     """ This is a high performance client that can be used
     to read/write a large number of reqeusts at once asyncronously.
     This operates with a backing worker pool of processes or threads
@@ -175,7 +175,7 @@ class ConcurrentClient(ModbusClientMixin):
         self.workers.append(self.manager)
 
         # creating the request workers
-        for i in range(worker_count): #NOSONAR
+        for i in range(worker_count): #NOSONAR pylint: disable=unused-variable
             worker = primitives.worker(
                 target=_client_worker_process,
                 args=(self.factory, self.input_queue, self.output_queue,

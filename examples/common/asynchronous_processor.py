@@ -5,6 +5,7 @@
 The following is a full example of a continuous client processor. Feel
 free to use it as a skeleton guide in implementing your own.
 """
+# pylint: disable=R0801
 # --------------------------------------------------------------------------- #
 # import the necessary modules
 # --------------------------------------------------------------------------- #
@@ -14,7 +15,7 @@ from twisted.internet import serialport, reactor
 from twisted.internet.protocol import ClientFactory
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol # pylint: disable=no-name-in-module
 
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use

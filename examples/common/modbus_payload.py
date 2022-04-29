@@ -4,6 +4,7 @@
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
+# pylint: disable=R0801
 import logging
 from collections import OrderedDict
 
@@ -28,7 +29,7 @@ ORDER_DICT = {
 }
 
 
-def run_binary_payload_ex():
+def run_binary_payload_ex(): # pylint: disable=too-many-statements
     """ Run binary payload. """
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
@@ -164,10 +165,10 @@ def run_binary_payload_ex():
                                                      wordorder=word_endian)
 
         assert decoder._byteorder == builder._byteorder, \
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder" # pylint: disable=protected-access
+                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder" # pylint: disable=protected-access,line-too-long
 
         assert decoder._wordorder == builder._wordorder, \
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"  # pylint: disable=protected-access
+                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"  # pylint: disable=protected-access,line-too-long
 
         decoded = OrderedDict([
             ('string', decoder.decode_string(len(strng))),

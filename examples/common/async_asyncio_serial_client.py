@@ -7,9 +7,11 @@ client implementation from pymodbus with asyncio.
 
 The example is only valid on Python3.4 and above
 """
+# pylint: disable=R0801
 import logging
 import asyncio
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as ModbusClient
+from pymodbus.client.asynchronous.serial import ( # pylint: disable=no-name-in-module
+    AsyncModbusSerialClient as ModbusClient)
 from pymodbus.client.asynchronous import schedulers
 
 

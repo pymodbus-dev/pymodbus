@@ -5,6 +5,7 @@
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus.
 """
+# pylint: disable=R0801
 # --------------------------------------------------------------------------- #
 # import needed libraries
 # --------------------------------------------------------------------------- #

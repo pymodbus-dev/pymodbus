@@ -9,6 +9,7 @@ implementation from pymodbus.
         result = client.read_coils(1,10)
         print result
 """
+# pylint: disable=R0801
 import logging
 
 # --------------------------------------------------------------------------- #
@@ -30,7 +31,7 @@ log.setLevel(logging.DEBUG)
 UNIT = 0x1
 
 
-def run_sync_client():
+def run_sync_client(): # pylint: disable=too-many-statements
     """ Run sync client. """
     # ------------------------------------------------------------------------#
     # choose the client you want

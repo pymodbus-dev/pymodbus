@@ -173,7 +173,7 @@ def create_sunspec_sync_client(host):
     """
     modbus = ModbusTcpClient(host)
     modbus.connect()
-    client = SunspecClient(modbus)
+    client = SunspecClient(modbus) # pylint: disable=redefined-outer-name
     client.initialize()
     return client
 
@@ -277,7 +277,7 @@ class SunspecClient:
 
         :returns: A list of the available blocks
         """
-        blocks = []
+        blocks = [] # pylint: disable=redefined-outer-name
         offset = self.offset + 2
         model = SunspecModel.CommonBlock
         while model != SunspecModel.EndOfSunSpecMap:

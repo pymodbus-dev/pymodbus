@@ -599,7 +599,7 @@ class ModbusControlBlock(Singleton):
             if bit and 0 <= bit < len(self.__diagnostic):
                 return self.__diagnostic[bit]
         except Exception: # pylint: disable=broad-except
-            return None
+            pass
         return None
 
     def getDiagnosticRegister(self): # pylint: disable=invalid-name

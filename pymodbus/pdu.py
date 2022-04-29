@@ -7,7 +7,7 @@ from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
 from pymodbus.utilities import rtuFrameSize
-from pymodbus.compat import int2byte, byte2int
+from pymodbus.compat import iteritems, int2byte, byte2int
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -158,7 +158,7 @@ class ModbusExceptions(Singleton): # pylint: disable=too-few-public-methods
 
         :param code: The code number to translate
         """
-        values = dict((v, k) for k, v in iter(cls.__dict__.items())
+        values = dict((v, k) for k, v in iteritems(cls.__dict__)
             if not k.startswith('__') and not callable(v))
         return values.get(code, None)
 

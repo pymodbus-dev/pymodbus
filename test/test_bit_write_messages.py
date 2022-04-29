@@ -16,6 +16,7 @@ from pymodbus.bit_write_message import (
     WriteSingleCoilRequest,
 )
 from pymodbus.pdu import ModbusExceptions
+from pymodbus.compat import iteritems
 
 from .modbus_mocks import MockContext, FakeList
 
@@ -46,7 +47,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             WriteMultipleCoilsRequest(1, [True]*5) : b'\x00\x01\x00\x05\x01\x1f',
             WriteMultipleCoilsResponse(1, 5)       : b'\x00\x01\x00\x05',
         }
-        for request, expected in iter(messages.items()):
+        for request, expected in iteritems(messages):
             self.assertEqual(request.encode(), expected)
 
     def test_bit_write_message_get_response_pdu(self):
@@ -54,7 +55,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         requests = {
             WriteSingleCoilRequest(1, 0xabcd): 5
         }
-        for request, expected in iter(requests.items()):
+        for request, expected in iteritems(requests):
             pdu_len = request.get_response_pdu_size()
             self.assertEqual(pdu_len, expected)
 

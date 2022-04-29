@@ -6,6 +6,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
 )
 from pymodbus.exceptions import NoSuchSlaveException
+from pymodbus.compat import iteritems
 
 class ModbusServerSingleContextTest(unittest.TestCase):
     ''' This is the unittest for the pymodbus.datastore.ModbusServerContext
@@ -98,9 +99,9 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
     def test_multiple_context_set(self):
         ''' Test a setting multiple slave contexts '''
         slaves = dict((id, ModbusSlaveContext()) for id in range(10))
-        for slave_id, slave in iter(slaves.items()):
+        for slave_id, slave in iteritems(slaves):
             self.context[slave_id] = slave
-        for slave_id, slave in iter(slaves.items()):
+        for slave_id, slave in iteritems(slaves):
             actual = self.context[slave_id]
             self.assertEqual(slave, actual)
 

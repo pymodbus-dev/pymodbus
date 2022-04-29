@@ -11,7 +11,7 @@ from collections import OrderedDict
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
-from pymodbus.compat import int2byte
+from pymodbus.compat import iteritems, itervalues, int2byte
 
 
 #---------------------------------------------------------------------------#
@@ -152,7 +152,7 @@ class ModbusPlusStatistics:
 
         :returns: An iterator of the modbus plus statistics
         '''
-        return iter(self.__data.items())
+        return iteritems(self.__data)
 
     def reset(self):
         ''' This clears all of the modbus plus statistics
@@ -165,7 +165,7 @@ class ModbusPlusStatistics:
 
         :returns: 54 16-bit words representing the status
         '''
-        return iter(self.__data.values())
+        return itervalues(self.__data)
 
     def encode(self):
         ''' Returns a summary of the modbus plus statistics
@@ -229,14 +229,14 @@ class ModbusDeviceIdentification:
 
         :returns: An iterator of the device information
         '''
-        return iter(self.__data.items())
+        return iteritems(self.__data)
 
     def summary(self):
         ''' Return a summary of the main items
 
         :returns: An dictionary of the main items
         '''
-        return dict(zip(self.__names, iter(self.__data.values())))
+        return dict(zip(self.__names, itervalues(self.__data)))
 
     def update(self, value):
         ''' Update the values of this identity
@@ -421,7 +421,7 @@ class ModbusCountersHandler:
 
         :returns: An iterator of the device counters
         '''
-        return zip(self.__names, iter(self.__data.values()))
+        return zip(self.__names, itervalues(self.__data))
 
     def update(self, values):
         ''' Update the values of this identity
@@ -429,7 +429,7 @@ class ModbusCountersHandler:
 
         :param values: The value to copy values from
         '''
-        for k, v in iter(values.items()):
+        for k, v in iteritems(values):
             v += self.__getattribute__(k)
             self.__setattr__(k, v)
 
@@ -444,7 +444,7 @@ class ModbusCountersHandler:
         :returns: A byte with each bit representing each counter
         '''
         count, result = 0x01, 0x00
-        for i in iter(self.__data.values()):
+        for i in itervalues(self.__data):
             if i != 0x00:
                 result |= count
             count <<= 1
@@ -593,7 +593,7 @@ class ModbusControlBlock(Singleton):
 
         :param mapping: Dictionary of key:value pairs to set
         '''
-        for entry in iter(mapping.items()):
+        for entry in iteritems(mapping):
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
                 self.__diagnostic[entry[0]] = (entry[1] != 0)
 

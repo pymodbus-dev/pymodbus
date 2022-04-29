@@ -19,7 +19,7 @@ from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.utilities import hexlify_packets, ModbusTransactionState
-from pymodbus.compat import byte2int
+from pymodbus.compat import iterkeys, byte2int
 
 
 # --------------------------------------------------------------------------- #
@@ -439,7 +439,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :returns: An iterator of the managed transactions
         """
-        return iter(self.transactions.keys())
+        return iterkeys(self.transactions)
 
     def addTransaction(self, request, tid=None):
         """ Adds a transaction to the handler

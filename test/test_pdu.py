@@ -11,6 +11,7 @@ from pymodbus.pdu import (
 from pymodbus.exceptions import (
     NotImplementedException,
 )
+from pymodbus.compat import iteritems
 
 class SimplePduTest(unittest.TestCase):
     '''
@@ -55,7 +56,7 @@ class SimplePduTest(unittest.TestCase):
         request = ModbusRequest()
         request.function_code = 1
         errors = dict((ModbusExceptions.decode(c), c) for c in range(1,20))
-        for error, code in iter(errors.items()):
+        for error, code in iteritems(errors):
             result = request.doException(code)
             self.assertEqual(str(result), f"Exception Response(129, 1, {error})")
 

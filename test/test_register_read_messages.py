@@ -13,6 +13,7 @@ from pymodbus.register_read_message import (
 from pymodbus.register_read_message import ReadRegistersRequestBase
 from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.pdu import ModbusExceptions
+from pymodbus.compat import iteritems, iterkeys
 
 from .modbus_mocks import MockContext, FakeList
 
@@ -69,12 +70,12 @@ class ReadRegisterMessagesTest(unittest.TestCase):
 
     def test_register_read_requests(self):
         """ Test register read requests. """
-        for request, response in iter(self.request_read.items()):
+        for request, response in iteritems(self.request_read):
             self.assertEqual(request.encode(), response)
 
     def test_register_read_responses(self):
         """ Test register read response. """
-        for request, response in iter(self.response_read.items()):
+        for request, response in iteritems(self.response_read):
             self.assertEqual(request.encode(), response)
 
     def test_register_read_response_decode(self):
@@ -180,9 +181,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
 
     def test_serializing_to_string(self):
         """ Test serializing to string. """
-        for request in iter(self.request_read.keys()):
+        for request in iterkeys(self.request_read):
             self.assertTrue(str(request) is not None) #NOSONAR
-        for request in iter(self.response_read.keys()):
+        for request in iterkeys(self.response_read):
             self.assertTrue(str(request) is not None) #NOSONAR
 
 #---------------------------------------------------------------------------#

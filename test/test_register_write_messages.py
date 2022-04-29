@@ -10,6 +10,7 @@ from pymodbus.register_write_message import (
     MaskWriteRegisterResponse,
 )
 from pymodbus.pdu import ModbusExceptions
+from pymodbus.compat import iteritems, iterkeys
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.payload import Endian
 
@@ -61,7 +62,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def test_register_write_requests_encode(self):
         """ Test register write requests encode. """
-        for request, response in iter(self.write.items()):
+        for request, response in iteritems(self.write):
             self.assertEqual(request.encode(), response)
 
     def test_register_write_requests_decode(self):
@@ -80,7 +81,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def test_serializing_to_string(self):
         """ Test serializing to string. """
-        for request in iter(self.write.keys()):
+        for request in iterkeys(self.write):
             self.assertTrue(str(request) is not None) #NOSONAR
 
     def test_write_single_register_request(self):

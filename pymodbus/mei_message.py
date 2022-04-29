@@ -10,7 +10,7 @@ from pymodbus.pdu import ModbusResponse
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import DeviceInformationFactory
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.compat import byte2int
+from pymodbus.compat import iteritems, byte2int
 
 _MCB = ModbusControlBlock()
 
@@ -157,7 +157,7 @@ class ReadDeviceInformationResponse(ModbusResponse): # pylint: disable=too-many-
         self.space_left = 253 - 6
         objects = b''
         try:
-            for (object_id, data) in iter(self.information.items()):
+            for (object_id, data) in iteritems(self.information):
                 if isinstance(data, list):
                     for item in data:
                         objects += self._encode_object(object_id, item)

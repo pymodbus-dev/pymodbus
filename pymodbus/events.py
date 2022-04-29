@@ -1,10 +1,11 @@
-""" Modbus Remote Events
+'''
+Modbus Remote Events
 ------------------------------------------------------------
 
 An event byte returned by the Get Communications Event Log function
 can be any one of four types. The type is defined by bit 7
 (the high-order bit) in each byte. It may be further defined by bit 6.
-"""
+'''
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
@@ -14,22 +15,22 @@ class ModbusEvent:
     """Define modbus events."""
 
     def encode(self): # pylint: disable=no-self-use
-        """ Encodes the status bits to an event message
+        ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
-        """
+        '''
         raise NotImplementedException()
 
     def decode(self, event): # pylint: disable=no-self-use
-        """ Decodes the event message to its status bits
+        ''' Decodes the event message to its status bits
 
         :param event: The event to decode
-        """
+        '''
         raise NotImplementedException()
 
 
 class RemoteReceiveEvent(ModbusEvent):
-    """ Remote device MODBUS Receive Event
+    ''' Remote device MODBUS Receive Event
 
     The remote device stores this type of event byte when a query message
     is received. It is stored before the remote device processes the message.
@@ -46,30 +47,30 @@ class RemoteReceiveEvent(ModbusEvent):
         5   Currently in Listen Only Mode
         6   Broadcast Receive
         7   1
-    """
+    '''
 
     def __init__(self, **kwargs):
-        """ Initialize a new event instance
-        """
+        ''' Initialize a new event instance
+        '''
         self.overrun   = kwargs.get('overrun', False)
         self.listen    = kwargs.get('listen', False)
         self.broadcast = kwargs.get('broadcast', False)
 
     def encode(self):
-        """ Encodes the status bits to an event message
+        ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
-        """
+        '''
         bits  = [False] * 3
         bits += [self.overrun, self.listen, self.broadcast, True]
         packet = pack_bitstring(bits)
         return packet
 
     def decode(self, event):
-        """ Decodes the event message to its status bits
+        ''' Decodes the event message to its status bits
 
         :param event: The event to decode
-        """
+        '''
         bits = unpack_bitstring(event)
         self.overrun   = bits[4]
         self.listen    = bits[5]
@@ -77,7 +78,7 @@ class RemoteReceiveEvent(ModbusEvent):
 
 
 class RemoteSendEvent(ModbusEvent):
-    """ Remote device MODBUS Send Event
+    ''' Remote device MODBUS Send Event
 
     The remote device stores this type of event byte when it finishes
     processing a request message. It is stored if the remote device
@@ -97,11 +98,11 @@ class RemoteSendEvent(ModbusEvent):
         5   Currently in Listen Only Mode
         6   1
         7   0
-    """
+    '''
 
     def __init__(self, **kwargs):
-        """ Initialize a new event instance
-        """
+        ''' Initialize a new event instance
+        '''
         self.read          = kwargs.get('read', False)
         self.slave_abort   = kwargs.get('slave_abort', False)
         self.slave_busy    = kwargs.get('slave_busy', False)
@@ -110,10 +111,10 @@ class RemoteSendEvent(ModbusEvent):
         self.listen        = kwargs.get('listen', False)
 
     def encode(self):
-        """ Encodes the status bits to an event message
+        ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
-        """
+        '''
         bits = [self.read, self.slave_abort, self.slave_busy,
             self.slave_nak, self.write_timeout, self.listen]
         bits  += [True, False]
@@ -121,10 +122,10 @@ class RemoteSendEvent(ModbusEvent):
         return packet
 
     def decode(self, event):
-        """ Decodes the event message to its status bits
+        ''' Decodes the event message to its status bits
 
         :param event: The event to decode
-        """
+        '''
         #NOSONAR todo fix the start byte count # pylint: disable=fixme
         bits = unpack_bitstring(event)
         self.read          = bits[0]
@@ -136,33 +137,33 @@ class RemoteSendEvent(ModbusEvent):
 
 
 class EnteredListenModeEvent(ModbusEvent):
-    """ Remote device Entered Listen Only Mode
+    ''' Remote device Entered Listen Only Mode
 
     The remote device stores this type of event byte when it enters
     the Listen Only Mode. The event is defined by a content of 04 hex.
-    """
+    '''
 
     value = 0x04
     __encoded = b'\x04'
 
     def encode(self):
-        """ Encodes the status bits to an event message
+        ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
-        """
+        '''
         return self.__encoded
 
     def decode(self, event):
-        """ Decodes the event message to its status bits
+        ''' Decodes the event message to its status bits
 
         :param event: The event to decode
-        """
+        '''
         if event != self.__encoded:
             raise ParameterException('Invalid decoded value')
 
 
 class CommunicationRestartEvent(ModbusEvent):
-    """ Remote device Initiated Communication Restart
+    ''' Remote device Initiated Communication Restart
 
     The remote device stores this type of event byte when its communications
     port is restarted. The remote device can be restarted by the Diagnostics
@@ -176,22 +177,22 @@ class CommunicationRestartEvent(ModbusEvent):
     the log and the rest of the log is cleared to zeros.
 
     The event is defined by a content of zero.
-    """
+    '''
 
     value = 0x00
     __encoded = b'\x00'
 
     def encode(self):
-        """ Encodes the status bits to an event message
+        ''' Encodes the status bits to an event message
 
         :returns: The encoded event message
-        """
+        '''
         return self.__encoded
 
     def decode(self, event):
-        """ Decodes the event message to its status bits
+        ''' Decodes the event message to its status bits
 
         :param event: The event to decode
-        """
+        '''
         if event != self.__encoded:
             raise ParameterException('Invalid decoded value')

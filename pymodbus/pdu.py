@@ -1,4 +1,6 @@
-""" Contains base classes for modbus request/response/error packets. """
+"""
+Contains base classes for modbus request/response/error packets
+"""
 import logging
 import struct
 
@@ -17,7 +19,8 @@ _logger = logging.getLogger(__name__)
 # Base PDU's
 # --------------------------------------------------------------------------- #
 class ModbusPDU:
-    """ Base class for all Modbus messages
+    """
+    Base class for all Modbus messages
 
     .. attribute:: transaction_id
 
@@ -135,8 +138,9 @@ class ModbusResponse(ModbusPDU):
 # Exception PDU's
 # --------------------------------------------------------------------------- #
 class ModbusExceptions(Singleton): # pylint: disable=too-few-public-methods
-    """ An enumeration of the valid modbus exceptions. """
-
+    """
+    An enumeration of the valid modbus exceptions
+    """
     IllegalFunction         = 0x01
     IllegalAddress          = 0x02
     IllegalValue            = 0x03
@@ -200,7 +204,8 @@ class ExceptionResponse(ModbusResponse):
 
 
 class IllegalFunctionRequest(ModbusRequest):
-    """ Defines the Modbus slave exception type 'Illegal Function'
+    """
+    Defines the Modbus slave exception type 'Illegal Function'
     This exception code is returned if the slave::
 
         - does not implement the function code **or**

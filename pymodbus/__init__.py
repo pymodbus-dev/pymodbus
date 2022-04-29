@@ -1,4 +1,5 @@
-""" Pymodbus: Modbus Protocol Implementation
+'''
+Pymodbus: Modbus Protocol Implementation
 -----------------------------------------
 
 TwistedModbus is built on top of the code developed by:
@@ -8,7 +9,7 @@ TwistedModbus is built on top of the code developed by:
     Hynek Petrak <hynek@swac.cz>
 
 Released under the the BSD license
-"""
+'''
 
 import logging as __logging
 import pymodbus.version as __version

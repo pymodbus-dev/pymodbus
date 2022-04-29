@@ -1,4 +1,5 @@
-""" Handle the version information here; you should only have to
+"""
+Handle the version information here; you should only have to
 change the version tuple.
 
 Since we are using twisted's version class, we can also query
@@ -10,7 +11,7 @@ class Version:
     """Manage version."""
 
     def __init__(self, package, major, minor, micro, pre=None): # pylint: disable=too-many-arguments
-        """ Initialize
+        """
 
         :param package: Name of the package that this is a version of.
         :param major: The major version number.

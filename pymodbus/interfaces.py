@@ -1,4 +1,5 @@
-""" Pymodbus Interfaces
+"""
+Pymodbus Interfaces
 ---------------------
 
 A collection of base classes that are used throughout
@@ -11,7 +12,8 @@ from pymodbus.exceptions import NotImplementedException
 # Generic
 # --------------------------------------------------------------------------- #
 class Singleton: # pylint: disable=too-few-public-methods
-    """ Singleton base class
+    """
+    Singleton base class
     http://mail.python.org/pipermail/python-list/2007-July/450681.html
     """
     def __new__(cls, *args, **kwargs): # pylint: disable=unused-argument
@@ -52,7 +54,8 @@ class IModbusDecoder:
             "Method not implemented by derived class")
 
     def register(self, function=None): # pylint: disable=no-self-use
-        """ Registers a function and sub function class with the decoder
+        """
+        Registers a function and sub function class with the decoder
         :param function: Custom function class to register
         :return:
         """
@@ -61,7 +64,8 @@ class IModbusDecoder:
 
 
 class IModbusFramer:
-    """ A framer strategy interface. The idea is that we abstract away all the
+    """
+    A framer strategy interface. The idea is that we abstract away all the
     detail about how to detect if a current message frame exists, decoding
     it, sending it, etc so that we can plug in a new Framer object (tcp,
     rtu, ascii).
@@ -157,7 +161,8 @@ class IModbusFramer:
 
 
 class IModbusSlaveContext:
-    """ Interface for a modbus slave data context
+    """
+    Interface for a modbus slave data context
 
     Derived classes must implemented the following methods:
             reset(self)
@@ -213,7 +218,8 @@ class IModbusSlaveContext:
 
 
 class IPayloadBuilder: # pylint: disable=too-few-public-methods
-    """ This is an interface to a class that can build a payload
+    """
+    This is an interface to a class that can build a payload
     for a modbus register write command. It should abstract
     the codec for encoding data to the required format
     (bcd, binary, char, etc).

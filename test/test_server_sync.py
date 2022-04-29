@@ -3,7 +3,6 @@
 import ssl
 import socket
 import unittest
-import socketserver
 from unittest.mock import patch, Mock
 import pytest
 import serial
@@ -30,6 +29,7 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.transaction import ModbusTlsFramer
+import socketserver
 
 
 # --------------------------------------------------------------------------- #

@@ -181,7 +181,7 @@ jobs:
         task:
           - name: pylint
             tox: pylint
-            # continue_on_error: true
+            continue_on_error: true
           - name: flake8
             tox: flake8
             continue_on_error: true

@@ -22,7 +22,7 @@ jobs:
     container: ${{ matrix.os.container[matrix.python.docker] }}
     # present runtime seems to be about 2 minutes
     # with pypy being the exception (10 minutes)
-    timeout-minutes: 25
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:

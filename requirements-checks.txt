@@ -5,4 +5,3 @@ pyflakes>=1.2.3
 pylint>=2.13.3
 codespell>=2.1.0
 bandit>=1.7.4
-isort>=5.10.1

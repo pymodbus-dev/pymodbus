@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-""" Epydoc API Runner
+'''
+Epydoc API Runner
 ------------------
 
 Using pkg_resources, we attempt to see if epydoc is installed,
 if so, we use its cli program to compile the documents
-"""
+'''
 import sys
 import os
 import shutil
@@ -15,7 +16,7 @@ try:
     pkg_resources.require("epydoc")
 
     from epydoc.cli import cli # pylint: disable=import-error
-    sys.argv = """epydoc.py pymodbus
+    sys.argv = '''epydoc.py pymodbus
         --html --simple-term --quiet
         --include-log
         --graph=all
@@ -24,7 +25,7 @@ try:
         --exclude=._
         --exclude=tests
         --output=html/
-    """.split()
+    '''.split()
     #bugs in trunk for --docformat=restructuredtext
 
     if not os.path.exists("./html"):

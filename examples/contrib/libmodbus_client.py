@@ -27,6 +27,7 @@ For these to work, you must have `cffi` and `libmodbus-dev` installed:
 # -------------------------------------------------------------------------- #
 # import system libraries
 # -------------------------------------------------------------------------- #
+
 from cffi import FFI
 
 # -------------------------------------------------------------------------- #
@@ -36,23 +37,11 @@ from cffi import FFI
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ModbusException
 from pymodbus.client.common import ModbusClientMixin
-from pymodbus.bit_read_message import (
-    ReadCoilsResponse,
-    ReadDiscreteInputsResponse,
-)
-from pymodbus.register_read_message import (
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersResponse,
-)
+from pymodbus.bit_read_message import ReadCoilsResponse, ReadDiscreteInputsResponse
+from pymodbus.register_read_message import ReadHoldingRegistersResponse, ReadInputRegistersResponse
 from pymodbus.register_read_message import ReadWriteMultipleRegistersResponse
-from pymodbus.bit_write_message import (
-    WriteSingleCoilResponse,
-    WriteMultipleCoilsResponse,
-)
-from pymodbus.register_write_message import (
-    WriteSingleRegisterResponse,
-    WriteMultipleRegistersResponse,
-)
+from pymodbus.bit_write_message import WriteSingleCoilResponse, WriteMultipleCoilsResponse
+from pymodbus.register_write_message import WriteSingleRegisterResponse, WriteMultipleRegistersResponse
 
 # --------------------------------------------------------------------------- #
 # create the C interface
@@ -108,53 +97,48 @@ LIB = compiler.dlopen('modbus')  # create our bindings
 
 
 def get_float(data):
-    """ Get float. """
     return LIB.modbus_get_float(data)
 
 
 def set_float(value, data):
-    """ Set float. """
     LIB.modbus_set_float(value, data)
 
 
 def cast_to_int16(data):
-    """ Cast to int16. """
     return int(compiler.cast('int16_t', data))
 
 
 def cast_to_int32(data):
-    """ Cast to int32. """
     return int(compiler.cast('int32_t', data))
 
 
 class NotImplementedException(Exception):
-    """ Not implemented exception. """
-
+    pass
 
 # -------------------------------------------------------------------------- #
 # level1 client
 # -------------------------------------------------------------------------- #
 
 
-class LibmodbusLevel1Client:
+class LibmodbusLevel1Client(object):
     """ A raw wrapper around the libmodbus c library. Feel free
     to use it if you want increased performance and don't mind the
     entire protocol not being implemented.
     """
 
     @classmethod
-    def create_tcp_client(cls, my_host='127.0.0.1', my_port=Defaults.Port):
+    def create_tcp_client(klass, host='127.0.0.1', port=Defaults.Port):
         """ Create a TCP modbus client for the supplied parameters.
 
             :param host: The host to connect to
             :param port: The port to connect to on that host
             :returns: A new level1 client
         """
-        my_client = LIB.modbus_new_tcp(my_host.encode(), my_port)
-        return cls(my_client)
+        client = LIB.modbus_new_tcp(host.encode(), port)
+        return klass(client)
 
     @classmethod
-    def create_rtu_client(cls, **kwargs):
+    def create_rtu_client(klass, **kwargs):
         """ Create a TCP modbus client for the supplied parameters.
 
             :param port: The serial port to attach to
@@ -164,15 +148,15 @@ class LibmodbusLevel1Client:
             :param baudrate: The baud rate to use for the serial device
             :returns: A new level1 client
         """
-        my_port  = kwargs.get('port', '/dev/ttyS0')  # noqa E221
+        port     = kwargs.get('port', '/dev/ttyS0')  # noqa E221
         baudrate = kwargs.get('baud', Defaults.Baudrate)
         parity   = kwargs.get('parity', Defaults.Parity) # noqa E221
         bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         stopbits = kwargs.get('stopbits', Defaults.Stopbits)
-        my_client = LIB.modbus_new_rtu(my_port, baudrate, parity, bytesize, stopbits)
-        return cls(my_client)
+        client = LIB.modbus_new_rtu(port, baudrate, parity, bytesize, stopbits)
+        return klass(client)
 
-    def __init__(self, my_client):
+    def __init__(self, client):
         """ Initalize a new instance of the LibmodbusLevel1Client. This
         method should not be used, instead new instances should be created
         using the two supplied factory methods:
@@ -182,7 +166,7 @@ class LibmodbusLevel1Client:
 
         :param client: The underlying client instance to operate with.
         """
-        self.client = my_client
+        self.client = client
         self.slave = Defaults.UnitId
 
     def set_slave(self, slave):
@@ -191,7 +175,7 @@ class LibmodbusLevel1Client:
         :param slave: The new slave to operate against
         :returns: The resulting slave to operate against
         """
-        self.slave = self._execute(LIB.modbus_set_slave, slave) # pylint: disable=no-member
+        self.slave = self._execute(LIB.modbus_set_slave, slave)
         return self.slave
 
     def connect(self):
@@ -199,7 +183,7 @@ class LibmodbusLevel1Client:
 
         :returns: True if successful, throws otherwise
         """
-        return self.__execute(LIB.modbus_connect) == 0
+        return (self.__execute(LIB.modbus_connect) == 0)
 
     def flush(self):
         """ Discards the existing bytes on the wire.
@@ -396,7 +380,7 @@ class LibmodbusClient(ModbusClientMixin):
             lambda tx, rx: ReadWriteMultipleRegistersResponse(list(rx)),
     }
 
-    def __init__(self, my_client):
+    def __init__(self, client):
         """ Initalize a new instance of the LibmodbusClient. This should
         be initialized with one of the LibmodbusLevel1Client instances:
 
@@ -404,7 +388,7 @@ class LibmodbusClient(ModbusClientMixin):
         * LibmodbusLevel1Client.create_tcp_client(...)
         :param client: The underlying client instance to operate with.
         """
-        self.client = my_client
+        self.client = client
 
     # ----------------------------------------------------------------------- #
     # We use the client mixin to implement the api methods which are all
@@ -437,11 +421,9 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     def connect(self):
-        """ Connect. """
         return self.client.connect()
 
     def close(self):
-        """ Close. """
         return self.client.close()
 
     # ----------------------------------------------------------------------- #
@@ -468,8 +450,8 @@ class LibmodbusClient(ModbusClientMixin):
 if __name__ == '__main__':
 
     # create our low level client
-    host = '127.0.0.1' # pylint: disable=invalid-name
-    port = 502 # pylint: disable=invalid-name
+    host = '127.0.0.1'
+    port = 502
     protocol = LibmodbusLevel1Client.create_tcp_client(host, port)
 
     # operate with our high level client

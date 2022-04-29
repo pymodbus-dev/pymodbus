@@ -1,5 +1,3 @@
-"""Binary framer."""
-import logging
 import struct
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.utilities import checkCRC, computeCRC
@@ -8,6 +6,7 @@ from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 
 BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -17,7 +16,7 @@ BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # --------------------------------------------------------------------------- #
 
 
-class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attributes
+class ModbusBinaryFramer(ModbusFramer):
     """
     Modbus Binary Frame Controller::
 
@@ -60,12 +59,11 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """Decode data."""
         if len(data) > self._hsize:
             uid = struct.unpack('>B', data[1:2])[0]
             fcode = struct.unpack('>B', data[2:3])[0]
             return dict(unit=uid, fcode=fcode)
-        return {}
+        return dict()
 
     def checkFrame(self):
         """ Check and decode the next frame
@@ -139,7 +137,7 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """
         The new packet processing pattern
 
@@ -173,8 +171,8 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
                     self.advanceFrame()
                     callback(result)  # defer or push to a thread?
                 else:
-                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
-                    _logger.debug(txt)
+                    _logger.debug("Not a valid unit id - {}, "
+                                  "ignoring!!".format(self._header['uid']))
                     self.resetFrame()
                     break
 
@@ -208,13 +206,13 @@ class ModbusBinaryFramer(ModbusFramer): # pylint: disable=too-many-instance-attr
         :returns: the escaped packet
         """
         array = bytearray()
-        for item in data:
-            if item in self._repeat:
-                array.append(item)
-            array.append(item)
+        for d in data:
+            if d in self._repeat:
+                array.append(d)
+            array.append(d)
         return bytes(array)
 
-    def resetFrame(self): # pylint: disable=invalid-name
+    def resetFrame(self):
         """ Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is

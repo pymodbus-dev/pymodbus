@@ -1,12 +1,10 @@
-"""Remote datastore."""
-import logging
-
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
 
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
+import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -33,51 +31,48 @@ class RemoteSlaveContext(IModbusSlaveContext):
         ''' Resets all the datastores to their default values '''
         raise NotImplementedException()
 
-    def validate(self, fc_as_hex, address, count=1): # pylint: disable=arguments-renamed
+    def validate(self, fx, address, count=1):
         ''' Validates the request to make sure it is in range
 
-        :param fc_as_hex: The function we are working with
+        :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         '''
-        txt = f"validate[{fc_as_hex}] {address}:{count}"
-        _logger.debug(txt)
-        result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
+        _logger.debug("validate[%d] %d:%d" % (fx, address, count))
+        result = self.__get_callbacks[self.decode(fx)](address, count)
         return not result.isError()
 
-    def getValues(self, fc_as_hex, address, count=1): # pylint: disable=arguments-renamed
+    def getValues(self, fx, address, count=1):
         ''' Get `count` values from datastore
 
-        :param fc_as_hex: The function we are working with
+        :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         '''
-        #NOSONAR TODO deal with deferreds pylint: disable=fixme
-        txt = f"get values[{fc_as_hex}] {address}:{count}"
-        _logger.debug(txt)
-        result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
-        return self.__extract_result(self.decode(fc_as_hex), result)
+        # TODO deal with deferreds
+        _logger.debug("get values[%d] %d:%d" % (fx, address, count))
+        result = self.__get_callbacks[self.decode(fx)](address, count)
+        return self.__extract_result(self.decode(fx), result)
 
-    def setValues(self, fc_as_hex, address, values): # pylint: disable=arguments-renamed
+    def setValues(self, fx, address, values):
         ''' Sets the datastore with the supplied values
 
-        :param fc_as_hex: The function we are working with
+        :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         '''
-        #NOSONAR TODO deal with deferreds pylint: disable=fixme
-        txt = f"set values[{fc_as_hex}] {address}:{len(values)}"
-        _logger.debug(txt)
-        self.__set_callbacks[self.decode(fc_as_hex)](address, values)
+        # TODO deal with deferreds
+        _logger.debug("set values[%d] %d:%d" % (fx, address, len(values)))
+        self.__set_callbacks[self.decode(fx)](address, values)
 
     def __str__(self):
         ''' Returns a string representation of the context
 
         :returns: A string representation of the context
         '''
-        return f"Remote Slave Context({self._client})"
+        return "Remote Slave Context(%s)" % self._client
 
     def __build_mapping(self):
         '''
@@ -88,27 +83,26 @@ class RemoteSlaveContext(IModbusSlaveContext):
         if self.unit:
             kwargs["unit"] = self.unit
         self.__get_callbacks = {
-            'd': lambda a, c: self._client.read_discrete_inputs(a, c, **kwargs), # pylint: disable=unnecessary-lambda
-            'c': lambda a, c: self._client.read_coils(a, c, **kwargs), # pylint: disable=unnecessary-lambda
-            'h': lambda a, c: self._client.read_holding_registers(a, c, **kwargs), # pylint: disable=unnecessary-lambda
-            'i': lambda a, c: self._client.read_input_registers(a, c, **kwargs), # pylint: disable=unnecessary-lambda
+            'd': lambda a, c: self._client.read_discrete_inputs(a, c, **kwargs),
+            'c': lambda a, c: self._client.read_coils(a, c, **kwargs),
+            'h': lambda a, c: self._client.read_holding_registers(a, c, **kwargs),
+            'i': lambda a, c: self._client.read_input_registers(a, c, **kwargs),
         }
         self.__set_callbacks = {
-            'd': lambda a, v: self._client.write_coils(a, v, **kwargs), # pylint: disable=unnecessary-lambda
-            'c': lambda a, v: self._client.write_coils(a, v, **kwargs), # pylint: disable=unnecessary-lambda
-            'h': lambda a, v: self._client.write_registers(a, v, **kwargs), # pylint: disable=unnecessary-lambda
-            'i': lambda a, v: self._client.write_registers(a, v, **kwargs), # pylint: disable=unnecessary-lambda
+            'd': lambda a, v: self._client.write_coils(a, v, **kwargs),
+            'c': lambda a, v: self._client.write_coils(a, v, **kwargs),
+            'h': lambda a, v: self._client.write_registers(a, v, **kwargs),
+            'i': lambda a, v: self._client.write_registers(a, v, **kwargs),
         }
 
-    def __extract_result(self, fc_as_hex, result): # pylint: disable=no-self-use
+    def __extract_result(self, fx, result):
         ''' A helper method to extract the values out of
         a response.  TODO make this consistent (values?)
         '''
         if not result.isError():
-            if fc_as_hex in ['d', 'c']:
+            if fx in ['d', 'c']:
                 return result.bits
-            if fc_as_hex in ['h', 'i']:
+            if fx in ['h', 'i']:
                 return result.registers
         else:
             return result
-        return None

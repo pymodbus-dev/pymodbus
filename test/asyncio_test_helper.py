@@ -1,9 +1,8 @@
 
-"""Asyncio helper."""
 import functools
 
 
-def _yielded_return(return_value, *args): # pylint: disable=unused-argument
+def _yielded_return(return_value, *args):
     """Generator factory function with return value."""
 
     async def _():
@@ -47,8 +46,8 @@ def run_coroutine(coro):
         # step through all parts of coro without scheduling anything else:
         while True:
             result = coro.send(result)
-    except StopIteration as exc:
+    except StopIteration as ex:
         # coro reached end pass on its return value:
-        return exc.value
-    except: # pylint: disable=try-except-raise
+        return ex.value
+    except:
         raise

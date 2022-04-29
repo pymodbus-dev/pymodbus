@@ -1,39 +1,15 @@
 #!/usr/bin/env python3
-""" Test all messages."""
 import unittest
 from pymodbus.constants import Defaults
-from pymodbus.bit_read_message import (
-    ReadDiscreteInputsResponse,
-    ReadCoilsResponse,
-    ReadDiscreteInputsRequest,
-    ReadCoilsRequest,
-)
-from pymodbus.bit_write_message import (
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilResponse,
-    WriteSingleCoilRequest,
-    WriteMultipleCoilsRequest,
-)
-from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersResponse,
-    ReadInputRegistersResponse,
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersRequest,
-    ReadWriteMultipleRegistersRequest,
-    ReadHoldingRegistersRequest,
-)
-from pymodbus.register_write_message import (
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterResponse,
-    WriteMultipleRegistersRequest,
-    WriteSingleRegisterRequest,
-)
+from pymodbus.bit_read_message import *
+from pymodbus.bit_write_message import *
+from pymodbus.register_read_message import *
+from pymodbus.register_write_message import *
 
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
 class ModbusAllMessagesTests(unittest.TestCase):
-    """All messages tests."""
 
     #-----------------------------------------------------------------------#
     # Setup/TearDown
@@ -73,22 +49,23 @@ class ModbusAllMessagesTests(unittest.TestCase):
 
     def tearDown(self):
         ''' Cleans up the test environment '''
+        pass
 
-    def test_initializing_slave_address_request(self):
+    def testInitializingSlaveAddressRequest(self):
         ''' Test that every request can initialize the unit id '''
         unit_id = 0x12
         for factory in self.requests:
             request = factory(unit_id)
             self.assertEqual(request.unit_id, unit_id)
 
-    def test_initializing_slave_address_response(self):
+    def testInitializingSlaveAddressResponse(self):
         ''' Test that every response can initialize the unit id '''
         unit_id = 0x12
         for factory in self.responses:
             response = factory(unit_id)
             self.assertEqual(response.unit_id, unit_id)
 
-    def test_forwarding_kwargs_to_pdu(self):
+    def testForwardingKwargsToPdu(self):
         ''' Test that the kwargs are forwarded to the pdu correctly '''
         request = ReadCoilsRequest(1,5, unit=0x12, transaction=0x12, protocol=0x12)
         self.assertEqual(request.unit_id, 0x12)

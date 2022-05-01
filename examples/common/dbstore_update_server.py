@@ -1,5 +1,4 @@
-"""
-Pymodbus Server With Updating Thread
+""" Pymodbus Server With Updating Thread
 --------------------------------------------------------------------------
 This is an example of having a background thread updating the
 context in an SQLite4 database while the server is operating.
@@ -13,6 +12,14 @@ This can also be done with a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
+import logging
+import random
+
+# --------------------------------------------------------------------------- #
+# import the twisted libraries we need
+# --------------------------------------------------------------------------- #
+from twisted.internet.task import LoopingCall
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
@@ -22,18 +29,11 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
-import random
-
-# --------------------------------------------------------------------------- #
-# import the twisted libraries we need
-# --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -42,14 +42,14 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
-def updating_writer(a):
+def updating_writer(parm1):
     """ A worker process that runs every so often and
     updates live values of the context which resides in an SQLite3 database.
     It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     """
     log.debug("Updating the database context")
-    context = a[0]
+    context = parm1[0]
     readfunction = 0x03  # read holding registers
     writefunction = 0x10
     slave_id = 0x01  # slave address
@@ -57,17 +57,20 @@ def updating_writer(a):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999)
-    rand_addr = random.randint(0, 65000)
-    log.debug("Writing to datastore: {}, {}".format(rand_addr, rand_value))
+    rand_value = random.randint(0, 9999) #NOSONAR #nosec
+    rand_addr = random.randint(0, 65000) #NOSONAR #nosec
+    txt = f"Writing to datastore: {rand_addr}, {rand_value}"
+    log.debug(txt)
     # import pdb; pdb.set_trace()
     context[slave_id].setValues(writefunction, rand_addr, [rand_value],
                                 update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
-    log.debug("Values from datastore: " + str(values))
+    txt = f"Values from datastore: {values}"
+    log.debug(txt)
 
 
 def run_dbstore_update_server():
+    """ Run dbstore update server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -80,13 +83,14 @@ def run_dbstore_update_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    identity = ModbusDeviceIdentification(info_name= {
+        'VendorName': 'pymodbus',
+        'ProductCode': 'PM',
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'ProductName': 'pymodbus Server',
+        'ModelName': 'pymodbus Server',
+        'MajorMinorRevision': version.short(),
+    })
 
     # ----------------------------------------------------------------------- #
     # run the server you want

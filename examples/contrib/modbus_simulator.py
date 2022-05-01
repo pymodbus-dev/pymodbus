@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""
-An example of creating a fully implemented modbus server
+""" An example of creating a fully implemented modbus server
 with read/write data as well as user configurable base data
 """
-
-import pickle
-from optparse import OptionParser
+import logging
+import pickle #nosec
+from optparse import OptionParser # pylint: disable=deprecated-module
 
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
@@ -13,11 +12,9 @@ from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #
-import logging
-logging.basicConfig()
-
 server_log = logging.getLogger("pymodbus.server")
 protocol_log = logging.getLogger("pymodbus.protocol")
+_logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------------- #
 # Extra Global Functions
@@ -53,12 +50,11 @@ class ConfigurationException(Exception):
 
         :returns: A string representation of the object
         """
-        return 'Configuration Error: %s' % self.string
+        return f'Configuration Error: {self.string}'
 
 
-class Configuration:
-    """
-    Class used to parse configuration file and create and modbus
+class Configuration: # pylint: disable=too-few-public-methods
+    """ Class used to parse configuration file and create and modbus
     datastore.
 
     The format of the configuration file is actually just a
@@ -67,29 +63,28 @@ class Configuration:
     """
 
     def __init__(self, config):
-        """
-        Trys to load a configuration file, lets the file not
+        """ Tries to load a configuration file, lets the file not
         found exception fall through
 
         :param config: The pickled datastore
         """
         try:
-            self.file = open(config, "rb")
-        except Exception as e:
-            _logger.critical(str(e))
-            raise ConfigurationException("File not found %s" % config)
+            self.file = open(config, "rb") # pylint: disable=consider-using-with
+        except Exception as exc:
+            _logger.critical(str(exc))
+            raise ConfigurationException(f"File not found {config}") # pylint: disable=raise-missing-from
 
     def parse(self):
         """ Parses the config file and creates a server context
         """
-        handle = pickle.load(self.file)
+        handle = pickle.load(self.file) #nosec
         try:  # test for existence, or bomb
             dsd = handle['di']
             csd = handle['ci']
             hsd = handle['hr']
             isd = handle['ir']
         except Exception:
-            raise ConfigurationException("Invalid Configuration")
+            raise ConfigurationException("Invalid Configuration") # pylint: disable=raise-missing-from
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
 
@@ -107,14 +102,14 @@ def main():
     parser.add_option("-D", "--debug",
                       help="Turn on to enable tracing",
                       action="store_true", dest="debug", default=False)
-    (opt, arg) = parser.parse_args()
+    (opt, _) = parser.parse_args()
 
     # enable debugging information
     if opt.debug:
         try:
             server_log.setLevel(logging.DEBUG)
             protocol_log.setLevel(logging.DEBUG)
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             print("Logging is not supported on this system")
 
     # parse configuration file and run

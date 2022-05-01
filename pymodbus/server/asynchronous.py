@@ -1,12 +1,13 @@
-"""
-Implementation of a Twisted Modbus Server
+""" Implementation of a Twisted Modbus Server
 ------------------------------------------
 
 """
+import logging
+import threading
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
-from twisted.internet import reactor
+from twisted.internet import reactor # pylint: disable=unused-import
 
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets
@@ -16,16 +17,12 @@ from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusAccessControl
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.transaction import (ModbusSocketFramer,
-                                  ModbusRtuFramer,
-                                  ModbusAsciiFramer,
-                                  ModbusBinaryFramer)
+from pymodbus.transaction import ModbusSocketFramer,ModbusAsciiFramer
 from pymodbus.pdu import ModbusExceptions as merror
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -35,6 +32,10 @@ _logger = logging.getLogger(__name__)
 class ModbusTcpProtocol(protocol.Protocol):
     """ Implements a modbus server in twisted """
 
+    def __init__(self):
+        """Define local variables."""
+        self.framer = None
+
     def connectionMade(self):
         """ Callback for when a client connects
 
@@ -42,16 +43,18 @@ class ModbusTcpProtocol(protocol.Protocol):
                  protocol __init__, the client connection made is essentially
                  our __init__ method.
         """
-        _logger.debug("Client Connected [%s]" % self.transport.getHost())
+        txt = f"Client Connected [{self.transport.getHost()}]"
+        _logger.debug(txt)
         self.framer = self.factory.framer(decoder=self.factory.decoder,
                                           client=None)
 
-    def connectionLost(self, reason):
+    def connectionLost(self, reason): # pylint: disable=signature-differs
         """ Callback for when a client disconnects
 
         :param reason: The client's reason for disconnecting
         """
-        _logger.debug("Client Disconnected: %s" % reason)
+        txt = f"Client Disconnected: {reason}"
+        _logger.debug(txt)
 
     def dataReceived(self, data):
         """ Callback when we receive any data
@@ -59,7 +62,8 @@ class ModbusTcpProtocol(protocol.Protocol):
         :param data: The data sent by the client
         """
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug('Data Received: ' + hexlify_packets(data))
+            txt = f"Data Received: {hexlify_packets(data)}"
+            _logger.debug(txt)
         if not self.factory.control.ListenOnly:
             units = self.factory.store.slaves()
             single = self.factory.store.single
@@ -75,13 +79,15 @@ class ModbusTcpProtocol(protocol.Protocol):
         try:
             context = self.factory.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException as ex:
-            _logger.debug("requested slave does not exist: %s" % request.unit_id )
+        except NoSuchSlaveException:
+            txt = f"requested slave does not exist: {request.unit_id}"
+            _logger.debug(txt)
             if self.factory.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception as ex:
-            _logger.debug("Datastore unable to fulfill request: %s" % ex)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Datastore unable to fulfill request: {exc}"
+            _logger.debug(txt)
             response = request.doException(merror.SlaveFailure)
 
         response.transaction_id = request.transaction_id
@@ -97,13 +103,14 @@ class ModbusTcpProtocol(protocol.Protocol):
             self.factory.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug('send: %s' % b2a_hex(pdu))
+                txt = f"send: {b2a_hex(pdu)}"
+                _logger.debug(txt)
             return self.transport.write(pdu)
+        return None
 
 
 class ModbusServerFactory(ServerFactory):
-    """
-    Builder class for a modbus server
+    """ Builder class for a modbus server
 
     This also holds the server datastore so that it is
     persisted between connections
@@ -127,7 +134,8 @@ class ModbusServerFactory(ServerFactory):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves', Defaults.IgnoreMissingSlaves)
+        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+                                                Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -163,17 +171,19 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-    def datagramReceived(self, data, addr):
+    def datagramReceived(self, datagram, addr):
         """ Callback when we receive any data
 
         :param data: The data sent by the client
         """
-        _logger.debug("Client Connected [%s]" % addr)
+        txt = f"Client Connected [{addr}]"
+        _logger.debug(txt)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug("Datagram Received: "+ hexlify_packets(data))
+            txt = f"Datagram Received: {hexlify_packets(datagram)}"
+            _logger.debug(txt)
         if not self.control.ListenOnly:
             continuation = lambda request: self._execute(request, addr)
-            self.framer.processIncomingPacket(data, continuation)
+            self.framer.processIncomingPacket(datagram, continuation)
 
     def _execute(self, request, addr):
         """ Executes the request and returns the result
@@ -183,14 +193,15 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         try:
             context = self.store[request.unit_id]
             response = request.execute(context)
-        except NoSuchSlaveException as ex:
-            _logger.debug("requested slave does not exist: "
-                          "%s" % request.unit_id )
+        except NoSuchSlaveException:
+            txt = f"requested slave does not exist: {request.unit_id}"
+            _logger.debug(txt)
             if self.ignore_missing_slaves:
                 return # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception as ex:
-            _logger.debug("Datastore unable to fulfill request: %s" % ex)
+        except Exception as exc: # pylint: disable=broad-except
+            txt = f"Datastore unable to fulfill request: {exc}"
+            _logger.debug(txt)
             response = request.doException(merror.SlaveFailure)
         #self.framer.populateResult(response)
         response.transaction_id = request.transaction_id
@@ -206,7 +217,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.control.Counter.BusMessage += 1
         pdu = self.framer.buildPacket(message)
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug('send: %s' % b2a_hex(pdu))
+            txt = f"send: {b2a_hex(pdu)}"
+            _logger.debug(txt)
         return self.transport.write(pdu, addr)
 
 
@@ -214,8 +226,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
 # Starting Factories
 # --------------------------------------------------------------------------- #
 def _is_main_thread():
-    import threading
-
+    """ Internal is main thread. """
     if threading.current_thread() != threading.main_thread():
         _logger.debug("Running in spawned thread")
         return False
@@ -223,11 +234,10 @@ def _is_main_thread():
     return True
 
 
-def StartTcpServer(context, identity=None, address=None,
-                   console=False, defer_reactor_run=False, custom_functions=[],
+def StartTcpServer(context, identity=None, address=None, #NOSONAR pylint: disable=dangerous-default-value,invalid-name
+                   console=False, defer_reactor_run=False, custom_functions=[], #NOSONAR pylint: disable=,unused-argument
                    **kwargs):
-    """
-    Helper method to start the Modbus Async TCP server
+    """ Helper method to start the Modbus Async TCP server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -236,28 +246,28 @@ def StartTcpServer(context, identity=None, address=None,
     :param ignore_missing_slaves: True to not send errors on a request \
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
-    from twisted.internet import reactor
+    from twisted.internet import reactor as local_reactor # pylint: disable=import-outside-toplevel,reimported
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    for f in custom_functions:
-        factory.decoder.register(f)
+    for func in custom_functions:
+        factory.decoder.register(func)
 
-    _logger.info("Starting Modbus TCP Server on %s:%s" % address)
-    reactor.listenTCP(address[1], factory, interface=address[0])
+    txt = f"Starting Modbus TCP Server on {address}"
+    _logger.info(txt)
+    local_reactor.listenTCP(address[1], factory, interface=address[0]) # pylint: disable=no-member
     if not defer_reactor_run:
-        reactor.run(installSignalHandlers=_is_main_thread())
+        local_reactor.run(installSignalHandlers=_is_main_thread()) # pylint: disable=no-member
 
 
-def StartUdpServer(context, identity=None, address=None,
+def StartUdpServer(context, identity=None, address=None, #NOSONAR pylint: disable=invalid-name,dangerous-default-value
                    defer_reactor_run=False, custom_functions=[], **kwargs):
-    """
-    Helper method to start the Modbus Async Udp server
+    """ Helper method to start the Modbus Async Udp server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -265,28 +275,28 @@ def StartUdpServer(context, identity=None, address=None,
     :param ignore_missing_slaves: True to not send errors on a request \
     to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
-    of starting server, to be explictly started by the user
+    of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
-    from twisted.internet import reactor
+    from twisted.internet import reactor as local_reactor # pylint: disable=import-outside-toplevel,reimported
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpProtocol(context, framer, identity, **kwargs)
-    for f in custom_functions:
-        server.decoder.register(f)
+    for func in custom_functions:
+        server.decoder.register(func)
 
-    _logger.info("Starting Modbus UDP Server on %s:%s" % address)
-    reactor.listenUDP(address[1], server, interface=address[0])
+    txt = f"Starting Modbus UDP Server on {address}"
+    _logger.info(txt)
+    local_reactor.listenUDP(address[1], server, interface=address[0])  # pylint: disable=no-member
     if not defer_reactor_run:
-        reactor.run(installSignalHandlers=_is_main_thread())
+        local_reactor.run(installSignalHandlers=_is_main_thread()) # pylint: disable=no-member
 
 
-def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
+def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer, #NOSONAR pylint: disable=invalid-name,dangerous-default-value
                       defer_reactor_run=False, custom_functions=[], **kwargs):
-    """
-    Helper method to start the Modbus Async Serial server
+    """ Helper method to start the Modbus Async Serial server
 
     :param context: The server data context
     :param identify: The server identity to use (default empty)
@@ -297,17 +307,16 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     :param ignore_missing_slaves: True to not send errors on a request to a
            missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
-           of starting server, to be explictly started by the user
+           of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
 
     """
-    from twisted.internet import reactor
-    from twisted.internet.serialport import SerialPort
+    from twisted.internet import reactor as local_reactor # pylint: disable=import-outside-toplevel,reimported
+    from twisted.internet.serialport import SerialPort # pylint: disable=import-outside-toplevel
 
     port = kwargs.get('port', '/dev/ttyS0')
     baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-    console = kwargs.get('console', False)
     bytesize = kwargs.get("bytesize", Defaults.Bytesize)
     stopbits = kwargs.get("stopbits", Defaults.Stopbits)
     parity = kwargs.get("parity", Defaults.Parity)
@@ -315,30 +324,29 @@ def StartSerialServer(context, identity=None, framer=ModbusAsciiFramer,
     xonxoff = kwargs.get("xonxoff", 0)
     rtscts = kwargs.get("rtscts", 0)
 
-    _logger.info("Starting Modbus Serial Server on %s" % port)
+    txt = f"Starting Modbus Serial Server on {port}"
+    _logger.info(txt)
     factory = ModbusServerFactory(context, framer, identity, **kwargs)
-    for f in custom_functions:
-        factory.decoder.register(f)
+    for func in custom_functions:
+        factory.decoder.register(func)
 
-    protocol = factory.buildProtocol(None)
+    local_protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging
-    SerialPort(protocol, port, reactor, baudrate=baudrate, parity=parity,
+    SerialPort(local_protocol, port, local_reactor, baudrate=baudrate, parity=parity, # pylint: disable=unexpected-keyword-arg
                stopbits=stopbits, timeout=timeout, xonxoff=xonxoff,
                rtscts=rtscts, bytesize=bytesize)
     if not defer_reactor_run:
-        reactor.run(installSignalHandlers=_is_main_thread())
+        local_reactor.run(installSignalHandlers=_is_main_thread()) # pylint: disable=no-member
 
 
-def StopServer():
-    """
-    Helper method to stop Async Server
-    """
-    from twisted.internet import reactor
+def StopServer(): #NOSONAR pylint: disable=invalid-name
+    """ Helper method to stop Async Server. """
+    from twisted.internet import reactor as local_reactor # pylint: disable=import-outside-toplevel,reimported
     if _is_main_thread():
-        reactor.stop()
+        local_reactor.stop()
         _logger.debug("Stopping server from main thread")
     else:
-        reactor.callFromThread(reactor.stop)
+        local_reactor.callFromThread(local_reactor.stop) # pylint: disable=no-member
         _logger.debug("Stopping Server from another thread")
 
 

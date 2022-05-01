@@ -1,5 +1,4 @@
-"""
-Pymodbus Exceptions
+""" Pymodbus Exceptions
 --------------------
 
 Custom exceptions to be used in the Modbus code.
@@ -14,11 +13,12 @@ class ModbusException(Exception):
         :param string: The message to append to the error
         """
         self.string = string
+        super().__init__()
 
     def __str__(self):
-        return 'Modbus Error: %s' % self.string
+        return f'Modbus Error: {self.string}'
 
-    def isError(self):
+    def isError(self): # pylint: disable=no-self-use,(invalid-name
         """Error"""
         return True
 
@@ -31,7 +31,7 @@ class ModbusIOException(ModbusException):
         :param string: The message to append to the error
         """
         self.fcode = function_code
-        self.message = "[Input/Output] %s" % string
+        self.message = f"[Input/Output] {string}"
         ModbusException.__init__(self, self.message)
 
 
@@ -43,7 +43,7 @@ class ParameterException(ModbusException):
 
         :param string: The message to append to the error
         """
-        message = "[Invalid Parameter] %s" % string
+        message = f"[Invalid Parameter] {string}"
         ModbusException.__init__(self, message)
 
 
@@ -56,7 +56,7 @@ class NoSuchSlaveException(ModbusException):
 
         :param string: The message to append to the error
         """
-        message = "[No Such Slave] %s" % string
+        message = f"[No Such Slave] {string}"
         ModbusException.__init__(self, message)
 
 
@@ -67,7 +67,7 @@ class NotImplementedException(ModbusException):
         """ Initialize the exception
         :param string: The message to append to the error
         """
-        message = "[Not Implemented] %s" % string
+        message = f"[Not Implemented] {string}"
         ModbusException.__init__(self, message)
 
 
@@ -79,30 +79,26 @@ class ConnectionException(ModbusException):
 
         :param string: The message to append to the error
         """
-        message = "[Connection] %s" % string
+        message = f"[Connection] {string}"
         ModbusException.__init__(self, message)
 
 
 class InvalidMessageReceivedException(ModbusException):
-    """
-    Error resulting from invalid response received or decoded
-    """
+    """ Error resulting from invalid response received or decoded. """
 
     def __init__(self, string=""):
         """ Initialize the exception
 
         :param string: The message to append to the error
         """
-        message = "[Invalid Message] %s" % string
+        message = f"[Invalid Message] {string}"
         ModbusException.__init__(self, message)
 
 
 class MessageRegisterException(ModbusException):
-    """
-    Error resulting from failing to register a custom message request/response
-    """
+    """ Error resulting from failing to register a custom message request/response. """
     def __init__(self, string=""):
-        message = '[Error registering message] %s' % string
+        message = f'[Error registering message] {string}'
         ModbusException.__init__(self, message)
 
 
@@ -114,7 +110,7 @@ class TimeOutException(ModbusException):
 
         :param string: The message to append to the error
         """
-        message = "[Timeout] %s" % string
+        message = f"[Timeout] {string}"
         ModbusException.__init__(self, message)
 
 

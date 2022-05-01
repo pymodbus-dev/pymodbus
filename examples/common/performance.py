@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Performance Example
+""" Pymodbus Performance Example
 --------------------------------------------------------------------------
 
 The following is an quick performance check of the synchronous
@@ -10,15 +9,17 @@ modbus client.
 # import the necessary modules
 # --------------------------------------------------------------------------- #
 from __future__ import print_function
+import logging
 import os
+from threading import Lock, Thread as tWorker
+from concurrent.futures import ThreadPoolExecutor as eWorker, as_completed
 from time import time
 from pymodbus.client.sync import ModbusTcpClient
+# from pymodbus.client.sync import ModbusSerialClient #NOSONAR
 
 try:
-    from multiprocessing import log_to_stderr
+    from multiprocessing import Process as mWorker, log_to_stderr
 except ImportError:
-    import logging
-    logging.basicConfig()
     log_to_stderr = logging.getLogger
 
 # --------------------------------------------------------------------------- #
@@ -27,7 +28,6 @@ except ImportError:
 
 # from multiprocessing import Process as Worker
 # from threading import Thread as Worker
-from threading import Lock
 _thread_lock = Lock()
 # --------------------------------------------------------------------------- #
 # initialize the test
@@ -38,9 +38,9 @@ _thread_lock = Lock()
 # * cycles  - the total number of requests to send
 # * host    - the host to send the requests to
 # --------------------------------------------------------------------------- #
-workers = 10
-cycles = 1000
-host = '127.0.0.1'
+workers = 10 # pylint: disable=invalid-name
+cycles = 1000 # pylint: disable=invalid-name
+host = '127.0.0.1' # pylint: disable=invalid-name
 
 
 # --------------------------------------------------------------------------- #
@@ -50,7 +50,7 @@ host = '127.0.0.1'
 # although it should be noted that there are performance penalties
 # associated with each strategy.
 # --------------------------------------------------------------------------- #
-def single_client_test(host, cycles):
+def single_client_test(n_host, n_cycles):
     """ Performs a single threaded test of a synchronous
     client against the specified host
 
@@ -59,54 +59,51 @@ def single_client_test(host, cycles):
     """
     logger = log_to_stderr()
     logger.setLevel(logging.WARNING)
-    logger.debug("starting worker: %d" % os.getpid())
+    txt = f"starting worker: {os.getpid()}"
+    logger.debug(txt)
 
     try:
         count = 0
-        client = ModbusTcpClient(host, port=5020)
-        # client = ModbusSerialClient(method="rtu",
-        #                             port="/dev/ttyp0", baudrate=9600)
-        while count < cycles:
-            # print(count)
-            # with _thread_lock:
+        client = ModbusTcpClient(n_host, port=5020)
+        while count < n_cycles:
             client.read_holding_registers(10, 123, unit=1)
             count += 1
-    except Exception:
+    except Exception: # pylint: disable=broad-except
         logger.exception("failed to run test successfully")
-    logger.debug("finished worker: %d" % os.getpid())
+    txt = f"finished worker: {os.getpid()}"
+    logger.debug(txt)
 
 
-def multiprocessing_test(fn, args):
-    from multiprocessing import Process as Worker
-    start = time()
-    procs = [Worker(target=fn, args=args)
+def multiprocessing_test(func, extras):
+    """ Multiprocessing test. """
+    start_time = time()
+    procs = [mWorker(target=func, args=extras)
              for _ in range(workers)]
 
     any(p.start() for p in procs)   # start the workers
     any(p.join() for p in procs)   # wait for the workers to finish
-    return start
+    return start_time
 
 
-def thread_test(fn, args):
-    from threading import Thread as Worker
-    start = time()
-    procs = [Worker(target=fn, args=args)
+def thread_test(func, extras):
+    """ Thread test. """
+    start_time = time()
+    procs = [tWorker(target=func, args=extras)
              for _ in range(workers)]
 
     any(p.start() for p in procs)  # start the workers
     any(p.join() for p in procs)  # wait for the workers to finish
-    return start
+    return start_time
 
 
-def thread_pool_exe_test(fn, args):
-    from concurrent.futures import ThreadPoolExecutor as Worker
-    from concurrent.futures import as_completed
-    start = time()
-    with Worker(max_workers=workers, thread_name_prefix="Perform") as exe:
-        futures = {exe.submit(fn, *args): job for job in range(workers)}
+def thread_pool_exe_test(func, extras):
+    """ Thread pool exe. """
+    start_time = time()
+    with eWorker(max_workers=workers, thread_name_prefix="Perform") as exe:
+        futures = {exe.submit(func, *extras): job for job in range(workers)}
         for future in as_completed(futures):
             future.result()
-    return start
+    return start_time
 
 # --------------------------------------------------------------------------- #
 # run our test and check results
@@ -137,11 +134,11 @@ if __name__ == "__main__":
     # any(p.join() for p in procs)   # wait for the workers to finish
     # start = multiprocessing_test(single_client_test, args)
     # start = thread_pool_exe_test(single_client_test, args)
-    for tester in [multiprocessing_test, thread_test, thread_pool_exe_test]:
+    for tester in (multiprocessing_test, thread_test, thread_pool_exe_test):
         print(tester.__name__)
         start = tester(single_client_test, args)
         stop = time()
-        print("%d requests/second" % ((1.0 * cycles) / (stop - start)))
-        print("time taken to complete %s cycle by "
-              "%s workers is %s seconds" % (cycles, workers, stop - start))
+        print(f"{(1.0 * cycles) / (stop - start)} requests/second")
+        print(f"time taken to complete {cycles} cycle by "
+              f"{workers} workers is {stop - start} seconds")
         print()

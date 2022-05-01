@@ -1,5 +1,4 @@
-"""
-Given a modbus mapping file, this is used to generate
+""" Given a modbus mapping file, this is used to generate
 decoder blocks so that non-programmers can define the
 register values and then decode a modbus device all
 without having to write a line of code for decoding.
@@ -33,7 +32,7 @@ requested functionality)::
         index += mapping[i]['size']
 
 Also, using the same input mapping parsers, we can generate
-populated slave contexts that can be run behing a modbus server::
+populated slave contexts that can be run behind a modbus server::
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import modbus_context_decoder
@@ -49,11 +48,10 @@ populated slave contexts that can be run behing a modbus server::
 import csv
 import json
 from collections import defaultdict
-
 from tokenize import generate_tokens
-from pymodbus.datastore.context import ModbusSlaveContext
-
 from io import StringIO
+
+from pymodbus.datastore.context import ModbusSlaveContext
 
 
 # --------------------------------------------------------------------------- #
@@ -83,12 +81,12 @@ def csv_mapping_parser(path, template):
     :returns: The decoded csv dictionary
     """
     mapping_blocks = defaultdict(dict)
-    with open(path, 'r') as handle:
+    with open(path, 'r') as handle: # pylint: disable=unspecified-encoding
         reader = csv.reader(handle)
         reader.next()  # skip the csv header
         for row in reader:
             mapping = dict(zip(template, row))
-            fid = mapping.pop('function')
+            mapping.pop('function')
             aid = int(mapping['address'])
             mapping_blocks[aid] = mapping
     return mapping_blocks
@@ -117,7 +115,7 @@ def json_mapping_parser(path, template):
     :returns: The decoded csv dictionary
     """
     mapping_blocks = {}
-    with open(path, 'r') as handle:
+    with open(path, 'r') as handle: # pylint: disable=unspecified-encoding
         for tid, rows in json.load(handle).iteritems():
             mappings = {}
             for key, values in rows.iteritems():
@@ -127,7 +125,7 @@ def json_mapping_parser(path, template):
     return mapping_blocks
 
 
-def xml_mapping_parser(path):
+def xml_mapping_parser():
     """ Given an xml file of the the mapping data for
     a modbus device, return a mapping layout that can
     be used to decode an new block.
@@ -138,7 +136,6 @@ def xml_mapping_parser(path):
     :param path: The path to the xml input file
     :returns: The decoded csv dictionary
     """
-    pass
 
 
 # --------------------------------------------------------------------------- #
@@ -176,7 +173,7 @@ def modbus_context_decoder(mapping_blocks):
 # So this allows one to simply grab a number of registers, and then
 # pass them to this decoder which will do the rest.
 # --------------------------------------------------------------------------- #
-class ModbusTypeDecoder(object):
+class ModbusTypeDecoder:
     """ This is a utility to determine the correct
     decoder to use given a type name. By default this
     supports all the types available in the default modbus
@@ -219,65 +216,77 @@ class ModbusTypeDecoder(object):
     # ------------------------------------------------------------ #
     @staticmethod
     def parse_string(tokens):
+        """ Parse value. """
         _ = tokens.next()
         size = int(tokens.next())
         return lambda d: d.decode_string(size=size)
 
     @staticmethod
-    def parse_bits(tokens):
+    def parse_bits():
+        """ Parse value. """
         return lambda d: d.decode_bits()
 
     @staticmethod
-    def parse_8bit_uint(tokens):
+    def parse_8bit_uint():
+        """ Parse value. """
         return lambda d: d.decode_8bit_uint()
 
     @staticmethod
-    def parse_16bit_uint(tokens):
+    def parse_16bit_uint():
+        """ Parse value. """
         return lambda d: d.decode_16bit_uint()
 
     @staticmethod
-    def parse_32bit_uint(tokens):
+    def parse_32bit_uint():
+        """ Parse value. """
         return lambda d: d.decode_32bit_uint()
 
     @staticmethod
-    def parse_64bit_uint(tokens):
+    def parse_64bit_uint():
+        """ Parse value. """
         return lambda d: d.decode_64bit_uint()
 
     @staticmethod
-    def parse_8bit_int(tokens):
+    def parse_8bit_int():
+        """ Parse value. """
         return lambda d: d.decode_8bit_int()
 
     @staticmethod
-    def parse_16bit_int(tokens):
+    def parse_16bit_int():
+        """ Parse value. """
         return lambda d: d.decode_16bit_int()
 
     @staticmethod
-    def parse_32bit_int(tokens):
+    def parse_32bit_int():
+        """ Parse value. """
         return lambda d: d.decode_32bit_int()
 
     @staticmethod
-    def parse_64bit_int(tokens):
+    def parse_64bit_int():
+        """ Parse value. """
         return lambda d: d.decode_64bit_int()
 
     @staticmethod
-    def parse_32bit_float(tokens):
+    def parse_32bit_float():
+        """ Parse value. """
         return lambda d: d.decode_32bit_float()
 
     @staticmethod
-    def parse_64bit_float(tokens):
+    def parse_64bit_float():
+        """ Parse value. """
         return lambda d: d.decode_64bit_float()
 
     # ------------------------------------------------------------
     # Public Interface
     # ------------------------------------------------------------
-    def tokenize(self, value):
+    def tokenize(self, value): # pylint: disable=no-self-use
         """ Given a value, return the tokens
 
         :param value: The value to tokenize
         :returns: A token generator
         """
         tokens = generate_tokens(StringIO(value).readline)
-        for toknum, tokval, _, _, _ in tokens:
+        for _, tokval, _, _, _ in tokens:
             yield tokval
 
     def parse(self, value):
@@ -289,7 +298,7 @@ class ModbusTypeDecoder(object):
         :returns: The decoder method to use
         """
         tokens = self.tokenize(value)
-        token = tokens.next().lower()
+        token = tokens.next().lower() # pylint: disable=no-member
         parser = self.parsers.get(token, self.default)
         return parser(tokens)
 

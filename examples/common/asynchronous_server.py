@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Asynchronous Server Example
+""" Pymodbus Asynchronous Server Example
 --------------------------------------------------------------------------
 
 The asynchronous server is a high performance implementation using the
@@ -10,26 +9,35 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
+import logging
+
+from custom_message import CustomModbusRequest # pylint: disable=import-error
+
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
-
+# from pymodbus.server.asynchronous import StartUdpServer #NOSONAR
+# from pymodbus.server.asynchronous import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from custom_message import CustomModbusRequest
+#from pymodbus.transaction import ( #NOSONAR
+#    ModbusRtuFramer, #NOSONAR
+#    ModbusAsciiFramer, #NOSONAR
+#    ModbusBinaryFramer, #NOSONAR
+#) #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT)
+logging.basicConfig(format=FORMAT) #NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_async_server():
+    """ Run async server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -56,7 +64,7 @@ def run_async_server():
     #     store = ModbusSlaveContext()
     #
     # Finally, you are allowed to use the same DataBlock reference for every
-    # table or you you may use a seperate DataBlock for each table.
+    # table or you you may use a separate DataBlock for each table.
     # This depends if you would like functions to be able to access and modify
     # the same data or not::
     #
@@ -85,8 +93,8 @@ def run_async_server():
     #     store = ModbusSlaveContext(..., zero_mode=True)
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
+        di=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
         ir=ModbusSequentialDataBlock(0, [17] * 100))
     store.register(CustomModbusRequest.function_code, 'cm',
@@ -98,13 +106,14 @@ def run_async_server():
     # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'Pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'Pymodbus Server'
-    identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    identity = ModbusDeviceIdentification(info_name= {
+        'VendorName': 'Pymodbus',
+        'ModelName': 'Pymodbus Server',
+        'MajorMinorRevision': version.short(),
+        'ProductCode': 'PM',
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'ProductName': 'Pymodbus Server',
+    })
 
     # ----------------------------------------------------------------------- #
     # run the server you want

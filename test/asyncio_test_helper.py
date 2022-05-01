@@ -1,8 +1,9 @@
 
+"""Asyncio helper."""
 import functools
 
 
-def _yielded_return(return_value, *args):
+def _yielded_return(return_value, *args): # pylint: disable=unused-argument
     """Generator factory function with return value."""
 
     async def _():
@@ -31,9 +32,6 @@ def return_as_coroutine(return_value=None):
         def test_it(mock_sleep):
             mock_sleep.side_effect = return_as_coroutine()
             result = run_coroutine(my_coro_under_test)
-            assert mock_sleep.call_count == 2
-            assert mock_sleep.call_args_list == [mock.call(1), mock.call(2)]
-            assert result == 42
     """
     return functools.partial(_yielded_return, return_value)
 
@@ -46,8 +44,8 @@ def run_coroutine(coro):
         # step through all parts of coro without scheduling anything else:
         while True:
             result = coro.send(result)
-    except StopIteration as ex:
+    except StopIteration as exc:
         # coro reached end pass on its return value:
-        return ex.value
-    except:
+        return exc.value
+    except: # pylint: disable=try-except-raise
         raise

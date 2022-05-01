@@ -1,5 +1,4 @@
-"""
-Modbus Payload Builders
+""" Modbus Payload Builders
 ------------------------
 
 A collection of utilities for building and decoding
@@ -7,6 +6,8 @@ modbus messages payloads.
 
 
 """
+import logging
+
 from struct import pack, unpack
 from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.constants import Endian
@@ -17,7 +18,6 @@ from pymodbus.exceptions import ParameterException
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -34,8 +34,7 @@ WC = {
 
 
 class BinaryPayloadBuilder(IPayloadBuilder):
-    """
-    A utility that helps build payload messages to be
+    """ A utility that helps build payload messages to be
     written with the various modbus messages. It really is just
     a simple wrapper around the struct module, however it saves
     time looking up the format strings. What follows is a simple
@@ -52,8 +51,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw binary payload data to initialize with
-        :param byteorder: The endianess of the bytes in the words
-        :param wordorder: The endianess of the word (when wordcount is >= 2)
+        :param byteorder: The endianness of the bytes in the words
+        :param wordorder: The endianness of the word (when wordcount is >= 2)
         :param repack: Repack the provided payload based on BO
         """
         self._payload = payload or []
@@ -62,8 +61,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         self._repack = repack
 
     def _pack_words(self, fstring, value):
-        """
-        Packs Words based on the word order and byte order
+        """ Packs Words based on the word order and byte order
 
         # ---------------------------------------------- #
         # pack in to network ordered value               #
@@ -75,10 +73,10 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         :param value: Value to be packed
         :return:
         """
-        value = pack("!{}".format(fstring), value)
-        wc = WC.get(fstring.lower())//2
-        up = "!{}H".format(wc)
-        payload = unpack(up, value)
+        value = pack("!{}".format(fstring), value) # pylint: disable=consider-using-f-string
+        wordorder = WC.get(fstring.lower())//2
+        upperbyte = f"!{wordorder}H"
+        payload = unpack(upperbyte, value)
 
         if self._wordorder == Endian.Little:
             payload = list(reversed(payload))
@@ -104,8 +102,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         return self.to_string().decode('utf-8')
 
     def reset(self):
-        """ Reset the payload buffer
-        """
+        """ Reset the payload buffer. """
         self._payload = []
 
     def to_registers(self):
@@ -267,9 +264,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         self._payload.append(pack(fstring, value))
 
 
-class BinaryPayloadDecoder(object):
-    """
-    A utility that helps decode payload messages from a modbus
+class BinaryPayloadDecoder:
+    """ A utility that helps decode payload messages from a modbus
     response message.  It really is just a simple wrapper around
     the struct module, however it saves time looking up the format
     strings. What follows is a simple example::
@@ -283,8 +279,8 @@ class BinaryPayloadDecoder(object):
         """ Initialize a new payload decoder
 
         :param payload: The payload to decode with
-        :param byteorder: The endianess of the payload
-        :param wordorder: The endianess of the word (when wordcount is >= 2)
+        :param byteorder: The endianness of the payload
+        :param wordorder: The endianness of the word (when wordcount is >= 2)
         """
         self._payload = payload
         self._pointer = 0x00
@@ -292,7 +288,7 @@ class BinaryPayloadDecoder(object):
         self._wordorder = wordorder
 
     @classmethod
-    def fromRegisters(klass, registers, byteorder=Endian.Little,
+    def fromRegisters(cls, registers, byteorder=Endian.Little, # pylint: disable=invalid-name
                       wordorder=Endian.Big):
         """ Initialize a payload decoder with the result of
         reading a collection of registers from a modbus device.
@@ -303,46 +299,45 @@ class BinaryPayloadDecoder(object):
 
         :param registers: The register results to initialize with
         :param byteorder: The Byte order of each word
-        :param wordorder: The endianess of the word (when wordcount is >= 2)
+        :param wordorder: The endianness of the word (when wordcount is >= 2)
         :returns: An initialized PayloadDecoder
         """
         _logger.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
             payload = b''.join(pack('!H', x) for x in registers)
-            return klass(payload, byteorder, wordorder)
+            return cls(payload, byteorder, wordorder)
         raise ParameterException('Invalid collection of registers supplied')
 
     @classmethod
     def bit_chunks(cls, coils, size=8):
+        """ Return bit chunks. """
         chunks = [coils[i: i + size] for i in range(0, len(coils), size)]
         return chunks
 
     @classmethod
-    def fromCoils(klass, coils, byteorder=Endian.Little, wordorder=Endian.Big):
+    def fromCoils(cls, coils, byteorder=Endian.Little, wordorder=Endian.Big): #NOSONAR pylint: disable=unused-argument,invalid-name
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param byteorder: The endianess of the payload
+        :param byteorder: The endianness of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):
             payload = b''
-            padding = len(coils) % 8
-            if padding:    # Pad zero's
+            if (padding := len(coils) % 8):    # Pad zero's
                 extra = [False] * padding
                 coils = extra + coils
-            chunks = klass.bit_chunks(coils)
+            chunks = cls.bit_chunks(coils)
             for chunk in chunks:
                 payload += pack_bitstring(chunk[::-1])
-            return klass(payload, byteorder)
+            return cls(payload, byteorder)
         raise ParameterException('Invalid collection of coils supplied')
 
     def _unpack_words(self, fstring, handle):
-        """
-        Un Packs Words based on the word order and byte order
+        """ Un Packs Words based on the word order and byte order
 
         # ---------------------------------------------- #
         # Unpack in to network ordered unsigned integer  #
@@ -353,27 +348,23 @@ class BinaryPayloadDecoder(object):
         :return:
         """
         handle = make_byte_string(handle)
-        wc = WC.get(fstring.lower()) // 2
-        up = "!{}H".format(wc)
-        handle = unpack(up, handle)
+        wc_value = WC.get(fstring.lower()) // 2
+        handle = unpack(f"!{wc_value}H", handle)
         if self._wordorder == Endian.Little:
             handle = list(reversed(handle))
 
         # Repack as unsigned Integer
-        pk = self._byteorder + 'H'
-        handle = [pack(pk, p) for p in handle]
+        handle = [pack(self._byteorder + 'H', p) for p in handle]
         _logger.debug(handle)
         handle = b''.join(handle)
         return handle
 
     def reset(self):
-        """ Reset the decoder pointer back to the start
-        """
+        """ Reset the decoder pointer back to the start. """
         self._pointer = 0x00
 
     def decode_8bit_uint(self):
-        """ Decodes a 8 bit unsigned int from the buffer
-        """
+        """ Decodes a 8 bit unsigned int from the buffer. """
         self._pointer += 1
         fstring = self._byteorder + 'B'
         handle = self._payload[self._pointer - 1:self._pointer]
@@ -381,8 +372,7 @@ class BinaryPayloadDecoder(object):
         return unpack(fstring, handle)[0]
 
     def decode_bits(self):
-        """ Decodes a byte worth of bits from the buffer
-        """
+        """ Decodes a byte worth of bits from the buffer. """
         self._pointer += 1
         # fstring = self._endian + 'B'
         handle = self._payload[self._pointer - 1:self._pointer]
@@ -390,8 +380,7 @@ class BinaryPayloadDecoder(object):
         return unpack_bitstring(handle)
 
     def decode_16bit_uint(self):
-        """ Decodes a 16 bit unsigned int from the buffer
-        """
+        """ Decodes a 16 bit unsigned int from the buffer. """
         self._pointer += 2
         fstring = self._byteorder + 'H'
         handle = self._payload[self._pointer - 2:self._pointer]
@@ -399,8 +388,7 @@ class BinaryPayloadDecoder(object):
         return unpack(fstring, handle)[0]
 
     def decode_32bit_uint(self):
-        """ Decodes a 32 bit unsigned int from the buffer
-        """
+        """ Decodes a 32 bit unsigned int from the buffer. """
         self._pointer += 4
         fstring = 'I'
         # fstring = 'I'
@@ -409,8 +397,7 @@ class BinaryPayloadDecoder(object):
         return unpack("!"+fstring, handle)[0]
 
     def decode_64bit_uint(self):
-        """ Decodes a 64 bit unsigned int from the buffer
-        """
+        """ Decodes a 64 bit unsigned int from the buffer. """
         self._pointer += 8
         fstring = 'Q'
         handle = self._payload[self._pointer - 8:self._pointer]
@@ -418,8 +405,7 @@ class BinaryPayloadDecoder(object):
         return unpack("!"+fstring, handle)[0]
 
     def decode_8bit_int(self):
-        """ Decodes a 8 bit signed int from the buffer
-        """
+        """ Decodes a 8 bit signed int from the buffer. """
         self._pointer += 1
         fstring = self._byteorder + 'b'
         handle = self._payload[self._pointer - 1:self._pointer]
@@ -427,8 +413,7 @@ class BinaryPayloadDecoder(object):
         return unpack(fstring, handle)[0]
 
     def decode_16bit_int(self):
-        """ Decodes a 16 bit signed int from the buffer
-        """
+        """ Decodes a 16 bit signed int from the buffer. """
         self._pointer += 2
         fstring = self._byteorder + 'h'
         handle = self._payload[self._pointer - 2:self._pointer]
@@ -436,8 +421,7 @@ class BinaryPayloadDecoder(object):
         return unpack(fstring, handle)[0]
 
     def decode_32bit_int(self):
-        """ Decodes a 32 bit signed int from the buffer
-        """
+        """ Decodes a 32 bit signed int from the buffer. """
         self._pointer += 4
         fstring = 'i'
         handle = self._payload[self._pointer - 4:self._pointer]
@@ -445,8 +429,7 @@ class BinaryPayloadDecoder(object):
         return unpack("!"+fstring, handle)[0]
 
     def decode_64bit_int(self):
-        """ Decodes a 64 bit signed int from the buffer
-        """
+        """ Decodes a 64 bit signed int from the buffer. """
         self._pointer += 8
         fstring = 'q'
         handle = self._payload[self._pointer - 8:self._pointer]
@@ -487,8 +470,7 @@ class BinaryPayloadDecoder(object):
         :param size: The size of the string to decode
         """
         self._pointer += size
-        s = self._payload[self._pointer - size:self._pointer]
-        return s
+        return self._payload[self._pointer - size:self._pointer]
 
     def skip_bytes(self, nbytes):
         """ Skip n bytes in the buffer
@@ -496,7 +478,6 @@ class BinaryPayloadDecoder(object):
         :param nbytes: The number of bytes to skip
         """
         self._pointer += nbytes
-        return None
 
 #---------------------------------------------------------------------------#
 # Exported Identifiers

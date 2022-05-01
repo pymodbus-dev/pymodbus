@@ -1,5 +1,4 @@
-"""
-Implementation of a Modbus Client Using Twisted
+""" Implementation of a Modbus Client Using Twisted
 --------------------------------------------------
 
 Example run::
@@ -33,7 +32,10 @@ Another example::
        reactor.run()
 """
 from __future__ import unicode_literals
+import logging
+
 from twisted.internet import defer, protocol
+from twisted.python.failure import Failure
 
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
@@ -41,13 +43,11 @@ from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
 from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 from pymodbus.utilities import hexlify_packets
-from twisted.python.failure import Failure
 
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -56,13 +56,12 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 class ModbusClientProtocol(protocol.Protocol,
                            AsyncModbusClientMixin):
-    """
-    This represents the base modbus client protocol.  All the application
+    """ This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
     framer = None
 
-    def __init__(self, framer=None, **kwargs):
+    def __init__(self, framer=None, **kwargs): # pylint: disable=super-init-not-called
         self._connected = False
         self.framer = framer or ModbusSocketFramer(ClientDecoder())
         if isinstance(self.framer, type):
@@ -74,27 +73,24 @@ class ModbusClientProtocol(protocol.Protocol,
             self.transaction = FifoTransactionManager(self, **kwargs)
 
     def connectionMade(self):
-        """ 
-        Called upon a successful client connection.
-        """
+        """ Called upon a successful client connection. """
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
     def connectionLost(self, reason=None):
-        """ 
-        Called upon a client disconnect
+        """ Called upon a client disconnect
 
         :param reason: The reason for the disconnect
         """
-        _logger.debug("Client disconnected from modbus server: %s" % reason)
+        txt = f"Client disconnected from modbus server: {reason}"
+        _logger.debug(txt)
         self._connected = False
         for tid in list(self.transaction):
             self.transaction.getTransaction(tid).errback(Failure(
                 ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
-        """ 
-        Get response, check for valid message, decode result
+        """ Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         """
@@ -102,34 +98,32 @@ class ModbusClientProtocol(protocol.Protocol,
         self.framer.processIncomingPacket(data, self._handleResponse,
                                           unit=unit)
 
-    def execute(self, request):
-        """ 
-        Starts the producer to send the next request to
+    def execute(self, request=None):
+        """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        _logger.debug("send: " + hexlify_packets(packet))
+        txt = f"send: {hexlify_packets(packet)}"
+        _logger.debug(txt)
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
 
-    def _handleResponse(self, reply, **kwargs):
-        """ 
-        Handle the processed response and link to correct deferred
+    def _handleResponse(self, reply, **kwargs): # pylint: disable=invalid-name,unused-argument
+        """ Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
         """
         if reply is not None:
             tid = reply.transaction_id
-            handler = self.transaction.getTransaction(tid)
-            if handler:
+            if handler := self.transaction.getTransaction(tid):
                 handler.callback(reply)
             else:
-                _logger.debug("Unrequested message: " + str(reply))
+                txt = f"Unrequested message: {str(reply)}"
+                _logger.debug(txt)
 
-    def _buildResponse(self, tid):
-        """ 
-        Helper method to return a deferred response
+    def _buildResponse(self, tid): # pylint: disable=invalid-name,
+        """ Helper method to return a deferred response
         for the current request.
 
         :param tid: The transaction identifier for this response
@@ -139,14 +133,13 @@ class ModbusClientProtocol(protocol.Protocol,
             return defer.fail(Failure(
                 ConnectionException('Client is not connected')))
 
-        d = defer.Deferred()
-        self.transaction.addTransaction(d, tid)
-        return d
+        deferred = defer.Deferred()
+        self.transaction.addTransaction(deferred, tid)
+        return deferred
 
     def close(self):
-        """
-        Closes underlying transport layer ,essentially closing the client
-        :return: 
+        """ Closes underlying transport layer ,essentially closing the client
+        :return:
         """
         if self.transport and hasattr(self.transport, "close"):
             self.transport.close()
@@ -154,49 +147,45 @@ class ModbusClientProtocol(protocol.Protocol,
 
 
 class ModbusTcpClientProtocol(ModbusClientProtocol):
-    """
-    Async TCP Client protocol based on twisted.
-    
+    """ Async TCP Client protocol based on twisted.
+
     Default framer: ModbusSocketFramer
     """
     framer = ModbusSocketFramer(ClientDecoder())
 
 
 class ModbusSerClientProtocol(ModbusClientProtocol):
-    """
-    Async Serial Client protocol based on twisted
-    
+    """ Async Serial Client protocol based on twisted
+
     Default framer: ModbusRtuFramer
     """
     def __init__(self, framer=None, **kwargs):
         framer = framer or ModbusRtuFramer(ClientDecoder())
-        super(ModbusSerClientProtocol, self).__init__(framer, **kwargs)
+        super().__init__(framer, **kwargs)
 
 
 # --------------------------------------------------------------------------- #
 # Not Connected Client Protocol
 # --------------------------------------------------------------------------- #
-class ModbusUdpClientProtocol(protocol.DatagramProtocol, 
+class ModbusUdpClientProtocol(protocol.DatagramProtocol,
                               AsyncModbusClientMixin):
-    """
-    This represents the base modbus client protocol.  All the application
+    """ This represents the base modbus client protocol.  All the application
     layer code is deferred to a higher level wrapper.
     """
 
-    def datagramReceived(self, data, params):
-        """
-        Get response, check for valid message, decode result
+    def datagramReceived(self, datagram, addr):
+        """ Get response, check for valid message, decode result
 
         :param data: The data returned from the server
         :param params: The host parameters sending the datagram
         """
-        _logger.debug("Datagram from: %s:%d" % params)
-        unit = self.framer.decode_data(data).get("uid", 0)
-        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
+        txt = f"Datagram from: {addr}"
+        _logger.debug(txt)
+        unit = self.framer.decode_data(datagram).get("uid", 0)
+        self.framer.processIncomingPacket(datagram, self._handleResponse, unit=unit)
 
-    def execute(self, request):
-        """
-        Starts the producer to send the next request to
+    def execute(self, request=None):
+        """ Starts the producer to send the next request to
         consumer.write(Frame(request))
         """
         request.transaction_id = self.transaction.getNextTID()
@@ -204,30 +193,29 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         self.transport.write(packet, (self.host, self.port))
         return self._buildResponse(request.transaction_id)
 
-    def _handleResponse(self, reply, **kwargs):
-        """
-        Handle the processed response and link to correct deferred
+    def _handleResponse(self, reply, **kwargs): # pylint: disable=invalid-name,unused-argument
+        """ Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
         """
         if reply is not None:
             tid = reply.transaction_id
-            handler = self.transaction.getTransaction(tid)
-            if handler:
+            if handler := self.transaction.getTransaction(tid):
                 handler.callback(reply)
-            else: _logger.debug("Unrequested message: " + str(reply))
+            else:
+                txt = f"Unrequested message: {str(reply)}"
+                _logger.debug(txt)
 
-    def _buildResponse(self, tid):
-        """
-        Helper method to return a deferred response
+    def _buildResponse(self, tid): # pylint: disable=invalid-name
+        """ Helper method to return a deferred response
         for the current request.
 
         :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
         """
-        d = defer.Deferred()
-        self.transaction.addTransaction(d, tid)
-        return d
+        deferred = defer.Deferred()
+        self.transaction.addTransaction(deferred, tid)
+        return deferred
 
 
 # --------------------------------------------------------------------------- #
@@ -248,4 +236,3 @@ __all__ = [
     "ModbusUdpClientProtocol",
     "ModbusClientFactory"
 ]
-

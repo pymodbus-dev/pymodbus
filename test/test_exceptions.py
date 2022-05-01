@@ -1,33 +1,38 @@
 #!/usr/bin/env python3
+""" Test exceptions. """
 import unittest
-from pymodbus.exceptions import *
+
+from pymodbus.exceptions import (
+    ModbusException,
+    ConnectionException,
+    NotImplementedException,
+    ParameterException,
+    ModbusIOException,
+)
 
 class SimpleExceptionsTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.exceptions module
-    '''
+    """ Unittest for the pymodbus.exceptions module. """
 
     def setUp(self):
-        ''' Initializes the test environment '''
+        """ Initializes the test environment """
         self.exceptions = [
                 ModbusException("bad base"),
                 ModbusIOException("bad register"),
-                ParameterException("bad paramater"),
+                ParameterException("bad parameter"),
                 NotImplementedException("bad function"),
                 ConnectionException("bad connection"),
         ]
 
     def tearDown(self):
-        ''' Cleans up the test environment '''
-        pass
+        """ Cleans up the test environment """
 
-    def testExceptions(self):
-        ''' Test all module exceptions '''
-        for ex in self.exceptions:
+    def test_exceptions(self):
+        """ Test all module exceptions """
+        for exc in self.exceptions:
             try:
-                raise ex
-            except ModbusException as ex:
-                self.assertTrue("Modbus Error:" in str(ex))
+                raise exc
+            except ModbusException as exc:
+                self.assertTrue("Modbus Error:" in str(exc))
                 return
             self.fail("Excepted a ModbusExceptions")
 

@@ -1,5 +1,4 @@
-"""
-Command Completion for pymodbus REPL.
+""" Command Completion for pymodbus REPL.
 
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
@@ -10,11 +9,11 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.application.current import get_app
 from pymodbus.repl.client.helper import get_commands
-from pymodbus.compat import string_types
 
 
 @Condition
 def has_selected_completion():
+    """Check for selected completion."""
     complete_state = get_app().current_buffer.complete_state
     return (complete_state is not None and
             complete_state.current_completion is not None)
@@ -29,12 +28,10 @@ style = Style.from_dict({
 
 
 class CmdCompleter(Completer):
-    """
-    Completer for Pymodbus REPL.
-    """
+    """ Completer for Pymodbus REPL. """
 
     def __init__(self, client=None, commands=None, ignore_case=True):
-        """
+        """ Initialize.
 
         :param client: Modbus Client
         :param commands: Commands to be added for Completion (list)
@@ -47,43 +44,36 @@ class CmdCompleter(Completer):
 
     @property
     def commands(self):
+        """ Return commands. """
         return self._commands
 
     @property
     def command_names(self):
+        """ Return command names. """
         return self._commands.keys()
 
-    def completing_command(self, words, word_before_cursor):
-        """
-        Determine if we are dealing with supported command.
+    def completing_command(self, words, word_before_cursor): # pylint: disable=no-self-use
+        """ Determine if we are dealing with supported command.
 
         :param words: Input text broken in to word tokens.
         :param word_before_cursor: The current word before the cursor, \
             which might be one or more blank spaces.
         :return:
         """
-        if len(words) == 1 and word_before_cursor != '':
-            return True
-        else:
-            return False
+        return len(words) == 1 and len(word_before_cursor)
 
-    def completing_arg(self, words, word_before_cursor):
-        """
-        Determine if we are currently completing an argument.
+    def completing_arg(self, words, word_before_cursor): # pylint: disable=no-self-use
+        """ Determine if we are currently completing an argument.
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word before the cursor, \
             which might be one or more blank spaces.
         :return: Specifies whether we are currently completing an arg.
         """
-        if len(words) > 1 and word_before_cursor != '':
-            return True
-        else:
-            return False
+        return len(words) > 1 and len(word_before_cursor)
 
-    def arg_completions(self, words, word_before_cursor):
-        """
-        Generates arguments completions based on the input.
+    def arg_completions(self, words, word_before_cursor): # pylint: disable=unused-argument
+        """ Generates arguments completions based on the input.
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word  before the cursor, \
@@ -92,17 +82,16 @@ class CmdCompleter(Completer):
         """
         cmd = words[0].strip()
         cmd = self._commands.get(cmd, None)
-        if cmd:
-            return cmd
+        return cmd if cmd else None
 
     def _get_completions(self, word, word_before_cursor):
+        """ Internal get completions. """
         if self.ignore_case:
             word_before_cursor = word_before_cursor.lower()
         return self.word_matches(word, word_before_cursor)
 
     def word_matches(self, word, word_before_cursor):
-        """
-        Match the word and word before cursor
+        """ Match the word and word before cursor
 
         :param words: The input text broken into word tokens.
         :param word_before_cursor: The current word before the cursor, \
@@ -115,8 +104,7 @@ class CmdCompleter(Completer):
         return word.startswith(word_before_cursor)
 
     def get_completions(self, document, complete_event):
-        """
-        Get completions for the current scope.
+        """ Get completions for the current scope.
 
         :param document: An instance of `prompt_toolkit.Document`.
         :param complete_event: (Unused).
@@ -127,14 +115,14 @@ class CmdCompleter(Completer):
         words = document.text.strip().split()
         meta = None
         commands = []
-        if len(words) == 0:
+        if not words:
             # yield commands
             pass
         if self.completing_command(words, word_before_cursor):
             commands = self._command_names
             c_meta = {
                 k: v.help_text
-                if not isinstance(v, string_types)
+                if not isinstance(v, str)
                 else v for k, v in self._commands.items()
             }
             meta = lambda x: (x, c_meta.get(x, ''))
@@ -149,8 +137,8 @@ class CmdCompleter(Completer):
                 commands = list(command.get_completion())
                 commands = list(filter(lambda cmd: not(any(cmd in x for x in words)), commands))
                 meta = command.get_meta
-        for a in commands:
-            if self._get_completions(a, word_before_cursor):
-                cmd, display_meta = meta(a) if meta else ('', '')
-                yield Completion(a, -len(word_before_cursor),
+        for command in commands:
+            if self._get_completions(command, word_before_cursor):
+                _, display_meta = meta(command) if meta else ('', '')
+                yield Completion(command, -len(word_before_cursor),
                                  display_meta=display_meta)

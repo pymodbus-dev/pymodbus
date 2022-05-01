@@ -1,13 +1,14 @@
-from pymodbus.exceptions import ParameterException, NoSuchSlaveException
+""" Context for datastore. """
+import logging
+
+from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.constants import Defaults
-from pymodbus.compat import iteritems, itervalues
 
 #---------------------------------------------------------------------------#
 # Logging
 #---------------------------------------------------------------------------#
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -15,13 +16,12 @@ _logger = logging.getLogger(__name__)
 # Slave Contexts
 #---------------------------------------------------------------------------#
 class ModbusSlaveContext(IModbusSlaveContext):
-    '''
-    This creates a modbus data model with each data access
+    """ This creates a modbus data model with each data access
     stored in its own personal block
-    '''
+    """
 
-    def __init__(self, *args, **kwargs):
-        ''' Initializes the datastores, defaults to fully populated
+    def __init__(self, *args, **kwargs): # pylint: disable=unused-argument
+        """ Initializes the datastores, defaults to fully populated
         sequential data blocks if none are passed in.
 
         :param kwargs: Each element is a ModbusDataBlock
@@ -30,8 +30,8 @@ class ModbusSlaveContext(IModbusSlaveContext):
             'co' - Coils initializer
             'hr' - Holding Register initializer
             'ir' - Input Registers iniatializer
-        '''
-        self.store = dict()
+        """
+        self.store = {}
         self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock.create())
         self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
         self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
@@ -39,146 +39,142 @@ class ModbusSlaveContext(IModbusSlaveContext):
         self.zero_mode = kwargs.get('zero_mode', Defaults.ZeroMode)
 
     def __str__(self):
-        ''' Returns a string representation of the context
+        """ Returns a string representation of the context
 
         :returns: A string representation of the context
-        '''
+        """
         return "Modbus Slave Context"
 
     def reset(self):
-        ''' Resets all the datastores to their default values '''
-        for datastore in itervalues(self.store):
+        """ Resets all the datastores to their default values """
+        for datastore in iter(self.store.values()):
             datastore.reset()
 
-    def validate(self, fx, address, count=1):
-        ''' Validates the request to make sure it is in range
+    def validate(self, fc_as_hex, address, count=1):
+        """ Validates the request to make sure it is in range
 
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
-        '''
+        """
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("validate: fc-[%d] address-%d: count-%d" % (fx, address,
-                                                                  count))
-        return self.store[self.decode(fx)].validate(address, count)
+        txt = f"validate: fc-[{fc_as_hex}] address-{address}: count-{count}"
+        _logger.debug(txt)
+        return self.store[self.decode(fc_as_hex)].validate(address, count)
 
-    def getValues(self, fx, address, count=1):
-        ''' Get `count` values from datastore
+    def getValues(self, fc_as_hex, address, count=1):
+        """ Get `count` values from datastore
 
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
-        '''
+        """
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("getValues fc-[%d] address-%d: count-%d" % (fx, address,
-                                                                  count))
-        return self.store[self.decode(fx)].getValues(address, count)
+        txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
+        _logger.debug(txt)
+        return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
-    def setValues(self, fx, address, values):
-        ''' Sets the datastore with the supplied values
+    def setValues(self, fc_as_hex, address, values):
+        """ Sets the datastore with the supplied values
 
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
-        '''
+        """
         if not self.zero_mode:
             address = address + 1
-        _logger.debug("setValues[%d] %d:%d" % (fx, address, len(values)))
-        self.store[self.decode(fx)].setValues(address, values)
+        txt = f"setValues[{fc_as_hex}] address-{address}: count-{len(values)}"
+        _logger.debug(txt)
+        self.store[self.decode(fc_as_hex)].setValues(address, values)
 
-    def register(self, fc, fx, datablock=None):
-        """
-        Registers a datablock with the slave context
+    def register(self, function_code, fc_as_hex, datablock=None):
+        """ Registers a datablock with the slave context
         :param fc: function code (int)
         :param fx: string representation of function code (e.g 'cf' )
         :param datablock: datablock to associate with this function code
         :return:
         """
-        self.store[fx] = datablock or ModbusSequentialDataBlock.create()
-        self._IModbusSlaveContext__fx_mapper[fc] = fx
+        self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
+        self._IModbusSlaveContext__fx_mapper[function_code] = fc_as_hex # pylint: disable=no-member
 
 
-class ModbusServerContext(object):
-    ''' This represents a master collection of slave contexts.
+class ModbusServerContext:
+    """ This represents a master collection of slave contexts.
     If single is set to true, it will be treated as a single
     context so every unit-id returns the same context. If single
     is set to false, it will be interpreted as a collection of
     slave contexts.
-    '''
+    """
 
     def __init__(self, slaves=None, single=True):
-        ''' Initializes a new instance of a modbus server context.
+        """ Initializes a new instance of a modbus server context.
 
         :param slaves: A dictionary of client contexts
         :param single: Set to true to treat this as a single context
-        '''
+        """
         self.single = single
         self._slaves = slaves or {}
         if self.single:
             self._slaves = {Defaults.UnitId: self._slaves}
 
     def __iter__(self):
-        ''' Iterater over the current collection of slave
+        """ Iterator over the current collection of slave
         contexts.
 
         :returns: An iterator over the slave contexts
-        '''
-        return iteritems(self._slaves)
+        """
+        return iter(self._slaves.items())
 
     def __contains__(self, slave):
-        ''' Check if the given slave is in this list
+        """ Check if the given slave is in this list
 
         :param slave: slave The slave to check for existence
         :returns: True if the slave exists, False otherwise
-        '''
+        """
         if self.single and self._slaves:
             return True
-        else:
-            return slave in self._slaves
+        return slave in self._slaves
 
     def __setitem__(self, slave, context):
-        ''' Used to set a new slave context
+        """ Used to set a new slave context
 
         :param slave: The slave context to set
         :param context: The new context to set for this slave
-        '''
+        """
         if self.single:
             slave = Defaults.UnitId
         if 0xf7 >= slave >= 0x00:
             self._slaves[slave] = context
         else:
-            raise NoSuchSlaveException('slave index :{} '
-                                       'out of range'.format(slave))
+            raise NoSuchSlaveException(f"slave index :{slave} out of range")
 
     def __delitem__(self, slave):
-        ''' Wrapper used to access the slave context
+        """ Wrapper used to access the slave context
 
         :param slave: The slave context to remove
-        '''
+        """
         if not self.single and (0xf7 >= slave >= 0x00):
             del self._slaves[slave]
         else:
-            raise NoSuchSlaveException('slave index: {} '
-                                       'out of range'.format(slave))
+            raise NoSuchSlaveException(f"slave index: {slave} out of range")
 
     def __getitem__(self, slave):
-        ''' Used to get access to a slave context
+        """ Used to get access to a slave context
 
         :param slave: The slave context to get
         :returns: The requested slave context
-        '''
+        """
         if self.single:
             slave = Defaults.UnitId
         if slave in self._slaves:
             return self._slaves.get(slave)
-        else:
-            raise NoSuchSlaveException("slave - {} does not exist, "
-                                       "or is out of range".format(slave))
+        raise NoSuchSlaveException(f"slave - {slave} does not exist, or is out of range")
 
     def slaves(self):
+        """Define slaves."""
         # Python3 now returns keys() as iterable
         return list(self._slaves.keys())

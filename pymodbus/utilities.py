@@ -1,18 +1,14 @@
-"""
-Modbus Utilities
+""" Modbus Utilities
 -----------------
 
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
-from pymodbus.compat import int2byte, byte2int
-from six import string_types
+import struct
 
 
-class ModbusTransactionState(object):
-    """
-    Modbus Client States
-    """
+class ModbusTransactionState: # pylint: disable=too-few-public-methods
+    """ Modbus Client States. """
     IDLE = 0
     SENDING = 1
     WAITING_FOR_REPLY = 2
@@ -25,6 +21,7 @@ class ModbusTransactionState(object):
 
     @classmethod
     def to_string(cls, state):
+        """Convert to string."""
         states = {
             ModbusTransactionState.IDLE: "IDLE",
             ModbusTransactionState.SENDING: "SENDING",
@@ -43,8 +40,7 @@ class ModbusTransactionState(object):
 # --------------------------------------------------------------------------- #
 
 def default(value):
-    """
-    Given a python object, return the default value
+    """ Given a python object, return the default value
     of that object.
 
     :param value: The value to get the default of
@@ -96,13 +92,13 @@ def pack_bitstring(bits):
             packed += 128
         i += 1
         if i == 8:
-            ret += int2byte(packed)
+            ret += struct.pack('>B', packed)
             i = packed = 0
         else:
             packed >>= 1
     if 0 < i < 8:
         packed >>= (7 - i)
-        ret += int2byte(packed)
+        ret += struct.pack('>B', packed)
     return ret
 
 
@@ -119,22 +115,21 @@ def unpack_bitstring(string):
     byte_count = len(string)
     bits = []
     for byte in range(byte_count):
-        value = byte2int(int(string[byte]))
+        value = int(int(string[byte]))
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
     return bits
 
 
-def make_byte_string(s):
-    """
-    Returns byte string from a given string, python3 specific fix
+def make_byte_string(byte_string):
+    """ Returns byte string from a given string, python3 specific fix
     :param s:
     :return:
     """
-    if isinstance(s, string_types):
-        s = s.encode()
-    return s
+    if isinstance(byte_string, str):
+        byte_string = byte_string.encode()
+    return byte_string
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
@@ -157,7 +152,7 @@ def __generate_crc16_table():
 __crc16_table = __generate_crc16_table()
 
 
-def computeCRC(data):
+def computeCRC(data): #NOSONAR pylint: disable=invalid-name
     """ Computes a crc16 on the passed in string. For modbus,
     this is only used on the binary serial protocols (in this
     case RTU).
@@ -169,14 +164,14 @@ def computeCRC(data):
     :returns: The calculated CRC
     """
     crc = 0xffff
-    for a in data:
-        idx = __crc16_table[(crc ^ byte2int(a)) & 0xff]
+    for data_byte in data:
+        idx = __crc16_table[(crc ^ int(data_byte)) & 0xff]
         crc = ((crc >> 8) & 0xff) ^ idx
     swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
     return swapped
 
 
-def checkCRC(data, check):
+def checkCRC(data, check): #NOSONAR pylint: disable=invalid-name
     """ Checks if the data matches the passed in CRC
 
     :param data: The data to create a crc16 of
@@ -186,7 +181,7 @@ def checkCRC(data, check):
     return computeCRC(data) == check
 
 
-def computeLRC(data):
+def computeLRC(data): #NOSONAR pylint: disable=invalid-name
     """ Used to compute the longitudinal redundancy check
     against a string. This is only used on the serial ASCII
     modbus protocol. A full description of this implementation
@@ -196,12 +191,12 @@ def computeLRC(data):
     :returns: The calculated LRC
 
     """
-    lrc = sum(byte2int(a) for a in data) & 0xff
+    lrc = sum(int(a) for a in data) & 0xff
     lrc = (lrc ^ 0xff) + 1
     return lrc & 0xff
 
 
-def checkLRC(data, check):
+def checkLRC(data, check): #NOSONAR pylint: disable=invalid-name
     """ Checks if the passed in data matches the LRC
 
     :param data: The data to calculate
@@ -211,7 +206,7 @@ def checkLRC(data, check):
     return computeLRC(data) == check
 
 
-def rtuFrameSize(data, byte_count_pos):
+def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
     """ Calculates the size of the frame based on the byte count.
 
     :param data: The buffer containing the frame.
@@ -231,18 +226,17 @@ def rtuFrameSize(data, byte_count_pos):
     field, and finally increment the sum by three (one byte for the
     byte count field, two for the CRC).
     """
-    return byte2int(data[byte_count_pos]) + byte_count_pos + 3
+    return int(data[byte_count_pos]) + byte_count_pos + 3
 
 
 def hexlify_packets(packet):
-    """
-    Returns hex representation of bytestring received
+    """ Returns hex representation of bytestring received
     :param packet:
     :return:
     """
     if not packet:
         return ''
-    return " ".join([hex(byte2int(x)) for x in packet])
+    return " ".join([hex(int(x)) for x in packet])
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

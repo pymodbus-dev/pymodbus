@@ -1,3 +1,4 @@
+"""Define datastore."""
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.datastore.store import ModbusSparseDataBlock
 from pymodbus.datastore.context import ModbusSlaveContext

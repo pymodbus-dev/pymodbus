@@ -1,45 +1,44 @@
-'''
-MEI Message Test Fixture
+""" MEI Message Test Fixture
 --------------------------------
 
 This fixture tests the functionality of all the
 mei based request/response messages:
-'''
+"""
 import unittest
-from pymodbus.mei_message import *
-from pymodbus.constants import DeviceInformation, MoreData
-from pymodbus.pdu import ModbusExceptions
+from pymodbus.mei_message import (
+    ReadDeviceInformationRequest,
+    ReadDeviceInformationResponse,
+)
+from pymodbus.constants import DeviceInformation
 from pymodbus.device import ModbusControlBlock
 
 #---------------------------------------------------------------------------#
 # Fixture
 #---------------------------------------------------------------------------#
 class ModbusMeiMessageTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus.mei_message module
-    '''
+    """ Unittest for the pymodbus.mei_message module. """
 
     #-----------------------------------------------------------------------#
     # Read Device Information
     #-----------------------------------------------------------------------#
 
-    def testReadDeviceInformationRequestEncode(self):
-        ''' Test basic bit message encoding/decoding '''
+    def test_read_device_information_request_encode(self):
+        """ Test basic bit message encoding/decoding """
         params  = {'read_code':DeviceInformation.Basic, 'object_id':0x00 }
         handle  = ReadDeviceInformationRequest(**params)
         result  = handle.encode()
         self.assertEqual(result, b'\x0e\x01\x00')
         self.assertEqual("ReadDeviceInformationRequest(1,0)", str(handle))
 
-    def testReadDeviceInformationRequestDecode(self):
-        ''' Test basic bit message encoding/decoding '''
+    def test_read_device_information_request_decode(self):
+        """ Test basic bit message encoding/decoding """
         handle  = ReadDeviceInformationRequest()
         handle.decode(b'\x0e\x01\x00')
         self.assertEqual(handle.read_code, DeviceInformation.Basic)
         self.assertEqual(handle.object_id, 0x00)
 
-    def testReadDeviceInformationRequest(self):
-        ''' Test basic bit message encoding/decoding '''
+    def test_read_device_information_request(self):
+        """ Test basic bit message encoding/decoding """
         context = None
         control = ModbusControlBlock()
         control.Identity.VendorName  = "Company"
@@ -61,8 +60,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
         result = handle.execute(context)
         self.assertEqual(result.information[0x81], ['Test', 'Repeated'])
 
-    def testReadDeviceInformationRequestError(self):
-        ''' Test basic bit message encoding/decoding '''
+    def test_read_device_information_request_error(self):
+        """ Test basic bit message encoding/decoding """
         handle  = ReadDeviceInformationRequest()
         handle.read_code = -1
         self.assertEqual(handle.execute(None).function_code, 0xab)
@@ -73,8 +72,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
         handle.object_id = 0x100
         self.assertEqual(handle.execute(None).function_code, 0xab)
 
-    def testReadDeviceInformationResponseEncode(self):
-        ''' Test that the read fifo queue response can encode '''
+    def test_read_device_information_encode(self):
+        """ Test that the read fifo queue response can encode """
         message  = b'\x0e\x01\x83\x00\x00\x03'
         message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
         dataset  = {
@@ -102,8 +101,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
         result = handle.encode()
         self.assertEqual(result, message)
 
-    def testReadDeviceInformationResponseEncodeLong(self):
-        ''' Test that the read fifo queue response can encode '''
+    def test_read_device_information_encode_long(self):
+        """ Test that the read fifo queue response can encode """
         longstring = "Lorem ipsum dolor sit amet, consectetur adipiscing " \
                      "elit. Vivamus rhoncus massa turpis, sit amet ultrices" \
                      " orci semper ut. Aliquam tristique sapien in lacus " \
@@ -124,8 +123,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual(result, message)
         self.assertEqual("ReadDeviceInformationResponse(1)", str(handle))
 
-    def testReadDeviceInformationResponseDecode(self):
-        ''' Test that the read device information response can decode '''
+    def test_read_device_information_decode(self):
+        """ Test that the read device information response can decode """
         message  = b'\x0e\x01\x01\x00\x00\x05'
         message += b'\x00\x07Company\x01\x07Product\x02\x07v2.1.12'
         message += b'\x81\x04Test\x81\x08Repeated\x81\x07Another'
@@ -138,8 +137,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
         self.assertEqual(handle.information[0x02], b'v2.1.12')
         self.assertEqual(handle.information[0x81], [b'Test', b'Repeated', b'Another'])
 
-    def testRtuFrameSize(self):
-        ''' Test that the read device information response can decode '''
+    def test_rtu_frame_size(self):
+        """ Test that the read device information response can decode """
         message = b'\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B'
         result  = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
         self.assertEqual(result, 18)

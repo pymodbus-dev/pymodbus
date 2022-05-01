@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""
-Pymodbus Server With Callbacks
+""" Pymodbus Server With Callbacks
 --------------------------------------------------------------------------
 
 This is an example of adding callbacks to a running modbus server
 when a value is written to it. In order for this to work, it needs
 a device-mapping file.
 """
+import logging
+from multiprocessing import Queue, Process
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
@@ -15,18 +17,12 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
-
-# --------------------------------------------------------------------------- #
-# import the python libraries we need
-# --------------------------------------------------------------------------- #
-from multiprocessing import Queue, Process
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -42,22 +38,21 @@ class CallbackDataBlock(ModbusSparseDataBlock):
     """
 
     def __init__(self, devices, queue):
-        """
-        """
+        """ Initialize. """
         self.devices = devices
         self.queue = queue
 
         values = {k: 0 for k in devices.keys()}
         values[0xbeef] = len(values)  # the number of devices
-        super(CallbackDataBlock, self).__init__(values)
+        super().__init__(values)
 
-    def setValues(self, address, value):
+    def setValues(self, address, value): # pylint: disable=arguments-differ
         """ Sets the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
         """
-        super(CallbackDataBlock, self).setValues(address, value)
+        super().setValues(address, value)
         self.queue.put((self.devices.get(address, None), value))
 
 # --------------------------------------------------------------------------- #
@@ -72,9 +67,9 @@ def rescale_value(value):
     :param value: The input value to scale
     :returns: The rescaled value
     """
-    s = 1 if value >= 50 else -1
-    c = value if value < 50 else (value - 50)
-    return s * (c * 64)
+    scale = 1 if value >= 50 else -1
+    cur = value if value < 50 else (value - 50)
+    return scale * (cur * 64)
 
 
 def device_writer(queue):
@@ -85,8 +80,9 @@ def device_writer(queue):
     """
     while True:
         device, value = queue.get()
-        scaled = rescale_value(value[0])
-        log.debug("Write(%s) = %s" % (device, value))
+        rescale_value(value[0])
+        txt = f"Write({device}) = {value}"
+        log.debug(txt)
         if not device:
             continue
         # do any logic here to update your devices
@@ -107,7 +103,7 @@ def read_device_map(path):
     :returns: The input mapping file
     """
     devices = {}
-    with open(path, 'r') as stream:
+    with open(path, 'r') as stream: # pylint: disable=unspecified-encoding
         for line in stream:
             piece = line.strip().split(',')
             devices[int(piece[0], 16)] = piece[1]
@@ -115,6 +111,7 @@ def read_device_map(path):
 
 
 def run_callback_server():
+    """ Run callback server. """
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -127,19 +124,20 @@ def run_callback_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    identity = ModbusDeviceIdentification(info_name= {
+        'VendorName': 'pymodbus',
+        'ProductCode': 'PM',
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'ProductName': 'pymodbus Server',
+        'ModelName': 'pymodbus Server',
+        'MajorMinorRevision': version.short(),
+    })
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
-    p = Process(target=device_writer, args=(queue,))
-    p.start()
+    proc = Process(target=device_writer, args=(queue,))
+    proc.start()
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 

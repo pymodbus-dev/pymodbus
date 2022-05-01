@@ -235,16 +235,16 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
 
     def test_add_remove__single_clients(self):
         """ Test adding and removing a host """
-        self.assertFalse(self.access.check("192.168.1.1"))
-        self.access.add("192.168.1.1")
-        self.assertTrue(self.access.check("192.168.1.1"))
-        self.access.add("192.168.1.1")
-        self.access.remove("192.168.1.1")
-        self.assertFalse(self.access.check("192.168.1.1"))
+        self.assertFalse(self.access.check("192.168.1.1"))  # NOSONAR
+        self.access.add("192.168.1.1")  # NOSONAR
+        self.assertTrue(self.access.check("192.168.1.1"))  # NOSONAR
+        self.access.add("192.168.1.1")  # NOSONAR
+        self.access.remove("192.168.1.1")  # NOSONAR
+        self.assertFalse(self.access.check("192.168.1.1"))  # NOSONAR
 
     def test_add_remove_multiple_clients(self):
         """ Test adding and removing a host """
-        clients = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        clients = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]  # NOSONAR
         self.access.add(clients)
         for host in clients:
             self.assertTrue(self.access.check(host))
@@ -252,7 +252,7 @@ class SimpleDataStoreTest(unittest.TestCase): # pylint: disable=too-many-public-
 
     def test_network_access_list_iterator(self):
         """ Test adding and removing a host """
-        clients = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        clients = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]  # NOSONAR
         self.access.add(clients)
         for host in self.access:
             self.assertTrue(host in clients)

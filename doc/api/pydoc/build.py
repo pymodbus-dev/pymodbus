@@ -93,8 +93,8 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
 	def docmodule(self, object, name=None, mod=None, packageContext = None, *ignored):
 		"""Produce HTML documentation for a module object."""
-		name = object.__name__ # ignore the passed-in name
-		parts = split(name, '.')
+		my_name = object.__name__ # ignore the passed-in name
+		parts = split(my_name, '.')
 		links = []
 		for i in range(len(parts)-1):
 			links.append(
@@ -135,7 +135,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
 			for base in value.__bases__:
 				key, modname = base.__name__, base.__module__
 				module = sys.modules.get(modname)
-				if modname != name and module and hasattr(module, key):
+				if modname != my_name and module and hasattr(module, key):
 					if getattr(module, key) is base:
 						if not cdict.has_key(key):
 							cdict[key] = cdict[base] = modname + '.html#' + key
@@ -165,10 +165,10 @@ class DefaultFormatter(pydoc.HTMLDoc):
 				path = os.path.join(object.__path__[0], file)
 				modname = inspect.getmodulename(file)
 				if modname and modname not in modnames:
-					modpkgs.append((modname, name, 0, 0))
+					modpkgs.append((modname, my_name, 0, 0))
 					modnames.append(modname)
 				elif pydoc.ispackage(path):
-					modpkgs.append((file, name, 1, 0))
+					modpkgs.append((file, my_name, 1, 0))
 			modpkgs.sort()
 			contents = self.multicolumn(modpkgs, self.modpkglink)
 ##			result = result + self.bigsection(
@@ -184,15 +184,15 @@ class DefaultFormatter(pydoc.HTMLDoc):
 		if classes:
 #FIX			classlist = map(lambda (key, value): value, classes)
 			contents = [
-				self.formattree(inspect.getclasstree(classlist, 1), name)]
+				self.formattree(inspect.getclasstree(classlist, 1), my_name)]
 			for key, value in classes:
-				contents.append(self.document(value, key, name, fdict, cdict))
+				contents.append(self.document(value, key, my_name, fdict, cdict))
 			result = result + self.bigsection(
 				'Classes', '#ffffff', '#ee77aa', join(contents))
 		if funcs:
 			contents = []
 			for key, value in funcs:
-				contents.append(self.document(value, key, name, fdict, cdict))
+				contents.append(self.document(value, key, my_name, fdict, cdict))
 			result = result + self.bigsection(
 				'Functions', '#ffffff', '#eeaa77', join(contents))
 		if data:

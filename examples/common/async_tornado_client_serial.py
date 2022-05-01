@@ -159,9 +159,9 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, # pylint: disable=unpacking-non-sequence
+    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, # NOSONAR pylint: disable=unpacking-non-sequence
                                                method="rtu",
-                                               port="/tmp/ptyp0", #nosec
+                                               port="/tmp/ptyp0", # nosec NOSONAR
                                                baudrate=9600,
                                                timeout=2)
 

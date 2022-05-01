@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Client Examples.
 
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus with twisted.
@@ -19,7 +18,7 @@ log.setLevel(logging.DEBUG)
 # state a few constants
 # ---------------------------------------------------------------------------#
 
-SERIAL_PORT = "/tmp/ptyp0" # nosec NOSONAR
+SERIAL_PORT = "/tmp/ptyp0"  # nosec NOSONAR
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -27,27 +26,26 @@ UNIT = 0x01
 
 
 class ExampleProtocol(ModbusClientProtocol):
-    """ Example protocol. """
+    """Example protocol."""
 
     def __init__(self, framer):
-        """ Initializes our custom protocol
+        """Initialize our custom protocol
 
         :param framer: The decoder to use to process messages
         :param endpoint: The endpoint to send results to
         """
         ModbusClientProtocol.__init__(self, framer)
         log.debug("Beginning the processing loop")
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
 
     def fetch_holding_registers(self):
-        """ Defer fetching holding registers
-        """
+        """Defer fetching holding registers"""
         log.debug("Starting the next cycle")
         result = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
         result.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
-        """ Write values of holding registers, defer fetching coils
+        """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
         """
@@ -57,17 +55,17 @@ class ExampleProtocol(ModbusClientProtocol):
         result.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
-        """ Write values of coils, trigger next cycle
+        """Write values of coils, trigger next cycle
 
         :param response: The response to process
         """
         log.info(response.getBit(0))
         log.info(response.getBit(1))
         log.info(response.getBit(2))
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
 
-    def error_handler(self, failure): # pylint: disable=no-self-use
-        """ Handle any twisted errors
+    def error_handler(self, failure):  # pylint: disable=no-self-use
+        """Handle any twisted errors
 
         :param failure: The error to handle
         """
@@ -76,7 +74,7 @@ class ExampleProtocol(ModbusClientProtocol):
 
 if __name__ == "__main__":
     import time
-    proto, client = AsyncModbusSerialClient(schedulers.REACTOR, # pylint: disable=unpacking-non-sequence
+    proto, client = AsyncModbusSerialClient(schedulers.REACTOR,  # pylint: disable=unpacking-non-sequence
                                             method="rtu",
                                             port=SERIAL_PORT,
                                             timeout=2,

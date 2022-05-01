@@ -1,5 +1,4 @@
-""" Implementation of a Modbus Client Using Twisted
---------------------------------------------------
+"""Implementation of a Modbus Client Using Twisted.
 
 Example run::
 
@@ -53,12 +52,14 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # Connected Client Protocols
 # --------------------------------------------------------------------------- #
-class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no cover
-    """ This represents the base modbus client protocol.  All the application
-    layer code is deferred to a higher level wrapper.
+class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no cover
+    """This represents the base modbus client protocol.
+
+    All the application layer code is deferred to a higher level wrapper.
     """
+
     def __init__(self, framer=None, **kwargs):
-        """ Initializes the framer module
+        """Initialize the framer module.
 
         :param framer: The framer to use for the protocol
         """
@@ -74,13 +75,12 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
             self.transaction = FifoTransactionManager(self, **kwargs)
 
     def connectionMade(self):
-        """ Called upon a successful client connection.
-        """
+        """Call upon a successful client connection."""
         _logger.debug("Client connected to modbus server")
         self._connected = True
 
-    def connectionLost(self, reason): # pylint: disable=signature-differs
-        """ Called upon a client disconnect
+    def connectionLost(self, reason):  # pylint: disable=signature-differs
+        """Call upon a client disconnect.
 
         :param reason: The reason for the disconnect
         """
@@ -92,7 +92,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
                 ConnectionException('Connection lost during request')))
 
     def dataReceived(self, data):
-        """ Get response, check for valid message, decode result
+        """Get response, check for valid message, decode result.
 
         :param data: The data returned from the server
         """
@@ -100,15 +100,13 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
         self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
 
     def execute(self, request):
-        """ Starts the producer to send the next request to
-        consumer.write(Frame(request))
-        """
+        """Start the producer to send the next request to consumer.write(Frame(request))."""
         request.transaction_id = self.transaction.getNextTID()
         self.transport.write(self.framer.buildPacket(request))
         return self._build_response(request.transaction_id)
 
     def _handle_response(self, reply):
-        """ Handle the processed response and link to correct deferred
+        """Handle the processed response and link to correct deferred.
 
         :param reply: The reply to process
         """
@@ -120,8 +118,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
                 _logger.debug(txt)
 
     def _build_response(self, tid):
-        """ Helper method to return a deferred response
-        for the current request.
+        """Return a deferred response for the current request.
 
         :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
@@ -146,13 +143,14 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin): # pragma: no c
 # --------------------------------------------------------------------------- #
 # Not Connected Client Protocol
 # --------------------------------------------------------------------------- #
-class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # pragma: no cover
-    """ This represents the base modbus client protocol.  All the application
-    layer code is deferred to a higher level wrapper.
+class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):  # pragma: no cover
+    """This represents the base modbus client protocol.
+
+    All the application layer code is deferred to a higher level wrapper.
     """
 
     def __init__(self, framer=None, **kwargs):
-        """ Initializes the framer module
+        """Initialize the framer module.
 
         :param framer: The framer to use for the protocol
         """
@@ -164,7 +162,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # p
             self.transaction = FifoTransactionManager(self, **kwargs)
 
     def datagramReceived(self, datagram, addr):
-        """ Get response, check for valid message, decode result
+        """Get response, check for valid message, decode result.
 
         :param data: The data returned from the server
         :param params: The host parameters sending the datagram
@@ -175,16 +173,14 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # p
         self.framer.processIncomingPacket(datagram, self._handle_response, unit=unit)
 
     def execute(self, request):
-        """ Starts the producer to send the next request to
-        consumer.write(Frame(request))
-        """
+        """Start the producer to send the next request to consumer.write(Frame(request))."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         self.transport.write(packet)
         return self._build_response(request.transaction_id)
 
     def _handle_response(self, reply):
-        """ Handle the processed response and link to correct deferred
+        """Handle the processed response and link to correct deferred.
 
         :param reply: The reply to process
         """
@@ -197,8 +193,7 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # p
                 _logger.debug(txt)
 
     def _build_response(self, tid):
-        """ Helper method to return a deferred response
-        for the current request.
+        """Return a deferred response for the current request.
 
         :param tid: The transaction identifier for this response
         :returns: A defer linked to the latest request
@@ -211,12 +206,13 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin): # p
 # --------------------------------------------------------------------------- #
 # Client Factories
 # --------------------------------------------------------------------------- #
-class ModbusClientFactory(protocol.ReconnectingClientFactory): # pragma: no cover
-    """ Simple client protocol factory """
+class ModbusClientFactory(protocol.ReconnectingClientFactory):  # pragma: no cover
+    """Simple client protocol factory."""
 
     protocol = ModbusClientProtocol
 
     def __init__(self):
+        """Initialize."""
         deprecated(self.__class__.__name__)
         protocol.ReconnectingClientFactory.__init__(self)
 

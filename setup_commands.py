@@ -1,3 +1,4 @@
+"""Setup commands."""
 import os
 import shutil
 import sys
@@ -8,25 +9,27 @@ from setuptools import Command
 
 
 class BuildApiDocsCommand(Command):
-    """ Helper command to build the available api documents
+    """Helper command to build the available api documents.
+
     This scans all the subdirectories under api and runs the
     build.py script underneath trying to build the api
     documentation for the given format.
     """
+
     description = "build all the project's api documents"
     user_options = []
 
     def initialize_options(self):
-        """ options setup """
+        """Initialize options setup."""
         if not os.path.exists('./build'):
             os.mkdir('./build')
 
     def finalize_options(self):
-        """ options teardown """
+        """Finalize options teardown."""
         pass
 
     def run(self):
-        """ command runner """
+        """Run command."""
         old_cwd = os.getcwd()
         directories = (d for d in os.listdir('./doc/api') if not d.startswith('.'))
         for entry in directories:
@@ -36,10 +39,8 @@ class BuildApiDocsCommand(Command):
 
 
 class DeepCleanCommand(Command):
-    """
-    Helper command to return the directory to a completely
-    clean state.
-    """
+    """Helper command to return the directory to a completely clean state."""
+
     description = "clean everything that we don't want"
     user_options = []
     trash = ['build', 'dist', 'pymodbus.egg-info',
@@ -47,19 +48,19 @@ class DeepCleanCommand(Command):
              ]
 
     def initialize_options(self):
-        """ options setup """
+        """Initialize options setup."""
         pass
 
     def finalize_options(self):
         pass
 
     def run(self):
-        """ command runner """
+        """Run command."""
         self._delete_pyc_files()
         self._delete_trash_dirs()
 
     def _delete_trash_dirs(self):
-        """ remove all directories created in building """
+        """Remove all directories created in building."""
         self._delete_pyc_files()
         for directory in self.trash:
             if os.path.exists(directory):
@@ -67,7 +68,7 @@ class DeepCleanCommand(Command):
 
     @staticmethod
     def _delete_pyc_files():
-        """ remove all python cache files """
+        """Remove all python cache files."""
         for root, dirs, files in os.walk('.'):
             for file in files:
                 if file.endswith('.pyc'):
@@ -75,15 +76,13 @@ class DeepCleanCommand(Command):
 
 
 class LintCommand(Command):
-    """
-    Helper command to perform a lint scan of the
-    sourcecode and return the results.
-    """
+    """Helper command to perform a lint scan of the sourcecode and return the results."""
+
     description = "perform a lint scan of the code"
     user_options = []
 
     def initialize_options(self):
-        """ options setup """
+        """Initialize options setup."""
         if not os.path.exists('./build'):
             os.mkdir('./build')
 
@@ -91,7 +90,7 @@ class LintCommand(Command):
         pass
 
     def run(self):
-        """ command runner """
+        """Run command."""
         scanners = [s for s in dir(self) if s.find('__try') >= 0]
         for scanner in scanners:
             if getattr(self, scanner)():
@@ -108,35 +107,35 @@ class LintCommand(Command):
 
     def _try_pychecker(self):
         try:
-            import pychecker
+            import pychecker  # noqa F401
             sys.argv = """pychecker pymodbus/*.py""".split()
-            main()
+            main()  # noqa F821
             return True
         except Exception:
             return False
 
     def _try_pylint(self):
         try:
-            import pylint
+            import pylint  # noqa F401
             sys.argv = """pylint pymodbus/*.py""".split()
-            main()
+            main()  # noqa F821
             return True
         except Exception:
             return False
 
 
 class Python3Command(Command):
-    """ Helper command to scan for potential python 3
-    errors.
+    """Helper command to scan for potential python 3 errors.
 
     ./setup.py scan_2to3 > build/diffs_2to3 build/report_2to3
     """
+
     description = "perform 2to3 scan of the code"
     user_options = []
     directories = ['pymodbus', 'test', 'examples']
 
     def initialize_options(self):
-        """ options setup """
+        """Initialize options setup."""
         if not os.path.exists('./build'):
             os.mkdir('./build')
 
@@ -144,7 +143,7 @@ class Python3Command(Command):
         pass
 
     def run(self):
-        """ command runner """
+        """Run command"""
         self._run_python3()
 
     def _run_python3(self):
@@ -158,15 +157,14 @@ class Python3Command(Command):
 
 
 class Pep8Command(Command):
-    """
-    Helper command to scan for potential pep8 violations
-    """
+    """Helper command to scan for potential pep8 violations."""
+
     description = "perform pep8 scan of the code"
     user_options = []
     directories = ['pymodbus']
 
     def initialize_options(self):
-        """ options setup """
+        """Initialize options setup"""
         if not os.path.exists('./build'):
             os.mkdir('./build')
 
@@ -174,7 +172,7 @@ class Pep8Command(Command):
         pass
 
     def run(self):
-        """ command runner """
+        """Run command."""
         self._run_pep8()
 
     def _run_pep8(self):

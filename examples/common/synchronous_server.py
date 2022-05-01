@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Server Example
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Server Example.
 
 The synchronous server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
@@ -27,13 +26,13 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -104,7 +103,7 @@ def run_server():
     ModbusDeviceIdentification(info_name= {
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),

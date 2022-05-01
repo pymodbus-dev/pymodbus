@@ -1,7 +1,4 @@
-""" Encapsulated Interface (MEI) Transport Messages
------------------------------------------------
-
-"""
+"""Encapsulated Interface (MEI) Transport Messages."""
 import struct
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.pdu import ModbusRequest
@@ -14,7 +11,8 @@ _MCB = ModbusControlBlock()
 
 
 class _OutOfSpaceException(Exception):
-    """ Internal out of space exception. """
+    """Internal out of space exception."""
+
     # This exception exists here as a simple, local way to manage response
     # length control for the only MODBUS command which requires it under
     # standard, non-error conditions. It and the structures associated with
@@ -25,16 +23,19 @@ class _OutOfSpaceException(Exception):
     # restricted to 253 bytes, irrespective of the transport used.
     #
     # See Page 5/50 of MODBUS Application Protocol Specification V1.1b3.
+
     def __init__(self, oid):
         self.oid = oid
         super().__init__()
 
 
-#---------------------------------------------------------------------------#
-# Read Device Information
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Read Device Information
+# ---------------------------------------------------------------------------#
 class ReadDeviceInformationRequest(ModbusRequest):
-    """ This function code allows reading the identification and additional
+    """Read device information.
+
+    This function code allows reading the identification and additional
     information relative to the physical and functional description of a
     remote device, only.
 
@@ -42,12 +43,13 @@ class ReadDeviceInformationRequest(ModbusRequest):
     composed of a set of addressable data elements. The data elements are
     called objects and an object Id identifies them.
     """
+
     function_code = 0x2b
     sub_function_code = 0x0e
     _rtu_frame_size = 7
 
     def __init__(self, read_code=None, object_id=0x00, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param read_code: The device information read code
         :param object_id: The object to read from
@@ -57,24 +59,24 @@ class ReadDeviceInformationRequest(ModbusRequest):
         self.object_id = object_id
 
     def encode(self):
-        """ Encodes the request packet
+        """Encode the request packet.
 
         :returns: The byte encoded packet
         """
         packet = struct.pack('>BBB', self.sub_function_code,
-            self.read_code, self.object_id)
+                             self.read_code, self.object_id)
         return packet
 
     def decode(self, data):
-        """ Decodes data part of the message.
+        """Decode data part of the message.
 
         :param data: The incoming data
         """
         params = struct.unpack('>BBB', data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    def execute(self, context): #NOSONAR pylint: disable=unused-argument
-        """ Run a read exception status request against the store
+    def execute(self, context):  # NOSONAR pylint: disable=unused-argument
+        """Run a read exception status request against the store.
 
         :param context: The datastore to request from
         :returns: The populated response
@@ -85,41 +87,42 @@ class ReadDeviceInformationRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
 
         information = DeviceInformationFactory.get(_MCB,
-            self.read_code, self.object_id)
+                                                   self.read_code, self.object_id)
         return ReadDeviceInformationResponse(self.read_code, information)
 
     def __str__(self):
-        """ Builds a representation of the request
+        """Build a representation of the request.
 
         :returns: The string representation of the request
         """
         params = (self.read_code, self.object_id)
-        return "ReadDeviceInformationRequest(%d,%d)" % params # pylint: disable=consider-using-f-string
+        return "ReadDeviceInformationRequest(%d,%d)" % params  # pylint: disable=consider-using-f-string
 
 
 class ReadDeviceInformationResponse(ModbusResponse):
     """Read device information response."""
+
     function_code = 0x2b
     sub_function_code = 0x0e
 
     @classmethod
     def calculateRtuFrameSize(cls, buffer):
-        """ Calculates the size of the message
+        """Calculate the size of the message
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the response.
         """
-        size  = 8 # skip the header information
+        size = 8  # skip the header information
         count = int(buffer[7])
 
         while count > 0:
-            _, object_length = struct.unpack('>BB', buffer[size:size+2])
+            _, object_length = struct.unpack('>BB', buffer[size:size + 2])
             size += object_length + 2
             count -= 1
         return size + 2
 
     def __init__(self, read_code=None, information=None, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param read_code: The device information read code
         :param information: The requested information request
@@ -134,7 +137,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.space_left = None
 
     def _encode_object(self, object_id, data):
-        """ Internal encode object. """
+        """Encode object."""
         self.space_left -= (2 + len(data))
         if self.space_left <= 0:
             raise _OutOfSpaceException(object_id)
@@ -147,7 +150,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         return encoded_obj
 
     def encode(self):
-        """ Encodes the response
+        """Encode the response.
 
         :returns: The byte encoded message
         """
@@ -172,7 +175,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         return packet
 
     def decode(self, data):
-        """ Decodes a the response
+        """Decode a the response.
 
         :param data: The packet data to decode
         """
@@ -180,29 +183,30 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.sub_function_code, self.read_code = params[0:2]
         self.conformity, self.more_follows = params[2:4]
         self.next_object_id, self.number_of_objects = params[4:6]
-        self.information, count = {}, 6 # skip the header information
+        self.information, count = {}, 6  # skip the header information
 
         while count < len(data):
-            object_id, object_length = struct.unpack('>BB', data[count:count+2])
+            object_id, object_length = struct.unpack('>BB', data[count:count + 2])
             count += object_length + 2
             if object_id not in self.information.keys():
-                self.information[object_id] = data[count-object_length:count]
+                self.information[object_id] = data[count - object_length:count]
             elif isinstance(self.information[object_id], list):
-                self.information[object_id].append(data[count-object_length:count])
+                self.information[object_id].append(data[count - object_length:count])
             else:
                 self.information[object_id] = [self.information[object_id],
                                                data[count - object_length:count]]
 
     def __str__(self):
-        """ Builds a representation of the response
+        """Build a representation of the response.
 
         :returns: The string representation of the response
         """
         return f"ReadDeviceInformationResponse({self.read_code})"
 
-#---------------------------------------------------------------------------#
-# Exported symbols
-#---------------------------------------------------------------------------#
+
+# ---------------------------------------------------------------------------#
+#  Exported symbols
+# ---------------------------------------------------------------------------#
 __all__ = [
     "ReadDeviceInformationRequest", "ReadDeviceInformationResponse",
 ]

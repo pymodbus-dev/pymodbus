@@ -18,12 +18,11 @@ _logger = logging.getLogger(__name__)
 # Context
 # --------------------------------------------------------------------------- #
 class SqlSlaveContext(IModbusSlaveContext):
-    """ This creates a modbus data model with each data access
-    stored in its own personal block.
-    """
+    """This creates a modbus data model with each data access in its a block."""
 
-    def __init__(self, *args, **kwargs): # pylint: disable=unused-argument
-        """ Initializes the datastores
+    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+        """Initialize the datastores.
+
         :param kwargs: Each element is a ModbusDataBlock
         """
         self.table = kwargs.get('table', 'pymodbus')
@@ -31,18 +30,20 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._db_create(self.table, self.database)
 
     def __str__(self):
-        """ Returns a string representation of the context
+        """Return a string representation of the context.
+
         :returns: A string representation of the context
         """
         return "Modbus Slave Context"
 
     def reset(self):
-        """ Resets all the datastores to their default values """
+        """Reset all the datastores to their default values."""
         self._metadata.drop_all()
         self._db_create(self.table, self.database)
 
     def validate(self, fx, address, count=1):
-        """ Validates the request to make sure it is in range
+        """Validate the request to make sure it is in range.
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
@@ -54,7 +55,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         return self._validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
-        """ Get `count` values from datastore
+        """Get `count` values from datastore.
+
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
@@ -66,7 +68,8 @@ class SqlSlaveContext(IModbusSlaveContext):
         return self._get(self.decode(fx), address, count)
 
     def setValues(self, fx, address, values, update=True):
-        """ Sets the datastore with the supplied values
+        """Set the datastore with the supplied values.
+
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
@@ -84,7 +87,8 @@ class SqlSlaveContext(IModbusSlaveContext):
     # Sqlite Helper Methods
     # ----------------------------------------------------------------------- #
     def _db_create(self, table, database):
-        """ A helper method to initialize the database and handles
+        """Initialize the database and handles.
+
         :param table: The table name to create
         :param database: The database uri to use
         """
@@ -98,8 +102,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
 
-    def _get(self, type, offset, count): # pylint: disable=redefined-builtin
-        """ Internal get.
+    def _get(self, type, offset, count):  # pylint: disable=redefined-builtin
+        """Get.
+
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read
@@ -114,8 +119,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(self, type, offset, values, prefix=''): # pylint: disable=no-self-use,redefined-builtin
-        """ A helper method to generate the sql update context
+    def _build_set(self, type, offset, values, prefix=''):  # pylint: disable=no-self-use,redefined-builtin
+        """Generate the sql update context.
+
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -130,13 +136,14 @@ class SqlSlaveContext(IModbusSlaveContext):
             })
         return result
 
-    def _check(self, type, offset, values): #NOSONAR pylint: disable=unused-argument,redefined-builtin
-        """ Internal check. """
+    def _check(self, type, offset, values):  # NOSONAR pylint: disable=unused-argument,redefined-builtin
+        """Check."""
         result = self._get(type, offset, count=1)
-        return False if len(result) > 0 else True # pylint: disable=simplifiable-if-expression
+        return False if len(result) > 0 else True  # pylint: disable=simplifiable-if-expression
 
-    def _set(self, type, offset, values): # pylint: disable=redefined-builtin
-        """ Internal set.
+    def _set(self, type, offset, values):  # pylint: disable=redefined-builtin
+        """Set.
+
         :param key: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -148,8 +155,9 @@ class SqlSlaveContext(IModbusSlaveContext):
             return result.rowcount == len(values)
         return False
 
-    def _update(self, type, offset, values): # pylint: disable=redefined-builtin
-        """ Internal update.
+    def _update(self, type, offset, values):  # pylint: disable=redefined-builtin
+        """Update.
+
         :param type: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
@@ -162,8 +170,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
-    def _validate(self, type, offset, count): # pylint: disable=redefined-builtin
-        """ Internal validate.
+    def _validate(self, type, offset, count):  # pylint: disable=redefined-builtin
+        """Validate.
+
         :param type: The key prefix to use
         :param offset: The address offset to start at
         :param count: The number of bits to read

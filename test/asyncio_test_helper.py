@@ -3,8 +3,8 @@
 import functools
 
 
-def _yielded_return(return_value, *args): # pylint: disable=unused-argument
-    """Generator factory function with return value."""
+def _yielded_return(return_value, *args):  # pylint: disable=unused-argument
+    """Return Generator factory function with return value."""
 
     async def _():
         """Actual generator producing value."""
@@ -16,7 +16,7 @@ def _yielded_return(return_value, *args): # pylint: disable=unused-argument
 
 
 def return_as_coroutine(return_value=None):
-    """Creates a function that behaves like an asyncio coroutine and returns the given value.
+    """Create a function that behaves like an asyncio coroutine and returns the given value.
 
     Typically used as a side effect of a mocked coroutine like this:
 
@@ -37,8 +37,7 @@ def return_as_coroutine(return_value=None):
 
 
 def run_coroutine(coro):
-    """Runs a coroutine as top-level task by iterating through all yielded steps."""
-
+    """Run a coroutine as top-level task by iterating through all yielded steps."""
     result = None
     try:
         # step through all parts of coro without scheduling anything else:
@@ -47,5 +46,5 @@ def run_coroutine(coro):
     except StopIteration as exc:
         # coro reached end pass on its return value:
         return exc.value
-    except: # pylint: disable=try-except-raise
+    except:  # noqa E722 pylint: disable=try-except-raise
         raise

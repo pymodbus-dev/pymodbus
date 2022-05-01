@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Server Example with Custom functions
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Server Example with Custom functions.
 
 Implements a custom function code not in standard modbus function code list
 and its response which otherwise would throw  `IllegalFunction (0x1)` error.
@@ -61,7 +60,7 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from custom_message import CustomModbusRequest # pylint: disable=import-error
+from custom_message import CustomModbusRequest  # pylint: disable=import-error
 
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
@@ -78,13 +77,13 @@ from pymodbus.datastore import (
 
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
+    """Run server."""
     store = ModbusSlaveContext(
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
@@ -103,7 +102,7 @@ def run_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),

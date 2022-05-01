@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Server Example
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Server Example.
 
 The asynchronous server is a high performance implementation using the
 twisted library as its backend.  This allows it to scale to many thousands
@@ -11,7 +10,7 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 import logging
 
-from custom_message import CustomModbusRequest # pylint: disable=import-error
+from custom_message import CustomModbusRequest  # pylint: disable=import-error
 
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
@@ -20,24 +19,24 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-#from pymodbus.transaction import ( #NOSONAR
+# from pymodbus.transaction import ( #NOSONAR
 #    ModbusRtuFramer, #NOSONAR
 #    ModbusAsciiFramer, #NOSONAR
 #    ModbusBinaryFramer, #NOSONAR
-#) #NOSONAR
+# ) #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_async_server():
-    """ Run async server. """
+    """Run async server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -111,7 +110,7 @@ def run_async_server():
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
     })
 

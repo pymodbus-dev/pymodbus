@@ -1,4 +1,4 @@
-""" Helper Module for REPL actions.
+"""Helper Module for REPL actions.
 
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
@@ -54,9 +54,10 @@ CLIENT_ATTRIBUTES = []
 
 
 class Command:
-    """ Class representing Commands to be consumed by Completer. """
+    """Class representing Commands to be consumed by Completer."""
+
     def __init__(self, name, signature, doc, unit=False):
-        """ Initialize
+        """Initialize.
 
         :param name: Name of the command
         :param signature: inspect object
@@ -77,7 +78,7 @@ class Command:
             self.args.update(**DEFAULT_KWARGS)
 
     def _create_help(self):
-        """ Internal create help. """
+        """Create help."""
         doc = filter(lambda d: d, self.doc)
         cmd_help = list(filter(
             lambda x: not x.startswith(":param") and not x.startswith(
@@ -85,7 +86,7 @@ class Command:
         return " ".join(cmd_help).strip()
 
     def _create_arg_help(self):
-        """ Internal create arg help. """
+        """Create arg help."""
         param_dict = {}
         params = list(filter(lambda d: d.strip().startswith(":param"),
                              self.doc))
@@ -95,7 +96,7 @@ class Command:
         return param_dict
 
     def create_completion(self):
-        """ Create command completion meta data.
+        """Create command completion meta data.
 
         :return:
         """
@@ -116,14 +117,14 @@ class Command:
         return words
 
     def get_completion(self):
-        """ Gets a list of completions.
+        """Get a list of completions.
 
         :return:
         """
         return self.args.keys()
 
     def get_meta(self, cmd):
-        """ Get Meta info of a given command.
+        """Get Meta info of a given command.
 
         :param cmd: Name of command.
         :return: Dict containing meta info.
@@ -133,13 +134,14 @@ class Command:
         return cmd, self.param_help.get(cmd, '')
 
     def __str__(self):
+        """Return string representation."""
         if self.doc:
-            return "Command {:>50}{:<20}".format(self.name, self.doc) # pylint: disable=consider-using-f-string
+            return "Command {:>50}{:<20}".format(self.name, self.doc)  # pylint: disable=consider-using-f-string
         return f"Command {self.name}"
 
 
 def _get_requests(members):
-    """ Internal get requests. """
+    """Get requests."""
     commands = list(filter(lambda x: (x[0] not in EXCLUDE
                                       and x[0] not in CLIENT_METHODS
                                       and callable(x[1])),
@@ -154,9 +156,8 @@ def _get_requests(members):
 
 
 def _get_client_methods(members):
-    """ Internal get client methods. """
-    commands = list(filter(lambda x: (x[0] not in EXCLUDE
-                                      and x[0] in CLIENT_METHODS),
+    """Get client methods."""
+    commands = list(filter(lambda x: (x[0] not in EXCLUDE and x[0] in CLIENT_METHODS),
                            members))
     commands = {
         "client.{c[0]}":
@@ -168,22 +169,22 @@ def _get_client_methods(members):
 
 
 def _get_client_properties(members):
-    """ Internal get client properties. """
-    global CLIENT_ATTRIBUTES # pylint: disable=global-variable-not-assigned
+    """Get client properties."""
+    global CLIENT_ATTRIBUTES  # pylint: disable=global-variable-not-assigned
     commands = list(filter(lambda x: not callable(x[1]), members))
     commands = {
         f"client.{c[0]}":
             Command(f"client.{c[0]}", None, "Read Only!", unit=False)
-        for c in commands if (not c[0].startswith("_")
-                              and isinstance(c[1], (str, int, float)))
+        for c in commands if (not c[0].startswith("_") and isinstance(c[1], (str, int, float)))
     }
     CLIENT_ATTRIBUTES.extend(list(commands.keys()))
     return commands
 
 
 def get_commands(client):
-    """ Helper method to retrieve all required methods and attributes of a client \
-    object and convert it to commands.
+    """Retrieve all required methods and attributes.
+
+    Of a client object and convert it to commands.
 
     :param client: Modbus Client object.
     :return:
@@ -199,8 +200,7 @@ def get_commands(client):
         f"result.{c[0]}":
             Command(f"result.{c[0]}", argspec(c[1]),
                     inspect.getdoc(c[1]))
-        for c in result_commands if (not c[0].startswith("_")
-                                     and c[0] != "print_result")
+        for c in result_commands if (not c[0].startswith("_") and c[0] != "print_result")
     }
     commands.update(requests)
     commands.update(client_methods)
@@ -210,12 +210,14 @@ def get_commands(client):
 
 
 class Result:
-    """ Represent result command. """
+    """Represent result command."""
+
     function_code = None
     data = None
 
     def __init__(self, result):
-        """ Initialize.
+        """Initialize.
+
         :param result: Response of a modbus command.
         """
         if isinstance(result, dict):  # Modbus response
@@ -225,7 +227,7 @@ class Result:
             self.data = result
 
     def decode(self, formatters, byte_order='big', word_order='big'):
-        """ Decode the register response to known formatters.
+        """Decode the register response to known formatters.
 
         :param formatters: int8/16/32/64, uint8/16/32/64, float32/64
         :param byte_order: little/big
@@ -258,14 +260,14 @@ class Result:
             self.print_result(decoded)
 
     def raw(self):
-        """ Return raw result dict.
+        """Return raw result dict.
 
         :return:
         """
         self.print_result()
 
     def _process_dict(self, use_dict):
-        """ Internal process dict. """
+        """Process dict."""
         new_dict = OrderedDict()
         for k, v_item in use_dict.items():
             if isinstance(v_item, bytes):
@@ -274,12 +276,12 @@ class Result:
                 v_item = self._process_dict(v_item)
             elif isinstance(v_item, (list, tuple)):
                 v_item = [v1.decode('utf-8') if isinstance(v1, bytes) else v1
-                     for v1 in v_item ]
+                          for v1 in v_item]
             new_dict[k] = v_item
         return new_dict
 
     def print_result(self, data=None):
-        """ Prettu print result object.
+        """Print result object pretty.
 
         :param data: Data to be printed.
         :return:

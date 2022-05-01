@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Server With Callbacks
---------------------------------------------------------------------------
+"""Pymodbus Server With Callbacks.
 
 This is an example of adding callbacks to a running modbus server
 when a value is written to it. In order for this to work, it needs
@@ -32,13 +31,13 @@ log.setLevel(logging.DEBUG)
 
 
 class CallbackDataBlock(ModbusSparseDataBlock):
-    """ A datablock that stores the new value in memory
-    and passes the operation to a message queue for further
-    processing.
+    """A datablock that stores the new value in memory,
+
+    and passes the operation to a message queue for further processing.
     """
 
     def __init__(self, devices, queue):
-        """ Initialize. """
+        """Initialize."""
         self.devices = devices
         self.queue = queue
 
@@ -46,8 +45,8 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         values[0xbeef] = len(values)  # the number of devices
         super().__init__(values)
 
-    def setValues(self, address, value): # pylint: disable=arguments-differ
-        """ Sets the requested values of the datastore
+    def setValues(self, address, value):  # pylint: disable=arguments-differ
+        """Set the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
@@ -61,8 +60,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
 
 
 def rescale_value(value):
-    """ Rescale the input value from the range
-    of 0..100 to -3200..3200.
+    """Rescale the input value from the range of 0..100 to -3200..3200.
 
     :param value: The input value to scale
     :returns: The rescaled value
@@ -73,8 +71,7 @@ def rescale_value(value):
 
 
 def device_writer(queue):
-    """ A worker process that processes new messages
-    from a queue to write to device outputs
+    """Process new messages from a queue to write to device outputs
 
     :param queue: The queue to get new messages from
     """
@@ -93,8 +90,7 @@ def device_writer(queue):
 
 
 def read_device_map(path):
-    """ A helper method to read the device
-    path to address mapping from file::
+    """Read the device path to address mapping from file::
 
        0x0001,/dev/device1
        0x0002,/dev/device2
@@ -103,7 +99,7 @@ def read_device_map(path):
     :returns: The input mapping file
     """
     devices = {}
-    with open(path, 'r') as stream: # pylint: disable=unspecified-encoding
+    with open(path, 'r') as stream:  # pylint: disable=unspecified-encoding
         for line in stream:
             piece = line.strip().split(',')
             devices[int(piece[0], 16)] = piece[1]
@@ -111,7 +107,7 @@ def read_device_map(path):
 
 
 def run_callback_server():
-    """ Run callback server. """
+    """Run callback server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -127,7 +123,7 @@ def run_callback_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'pymodbus Server',
         'ModelName': 'pymodbus Server',
         'MajorMinorRevision': version.short(),

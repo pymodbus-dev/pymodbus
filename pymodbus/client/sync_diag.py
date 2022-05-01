@@ -30,8 +30,9 @@ LOG_MSGS = {
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
-    """ Variant of pymodbus.client.sync.ModbusTcpClient with additional
-    logging to diagnose network issues.
+    """Variant of pymodbus.client.sync.ModbusTcpClient.
+
+    With additional logging to diagnose network issues.
 
     The following events are logged:
 
@@ -58,7 +59,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
     def __init__(self, host='127.0.0.1', port=Defaults.Port,
                  framer=ModbusSocketFramer, **kwargs):
-        """ Initialize a client instance
+        """Initialize a client instance.
 
         The keys of LOG_MSGS can be used in kwargs to customize the messages.
 
@@ -83,7 +84,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.__dict__[k_item] = kwargs.get(k_item, v_item)
 
     def connect(self):
-        """ Connect to the modbus tcp server
+        """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -101,8 +102,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """Close the underlying socket connection."""
         if self.socket:
             _logger.info(self.discon_msg, self)
             self.socket.close()
@@ -130,7 +130,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             raise ConnectionException from exc
 
     def _log_delayed_response(self, result_len, size, delay):
-        """ Internal log delayed response. """
+        """Log delayed response."""
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
         elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
@@ -140,7 +140,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             _logger.warning(self.delay_msg, delay, result_len, size)
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
@@ -148,7 +148,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
 
 def get_client():
-    """ Returns an appropriate client based on logging level
+    """Return an appropriate client based on logging level.
 
     This will be ModbusTcpDiagClient by default, or the parent class
     if the log level is such that the diagnostic client will not log

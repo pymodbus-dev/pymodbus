@@ -1,5 +1,4 @@
-""" Modbus Utilities
------------------
+"""Modbus Utilities.
 
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
@@ -7,8 +6,9 @@ data computing checksums, and decode checksums.
 import struct
 
 
-class ModbusTransactionState: # pylint: disable=too-few-public-methods
-    """ Modbus Client States. """
+class ModbusTransactionState:  # pylint: disable=too-few-public-methods
+    """Modbus Client States."""
+
     IDLE = 0
     SENDING = 1
     WAITING_FOR_REPLY = 2
@@ -40,8 +40,7 @@ class ModbusTransactionState: # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 
 def default(value):
-    """ Given a python object, return the default value
-    of that object.
+    """Return the default value of object.
 
     :param value: The value to get the default of
     :returns: The default value
@@ -50,7 +49,8 @@ def default(value):
 
 
 def dict_property(store, index):
-    """ Helper to create class properties from a dictionary.
+    """Create class properties from a dictionary.
+
     Basically this allows you to remove a lot of possible
     boilerplate code.
 
@@ -76,7 +76,7 @@ def dict_property(store, index):
 # Bit packing functions
 # --------------------------------------------------------------------------- #
 def pack_bitstring(bits):
-    """ Creates a string out of an array of bits
+    """Create a string out of an array of bits.
 
     :param bits: A bit array
 
@@ -103,7 +103,7 @@ def pack_bitstring(bits):
 
 
 def unpack_bitstring(string):
-    """ Creates bit array out of a string
+    """Create bit array out of a string.
 
     :param string: The modbus data packet to decode
 
@@ -123,7 +123,8 @@ def unpack_bitstring(string):
 
 
 def make_byte_string(byte_string):
-    """ Returns byte string from a given string, python3 specific fix
+    """Return byte string from a given string, python3 specific fix.
+
     :param s:
     :return:
     """
@@ -133,8 +134,10 @@ def make_byte_string(byte_string):
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
+
+
 def __generate_crc16_table():
-    """ Generates a crc16 lookup table
+    """Generate a crc16 lookup table.
 
     .. note:: This will only be generated once
     """
@@ -144,17 +147,20 @@ def __generate_crc16_table():
         for _ in range(8):
             if (byte ^ crc) & 0x0001:
                 crc = (crc >> 1) ^ 0xa001
-            else: crc >>= 1
+            else:
+                crc >>= 1
             byte >>= 1
         result.append(crc)
     return result
 
+
 __crc16_table = __generate_crc16_table()
 
 
-def computeCRC(data): #NOSONAR pylint: disable=invalid-name
-    """ Computes a crc16 on the passed in string. For modbus,
-    this is only used on the binary serial protocols (in this
+def computeCRC(data):  # NOSONAR pylint: disable=invalid-name
+    """Compute a crc16 on the passed in string.
+
+    For modbus, this is only used on the binary serial protocols (in this
     case RTU).
 
     The difference between modbus's crc16 and a normal crc16
@@ -171,8 +177,8 @@ def computeCRC(data): #NOSONAR pylint: disable=invalid-name
     return swapped
 
 
-def checkCRC(data, check): #NOSONAR pylint: disable=invalid-name
-    """ Checks if the data matches the passed in CRC
+def checkCRC(data, check):  # NOSONAR pylint: disable=invalid-name
+    """Check if the data matches the passed in CRC.
 
     :param data: The data to create a crc16 of
     :param check: The CRC to validate
@@ -181,9 +187,10 @@ def checkCRC(data, check): #NOSONAR pylint: disable=invalid-name
     return computeCRC(data) == check
 
 
-def computeLRC(data): #NOSONAR pylint: disable=invalid-name
-    """ Used to compute the longitudinal redundancy check
-    against a string. This is only used on the serial ASCII
+def computeLRC(data):  # NOSONAR pylint: disable=invalid-name
+    """Use to compute the longitudinal redundancy check against a string.
+
+    This is only used on the serial ASCII
     modbus protocol. A full description of this implementation
     can be found in appendex B of the serial line modbus description.
 
@@ -196,8 +203,8 @@ def computeLRC(data): #NOSONAR pylint: disable=invalid-name
     return lrc & 0xff
 
 
-def checkLRC(data, check): #NOSONAR pylint: disable=invalid-name
-    """ Checks if the passed in data matches the LRC
+def checkLRC(data, check):  # NOSONAR pylint: disable=invalid-name
+    """Check if the passed in data matches the LRC.
 
     :param data: The data to calculate
     :param check: The LRC to validate
@@ -206,8 +213,8 @@ def checkLRC(data, check): #NOSONAR pylint: disable=invalid-name
     return computeLRC(data) == check
 
 
-def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
-    """ Calculates the size of the frame based on the byte count.
+def rtuFrameSize(data, byte_count_pos):  # NOSONAR pylint: disable=invalid-name
+    """Calculate the size of the frame based on the byte count.
 
     :param data: The buffer containing the frame.
     :param byte_count_pos: The index of the byte count in the buffer.
@@ -230,13 +237,15 @@ def rtuFrameSize(data, byte_count_pos): #NOSONAR pylint: disable=invalid-name
 
 
 def hexlify_packets(packet):
-    """ Returns hex representation of bytestring received
+    """Return hex representation of bytestring received.
+
     :param packet:
     :return:
     """
     if not packet:
         return ''
     return " ".join([hex(int(x)) for x in packet])
+
 
 # --------------------------------------------------------------------------- #
 # Exported symbols

@@ -1,11 +1,9 @@
-""" TLS helper for Modbus TLS Client
-------------------------------------------
-
-"""
+"""TLS helper for Modbus TLS Client."""
 import ssl
 
+
 def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None):
-    """ Provide the SSLContext for ModbusTlsClient
+    """Provide the SSLContext for ModbusTlsClient.
 
     If the user defined SSLContext is not passed in, sslctx_provider will
     produce a default one.

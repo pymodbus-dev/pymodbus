@@ -11,18 +11,18 @@ from pymodbus.transaction import ModbusTlsFramer
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTLSClient: # pylint: disable=too-few-public-methods
-    """ Actual Async TLS Client to be used.
+class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
+    """Actual Async TLS Client to be used.
 
     To use do::
-
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort, # pylint: disable=too-many-arguments
+
+    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort,  # pylint: disable=too-many-arguments
                 framer=None, sslctx=None, certfile=None, keyfile=None,
                 password=None, source_address=None, timeout=None, **kwargs):
-        """ Scheduler to use:
-            - async_io (asyncio)
+        """Use scheduler async_io (asyncio)
+
         :param scheduler: Backend to use
         :param host: Target server's name, also matched for certificate
         :param port: Port

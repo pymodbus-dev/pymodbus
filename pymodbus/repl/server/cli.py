@@ -1,4 +1,6 @@
-""" Copyright (c) 2020 by RiptideIO
+"""Repl server cli.
+
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import logging
@@ -17,13 +19,13 @@ from prompt_toolkit.formatted_text import HTML
 _logger = logging.getLogger(__name__)
 
 TITLE = (
-"__________                          .______.                    _________"
-"\______   \___.__. _____   ____   __| _/\_ |__  __ __  ______  /   _____/ ______________  __ ___________" # pylint: disable=anomalous-backslash-in-string
-" |     ___<   |  |/     \ /  _ \ / __ |  | __ \|  |  \/  ___/  \_____  \_/ __ \_  __ \  \/ // __ \_  __ \\" # pylint: disable=anomalous-backslash-in-string
-" |    |    \___  |  Y Y  (  <_> ) /_/ |  | \_\ \  |  /\___ \   /        \  ___/|  | \/\   /\  ___/|  | \/" # pylint: disable=anomalous-backslash-in-string
-" |____|    / ____|__|_|  /\____/\____ |  |___  /____//____  > /_______  /\___  >__|    \_/  \___  >__|" # pylint: disable=anomalous-backslash-in-string
-"           \/          \/            \/      \/           \/          \/     \/                 \/" # pylint: disable=anomalous-backslash-in-string
-"                                                                                                1.0.0"
+    r"__________                          .______.                    _________"
+    r"\______   \___.__. _____   ____   __| _/\_ |__  __ __  ______  /   _____/ ______________  __ ___________"
+    r" |     ___<   |  |/     \ /  _ \ / __ |  | __ \|  |  \/  ___/  \_____  \_/ __ \_  __ \  \/ // __ \_  __ \\"
+    r" |    |    \___  |  Y Y  (  <_> ) /_/ |  | \_\ \  |  /\___ \   /        \  ___/|  | \/\   /\  ___/|  | \/"
+    r" |____|    / ____|__|_|  /\____/\____ |  |___  /____//____  > /_______  /\___  >__|    \_/  \___  >__|"
+    r"           \/          \/            \/      \/           \/          \/     \/                 \/"
+    r"                                                                                                1.0.0"
 )
 
 SMALL_TITLE = "Pymodbus server..."
@@ -61,7 +63,7 @@ USAGE = "manipulator response_type=|normal|error|delayed|empty|stray \n" \
         "5. To disable response manipulation\n\t" \
         "   <ansiblue>manipulator response_type=normal</ansiblue>"
 COMMAND_HELPS = {
-   "manipulator": f"Manipulate response from server.\nUsage: {USAGE}",
+    "manipulator": f"Manipulate response from server.\nUsage: {USAGE}",
     "clear": "Clears screen"
 
 }
@@ -69,48 +71,49 @@ COMMAND_HELPS = {
 
 STYLE = Style.from_dict({"": "cyan"})
 CUSTOM_FORMATTERS = [
-        formatters.Label(suffix=": "),
-        formatters.Bar(start="|", end="|", sym_a="#", sym_b="#", sym_c="-"),
-        formatters.Text(" "),
-        formatters.Text(" "),
-        formatters.TimeElapsed(),
-        formatters.Text("  "),
-    ]
+    formatters.Label(suffix=": "),
+    formatters.Bar(start="|", end="|", sym_a="#", sym_b="#", sym_c="-"),
+    formatters.Text(" "),
+    formatters.Text(" "),
+    formatters.TimeElapsed(),
+    formatters.Text("  "),
+]
 
 
 def info(message):
-    """ Show info. """
+    """Show info."""
     if not isinstance(message, str):
         message = str(message)
     click.secho(message, fg="green")
 
 
 def warning(message):
-    """ Show warning. """
+    """Show warning."""
     click.secho(str(message), fg="yellow")
 
 
 def error(message):
-    """ Show error. """
+    """Show error."""
     click.secho(str(message), fg="red")
 
 
 def get_terminal_width():
-    """ Get terminal width. """
+    """Get terminal width."""
     return shutil.get_terminal_size()[0]
 
 
 def print_help():
-    """ Print help. """
+    """Print help."""
     print_formatted_text(HTML("<u>Available commands:</u>"))
     for cmd, hlp in sorted(COMMAND_HELPS.items()):
         print_formatted_text(
-            HTML("<skyblue>{:45s}</skyblue><seagreen>{:100s}</seagreen>".format(cmd, hlp)) # pylint: disable=consider-using-f-string
+            HTML("<skyblue>{:45s}</skyblue><seagreen>{:100s}</seagreen>".format(cmd, hlp)  # pylint: disable=C0209
+                 )
         )
 
 
-async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
-    """ CLI interactive shell. """
+async def interactive_shell(server):  # NOSONAR pylint: disable=too-complex
+    """Run CLI interactive shell."""
     col = get_terminal_width()
     max_len = max([len(t) for t in TITLE.split("\n")])
     if col > max_len:
@@ -124,7 +127,7 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
                             bottom_toolbar=BOTTOM_TOOLBAR)
 
     # Run echo loop. Read text from stdin, and reply it back.
-    while True: # pylint: disable=too-many-nested-blocks
+    while True:  # pylint: disable=too-many-nested-blocks
         try:
             invalid_command = False
             result = await session.prompt_async()
@@ -157,7 +160,7 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
                             arg, value = arg.split("=")
                         elif arg in COMMAND_ARGS:
                             try:
-                                value = args[index+1]
+                                value = args[index + 1]
                                 skip_next = True
                             except IndexError:
                                 error(f"Missing value for argument - {arg}")
@@ -169,8 +172,8 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
                                 warning(f"Invalid response type request - {value}")
                                 warning(f"Choose from {RESPONSE_TYPES}")
                                 valid = False
-                        elif arg in set(["error_code", "delay_by", # pylint: disable=confusing-consecutive-elif
-                                     "clear_after", "data_len"]):
+                        elif arg in set(["error_code", "delay_by",  # pylint: disable=confusing-consecutive-elif
+                                         "clear_after", "data_len"]):
                             try:
                                 value = int(value)
                             except ValueError:
@@ -189,7 +192,7 @@ async def interactive_shell(server): #NOSONAR pylint: disable=too-complex
 
 
 async def main(server):
-    """Main to run."""
+    """Run main."""
     # with patch_stdout():
     try:
         await interactive_shell(server)

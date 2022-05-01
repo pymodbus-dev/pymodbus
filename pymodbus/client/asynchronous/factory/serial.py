@@ -1,5 +1,4 @@
-""" Factory to create asynchronous serial clients based on twisted/tornado/asyncio
-"""
+"""Factory to create asynchronous serial clients based on twisted/tornado/asyncio."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
@@ -16,34 +15,36 @@ _logger = logging.getLogger(__name__)
 
 
 def reactor_factory(port, framer, **kwargs):
-    """Factory to create twisted serial asynchronous client
+    """Create twisted serial asynchronous client.
+
     :param port: Serial port
     :param framer: Modbus Framer
     :param kwargs:
     :return: event_loop_thread and twisted serial client
     """
-    from twisted.internet import reactor # pylint: disable=import-outside-toplevel
-    from twisted.internet.serialport import SerialPort # pylint: disable=import-outside-toplevel
-    from twisted.internet.protocol import ClientFactory # pylint: disable=import-outside-toplevel
+    from twisted.internet import reactor  # pylint: disable=import-outside-toplevel
+    from twisted.internet.serialport import SerialPort  # pylint: disable=import-outside-toplevel
+    from twisted.internet.protocol import ClientFactory  # pylint: disable=import-outside-toplevel
 
     class SerialClientFactory(ClientFactory):
         """Define serial client factory."""
+
         def __init__(self, framer, proto_cls):
-            """ Remember things necessary for building a protocols """
+            """Remember things necessary for building a protocols."""
             self.proto_cls = proto_cls
             self.framer = framer
 
-        def buildProtocol(self): # pylint: disable=arguments-differ
-            """ Create a protocol and start the reading cycle """
+        def buildProtocol(self):  # pylint: disable=arguments-differ
+            """Create a protocol and start the reading cycle-"""
             proto = self.proto_cls(self.framer)
             proto.factory = self
             return proto
 
-    class SerialModbusClient(SerialPort): # pylint: disable=abstract-method
+    class SerialModbusClient(SerialPort):  # pylint: disable=abstract-method
         """Define serial client."""
 
         def __init__(self, framer, *args, **kwargs):
-            """ Setup the client and start listening on the serial port
+            """Initialize the client and start listening on the serial port.
 
             :param factory: The factory to build clients with
             """
@@ -52,7 +53,7 @@ def reactor_factory(port, framer, **kwargs):
             proto = SerialClientFactory(framer, proto_cls).buildProtocol()
             SerialPort.__init__(self, proto, *args, **kwargs)
 
-    proto = EventLoopThread("reactor", reactor.run, reactor.stop, # pylint: disable=no-member
+    proto = EventLoopThread("reactor", reactor.run, reactor.stop,  # pylint: disable=no-member
                             installSignalHandlers=0)
     ser_client = SerialModbusClient(framer, port, reactor, **kwargs)
 
@@ -60,16 +61,16 @@ def reactor_factory(port, framer, **kwargs):
 
 
 def io_loop_factory(port=None, framer=None, **kwargs):
-    """ Factory to create Tornado based asynchronous serial clients
+    """Create Tornado based asynchronous serial clients.
+
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs:
     :return: event_loop_thread and tornado future
     """
-
-    from tornado.ioloop import IOLoop # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import (AsyncModbusSerialClient as # pylint: disable=import-outside-toplevel
-                                               Client)
+    from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
+    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
+        AsyncModbusSerialClient as Client)  # pylint: disable=import-outside-toplevel
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
@@ -82,7 +83,8 @@ def io_loop_factory(port=None, framer=None, **kwargs):
 
 
 def async_io_factory(port=None, framer=None, **kwargs):
-    """ Factory to create asyncio based asynchronous serial clients
+    """Create asyncio based asynchronous serial clients.
+
     :param port:  Serial port
     :param framer: Modbus Framer
     :param kwargs: Serial port options
@@ -99,7 +101,7 @@ def async_io_factory(port=None, framer=None, **kwargs):
     coro = client.connect
     if not loop.is_running():
         loop.run_until_complete(coro())
-    else:# loop is not asyncio.get_event_loop():
+    else:  # loop is not asyncio.get_event_loop():
         future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
         future.result()
 
@@ -107,7 +109,8 @@ def async_io_factory(port=None, framer=None, **kwargs):
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """Get protocol factory based on the backend scheduler being used.
+
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
     :return:
     """
@@ -121,4 +124,4 @@ def get_factory(scheduler):
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
     txt = f"Invalid Scheduler '{scheduler}'"
-    raise Exception(txt) #NOSONAR
+    raise Exception(txt)  # NOSONAR

@@ -1,5 +1,4 @@
-""" Diagnostic Record Read/Write
-------------------------------
+"""Diagnostic Record Read/Write.
 
 These need to be tied into a the current server context
 or linked to the appropriate data
@@ -16,24 +15,26 @@ from pymodbus.utilities import pack_bitstring
 _MCB = ModbusControlBlock()
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Function Codes Base Classes
-# diagnostic 08, 00-18,20
-#---------------------------------------------------------------------------#
-# TODO Make sure all the data is decoded from the response # pylint: disable=fixme
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Function Codes Base Classes
+#  diagnostic 08, 00-18,20
+# ---------------------------------------------------------------------------#
+#  TODO Make sure all the data is decoded from the response # pylint: disable=fixme
+# ---------------------------------------------------------------------------#
 class DiagnosticStatusRequest(ModbusRequest):
-    """ This is a base class for all of the diagnostic request functions. """
+    """This is a base class for all of the diagnostic request functions."""
+
     function_code = 0x08
     _rtu_frame_size = 8
 
     def __init__(self, **kwargs):
-        """ Base initializer for a diagnostic request. """
+        """Initialize a diagnostic request."""
         ModbusRequest.__init__(self, **kwargs)
         self.message = None
 
     def encode(self):
-        """ Base encoder for a diagnostic response
+        """Encode a diagnostic response.
+
         we encode the data set in self.message
 
         :returns: The encoded packet
@@ -52,38 +53,44 @@ class DiagnosticStatusRequest(ModbusRequest):
         return packet
 
     def decode(self, data):
-        """ Base decoder for a diagnostic request
+        """Decode a diagnostic request.
 
         :param data: The data to decode into the function code
         """
-        self.sub_function_code, self.message = struct.unpack('>HH', data) # pylint: disable=attribute-defined-outside-init
+        self.sub_function_code, self.message = struct.unpack('>HH', data)  # pylint: disable=W0201
 
     def get_response_pdu_size(self):
-        """ Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
+        """Get response pdu size.
+
+        Func_code (1 byte) + Sub function code (2 byte) + Data (2 * N bytes)
         :return:
         """
-        if not isinstance(self.message,list):
+        if not isinstance(self.message, list):
             self.message = [self.message]
         return 1 + 2 + 2 * len(self.message)
 
 
 class DiagnosticStatusResponse(ModbusResponse):
-    """ This is a base class for all of the diagnostic response functions
+    """Diagnostic status.
+
+    This is a base class for all of the diagnostic response functions
 
     It works by performing all of the encoding and decoding of variable
     data and lets the higher classes define what extra data to append
     and how to execute a request
     """
+
     function_code = 0x08
     _rtu_frame_size = 8
 
     def __init__(self, **kwargs):
-        """ Base initializer for a diagnostic response. """
+        """Initialize a diagnostic response."""
         ModbusResponse.__init__(self, **kwargs)
         self.message = None
 
     def encode(self):
-        """ Base encoder for a diagnostic response
+        """Encode diagnostic response.
+
         we encode the data set in self.message
 
         :returns: The encoded packet
@@ -102,20 +109,22 @@ class DiagnosticStatusResponse(ModbusResponse):
         return packet
 
     def decode(self, data):
-        """ Base decoder for a diagnostic response
+        """Decode diagnostic response.
 
         :param data: The data to decode into the function code
         """
-        word_len = len(data)//2
+        word_len = len(data) // 2
         if len(data) % 2:
             word_len += 1
             data = data + b'0'
-        data = struct.unpack('>' + 'H'*word_len, data)
-        self.sub_function_code, self.message = data[0], data[1:] # pylint: disable=attribute-defined-outside-init
+        data = struct.unpack('>' + 'H' * word_len, data)
+        self.sub_function_code, self.message = data[0], data[1:]  # pylint: disable=attribute-defined-outside-init
 
 
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
-    """ A large majority of the diagnostic functions are simple
+    """Return diagnostic status.
+
+    A large majority of the diagnostic functions are simple
     status request functions.  They work by sending 0x0000
     as data and their function code and they are returned
     2 bytes of data.
@@ -125,7 +134,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
     """
 
     def __init__(self, data=0x0000, **kwargs):
-        """ General initializer for a simple diagnostic request
+        """Initialize a simple diagnostic request
 
         The data defaults to 0x0000 if not provided as over half
         of the functions require it.
@@ -135,20 +144,22 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, **kwargs)
         self.message = data
 
-    def execute(self, *args): # pylint: disable=no-self-use
-        """ Base function to raise if not implemented """
+    def execute(self, *args):  # pylint: disable=no-self-use
+        """Raise if not implemented."""
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 
 
 class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
-    """ A large majority of the diagnostic functions are simple
+    """Diagnostic status.
+
+    A large majority of the diagnostic functions are simple
     status request functions.  They work by sending 0x0000
     as data and their function code and they are returned
     2 bytes of data.
     """
 
     def __init__(self, data=0x0000, **kwargs):
-        """ General initializer for a simple diagnostic response
+        """Return a simple diagnostic response.
 
         :param data: The resulting data to return to the client
         """
@@ -156,18 +167,21 @@ class DiagnosticStatusSimpleResponse(DiagnosticStatusResponse):
         self.message = data
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 00
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 00
+# ---------------------------------------------------------------------------#
 class ReturnQueryDataRequest(DiagnosticStatusRequest):
-    """ The data passed in the request data field is to be returned (looped back)
+    """Return query data.
+
+    The data passed in the request data field is to be returned (looped back)
     in the response. The entire response message should be identical to the
     request.
     """
+
     sub_function_code = 0x0000
 
     def __init__(self, message=0x0000, **kwargs):
-        """ Initializes a new instance of the request
+        """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
         """
@@ -177,8 +191,8 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         else:
             self.message = [message]
 
-    def execute(self, *args): # pylint: disable=unused-argument
-        """ Executes the loopback request (builds the response)
+    def execute(self, *args):  # pylint: disable=unused-argument
+        """Execute the loopback request (builds the response).
 
         :returns: The populated loopback response message
         """
@@ -186,180 +200,206 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
 
 class ReturnQueryDataResponse(DiagnosticStatusResponse):
-    """ The data passed in the request data field is to be returned (looped back)
+    """Return query data.
+
+    The data passed in the request data field is to be returned (looped back)
     in the response. The entire response message should be identical to the
     request.
     """
+
     sub_function_code = 0x0000
 
     def __init__(self, message=0x0000, **kwargs):
-        """ Initializes a new instance of the response
+        """Initialize a new instance of the response.
 
         :param message: The message to loopback
         """
         DiagnosticStatusResponse.__init__(self, **kwargs)
         if isinstance(message, list):
             self.message = message
-        else: self.message = [message]
+        else:
+            self.message = [message]
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 01
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 01
+# ---------------------------------------------------------------------------#
 class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
-    """ The remote device serial line port must be initialized and restarted, and
+    """Restart communication.
+
+    The remote device serial line port must be initialized and restarted, and
     all of its communications event counters are cleared. If the port is
     currently in Listen Only Mode, no response is returned. This function is
     the only one that brings the port out of Listen Only Mode. If the port is
     not currently in Listen Only Mode, a normal response is returned. This
     occurs before the restart is executed.
     """
+
     sub_function_code = 0x0001
 
     def __init__(self, toggle=False, **kwargs):
-        """ Initializes a new request
+        """Initialize a new request.
 
         :param toggle: Set to True to toggle, False otherwise
         """
         DiagnosticStatusRequest.__init__(self, **kwargs)
         if toggle:
-            self.message   = [ModbusStatus.On]
-        else: self.message = [ModbusStatus.Off]
+            self.message = [ModbusStatus.On]
+        else:
+            self.message = [ModbusStatus.Off]
 
-    def execute(self, *args): # pylint: disable=unused-argument
-        """ Clear event log and restart
+    def execute(self, *args):  # pylint: disable=unused-argument
+        """Clear event log and restart.
 
         :returns: The initialized response message
         """
-        #if _MCB.ListenOnly:
+        # if _MCB.ListenOnly:
         return RestartCommunicationsOptionResponse(self.message)
 
+
 class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
-    """ The remote device serial line port must be initialized and restarted, and
+    """Restart Communication.
+
+    The remote device serial line port must be initialized and restarted, and
     all of its communications event counters are cleared. If the port is
     currently in Listen Only Mode, no response is returned. This function is
     the only one that brings the port out of Listen Only Mode. If the port is
     not currently in Listen Only Mode, a normal response is returned. This
     occurs before the restart is executed.
     """
+
     sub_function_code = 0x0001
 
     def __init__(self, toggle=False, **kwargs):
-        """ Initializes a new response
+        """Initialize a new response.
 
         :param toggle: Set to True if we toggled, False otherwise
         """
         DiagnosticStatusResponse.__init__(self, **kwargs)
         if toggle:
-            self.message   = [ModbusStatus.On]
-        else: self.message = [ModbusStatus.Off]
+            self.message = [ModbusStatus.On]
+        else:
+            self.message = [ModbusStatus.Off]
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 02
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 02
+# ---------------------------------------------------------------------------#
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
-    """ The contents of the remote device's 16-bit diagnostic register are
-    returned in the response
-    """
+    """The contents of the remote device's 16-bit diagnostic register are returned in the response."""
+
     sub_function_code = 0x0002
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
-        #if _MCB.isListenOnly():
+        # if _MCB.isListenOnly():
         register = pack_bitstring(_MCB.getDiagnosticRegister())
         return ReturnDiagnosticRegisterResponse(register)
 
 
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
-    """ The contents of the remote device's 16-bit diagnostic register are
+    """Return diagnostic register.
+
+    The contents of the remote device's 16-bit diagnostic register are
     returned in the response
     """
+
     sub_function_code = 0x0002
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 03
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 03
+# ---------------------------------------------------------------------------#
 class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
-    """ The character 'CHAR' passed in the request data field becomes the end of
+    """Change ascii input delimiter.
+
+    The character 'CHAR' passed in the request data field becomes the end of
     message delimiter for future messages (replacing the default LF
     character). This function is useful in cases of a Line Feed is not
     required at the end of ASCII messages.
     """
+
     sub_function_code = 0x0003
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
         char = (self.message & 0xff00) >> 8
-        _MCB._setDelimiter(char) # pylint: disable=protected-access
+        _MCB._setDelimiter(char)  # pylint: disable=protected-access
         return ChangeAsciiInputDelimiterResponse(self.message)
 
 
 class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
-    """ The character 'CHAR' passed in the request data field becomes the end of
+    """Change ascii input delimiter.
+
+    The character 'CHAR' passed in the request data field becomes the end of
     message delimiter for future messages (replacing the default LF
     character). This function is useful in cases of a Line Feed is not
     required at the end of ASCII messages.
     """
+
     sub_function_code = 0x0003
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 04
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 04
+# ---------------------------------------------------------------------------#
 class ForceListenOnlyModeRequest(DiagnosticStatusSimpleRequest):
-    """ Forces the addressed remote device to its Listen Only Mode for MODBUS
-    communications.  This isolates it from the other devices on the network,
+    """Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
+
+    This isolates it from the other devices on the network,
     allowing them to continue communicating without interruption from the
     addressed remote device. No response is returned.
     """
+
     sub_function_code = 0x0004
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
-        _MCB._setListenOnly(True) # pylint: disable=protected-access
+        _MCB._setListenOnly(True)  # pylint: disable=protected-access
         return ForceListenOnlyModeResponse()
 
 
 class ForceListenOnlyModeResponse(DiagnosticStatusResponse):
-    """ Forces the addressed remote device to its Listen Only Mode for MODBUS
-    communications.  This isolates it from the other devices on the network,
+    """Forces the addressed remote device to its Listen Only Mode for MODBUS communications.
+
+    This isolates it from the other devices on the network,
     allowing them to continue communicating without interruption from the
     addressed remote device. No response is returned.
 
     This does not send a response
     """
+
     sub_function_code = 0x0004
-    should_respond    = False
+    should_respond = False
 
     def __init__(self, **kwargs):
-        """ Initializer to block a return response
-        """
+        """Initialize to block a return response."""
         DiagnosticStatusResponse.__init__(self, **kwargs)
         self.message = []
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 10
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 10
+# ---------------------------------------------------------------------------#
 class ClearCountersRequest(DiagnosticStatusSimpleRequest):
-    """ The goal is to clear ll counters and the diagnostic register.
+    """Clear ll counters and the diagnostic register.
+
     Also, counters are cleared upon power-up
     """
+
     sub_function_code = 0x000A
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -368,24 +408,29 @@ class ClearCountersRequest(DiagnosticStatusSimpleRequest):
 
 
 class ClearCountersResponse(DiagnosticStatusSimpleResponse):
-    """ The goal is to clear ll counters and the diagnostic register.
+    """Clear ll counters and the diagnostic register.
+
     Also, counters are cleared upon power-up
     """
+
     sub_function_code = 0x000A
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 11
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 11
+# ---------------------------------------------------------------------------#
 class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages that the
+    """Return bus message count.
+
+    The response data field returns the quantity of messages that the
     remote device has detected on the communications systems since its last
     restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000B
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -394,25 +439,31 @@ class ReturnBusMessageCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnBusMessageCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages that the
+    """Return bus message count.
+
+    The response data field returns the quantity of messages that the
     remote device has detected on the communications systems since its last
     restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000B
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 12
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 12
+# ---------------------------------------------------------------------------#
 class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of CRC errors encountered
+    """Return bus comm. count.
+
+    The response data field returns the quantity of CRC errors encountered
     by the remote device since its last restart, clear counter operation, or
     power-up
     """
+
     sub_function_code = 0x000C
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -421,25 +472,31 @@ class ReturnBusCommunicationErrorCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnBusCommunicationErrorCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of CRC errors encountered
+    """Return bus comm. error.
+
+    The response data field returns the quantity of CRC errors encountered
     by the remote device since its last restart, clear counter operation, or
     power-up
     """
+
     sub_function_code = 0x000C
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 13
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 13
+# ---------------------------------------------------------------------------#
 class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of modbus exception
+    """Return bus exception.
+
+    The response data field returns the quantity of modbus exception
     responses returned by the remote device since its last restart,
     clear counters operation, or power-up
     """
+
     sub_function_code = 0x000D
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -448,25 +505,31 @@ class ReturnBusExceptionErrorCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnBusExceptionErrorCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of modbus exception
+    """Return bus exception.
+
+    The response data field returns the quantity of modbus exception
     responses returned by the remote device since its last restart,
     clear counters operation, or power-up
     """
+
     sub_function_code = 0x000D
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 14
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 14
+# ---------------------------------------------------------------------------#
 class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave message count.
+
+    The response data field returns the quantity of messages addressed to the
     remote device, or broadcast, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000E
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -475,25 +538,31 @@ class ReturnSlaveMessageCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnSlaveMessageCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave message count.
+
+    The response data field returns the quantity of messages addressed to the
     remote device, or broadcast, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000E
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 15
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 15
+# ---------------------------------------------------------------------------#
 class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave no response.
+
+    The response data field returns the quantity of messages addressed to the
     remote device, or broadcast, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000F
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -502,26 +571,32 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave no response.
+
+    The response data field returns the quantity of messages addressed to the
     remote device, or broadcast, that the remote device has processed since
     its last restart, clear counters operation, or power-up
     """
+
     sub_function_code = 0x000F
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 16
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 16
+# ---------------------------------------------------------------------------#
 class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave NAK count.
+
+    The response data field returns the quantity of messages addressed to the
     remote device for which it returned a Negative Acknowledge (NAK) exception
     response, since its last restart, clear counters operation, or power-up.
     Exception responses are described and listed in section 7 .
     """
+
     sub_function_code = 0x0010
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -530,26 +605,32 @@ class ReturnSlaveNAKCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnSlaveNAKCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave NAK.
+
+    The response data field returns the quantity of messages addressed to the
     remote device for which it returned a Negative Acknowledge (NAK) exception
     response, since its last restart, clear counters operation, or power-up.
     Exception responses are described and listed in section 7.
     """
+
     sub_function_code = 0x0010
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 17
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 17
+# ---------------------------------------------------------------------------#
 class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave busy count.
+
+    The response data field returns the quantity of messages addressed to the
     remote device for which it returned a Slave Device Busy exception response,
     since its last restart, clear counters operation, or power-up.
     """
+
     sub_function_code = 0x0011
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -558,27 +639,33 @@ class ReturnSlaveBusyCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnSlaveBusyCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave busy count.
+
+    The response data field returns the quantity of messages addressed to the
     remote device for which it returned a Slave Device Busy exception response,
     since its last restart, clear counters operation, or power-up.
     """
+
     sub_function_code = 0x0011
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 18
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 18
+# ---------------------------------------------------------------------------#
 class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """ The response data field returns the quantity of messages addressed to the
+    """Return slave character overrun.
+
+    The response data field returns the quantity of messages addressed to the
     remote device that it could not handle due to a character overrun condition,
     since its last restart, clear counters operation, or power-up. A character
     overrun is caused by data characters arriving at the port faster than they
     can be stored, or by the loss of a character due to a hardware malfunction.
     """
+
     sub_function_code = 0x0012
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -587,27 +674,31 @@ class ReturnSlaveBusCharacterOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnSlaveBusCharacterOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages addressed to the
-    remote device that it could not handle due to a character overrun condition,
-    since its last restart, clear counters operation, or power-up. A character
+    """Return the quantity of messages addressed to the remote device unhandled due to a character overrun.
+
+    Since its last restart, clear counters operation, or power-up. A character
     overrun is caused by data characters arriving at the port faster than they
     can be stored, or by the loss of a character due to a hardware malfunction.
     """
+
     sub_function_code = 0x0012
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 19
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 19
+# ---------------------------------------------------------------------------#
 class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """ An IOP overrun is caused by data characters arriving at the port
+    """Return IopOverrun.
+
+    An IOP overrun is caused by data characters arriving at the port
     faster than they can be stored, or by the loss of a character due
     to a hardware malfunction.  This function is specific to the 884.
     """
+
     sub_function_code = 0x0013
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -616,27 +707,31 @@ class ReturnIopOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ReturnIopOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """ The response data field returns the quantity of messages
+    """Return Iop overrun count.
+
+    The response data field returns the quantity of messages
     addressed to the slave that it could not handle due to an 884
     IOP overrun condition, since its last restart, clear counters
     operation, or power-up.
     """
+
     sub_function_code = 0x0013
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 20
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 20
+# ---------------------------------------------------------------------------#
 class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
-    """ Clears the overrun error counter and reset the error flag
+    """Clear the overrun error counter and reset the error flag.
 
     An error flag should be cleared, but nothing else in the
     specification mentions is, so it is ignored.
     """
+
     sub_function_code = 0x0014
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
@@ -645,15 +740,18 @@ class ClearOverrunCountRequest(DiagnosticStatusSimpleRequest):
 
 
 class ClearOverrunCountResponse(DiagnosticStatusSimpleResponse):
-    """ Clears the overrun error counter and reset the error flag. """
+    """Clear the overrun error counter and reset the error flag."""
+
     sub_function_code = 0x0014
 
 
-#---------------------------------------------------------------------------#
-# Diagnostic Sub Code 21
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Diagnostic Sub Code 21
+# ---------------------------------------------------------------------------#
 class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
-    """ In addition to the Function code (08) and Subfunction code
+    """Get/Clear modbus plus request.
+
+    In addition to the Function code (08) and Subfunction code
     (00 15 hex) in the query, a two-byte Operation field is used
     to specify either a 'Get Statistics' or a 'Clear Statistics'
     operation.  The two operations are exclusive - the 'Get'
@@ -662,30 +760,33 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
     them. Statistics are also cleared on power-up of the slave
     device.
     """
+
     sub_function_code = 0x0015
 
     def __init__(self, **kwargs):
+        """Initialize."""
         super().__init__(**kwargs)
 
     def get_response_pdu_size(self):
-        """ Returns a series of 54 16-bit words (108 bytes) in the data field of the response
-        (this function differs from the usual two-byte length of the data field). The data
-        contains the statistics for the Modbus Plus peer processor in the slave device.
+        """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
+
+        This function differs from the usual two-byte length of the data field.
+        The data contains the statistics for the Modbus Plus peer processor in the slave device.
         Func_code (1 byte) + Sub function code (2 byte) + Operation (2 byte) + Data (108 bytes)
         :return:
         """
         if self.message == ModbusPlusOperation.GetStatistics:
-            data = 2 + 108 # byte count(2) + data (54*2)
+            data = 2 + 108  # byte count(2) + data (54*2)
         else:
             data = 0
-        return 1 + 2 + 2 + 2+ data
+        return 1 + 2 + 2 + 2 + data
 
     def execute(self, *args):
-        """ Execute the diagnostic request on the given device
+        """Execute the diagnostic request on the given device.
 
         :returns: The initialized response message
         """
-        message = None # the clear operation does not return info
+        message = None  # the clear operation does not return info
         if self.message == ModbusPlusOperation.ClearStatistics:
             _MCB.Plus.reset()
             message = self.message
@@ -695,7 +796,8 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
         return GetClearModbusPlusResponse(message)
 
     def encode(self):
-        """ Base encoder for a diagnostic response
+        """Encode a diagnostic response.
+
         we encode the data set in self.message
 
         :returns: The encoded packet
@@ -706,17 +808,18 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
 
 class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
-    """ Returns a series of 54 16-bit words (108 bytes) in the data field
-    of the response (this function differs from the usual two-byte
-    length of the data field). The data contains the statistics for
-    the Modbus Plus peer processor in the slave device.
+    """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
+
+    This function differs from the usual two-byte length of the data field.
+    The data contains the statistics for the Modbus Plus peer processor in the slave device.
     """
+
     sub_function_code = 0x0015
 
 
-#---------------------------------------------------------------------------#
-# Exported symbols
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Exported symbols
+# ---------------------------------------------------------------------------#
 __all__ = [
     "DiagnosticStatusRequest", "DiagnosticStatusResponse",
     "ReturnQueryDataRequest", "ReturnQueryDataResponse",

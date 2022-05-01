@@ -4,7 +4,7 @@ warnings.simplefilter('always', DeprecationWarning)
 
 WARNING = """
 Usage of '{}' is deprecated from 2.0.0 and will be removed in future releases.
-Use the new Async Modbus Client implementation based on Twisted, tornado 
+Use the new Async Modbus Client implementation based on Twisted, tornado
 and asyncio
 ------------------------------------------------------------------------
 

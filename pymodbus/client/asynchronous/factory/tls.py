@@ -1,4 +1,4 @@
-""" Factory to create asynchronous tls clients based on asyncio. """
+"""Factory to create asynchronous tls clients based on asyncio."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
@@ -10,9 +10,11 @@ from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
+
 def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
                      server_hostname=None, framer=None, **kwargs):
-    """ Factory to create asyncio based asynchronous tls clients
+    """Create asyncio based asynchronous tls clients.
+
     :param host: Target server's name, also matched for certificate
     :param port: Port
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
@@ -25,7 +27,6 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
     :param kwargs:
     :return: asyncio event loop and tcp client
     """
-
     try:
         loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     except RuntimeError:
@@ -39,7 +40,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
         return loop, init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
-                              framer, **kwargs)
+                                     framer, **kwargs)
     else:
         cor = init_tls_client(proto_cls, loop, host, port, sslctx, server_hostname,
                               framer, **kwargs)
@@ -50,7 +51,8 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """Get protocol factory based on the backend scheduler being used.
+
     :param scheduler: ASYNC_IO
     :return
     """
@@ -60,4 +62,4 @@ def get_factory(scheduler):
     txt = f"Allowed Schedulers: {schedulers.ASYNC_IO}"
     _logger.warning(txt)
     txt = f"Invalid Scheduler '{scheduler}'"
-    raise Exception(txt) #NOSONAR
+    raise Exception(txt)  # NOSONAR

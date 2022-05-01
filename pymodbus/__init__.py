@@ -1,5 +1,4 @@
-""" Pymodbus: Modbus Protocol Implementation
------------------------------------------
+"""Pymodbus: Modbus Protocol Implementation.
 
 TwistedModbus is built on top of the code developed by:
 
@@ -14,10 +13,10 @@ import logging as __logging
 from logging import NullHandler as __null
 import pymodbus.version as __version
 __version__ = __version.version.short()
-__author__  = 'Galen Collins'
+__author__ = 'Galen Collins'
 __maintainer__ = 'dhoomakethu'
 
-#---------------------------------------------------------------------------#
-# Block unhandled logging
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Block unhandled logging
+# ---------------------------------------------------------------------------#
 __logging.getLogger(__name__).addHandler(__null())

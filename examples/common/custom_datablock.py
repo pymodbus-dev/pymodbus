@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Server With Custom Datablock Side Effect
---------------------------------------------------------------------------
+"""Pymodbus Server With Custom Datablock Side Effect.
 
 This is an example of performing custom logic after a value has been
 written to the datastore.
@@ -30,12 +29,13 @@ log.setLevel(logging.DEBUG)
 
 
 class CustomDataBlock(ModbusSparseDataBlock):
-    """ A datablock that stores the new value in memory
+    """A datablock that stores the new value in memory,
+
     and performs a custom action after it has been stored.
     """
 
-    def setValues(self, address, value): # pylint: disable=arguments-differ
-        """ Sets the requested values of the datastore
+    def setValues(self, address, value):  # pylint: disable=arguments-differ
+        """Set the requested values of the datastore
 
         :param address: The starting address
         :param values: The new values to be set
@@ -50,7 +50,7 @@ class CustomDataBlock(ModbusSparseDataBlock):
 
 
 def run_custom_db_server():
-    """ Run custom db server. """
+    """Run custom db server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -65,7 +65,7 @@ def run_custom_db_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'pymodbus Server',
         'ModelName': 'pymodbus Server',
         'MajorMinorRevision': version.short(),

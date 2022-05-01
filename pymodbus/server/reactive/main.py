@@ -1,4 +1,6 @@
-""" Copyright (c) 2020 by RiptideIO
+"""Reactive main.
+
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import os
@@ -10,7 +12,7 @@ import logging
 
 try:
     from aiohttp import web
-except ImportError as e:
+except ImportError:
     print("Reactive server requires aiohttp. "
           "Please install with 'pip install aiohttp' and try again.")
     sys.exit(1)
@@ -86,10 +88,13 @@ curl -X POST http://{}:{} -d '{{"response_type": "error", "error_code": 4}}'
 
 
 class ReactiveServer:
-    """ Modbus Asynchronous Server which can manipulate the response dynamically.
+    """Modbus Asynchronous Server which can manipulate the response dynamically.
+
     Useful for testing
     """
+
     def __init__(self, host, port, modbus_server, loop=None):
+        """Initialize."""
         self._web_app = web.Application()
         self._runner = web.AppRunner(self._web_app)
         self._host = host
@@ -105,12 +110,12 @@ class ReactiveServer:
 
     @property
     def web_app(self):
-        """ Start web_app. """
+        """Start web_app."""
         return self._web_app
 
     @property
     def manipulator_config(self):
-        """ Manipulate config. """
+        """Manipulate config."""
         return self._manipulator_config
 
     @manipulator_config.setter
@@ -119,12 +124,13 @@ class ReactiveServer:
             self._manipulator_config.update(**value)
 
     def _add_routes(self):
-        """ Internal add routes. """
+        """Add routes."""
         self._web_app.add_routes([
             web.post('/', self._response_manipulator)])
 
     async def start_modbus_server(self, app):
-        """ Start Modbus server as asyncio task after startup
+        """Start Modbus server as asyncio task after startup.
+
         :param app: Webapp
         :return:
         """
@@ -144,12 +150,13 @@ class ReactiveServer:
                     self._modbus_server.serve_forever())
 
             logger.info("Modbus server started")
-        except Exception as exc: # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             logger.error("Error starting modbus server")
             logger.error(exc)
 
     async def stop_modbus_server(self, app):
-        """ Stop modbus server
+        """Stop modbus server.
+
         :param app: Webapp
         :return:
         """
@@ -161,7 +168,8 @@ class ReactiveServer:
         logger.info("Modbus server Stopped")
 
     async def _response_manipulator(self, request):
-        """ POST request Handler for response manipulation end point
+        """POST request Handler for response manipulation end point.
+
         Payload is a dict with following fields
             :response_type : One among (normal, delayed, error, empty, stray)
             :error_code: Modbus error code for error response
@@ -175,7 +183,8 @@ class ReactiveServer:
         return web.json_response(data=data)
 
     def update_manipulator_config(self, config):
-        """ Updates manipulator config. Resets previous counters
+        """Update manipulator config. Resets previous counters.
+
         :param config: Manipulator config (dict)
         :return:
         """
@@ -183,7 +192,8 @@ class ReactiveServer:
         self._manipulator_config = config
 
     def manipulate_response(self, response):
-        """ Manipulates the actual response according to the required error state.
+        """Manipulate the actual response according to the required error state.
+
         :param response: Modbus response object
         :return: Modbus response
         """
@@ -211,7 +221,7 @@ class ReactiveServer:
             delay_by = self._manipulator_config.get("delay_by")
             txt = f"Delaying response by {delay_by}s for all incoming requests"
             logger.warning(txt)
-            time.sleep(delay_by) #change to async TODO pylint: disable:fixme
+            time.sleep(delay_by)  # change to async TODO pylint: disable:fixme
             self._counter += 1
         elif response_type == "empty":
             logger.warning("Sending empty response")
@@ -228,7 +238,8 @@ class ReactiveServer:
         return response, skip_encoding
 
     def run(self):
-        """ Run Web app
+        """Run Web app.
+
         :return:
         """
         def _info(message):
@@ -239,23 +250,25 @@ class ReactiveServer:
                     print=_info)
 
     async def run_async(self):
-        """ Run Web app
+        """Run Web app.
+
         :return:
         """
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)
             await site.start()
-        except Exception as exc: # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             logger.error(exc)
 
     @classmethod
     def create_identity(cls, vendor="Pymodbus", product_code="PM",
-                        vendor_url='http://github.com/riptideio/pymodbus/', #NOSONAR
+                        vendor_url='http://github.com/riptideio/pymodbus/',  # NOSONAR
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
                         version=pymodbus_version.short()):
-        """ Create modbus identity
+        """Create modbus identity.
+
         :param vendor:
         :param product_code:
         :param vendor_url:
@@ -264,7 +277,7 @@ class ReactiveServer:
         :param version:
         :return: ModbusIdentity object
         """
-        identity = ModbusDeviceIdentification(info_name= {
+        identity = ModbusDeviceIdentification(info_name={
             'VendorName': vendor,
             'ProductCode': product_code,
             'VendorUrl': vendor_url,
@@ -278,7 +291,8 @@ class ReactiveServer:
     @classmethod
     def create_context(cls, data_block=None, unit=1,
                        single=False):
-        """ Create Modbus context.
+        """Create Modbus context.
+
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
         :param unit: Unit id for the slave
         :param single: To run as a single slave
@@ -290,18 +304,18 @@ class ReactiveServer:
             start_address = block_desc.get("start_address", 0)
             default_count = block_desc.get("count", 0)
             default_value = block_desc.get("value", 0)
-            default_values = [default_value]*default_count
+            default_values = [default_value] * default_count
             sparse = block_desc.get("sparse", False)
             db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
             if sparse:
                 if not (address_map := block_desc.get("address_map")):
-                    address_map = random.sample( #NOSONAR
-                        range(start_address+1, default_count), default_count-1)
+                    address_map = random.sample(  # NOSONAR
+                        range(start_address + 1, default_count), default_count - 1)
                     address_map.insert(0, 0)
                 block[modbus_entity] = {add: val for add in sorted(address_map)
-                    for val in default_values}
+                                        for val in default_values}
             else:
-                block[modbus_entity] =db(start_address, default_values)
+                block[modbus_entity] = db(start_address, default_values)
 
         slave_context = ModbusSlaveContext(**block, zero_mode=True)
         if not single:
@@ -314,10 +328,12 @@ class ReactiveServer:
         return server_context
 
     @classmethod
-    def factory(cls, server, framer=None, context=None, unit=1, single=False, # pylint: disable=dangerous-default-value,too-many-arguments
+    def factory(cls, server, framer=None, context=None,  # pylint: disable=dangerous-default-value,too-many-arguments
+                unit=1, single=False,
                 host="localhost", modbus_port=5020, web_port=8080,
                 data_block=DEFAULT_DATA_BLOCK, identity=None, loop=None, **kwargs):
-        """ Factory to create ReactiveModbusServer
+        """Create ReactiveModbusServer.
+
         :param server: Modbus server type (tcp, rtu, tls, udp)
         :param framer: Modbus framer (ModbusSocketFramer, ModbusRTUFramer, ModbusTLSFramer)
         :param context: Modbus server context to use

@@ -1,4 +1,6 @@
-""" Copyright (c) 2020 by RiptideIO
+"""Repl server main.
+
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import sys
@@ -15,7 +17,7 @@ from pymodbus.repl.server.cli import run_repl
 if sys.version_info > (3, 7):
     CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
-    CANCELLED_ERROR = asyncio.CancelledError # pylint: disable=invalid-name
+    CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name
 
 _logger = logging.getLogger(__name__)
 
@@ -31,10 +33,10 @@ _logger = logging.getLogger(__name__)
               help="Run with debug logs enabled for pymodbus")
 @click.pass_context
 def server(ctx, host, web_port, broadcast_support, repl, verbose):
-    """Server code."""
-    FORMAT = ('%(asctime)-15s %(threadName)-15s' # pylint: disable=invalid-name
+    """Run server code."""
+    FORMAT = ('%(asctime)-15s %(threadName)-15s'  # pylint: disable=invalid-name
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-    logging.basicConfig(format=FORMAT) #NOSONAR
+    logging.basicConfig(format=FORMAT)  # NOSONAR
     if verbose:
         _logger.setLevel(logging.DEBUG)
     else:
@@ -66,15 +68,16 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
 @click.pass_context
 def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         modbus_config, randomize):
-    """ Run Reactive Modbus server exposing REST endpoint
-    for response manipulation.
+    """Run Reactive Modbus server.
+
+    Exposing REST endpoint for response manipulation.
     """
     repl = ctx.obj.pop("repl")
     web_app_config = ctx.obj
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
     if modbus_config:
-        with open(modbus_config) as my_file: # pylint: disable=unspecified-encoding
+        with open(modbus_config) as my_file:  # pylint: disable=unspecified-encoding
             modbus_config = json.load(my_file)
     else:
         modbus_config = DEFUALT_CONFIG
@@ -107,4 +110,4 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
 
 
 if __name__ == '__main__':
-    server() # pylint: disable=no-value-for-parameter
+    server()  # pylint: disable=no-value-for-parameter

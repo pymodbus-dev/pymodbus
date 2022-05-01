@@ -1,6 +1,4 @@
-""" Register Writing Request/Response Messages
--------------------------------------------
-"""
+"""Register Writing Request/Response Messages."""
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse
@@ -8,18 +6,18 @@ from pymodbus.pdu import ModbusExceptions as merror
 
 
 class WriteSingleRegisterRequest(ModbusRequest):
-    """ This function code is used to write a single holding register in a
-    remote device.
+    """This function code is used to write a single holding register in a remote device.
 
     The Request PDU specifies the address of the register to
     be written. Registers are addressed starting at zero. Therefore register
     numbered 1 is addressed as 0.
     """
+
     function_code = 6
     _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
@@ -29,7 +27,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         self.value = value
 
     def encode(self):
-        """ Encode a write single register packet packet request
+        """Encode a write single register packet packet request.
 
         :returns: The encoded packet
         """
@@ -41,14 +39,14 @@ class WriteSingleRegisterRequest(ModbusRequest):
         return packet
 
     def decode(self, data):
-        """ Decode a write single register packet packet request
+        """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
         self.address, self.value = struct.unpack('>HH', data)
 
     def execute(self, context):
-        """ Run a write single register request against a datastore
+        """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
@@ -62,14 +60,16 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
-    def get_response_pdu_size(self): # pylint: disable=no-self-use
-        """ Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
+    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+        """Get response pdu size.
+
+        Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
         :return:
         """
         return 1 + 2 + 2
 
     def __str__(self):
-        """ Returns a string representation of the instance
+        """Return a string representation of the instance.
 
         :returns: A string representation of the instance
         """
@@ -77,14 +77,16 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
 
 class WriteSingleRegisterResponse(ModbusResponse):
-    """ The normal response is an echo of the request, returned after the
-    register contents have been written.
+    """The normal response is an echo of the request.
+
+    Returned after the register contents have been written.
     """
+
     function_code = 6
     _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
@@ -94,44 +96,46 @@ class WriteSingleRegisterResponse(ModbusResponse):
         self.value = value
 
     def encode(self):
-        """ Encode a write single register packet packet request
+        """Encode a write single register packet packet request.
 
         :returns: The encoded packet
         """
         return struct.pack('>HH', self.address, self.value)
 
     def decode(self, data):
-        """ Decode a write single register packet packet request
+        """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
         self.address, self.value = struct.unpack('>HH', data)
 
     def __str__(self):
-        """ Returns a string representation of the instance
+        """Return a string representation of the instance.
 
         :returns: A string representation of the instance
         """
         params = (self.address, self.value)
-        return "WriteRegisterResponse %d => %d" % params # pylint: disable=consider-using-f-string
+        return "WriteRegisterResponse %d => %d" % params  # pylint: disable=consider-using-f-string
 
 
-#---------------------------------------------------------------------------#
-# Write Multiple Registers
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Write Multiple Registers
+# ---------------------------------------------------------------------------#
 class WriteMultipleRegistersRequest(ModbusRequest):
-    """ This function code is used to write a block of contiguous registers (1
-    to approx. 120 registers) in a remote device.
+    """This function code is used to write a block.
+
+    Of contiguous registers (1 to approx. 120 registers) in a remote device.
 
     The requested written values are specified in the request data field.
     Data is packed as two bytes per register.
     """
+
     function_code = 16
     _rtu_byte_count_pos = 6
-    _pdu_length = 5  #func + adress1 + adress2 + outputQuant1 + outputQuant2
+    _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
     def __init__(self, address=None, values=None, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
@@ -147,7 +151,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         self.byte_count = self.count * 2
 
     def encode(self):
-        """ Encode a write single register packet packet request
+        """Encode a write single register packet packet request.
 
         :returns: The encoded packet
         """
@@ -161,18 +165,18 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         return packet
 
     def decode(self, data):
-        """ Decode a write single register packet packet request
+        """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
         self.address, self.count, \
-        self.byte_count = struct.unpack('>HHB', data[:5])
+            self.byte_count = struct.unpack('>HHB', data[:5])
         self.values = []  # reset
         for idx in range(5, (self.count * 2) + 5, 2):
             self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
 
     def execute(self, context):
-        """ Run a write single register request against a datastore
+        """Run a write single register request against a datastore.
 
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
@@ -187,30 +191,34 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleRegistersResponse(self.address, self.count)
 
-    def get_response_pdu_size(self): # pylint: disable=no-self-use
-        """ Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)
+    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+        """Get response pdu size.
+
+        Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)
         :return:
         """
         return 1 + 2 + 2
 
     def __str__(self):
-        """ Returns a string representation of the instance
+        """Return a string representation of the instance.
 
         :returns: A string representation of the instance
         """
         params = (self.address, self.count)
-        return "WriteMultipleRegisterRequest %d => %d" % params # pylint: disable=consider-using-f-string
+        return "WriteMultipleRegisterRequest %d => %d" % params  # pylint: disable=consider-using-f-string
 
 
 class WriteMultipleRegistersResponse(ModbusResponse):
-    """ The normal response returns the function code, starting address, and
-    quantity of registers written.
+    """The normal response returns the function code.
+
+    Starting address, and quantity of registers written.
     """
+
     function_code = 16
     _rtu_frame_size = 8
 
     def __init__(self, address=None, count=None, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
@@ -220,39 +228,42 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         self.count = count
 
     def encode(self):
-        """ Encode a write single register packet packet request
+        """Encode a write single register packet packet request.
 
         :returns: The encoded packet
         """
         return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        """ Decode a write single register packet packet request
+        """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
         self.address, self.count = struct.unpack('>HH', data)
 
     def __str__(self):
-        """ Returns a string representation of the instance
+        """Return a string representation of the instance.
 
         :returns: A string representation of the instance
         """
         params = (self.address, self.count)
-        return "WriteMultipleRegisterResponse (%d,%d)" % params # pylint: disable=consider-using-f-string
+        return "WriteMultipleRegisterResponse (%d,%d)" % params  # pylint: disable=consider-using-f-string
+
 
 class MaskWriteRegisterRequest(ModbusRequest):
-    """ This function code is used to modify the contents of a specified holding
-    register using a combination of an AND mask, an OR mask, and the
-    register's current contents. The function can be used to set or clear
-    individual bits in the register.
+    """This function code is used to modify the contents.
+
+    Of a specified holding register using a combination of an AND mask,
+    an OR mask, and the register's current contents.
+    The function can be used to set or clear individual bits in the register.
     """
+
     function_code = 0x16
     _rtu_frame_size = 10
 
     def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
                  **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask to apply to the register address
@@ -264,7 +275,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         self.or_mask = or_mask
 
     def encode(self):
-        """ Encodes the request packet
+        """Encode the request packet.
 
         :returns: The byte encoded packet
         """
@@ -272,7 +283,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
                            self.or_mask)
 
     def decode(self, data):
-        """ Decodes the incoming request
+        """Decode the incoming request.
 
         :param data: The data to decode into the address
         """
@@ -280,7 +291,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
                                                                   data)
 
     def execute(self, context):
-        """ Run a mask write register request against the store
+        """Run a mask write register request against the store.
 
         :param context: The datastore to request from
         :returns: The populated response
@@ -299,15 +310,17 @@ class MaskWriteRegisterRequest(ModbusRequest):
 
 
 class MaskWriteRegisterResponse(ModbusResponse):
-    """ The normal response is an echo of the request. The response is returned
-    after the register has been written.
+    """The normal response is an echo of the request.
+
+    The response is returned after the register has been written.
     """
+
     function_code = 0x16
     _rtu_frame_size = 10
 
     def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
                  **kwargs):
-        """ Initializes a new instance
+        """Initialize new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
         :param and_mask: The and bitmask applied to the register address
@@ -319,7 +332,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
         self.or_mask = or_mask
 
     def encode(self):
-        """ Encodes the response
+        """Encode the response.
 
         :returns: The byte encoded message
         """
@@ -327,7 +340,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
                            self.or_mask)
 
     def decode(self, data):
-        """ Decodes a the response
+        """Decode a the response.
 
         :param data: The packet data to decode
         """
@@ -335,9 +348,9 @@ class MaskWriteRegisterResponse(ModbusResponse):
                                                                   data)
 
 
-#---------------------------------------------------------------------------#
-# Exported symbols
-#---------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------#
+#  Exported symbols
+# ---------------------------------------------------------------------------#
 __all__ = [
     "WriteSingleRegisterRequest", "WriteSingleRegisterResponse",
     "WriteMultipleRegistersRequest", "WriteMultipleRegistersResponse",

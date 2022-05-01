@@ -1,5 +1,3 @@
-""" Binary framer. """
-import logging
 import struct
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.utilities import checkCRC, computeCRC
@@ -8,6 +6,7 @@ from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 
 BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -18,7 +17,8 @@ BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 
 class ModbusBinaryFramer(ModbusFramer):
-    """ Modbus Binary Frame Controller::
+    """
+    Modbus Binary Frame Controller::
 
         [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
           1b        1b         1b         Nb     2b     1b
@@ -59,12 +59,11 @@ class ModbusBinaryFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """ Decode data. """
         if len(data) > self._hsize:
             uid = struct.unpack('>B', data[1:2])[0]
             fcode = struct.unpack('>B', data[2:3])[0]
             return dict(unit=uid, fcode=fcode)
-        return {}
+        return dict()
 
     def checkFrame(self):
         """ Check and decode the next frame
@@ -77,7 +76,8 @@ class ModbusBinaryFramer(ModbusFramer):
         if start > 0:  # go ahead and skip old bad data
             self._buffer = self._buffer[start:]
 
-        if (end := self._buffer.find(self._end)) != -1:
+        end = self._buffer.find(self._end)
+        if end != -1:
             self._header['len'] = end
             self._header['uid'] = struct.unpack('>B', self._buffer[1:2])[0]
             self._header['crc'] = struct.unpack('>H', self._buffer[end - 2:end])[0]
@@ -137,8 +137,9 @@ class ModbusBinaryFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """ The new packet processing pattern
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
+        """
+        The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -163,14 +164,15 @@ class ModbusBinaryFramer(ModbusFramer):
         while self.isFrameReady():
             if self.checkFrame():
                 if self._validate_unit_id(unit, single):
-                    if (result := self.decoder.decode(self.getFrame())) is None:
+                    result = self.decoder.decode(self.getFrame())
+                    if result is None:
                         raise ModbusIOException("Unable to decode response")
                     self.populateResult(result)
                     self.advanceFrame()
                     callback(result)  # defer or push to a thread?
                 else:
-                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
-                    _logger.debug(txt)
+                    _logger.debug("Not a valid unit id - {}, "
+                                  "ignoring!!".format(self._header['uid']))
                     self.resetFrame()
                     break
 
@@ -194,7 +196,8 @@ class ModbusBinaryFramer(ModbusFramer):
         return packet
 
     def _preflight(self, data):
-        """ Preflight buffer test
+        """
+        Preflight buffer test
 
         This basically scans the buffer for start and end
         tags and if found, escapes them.
@@ -203,13 +206,13 @@ class ModbusBinaryFramer(ModbusFramer):
         :returns: the escaped packet
         """
         array = bytearray()
-        for item in data:
-            if item in self._repeat:
-                array.append(item)
-            array.append(item)
+        for d in data:
+            if d in self._repeat:
+                array.append(d)
+            array.append(d)
         return bytes(array)
 
-    def resetFrame(self): # pylint: disable=invalid-name
+    def resetFrame(self):
         """ Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is

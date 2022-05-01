@@ -1,23 +1,25 @@
-""" Contains base classes for modbus request/response/error packets. """
-import logging
-import struct
-
+"""
+Contains base classes for modbus request/response/error packets
+"""
 from pymodbus.interfaces import Singleton
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
 from pymodbus.utilities import rtuFrameSize
+from pymodbus.compat import iteritems, int2byte, byte2int
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
 # Base PDU's
 # --------------------------------------------------------------------------- #
-class ModbusPDU:
-    """ Base class for all Modbus messages
+class ModbusPDU(object):
+    """
+    Base class for all Modbus messages
 
     .. attribute:: transaction_id
 
@@ -58,14 +60,14 @@ class ModbusPDU:
         self.skip_encode = kwargs.get('skip_encode', False)
         self.check = 0x0000
 
-    def encode(self): # pylint: disable=no-self-use
+    def encode(self):
         """ Encodes the message
 
         :raises: A not implemented exception
         """
         raise NotImplementedException()
 
-    def decode(self, data): # pylint: disable=no-self-use
+    def decode(self, data):
         """ Decodes data part of the message.
 
         :param data: is a string object
@@ -74,7 +76,7 @@ class ModbusPDU:
         raise NotImplementedException()
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer): #NOSONAR pylint: disable=invalid-name
+    def calculateRtuFrameSize(cls, buffer):
         """ Calculates the size of a PDU.
 
         :param buffer: A buffer containing the data that have been received.
@@ -82,10 +84,10 @@ class ModbusPDU:
         """
         if hasattr(cls, '_rtu_frame_size'):
             return cls._rtu_frame_size
-        if hasattr(cls, '_rtu_byte_count_pos'):
+        elif hasattr(cls, '_rtu_byte_count_pos'):
             return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
-        raise NotImplementedException(
-            f"Cannot determine RTU frame size for {cls.__name__}")
+        else: raise NotImplementedException(
+            "Cannot determine RTU frame size for %s" % cls.__name__)
 
 
 class ModbusRequest(ModbusPDU):
@@ -95,13 +97,13 @@ class ModbusRequest(ModbusPDU):
         """ Proxy to the lower level initializer """
         ModbusPDU.__init__(self, **kwargs)
 
-    def doException(self, exception): # pylint: disable=invalid-name
+    def doException(self, exception):
         """ Builds an error response based on the function
 
         :param exception: The exception to return
         :raises: An exception response
         """
-        exc = ExceptionResponse(self.function_code, exception) # pylint: disable=no-member
+        exc = ExceptionResponse(self.function_code, exception)
         _logger.error(exc)
         return exc
 
@@ -126,17 +128,18 @@ class ModbusResponse(ModbusPDU):
         """ Proxy to the lower level initializer """
         ModbusPDU.__init__(self, **kwargs)
 
-    def isError(self): # pylint: disable=invalid-name
+    def isError(self):
         """Checks if the error is a success or failure"""
-        return self.function_code > 0x80 # pylint: disable=no-member
+        return self.function_code > 0x80
 
 
 # --------------------------------------------------------------------------- #
 # Exception PDU's
 # --------------------------------------------------------------------------- #
-class ModbusExceptions(Singleton): # pylint: disable=too-few-public-methods
-    """ An enumeration of the valid modbus exceptions. """
-
+class ModbusExceptions(Singleton):
+    """
+    An enumeration of the valid modbus exceptions
+    """
     IllegalFunction         = 0x01
     IllegalAddress          = 0x02
     IllegalValue            = 0x03
@@ -154,7 +157,7 @@ class ModbusExceptions(Singleton): # pylint: disable=too-few-public-methods
 
         :param code: The code number to translate
         """
-        values = dict((v, k) for k, v in iter(cls.__dict__.items())
+        values = dict((v, k) for k, v in iteritems(cls.__dict__)
             if not k.startswith('__') and not callable(v))
         return values.get(code, None)
 
@@ -180,14 +183,14 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The encoded exception packet
         """
-        return struct.pack('>B', self.exception_code)
+        return int2byte(self.exception_code)
 
     def decode(self, data):
         """ Decodes a modbus exception response
 
         :param data: The packet data to decode
         """
-        self.exception_code = int(data[0])
+        self.exception_code = byte2int(data[0])
 
     def __str__(self):
         """ Builds a representation of an exception response
@@ -196,11 +199,12 @@ class ExceptionResponse(ModbusResponse):
         """
         message = ModbusExceptions.decode(self.exception_code)
         parameters = (self.function_code, self.original_code, message)
-        return "Exception Response(%d, %d, %s)" % parameters # pylint: disable=consider-using-f-string
+        return "Exception Response(%d, %d, %s)" % parameters
 
 
 class IllegalFunctionRequest(ModbusRequest):
-    """ Defines the Modbus slave exception type 'Illegal Function'
+    """
+    Defines the Modbus slave exception type 'Illegal Function'
     This exception code is returned if the slave::
 
         - does not implement the function code **or**
@@ -221,8 +225,9 @@ class IllegalFunctionRequest(ModbusRequest):
 
         :param data: Not used
         """
+        pass
 
-    def execute(self, context): # pylint: disable=unused-argument
+    def execute(self, context):
         """ Builds an illegal function request error response
 
         :param context: The current context for the message
@@ -237,4 +242,6 @@ class IllegalFunctionRequest(ModbusRequest):
 
 __all__ = [
     'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
-    'ExceptionResponse', 'IllegalFunctionRequest',]
+    'ExceptionResponse', 'IllegalFunctionRequest',
+]
+

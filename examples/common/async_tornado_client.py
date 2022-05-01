@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
+"""
+Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus using Tornado.
 """
-import logging
+
 import functools
 from tornado.ioloop import IOLoop
 from pymodbus.client.asynchronous import schedulers
@@ -20,8 +21,10 @@ from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClien
 # ---------------------------------------------------------------------------#
 # configure the client logging
 # ---------------------------------------------------------------------------#
-_logger = logging.getLogger()
-_logger.setLevel(logging.DEBUG)
+import logging
+logging.basicConfig()
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 
 # ---------------------------------------------------------------------------#
@@ -29,35 +32,33 @@ _logger.setLevel(logging.DEBUG)
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value #nosec
+        assert value
 
-    def on_done(f_trans):
-        if (exc := f_trans.exception()):
-            _logger.debug(exc)
+    def on_done(f):
+        exc = f.exception()
+        if exc:
+            log.debug(exc)
             return _assertor(False)
 
-        return _assertor(callback(f_trans.result()))
+        return _assertor(callback(f.result()))
 
     future.add_done_callback(on_done)
 
 
 def _print(value):
-    """ Internal print. """
     if hasattr(value, "bits"):
-        result = value.bits
+        t = value.bits
     elif hasattr(value, "registers"):
-        result = value.registers
+        t = value.registers
     else:
-        _logger.error(value)
-        return None
-    txt = f"Printing : -- {result}"
-    _logger.info(txt)
-    return result
+        log.error(value)
+        return
+    log.info("Printing : -- {}".format(t))
+    return t
 
 
 UNIT = 0x01
@@ -74,8 +75,7 @@ UNIT = 0x01
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(client, protocol): # pylint: disable=redefined-outer-name
-    """ Begin async test. """
+def beginAsynchronousTest(client, protocol):
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
@@ -128,21 +128,19 @@ def begin_asynchronous_test(client, protocol): # pylint: disable=redefined-outer
 
 
 def err(*args, **kwargs):
-    """ Error. """
-    txt = f"Err {args} {kwargs}"
-    _logger.error(txt)
+    log.error("Err", args, kwargs)
 
 
-def callback(protocol, future): # pylint: disable=redefined-outer-name
-    """ Callback. """
-    _logger.debug("Client connected")
-    if (exp := future.exception()):
+def callback(protocol, future):
+    log.debug("Client connected")
+    exp = future.exception()
+    if exp:
         return err(exp)
 
     client = future.result()
-    return begin_asynchronous_test(client, protocol)
+    return beginAsynchronousTest(client, protocol)
 
 
 if __name__ == "__main__":
-    protocol, future = ModbusClient(schedulers.IO_LOOP, port=5020) #NOSONAR pylint: disable=unpacking-non-sequence
+    protocol, future = ModbusClient(schedulers.IO_LOOP, port=5020)
     future.add_done_callback(functools.partial(callback, protocol))

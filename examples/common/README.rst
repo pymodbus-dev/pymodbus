@@ -12,7 +12,7 @@ pymodbus
 You can use pymodbus as a testing server by simply modifying
 one of the run scripts supplied here. There is an
 asynchronous version and a synchronous version (that really
-differ in how many dependencies you are willing to have).
+differ in how mnay dependencies you are willing to have).
 Regardless of which one you choose, they can be started
 quite easily::
 

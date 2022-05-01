@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Logging Examples
+"""
+Pymodbus Logging Examples
 --------------------------------------------------------------------------
 """
 import logging
@@ -9,6 +10,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # This will simply send everything logged to console
     # ----------------------------------------------------------------------- #
+    logging.basicConfig()
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
 
@@ -21,6 +23,7 @@ if __name__ == "__main__":
     # * pymodbus.client.*   - all logging messages involving the client
     # * pymodbus.protocol.* - all logging messages inside the protocol layer
     # ----------------------------------------------------------------------- #
+    logging.basicConfig()
     log = logging.getLogger('pymodbus.server')
     log.setLevel(logging.ERROR)
 
@@ -39,4 +42,4 @@ if __name__ == "__main__":
         Handlers.SysLogHandler(facility="daemon"),
         Handlers.DatagramHandler('localhost', 12345),
     ]
-    [log.addHandler(h) for h in handlers] # pylint: disable=expression-not-assigned
+    [log.addHandler(h) for h in handlers]

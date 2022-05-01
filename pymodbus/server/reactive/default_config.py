@@ -1,8 +1,9 @@
-""" Copyright (c) 2020 by RiptideIO
+"""
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 
-DEFUALT_CONFIG = { # pylint: disable=consider-using-namedtuple-or-dataclass
+DEFUALT_CONFIG = {
   "tcp": {
     "handler": "ModbusConnectedRequestHandler",
     "allow_reuse_address": True,

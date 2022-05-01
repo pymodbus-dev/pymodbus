@@ -1,12 +1,11 @@
-""" Thread safe datastore. """
 import threading
 from contextlib import contextmanager
 from pymodbus.datastore.store import BaseModbusDataBlock
 
 
-class ContextWrapper:
+class ContextWrapper(object):
     """ This is a simple wrapper around enter
-    and exit functions that conforms to the python
+    and exit functions that conforms to the pyhton
     context manager protocol:
 
     with ContextWrapper(enter, leave):
@@ -19,7 +18,7 @@ class ContextWrapper:
         self._factory = factory
 
     def __enter__(self):
-        if self.enter: # pylint: disable=no-member
+        if self.enter:
             self._enter()
         return self if not self._factory else self._factory()
 
@@ -28,8 +27,8 @@ class ContextWrapper:
             self._leave()
 
 
-class ReadWriteLock:
-    """ This reader writer lock guarantees write order, but not
+class ReadWriteLock(object):
+    """ This reader writer lock gurantees write order, but not
     read order and is generally biased towards allowing writes
     if they are available to prevent starvation.
 
@@ -51,10 +50,9 @@ class ReadWriteLock:
         self.writer = False                   # is there a current writer
 
     def __is_pending_writer(self):
-        """ Internal is pending writer. """
         return (self.writer                     # if there is a current writer
                 or (self.queue                    # or if there is a waiting writer
-                    and (self.queue[0] != self.read_condition)))
+                    and (self.queue[0] != self.read_condition)))    # or if the queue head is not a reader
 
     def acquire_reader(self):
         """ Notifies the lock that a new reader is requesting
@@ -66,7 +64,7 @@ class ReadWriteLock:
                     self.queue.append(self.read_condition)  # add the readers in line for the queue
                 while self.__is_pending_writer():           # until the current writer is finished
                     self.read_condition.wait(1)             # wait on our condition
-                if self.queue and self.read_condition == self.queue[0]:
+                if self.queue and self.read_condition == self.queue[0]:  # if the read condition is at the queue head
                     self.queue.pop(0)                       # then go ahead and remove it
             self.readers += 1                               # update the current number of readers
 
@@ -75,13 +73,12 @@ class ReadWriteLock:
         the underlying resource.
         """
         with self.lock:
-            if self.writer or self.readers:
-                condition = threading.Condition(self.lock)
-                    # create a condition just for this writer
+            if self.writer or self.readers:                 # if we need to wait on a writer or readers
+                condition = threading.Condition(self.lock)  # create a condition just for this writer
                 self.queue.append(condition)                # and put it on the waiting queue
                 while self.writer or self.readers:          # until the write lock is free
-                    condition.wait(1)
-                self.queue.pop(0)
+                    condition.wait(1)                       # wait on our condition
+                self.queue.pop(0)                           # remove our condition after our condition is met
             self.writer = True                              # stop other writers from operating
 
     def release_reader(self):
@@ -182,37 +179,30 @@ class ThreadSafeDataBlock(BaseModbusDataBlock):
             return self.block.setValues(address, values)
 
 
-if __name__ == "__main__": # pylint: disable=too-complex
+if __name__ == "__main__":
 
-    class AtomicCounter:
-        """ Atomic counter. """
-
+    class AtomicCounter(object):
         def __init__(self, **kwargs):
-            """ Init. """
             self.counter = kwargs.get('start', 0)
             self.finish = kwargs.get('finish', 1000)
             self.lock = threading.Lock()
 
         def increment(self, count=1):
-            """ Increment. """
             with self.lock:
                 self.counter += count
 
         def is_running(self):
-            """ Is running. """
             return self.counter <= self.finish
 
     locker = ReadWriteLock()
     readers, writers = AtomicCounter(), AtomicCounter()
 
     def read():
-        """ Read. """
         while writers.is_running() and readers.is_running():
             with locker.get_reader_lock():
                 readers.increment()
 
     def write():
-        """ Write. """
         while writers.is_running() and readers.is_running():
             with locker.get_writer_lock():
                 writers.increment()
@@ -223,4 +213,4 @@ if __name__ == "__main__": # pylint: disable=too-complex
         t.start()
     for t in rthreads + wthreads:
         t.join()
-    print(f"readers[{readers.counter}] writers[{writers.counter}]")
+    print("readers[%d] writers[%d]" % (readers.counter, writers.counter))

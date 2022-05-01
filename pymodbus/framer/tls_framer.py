@@ -1,5 +1,3 @@
-""" TLS framer. """
-import logging
 import struct
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.exceptions import InvalidMessageReceivedException
@@ -9,6 +7,7 @@ from pymodbus.framer import ModbusFramer, TLS_FRAME_HEADER
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
@@ -42,7 +41,9 @@ class ModbusTlsFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def checkFrame(self):
-        """ Check and decode the next frame Return true if we were successful. """
+        """
+        Check and decode the next frame Return true if we were successful
+        """
         if self.isFrameReady():
             # we have at least a complete message, continue
             if len(self._buffer) - self._hsize >= 1:
@@ -83,7 +84,8 @@ class ModbusTlsFramer(ModbusFramer):
         return self._buffer[self._hsize:]
 
     def populateResult(self, result):
-        """ Populates the modbus result with the transport specific header
+        """
+        Populates the modbus result with the transport specific header
         information (no header before PDU in decrypted message)
 
         :param result: The response packet
@@ -94,14 +96,14 @@ class ModbusTlsFramer(ModbusFramer):
     # Public Member Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """ Decode data. """
         if len(data) > self._hsize:
             (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0:self._hsize+1])
             return dict(fcode=fcode)
-        return {}
+        return dict()
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """ The new packet processing pattern
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
+        """
+        The new packet processing pattern
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -123,8 +125,7 @@ class ModbusTlsFramer(ModbusFramer):
             unit = [unit]
         # no unit id for Modbus Security Application Protocol
         single = kwargs.get("single", True)
-        txt = f"Processing: {hexlify_packets(data)}"
-        _logger.debug(txt)
+        _logger.debug("Processing: " + hexlify_packets(data))
         self.addToFrame(data)
 
         if self.isFrameReady():
@@ -132,26 +133,31 @@ class ModbusTlsFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    txt = f"Not in valid unit id - {unit}, ignoring!!"
-                    _logger.debug(txt)
+                    _logger.debug("Not in valid unit id - {}, "
+                                  "ignoring!!".format(unit))
                     self.resetFrame()
             else:
                 _logger.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
 
     def _process(self, callback, error=False):
-        """ Process incoming packets irrespective error condition. """
+        """
+        Process incoming packets irrespective error condition
+        """
         data = self.getRawFrame() if error else self.getFrame()
-        if (result := self.decoder.decode(data)) is None:
+        result = self.decoder.decode(data)
+        if result is None:
             raise ModbusIOException("Unable to decode request")
-        if error and result.function_code < 0x80:
+        elif error and result.function_code < 0x80:
             raise InvalidMessageReceivedException(result)
-        self.populateResult(result)
-        self.advanceFrame()
-        callback(result)  # defer or push to a thread?
+        else:
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer or push to a thread?
 
-    def resetFrame(self): # pylint: disable=invalid-name
-        """ Reset the entire message frame.
+    def resetFrame(self):
+        """
+        Reset the entire message frame.
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
@@ -160,8 +166,10 @@ class ModbusTlsFramer(ModbusFramer):
         """
         self._buffer = b''
 
-    def getRawFrame(self): # pylint: disable=invalid-name
-        """ Returns the complete buffer. """
+    def getRawFrame(self):
+        """
+        Returns the complete buffer
+        """
         return self._buffer
 
     def buildPacket(self, message):

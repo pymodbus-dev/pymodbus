@@ -1,4 +1,5 @@
-""" These are a collection of helper methods that can be
+"""
+These are a collection of helper methods that can be
 used to save a modbus server context to file for backup,
 checkpointing, or any other purpose. There use is very
 simple::
@@ -26,14 +27,14 @@ and supply the needed callbacks for your given format:
 * handle_save_end(self)
 """
 import json
-import xml.etree.ElementTree as xml #nosec
+import xml.etree.ElementTree as xml
 
 
-class ModbusDatastoreSaver:
+class ModbusDatastoreSaver(object):
     """ An abstract base class that can be used to implement
-    a persistence format for the modbus server context. In
+    a persistance format for the modbus server context. In
     order to use it, just complete the necessary callbacks
-    (SAX style) that your persistence format needs.
+    (SAX style) that your persistance format needs.
     """
 
     def __init__(self, context, path=None):
@@ -51,13 +52,13 @@ class ModbusDatastoreSaver:
         callbacks which the sub classes will
         implement.
         """
-        with open(self.path, 'w') as self.file_handle: # pylint: disable=attribute-defined-outside-init,unspecified-encoding
+        with open(self.path, 'w') as self.file_handle:
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)
                 for store_name, store in slave.store.iteritems():
                     self.handle_store_start(store_name)
-                    self.handle_store_values(iter(store)) # pylint: disable=no-member
+                    self.handle_store_values(iter(store))
                     self.handle_store_end(store_name)
                 self.handle_slave_end(slave_name)
             self.handle_save_end()
@@ -66,22 +67,22 @@ class ModbusDatastoreSaver:
     # predefined state machine callbacks
     # ------------------------------------------------------------
     def handle_save_start(self):
-        """ Handle save start. """
+        pass
 
     def handle_store_start(self, store):
-        """ Handle store start. """
+        pass
 
     def handle_store_end(self, store):
-        """ Handle store end. """
+        pass
 
     def handle_slave_start(self, slave):
-        """ Handle slave start. """
+        pass
 
     def handle_slave_end(self, slave):
-        """ handle slave end. """
+        pass
 
     def handle_save_end(self):
-        """ Handle save end. """
+        pass
 
 
 # ---------------------------------------------------------------- #
@@ -103,23 +104,18 @@ class JsonDatastoreSaver(ModbusDatastoreSaver):
     }
 
     def handle_save_start(self):
-        """ Handle save start. """
-        self._context = {}
+        self._context = dict()
 
     def handle_slave_start(self, slave):
-        """ Handle slave start. """
-        self._context[hex(slave)] = self._slave = {}
+        self._context[hex(slave)] = self._slave = dict()
 
     def handle_store_start(self, store):
-        """ Handle store start. """
         self._store = self.STORE_NAMES[store]
 
     def handle_store_values(self, values):
-        """ Handle store values. """
         self._slave[self._store] = dict(values)
 
     def handle_save_end(self):
-        """ Handle save end. """
         json.dump(self._context, self.file_handle)
 
 
@@ -140,29 +136,23 @@ class CsvDatastoreSaver(ModbusDatastoreSaver):
     }
 
     def handle_save_start(self):
-        """ Handle save start. """
         self.file_handle.write(self.HEADER)
 
     def handle_slave_start(self, slave):
-        """ Handle slave start. """
         self._line = [str(slave)]
 
     def handle_store_start(self, store):
-        """ Handle store start. """
         self._line.append(self.STORE_NAMES[store])
 
     def handle_store_values(self, values):
-        """ Handle store values. """
         self.file_handle.writelines(self.handle_store_value(values))
 
     def handle_store_end(self, store):
-        """ Handle store end. """
         self._line.pop()
 
     def handle_store_value(self, values):
-        """ Handle store value. """
-        for val_a, val_v in values:
-            yield ','.join(self._line + [str(val_a), str(val_v)]) + self.NEWLINE
+        for a, v in values:
+            yield ','.join(self._line + [str(a), str(v)]) + self.NEWLINE
 
 
 class XmlDatastoreSaver(ModbusDatastoreSaver):
@@ -180,22 +170,18 @@ class XmlDatastoreSaver(ModbusDatastoreSaver):
     }
 
     def handle_save_start(self):
-        """ Handle save start. """
         self._context = xml.Element("context")
-        self._root = xml.ElementTree(self._context) # pylint: disable=attribute-defined-outside-init
+        self._root = xml.ElementTree(self._context)
 
     def handle_slave_start(self, slave):
-        """ Handle slave start. """
-        self._slave = xml.SubElement(self._context, "slave") # pylint: disable=attribute-defined-outside-init
+        self._slave = xml.SubElement(self._context, "slave")
         self._slave.set("id", str(slave))
 
     def handle_store_start(self, store):
-        """ Handle store start. """
         self._store = xml.SubElement(self._slave, "store")
         self._store.set("function", self.STORE_NAMES[store])
 
     def handle_store_values(self, values):
-        """ Handle store values. """
         for address, value in values:
             entry = xml.SubElement(self._store, "entry")
             entry.text = str(value)

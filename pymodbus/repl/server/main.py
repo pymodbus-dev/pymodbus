@@ -1,23 +1,21 @@
-""" Copyright (c) 2020 by RiptideIO
+"""
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
-import sys
-import logging
 import asyncio
 import json
 import click
+from pymodbus.compat import PYTHON_VERSION
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
     ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
-if sys.version_info > (3, 7):
+if PYTHON_VERSION > (3, 7):
     CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
-    CANCELLED_ERROR = asyncio.CancelledError # pylint: disable=invalid-name
-
-_logger = logging.getLogger(__name__)
+    CANCELLED_ERROR = asyncio.CancelledError
 
 
 @click.group("ReactiveModbusServer")
@@ -31,14 +29,19 @@ _logger = logging.getLogger(__name__)
               help="Run with debug logs enabled for pymodbus")
 @click.pass_context
 def server(ctx, host, web_port, broadcast_support, repl, verbose):
-    """Server code."""
-    FORMAT = ('%(asctime)-15s %(threadName)-15s' # pylint: disable=invalid-name
+    global logger
+    import logging
+    FORMAT = ('%(asctime)-15s %(threadName)-15s'
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-    logging.basicConfig(format=FORMAT) #NOSONAR
+    pymodbus_logger = logging.getLogger("pymodbus")
+    logging.basicConfig(format=FORMAT)
+    logger = logging.getLogger(__name__)
     if verbose:
-        _logger.setLevel(logging.DEBUG)
+        pymodbus_logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
-        _logger.setLevel(logging.ERROR)
+        pymodbus_logger.setLevel(logging.ERROR)
+        logger.setLevel(logging.ERROR)
 
     ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
                "broadcast": broadcast_support}
@@ -66,7 +69,8 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
 @click.pass_context
 def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         modbus_config, randomize):
-    """ Run Reactive Modbus server exposing REST endpoint
+    """
+    Run Reactive Modbus server exposing REST endpoint
     for response manipulation.
     """
     repl = ctx.obj.pop("repl")
@@ -74,8 +78,8 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
     if modbus_config:
-        with open(modbus_config) as my_file: # pylint: disable=unspecified-encoding
-            modbus_config = json.load(my_file)
+        with open(modbus_config) as f:
+            modbus_config = json.load(f)
     else:
         modbus_config = DEFUALT_CONFIG
     modbus_config = modbus_config.get(modbus_server, {})
@@ -107,4 +111,4 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
 
 
 if __name__ == '__main__':
-    server() # pylint: disable=no-value-for-parameter
+    server()

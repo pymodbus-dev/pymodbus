@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Payload Utilities Test Fixture
+"""
+Payload Utilities Test Fixture
 --------------------------------
 This fixture tests the functionality of the payload
 utilities.
@@ -16,14 +17,14 @@ from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 # Fixture
 #---------------------------------------------------------------------------#
 class ModbusPayloadUtilityTests(unittest.TestCase):
-    """ Modbus payload utility tests. """
 
     # ----------------------------------------------------------------------- #
     # Setup/TearDown
     # ----------------------------------------------------------------------- #
 
     def setUp(self):
-        """ Initializes the test environment and builds request/result
+        """
+        Initializes the test environment and builds request/result
         encoding pairs
         """
         self.little_endian_payload = \
@@ -44,12 +45,13 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
 
     def tearDown(self):
         """ Cleans up the test environment """
+        pass
 
     # ----------------------------------------------------------------------- #
     # Payload Builder Tests
     # ----------------------------------------------------------------------- #
 
-    def test_little_endian_payload_builder(self):
+    def testLittleEndianPayloadBuilder(self):
         """ Test basic bit message encoding/decoding """
         builder = BinaryPayloadBuilder(byteorder=Endian.Little,
                                        wordorder=Endian.Little)
@@ -68,7 +70,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_bits(self.bitstring)
         self.assertEqual(self.little_endian_payload, builder.to_string())
 
-    def test_big_endian_payload_builder(self):
+    def testBigEndianPayloadBuilder(self):
         """ Test basic bit message encoding/decoding """
         builder = BinaryPayloadBuilder(byteorder=Endian.Big)
         builder.add_8bit_uint(1)
@@ -86,7 +88,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         builder.add_bits(self.bitstring)
         self.assertEqual(self.big_endian_payload, builder.to_string())
 
-    def test_payload_builder_reset(self):
+    def testPayloadBuilderReset(self):
         """ Test basic bit message encoding/decoding """
         builder = BinaryPayloadBuilder()
         builder.add_8bit_uint(0x12)
@@ -99,7 +101,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(b'', builder.to_string())
         self.assertEqual([], builder.build())
 
-    def test_payload_builder_with_raw_payload(self):
+    def testPayloadBuilderWithRawPayload(self):
         """ Test basic bit message encoding/decoding """
         _coils1 = [False, False, True, True, False, True, False, False, False,
                    False, False, True, False, False, True, False, False, True,
@@ -114,24 +116,24 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
                                        repack=True)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([13330, 30806], builder.to_registers())
-        coils = builder.to_coils()
-        self.assertEqual(_coils1, coils)
+        c = builder.to_coils()
+        self.assertEqual(_coils1, c)
 
         builder = BinaryPayloadBuilder([b'\x12', b'\x34', b'\x56', b'\x78'],
                                        byteorder=Endian.Big)
         self.assertEqual(b'\x12\x34\x56\x78', builder.to_string())
         self.assertEqual([4660, 22136], builder.to_registers())
         self.assertEqual('\x12\x34\x56\x78', str(builder))
-        coils = builder.to_coils()
-        self.assertEqual(_coils2, coils)
+        c = builder.to_coils()
+        self.assertEqual(_coils2, c)
 
     # ----------------------------------------------------------------------- #
     # Payload Decoder Tests
     # ----------------------------------------------------------------------- #
 
-    def test_little_endian_payload_decoder(self):
+    def testLittleEndianPayloadDecoder(self):
         """ Test basic bit message encoding/decoding """
-        decoder = BinaryPayloadDecoder(self.little_endian_payload,
+        decoder = BinaryPayloadDecoder(self.little_endian_payload, 
                                        byteorder=Endian.Little,
                                        wordorder=Endian.Little)
         self.assertEqual(1,      decoder.decode_8bit_uint())
@@ -148,9 +150,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual('test', decoder.decode_string(4).decode())
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
-    def test_big_endian_payload_decoder(self):
+    def testBigEndianPayloadDecoder(self):
         """ Test basic bit message encoding/decoding """
-        decoder = BinaryPayloadDecoder(self.big_endian_payload,
+        decoder = BinaryPayloadDecoder(self.big_endian_payload, 
                                        byteorder=Endian.Big)
         self.assertEqual(1,      decoder.decode_8bit_uint())
         self.assertEqual(2,      decoder.decode_16bit_uint())
@@ -166,15 +168,15 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(b'test', decoder.decode_string(4))
         self.assertEqual(self.bitstring, decoder.decode_bits())
 
-    def test_payload_decoder_reset(self):
+    def testPayloadDecoderReset(self):
         """ Test the payload decoder reset functionality """
         decoder = BinaryPayloadDecoder(b'\x12\x34')
         self.assertEqual(0x12, decoder.decode_8bit_uint())
         self.assertEqual(0x34, decoder.decode_8bit_uint())
-        decoder.reset()
+        decoder.reset()   
         self.assertEqual(0x3412, decoder.decode_16bit_uint())
 
-    def test_payload_decoder_register_factory(self):
+    def testPayloadDecoderRegisterFactory(self):
         """ Test the payload decoder reset functionality """
         payload = [1, 2, 3, 4]
         decoder = BinaryPayloadDecoder.fromRegisters(payload, byteorder=Endian.Little)
@@ -188,7 +190,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertRaises(ParameterException,
             lambda: BinaryPayloadDecoder.fromRegisters('abcd'))
 
-    def test_payload_decoder_coil_factory(self):
+    def testPayloadDecoderCoilFactory(self):
         """ Test the payload decoder reset functionality """
         payload = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1]
         decoder = BinaryPayloadDecoder.fromCoils(payload, byteorder=Endian.Little)

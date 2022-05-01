@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-""" Pymodbus Payload Building/Decoding Example
+"""
+Pymodbus Payload Building/Decoding Example
 --------------------------------------------------------------------------
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
-import logging
-from collections import OrderedDict
-
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.compat import iteritems
+from collections import OrderedDict
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
+import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -29,7 +30,6 @@ ORDER_DICT = {
 
 
 def run_binary_payload_ex():
-    """ Run binary payload. """
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
@@ -84,18 +84,16 @@ def run_binary_payload_ex():
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
     # ----------------------------------------------------------------------- #
-    combos = [(word_endian, byte_endian)
-        for word_endian in (Endian.Big, Endian.Little)
-            for byte_endian in (Endian.Big, Endian.Little)]
-    for word_endian, byte_endian in combos:
+    combos = [(wo, bo) for wo in [Endian.Big, Endian.Little] for bo in [Endian.Big, Endian.Little]]
+    for wo, bo in combos:
         print("-" * 60)
-        print(f"Word Order: {ORDER_DICT[word_endian]}")
-        print(f"Byte Order: {ORDER_DICT[byte_endian]}")
+        print("Word Order: {}".format(ORDER_DICT[wo]))
+        print("Byte Order: {}".format(ORDER_DICT[bo]))
         print()
-        builder = BinaryPayloadBuilder(byteorder=byte_endian,
-                                       wordorder=word_endian)
-        my_string = "abcdefgh"
-        builder.add_string(my_string)
+        builder = BinaryPayloadBuilder(byteorder=bo,
+                                       wordorder=wo)
+        strng = "abcdefgh"
+        builder.add_string(strng)
         builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
         builder.add_8bit_int(-0x12)
         builder.add_8bit_uint(0x12)
@@ -160,17 +158,17 @@ def run_binary_payload_ex():
         print(result.registers)
         print("\n")
         decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                     byteorder=byte_endian,
-                                                     wordorder=word_endian)
+                                                     byteorder=bo,
+                                                     wordorder=wo)
 
-        assert decoder._byteorder == (builder._byteorder, #nosec pylint: disable=protected-access
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._byteorder == builder._byteorder, \
+               "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
-        assert decoder._wordorder == (builder._wordorder, #nosec pylint: disable=protected-access
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._wordorder == builder._wordorder, \
+               "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder"
 
         decoded = OrderedDict([
-            ('string', decoder.decode_string(len(my_string))),
+            ('string', decoder.decode_string(len(strng))),
             ('bits', decoder.decode_bits()),
             ('8int', decoder.decode_8bit_int()),
             ('8uint', decoder.decode_8bit_uint()),
@@ -192,8 +190,8 @@ def run_binary_payload_ex():
         print("-" * 60)
         print("Decoded Data")
         print("-" * 60)
-        for name, value in iter(decoded.items()):
-            print("%s\t" % name, hex(value) if isinstance(value, int) else value) # pylint: disable=consider-using-f-string
+        for name, value in iteritems(decoded):
+            print("%s\t" % name, hex(value) if isinstance(value, int) else value)
 
     # ----------------------------------------------------------------------- #
     # close the client

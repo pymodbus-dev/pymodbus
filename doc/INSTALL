@@ -62,7 +62,7 @@ The API documents can be generated using one of four programs:
 * pydoctor
 * doxygen
 
-To build these, simply run the following command and the available
+To bulid these, simply run the following command and the available
 packages will sipmly be built::
 
     python setup.py build_apidocs

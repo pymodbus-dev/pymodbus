@@ -1,52 +1,35 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Client Extended Examples
+"""
+Pymodbus Synchronous Client Extended Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus to perform the extended portions of the
 modbus protocol.
 """
-import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 # from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
-from pymodbus.diag_message import (
-    GetClearModbusPlusRequest,
-    ClearOverrunCountRequest,
-    ReturnIopOverrunCountRequest,
-    ReturnSlaveBusCharacterOverrunCountRequest,
-    ReturnSlaveBusyCountRequest,
-    ReturnSlaveNAKCountRequest,
-    ReturnSlaveNoResponseCountRequest,
-    ReturnSlaveMessageCountRequest,
-    ReturnBusExceptionErrorCountRequest,
-    ReturnBusCommunicationErrorCountRequest,
-    ClearCountersRequest,
-    ForceListenOnlyModeRequest,
-    ChangeAsciiInputDelimiterRequest,
-    ReturnDiagnosticRegisterRequest,
-    RestartCommunicationsOptionRequest,
-    ReturnQueryDataRequest,
-)
-from pymodbus.other_message import (
-    GetCommEventLogRequest,
-    GetCommEventCounterRequest,
-    ReadExceptionStatusRequest,
-    ReportSlaveIdRequest,
-)
-from pymodbus.mei_message import (
-    ReadDeviceInformationRequest,
-)
+
+
+# --------------------------------------------------------------------------- #
+# import the extended messages to perform
+# --------------------------------------------------------------------------- #
+from pymodbus.diag_message import *
+from pymodbus.file_message import *
+from pymodbus.other_message import *
+from pymodbus.mei_message import *
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
+import logging
 FORMAT = ('%(asctime)-15s %(threadName)-15s '
           '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -54,7 +37,6 @@ UNIT = 0x01
 
 
 def execute_extended_requests():
-    """ Execute extended requests. """
     # ------------------------------------------------------------------------#
     # choose the client you want
     # ------------------------------------------------------------------------#
@@ -99,6 +81,11 @@ def execute_extended_requests():
     rq = ReadDeviceInformationRequest(unit=UNIT)
     rr = client.execute(rq)
     log.debug(rr)
+    # assert(rr == None)              # not supported by reference
+    # assert (not rr.isError())  # test that we are not an error
+    # assert (rr.information[0] == b'Pymodbus')  # test the vendor name
+    # assert (rr.information[1] == b'PM')  # test the product code
+    # assert (rr.information[2] == b'1.0')  # test the code revision
 
     log.debug("Running ReportSlaveIdRequest")
     rq = ReportSlaveIdRequest(unit=UNIT)

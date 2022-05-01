@@ -1,4 +1,5 @@
-""" Modbus BCD Payload Builder
+"""
+Modbus BCD Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
@@ -58,7 +59,8 @@ def count_bcd_digits(bcd):
 
 
 class BcdPayloadBuilder(IPayloadBuilder):
-    """ A utility that helps build binary coded decimal payload
+    """
+    A utility that helps build binary coded decimal payload
     messages to be written with the various modbus messages.
     example::
 
@@ -72,10 +74,10 @@ class BcdPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         """
-        self._endian = endian
         self._payload = payload or []
+        self._endian = endian
 
     def __str__(self):
         """ Return the payload buffer as a string
@@ -137,8 +139,9 @@ class BcdPayloadBuilder(IPayloadBuilder):
         self._payload.append(value)
 
 
-class BcdPayloadDecoder:
-    """ A utility that helps decode binary coded decimal payload
+class BcdPayloadDecoder(object):
+    """
+    A utility that helps decode binary coded decimal payload
     messages from a modbus response message. What follows is
     a simple example::
 
@@ -156,7 +159,7 @@ class BcdPayloadDecoder:
         self._pointer = 0x00
 
     @staticmethod
-    def fromRegisters(registers, endian=Endian.Little): # pylint: disable=invalid-name
+    def fromRegisters(registers, endian=Endian.Little):
         """ Initialize a payload decoder with the result of
         reading a collection of registers from a modbus device.
 
@@ -165,7 +168,7 @@ class BcdPayloadDecoder:
         been decoded by the rest of the library.
 
         :param registers: The register results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
@@ -174,14 +177,14 @@ class BcdPayloadDecoder:
         raise ParameterException('Invalid collection of registers supplied')
 
     @staticmethod
-    def fromCoils(coils, endian=Endian.Little): # pylint: disable=invalid-name
+    def fromCoils(coils, endian=Endian.Little):
         """ Initialize a payload decoder with the result of
         reading a collection of coils from a modbus device.
 
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):

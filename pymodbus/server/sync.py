@@ -1,13 +1,13 @@
-""" Implementation of a Threaded Modbus Server
+"""
+Implementation of a Threaded Modbus Server
 ------------------------------------------
 
 """
-import logging
-import traceback
 from binascii import b2a_hex
-import socket
-import socketserver
 import serial
+import socket
+import ssl
+import traceback
 
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets
@@ -15,14 +15,16 @@ from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import ModbusAsciiFramer, ModbusSocketFramer, ModbusTlsFramer
+from pymodbus.transaction import *
 from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.compat import socketserver, byte2int
 from pymodbus.server.tls_helper import sslctx_provider
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -38,19 +40,19 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     """
     running = False
     framer = None
-
+    
     def setup(self):
-        """ Callback for when a client connects."""
-        txt = f"Client Connected [{self.client_address}]"
-        _logger.debug(txt)
+        """ Callback for when a client connects
+        """
+        _logger.debug("Client Connected [%s:%s]" % self.client_address)
         self.running = True
         self.framer = self.server.framer(self.server.decoder, client=None)
         self.server.threads.append(self)
 
     def finish(self):
-        """ Callback for when a client disconnects. """
-        txt = f"Client Disconnected [{self.client_address}]"
-        _logger.debug(txt)
+        """ Callback for when a client disconnects
+        """
+        _logger.debug("Client Disconnected [%s:%s]" % self.client_address)
         self.server.threads.remove(self)
 
     def execute(self, request):
@@ -60,7 +62,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         """
         broadcast = False
         try:
-            if self.server.broadcast_enable and not request.unit_id:
+            if self.server.broadcast_enable and request.unit_id == 0:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts, note response will be ignored
                 for unit_id in self.server.context.slaves():
@@ -68,15 +70,15 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
             else:
                 context = self.server.context[request.unit_id]
                 response = request.execute(context)
-        except NoSuchSlaveException:
-            txt = f"requested slave does not exist: {request.unit_id}"
-            _logger.debug(txt)
+        except NoSuchSlaveException as ex:
+            _logger.debug("requested slave does "
+                          "not exist: %s" % request.unit_id )
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
-        except Exception as exc: # pylint: disable=broad-except
+        except Exception as ex:
             _logger.debug("Datastore unable to fulfill request: "
-                          "%s; %s", exc, traceback.format_exc())
+                          "%s; %s", ex, traceback.format_exc())
             response = request.doException(merror.SlaveFailure)
         # no response when broadcasting
         if not broadcast:
@@ -88,11 +90,12 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     # Base class implementations
     # ----------------------------------------------------------------------- #
     def handle(self):
-        """ Callback when we receive any data. """
+        """ Callback when we receive any data
+        """
         raise NotImplementedException("Method not implemented"
                                       " by derived class")
 
-    def send(self, message): # pylint: disable=no-self-use
+    def send(self, message):
         """ Send a request (string) to the network
 
         :param message: The unencoded modbus response
@@ -112,7 +115,8 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
         """
         while self.running:
             try:
-                if data := self.request.recv(1024):
+                data = self.request.recv(1024)
+                if data:
                     units = self.server.context.slaves()
                     if not isinstance(units, (list, tuple)):
                         units = [units]
@@ -123,12 +127,11 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                     single = self.server.context.single
                     self.framer.processIncomingPacket(data, self.execute,
                                                       units, single=single)
-            except Exception as msg: # pylint: disable=broad-except
+            except Exception as msg:
                 # Since we only have a single socket, we cannot exit
                 # Clear frame buffer
                 self.framer.resetFrame()
-                txt = f"Error: Socket error occurred {msg}"
-                _logger.debug(txt)
+                _logger.debug("Error: Socket error occurred %s" % msg)
 
     def send(self, message):
         """ Send a request (string) to the network
@@ -139,16 +142,13 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
             # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"send: [{message}]- {b2a_hex(pdu)}"
-                _logger.debug(txt)
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.request.send(pdu)
-        return None
 
 
 class CustomSingleRequestHandler(ModbusSingleRequestHandler):
-    """ Handle single request. """
 
-    def __init__(self, request, client_address, server): # pylint: disable=super-init-not-called
+    def __init__(self, request, client_address, server):
         self.request = request
         self.client_address = client_address
         self.server = server
@@ -163,13 +163,13 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     the client handler for a connected protocol (TCP).
     """
 
-    def handle(self): # pylint: disable=too-complex
-        """ Callback when we receive any data, until self.running becomes False.
+    def handle(self):
+        """Callback when we receive any data, until self.running becomes False.
         Blocks indefinitely awaiting data.  If shutdown is required, then the
         global socket.settimeout(<seconds>) may be used, to allow timely
         checking of self.running.  However, since this also affects socket
         connects, if there are outgoing socket connections used in the same
-        program, then these will be prevented, if the specified timeout is too
+        program, then these will be prevented, if the specfied timeout is too
         short.  Hence, this is unreliable.
 
         To respond to Modbus...Server.server_close() (which clears each
@@ -181,10 +181,11 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
 
         """
         reset_frame = False
-        while self.running: # pylint: disable=too-many-nested-blocks
+        while self.running:
             try:
                 units = self.server.context.slaves()
-                if not (data := self.request.recv(1024)):
+                data = self.request.recv(1024)
+                if not data:
                     self.running = False
                 else:
                     if not isinstance(units, (list, tuple)):
@@ -196,8 +197,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
                             units.append(0)
 
                 if _logger.isEnabledFor(logging.DEBUG):
-                    txt = f"Handling data: {hexlify_packets(data)}"
-                    _logger.debug(txt)
+                    _logger.debug('Handling data: ' + hexlify_packets(data))
                 single = self.server.context.single
                 self.framer.processIncomingPacket(data, self.execute, units,
                                                   single=single)
@@ -206,12 +206,11 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
                     _logger.debug("Socket timeout occurred %s", msg)
                 reset_frame = True
             except socket.error as msg:
-                txt = f"Socket error occurred {msg}"
-                _logger.error(txt)
+                _logger.error("Socket error occurred %s" % msg)
                 self.running = False
-            except Exception:  # pylint: disable=broad-except
-                txt = f"Socket exception occurred {traceback.format_exc()}"
-                _logger.error(txt)
+            except:
+                _logger.error("Socket exception occurred "
+                              "%s" % traceback.format_exc() )
                 self.running = False
                 reset_frame = True
             finally:
@@ -228,10 +227,8 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
             # self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"send: [{message}]- {b2a_hex(pdu)}"
-                _logger.debug(txt)
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.request.send(pdu)
-        return None
 
 
 class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
@@ -245,7 +242,8 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
     socket = None
 
     def handle(self):
-        """ Callback when we receive any data. """
+        """ Callback when we receive any data
+        """
         reset_frame = False
         while self.running:
             try:
@@ -254,21 +252,18 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
                     self.running = False
                     data = b''
                 if _logger.isEnabledFor(logging.DEBUG):
-                    txt = f"Handling data: {hexlify_packets(data)}"
-                    _logger.debug(txt)
+                    _logger.debug('Handling data: ' + hexlify_packets(data))
                 # if not self.server.control.ListenOnly:
                 units = self.server.context.slaves()
                 single = self.server.context.single
                 self.framer.processIncomingPacket(data, self.execute,
                                                   units, single=single)
-            except socket.timeout:
-                pass
+            except socket.timeout: pass
             except socket.error as msg:
-                txt = f"Socket error occurred {msg}"
-                _logger.error(txt)
+                _logger.error("Socket error occurred %s" % msg)
                 self.running = False
                 reset_frame = True
-            except Exception as msg: # pylint: disable=broad-except
+            except Exception as msg:
                 _logger.error(msg)
                 self.running = False
                 reset_frame = True
@@ -288,16 +283,16 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             #self.server.control.Counter.BusMessage += 1
             pdu = self.framer.buildPacket(message)
             if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"send: [{message}]- {b2a_hex(pdu)}"
-                _logger.debug(txt)
+                _logger.debug('send: [%s]- %s' % (message, b2a_hex(pdu)))
             return self.socket.sendto(pdu, self.client_address)
-        return None
+
 
 # --------------------------------------------------------------------------- #
 # Server Implementations
 # --------------------------------------------------------------------------- #
 class ModbusTcpServer(socketserver.ThreadingTCPServer):
-    """ A modbus threaded tcp socket server
+    """
+    A modbus threaded tcp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -320,7 +315,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
                         ModbusConnectedRequestHandler
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
-        :param ignore_missing_slaves: True to not send errors on a request
+        :param ignore_missing_slaves: True to not send errors on a request 
                         to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
                         False to treat 0 as any other unit_id
@@ -345,15 +340,14 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
                                                  self.handler,
                                                  **kwargs)
 
-    def process_request(self, request, client_address):
+    def process_request(self, request, client):
         """ Callback for connecting a new client thread
 
         :param request: The request to handle
         :param client: The address of the client
         """
-        txt = f"Started thread to serve client at {str(client_address)}"
-        _logger.debug(txt)
-        socketserver.ThreadingTCPServer.process_request(self, request, client_address)
+        _logger.debug("Started thread to serve client at " + str(client))
+        socketserver.ThreadingTCPServer.process_request(self, request, client)
 
     def shutdown(self):
         """ Stops the serve_forever loop.
@@ -374,14 +368,15 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
 
 
 class ModbusTlsServer(ModbusTcpServer):
-    """ A modbus threaded TLS server
+    """
+    A modbus threaded TLS server
 
     We inherit and overload the ModbusTcpServer so that we
     can control the client threads as well as have a single
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None, # pylint: disable=too-many-arguments
+    def __init__(self, context, framer=None, identity=None, address=None,
                  sslctx=None, certfile=None, keyfile=None, password=None,
                  reqclicert=False, handler=None, allow_reuse_address=False,
                  **kwargs):
@@ -417,13 +412,15 @@ class ModbusTlsServer(ModbusTcpServer):
                                  handler, allow_reuse_address, **kwargs)
 
     def server_activate(self):
-        """ Callback for starting listening over TLS connection. """
+        """ Callback for starting listening over TLS connection
+        """
         self.socket = self.sslctx.wrap_socket(self.socket, server_side=True)
         socketserver.ThreadingTCPServer.server_activate(self)
 
 
 class ModbusUdpServer(socketserver.ThreadingUDPServer):
-    """ A modbus threaded udp socket server
+    """
+    A modbus threaded udp socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -467,27 +464,28 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
             self.address, self.handler, **kwargs)
         # self._BaseServer__shutdown_request = True
 
-    def process_request(self, request, client_address):
+    def process_request(self, request, client):
         """ Callback for connecting a new client thread
 
         :param request: The request to handle
         :param client: The address of the client
         """
-        _, _ = request # TODO I might have to rewrite # pylint: disable=fixme
-        txt = f"Started thread to serve client at {client_address}"
-        _logger.debug(txt)
-        socketserver.ThreadingUDPServer.process_request(self, request, client_address)
+        packet, socket = request # TODO I might have to rewrite
+        _logger.debug("Started thread to serve client at " + str(client))
+        socketserver.ThreadingUDPServer.process_request(self, request, client)
 
     def server_close(self):
-        """ Callback for stopping the running server. """
+        """ Callback for stopping the running server
+        """
         _logger.debug("Modbus server stopped")
         self.socket.close()
         for thread in self.threads:
             thread.running = False
 
 
-class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
-    """ A modbus threaded serial socket server
+class ModbusSerialServer(object):
+    """
+    A modbus threaded serial socket server
 
     We inherit and overload the socket server so that we
     can control the client threads as well as have a single
@@ -546,8 +544,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
 
         :returns: True if connection succeeded, False otherwise
         """
-        if self.socket:
-            return True
+        if self.socket: return True
         try:
             self.socket = serial.Serial(port=self.device,
                                         timeout=self.timeout,
@@ -603,7 +600,7 @@ class ModbusSerialServer: # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 # Creation Factories
 # --------------------------------------------------------------------------- #
-def StartTcpServer(context=None, identity=None, address=None, # pylint: disable=invalid-name,dangerous-default-value
+def StartTcpServer(context=None, identity=None, address=None,
                    custom_functions=[], **kwargs):
     """ A factory to start and run a tcp modbus server
 
@@ -618,12 +615,12 @@ def StartTcpServer(context=None, identity=None, address=None, # pylint: disable=
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusTcpServer(context, framer, identity, address, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
-def StartTlsServer(context=None, identity=None, address=None, sslctx=None, # pylint: disable=invalid-name,dangerous-default-value
+def StartTlsServer(context=None, identity=None, address=None, sslctx=None,
                    certfile=None, keyfile=None, password=None, reqclicert=False,
                    custom_functions=[], **kwargs):
     """ A factory to start and run a tls modbus server
@@ -645,12 +642,12 @@ def StartTlsServer(context=None, identity=None, address=None, sslctx=None, # pyl
     server = ModbusTlsServer(context, framer, identity, address, sslctx,
                              certfile, keyfile, password, reqclicert, **kwargs)
 
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
-def StartUdpServer(context=None, identity=None, address=None, # pylint: disable=invalid-name,dangerous-default-value
+def StartUdpServer(context=None, identity=None, address=None,
                    custom_functions=[], **kwargs):
     """ A factory to start and run a udp modbus server
 
@@ -665,12 +662,12 @@ def StartUdpServer(context=None, identity=None, address=None, # pylint: disable=
     """
     framer = kwargs.pop('framer', ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 
-def StartSerialServer(context=None, identity=None,  custom_functions=[], # pylint: disable=invalid-name, dangerous-default-value
+def StartSerialServer(context=None, identity=None,  custom_functions=[],
                       **kwargs):
     """ A factory to start and run a serial modbus server
 
@@ -690,8 +687,8 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[], # pylin
     """
     framer = kwargs.pop('framer', ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
-    for func in custom_functions:
-        server.decoder.register(func)
+    for f in custom_functions:
+        server.decoder.register(f)
     server.serve_forever()
 
 # --------------------------------------------------------------------------- #
@@ -702,3 +699,4 @@ def StartSerialServer(context=None, identity=None,  custom_functions=[], # pylin
 __all__ = [
     "StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"
 ]
+

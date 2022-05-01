@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Modbus Message Generator
+"""
+Modbus Message Generator
 --------------------------------------------------------------------------
 
 The following is an example of how to generate example encoded messages
@@ -10,8 +11,7 @@ for the supplied modbus format:
 * rtu    - `./generate-messages.py -f rtu -m rx -b`
 * binary - `./generate-messages.py -f binary -m tx -b`
 """
-import logging
-from optparse import OptionParser # pylint: disable=deprecated-module
+from optparse import OptionParser
 import codecs as c
 # -------------------------------------------------------------------------- #
 # import all the available framers
@@ -20,58 +20,22 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.bit_read_message import (
-    ReadCoilsResponse,
-    ReadDiscreteInputsResponse,
-    ReadCoilsRequest,
-    ReadDiscreteInputsRequest,
-)
-from pymodbus.bit_write_message import (
-    WriteSingleCoilResponse,
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilRequest,
-    WriteMultipleCoilsRequest,
-)
-import pymodbus.diag_message as modbus_diag
-from pymodbus.file_message import (
-    ReadFifoQueueResponse,
-    WriteFileRecordResponse,
-    ReadFileRecordResponse,
-    ReadFifoQueueRequest,
-    WriteFileRecordRequest,
-    ReadFileRecordRequest,
-)
-from pymodbus.other_message import (
-    GetCommEventLogResponse,
-    GetCommEventCounterResponse,
-    ReadExceptionStatusResponse,
-    ReportSlaveIdRequest,
-    GetCommEventLogRequest,
-    GetCommEventCounterRequest,
-    ReadExceptionStatusRequest,
-    ReportSlaveIdResponse,
-)
-from pymodbus.mei_message import ReadDeviceInformationResponse, ReadDeviceInformationRequest
-from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersResponse,
-    ReadInputRegistersResponse,
-    ReadHoldingRegistersResponse,
-    ReadWriteMultipleRegistersRequest,
-    ReadInputRegistersRequest,
-    ReadHoldingRegistersRequest,
-)
-from pymodbus.register_write_message import (
-    MaskWriteRegisterResponse,
-    WriteSingleRegisterResponse,
-    WriteMultipleRegistersResponse,
-    MaskWriteRegisterRequest,
-    WriteSingleRegisterRequest,
-    WriteMultipleRegistersRequest,
-)
+# -------------------------------------------------------------------------- #
+# import all available messages
+# -------------------------------------------------------------------------- #
+from pymodbus.bit_read_message import *
+from pymodbus.bit_write_message import *
+from pymodbus.diag_message import *
+from pymodbus.file_message import *
+from pymodbus.other_message import *
+from pymodbus.mei_message import *
+from pymodbus.register_read_message import *
+from pymodbus.register_write_message import *
 
 # -------------------------------------------------------------------------- #
 # initialize logging
 # -------------------------------------------------------------------------- #
+import logging
 modbus_log = logging.getLogger("pymodbus")
 
 
@@ -101,23 +65,23 @@ _request_messages = [
 
     ReadDeviceInformationRequest,
 
-    modbus_diag.ReturnQueryDataRequest,
-    modbus_diag.RestartCommunicationsOptionRequest,
-    modbus_diag.ReturnDiagnosticRegisterRequest,
-    modbus_diag.ChangeAsciiInputDelimiterRequest,
-    modbus_diag.ForceListenOnlyModeRequest,
-    modbus_diag.ClearCountersRequest,
-    modbus_diag.ReturnBusMessageCountRequest,
-    modbus_diag.ReturnBusCommunicationErrorCountRequest,
-    modbus_diag.ReturnBusExceptionErrorCountRequest,
-    modbus_diag.ReturnSlaveMessageCountRequest,
-    modbus_diag.ReturnSlaveNoResponseCountRequest,
-    modbus_diag.ReturnSlaveNAKCountRequest,
-    modbus_diag.ReturnSlaveBusyCountRequest,
-    modbus_diag.ReturnSlaveBusCharacterOverrunCountRequest,
-    modbus_diag.ReturnIopOverrunCountRequest,
-    modbus_diag.ClearOverrunCountRequest,
-    modbus_diag.GetClearModbusPlusRequest
+    ReturnQueryDataRequest,
+    RestartCommunicationsOptionRequest,
+    ReturnDiagnosticRegisterRequest,
+    ChangeAsciiInputDelimiterRequest,
+    ForceListenOnlyModeRequest,
+    ClearCountersRequest,
+    ReturnBusMessageCountRequest,
+    ReturnBusCommunicationErrorCountRequest,
+    ReturnBusExceptionErrorCountRequest,
+    ReturnSlaveMessageCountRequest,
+    ReturnSlaveNoResponseCountRequest,
+    ReturnSlaveNAKCountRequest,
+    ReturnSlaveBusyCountRequest,
+    ReturnSlaveBusCharacterOverrunCountRequest,
+    ReturnIopOverrunCountRequest,
+    ClearOverrunCountRequest,
+    GetClearModbusPlusRequest
 ]
 
 
@@ -147,23 +111,23 @@ _response_messages = [
 
     ReadDeviceInformationResponse,
 
-    modbus_diag.ReturnQueryDataResponse,
-    modbus_diag.RestartCommunicationsOptionResponse,
-    modbus_diag.ReturnDiagnosticRegisterResponse,
-    modbus_diag.ChangeAsciiInputDelimiterResponse,
-    modbus_diag.ForceListenOnlyModeResponse,
-    modbus_diag.ClearCountersResponse,
-    modbus_diag.ReturnBusMessageCountResponse,
-    modbus_diag.ReturnBusCommunicationErrorCountResponse,
-    modbus_diag.ReturnBusExceptionErrorCountResponse,
-    modbus_diag.ReturnSlaveMessageCountResponse,
-    modbus_diag.ReturnSlaveNoReponseCountResponse,
-    modbus_diag.ReturnSlaveNAKCountResponse,
-    modbus_diag.ReturnSlaveBusyCountResponse,
-    modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
-    modbus_diag.ReturnIopOverrunCountResponse,
-    modbus_diag.ClearOverrunCountResponse,
-    modbus_diag.GetClearModbusPlusResponse
+    ReturnQueryDataResponse,
+    RestartCommunicationsOptionResponse,
+    ReturnDiagnosticRegisterResponse,
+    ChangeAsciiInputDelimiterResponse,
+    ForceListenOnlyModeResponse,
+    ClearCountersResponse,
+    ReturnBusMessageCountResponse,
+    ReturnBusCommunicationErrorCountResponse,
+    ReturnBusExceptionErrorCountResponse,
+    ReturnSlaveMessageCountResponse,
+    ReturnSlaveNoReponseCountResponse,
+    ReturnSlaveNAKCountResponse,
+    ReturnSlaveBusyCountResponse,
+    ReturnSlaveBusCharacterOverrunCountResponse,
+    ReturnIopOverrunCountResponse,
+    ClearOverrunCountResponse,
+    GetClearModbusPlusResponse
 ]
 
 
@@ -205,11 +169,11 @@ def generate_messages(framer, options):
         messages = _response_messages
     for message in messages:
         message = message(**_arguments)
-        print("%-44s = " % message.__class__.__name__) # pylint: disable=consider-using-f-string
+        print("%-44s = " % message.__class__.__name__)
         packet = framer.buildPacket(message)
         if not options.ascii:
             packet = c.encode(packet, 'hex_codec').decode('utf-8')
-        print (f"{packet}\n")   # because ascii ends with a \r\n
+        print ("{}\n".format(packet))   # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
@@ -243,7 +207,7 @@ def get_options():
                       help="The messages to encode (rx, tx)",
                       dest="messages", default='rx')
 
-    (opt, _) = parser.parse_args()
+    (opt, arg) = parser.parse_args()
     return opt
 
 
@@ -255,10 +219,11 @@ def main():
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-        except Exception: # pylint: disable=broad-except
+            logging.basicConfig()
+        except Exception:
             print("Logging is not supported on this system")
 
-    framer = {
+    framer = lookup = {
         'tcp':    ModbusSocketFramer, # noqa E221
         'rtu':    ModbusRtuFramer, # noqa E221
         'binary': ModbusBinaryFramer,

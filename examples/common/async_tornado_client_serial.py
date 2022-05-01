@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
+"""
+Pymodbus Asynchronous Client Examples
 --------------------------------------------------------------------------
 
 The following is an example of how to use the asynchronous serial modbus
@@ -8,7 +9,6 @@ client implementation from pymodbus using tornado.
 # ---------------------------------------------------------------------------#
 # import needed libraries
 # ---------------------------------------------------------------------------#
-import logging
 import functools
 
 from tornado.ioloop import IOLoop
@@ -23,48 +23,46 @@ from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 # ---------------------------------------------------------------------------#
 # configure the client logging
 # ---------------------------------------------------------------------------#
+import logging
 
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-
-UNIT = 0x01
 
 # ---------------------------------------------------------------------------#
 # helper method to test deferred callbacks
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value #nosec
+        assert value
 
-    def on_done(f_trans):
-        if (exc := f_trans.exception()):
+    def on_done(f):
+        exc = f.exception()
+        if exc:
             log.debug(exc)
             return _assertor(False)
 
-        return _assertor(callback(f_trans.result()))
+        return _assertor(callback(f.result()))
 
     future.add_done_callback(on_done)
 
 
 def _print(value):
-    """ Internal print """
     if hasattr(value, "bits"):
-        result = value.bits
+        t = value.bits
     elif hasattr(value, "registers"):
-        result = value.registers
+        t = value.registers
     else:
         log.error(value)
-        return None
-    txt = f"Printing : -- {result}"
-    log.info(txt)
-    return result
+        return
+    log.info("Printing : -- {}".format(t))
+    return t
 
 
 # ---------------------------------------------------------------------------#
@@ -78,9 +76,10 @@ def _print(value):
 # deferred assert helper(dassert).
 # ---------------------------------------------------------------------------#
 
+UNIT = 0x01
 
-def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefined-outer-name
-    """ Begin async test. """
+
+def beginAsynchronousTest(client, protocol):
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
@@ -133,19 +132,17 @@ def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefine
 # ---------------------------------------------------------------------------#
 
 def err(*args, **kwargs):
-    """" handle error. """
-    txt = f"Err {args} {kwargs}"
-    log.error(txt)
+    log.error("Err", args, kwargs)
 
 
-def callback(protocol, future): # pylint: disable=redefined-outer-name
-    """ Callback. """
+def callback(protocol, future):
     log.debug("Client connected")
-    if (exp := future.exception()):
+    exp = future.exception()
+    if exp:
         return err(exp)
 
     client = future.result()
-    return begin_asynchronous_test(client, protocol)
+    return beginAsynchronousTest(client, protocol)
 
 
 if __name__ == "__main__":
@@ -159,9 +156,9 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, # pylint: disable=unpacking-non-sequence
+    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP,
                                                method="rtu",
-                                               port="/tmp/ptyp0", #nosec
+                                               port="/tmp/ptyp0",
                                                baudrate=9600,
                                                timeout=2)
 

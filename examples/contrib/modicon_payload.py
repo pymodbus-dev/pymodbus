@@ -1,4 +1,5 @@
-""" Modbus Modicon Payload Builder
+"""
+Modbus Modicon Payload Builder
 -----------------------------------------------------------
 
 This is an example of building a custom payload builder
@@ -14,7 +15,8 @@ from pymodbus.exceptions import ParameterException
 
 
 class ModiconPayloadBuilder(IPayloadBuilder):
-    """ A utility that helps build modicon encoded payload
+    """
+    A utility that helps build modicon encoded payload
     messages to be written with the various modbus messages.
     example::
 
@@ -28,7 +30,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         """ Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         """
         self._payload = payload or []
         self._endian = endian
@@ -138,12 +140,13 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         :param value: The value to add to the buffer
         """
         fstring = self._endian + 's'
-        for i in value:
-            self._payload.append(pack(fstring, i))
+        for c in value:
+            self._payload.append(pack(fstring, c))
 
 
-class ModiconPayloadDecoder:
-    """ A utility that helps decode modicon encoded payload
+class ModiconPayloadDecoder(object):
+    """
+    A utility that helps decode modicon encoded payload
     messages from a modbus response message. What follows is
     a simple example::
 
@@ -172,7 +175,7 @@ class ModiconPayloadDecoder:
         been decoded by the rest of the library.
 
         :param registers: The register results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
@@ -188,7 +191,7 @@ class ModiconPayloadDecoder:
         The coils are treated as a list of bit(boolean) values.
 
         :param coils: The coil results to initialize with
-        :param endian: The endianness of the payload
+        :param endian: The endianess of the payload
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):
@@ -251,7 +254,7 @@ class ModiconPayloadDecoder:
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
-    def decode_32bit_float(self):
+    def decode_32bit_float(self, size=1):
         """ Decodes a float from the buffer
         """
         self._pointer += 4

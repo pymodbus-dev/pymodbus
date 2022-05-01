@@ -20,8 +20,8 @@ jobs:
     name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.python.docker] }}
-    # present runtime seems to be about 2-4 minutes
-    # with pypy being the exception (7 minutes)
+    # present runtime seems to be about 2 minutes
+    # with pypy being the exception (10 minutes)
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -179,15 +179,6 @@ jobs:
       fail-fast: false
       matrix:
         task:
-          - name: pylint
-            tox: pylint
-            # continue_on_error: true
-          - name: codespell
-            tox: codespell
-            # continue_on_error: true
-          - name: bandit
-            tox: bandit
-            # continue_on_error: true
           - name: flake8
             tox: flake8
             continue_on_error: true
@@ -267,6 +258,7 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
+          pip install --upgrade six
       - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage

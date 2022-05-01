@@ -1,23 +1,18 @@
-""" SERIAL communication. """
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
-from pymodbus.transaction import (
-    ModbusRtuFramer,
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusSocketFramer
-)
+from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer, ModbusBinaryFramer, ModbusSocketFramer
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
-    """ Actual Async Serial Client to be used.
+class AsyncModbusSerialClient(object):
+    """
+    Actual Async Serial Client to be used.
 
     To use do::
 
@@ -25,7 +20,8 @@ class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
     """
     @classmethod
     def _framer(cls, method):
-        """ Returns the requested framer
+        """
+        Returns the requested framer
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
@@ -33,17 +29,18 @@ class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
         method = method.lower()
         if method == 'ascii':
             return ModbusAsciiFramer(ClientDecoder())
-        if method == 'rtu':
+        elif method == 'rtu':
             return ModbusRtuFramer(ClientDecoder())
-        if method == 'binary':
+        elif method == 'binary':
             return ModbusBinaryFramer(ClientDecoder())
-        if method == 'socket':
+        elif method == 'socket':
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")
 
     def __new__(cls, scheduler, method, port,  **kwargs):
-        """ Scheduler to use:
+        """
+        Scheduler to use:
             - reactor (Twisted)
             - io_loop (Tornado)
             - async_io (asyncio)

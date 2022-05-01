@@ -1,23 +1,24 @@
-""" Modbus Device Controller
+"""
+Modbus Device Controller
 -------------------------
 
 These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
-from collections import OrderedDict
-import struct
-
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
+from pymodbus.compat import iteritems, itervalues, izip, int2byte
 
+from collections import OrderedDict
 
 #---------------------------------------------------------------------------#
 # Network Access Control
 #---------------------------------------------------------------------------#
 class ModbusAccessControl(Singleton):
-    """ This is a simple implementation of a Network Management System table.
+    '''
+    This is a simple implementation of a Network Management System table.
     Its purpose is to control access to the server (if it is used).
     We assume that if an entry is in the table, it is allowed accesses to
     resources.  However, if the host does not appear in the table (all
@@ -25,30 +26,30 @@ class ModbusAccessControl(Singleton):
 
     Since it is a singleton, only one version can possible exist and all
     instances pull from here.
-    """
+    '''
     __nmstable = [
             "127.0.0.1",
     ]
 
     def __iter__(self):
-        """ Iterator over the network access tablek
+        ''' Iterater over the network access table
 
         :returns: An iterator of the network access table
-        """
+        '''
         return self.__nmstable.__iter__()
 
     def __contains__(self, host):
-        """ Check if a host is allowed to access resources
+        ''' Check if a host is allowed to access resources
 
         :param host: The host to check
-        """
+        '''
         return host in self.__nmstable
 
     def add(self, host):
-        """ Add allowed host(s) from the NMS table
+        ''' Add allowed host(s) from the NMS table
 
         :param host: The host to add
-        """
+        '''
         if not isinstance(host, list):
             host = [host]
         for entry in host:
@@ -56,10 +57,10 @@ class ModbusAccessControl(Singleton):
                 self.__nmstable.append(entry)
 
     def remove(self, host):
-        """ Remove allowed host(s) from the NMS table
+        ''' Remove allowed host(s) from the NMS table
 
         :param host: The host to remove
-        """
+        '''
         if not isinstance(host, list):
             host = [host]
         for entry in host:
@@ -67,21 +68,22 @@ class ModbusAccessControl(Singleton):
                 self.__nmstable.remove(entry)
 
     def check(self, host):
-        """ Check if a host is allowed to access resources
+        ''' Check if a host is allowed to access resources
 
         :param host: The host to check
-        """
+        '''
         return host in self.__nmstable
 
 
 #---------------------------------------------------------------------------#
 # Modbus Plus Statistics
 #---------------------------------------------------------------------------#
-class ModbusPlusStatistics:
-    """ This is used to maintain the current modbus plus statistics count. As of
+class ModbusPlusStatistics(object):
+    '''
+    This is used to maintain the current modbus plus statistics count. As of
     right now this is simply a stub to complete the modbus implementation.
     For more information, see the modbus implementation guide page 87.
-    """
+    '''
 
     __data = OrderedDict({
         'node_type_id'                   : [0x00] * 2, # 00
@@ -138,52 +140,54 @@ class ModbusPlusStatistics:
     })
 
     def __init__(self):
-        """ Initialize the modbus plus statistics with the default
+        '''
+        Initialize the modbus plus statistics with the default
         information.
-        """
+        '''
         self.reset()
 
     def __iter__(self):
-        """ Iterator over the statistics
+        ''' Iterater over the statistics
 
         :returns: An iterator of the modbus plus statistics
-        """
-        return iter(self.__data.items())
+        '''
+        return iteritems(self.__data)
 
     def reset(self):
-        """ This clears all of the modbus plus statistics
-        """
+        ''' This clears all of the modbus plus statistics
+        '''
         for key in self.__data:
             self.__data[key] = [0x00] * len(self.__data[key])
 
     def summary(self):
-        """ Returns a summary of the modbus plus statistics
+        ''' Returns a summary of the modbus plus statistics
 
         :returns: 54 16-bit words representing the status
-        """
-        return iter(self.__data.values())
+        '''
+        return itervalues(self.__data)
 
     def encode(self):
-        """ Returns a summary of the modbus plus statistics
+        ''' Returns a summary of the modbus plus statistics
 
         :returns: 54 16-bit words representing the status
-        """
+        '''
         total, values = [], sum(self.__data.values(), [])
-        for i in range(0, len(values), 2):
-            total.append((values[i] << 8) | values[i+1])
+        for c in range(0, len(values), 2):
+            total.append((values[c] << 8) | values[c+1])
         return total
 
 
 #---------------------------------------------------------------------------#
 # Device Information Control
 #---------------------------------------------------------------------------#
-class ModbusDeviceIdentification:
-    """ This is used to supply the device identification
+class ModbusDeviceIdentification(object):
+    '''
+    This is used to supply the device identification
     for the readDeviceIdentification function
 
     For more information read section 6.21 of the modbus
     application protocol.
-    """
+    '''
     __data = {
         0x00: '',  # VendorName
         0x01: '',  # ProductCode
@@ -194,7 +198,7 @@ class ModbusDeviceIdentification:
         0x06: '',  # UserApplicationName
         0x07: '',  # reserved
         0x08: '',  # reserved
-        # 0x80 -> 0xFF are privatek
+        # 0x80 -> 0xFF are private
     }
 
     __names = [
@@ -207,136 +211,131 @@ class ModbusDeviceIdentification:
         'UserApplicationName',
     ]
 
-    def __init__(self, info=None, info_name=None):
-        """ Initialize the datastore with the elements you need.
+    def __init__(self, info=None):
+        '''
+        Initialize the datastore with the elements you need.
         (note acceptable range is [0x00-0x06,0x80-0xFF] inclusive)
 
-        :param info: A dictionary of {int:string} of values
-        :param set: A dictionary of {name:string} of values
-        """
-
-        if isinstance(info_name, dict):
-            for key in info_name:
-                inx = self.__names.index(key)
-                self.__data[inx] = info_name[key]
-
+        :param information: A dictionary of {int:string} of values
+        '''
         if isinstance(info, dict):
             for key in info:
                 if (0x06 >= key >= 0x00) or (0xFF >= key >= 0x80):
                     self.__data[key] = info[key]
 
     def __iter__(self):
-        """ Iterator over the device information
+        ''' Iterater over the device information
 
         :returns: An iterator of the device information
-        """
-        return iter(self.__data.items())
+        '''
+        return iteritems(self.__data)
 
     def summary(self):
-        """ Return a summary of the main items
+        ''' Return a summary of the main items
 
         :returns: An dictionary of the main items
-        """
-        return dict(zip(self.__names, iter(self.__data.values())))
+        '''
+        return dict(zip(self.__names, itervalues(self.__data)))
 
     def update(self, value):
-        """ Update the values of this identity
+        ''' Update the values of this identity
         using another identify as the value
 
         :param value: The value to copy values from
-        """
+        '''
         self.__data.update(value)
 
     def __setitem__(self, key, value):
-        """ Wrapper used to access the device information
+        ''' Wrapper used to access the device information
 
         :param key: The register to set
         :param value: The new value for referenced register
-        """
+        '''
         if key not in [0x07, 0x08]:
             self.__data[key] = value
 
     def __getitem__(self, key):
-        """ Wrapper used to access the device information
+        ''' Wrapper used to access the device information
 
         :param key: The register to read
-        """
+        '''
         return self.__data.setdefault(key, '')
 
     def __str__(self):
-        """ Build a representation of the device
+        ''' Build a representation of the device
 
         :returns: A string representation of the device
-        """
+        '''
         return "DeviceIdentity"
 
     #-------------------------------------------------------------------------#
     # Properties
     #-------------------------------------------------------------------------#
-    VendorName          = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access,invalid-name
-    ProductCode         = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access,invalid-name
-    MajorMinorRevision  = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access,invalid-name
-    VendorUrl           = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access,invalid-name
-    ProductName         = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access,invalid-name
-    ModelName           = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access,invalid-name
-    UserApplicationName = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access,invalid-name
+    VendorName          = dict_property(lambda s: s.__data, 0)
+    ProductCode         = dict_property(lambda s: s.__data, 1)
+    MajorMinorRevision  = dict_property(lambda s: s.__data, 2)
+    VendorUrl           = dict_property(lambda s: s.__data, 3)
+    ProductName         = dict_property(lambda s: s.__data, 4)
+    ModelName           = dict_property(lambda s: s.__data, 5)
+    UserApplicationName = dict_property(lambda s: s.__data, 6)
 
 
-class DeviceInformationFactory(Singleton): # pylint: disable=too-few-public-methods
-    """ This is a helper factory that really just hides
+class DeviceInformationFactory(Singleton):
+    ''' This is a helper factory that really just hides
     some of the complexity of processing the device information
     requests (function code 0x2b 0x0e).
-    """
+    '''
 
     __lookup = {
-        DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))), # pylint: disable=protected-access
-        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07)) # pylint: disable=protected-access
-            if c.__get(r, i)[i] else list(range(0, 0x07))), # pylint: disable=protected-access
-        DeviceInformation.Extended: lambda c, r, i: c.__gets(r, # pylint: disable=protected-access
+        DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))),
+        DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))
+            if c.__get(r, i)[i] else list(range(0, 0x07))),
+        DeviceInformation.Extended: lambda c, r, i: c.__gets(r,
             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]
-            if c.__get(r, i)[i] else # pylint: disable=protected-access
+            if c.__get(r, i)[i] else
             [x for x in range(0, 0x100) if x not in range(0x07, 0x80)]),
-        DeviceInformation.Specific: lambda c, r, i: c.__get(r, i), # pylint: disable=protected-access
+        DeviceInformation.Specific: lambda c, r, i: c.__get(r, i),
     }
 
     @classmethod
     def get(cls, control, read_code=DeviceInformation.Basic, object_id=0x00):
-        """ Get the requested device data from the system
+        ''' Get the requested device data from the system
 
         :param control: The control block to pull data from
         :param read_code: The read code to process
         :param object_id: The specific object_id to read
         :returns: The requested data (id, length, value)
-        """
+        '''
         identity = control.Identity
         return cls.__lookup[read_code](cls, identity, object_id)
 
     @classmethod
-    def __get(cls, identity, object_id): #NOSONAR pylint: disable=unused-private-member
-        """ Read a single object_id from the device information
+    def __get(cls, identity, object_id):
+        ''' Read a single object_id from the device information
 
         :param identity: The identity block to pull data from
         :param object_id: The specific object id to read
         :returns: The requested data (id, length, value)
-        """
+        '''
         return { object_id:identity[object_id] }
 
     @classmethod
-    def __gets(cls, identity, object_ids): #NOSONAR pylint: disable=unused-private-member
-        """ Read multiple object_ids from the device information
+    def __gets(cls, identity, object_ids):
+        ''' Read multiple object_ids from the device information
 
         :param identity: The identity block to pull data from
         :param object_ids: The specific object ids to read
         :returns: The requested data (id, length, value)
-        """
+        '''
         return dict((oid, identity[oid]) for oid in object_ids if identity[oid])
 
 
 #---------------------------------------------------------------------------#
 # Counters Handler
 #---------------------------------------------------------------------------#
-class ModbusCountersHandler:
-    """ This is a helper class to simplify the properties for the counters::
+class ModbusCountersHandler(object):
+    '''
+    This is a helper class to simplify the properties for the counters::
 
     0x0B  1  Return Bus Message Count
 
@@ -401,9 +400,9 @@ class ModbusCountersHandler:
              overrun is caused by data characters arriving at the port faster
              than they can.
 
-    .. note:: I threw the event counter in here for convenience
-    """
-    __data = dict([(i, 0x0000) for i in range(9)]) # pylint: disable=consider-using-dict-comprehension
+    .. note:: I threw the event counter in here for convinience
+    '''
+    __data = dict([(i, 0x0000) for i in range(9)])
     __names   = [
         'BusMessage',
         'BusCommunicationError',
@@ -417,62 +416,62 @@ class ModbusCountersHandler:
     ]
 
     def __iter__(self):
-        """ Iterator over the device counters
+        ''' Iterater over the device counters
 
         :returns: An iterator of the device counters
-        """
-        return zip(self.__names, iter(self.__data.values()))
+        '''
+        return izip(self.__names, itervalues(self.__data))
 
     def update(self, values):
-        """ Update the values of this identity
+        ''' Update the values of this identity
         using another identify as the value
 
         :param values: The value to copy values from
-        """
-        for k, v_item in iter(values.items()):
-            v_item += self.__getattribute__(k)
-            self.__setattr__(k, v_item)
+        '''
+        for k, v in iteritems(values):
+            v += self.__getattribute__(k)
+            self.__setattr__(k, v)
 
     def reset(self):
-        """ This clears all of the system counters
-        """
-        self.__data = dict([(i, 0x0000) for i in range(9)]) # pylint: disable=consider-using-dict-comprehension
+        ''' This clears all of the system counters
+        '''
+        self.__data = dict([(i, 0x0000) for i in range(9)])
 
     def summary(self):
-        """ Returns a summary of the counters current status
+        ''' Returns a summary of the counters current status
 
         :returns: A byte with each bit representing each counter
-        """
+        '''
         count, result = 0x01, 0x00
-        for i in iter(self.__data.values()):
-            if i != 0x00: # pylint: disable=compare-to-zero
-                result |= count
+        for i in itervalues(self.__data):
+            if i != 0x00: result |= count
             count <<= 1
         return result
 
     #-------------------------------------------------------------------------#
     # Properties
-    #---------k----------------------------------------------------------------#
-    BusMessage            = dict_property(lambda s: s.__data, 0) #NOSONAR pylint: disable=protected-access
-    BusCommunicationError = dict_property(lambda s: s.__data, 1) #NOSONAR pylint: disable=protected-access
-    BusExceptionError     = dict_property(lambda s: s.__data, 2) #NOSONAR pylint: disable=protected-access
-    SlaveMessage          = dict_property(lambda s: s.__data, 3) #NOSONAR pylint: disable=protected-access
-    SlaveNoResponse       = dict_property(lambda s: s.__data, 4) #NOSONAR pylint: disable=protected-access
-    SlaveNAK              = dict_property(lambda s: s.__data, 5) #NOSONAR pylint: disable=protected-access
-    SlaveBusy             = dict_property(lambda s: s.__data, 6) #NOSONAR pylint: disable=protected-access
-    BusCharacterOverrun   = dict_property(lambda s: s.__data, 7) #NOSONAR pylint: disable=protected-access
-    Event                 = dict_property(lambda s: s.__data, 8) #NOSONAR pylint: disable=protected-access
+    #-------------------------------------------------------------------------#
+    BusMessage            = dict_property(lambda s: s.__data, 0)
+    BusCommunicationError = dict_property(lambda s: s.__data, 1)
+    BusExceptionError     = dict_property(lambda s: s.__data, 2)
+    SlaveMessage          = dict_property(lambda s: s.__data, 3)
+    SlaveNoResponse       = dict_property(lambda s: s.__data, 4)
+    SlaveNAK              = dict_property(lambda s: s.__data, 5)
+    SlaveBusy             = dict_property(lambda s: s.__data, 6)
+    BusCharacterOverrun   = dict_property(lambda s: s.__data, 7)
+    Event                 = dict_property(lambda s: s.__data, 8)
 
 
 #---------------------------------------------------------------------------#
 # Main server control block
 #---------------------------------------------------------------------------#
 class ModbusControlBlock(Singleton):
-    """ This is a global singleton that controls all system information
+    '''
+    This is a global singleton that controls all system information
 
     All activity should be logged here and all diagnostic requests
     should come from here.
-    """
+    '''
 
     __mode = 'ASCII'
     __diagnostic = [False] * 16
@@ -488,42 +487,42 @@ class ModbusControlBlock(Singleton):
     # Magic
     #-------------------------------------------------------------------------#
     def __str__(self):
-        """ Build a representation of the control block
+        ''' Build a representation of the control block
 
         :returns: A string representation of the control block
-        """
+        '''
         return "ModbusControl"
 
     def __iter__(self):
-        """ Iterator over the device counters
+        ''' Iterater over the device counters
 
         :returns: An iterator of the device counters
-        """
+        '''
         return self.__counters.__iter__()
 
     #-------------------------------------------------------------------------#
     # Events
     #-------------------------------------------------------------------------#
-    def addEvent(self, event): # pylint: disable=invalid-name
-        """ Adds a new event to the event log
+    def addEvent(self, event):
+        ''' Adds a new event to the event log
 
         :param event: A new event to add to the log
-        """
+        '''
         self.__events.insert(0, event)
         self.__events = self.__events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
-    def getEvents(self): # pylint: disable=invalid-name
-        """ Returns an encoded collection of the event log.
+    def getEvents(self):
+        ''' Returns an encoded collection of the event log.
 
         :returns: The encoded events packet
-        """
+        '''
         events = [event.encode() for event in self.__events]
         return b''.join(events)
 
-    def clearEvents(self): # pylint: disable=invalid-name
-        """ Clears the current list of events
-        """
+    def clearEvents(self):
+        ''' Clears the current list of events
+        '''
         self.__events = []
 
     #-------------------------------------------------------------------------#
@@ -535,9 +534,9 @@ class ModbusControlBlock(Singleton):
     Plus     = property(lambda s: s.__plus)
 
     def reset(self):
-        """ This clears all of the system counters and the
+        ''' This clears all of the system counters and the
             diagnostic register
-        """
+        '''
         self.__events = []
         self.__counters.reset()
         self.__diagnostic = [False] * 16
@@ -545,75 +544,74 @@ class ModbusControlBlock(Singleton):
     #-------------------------------------------------------------------------#
     # Listen Properties
     #-------------------------------------------------------------------------#
-    def _setListenOnly(self, value): # pylint: disable=invalid-name
-        """ This toggles the listen only status
+    def _setListenOnly(self, value):
+        ''' This toggles the listen only status
 
         :param value: The value to set the listen status to
-        """
-        self.__listen_only = bool(value) # pylint: disable=unused-private-member
+        '''
+        self.__listen_only = bool(value)
 
     ListenOnly = property(lambda s: s.__listen_only, _setListenOnly)
 
     #-------------------------------------------------------------------------#
     # Mode Properties
     #-------------------------------------------------------------------------#
-    def _setMode(self, mode): # pylint: disable=invalid-name
-        """ This toggles the current serial mode
+    def _setMode(self, mode):
+        ''' This toggles the current serial mode
 
         :param mode: The data transfer method in (RTU, ASCII)
-        """
-        if mode in set(['ASCII', 'RTU']):
-            self.__mode = mode # pylint: disable=unused-private-member
+        '''
+        if mode in ['ASCII', 'RTU']:
+            self.__mode = mode
 
     Mode = property(lambda s: s.__mode, _setMode)
 
     #-------------------------------------------------------------------------#
     # Delimiter Properties
     #-------------------------------------------------------------------------#
-    def _setDelimiter(self, char): # pylint: disable=invalid-name
-        """ This changes the serial delimiter character
+    def _setDelimiter(self, char):
+        ''' This changes the serial delimiter character
 
         :param char: The new serial delimiter character
-        """
+        '''
         if isinstance(char, str):
-            self.__delimiter = char.encode() # pylint: disable=unused-private-member
+            self.__delimiter = char.encode()
         if isinstance(char, bytes):
-            self.__delimiter = char # pylint: disable=unused-private-member
+            self.__delimiter = char
         elif isinstance(char, int):
-            self.__delimiter = struct.pack(">B", char) # pylint: disable=unused-private-member
+            self.__delimiter = int2byte(char)
 
     Delimiter = property(lambda s: s.__delimiter, _setDelimiter)
 
     #-------------------------------------------------------------------------#
     # Diagnostic Properties
     #-------------------------------------------------------------------------#
-    def setDiagnostic(self, mapping): # pylint: disable=invalid-name
-        """ This sets the value in the diagnostic register
+    def setDiagnostic(self, mapping):
+        ''' This sets the value in the diagnostic register
 
         :param mapping: Dictionary of key:value pairs to set
-        """
-        for entry in iter(mapping.items()):
+        '''
+        for entry in iteritems(mapping):
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
-                self.__diagnostic[entry[0]] = bool(entry[1])
+                self.__diagnostic[entry[0]] = (entry[1] != 0)
 
-    def getDiagnostic(self, bit): # pylint: disable=invalid-name
-        """ This gets the value in the diagnostic register
+    def getDiagnostic(self, bit):
+        ''' This gets the value in the diagnostic register
 
         :param bit: The bit to get
         :returns: The current value of the requested bit
-        """
+        '''
         try:
             if bit and 0 <= bit < len(self.__diagnostic):
                 return self.__diagnostic[bit]
-        except Exception: # pylint: disable=broad-except
+        except Exception:
             return None
-        return None
 
-    def getDiagnosticRegister(self): # pylint: disable=invalid-name
-        """ This gets the entire diagnostic register
+    def getDiagnosticRegister(self):
+        ''' This gets the entire diagnostic register
 
         :returns: The diagnostic register collection
-        """
+        '''
         return self.__diagnostic
 
 #---------------------------------------------------------------------------#

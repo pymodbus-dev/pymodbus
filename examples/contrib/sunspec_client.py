@@ -1,23 +1,22 @@
-""" Sunspec client. """
-import logging
-from twisted.internet.defer import Deferred
-
 from pymodbus.constants import Endian
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
+from twisted.internet.defer import Deferred
 
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
+import logging
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
+logging.basicConfig()
 
 
 # --------------------------------------------------------------------------- #
 # Sunspec Common Constants
 # --------------------------------------------------------------------------- #
-class SunspecDefaultValue: # pylint: disable=too-few-public-methods
+class SunspecDefaultValue(object):
     """ A collection of constants to indicate if
     a value is not implemented.
     """
@@ -35,7 +34,7 @@ class SunspecDefaultValue: # pylint: disable=too-few-public-methods
     String          = '\x00'  # noqa E221
 
 
-class SunspecStatus: # pylint: disable=too-few-public-methods
+class SunspecStatus(object):
     """ Indicators of the current status of a
     sunspec device
     """
@@ -44,14 +43,14 @@ class SunspecStatus: # pylint: disable=too-few-public-methods
     Unknown = 0xffffffff
 
 
-class SunspecIdentifier: # pylint: disable=too-few-public-methods
+class SunspecIdentifier(object):
     """ Assigned identifiers that are pre-assigned
     by the sunspec protocol.
     """
     Sunspec = 0x53756e53
 
 
-class SunspecModel: # pylint: disable=too-few-public-methods
+class SunspecModel(object):
     """ Assigned device indentifiers that are pre-assigned
     by the sunspec protocol.
     """
@@ -104,39 +103,39 @@ class SunspecModel: # pylint: disable=too-few-public-methods
     PanelInteger                             = 502  # noqa E221
 
     # ---------------------------------------------
-    # 641xx outback_ Blocks
+    # 641xx Outback Blocks
     # ---------------------------------------------
-    outback_device_identifier       = 64110  # noqa E221
-    outback_charge_controller       = 64111  # noqa E221
-    outback_fm_charge_controller    = 64112  # noqa E221
-    outback_fx_inv_realtime         = 64113  # noqa E221
-    outback_fx_inv_conf             = 64114  # noqa E221
-    outback_split_phase_rad_inv     = 64115  # noqa E221
-    outback_radian_inv_conf         = 64116  # noqa E221
-    outback_single_phase_rad_inv_rt = 64117  # noqa E221
-    outback_flexnet_dc_realtime     = 64118  # noqa E221
-    outback_flexnet_dc_conf         = 64119  # noqa E221
-    outback_system_control          = 64120  # noqa E221
+    OutbackDeviceIdentifier                  = 64110  # noqa E221
+    OutbackChargeController                  = 64111  # noqa E221
+    OutbackFMSeriesChargeController          = 64112  # noqa E221
+    OutbackFXInverterRealTime                = 64113  # noqa E221
+    OutbackFXInverterConfiguration           = 64114  # noqa E221
+    OutbackSplitPhaseRadianInverter          = 64115  # noqa E221
+    OutbackRadianInverterConfiguration       = 64116  # noqa E221
+    OutbackSinglePhaseRadianInverterRealTime = 64117  # noqa E221
+    OutbackFLEXNetDCRealTime                 = 64118  # noqa E221
+    OutbackFLEXNetDCConfiguration            = 64119  # noqa E221
+    OutbackSystemControl                     = 64120  # noqa E221
 
     # ---------------------------------------------
-    # 64xxx Vendor Extension Block
+    # 64xxx Vender Extension Block
     # ---------------------------------------------
     EndOfSunSpecMap                          = 65535  # noqa E221
 
     @classmethod
-    def lookup(cls, code):
+    def lookup(klass, code):
         """ Given a device identifier, return the
         device model name for that identifier
 
         :param code: The device code to lookup
         :returns: The device model name, or None if none available
         """
-        values = dict((v, k) for k, v in cls.__dict__.iteritems() # pylint: disable=no-member
+        values = dict((v, k) for k, v in klass.__dict__.iteritems()
                       if not callable(v))
         return values.get(code, None)
 
 
-class SunspecOffsets: # pylint: disable=too-few-public-methods
+class SunspecOffsets(object):
     """ Well known offsets that are used throughout
     the sunspec protocol
     """
@@ -148,7 +147,7 @@ class SunspecOffsets: # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Common Functions
 # --------------------------------------------------------------------------- #
-def defer_or_apply(func): #NOSONAR pylint: disable=unused-argument
+def defer_or_apply(func):
     """ Decorator to apply an adapter method
     to a result regardless if it is a deferred
     or a concrete response.
@@ -157,9 +156,9 @@ def defer_or_apply(func): #NOSONAR pylint: disable=unused-argument
     """
     def closure(future, adapt):
         if isinstance(future, Deferred):
-            defer = Deferred()
-            future.addCallback(lambda r: defer.callback(adapt(r)))
-            return defer
+            d = Deferred()
+            future.addCallback(lambda r: d.callback(adapt(r)))
+            return d
         return adapt(future)
     return closure
 
@@ -205,10 +204,9 @@ class SunspecDecoder(BinaryPayloadDecoder):
         return string.split(SunspecDefaultValue.String)[0]
 
 
-class SunspecClient:
-    """ SunSpec client. """
+class SunspecClient(object):
 
-    def __init__(self, client): # pylint: disable=redefined-outer-name
+    def __init__(self, client):
         """ Initialize a new instance of the client
 
         :param client: The modbus client to use
@@ -260,8 +258,7 @@ class SunspecClient:
         :param size: The size of the offset to read
         :returns: An initialized decoder for that result
         """
-        txt = f"reading device block[{offset}..{offset + size}]"
-        _logger.debug(txt)
+        _logger.debug("reading device block[{}..{}]".format(offset, offset + size))
         response = self.client.read_holding_registers(offset, size + 2)
         return SunspecDecoder.fromRegisters(response.registers)
 
@@ -305,7 +302,7 @@ if __name__ == "__main__":
     for key, value in common.iteritems():
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
-        print("{:<20}: {}".format(key, value)) # pylint: disable=consider-using-f-string
+        print("{:<20}: {}".format(key, value))
 
     # print out all the available device blocks
     blocks = client.get_all_device_blocks()

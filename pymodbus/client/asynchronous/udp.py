@@ -1,7 +1,4 @@
 """UDP communication."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import logging
 from pymodbus.constants import Defaults
 from pymodbus.client.asynchronous.factory.udp import get_factory

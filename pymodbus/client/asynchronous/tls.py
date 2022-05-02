@@ -1,7 +1,4 @@
 """TLS communication."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import logging
 from pymodbus.client.asynchronous.factory.tls import get_factory
 from pymodbus.constants import Defaults

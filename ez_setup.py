@@ -1,6 +1,5 @@
 #!python
-"""Ez_setup"""
-from __future__ import print_function
+"""Ez_setup."""
 import os
 import sys
 """Bootstrap setuptools installation

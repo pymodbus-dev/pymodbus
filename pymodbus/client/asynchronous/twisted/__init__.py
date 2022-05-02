@@ -30,7 +30,6 @@ Another example::
        reactor.callLater(1, process)
        reactor.run()
 """
-from __future__ import unicode_literals
 import logging
 
 from twisted.internet import defer, protocol

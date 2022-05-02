@@ -111,8 +111,14 @@ class RemoteSendEvent(ModbusEvent):
 
         :returns: The encoded event message
         """
-        bits = [self.read, self.slave_abort, self.slave_busy,
-                self.slave_nak, self.write_timeout, self.listen]
+        bits = [
+            self.read,
+            self.slave_abort,
+            self.slave_busy,
+            self.slave_nak,
+            self.write_timeout,
+            self.listen,
+        ]
         bits += [True, False]
         packet = pack_bitstring(bits)
         return packet

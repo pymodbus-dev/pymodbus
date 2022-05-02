@@ -39,6 +39,7 @@ class ModbusTransactionState:  # pylint: disable=too-few-public-methods
 # Helpers
 # --------------------------------------------------------------------------- #
 
+
 def default(value):
     """Return the default value of object.
 
@@ -64,7 +65,8 @@ def dict_property(store, index):
     elif isinstance(store, str):
         getter = lambda self: self.__getattribute__(store)[index]
         setter = lambda self, value: self.__getattribute__(store).__setitem__(
-            index, value)
+            index, value
+        )
     else:
         getter = lambda self: store[index]
         setter = lambda self, value: store.__setitem__(index, value)
@@ -97,7 +99,7 @@ def pack_bitstring(bits):
         else:
             packed >>= 1
     if 0 < i < 8:
-        packed >>= (7 - i)
+        packed >>= 7 - i
         ret += struct.pack(">B", packed)
     return ret
 
@@ -131,6 +133,8 @@ def make_byte_string(byte_string):
     if isinstance(byte_string, str):
         byte_string = byte_string.encode()
     return byte_string
+
+
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #
@@ -146,7 +150,7 @@ def __generate_crc16_table():
         crc = 0x0000
         for _ in range(8):
             if (byte ^ crc) & 0x0001:
-                crc = (crc >> 1) ^ 0xa001
+                crc = (crc >> 1) ^ 0xA001
             else:
                 crc >>= 1
             byte >>= 1
@@ -169,11 +173,11 @@ def computeCRC(data):  # NOSONAR pylint: disable=invalid-name
     :param data: The data to create a crc16 of
     :returns: The calculated CRC
     """
-    crc = 0xffff
+    crc = 0xFFFF
     for data_byte in data:
-        idx = __crc16_table[(crc ^ int(data_byte)) & 0xff]
-        crc = ((crc >> 8) & 0xff) ^ idx
-    swapped = ((crc << 8) & 0xff00) | ((crc >> 8) & 0x00ff)
+        idx = __crc16_table[(crc ^ int(data_byte)) & 0xFF]
+        crc = ((crc >> 8) & 0xFF) ^ idx
+    swapped = ((crc << 8) & 0xFF00) | ((crc >> 8) & 0x00FF)
     return swapped
 
 
@@ -198,9 +202,9 @@ def computeLRC(data):  # NOSONAR pylint: disable=invalid-name
     :returns: The calculated LRC
 
     """
-    lrc = sum(int(a) for a in data) & 0xff
-    lrc = (lrc ^ 0xff) + 1
-    return lrc & 0xff
+    lrc = sum(int(a) for a in data) & 0xFF
+    lrc = (lrc ^ 0xFF) + 1
+    return lrc & 0xFF
 
 
 def checkLRC(data, check):  # NOSONAR pylint: disable=invalid-name
@@ -251,6 +255,12 @@ def hexlify_packets(packet):
 # Exported symbols
 # --------------------------------------------------------------------------- #
 __all__ = [
-    "pack_bitstring", "unpack_bitstring", "default",
-    "computeCRC", "checkCRC", "computeLRC", "checkLRC", "rtuFrameSize"
+    "pack_bitstring",
+    "unpack_bitstring",
+    "default",
+    "computeCRC",
+    "checkCRC",
+    "computeLRC",
+    "checkLRC",
+    "rtuFrameSize",
 ]

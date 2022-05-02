@@ -15,9 +15,20 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
 
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.TLSPort,  # pylint: disable=too-many-arguments
-                framer=None, sslctx=None, certfile=None, keyfile=None,
-                password=None, source_address=None, timeout=None, **kwargs):
+    def __new__(  # pylint: disable=too-many-arguments
+        cls,
+        scheduler,
+        host="127.0.0.1",
+        port=Defaults.TLSPort,
+        framer=None,
+        sslctx=None,
+        certfile=None,
+        keyfile=None,
+        password=None,
+        source_address=None,
+        timeout=None,
+        **kwargs
+    ):
         """Use scheduler async_io (asyncio)
 
         :param scheduler: Backend to use
@@ -35,9 +46,16 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         """
         framer = framer or ModbusTlsFramer(ClientDecoder())
         factory_class = get_factory(scheduler)
-        yieldable = factory_class(host=host, port=port, sslctx=sslctx,
-                                  certfile=certfile, keyfile=keyfile,
-                                  password=password, framer=framer,
-                                  source_address=source_address,
-                                  timeout=timeout, **kwargs)
+        yieldable = factory_class(
+            host=host,
+            port=port,
+            sslctx=sslctx,
+            certfile=certfile,
+            keyfile=keyfile,
+            password=password,
+            framer=framer,
+            source_address=source_address,
+            timeout=timeout,
+            **kwargs
+        )
         return yieldable

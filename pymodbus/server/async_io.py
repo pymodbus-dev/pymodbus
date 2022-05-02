@@ -34,6 +34,7 @@ _logger = logging.getLogger(__name__)
 # Protocol Handlers
 # --------------------------------------------------------------------------- #
 
+
 class ModbusBaseRequestHandler(asyncio.BaseProtocol):
     """Implements modbus slave wire protocol.
 
@@ -58,11 +59,12 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             txt = f"Handler for stream [{self.client_address[:2]}] has been canceled"
             _logger.error(txt)
         elif isinstance(self, ModbusSingleRequestHandler):
-            _logger.error(
-                "Handler for serial port has been cancelled")
+            _logger.error("Handler for serial port has been cancelled")
         else:
             if hasattr(self, "protocol"):
-                sock_name = self.protocol._sock.getsockname()  # pylint: disable=protected-access
+                sock_name = (
+                    self.protocol._sock.getsockname()  # pylint: disable=protected-access
+                )
             else:
                 sock_name = "No socket"
             txt = f"Handler for UDP socket [{sock_name[1]}] has been canceled"
@@ -76,9 +78,10 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         corresponds to the socket being opened
         """
         try:
-            if hasattr(transport,
-                       "get_extra_info") and transport.get_extra_info(
-                    "sockname") is not None:
+            if (
+                hasattr(transport, "get_extra_info")
+                and transport.get_extra_info("sockname") is not None
+            ):
                 sockname = transport.get_extra_info("sockname")[:2]
                 txt = f"Socket [{sockname}] opened"
                 _logger.debug(txt)
@@ -90,13 +93,17 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 _logger.warning(txt)
             self.transport = transport  # pylint: disable=attribute-defined-outside-init
             self.running = True
-            self.framer = self.server.framer(self.server.decoder,  # pylint: disable=attribute-defined-outside-init
-                                             client=None)
+            self.framer = self.server.framer(  # pylint: disable=attribute-defined-outside-init
+                self.server.decoder,
+                client=None,
+            )
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
-            txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            txt = (
+                f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            )
             _logger.error(txt)
 
     def connection_lost(self, call_exc):
@@ -117,7 +124,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             self.running = False
 
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
-            txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            txt = (
+                f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            )
             _logger.error(txt)
 
     async def handle(self):  # NOSONAR
@@ -172,8 +181,11 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
                 single = self.server.context.single
                 self.framer.processIncomingPacket(
-                    data=data, callback=lambda x: self.execute(x, *addr),
-                    unit=units, single=single)
+                    data=data,
+                    callback=lambda x: self.execute(x, *addr),  # NOSONAR
+                    unit=units,
+                    single=single,
+                )
 
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
@@ -184,7 +196,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 # for UDP sockets, simply reset the frame
                 if isinstance(self, ModbusConnectedRequestHandler):
                     client_addr = self.client_address[:2]
-                    txt = f"Unknown exception \"{exc}\" on stream {client_addr} forcing disconnect"
+                    txt = f'Unknown exception "{exc}" on stream {client_addr} forcing disconnect'
                     _logger.error(txt)
                     self.transport.close()
                 else:
@@ -219,7 +231,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            txt = (
+                f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
+            )
             _logger.error(txt)
             response = request.doException(merror.SlaveFailure)
         # no response when broadcasting
@@ -233,6 +247,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
     def send(self, message, *addr, **kwargs):
         """Send message."""
+
         def __send(msg, *addr):
             if _logger.isEnabledFor(logging.DEBUG):
                 txt = f"send: [{message}]- {b2a_hex(msg)}"
@@ -241,6 +256,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self._send_(msg)
             else:
                 self._send_(msg, *addr)
+
         if kwargs.get("skip_encoding", False):
             __send(message, *addr)
         elif message.should_respond:
@@ -259,16 +275,14 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         :param message: The unencoded modbus response
         """
-        raise NotImplementedException("Method not implemented "
-                                      "by derived class")
+        raise NotImplementedException("Method not implemented by derived class")
 
     async def _recv_(self):  # pragma: no cover pylint: disable=no-self-use
         """Receive data from the network.
 
         :return:
         """
-        raise NotImplementedException("Method not implemented "
-                                      "by derived class")
+        raise NotImplementedException("Method not implemented by derived class")
 
 
 class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
@@ -282,7 +296,9 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         """Call when a connection is made."""
         super().connection_made(transport)
 
-        self.client_address = transport.get_extra_info("peername")  # pylint: disable=attribute-defined-outside-init
+        self.client_address = transport.get_extra_info(  # pylint: disable=attribute-defined-outside-init
+            "peername"
+        )
         self.server.active_connections[self.client_address] = self
         txt = f"TCP client connection established [{self.client_address[:2]}]"
         _logger.debug(txt)
@@ -316,8 +332,9 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         self.transport.write(data)
 
 
-class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler,
-                                       asyncio.DatagramProtocol):
+class ModbusDisconnectedRequestHandler(
+    ModbusBaseRequestHandler, asyncio.DatagramProtocol
+):
     """Implements the modbus server protocol
 
     This uses the socketserver.BaseRequestHandler to implement
@@ -370,11 +387,15 @@ class ModbusServerFactory:  # pylint: disable=too-few-public-methods
     This also holds the server datastore so that it is persisted between connections
     """
 
-    def __init__(self, store, framer=None, identity=None, **kwargs):  # pylint: disable=unused-argument
-        warnings.warn("deprecated API for asyncio. ServerFactory's are a "
-                      "twisted construct and don't have an equivalent in "
-                      "asyncio",
-                      DeprecationWarning)
+    def __init__(
+        self, store, framer=None, identity=None, **kwargs
+    ):  # pylint: disable=unused-argument
+        warnings.warn(
+            "deprecated API for asyncio. ServerFactory's are a "
+            "twisted construct and don't have an equivalent in "
+            "asyncio",
+            DeprecationWarning,
+        )
 
 
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
@@ -404,6 +425,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         if self.transport is not None:
             self.transport.write(data)
 
+
 # --------------------------------------------------------------------------- #
 # Server Implementations
 # --------------------------------------------------------------------------- #
@@ -417,18 +439,20 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    def __init__(self,  # pylint: disable=too-many-arguments
-                 context,
-                 framer=None,
-                 identity=None,
-                 address=None,
-                 handler=None,
-                 allow_reuse_address=False,
-                 allow_reuse_port=False,
-                 defer_start=False,
-                 backlog=20,
-                 loop=None,
-                 **kwargs):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        context,
+        framer=None,
+        identity=None,
+        address=None,
+        handler=None,
+        allow_reuse_address=False,
+        allow_reuse_port=False,
+        defer_start=False,
+        backlog=20,
+        loop=None,
+        **kwargs,
+    ):
         """Initialize the socket server.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -467,10 +491,12 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusConnectedRequestHandler
         self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.get(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
         self.response_manipulator = kwargs.get("response_manipulator", None)
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -498,8 +524,9 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
             self.serving.set_result(True)
             await self.server.serve_forever()
         else:
-            raise RuntimeError("Can't call serve_forever on "
-                               "an already running server object")
+            raise RuntimeError(
+                "Can't call serve_forever on an already running server object"
+            )
 
     def server_close(self):
         """Close server."""
@@ -520,23 +547,25 @@ class ModbusTlsServer(ModbusTcpServer):
     server context instance.
     """
 
-    def __init__(self,  # NOSONAR pylint: disable=too-many-arguments
-                 context,
-                 framer=None,
-                 identity=None,
-                 address=None,
-                 sslctx=None,
-                 certfile=None,
-                 keyfile=None,
-                 password=None,
-                 reqclicert=False,
-                 handler=None,
-                 allow_reuse_address=False,
-                 allow_reuse_port=False,
-                 defer_start=False,
-                 backlog=20,
-                 loop=None,
-                 **kwargs):  # NOSONAR
+    def __init__(  # NOSONAR pylint: disable=too-many-arguments
+        self,  # NOSONAR
+        context,  # NOSONAR
+        framer=None,  # NOSONAR
+        identity=None,  # NOSONAR
+        address=None,  # NOSONAR
+        sslctx=None,  # NOSONAR
+        certfile=None,  # NOSONAR
+        keyfile=None,  # NOSONAR
+        password=None,  # NOSONAR
+        reqclicert=False,  # NOSONAR
+        handler=None,  # NOSONAR
+        allow_reuse_address=False,  # NOSONAR
+        allow_reuse_port=False,  # NOSONAR
+        defer_start=False,  # NOSONAR
+        backlog=20,  # NOSONAR
+        loop=None,  # NOSONAR
+        **kwargs,  # NOSONAR
+    ):
         """Overloaded initializer for the socket server.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -584,8 +613,7 @@ class ModbusTlsServer(ModbusTcpServer):
             loop=loop,
             **kwargs,
         )
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
-                                      reqclicert)
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password, reqclicert)
         self.factory_parms["ssl"] = self.sslctx
 
 
@@ -597,13 +625,20 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None,  # pylint: disable=too-many-arguments
-                 handler=None, allow_reuse_address=False,
-                 allow_reuse_port=False,
-                 defer_start=False,  # pylint: disable=unused-argument
-                 backlog=20,  # pylint: disable=unused-argument
-                 loop=None,
-                 **kwargs):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        context,
+        framer=None,
+        identity=None,
+        address=None,
+        handler=None,
+        allow_reuse_address=False,
+        allow_reuse_port=False,
+        defer_start=False,  # pylint: disable=unused-argument
+        backlog=20,  # pylint: disable=unused-argument
+        loop=None,
+        **kwargs,
+    ):
         """Overloaded initializer for the socket server.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -629,10 +664,12 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.get(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
         self.response_manipulator = kwargs.get("response_manipulator", None)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -661,8 +698,9 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
             self.serving.set_result(True)
             await self.stop_serving
         else:
-            raise RuntimeError("Can't call serve_forever on an "
-                               "already running server object")
+            raise RuntimeError(
+                "Can't call serve_forever on an already running server object"
+            )
 
     def server_close(self):
         """Close server."""
@@ -683,7 +721,9 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 
     handler = None
 
-    def __init__(self, context, framer=None, identity=None, **kwargs):  # pragma: no cover
+    def __init__(
+        self, context, framer=None, identity=None, **kwargs
+    ):  # pragma: no cover
         """Initialize the socket server.
 
         If the identity structure is not passed in, the ModbusControlBlock
@@ -713,10 +753,12 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.timeout = kwargs.get("timeout", Defaults.Timeout)
         self.device = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.get(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None
@@ -762,7 +804,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
                 bytesize=self.bytesize,
                 parity=self.parity,
                 stopbits=self.stopbits,
-                timeout=self.timeout
+                timeout=self.timeout,
             )
         except serial.serialutil.SerialException as exc:
             txt = f"Failed to open serial port: {self.device}"
@@ -806,9 +848,14 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 
 
-async def StartTcpServer(context=None,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                         identity=None, address=None,
-                         custom_functions=[], defer_start=True, **kwargs):
+async def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    address=None,
+    custom_functions=[],
+    defer_start=True,
+    **kwargs,
+):
     """Start and run a tcp modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -836,14 +883,20 @@ async def StartTcpServer(context=None,  # NOSONAR pylint: disable=invalid-name,d
 
 
 async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
-        context=None, identity=None, address=None,
-        sslctx=None,
-        certfile=None, keyfile=None, password=None,
-        reqclicert=False,
-        allow_reuse_address=False,
-        allow_reuse_port=False,
-        custom_functions=[],
-        defer_start=True, **kwargs):
+    context=None,
+    identity=None,
+    address=None,
+    sslctx=None,
+    certfile=None,
+    keyfile=None,
+    password=None,
+    reqclicert=False,
+    allow_reuse_address=False,
+    allow_reuse_port=False,
+    custom_functions=[],
+    defer_start=True,
+    **kwargs,
+):
     """Start and run a tls modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -867,10 +920,20 @@ async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     :return: an initialized but inactive server object coroutine
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
-    server = ModbusTlsServer(context, framer, identity, address, sslctx,
-                             certfile, keyfile, password, reqclicert,
-                             allow_reuse_address=allow_reuse_address,
-                             allow_reuse_port=allow_reuse_port, **kwargs)
+    server = ModbusTlsServer(
+        context,
+        framer,
+        identity,
+        address,
+        sslctx,
+        certfile,
+        keyfile,
+        password,
+        reqclicert,
+        allow_reuse_address=allow_reuse_address,
+        allow_reuse_port=allow_reuse_port,
+        **kwargs,
+    )
 
     for func in custom_functions:
         server.decoder.register(func)  # pragma: no cover
@@ -881,9 +944,14 @@ async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     return server
 
 
-async def StartUdpServer(context=None,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                         identity=None, address=None,
-                         custom_functions=[], defer_start=True, **kwargs):
+async def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    address=None,
+    custom_functions=[],
+    defer_start=True,
+    **kwargs,
+):
     """Start and run a udp modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -907,8 +975,12 @@ async def StartUdpServer(context=None,  # NOSONAR pylint: disable=invalid-name,d
     return server
 
 
-async def StartSerialServer(context=None, identity=None,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                            custom_functions=[], **kwargs):  # pragma: no cover
+async def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    custom_functions=[],
+    **kwargs,
+):  # pragma: no cover
     """Start and run a serial modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -935,9 +1007,11 @@ async def StartSerialServer(context=None, identity=None,  # NOSONAR pylint: disa
 
 def StopServer():  # NOSONAR pylint: disable=invalid-name
     """Stop Async Server."""
-    warnings.warn("deprecated API for asyncio. Call server_close() on "
-                  "server object returned by StartXxxServer",
-                  DeprecationWarning)
+    warnings.warn(
+        "deprecated API for asyncio. Call server_close() on "
+        "server object returned by StartXxxServer",
+        DeprecationWarning,
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -945,8 +1019,4 @@ def StopServer():  # NOSONAR pylint: disable=invalid-name
 # --------------------------------------------------------------------------- #
 
 
-__all__ = [
-
-    "StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"
-
-]
+__all__ = ["StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"]

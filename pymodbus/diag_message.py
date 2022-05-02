@@ -57,7 +57,9 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :param data: The data to decode into the function code
         """
-        self.sub_function_code, self.message = struct.unpack(">HH", data)  # noqa: E501 pylint: disable=attribute-defined-outside-init
+        self.sub_function_code, self.message = struct.unpack(  # noqa: E501 pylint: disable=attribute-defined-outside-init
+            ">HH", data
+        )
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -118,7 +120,10 @@ class DiagnosticStatusResponse(ModbusResponse):
             word_len += 1
             data = data + b"0"
         data = struct.unpack(">" + "H" * word_len, data)
-        self.sub_function_code, self.message = data[0], data[1:]  # pylint: disable=attribute-defined-outside-init
+        self.sub_function_code, self.message = (  # pylint: disable=attribute-defined-outside-init
+            data[0],
+            data[1:],
+        )
 
 
 class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
@@ -329,7 +334,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 
         :returns: The initialized response message
         """
-        char = (self.message & 0xff00) >> 8
+        char = (self.message & 0xFF00) >> 8
         _MCB._setDelimiter(char)  # pylint: disable=protected-access
         return ChangeAsciiInputDelimiterResponse(self.message)
 
@@ -821,22 +826,40 @@ class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "DiagnosticStatusRequest", "DiagnosticStatusResponse",
-    "ReturnQueryDataRequest", "ReturnQueryDataResponse",
-    "RestartCommunicationsOptionRequest", "RestartCommunicationsOptionResponse",
-    "ReturnDiagnosticRegisterRequest", "ReturnDiagnosticRegisterResponse",
-    "ChangeAsciiInputDelimiterRequest", "ChangeAsciiInputDelimiterResponse",
-    "ForceListenOnlyModeRequest", "ForceListenOnlyModeResponse",
-    "ClearCountersRequest", "ClearCountersResponse",
-    "ReturnBusMessageCountRequest", "ReturnBusMessageCountResponse",
-    "ReturnBusCommunicationErrorCountRequest", "ReturnBusCommunicationErrorCountResponse",
-    "ReturnBusExceptionErrorCountRequest", "ReturnBusExceptionErrorCountResponse",
-    "ReturnSlaveMessageCountRequest", "ReturnSlaveMessageCountResponse",
-    "ReturnSlaveNoResponseCountRequest", "ReturnSlaveNoReponseCountResponse",
-    "ReturnSlaveNAKCountRequest", "ReturnSlaveNAKCountResponse",
-    "ReturnSlaveBusyCountRequest", "ReturnSlaveBusyCountResponse",
-    "ReturnSlaveBusCharacterOverrunCountRequest", "ReturnSlaveBusCharacterOverrunCountResponse",
-    "ReturnIopOverrunCountRequest", "ReturnIopOverrunCountResponse",
-    "ClearOverrunCountRequest", "ClearOverrunCountResponse",
-    "GetClearModbusPlusRequest", "GetClearModbusPlusResponse",
+    "DiagnosticStatusRequest",
+    "DiagnosticStatusResponse",
+    "ReturnQueryDataRequest",
+    "ReturnQueryDataResponse",
+    "RestartCommunicationsOptionRequest",
+    "RestartCommunicationsOptionResponse",
+    "ReturnDiagnosticRegisterRequest",
+    "ReturnDiagnosticRegisterResponse",
+    "ChangeAsciiInputDelimiterRequest",
+    "ChangeAsciiInputDelimiterResponse",
+    "ForceListenOnlyModeRequest",
+    "ForceListenOnlyModeResponse",
+    "ClearCountersRequest",
+    "ClearCountersResponse",
+    "ReturnBusMessageCountRequest",
+    "ReturnBusMessageCountResponse",
+    "ReturnBusCommunicationErrorCountRequest",
+    "ReturnBusCommunicationErrorCountResponse",
+    "ReturnBusExceptionErrorCountRequest",
+    "ReturnBusExceptionErrorCountResponse",
+    "ReturnSlaveMessageCountRequest",
+    "ReturnSlaveMessageCountResponse",
+    "ReturnSlaveNoResponseCountRequest",
+    "ReturnSlaveNoReponseCountResponse",
+    "ReturnSlaveNAKCountRequest",
+    "ReturnSlaveNAKCountResponse",
+    "ReturnSlaveBusyCountRequest",
+    "ReturnSlaveBusyCountResponse",
+    "ReturnSlaveBusCharacterOverrunCountRequest",
+    "ReturnSlaveBusCharacterOverrunCountResponse",
+    "ReturnIopOverrunCountRequest",
+    "ReturnIopOverrunCountResponse",
+    "ClearOverrunCountRequest",
+    "ClearOverrunCountResponse",
+    "GetClearModbusPlusRequest",
+    "GetClearModbusPlusResponse",
 ]

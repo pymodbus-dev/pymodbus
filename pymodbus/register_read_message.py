@@ -80,7 +80,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         byte_count = int(data[0])
         self.registers = []
         for i in range(1, byte_count + 1, 2):
-            self.registers.append(struct.unpack(">H", data[i:i + 2])[0])
+            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
     def getRegister(self, index):  # pylint: disable=(invalid-name
         """Get the requested register.
@@ -124,7 +124,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         """
-        if not 1 <= self.count <= 0x7d:
+        if not 1 <= self.count <= 0x7D:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -178,7 +178,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         """
-        if not 1 <= self.count <= 0x7d:
+        if not 1 <= self.count <= 0x7D:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -248,9 +248,14 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: The encoded packet
         """
-        result = struct.pack(">HHHHB",
-                             self.read_address, self.read_count,
-                             self.write_address, self.write_count, self.write_byte_count)
+        result = struct.pack(
+            ">HHHHB",
+            self.read_address,
+            self.read_count,
+            self.write_address,
+            self.write_count,
+            self.write_byte_count,
+        )
         for register in self.write_registers:
             result += struct.pack(">H", register)
         return result
@@ -260,12 +265,16 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         """
-        self.read_address, self.read_count,  \
-            self.write_address, self.write_count, \
-            self.write_byte_count = struct.unpack(">HHHHB", data[:9])
+        (
+            self.read_address,
+            self.read_count,
+            self.write_address,
+            self.write_count,
+            self.write_byte_count,
+        ) = struct.unpack(">HHHHB", data[:9])
         self.write_registers = []
         for i in range(9, self.write_byte_count + 9, 2):
-            register = struct.unpack(">H", data[i:i + 2])[0]
+            register = struct.unpack(">H", data[i : i + 2])[0]
             self.write_registers.append(register)
 
     def execute(self, context):
@@ -274,22 +283,22 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         """
-        if not 1 <= self.read_count <= 0x07d:
+        if not 1 <= self.read_count <= 0x07D:
             return self.doException(merror.IllegalValue)
         if not 1 <= self.write_count <= 0x079:
             return self.doException(merror.IllegalValue)
         if self.write_byte_count != self.write_count * 2:
             return self.doException(merror.IllegalValue)
-        if not context.validate(self.function_code, self.write_address,
-                                self.write_count):
+        if not context.validate(
+            self.function_code, self.write_address, self.write_count
+        ):
             return self.doException(merror.IllegalAddress)
-        if not context.validate(self.function_code, self.read_address,
-                                self.read_count):
+        if not context.validate(self.function_code, self.read_address, self.read_count):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.write_address,
-                          self.write_registers)
-        registers = context.getValues(self.function_code, self.read_address,
-                                      self.read_count)
+        context.setValues(self.function_code, self.write_address, self.write_registers)
+        registers = context.getValues(
+            self.function_code, self.read_address, self.read_count
+        )
         return ReadWriteMultipleRegistersResponse(registers)
 
     def get_response_pdu_size(self):
@@ -305,9 +314,15 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: A string representation of the instance
         """
-        params = (self.read_address, self.read_count, self.write_address,
-                  self.write_count)
-        return "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params  # pylint: disable=consider-using-f-string
+        params = (
+            self.read_address,
+            self.read_count,
+            self.write_address,
+            self.write_count,
+        )
+        return (
+            "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params  # pylint: disable=consider-using-f-string
+        )
 
 
 class ReadWriteMultipleRegistersResponse(ModbusResponse):
@@ -346,7 +361,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         """
         bytecount = int(data[0])
         for i in range(1, bytecount, 2):
-            self.registers.append(struct.unpack(">H", data[i:i + 2])[0])
+            self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -360,7 +375,10 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "ReadHoldingRegistersRequest", "ReadHoldingRegistersResponse",
-    "ReadInputRegistersRequest", "ReadInputRegistersResponse",
-    "ReadWriteMultipleRegistersRequest", "ReadWriteMultipleRegistersResponse",
+    "ReadHoldingRegistersRequest",
+    "ReadHoldingRegistersResponse",
+    "ReadInputRegistersRequest",
+    "ReadInputRegistersResponse",
+    "ReadWriteMultipleRegistersRequest",
+    "ReadWriteMultipleRegistersResponse",
 ]

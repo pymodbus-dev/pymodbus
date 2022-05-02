@@ -27,6 +27,7 @@ _logger = logging.getLogger(__name__)
 # Protocol Handlers
 # --------------------------------------------------------------------------- #
 
+
 class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     """Implements the modbus server protocol
 
@@ -87,16 +88,14 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
     # ----------------------------------------------------------------------- #
     def handle(self):
         """Call when we receive any data."""
-        raise NotImplementedException("Method not implemented"
-                                      " by derived class")
+        raise NotImplementedException("Method not implemented by derived class")
 
     def send(self, message):  # pylint: disable=no-self-use
         """Send a request (string) to the network.
 
         :param message: The unencoded modbus response
         """
-        raise NotImplementedException("Method not implemented "
-                                      "by derived class")
+        raise NotImplementedException("Method not implemented by derived class")
 
 
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
@@ -119,8 +118,9 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
                         if 0 not in units:
                             units.append(0)
                     single = self.server.context.single
-                    self.framer.processIncomingPacket(data, self.execute,
-                                                      units, single=single)
+                    self.framer.processIncomingPacket(
+                        data, self.execute, units, single=single
+                    )
             except Exception as msg:  # pylint: disable=broad-except
                 # Since we only have a single socket, we cannot exit
                 # Clear frame buffer
@@ -146,7 +146,9 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler):
 class CustomSingleRequestHandler(ModbusSingleRequestHandler):
     """Handle single request."""
 
-    def __init__(self, request, client_address, server):  # pylint: disable=super-init-not-called
+    def __init__(
+        self, request, client_address, server
+    ):  # pylint: disable=super-init-not-called
         self.request = request
         self.client_address = client_address
         self.server = server
@@ -199,8 +201,9 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
                     txt = f"Handling data: {hexlify_packets(data)}"
                     _logger.debug(txt)
                 single = self.server.context.single
-                self.framer.processIncomingPacket(data, self.execute, units,
-                                                  single=single)
+                self.framer.processIncomingPacket(
+                    data, self.execute, units, single=single
+                )
             except socket.timeout as msg:
                 if _logger.isEnabledFor(logging.DEBUG):
                     txt = f"Socket timeout occurred {msg}"
@@ -261,8 +264,9 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
                 # if not self.server.control.ListenOnly:
                 units = self.server.context.slaves()
                 single = self.server.context.single
-                self.framer.processIncomingPacket(data, self.execute,
-                                                  units, single=single)
+                self.framer.processIncomingPacket(
+                    data, self.execute, units, single=single
+                )
             except socket.timeout:
                 pass
             except socket.error as msg:
@@ -294,6 +298,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
             return self.socket.sendto(pdu, self.client_address)
         return None
 
+
 # --------------------------------------------------------------------------- #
 # Server Implementations
 # --------------------------------------------------------------------------- #
@@ -307,9 +312,16 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None,
-                 address=None, handler=None, allow_reuse_address=False,
-                 **kwargs):
+    def __init__(
+        self,
+        context,
+        framer=None,
+        identity=None,
+        address=None,
+        handler=None,
+        allow_reuse_address=False,
+        **kwargs,
+    ):
         """Initialize the socket server.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -336,17 +348,19 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusConnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.pop("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.pop("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.pop(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.pop(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        socketserver.ThreadingTCPServer.__init__(self, self.address,
-                                                 self.handler,
-                                                 **kwargs)
+        socketserver.ThreadingTCPServer.__init__(
+            self, self.address, self.handler, **kwargs
+        )
 
     def process_request(self, request, client_address):
         """Call for connecting a new client thread.
@@ -383,10 +397,21 @@ class ModbusTlsServer(ModbusTcpServer):
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None,  # pylint: disable=too-many-arguments
-                 sslctx=None, certfile=None, keyfile=None, password=None,
-                 reqclicert=False, handler=None, allow_reuse_address=False,
-                 **kwargs):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        context,
+        framer=None,
+        identity=None,
+        address=None,
+        sslctx=None,
+        certfile=None,
+        keyfile=None,
+        password=None,
+        reqclicert=False,
+        handler=None,
+        allow_reuse_address=False,
+        **kwargs,
+    ):
         """Initialize the ModbusTlsServer.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -412,11 +437,18 @@ class ModbusTlsServer(ModbusTcpServer):
                         False to treat 0 as any other unit_id
         """
         framer = framer or ModbusTlsFramer
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
-                                      reqclicert)
+        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password, reqclicert)
 
-        ModbusTcpServer.__init__(self, context, framer, identity, address,
-                                 handler, allow_reuse_address, **kwargs)
+        ModbusTcpServer.__init__(
+            self,
+            context,
+            framer,
+            identity,
+            address,
+            handler,
+            allow_reuse_address,
+            **kwargs,
+        )
 
     def server_activate(self):
         """Call for starting listening over TLS connection."""
@@ -432,8 +464,9 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
     server context instance.
     """
 
-    def __init__(self, context, framer=None, identity=None, address=None,
-                 handler=None, **kwargs):
+    def __init__(
+        self, context, framer=None, identity=None, address=None, handler=None, **kwargs
+    ):
         """Initialize the socket server.
 
         If the identify structure is not passed in, the ModbusControlBlock
@@ -457,16 +490,19 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.pop("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.pop("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.pop(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.pop(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        socketserver.ThreadingUDPServer.__init__(self,
-                                                 self.address, self.handler, **kwargs)
+        socketserver.ThreadingUDPServer.__init__(
+            self, self.address, self.handler, **kwargs
+        )
         # self._BaseServer__shutdown_request = True
 
     def process_request(self, request, client_address):
@@ -533,15 +569,16 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.parity = kwargs.get("parity", Defaults.Parity)
         self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
         self.timeout = kwargs.get("timeout", Defaults.Timeout)
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get("broadcast_enable",
-                                           Defaults.broadcast_enable)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.get(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
         self.socket = None
         if self._connect():
             self.is_running = True
-            self._build_handler(kwargs.get("handler",
-                                           CustomSingleRequestHandler))
+            self._build_handler(kwargs.get("handler", CustomSingleRequestHandler))
 
     def _connect(self):
         """Connect to the serial server.
@@ -551,12 +588,14 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if self.socket:
             return True
         try:
-            self.socket = serial.Serial(port=self.device,
-                                        timeout=self.timeout,
-                                        bytesize=self.bytesize,
-                                        stopbits=self.stopbits,
-                                        baudrate=self.baudrate,
-                                        parity=self.parity)
+            self.socket = serial.Serial(
+                port=self.device,
+                timeout=self.timeout,
+                bytesize=self.bytesize,
+                stopbits=self.stopbits,
+                baudrate=self.baudrate,
+                parity=self.parity,
+            )
         except serial.SerialException as msg:
             _logger.error(msg)
         return self.socket is not None
@@ -571,9 +610,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         request = self.socket
         request.send = request.write
         request.recv = request.read
-        self.handler = handler(request,
-                               (self.device, self.device),
-                               self)
+        self.handler = handler(request, (self.device, self.device), self)
 
     def serve_forever(self):
         """Call for connecting a new client thread."""
@@ -587,8 +624,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
                 else:
                     self.handler.handle()
         else:
-            _logger.error("Error opening serial port , "
-                          "Unable to start server!!")
+            _logger.error("Error opening serial port, Unable to start server!!")
 
     def server_close(self):
         """Call for stopping the running server."""
@@ -603,8 +639,13 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 # Creation Factories
 # --------------------------------------------------------------------------- #
-def StartTcpServer(context=None, identity=None, address=None,  # pylint: disable=invalid-name,dangerous-default-value
-                   custom_functions=[], **kwargs):
+def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    address=None,
+    custom_functions=[],
+    **kwargs,
+):
     """Start and run a tcp modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -623,10 +664,18 @@ def StartTcpServer(context=None, identity=None, address=None,  # pylint: disable
     server.serve_forever()
 
 
-def StartTlsServer(context=None,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                   identity=None, address=None, sslctx=None,
-                   certfile=None, keyfile=None, password=None, reqclicert=False,
-                   custom_functions=[], **kwargs):
+def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    address=None,
+    sslctx=None,
+    certfile=None,
+    keyfile=None,
+    password=None,
+    reqclicert=False,
+    custom_functions=[],
+    **kwargs,
+):
     """Start and run a tls modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -643,16 +692,31 @@ def StartTlsServer(context=None,  # NOSONAR pylint: disable=invalid-name,dangero
                                       missing slave
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
-    server = ModbusTlsServer(context, framer, identity, address, sslctx,
-                             certfile, keyfile, password, reqclicert, **kwargs)
+    server = ModbusTlsServer(
+        context,
+        framer,
+        identity,
+        address,
+        sslctx,
+        certfile,
+        keyfile,
+        password,
+        reqclicert,
+        **kwargs,
+    )
 
     for func in custom_functions:
         server.decoder.register(func)
     server.serve_forever()
 
 
-def StartUdpServer(context=None, identity=None, address=None,  # pylint: disable=invalid-name,dangerous-default-value
-                   custom_functions=[], **kwargs):
+def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    address=None,
+    custom_functions=[],
+    **kwargs,
+):
     """Start and run a udp modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -671,9 +735,12 @@ def StartUdpServer(context=None, identity=None, address=None,  # pylint: disable
     server.serve_forever()
 
 
-def StartSerialServer(context=None,  # NOSONAR pylint: disable=invalid-name, dangerous-default-value
-                      identity=None, custom_functions=[],
-                      **kwargs):
+def StartSerialServer(  # NOSONAR pylint: disable=invalid-name, dangerous-default-value
+    context=None,
+    identity=None,
+    custom_functions=[],
+    **kwargs,
+):
     """Start and run a serial modbus server.
 
     :param context: The ModbusServerContext datastore
@@ -696,11 +763,10 @@ def StartSerialServer(context=None,  # NOSONAR pylint: disable=invalid-name, dan
         server.decoder.register(func)
     server.serve_forever()
 
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
 
-__all__ = [
-    "StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"
-]
+__all__ = ["StartTcpServer", "StartTlsServer", "StartUdpServer", "StartSerialServer"]

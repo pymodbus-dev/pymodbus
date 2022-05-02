@@ -10,8 +10,14 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,  # pylint: disable=unused-argument
-                    source_address=None, timeout=None, **kwargs):
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,  # pylint: disable=unused-argument
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
     """Create twisted tcp asynchronous client.
 
     :param host: Host IP address
@@ -22,12 +28,17 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,  # pylint
     :param kwargs:
     :return: event_loop_thread and twisted_deferred
     """
-    from twisted.internet import reactor, protocol  # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.twisted import ModbusTcpClientProtocol  # pylint: disable=import-outside-toplevel
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel
+        reactor,
+        protocol,
+    )
+    from pymodbus.client.asynchronous.twisted import (  # pylint: disable=import-outside-toplevel
+        ModbusTcpClientProtocol,
+    )
 
-    deferred = protocol.ClientCreator(
-        reactor, ModbusTcpClientProtocol
-    ).connectTCP(host, port, timeout=timeout, bindAddress=source_address)
+    deferred = protocol.ClientCreator(reactor, ModbusTcpClientProtocol).connectTCP(
+        host, port, timeout=timeout, bindAddress=source_address
+    )
 
     callback = kwargs.get("callback")
     errback = kwargs.get("errback")
@@ -38,15 +49,25 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,  # pylint
     if errback:
         deferred.addErrback(errback)
 
-    protocol = EventLoopThread("reactor", reactor.run, reactor.stop,  # pylint: disable=no-member
-                               installSignalHandlers=0)
+    protocol = EventLoopThread(
+        "reactor",
+        reactor.run,  # pylint: disable=no-member
+        reactor.stop,  # pylint: disable=no-member
+        installSignalHandlers=0,
+    )
     protocol.start()
 
     return protocol, deferred
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
     """Create Tornado based asynchronous tcp clients.
 
     :param host: Host IP address
@@ -58,16 +79,23 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as \
-        Client  # pylint: disable=import-outside-toplevel
+    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
+        AsyncModbusTCPClient as Client,
+    )
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
     protocol.start()
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, ioloop=ioloop, **kwargs)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        ioloop=ioloop,
+        **kwargs,
+    )
 
     future = client.connect()
 
@@ -123,5 +151,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler \"{scheduler}\""
+    txt = f'Invalid Scheduler "{scheduler}"'
     raise Exception(txt)  # NOSONAR

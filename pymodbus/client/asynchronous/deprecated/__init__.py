@@ -1,5 +1,6 @@
 """Define deprecated function."""
 import warnings
+
 warnings.simplefilter("always", DeprecationWarning)
 
 WARNING = """

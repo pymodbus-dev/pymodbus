@@ -73,8 +73,8 @@ class ModbusAsciiFramer(ModbusFramer):
         if (end := self._buffer.find(self._end)) != -1:
             self._header["len"] = end
             self._header["uid"] = int(self._buffer[1:3], 16)
-            self._header["lrc"] = int(self._buffer[end - 2:end], 16)
-            data = a2b_hex(self._buffer[start + 1:end - 2])
+            self._header["lrc"] = int(self._buffer[end - 2 : end], 16)
+            data = a2b_hex(self._buffer[start + 1 : end - 2])
             return checkLRC(data, self._header["lrc"])
         return False
 
@@ -85,7 +85,7 @@ class ModbusAsciiFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header["len"] + 2:]
+        self._buffer = self._buffer[self._header["len"] + 2 :]
         self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
 
     def isFrameReady(self):
@@ -145,7 +145,9 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -194,17 +196,21 @@ class ModbusAsciiFramer(ModbusFramer):
         :return: The encoded packet
         """
         encoded = message.encode()
-        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id,
-                             message.function_code)
+        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id, message.function_code)
         checksum = computeLRC(encoded + buffer)
 
         packet = bytearray()
         params = (message.unit_id, message.function_code)
         packet.extend(self._start)
-        packet.extend(("%02x%02x" % params).encode())  # pylint: disable=consider-using-f-string
+        packet.extend(
+            ("%02x%02x" % params).encode()  # pylint: disable=consider-using-f-string
+        )
         packet.extend(b2a_hex(encoded))
-        packet.extend(("%02x" % checksum).encode())  # pylint: disable=consider-using-f-string
+        packet.extend(
+            ("%02x" % checksum).encode()  # pylint: disable=consider-using-f-string
+        )
         packet.extend(self._end)
         return bytes(packet).upper()
+
 
 # __END__

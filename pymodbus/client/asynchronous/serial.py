@@ -5,7 +5,7 @@ from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusAsciiFramer,
     ModbusBinaryFramer,
-    ModbusSocketFramer
+    ModbusSocketFramer,
 )
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException

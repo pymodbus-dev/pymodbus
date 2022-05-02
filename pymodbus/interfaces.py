@@ -5,10 +5,13 @@ the pymodbus library.
 """
 from pymodbus.exceptions import NotImplementedException
 
+TEXT_METHOD = "Method not implemented by derived class"
 
 # --------------------------------------------------------------------------- #
 # Generic
 # --------------------------------------------------------------------------- #
+
+
 class Singleton:  # pylint: disable=too-few-public-methods
     """Singleton base class.
 
@@ -40,17 +43,17 @@ class IModbusDecoder:
         :param message: The raw modbus request packet
         :return: The decoded modbus message or None if error
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
-    def lookupPduClass(self, function_code):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def lookupPduClass(  # NOSONAR pylint: disable=no-self-use,invalid-name
+        self, function_code
+    ):
         """Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def register(self, function=None):  # pylint: disable=no-self-use
         """Register a function and sub function class with the decoder.
@@ -58,8 +61,7 @@ class IModbusDecoder:
         :param function: Custom function class to register
         :return:
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
 
 class IModbusFramer:
@@ -76,8 +78,7 @@ class IModbusFramer:
 
         :returns: True if we successful, False otherwise
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def advanceFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Skip over the current framed message.
@@ -86,8 +87,7 @@ class IModbusFramer:
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def addToFrame(self, message):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Add the next message to the frame buffer.
@@ -97,8 +97,7 @@ class IModbusFramer:
 
         :param message: The most recent packet
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def isFrameReady(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Check if we should continue decode logic.
@@ -108,18 +107,18 @@ class IModbusFramer:
 
         :returns: True if ready, False otherwise
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def getFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Get the next frame from the buffer.
 
         :returns: The frame data or ""
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
-    def populateResult(self, result):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def populateResult(  # NOSONAR pylint: disable=no-self-use,invalid-name
+        self, result
+    ):
         """Populate the modbus result with current frame header.
 
         We basically copy the data back over from the current header
@@ -127,10 +126,11 @@ class IModbusFramer:
 
         :param result: The response packet
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
-    def processIncomingPacket(self, data, callback):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def processIncomingPacket(  # NOSONAR pylint: disable=no-self-use,invalid-name
+        self, data, callback
+    ):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -145,8 +145,7 @@ class IModbusFramer:
         :param data: The new packet data
         :param callback: The function to send results to
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
     def buildPacket(self, message):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Create a ready to send modbus packet.
@@ -157,8 +156,7 @@ class IModbusFramer:
         :param message: The request/response to send
         :returns: The built packet
         """
-        raise NotImplementedException(
-            "Method not implemented by derived class")
+        raise NotImplementedException(TEXT_METHOD)
 
 
 class IModbusSlaveContext:
@@ -187,7 +185,9 @@ class IModbusSlaveContext:
         """Reset all the datastores to their default values."""
         raise NotImplementedException("Context Reset")
 
-    def validate(self, fx, address, count=1):  # pylint: disable=no-self-use,invalid-name
+    def validate(  # pylint: disable=no-self-use,invalid-name
+        self, fx, address, count=1
+    ):
         """Validate the request to make sure it is in range.
 
         :param fx: The function we are working with
@@ -197,7 +197,9 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("validate context values")
 
-    def getValues(self, fx, address, count=1):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def getValues(  # NOSONAR pylint: disable=no-self-use,invalid-name
+        self, fx, address, count=1
+    ):
         """Get `count` values from datastore.
 
         :param fx: The function we are working with
@@ -207,7 +209,9 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("get context values")
 
-    def setValues(self, fx, address, values):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def setValues(  # NOSONAR pylint: disable=no-self-use,invalid-name
+        self, fx, address, values
+    ):
         """Set the datastore with the supplied values.
 
         :param fx: The function we are working with
@@ -240,6 +244,8 @@ class IPayloadBuilder:  # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 __all__ = [
     "Singleton",
-    "IModbusDecoder", "IModbusFramer", "IModbusSlaveContext",
+    "IModbusDecoder",
+    "IModbusFramer",
+    "IModbusSlaveContext",
     "IPayloadBuilder",
 ]

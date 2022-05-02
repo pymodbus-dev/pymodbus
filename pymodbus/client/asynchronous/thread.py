@@ -42,7 +42,7 @@ class EventLoopThread:
 
         :return:
         """
-        txt = f"Starting Event Loop: \"PyModbus_{self._name}\""
+        txt = f'Starting Event Loop: "PyModbus_{self._name}"'
         _logger.info(txt)
         self._event_loop.start()
 
@@ -51,6 +51,6 @@ class EventLoopThread:
 
         :return:
         """
-        txt = f"Stopping Event Loop: \"PyModbus_{self._name}\""
+        txt = f'Stopping Event Loop: "PyModbus_{self._name}"'
         _logger.info(txt)
         self._stop_loop()

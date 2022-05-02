@@ -2,8 +2,9 @@
 import ssl
 
 
-def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None,
-                    reqclicert=False):
+def sslctx_provider(
+    sslctx=None, certfile=None, keyfile=None, password=None, reqclicert=False
+):
     """Provide the SSLContext for ModbusTlsServer.
 
     If the user defined SSLContext is not passed in, sslctx_provider will
@@ -20,8 +21,7 @@ def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None,
         # According to MODBUS/TCP Security Protocol Specification, it is
         # TLSv2 at least
         sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile,
-                               password=password)
+        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     if reqclicert:
         sslctx.verify_mode = ssl.CERT_REQUIRED

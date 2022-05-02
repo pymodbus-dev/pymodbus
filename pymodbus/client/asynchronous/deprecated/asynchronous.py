@@ -88,8 +88,9 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no 
         _logger.debug(txt)
         self._connected = False
         for tid in list(self.transaction):
-            self.transaction.getTransaction(tid).errback(Failure(
-                ConnectionException("Connection lost during request")))
+            self.transaction.getTransaction(tid).errback(
+                Failure(ConnectionException("Connection lost during request"))
+            )
 
     def dataReceived(self, data):
         """Get response, check for valid message, decode result.
@@ -124,8 +125,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no 
         :returns: A defer linked to the latest request
         """
         if not self._connected:
-            return defer.fail(Failure(
-                ConnectionException("Client is not connected")))
+            return defer.fail(Failure(ConnectionException("Client is not connected")))
 
         deferred = defer.Deferred()
         self.transaction.addTransaction(deferred, tid)
@@ -143,7 +143,9 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no 
 # --------------------------------------------------------------------------- #
 # Not Connected Client Protocol
 # --------------------------------------------------------------------------- #
-class ModbusUdpClientProtocol(protocol.DatagramProtocol, ModbusClientMixin):  # pragma: no cover
+class ModbusUdpClientProtocol(
+    protocol.DatagramProtocol, ModbusClientMixin
+):  # pragma: no cover
     """This represents the base modbus client protocol.
 
     All the application layer code is deferred to a higher level wrapper.
@@ -216,11 +218,10 @@ class ModbusClientFactory(protocol.ReconnectingClientFactory):  # pragma: no cov
         deprecated(self.__class__.__name__)
         protocol.ReconnectingClientFactory.__init__(self)
 
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
 
-__all__ = [
-    "ModbusClientProtocol", "ModbusUdpClientProtocol", "ModbusClientFactory"
-]
+__all__ = ["ModbusClientProtocol", "ModbusUdpClientProtocol", "ModbusClientFactory"]

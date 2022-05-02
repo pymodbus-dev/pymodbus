@@ -22,7 +22,8 @@ def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None):
         sslctx.check_hostname = True
 
         if certfile and keyfile:
-            sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile,
-                                   password=password)
+            sslctx.load_cert_chain(
+                certfile=certfile, keyfile=keyfile, password=password
+            )
 
     return sslctx

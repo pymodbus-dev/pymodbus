@@ -141,7 +141,9 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         """
         response = self._get_bit_values(key, offset, count)
-        return True if None not in response else False  # pylint: disable=simplifiable-if-expression
+        return (
+            True if None not in response else False  # pylint: disable=simplifiable-if-expression
+        )
 
     def _get_bit(self, key, offset, count):
         """Get bit.
@@ -154,7 +156,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         response = (r or self._bit_default for r in response)
         result = "".join(response)
         result = unpack_bitstring(result)
-        return result[offset:offset + count]
+        return result[offset : offset + count]
 
     def _set_bit(self, key, offset, values):
         """Set bit.
@@ -171,8 +173,10 @@ class RedisSlaveContext(IModbusSlaveContext):
         current = self._get_bit_values(key, offset, count)
         current = (r or self._bit_default for r in current)
         current = "".join(current)
-        current = current[0:offset] + value.decode("utf-8") + current[offset + count:]
-        final = (current[s:s + self._bit_size] for s in range(0, count, self._bit_size))
+        current = current[0:offset] + value.decode("utf-8") + current[offset + count :]
+        final = (
+            current[s : s + self._bit_size] for s in range(0, count, self._bit_size)
+        )
 
         key = self._get_prefix(key)
         request = (f"{key}:{v}" for v in range(bit_start, bit_end + 1))
@@ -218,7 +222,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         """
         response = self._get_reg_values(key, offset, count)
         response = [r or self._reg_default for r in response]
-        return response[offset:offset + count]
+        return response[offset : offset + count]
 
     def _set_reg(self, key, offset, values):
         """Set register.

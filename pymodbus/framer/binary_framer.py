@@ -80,8 +80,8 @@ class ModbusBinaryFramer(ModbusFramer):
         if (end := self._buffer.find(self._end)) != -1:
             self._header["len"] = end
             self._header["uid"] = struct.unpack(">B", self._buffer[1:2])[0]
-            self._header["crc"] = struct.unpack(">H", self._buffer[end - 2:end])[0]
-            data = self._buffer[start + 1:end - 2]
+            self._header["crc"] = struct.unpack(">H", self._buffer[end - 2 : end])[0]
+            data = self._buffer[start + 1 : end - 2]
             return checkCRC(data, self._header["crc"])
         return False
 
@@ -92,7 +92,7 @@ class ModbusBinaryFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header["len"] + 2:]
+        self._buffer = self._buffer[self._header["len"] + 2 :]
         self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
     def isFrameReady(self):
@@ -140,7 +140,9 @@ class ModbusBinaryFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -190,9 +192,10 @@ class ModbusBinaryFramer(ModbusFramer):
         :returns: The encoded packet
         """
         data = self._preflight(message.encode())
-        packet = struct.pack(BINARY_FRAME_HEADER,
-                             message.unit_id,
-                             message.function_code) + data
+        packet = (
+            struct.pack(BINARY_FRAME_HEADER, message.unit_id, message.function_code)
+            + data
+        )
         packet += struct.pack(">H", computeCRC(packet))
         packet = self._start + packet + self._end
         return packet

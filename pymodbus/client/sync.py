@@ -45,7 +45,9 @@ class BaseModbusClient(ModbusClientMixin):
         self.transaction = DictTransactionManager(self, **kwargs)
         self._debug = False
         self._debugfd = None
-        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.broadcast_enable)
+        self.broadcast_enable = kwargs.get(
+            "broadcast_enable", Defaults.broadcast_enable
+        )
 
     # ----------------------------------------------------------------------- #
     # Client interface
@@ -65,12 +67,14 @@ class BaseModbusClient(ModbusClientMixin):
 
         :returns: True if socket/serial is open, False otherwise
         """
-        raise NotImplementedException(f"is_socket_open() not implemented by {self.__str__()}")
+        raise NotImplementedException(
+            f"is_socket_open() not implemented by {self.__str__()}"
+        )
 
     def send(self, request):
         """Send request."""
         if self.state != ModbusTransactionState.RETRYING:
-            _logger.debug("New Transaction state \"SENDING\"")
+            _logger.debug('New Transaction state "SENDING"')
             self.state = ModbusTransactionState.SENDING
         return self._send(request)
 
@@ -177,8 +181,9 @@ class BaseModbusClient(ModbusClientMixin):
 class ModbusTcpClient(BaseModbusClient):
     """Implementation of a modbus tcp client."""
 
-    def __init__(self, host="127.0.0.1", port=Defaults.Port,
-                 framer=ModbusSocketFramer, **kwargs):
+    def __init__(
+        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+    ):
         """Initialize a client instance.
 
         :param host: The host to connect to (default 127.0.0.1)
@@ -207,7 +212,8 @@ class ModbusTcpClient(BaseModbusClient):
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
-                source_address=self.source_address)
+                source_address=self.source_address,
+            )
             txt = f"Connection to Modbus server established. Socket {self.socket.getsockname()}"
             _logger.debug(txt)
         except socket.error as msg:
@@ -288,12 +294,12 @@ class ModbusTcpClient(BaseModbusClient):
             try:
                 ready = select.select([self.socket], [], [], end - time_)
             except ValueError:
-                return self._handle_abrupt_socket_close(
-                    size, data, time.time() - time_)
+                return self._handle_abrupt_socket_close(size, data, time.time() - time_)
             if ready[0]:
                 if (recv_data := self.socket.recv(recv_size)) == b"":
                     return self._handle_abrupt_socket_close(
-                        size, data, time.time() - time_)
+                        size, data, time.time() - time_
+                    )
                 data.append(recv_data)
                 data_length += len(recv_data)
             time_ = time.time()
@@ -329,8 +335,10 @@ class ModbusTcpClient(BaseModbusClient):
         self.close()
         size_txt = size if size else "unbounded read"
         readsize = f"read of {size_txt} bytes"
-        msg = (f"{self}: Connection unexpectedly closed "
-               f"{duration} seconds into {readsize}")
+        msg = (
+            f"{self}: Connection unexpectedly closed "
+            f"{duration} seconds into {readsize}"
+        )
         if data:
             result = b"".join(data)
             msg += f" after returning {len(result)} bytes"
@@ -341,7 +349,9 @@ class ModbusTcpClient(BaseModbusClient):
 
     def is_socket_open(self):
         """Check if socket is open."""
-        return True if self.socket is not None else False  # pylint: disable=simplifiable-if-expression
+        return (
+            True if self.socket is not None else False  # pylint: disable=simplifiable-if-expression
+        )
 
     def __str__(self):
         """Build a string representation of the connection.
@@ -357,6 +367,7 @@ class ModbusTcpClient(BaseModbusClient):
             f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
         )
 
+
 # --------------------------------------------------------------------------- #
 # Modbus TLS Client Transport Implementation
 # --------------------------------------------------------------------------- #
@@ -365,9 +376,17 @@ class ModbusTcpClient(BaseModbusClient):
 class ModbusTlsClient(ModbusTcpClient):
     """Implementation of a modbus tls client."""
 
-    def __init__(self, host="localhost", port=Defaults.TLSPort, sslctx=None,
-                 certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
-                 **kwargs):
+    def __init__(
+        self,
+        host="localhost",
+        port=Defaults.TLSPort,
+        sslctx=None,
+        certfile=None,
+        keyfile=None,
+        password=None,
+        framer=ModbusTlsFramer,
+        **kwargs,
+    ):
         """Initialize a client instance.
 
         :param host: The host to connect to (default localhost)
@@ -395,8 +414,9 @@ class ModbusTlsClient(ModbusTcpClient):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind(self.source_address)
-            self.socket = self.sslctx.wrap_socket(sock, server_side=False,
-                                                  server_hostname=self.host)
+            self.socket = self.sslctx.wrap_socket(
+                sock, server_side=False, server_hostname=self.host
+            )
             self.socket.settimeout(self.timeout)
             self.socket.connect((self.host, self.port))
         except socket.error as msg:
@@ -473,8 +493,9 @@ class ModbusTlsClient(ModbusTcpClient):
 class ModbusUdpClient(BaseModbusClient):
     """Implementation of a modbus udp client."""
 
-    def __init__(self, host="127.0.0.1", port=Defaults.Port,
-                 framer=ModbusSocketFramer, **kwargs):
+    def __init__(
+        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+    ):
         """Initialize a client instance.
 
         :param host: The host to connect to (default 127.0.0.1)
@@ -566,12 +587,15 @@ class ModbusUdpClient(BaseModbusClient):
             f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
         )
 
+
 # --------------------------------------------------------------------------- #
 # Modbus Serial Client Transport Implementation
 # --------------------------------------------------------------------------- #
 
 
-class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance-attributes
+class ModbusSerialClient(
+    BaseModbusClient
+):  # pylint: disable=too-many-instance-attributes
     """Implementation of a modbus serial client."""
 
     state = ModbusTransactionState.IDLE
@@ -600,8 +624,7 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
         """
         self.method = method
         self.socket = None
-        BaseModbusClient.__init__(self, self.__implementation(method, self),
-                                  **kwargs)
+        BaseModbusClient.__init__(self, self.__implementation(method, self), **kwargs)
 
         self.port = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
@@ -647,12 +670,14 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
         if self.socket:
             return True
         try:
-            self.socket = serial.serial_for_url(self.port,
-                                                timeout=self.timeout,
-                                                bytesize=self.bytesize,
-                                                stopbits=self.stopbits,
-                                                baudrate=self.baudrate,
-                                                parity=self.parity)
+            self.socket = serial.serial_for_url(
+                self.port,
+                timeout=self.timeout,
+                bytesize=self.bytesize,
+                stopbits=self.stopbits,
+                baudrate=self.baudrate,
+                parity=self.parity,
+            )
             if self.method == "rtu":
                 if self._strict:
                     self.socket.interCharTimeout = self.inter_char_timeout
@@ -670,10 +695,9 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
 
     def _in_waiting(self):
         """Return _in_waiting."""
-        in_waiting = ("in_waiting" if hasattr(
-            self.socket, "in_waiting") else "inWaiting")
+        in_waiting = "in_waiting" if hasattr(self.socket, "in_waiting") else "inWaiting"
 
-        if in_waiting == "in_waiting":
+        if in_waiting == "in_waiting":  # pylint: disable=consider-using-assignment-expr
             waitingbytes = getattr(self.socket, in_waiting)
         else:
             waitingbytes = getattr(self.socket, in_waiting)()
@@ -706,7 +730,7 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
             except NotImplementedError:
                 pass
             if self.state != ModbusTransactionState.SENDING:
-                _logger.debug("New Transaction state \"SENDING\"")
+                _logger.debug('New Transaction state "SENDING"')
                 self.state = ModbusTransactionState.SENDING
             size = self.socket.write(request)
             return size
@@ -717,9 +741,10 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
         size = 0
         more_data = False
         if self.timeout is not None and self.timeout:
-            condition = partial(lambda start, timeout:
-                                (time.time() - start) <= timeout,
-                                timeout=self.timeout)
+            condition = partial(
+                lambda start, timeout: (time.time() - start) <= timeout,
+                timeout=self.timeout,
+            )
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
         start = time.time()
@@ -768,11 +793,15 @@ class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance
             f"method={self.method}, timeout={self.timeout}>"
         )
 
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
 
 __all__ = [
-    "ModbusTcpClient", "ModbusTlsClient", "ModbusUdpClient", "ModbusSerialClient"
+    "ModbusTcpClient",
+    "ModbusTlsClient",
+    "ModbusUdpClient",
+    "ModbusSerialClient",
 ]

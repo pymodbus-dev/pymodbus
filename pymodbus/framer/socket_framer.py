@@ -55,9 +55,12 @@ class ModbusSocketFramer(ModbusFramer):
         Return true if we were successful.
         """
         if self.isFrameReady():
-            (self._header["tid"], self._header["pid"],
-             self._header["len"], self._header["uid"]) = struct.unpack(
-                ">HHHB", self._buffer[0:self._hsize])
+            (
+                self._header["tid"],
+                self._header["pid"],
+                self._header["len"],
+                self._header["uid"],
+            ) = struct.unpack(">HHHB", self._buffer[0 : self._hsize])
 
             # someone sent us an error? ignore it
             if self._header["len"] < 2:
@@ -102,7 +105,7 @@ class ModbusSocketFramer(ModbusFramer):
         :returns: The next full frame buffer
         """
         length = self._hsize + self._header["len"] - 1
-        return self._buffer[self._hsize:length]
+        return self._buffer[self._hsize : length]
 
     def populateResult(self, result):
         """Populate the modbus result.
@@ -122,8 +125,9 @@ class ModbusSocketFramer(ModbusFramer):
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
-            tid, pid, length, uid, fcode = struct.unpack(SOCKET_FRAME_HEADER,
-                                                         data[0:self._hsize + 1])
+            tid, pid, length, uid, fcode = struct.unpack(
+                SOCKET_FRAME_HEADER, data[0 : self._hsize + 1]
+            )
             return {
                 "tid": tid,
                 "pid": pid,
@@ -133,7 +137,9 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):  # NOSONAR pylint: disable=arguments-differ
+    def processIncomingPacket(  # NOSONAR pylint: disable=arguments-differ
+        self, data, callback, unit, **kwargs
+    ):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -187,7 +193,7 @@ class ModbusSocketFramer(ModbusFramer):
             raise InvalidMessageReceivedException(result)
         self.populateResult(result)
         self.advanceFrame()
-        callback(result)   # defer or push to a thread?
+        callback(result)  # defer or push to a thread?
 
     def resetFrame(self):  # pylint: disable=invalid-name
         """Reset the entire message frame.
@@ -211,13 +217,16 @@ class ModbusSocketFramer(ModbusFramer):
         :param message: The populated request/response to send
         """
         data = message.encode()
-        packet = struct.pack(SOCKET_FRAME_HEADER,
-                             message.transaction_id,
-                             message.protocol_id,
-                             len(data) + 2,
-                             message.unit_id,
-                             message.function_code)
+        packet = struct.pack(
+            SOCKET_FRAME_HEADER,
+            message.transaction_id,
+            message.protocol_id,
+            len(data) + 2,
+            message.unit_id,
+            message.function_code,
+        )
         packet += data
         return packet
+
 
 # __END__

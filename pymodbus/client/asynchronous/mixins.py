@@ -22,16 +22,21 @@ class BaseAsyncModbusClient(BaseModbusClient):
         self._connected = False
         self._timeout = timeout
 
-        super().__init__(
-            framer or ModbusSocketFramer(ClientDecoder()), **kwargs
-        )
+        super().__init__(framer or ModbusSocketFramer(ClientDecoder()), **kwargs)
 
 
 class AsyncModbusClientMixin(BaseAsyncModbusClient):
     """Async Modbus client mixing for UDP and TCP clients."""
 
-    def __init__(self, host="127.0.0.1", port=Defaults.Port, framer=None,
-                 source_address=None, timeout=None, **kwargs):
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port=Defaults.Port,
+        framer=None,
+        source_address=None,
+        timeout=None,
+        **kwargs
+    ):
         """Initialize a Modbus TCP/UDP asynchronous client
 
         :param host: Host IP address

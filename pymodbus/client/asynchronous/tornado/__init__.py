@@ -10,14 +10,13 @@ from tornado.ioloop import IOLoop
 from tornado.iostream import IOStream
 from tornado.iostream import BaseIOStream
 
-from pymodbus.client.asynchronous.mixins import (AsyncModbusClientMixin,
-                                                 AsyncModbusSerialClientMixin)
+from pymodbus.client.asynchronous.mixins import (
+    AsyncModbusClientMixin,
+    AsyncModbusSerialClientMixin,
+)
 
-from pymodbus.exceptions import (ConnectionException,
-                                 ModbusIOException,
-                                 TimeOutException)
-from pymodbus.utilities import (hexlify_packets,
-                                ModbusTransactionState)
+from pymodbus.exceptions import ConnectionException, ModbusIOException, TimeOutException
+from pymodbus.utilities import hexlify_packets, ModbusTransactionState
 from pymodbus.constants import Defaults
 
 
@@ -54,8 +53,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
         conn = self.get_socket()
         self.stream = IOStream(conn, io_loop=self.io_loop or IOLoop.current())
         self.stream.connect((self.host, self.port))
-        self.stream.read_until_close(None,
-                                     streaming_callback=self.on_receive)
+        self.stream.read_until_close(None, streaming_callback=self.on_receive)
         self._connected = True
         _logger.debug("Client connected")
 
@@ -168,10 +166,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
                     _logger.debug(txt)
                     unit = self.framer.decode_data(data).get("uid", 0)
                     self.framer.processIncomingPacket(
-                        data,
-                        self._handle_response,
-                        unit,
-                        tid=request.transaction_id
+                        data, self._handle_response, unit, tid=request.transaction_id
                     )
                     break
 
@@ -336,7 +331,9 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             """Clear serial waiting timeout."""
             if self.timeout_handle:
                 self.io_loop.remove_timeout(self.timeout_handle)
-                self.timeout_handle = None  # pylint: disable=attribute-defined-outside-init
+                self.timeout_handle = (  # pylint: disable=attribute-defined-outside-init
+                    None
+                )
 
         def _on_timeout():
             """Got timeout while waiting data from serial port."""
@@ -360,7 +357,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             self.io_loop.remove_handler(fd)
             self.close()
             self.transaction.getTransaction(request.transaction_id).set_exception(
-                ModbusIOException(*args))
+                ModbusIOException(*args)
+            )
 
         def _on_receive(fd, events):
             """Check new data in serial buffer to read or serial port closed."""
@@ -383,19 +381,23 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             # check if we have regular frame or modbus exception
             fcode = self.framer.decode_data(self.framer.getRawFrame()).get("fcode", 0)
             if fcode and (
-                (fcode > 0x80 and len(self.framer.getRawFrame()) == exception_response_length)
-                or  # noqa: W504
-                (len(self.framer.getRawFrame()) == expected_response_length)
+                (
+                    fcode > 0x80
+                    and len(self.framer.getRawFrame()) == exception_response_length
+                )
+                or (
+                    len(self.framer.getRawFrame()) == expected_response_length
+                )
             ):
                 _clear_timer()
                 self.io_loop.remove_handler(fd)
                 self.state = ModbusTransactionState.IDLE
                 self.framer.processIncomingPacket(
-                    b"",            # already sent via addToFrame()
+                    b"",  # already sent via addToFrame()
                     self._handle_response,
-                    0,              # don"t care when `single=True`
+                    0,  # don"t care when `single=True`
                     single=True,
-                    tid=request.transaction_id
+                    tid=request.transaction_id,
                 )
 
         packet = self.framer.buildPacket(request)
@@ -403,16 +405,20 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
 
         response_pdu_size = request.get_response_pdu_size()
         expected_response_length = self.transaction._calculate_response_length(  # pylint: disable=protected-access
-            response_pdu_size)
+            response_pdu_size
+        )
         txt = f"expected_response_length = {expected_response_length}"
         _logger.debug(txt)
 
         # NOSONAR TODO: calculate once
-        exception_response_length = self.transaction._calculate_exception_length()  # pylint: disable=protected-access
+        exception_response_length = (
+            self.transaction._calculate_exception_length()  # pylint: disable=protected-access
+        )
 
         if self.timeout:
             self.timeout_handle = self.io_loop.add_timeout(  # pylint: disable=attribute-defined-outside-init
-                time.time() + self.timeout, _on_timeout)
+                time.time() + self.timeout, _on_timeout
+            )
         self._send_packet(packet, callback=_on_write_done)
 
         return response
@@ -423,6 +429,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
         :param message: Message to be sent over the bus
         :return:
         """
+
         @gen.coroutine
         def sleep(timeout):
             yield gen.sleep(timeout)
@@ -433,8 +440,9 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 txt = f"Cleanup recv buffer before send: {hexlify_packets(result)}"
                 _logger.info(txt)
         except OSError as exc:
-            self.transaction.getTransaction(
-                message.transaction_id).set_exception(ModbusIOException(exc))
+            self.transaction.getTransaction(message.transaction_id).set_exception(
+                ModbusIOException(exc)
+            )
             return
 
         start = time.time()

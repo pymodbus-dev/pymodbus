@@ -88,7 +88,7 @@ class ModbusRtuFramer(ModbusFramer):
         try:
             self.populateHeader()
             frame_size = self._header["len"]
-            data = self._buffer[:frame_size - 2]
+            data = self._buffer[: frame_size - 2]
             crc = self._header["crc"]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             return checkCRC(data, crc_val)
@@ -102,7 +102,7 @@ class ModbusRtuFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header["len"]:]
+        self._buffer = self._buffer[self._header["len"] :]
         _logger.debug("Frame advanced, resetting header!!")
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
@@ -115,8 +115,10 @@ class ModbusRtuFramer(ModbusFramer):
         end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        txt = (f"Resetting frame - Current Frame in "
-               f"buffer - {hexlify_packets(self._buffer)}")
+        txt = (
+            f"Resetting frame - Current Frame in "
+            f"buffer - {hexlify_packets(self._buffer)}"
+        )
         _logger.debug(txt)
         self._buffer = b""
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
@@ -161,7 +163,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) < size:
             # crc yet not available
             raise IndexError
-        self._header["crc"] = data[size - 2:size]
+        self._header["crc"] = data[size - 2 : size]
 
     def addToFrame(self, message):
         """Add the received data to the buffer handle.
@@ -198,7 +200,9 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -243,9 +247,9 @@ class ModbusRtuFramer(ModbusFramer):
         :param message: The populated request/response to send
         """
         data = message.encode()
-        packet = struct.pack(RTU_FRAME_HEADER,
-                             message.unit_id,
-                             message.function_code) + data
+        packet = (
+            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+        )
         packet += struct.pack(">H", computeCRC(packet))
         # Ensure that transaction is actually the unit id for serial comms
         message.transaction_id = message.unit_id
@@ -262,15 +266,19 @@ class ModbusRtuFramer(ModbusFramer):
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 timestamp = round(time.time(), 6)
-                txt = (f"Changing state to IDLE - Last Frame End - {self.client.last_frame_end}, "
-                       f"Current Time stamp - {timestamp}")
+                txt = (
+                    f"Changing state to IDLE - Last Frame End - {self.client.last_frame_end}, "
+                    f"Current Time stamp - {timestamp}"
+                )
                 _logger.debug(txt)
 
                 if self.client.last_frame_end:
                     idle_time = self.client.idle_time()
                     if round(timestamp - idle_time, 6) <= self.client.silent_interval:
-                        txt = (f"Waiting for 3.5 char before next "
-                               f"send - {self.client.silent_interval * 1000} ms")
+                        txt = (
+                            f"Waiting for 3.5 char before next "
+                            f"send - {self.client.silent_interval * 1000} ms"
+                        )
                         _logger.debug(txt)
                         time.sleep(self.client.silent_interval)
                 else:
@@ -283,8 +291,10 @@ class ModbusRtuFramer(ModbusFramer):
                 time.sleep(self.client.timeout)
                 break
             elif time.time() > timeout:
-                _logger.debug("Spent more time than the read time out, "
-                              "resetting the transaction to IDLE")
+                _logger.debug(
+                    "Spent more time than the read time out, "
+                    "resetting the transaction to IDLE"
+                )
                 self.client.state = ModbusTransactionState.IDLE
             else:
                 _logger.debug("Sleeping")
@@ -319,5 +329,6 @@ class ModbusRtuFramer(ModbusFramer):
         txt = f"Getting Raw Frame - {hexlify_packets(self._buffer)}"
         _logger.debug(txt)
         return self._buffer
+
 
 # __END__

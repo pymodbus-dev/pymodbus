@@ -1,4 +1,5 @@
-#!/usr/bin/env python3 # pylint: disable-all
+#!/usr/bin/env python3
+# pylint: skip-file
 """Pydoc sub-class for generating documentation for entire packages.
 
 Taken from: http://pyopengl.sourceforge.net/pydoc/OpenGLContext.pydoc.pydoc2.html

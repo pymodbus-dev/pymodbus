@@ -73,8 +73,8 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
         except Exception as exc:  # pylint: disable=broad-except
-            _logger.debug("Datastore unable to fulfill request: "
-                          "%s; %s", exc, traceback.format_exc())
+            txt = f"Datastore unable to fulfill request: {exc} {traceback.format_exc()}"
+            _logger.debug(txt)
             response = request.doException(merror.SlaveFailure)
         # no response when broadcasting
         if not broadcast:
@@ -203,7 +203,8 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
                                                   single=single)
             except socket.timeout as msg:
                 if _logger.isEnabledFor(logging.DEBUG):
-                    _logger.debug("Socket timeout occurred %s", msg)
+                    txt = f"Socket timeout occurred {msg}"
+                    _logger.debug(txt)
                 reset_frame = True
             except socket.error as msg:
                 txt = f"Socket error occurred {msg}"
@@ -670,7 +671,7 @@ def StartUdpServer(context=None, identity=None, address=None,  # pylint: disable
     server.serve_forever()
 
 
-def StartSerialServer(context=None,  # pylint: disable=invalid-name, dangerous-default-value
+def StartSerialServer(context=None,  # NOSONAR pylint: disable=invalid-name, dangerous-default-value
                       identity=None, custom_functions=[],
                       **kwargs):
     """Start and run a serial modbus server.

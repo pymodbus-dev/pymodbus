@@ -107,7 +107,7 @@ def print_help():
     print_formatted_text(HTML("<u>Available commands:</u>"))
     for cmd, hlp in sorted(COMMAND_HELPS.items()):
         print_formatted_text(
-            HTML("<skyblue>{:45s}</skyblue><seagreen>{:100s}</seagreen>".format(cmd, hlp)  # pylint: disable=C0209
+            HTML("<skyblue>{cmd:45s}</skyblue><seagreen>{hlp:100s}</seagreen>"
                  )
         )
 

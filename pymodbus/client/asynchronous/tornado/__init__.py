@@ -416,8 +416,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
 
         if self.timeout:
             self.timeout_handle = self.io_loop.add_timeout(  # pylint: disable=attribute-defined-outside-init
-                time.time() + self.timeout,
-                _on_timeout)  # pylint: disable=attribute-defined-outside-init
+                time.time() + self.timeout, _on_timeout)
         self._send_packet(packet, callback=_on_write_done)
 
         return response

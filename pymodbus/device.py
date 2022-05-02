@@ -275,13 +275,13 @@ class ModbusDeviceIdentification:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    VendorName = dict_property(lambda s: s.__data, 0)  # NOSONAR pylint: disable=protected-access,invalid-name
-    ProductCode = dict_property(lambda s: s.__data, 1)  # NOSONAR pylint: disable=protected-access,invalid-name
-    MajorMinorRevision = dict_property(lambda s: s.__data, 2)  # NOSONAR pylint: disable=protected-access,invalid-name
-    VendorUrl = dict_property(lambda s: s.__data, 3)  # NOSONAR pylint: disable=protected-access,invalid-name
-    ProductName = dict_property(lambda s: s.__data, 4)  # NOSONAR pylint: disable=protected-access,invalid-name
-    ModelName = dict_property(lambda s: s.__data, 5)  # NOSONAR pylint: disable=protected-access,invalid-name
-    UserApplicationName = dict_property(lambda s: s.__data, 6)  # NOSONAR pylint: disable=protected-access,invalid-name
+    VendorName = dict_property(lambda s: s.__data, 0)  # NOSONAR pylint: disable=protected-access
+    ProductCode = dict_property(lambda s: s.__data, 1)  # NOSONAR pylint: disable=protected-access
+    MajorMinorRevision = dict_property(lambda s: s.__data, 2)  # NOSONAR pylint: disable=protected-access
+    VendorUrl = dict_property(lambda s: s.__data, 3)  # NOSONAR pylint: disable=protected-access
+    ProductName = dict_property(lambda s: s.__data, 4)  # NOSONAR pylint: disable=protected-access
+    ModelName = dict_property(lambda s: s.__data, 5)  # NOSONAR pylint: disable=protected-access
+    UserApplicationName = dict_property(lambda s: s.__data, 6)  # NOSONAR pylint: disable=protected-access
 
 
 class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-methods

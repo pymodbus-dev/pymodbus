@@ -29,7 +29,7 @@ from pymodbus.client.common import ModbusClientMixin
 # -------------------------------------------------------------------------- #
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
-logging.basicConfig()
+logging.basicConfig() # NOSONAR
 
 
 # -------------------------------------------------------------------------- #

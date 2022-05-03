@@ -113,7 +113,7 @@ class TestAsyncioClient:
         _, client = AsyncModbusSerialClient( #NOSONAR pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu') #NOSONAR #nosec
 
-        assert client.port == '/tmp/ptyp0' #nosec
+        assert client.port == '/tmp/ptyp0' # nosec NOSONAR
         assert client.baudrate == 9600 #nosec
 
     def test_factory_reset_wait_before_reconnect(self): # pylint: disable=no-self-use

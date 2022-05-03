@@ -192,8 +192,8 @@ class SunspecDecoder(BinaryPayloadDecoder):
         .. note:: This is always set to big endian byte order
         as specified in the protocol.
         """
-        byteorder = Endian.Big
-        BinaryPayloadDecoder.__init__(self, payload, byteorder)
+        my_byteorder = Endian.Big
+        BinaryPayloadDecoder.__init__(self, payload, my_byteorder)
 
     def decode_string(self, size=1):
         """ Decodes a string from the buffer

@@ -70,7 +70,7 @@ class TestAsynchronousClient:
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
     def test_tcp_tornado_client(self, mock_iostream, mock_ioloop): # pylint: disable=no-self-use,unused-argument
         """ Test the TCP tornado client client initialize """
-        protocol, future = AsyncModbusTCPClient( # pylint: disable=unpacking-non-sequence
+        protocol, future = AsyncModbusTCPClient( # NOSOANR pylint: disable=unpacking-non-sequence
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder()))
         client = future.result()
         assert isinstance(client, AsyncTornadoModbusTcpClient) #nosec

@@ -221,7 +221,7 @@ class ReactiveServer:
             delay_by = self._manipulator_config.get("delay_by")
             txt = f"Delaying response by {delay_by}s for all incoming requests"
             logger.warning(txt)
-            time.sleep(delay_by)  # change to async TODO pylint: disable:fixme
+            time.sleep(delay_by)  # change to async
             self._counter += 1
         elif response_type == "empty":
             logger.warning("Sending empty response")

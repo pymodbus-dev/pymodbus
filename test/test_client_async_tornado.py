@@ -263,9 +263,8 @@ class AsynchronousClientTest(unittest.TestCase):
     @patch("pymodbus.client.asynchronous.tornado.Serial")
     def test_serial_client_build_response(self,
                                           mock_serial,  # pylint: disable=unused-argument
-                                          mock_seriostream,  # pylint: disable=unused-argument
-                                          mock_ioloop):  # pylint: disable=unused-argument
-        """Test the tornado serial client client builds responses"""
+                                          mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+        """Test the tornado serial client client builds responses."""
         client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
                                          framer=ModbusRtuFramer(
                                              ClientDecoder()),

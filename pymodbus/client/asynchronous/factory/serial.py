@@ -70,7 +70,7 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     """
     from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
     from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
-        AsyncModbusSerialClient as Client)  # pylint: disable=import-outside-toplevel
+        AsyncModbusSerialClient as Client)
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)

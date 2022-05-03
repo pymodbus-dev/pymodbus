@@ -131,8 +131,9 @@ def run_with_not_running_loop():
     loop = asyncio.new_event_loop()
     assert not loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
-    new_loop, client = ModbusClient(schedulers.ASYNC_IO,  # NOSONAR pylint: disable=unpacking-non-sequence
-                                    port=5020, loop=loop)
+    new_loop, client = ModbusClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        schedulers.ASYNC_IO,
+        port=5020, loop=loop)
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------------RUN_WITH_NOT_RUNNING_LOOP---------------")

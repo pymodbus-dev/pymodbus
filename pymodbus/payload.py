@@ -311,7 +311,9 @@ class BinaryPayloadDecoder:
         return chunks
 
     @classmethod
-    def fromCoils(cls, coils, byteorder=Endian.Little, wordorder=Endian.Big):  # NOSONAR pylint: disable=C0103,W0613
+    def fromCoils(cls,  # NOSONAR pylint: disable=invalid-name
+                  coils, byteorder=Endian.Little,
+                  wordorder=Endian.Big):  # NOSONAR pylint: disable=unused-argument
         """Initialize a payload decoder with the result of reading of coils.
 
         The coils are treated as a list of bit(boolean) values.

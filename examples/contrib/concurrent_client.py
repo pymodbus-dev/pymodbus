@@ -87,16 +87,19 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
     :param output_queue: The queue to place client responses
     :param is_shutdown: Condition variable marking process shutdown
     """
-    log.info("starting up worker : %s", threading.current_thread())
+    txt = f"starting up worker : {threading.current_thread()}"
+    log.info(txt)
     my_client = factory()
     while not is_shutdown.is_set():
         try:
             workitem = input_queue.get(timeout=1)
-            log.debug("dequeue worker request: %s", workitem)
+            txt = f"dequeue worker request: {workitem}"
+            log.debug(txt)
             if not workitem:
                 continue
             try:
-                log.debug("executing request on thread: %s", workitem)
+                txt = f"executing request on thread: {workitem}"
+                log.debug(txt)
                 result = my_client.execute(workitem.request)
                 output_queue.put(WorkResponse(False, workitem.work_id, result))
             except Exception as exc:  # pylint: disable=broad-except
@@ -106,7 +109,8 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                                               workitem.work_id, exc))
         except Exception:  # nosec pylint: disable=broad-except
             pass
-    log.info("request worker shutting down: %s", threading.current_thread())
+    txt = f"request worker shutting down: {threading.current_thread()}"
+    log.info(txt)
 
 
 def _manager_worker_process(output_queue, my_futures, is_shutdown):
@@ -124,12 +128,14 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
     :param futures: The mapping of tid -> future
     :param is_shutdown: Condition variable marking process shutdown
     """
-    log.info("starting up manager worker: %s", threading.current_thread())
+    txt = f"starting up manager worker: {threading.current_thread()}"
+    log.info(txt)
     while not is_shutdown.is_set():
         try:
             workitem = output_queue.get()
             my_future = my_futures.get(workitem.work_id, None)
-            log.debug("dequeue manager response: %s", workitem)
+            txt = f"dequeue manager response: {workitem}"
+            log.debug(txt)
             if not my_future:
                 continue
             if workitem.is_exception:
@@ -227,7 +233,8 @@ if __name__ == "__main__":
 
     def client_factory():
         """Client factory."""
-        log.debug("creating client for: %s", threading.current_thread())
+        txt = f"creating client for: {threading.current_thread()}"
+        log.debug(txt)
         my_client = ModbusTcpClient('127.0.0.1', port=5020)
         my_client.connect()
         return client
@@ -238,6 +245,7 @@ if __name__ == "__main__":
         futures = [client.read_coils(i * 8, 8) for i in range(10)]
         log.info("waiting on futures to complete")
         for future in futures:
-            log.info("future result: %s", future.result(timeout=1))
+            txt = f"future result: {future.result(timeout=1)}"
+            log.info(txt)
     finally:
         client.shutdown()

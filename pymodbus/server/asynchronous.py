@@ -233,7 +233,8 @@ def _is_main_thread():
 
 def StartTcpServer(context,  # NOSONAR pylint: disable=dangerous-default-value,invalid-name
                    identity=None, address=None,
-                   console=False, defer_reactor_run=False,  # NOSONAR pylint: disable=W0613,
+                   console=False,  # NOSONAR pylint: disable=unused-argument,
+                   defer_reactor_run=False,
                    custom_functions=[],
                    **kwargs):
     """Start the Modbus Async TCP server.

@@ -155,7 +155,7 @@ class ModbusTransactionTest(unittest.TestCase):  # pylint: disable=too-many-publ
         # retry on invalid response
         trans.retry_on_invalid = True
         trans._recv = MagicMock(side_effect=iter(  # pylint: disable=protected-access
-            [b'', b'abcdef', b'deadbe', b'123456']))  # pylint: disable=protected-access
+            [b'', b'abcdef', b'deadbe', b'123456']))
         # tm._transact.side_effect = [(b'', None), (b'abcdef', None)]
         response = trans.execute(request)
         self.assertIsInstance(response, ModbusIOException)

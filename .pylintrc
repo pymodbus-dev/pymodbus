@@ -78,21 +78,14 @@ fail-on=
 # confidence=
 
 # Enable/Disable the message/report/category/checker with the given id(s).
-enable=
-    attribute-defined-outside-init,
-    fixme,
-    invalid-name,
-    missing-docstring,
-    no-self-use,
-    protected-access,
-    too-few-public-methods,
+enable=all
 
 disable= 
-    duplicate-code,
-    logging-too-many-args,
-    use-symbolic-message-instead,
-    useless-suppression,
-    format # handled by black
+    duplicate-code,                # TBD
+    file-ignored,                  # ONLY to be used with extreme care.
+    format,                        # NOT wanted, handled by black
+    locally-disabled,              # NOT wanted
+    suppressed-message,            # NOT wanted
 
 
 [REPORTS]

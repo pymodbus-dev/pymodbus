@@ -14,7 +14,7 @@ from pymodbus.server.reactive.main import (
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
-if sys.version_info > (3, 7):
+if sys.version_info >= (3, 8):
     CANCELLED_ERROR = asyncio.exceptions.CancelledError
 else:
     CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name

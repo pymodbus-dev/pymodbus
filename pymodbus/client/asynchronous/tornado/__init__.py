@@ -1,10 +1,6 @@
 """Asynchronous framework adapter for tornado."""
-from __future__ import unicode_literals
-
-import abc
-
 import logging
-
+import abc
 import time
 import socket
 from serial import Serial

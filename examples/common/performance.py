@@ -7,7 +7,6 @@ modbus client.
 # --------------------------------------------------------------------------- #
 # import the necessary modules
 # --------------------------------------------------------------------------- #
-from __future__ import print_function
 import logging
 import os
 from threading import Lock, Thread as tWorker

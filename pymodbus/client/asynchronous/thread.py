@@ -1,10 +1,6 @@
 """Thread setup."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from threading import Thread
-
 import logging
+from threading import Thread
 
 _logger = logging.getLogger(__name__)
 

@@ -1,6 +1,4 @@
 """Factory to create asynchronous serial clients based on twisted/tornado/asyncio."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 import asyncio
 

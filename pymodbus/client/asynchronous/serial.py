@@ -1,7 +1,4 @@
 """SERIAL communication."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
 from pymodbus.transaction import (

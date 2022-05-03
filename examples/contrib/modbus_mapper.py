@@ -1,5 +1,6 @@
-""" Given a modbus mapping file, this is used to generate
-decoder blocks so that non-programmers can define the
+r"""This is used to generate decoder blocks.
+
+so that non-programmers can define the
 register values and then decode a modbus device all
 without having to write a line of code for decoding.
 
@@ -64,9 +65,9 @@ from pymodbus.datastore.context import ModbusSlaveContext
 
 
 def csv_mapping_parser(path, template):
-    """ Given a csv file of the the mapping data for
-    a modbus device, return a mapping layout that can
-    be used to decode an new block.
+    """Given a csv file of the the mapping data for a modbus device,
+
+    return a mapping layout that can be used to decode an new block.
 
     .. note:: For the template, a few values are required
     to be defined: address, size, function, and type. All the remaining
@@ -81,7 +82,7 @@ def csv_mapping_parser(path, template):
     :returns: The decoded csv dictionary
     """
     mapping_blocks = defaultdict(dict)
-    with open(path, 'r') as handle: # pylint: disable=unspecified-encoding
+    with open(path, 'r') as handle:  # pylint: disable=unspecified-encoding
         reader = csv.reader(handle)
         reader.next()  # skip the csv header
         for row in reader:
@@ -93,8 +94,9 @@ def csv_mapping_parser(path, template):
 
 
 def json_mapping_parser(path, template):
-    """ Given a json file of the the mapping data for
-    a modbus device, return a mapping layout that can
+    """Given a json file of the the mapping data for a modbus device,
+
+    return a mapping layout that can
     be used to decode an new block.
 
     .. note:: For the template, a few values are required
@@ -115,7 +117,7 @@ def json_mapping_parser(path, template):
     :returns: The decoded csv dictionary
     """
     mapping_blocks = {}
-    with open(path, 'r') as handle: # pylint: disable=unspecified-encoding
+    with open(path, 'r') as handle:  # pylint: disable=unspecified-encoding
         for tid, rows in json.load(handle).iteritems():
             mappings = {}
             for key, values in rows.iteritems():
@@ -126,9 +128,9 @@ def json_mapping_parser(path, template):
 
 
 def xml_mapping_parser():
-    """ Given an xml file of the the mapping data for
-    a modbus device, return a mapping layout that can
-    be used to decode an new block.
+    """Given an xml file of the the mapping data for a modbus device,
+
+    return a mapping layout that can be used to decode an new block.
 
     .. note:: The input of the xml file is defined as
     follows::
@@ -145,8 +147,7 @@ def xml_mapping_parser():
 # populated function data blocks.
 # --------------------------------------------------------------------------- #
 def modbus_context_decoder(mapping_blocks):
-    """ Given a mapping block input, generate a backing
-    slave context with initialized data blocks.
+    """Generate a backing slave context with initialized data blocks.
 
     .. note:: This expects the following for each block:
     address, value, and function where function is one of
@@ -174,9 +175,9 @@ def modbus_context_decoder(mapping_blocks):
 # pass them to this decoder which will do the rest.
 # --------------------------------------------------------------------------- #
 class ModbusTypeDecoder:
-    """ This is a utility to determine the correct
-    decoder to use given a type name. By default this
-    supports all the types available in the default modbus
+    """This is a utility to determine the correct decoder to use given a type name.
+
+    By default this supports all the types available in the default modbus
     decoder, however this can easily be extended this class
     and adding new types to the mapper::
 
@@ -189,26 +190,26 @@ class ModbusTypeDecoder:
                 return lambda d: d.decode_my_type()
 
     """
+
     def __init__(self):
-        """ Initializes a new instance of the decoder
-        """
+        """Initialize a new instance of the decoder"""
         self.default = lambda m: self.parse_16bit_uint
         self.parsers = {
-            'uint':    self.parse_16bit_uint,  # noqa E221
-            'uint8':   self.parse_8bit_uint,  # noqa E221
-            'uint16':  self.parse_16bit_uint,  # noqa E221
-            'uint32':  self.parse_32bit_uint,  # noqa E221
-            'uint64':  self.parse_64bit_uint,  # noqa E221
-            'int':     self.parse_16bit_int,  # noqa E221
-            'int8':    self.parse_8bit_int,  # noqa E221
-            'int16':   self.parse_16bit_int,  # noqa E221
-            'int32':   self.parse_32bit_int,  # noqa E221
-            'int64':   self.parse_64bit_int,  # noqa E221
-            'float':   self.parse_32bit_float,  # noqa E221
+            'uint': self.parse_16bit_uint,  # noqa E221
+            'uint8': self.parse_8bit_uint,  # noqa E221
+            'uint16': self.parse_16bit_uint,  # noqa E221
+            'uint32': self.parse_32bit_uint,  # noqa E221
+            'uint64': self.parse_64bit_uint,  # noqa E221
+            'int': self.parse_16bit_int,  # noqa E221
+            'int8': self.parse_8bit_int,  # noqa E221
+            'int16': self.parse_16bit_int,  # noqa E221
+            'int32': self.parse_32bit_int,  # noqa E221
+            'int64': self.parse_64bit_int,  # noqa E221
+            'float': self.parse_32bit_float,  # noqa E221
             'float32': self.parse_32bit_float,  # noqa E221
             'float64': self.parse_64bit_float,  # noqa E221
-            'string':  self.parse_32bit_int,  # noqa E221
-            'bits':    self.parse_bits,  # noqa E221
+            'string': self.parse_32bit_int,  # noqa E221
+            'bits': self.parse_bits,  # noqa E221
         }
 
     # ------------------------------------------------------------ #
@@ -216,71 +217,71 @@ class ModbusTypeDecoder:
     # ------------------------------------------------------------ #
     @staticmethod
     def parse_string(tokens):
-        """ Parse value. """
+        """Parse value."""
         _ = tokens.next()
         size = int(tokens.next())
         return lambda d: d.decode_string(size=size)
 
     @staticmethod
     def parse_bits():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_bits()
 
     @staticmethod
     def parse_8bit_uint():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_8bit_uint()
 
     @staticmethod
     def parse_16bit_uint():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_16bit_uint()
 
     @staticmethod
     def parse_32bit_uint():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_32bit_uint()
 
     @staticmethod
     def parse_64bit_uint():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_64bit_uint()
 
     @staticmethod
     def parse_8bit_int():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_8bit_int()
 
     @staticmethod
     def parse_16bit_int():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_16bit_int()
 
     @staticmethod
     def parse_32bit_int():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_32bit_int()
 
     @staticmethod
     def parse_64bit_int():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_64bit_int()
 
     @staticmethod
     def parse_32bit_float():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_32bit_float()
 
     @staticmethod
     def parse_64bit_float():
-        """ Parse value. """
+        """Parse value."""
         return lambda d: d.decode_64bit_float()
 
     # ------------------------------------------------------------
     # Public Interface
     # ------------------------------------------------------------
-    def tokenize(self, value): # pylint: disable=no-self-use
-        """ Given a value, return the tokens
+    def tokenize(self, value):  # pylint: disable=no-self-use
+        """Return the tokens
 
         :param value: The value to tokenize
         :returns: A token generator
@@ -290,22 +291,21 @@ class ModbusTypeDecoder:
             yield tokval
 
     def parse(self, value):
-        """ Given a type value, return a function
-        that supplied with a decoder, will decode
-        the correct value.
+        """Return a function that supplied with a decoder,
+
+        will decode the correct value.
 
         :param value: The type of value to parse
         :returns: The decoder method to use
         """
         tokens = self.tokenize(value)
-        token = tokens.next().lower() # pylint: disable=no-member
+        token = tokens.next().lower()  # pylint: disable=no-member
         parser = self.parsers.get(token, self.default)
         return parser(tokens)
 
 
 def mapping_decoder(mapping_blocks, decoder=None):
-    """ Given the raw mapping blocks, convert
-    them into modbus value decoder map.
+    """Convert them into modbus value decoder map.
 
     :param mapping_blocks: The mapping blocks
     :param decoder: The type decoder to use

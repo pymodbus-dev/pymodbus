@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Test interfaces. """
+"""Test interfaces."""
 import unittest
 
 from pymodbus.interfaces import (
@@ -11,26 +11,28 @@ from pymodbus.interfaces import (
 )
 from pymodbus.exceptions import NotImplementedException
 
-class _SingleInstance(Singleton): # pylint: disable=too-few-public-methods
-    """ Single instance. """
+
+class _SingleInstance(Singleton):  # pylint: disable=too-few-public-methods
+    """Single instance."""
+
 
 class ModbusInterfaceTestsTest(unittest.TestCase):
-    """ Unittest for the pymodbus.interfaces module. """
+    """Unittest for the pymodbus.interfaces module."""
 
     def setUp(self):
-        """ Initializes the test environment """
+        """Initialize the test environment"""
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        """Clean up the test environment"""
 
     def test_singleton_interface(self):
-        """ Test that the singleton interface works """
-        first  = _SingleInstance()
+        """Test that the singleton interface works"""
+        first = _SingleInstance()
         second = _SingleInstance()
         self.assertEqual(first, second)
 
     def test_modbus_decoder_interface(self):
-        """ Test that the base class isn't implemented """
+        """Test that the base class isn't implemented"""
         x_base = None
         instance = IModbusDecoder()
         self.assertRaises(NotImplementedException, lambda: instance.decode(x_base))
@@ -40,7 +42,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
                           lambda: instance.register(x_base))
 
     def test_modbus_framer_interface(self):
-        """ Test that the base class isn't implemented """
+        """Test that the base class isn't implemented"""
         x_base = None
         instance = IModbusFramer()
         self.assertRaises(NotImplementedException, instance.checkFrame)
@@ -48,30 +50,31 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, instance.isFrameReady)
         self.assertRaises(NotImplementedException, instance.getFrame)
         self.assertRaises(NotImplementedException, lambda:
-                instance.addToFrame(x_base))
+                          instance.addToFrame(x_base))
         self.assertRaises(NotImplementedException, lambda:
-                instance.populateResult(x_base))
+                          instance.populateResult(x_base))
         self.assertRaises(NotImplementedException, lambda:
-                instance.processIncomingPacket(x_base,x_base))
+                          instance.processIncomingPacket(x_base, x_base))
         self.assertRaises(NotImplementedException, lambda:
-                instance.buildPacket(x_base))
+                          instance.buildPacket(x_base))
 
     def test_modbus_slave_context_interface(self):
-        """ Test that the base class isn't implemented """
+        """Test that the base class isn't implemented"""
         x_base = None
         instance = IModbusSlaveContext()
         self.assertRaises(NotImplementedException, instance.reset)
-        self.assertRaises(NotImplementedException, lambda: instance.validate(x_base,x_base,x_base))
-        self.assertRaises(NotImplementedException, lambda: instance.getValues(x_base,x_base,x_base))
-        self.assertRaises(NotImplementedException, lambda: instance.setValues(x_base,x_base,x_base))
+        self.assertRaises(NotImplementedException, lambda: instance.validate(x_base, x_base, x_base))
+        self.assertRaises(NotImplementedException, lambda: instance.getValues(x_base, x_base, x_base))
+        self.assertRaises(NotImplementedException, lambda: instance.setValues(x_base, x_base, x_base))
 
     def test_modbus_payload_builder_interface(self):
-        """ Test that the base class isn't implemented """
+        """Test that the base class isn't implemented"""
         instance = IPayloadBuilder()
-        self.assertRaises(NotImplementedException, lambda: instance.build()) # pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: instance.build())  # pylint: disable=unnecessary-lambda
 
-#---------------------------------------------------------------------------#
-# Main
-#---------------------------------------------------------------------------#
+
+# ---------------------------------------------------------------------------#
+#  Main
+# ---------------------------------------------------------------------------#
 if __name__ == "__main__":
     unittest.main()

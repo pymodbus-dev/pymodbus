@@ -1,5 +1,6 @@
-""" Handle the version information here; you should only have to
-change the version tuple.
+"""Handle the version information here.
+
+you should only have to change the version tuple.
 
 Since we are using twisted's version class, we can also query
 the svn version as well using the local .entries file.
@@ -10,7 +11,7 @@ class Version:
     """Manage version."""
 
     def __init__(self, package, major, minor, micro, pre=None):
-        """ Initialize
+        """Initialize.
 
         :param package: Name of the package that this is a version of.
         :param major: The major version number.
@@ -25,15 +26,13 @@ class Version:
         self.pre = pre
 
     def short(self):
-        """ Return a string in canonical short version format
-        <major>.<minor>.<micro>.<pre>
-        """
+        """Return a string in canonical short version format: <major>.<minor>.<micro>.<pre>."""
         if self.pre:
             return f'{self.major}.{self.minor}.{self.micro}.{self.pre}'
         return f'{self.major}.{self.minor}.{self.micro}'
 
     def __str__(self):
-        """ Returns a string representation of the object
+        """Return a string representation of the object.
 
         :returns: A string representation of this object
         """

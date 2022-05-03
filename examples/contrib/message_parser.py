@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Modbus Message Parser
---------------------------------------------------------------------------
+"""Modbus Message Parser.
 
 The following is an example of how to parse modbus messages
 using the supplied framers for a number of protocols:
@@ -17,7 +16,7 @@ from __future__ import print_function
 import logging
 import collections
 import textwrap
-from optparse import OptionParser # pylint: disable=deprecated-module
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import codecs as c
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
@@ -29,7 +28,7 @@ from pymodbus.transaction import ModbusRtuFramer
 # -------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 
 
@@ -38,10 +37,10 @@ log = logging.getLogger()
 # -------------------------------------------------------------------------- #
 
 class Decoder:
-    """ Decoder. """
+    """Decoder."""
 
     def __init__(self, framer, encode=False):
-        """ Initialize a new instance of the decoder
+        """Initialize a new instance of the decoder
 
         :param framer: The framer to use
         :param encode: If the message needs to be encoded
@@ -50,12 +49,12 @@ class Decoder:
         self.encode = encode
 
     def decode(self, message):
-        """ Attempt to decode the supplied message
+        """Attempt to decode the supplied message
 
         :param message: The message to decode
         """
         value = message if self.encode else c.encode(message, 'hex_codec')
-        print("="*80)
+        print("=" * 80)
         print(f"Decoding Message {value}")
         print("=" * 80)
         decoders = [
@@ -68,49 +67,49 @@ class Decoder:
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
-                    unit = decoder._header.get("uid", 0x00) # pylint: disable=protected-access
+                    unit = decoder._header.get("uid", 0x00)  # pylint: disable=protected-access
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report, unit)
                 else:
                     self.check_errors(decoder, message)
-            except Exception: # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 
-    def check_errors(self, decoder, message): # pylint: disable=no-self-use
-        """ Attempt to find message errors
+    def check_errors(self, decoder, message):  # pylint: disable=no-self-use
+        """Attempt to find message errors
 
         :param message: The message to find errors in
         """
         txt = f"Unable to parse message - {message} with {decoder}"
         log.error(txt)
 
-    def report(self, message): # pylint: disable=no-self-use
-        """ The callback to print the message information
+    def report(self, message):  # pylint: disable=no-self-use
+        """Print the message information
 
         :param message: The message to print
         """
-        print("%-15s = %s" % ('name', message.__class__.__name__)) #NOSONAR pylint: disable=consider-using-f-string
+        print("%-15s = %s" % ('name', message.__class__.__name__))  # NOSONAR pylint: disable=consider-using-f-string
         for (k_dict, v_dict) in message.__dict__.items():
             if isinstance(v_dict, dict):
-                print("%-15s =" % k_dict) # pylint: disable=consider-using-f-string
+                print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 for k_item, v_item in v_dict.items():
-                    print("  %-12s => %s" % (k_item, v_item)) # pylint: disable=consider-using-f-string
+                    print("  %-12s => %s" % (k_item, v_item))  # pylint: disable=consider-using-f-string
 
-            elif isinstance(v_dict, collections.Iterable): # pylint: disable=no-member
-                print("%-15s =" % k_dict) # pylint: disable=consider-using-f-string
+            elif isinstance(v_dict, collections.Iterable):  # pylint: disable=no-member
+                print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):
-                    print("%-15s . %s" % ("", line)) # pylint: disable=consider-using-f-string
+                    print("%-15s . %s" % ("", line))  # pylint: disable=consider-using-f-string
             else:
-                print("%-15s = %s" % (k_dict, hex(v_dict))) # pylint: disable=consider-using-f-string
-        print("%-15s = %s" % ('documentation', message.__doc__)) # pylint: disable=consider-using-f-string
+                print("%-15s = %s" % (k_dict, hex(v_dict)))  # pylint: disable=consider-using-f-string
+        print("%-15s = %s" % ('documentation', message.__doc__))  # pylint: disable=consider-using-f-string
 
 
 # -------------------------------------------------------------------------- #
 # and decode our message
 # -------------------------------------------------------------------------- #
 def get_options():
-    """ A helper method to parse the command line options
+    """Parse the command line options
 
     :returns: The options manager
     """
@@ -157,7 +156,7 @@ def get_options():
 
 
 def get_messages(option):
-    """ A helper method to generate the messages to parse
+    """Do a helper method to generate the messages to parse
 
     :param options: The option manager
     :returns: The message iterator to parse
@@ -175,7 +174,7 @@ def get_messages(option):
             option.message = c.decode(option.message.encode(), 'hex_codec')
         yield option.message
     elif option.file:
-        with open(option.file, "r") as handle: # pylint: disable=unspecified-encoding
+        with open(option.file, "r") as handle:  # pylint: disable=unspecified-encoding
             for line in handle:
                 if line.startswith('#'):
                     continue
@@ -186,21 +185,20 @@ def get_messages(option):
 
 
 def main():
-    """ The main runner function
-    """
+    """Run main runner function"""
     option = get_options()
 
     if option.debug:
         try:
             log.setLevel(logging.DEBUG)
-        except Exception as exc: # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             print(f"Logging is not supported on this system- {exc}")
 
     framer = {
-        'tcp':    ModbusSocketFramer,  # noqa E221
-        'rtu':    ModbusRtuFramer,  # noqa E221
+        'tcp': ModbusSocketFramer,  # noqa E221
+        'rtu': ModbusRtuFramer,  # noqa E221
         'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer,  # noqa E221
+        'ascii': ModbusAsciiFramer,  # noqa E221
     }.get(option.framer or option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer, option.ascii)

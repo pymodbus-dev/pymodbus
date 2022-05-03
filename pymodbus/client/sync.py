@@ -1,4 +1,4 @@
-""" Sync client. """
+"""Sync client."""
 import logging
 import socket
 import select
@@ -29,13 +29,15 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseModbusClient(ModbusClientMixin):
-    """ Interface for a modbus synchronous client. Defined here are all the
-    methods for performing the related request methods.  Derived classes
-    simply need to implement the transport methods and set the correct
-    framer.
+    """Interface for a modbus synchronous client.
+
+    Defined here are all the methods for performing the related request
+    methods.  Derived classes simply need to implement the transport
+    methods and set the correct framer.
     """
+
     def __init__(self, framer, **kwargs):
-        """ Initialize a client instance
+        """Initialize a client instance.
 
         :param framer: The modbus framer implementation to use
         """
@@ -48,23 +50,22 @@ class BaseModbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
     # Client interface
     # ----------------------------------------------------------------------- #
-    def connect(self): # pylint: disable=no-self-use
-        """ Connect to the modbus remote host
+    def connect(self):  # pylint: disable=no-self-use
+        """Connect to the modbus remote host.
 
         :returns: True if connection succeeded, False otherwise
         """
         raise NotImplementedException("Method not implemented by derived class")
 
     def close(self):
-        """ Closes the underlying socket connection. """
+        """Close the underlying socket connection."""
 
     def is_socket_open(self):
-        """ Check whether the underlying socket/serial is open or not.
+        """Check whether the underlying socket/serial is open or not.
 
         :returns: True if socket/serial is open, False otherwise
         """
         raise NotImplementedException(f"is_socket_open() not implemented by {self.__str__()}")
-
 
     def send(self, request):
         """Send request."""
@@ -73,8 +74,8 @@ class BaseModbusClient(ModbusClientMixin):
             self.state = ModbusTransactionState.SENDING
         return self._send(request)
 
-    def _send(self, request): # pylint: disable=no-self-use
-        """ Sends data on the underlying socket
+    def _send(self, request):  # pylint: disable=no-self-use
+        """Send data on the underlying socket.
 
         :param request: The encoded request to send
         :return: The number of bytes written
@@ -85,8 +86,8 @@ class BaseModbusClient(ModbusClientMixin):
         """Receive data."""
         return self._recv(size)
 
-    def _recv(self, size): # pylint: disable=no-self-use
-        """ Reads data from the underlying descriptor
+    def _recv(self, size):  # pylint: disable=no-self-use
+        """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read
@@ -97,7 +98,8 @@ class BaseModbusClient(ModbusClientMixin):
     # Modbus client methods
     # ----------------------------------------------------------------------- #
     def execute(self, request=None):
-        """ Execute.
+        """Execute.
+
         :param request: The request to process
         :returns: The result of the request execution
         """
@@ -109,7 +111,7 @@ class BaseModbusClient(ModbusClientMixin):
     # The magic methods
     # ----------------------------------------------------------------------- #
     def __enter__(self):
-        """ Implement the client with enter block
+        """Implement the client with enter block.
 
         :returns: The current instance of the client
         """
@@ -118,11 +120,12 @@ class BaseModbusClient(ModbusClientMixin):
         return self
 
     def __exit__(self, klass, value, traceback):
-        """ Implement the client with exit block """
+        """Implement the client with exit block."""
         self.close()
 
     def idle_time(self):
-        """ Bus Idle Time to initiate next transaction
+        """Return bus Idle Time to initiate next transaction.
+
         :return: time stamp
         """
         if self.last_frame_end is None or self.silent_interval is None:
@@ -130,37 +133,38 @@ class BaseModbusClient(ModbusClientMixin):
         return self.last_frame_end + self.silent_interval
 
     def debug_enabled(self):
-        """ Returns a boolean indicating if debug is enabled. """
+        """Return a boolean indicating if debug is enabled."""
         return self._debug
 
     def set_debug(self, debug):
-        """ Sets the current debug flag. """
+        """Set the current debug flag."""
         self._debug = debug
 
     def trace(self, writeable):
-        """ Show trace. """
+        """Show trace."""
         if writeable:
             self.set_debug(True)
         self._debugfd = writeable
 
     def _dump(self, data):
-        """ Internal dump. """
+        """Dump."""
         fd = self._debugfd if self._debugfd else sys.stdout
         try:
             fd.write(hexlify_packets(data))
-        except Exception as exc: # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             _logger.debug(hexlify_packets(data))
             _logger.exception(exc)
 
     def register(self, function):
-        """ Registers a function and sub function class with the decoder
+        """Register a function and sub function class with the decoder.
+
         :param function: Custom function class to register
         :return:
         """
         self.framer.decoder.register(function)
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
@@ -171,11 +175,11 @@ class BaseModbusClient(ModbusClientMixin):
 # Modbus TCP Client Transport Implementation
 # --------------------------------------------------------------------------- #
 class ModbusTcpClient(BaseModbusClient):
-    """ Implementation of a modbus tcp client. """
+    """Implementation of a modbus tcp client."""
 
     def __init__(self, host='127.0.0.1', port=Defaults.Port,
-        framer=ModbusSocketFramer, **kwargs):
-        """ Initialize a client instance
+                 framer=ModbusSocketFramer, **kwargs):
+        """Initialize a client instance.
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
@@ -189,11 +193,11 @@ class ModbusTcpClient(BaseModbusClient):
         self.port = port
         self.source_address = kwargs.get('source_address', ('', 0))
         self.socket = None
-        self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        self.timeout = kwargs.get('timeout', Defaults.Timeout)
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     def connect(self):
-        """ Connect to the modbus tcp server
+        """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -213,13 +217,13 @@ class ModbusTcpClient(BaseModbusClient):
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection. """
+        """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
 
     def _check_read_buffer(self):
-        """ Internal check read buffer. """
+        """Check read buffer."""
         time_ = time.time()
         end = time_ + self.timeout
         data = None
@@ -229,7 +233,7 @@ class ModbusTcpClient(BaseModbusClient):
         return data
 
     def _send(self, request):
-        """ Sends data on the underlying socket
+        """Send data on the underlying socket.
 
         :param request: The encoded request to send
         :return: The number of bytes written
@@ -245,7 +249,7 @@ class ModbusTcpClient(BaseModbusClient):
         return 0
 
     def _recv(self, size):
-        """ Reads data from the underlying descriptor
+        """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read if the peer sent a response, or a zero-length
@@ -307,7 +311,7 @@ class ModbusTcpClient(BaseModbusClient):
         return b"".join(data)
 
     def _handle_abrupt_socket_close(self, size, data, duration):
-        """ Handle unexpected socket close by remote end
+        """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end
         has unexpectedly closed the connection, to clean up and handle
@@ -335,16 +339,18 @@ class ModbusTcpClient(BaseModbusClient):
         raise ConnectionException(msg)
 
     def is_socket_open(self):
-        return True if self.socket is not None else False # pylint: disable=simplifiable-if-expression
+        """Check if socket is open."""
+        return True if self.socket is not None else False  # pylint: disable=simplifiable-if-expression
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
         return f"ModbusTcpClient({self.host}:{self.port})"
 
     def __repr__(self):
+        """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
             f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
@@ -356,12 +362,12 @@ class ModbusTcpClient(BaseModbusClient):
 
 
 class ModbusTlsClient(ModbusTcpClient):
-    """ Implementation of a modbus tls client. """
+    """Implementation of a modbus tls client."""
 
     def __init__(self, host='localhost', port=Defaults.TLSPort, sslctx=None,
-        certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
-        **kwargs):
-        """ Initialize a client instance
+                 certfile=None, keyfile=None, password=None, framer=ModbusTlsFramer,
+                 **kwargs):
+        """Initialize a client instance.
 
         :param host: The host to connect to (default localhost)
         :param port: The modbus port to connect to (default 802)
@@ -379,7 +385,7 @@ class ModbusTlsClient(ModbusTcpClient):
         ModbusTcpClient.__init__(self, host, port, framer, **kwargs)
 
     def connect(self):
-        """ Connect to the modbus tls server
+        """Connect to the modbus tls server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -399,7 +405,7 @@ class ModbusTlsClient(ModbusTcpClient):
         return self.socket is not None
 
     def _recv(self, size):
-        """ Reads data from the underlying descriptor
+        """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read
@@ -443,13 +449,14 @@ class ModbusTlsClient(ModbusTcpClient):
         return data
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
         return f"ModbusTlsClient({self.host}:{self.port})"
 
     def __repr__(self):
+        """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
             f"ipaddr={self.host}, port={self.port}, sslctx={self.sslctx}, "
@@ -463,11 +470,11 @@ class ModbusTlsClient(ModbusTcpClient):
 
 
 class ModbusUdpClient(BaseModbusClient):
-    """ Implementation of a modbus udp client. """
+    """Implementation of a modbus udp client."""
 
     def __init__(self, host='127.0.0.1', port=Defaults.Port,
                  framer=ModbusSocketFramer, **kwargs):
-        """ Initialize a client instance
+        """Initialize a client instance.
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
@@ -482,7 +489,8 @@ class ModbusUdpClient(BaseModbusClient):
 
     @classmethod
     def _get_address_family(cls, address):
-        """ A helper method to get the correct address family
+        """Get the correct address family.
+
         for a given address.
 
         :param address: The address to get the af for
@@ -490,12 +498,12 @@ class ModbusUdpClient(BaseModbusClient):
         """
         try:
             _ = socket.inet_pton(socket.AF_INET6, address)
-        except socket.error: # not a valid ipv6 address
+        except socket.error:  # not a valid ipv6 address
             return socket.AF_INET
         return socket.AF_INET6
 
     def connect(self):
-        """ Connect to the modbus tcp server
+        """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -512,11 +520,11 @@ class ModbusUdpClient(BaseModbusClient):
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection. """
+        """Close the underlying socket connection."""
         self.socket = None
 
     def _send(self, request):
-        """ Sends data on the underlying socket
+        """Send data on the underlying socket.
 
         :param request: The encoded request to send
         :return: The number of bytes written
@@ -528,7 +536,7 @@ class ModbusUdpClient(BaseModbusClient):
         return 0
 
     def _recv(self, size):
-        """ Reads data from the underlying descriptor
+        """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read
@@ -538,18 +546,20 @@ class ModbusUdpClient(BaseModbusClient):
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):
+        """Check if socket is open."""
         if self.socket:
             return True
         return self.connect()
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
         return f"ModbusUdpClient({self.host}:{self.port})"
 
     def __repr__(self):
+        """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
             f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
@@ -560,15 +570,15 @@ class ModbusUdpClient(BaseModbusClient):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-attributes
-    """ Implementation of a modbus serial client. """
+class ModbusSerialClient(BaseModbusClient):  # pylint: disable=too-many-instance-attributes
+    """Implementation of a modbus serial client."""
 
     state = ModbusTransactionState.IDLE
     inter_char_timeout = 0
     silent_interval = 0
 
     def __init__(self, method='ascii', **kwargs):
-        """ Initialize a serial client instance
+        """Initialize a serial client instance.
 
         The methods to connect are::
 
@@ -595,9 +605,9 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         self.port = kwargs.get('port', 0)
         self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        self.parity = kwargs.get('parity',   Defaults.Parity)
+        self.parity = kwargs.get('parity', Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-        self.timeout = kwargs.get('timeout',  Defaults.Timeout)
+        self.timeout = kwargs.get('timeout', Defaults.Timeout)
         self._strict = kwargs.get("strict", False)
         self.last_frame_end = None
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
@@ -612,7 +622,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
 
     @staticmethod
     def __implementation(method, client):
-        """ Returns the requested framer
+        """Return the requested framer.
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
@@ -629,7 +639,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         raise ParameterException("Invalid framer method requested")
 
     def connect(self):
-        """ Connect to the modbus serial server
+        """Connect to the modbus serial server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -637,11 +647,11 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
             return True
         try:
             self.socket = serial.serial_for_url(self.port,
-                                        timeout=self.timeout,
-                                        bytesize=self.bytesize,
-                                        stopbits=self.stopbits,
-                                        baudrate=self.baudrate,
-                                        parity=self.parity)
+                                                timeout=self.timeout,
+                                                bytesize=self.bytesize,
+                                                stopbits=self.stopbits,
+                                                baudrate=self.baudrate,
+                                                parity=self.parity)
             if self.method == "rtu":
                 if self._strict:
                     self.socket.interCharTimeout = self.inter_char_timeout
@@ -652,13 +662,13 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection. """
+        """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
 
     def _in_waiting(self):
-        """ Internal _in_waiting. """
+        """Return _in_waiting."""
         in_waiting = ("in_waiting" if hasattr(
             self.socket, "in_waiting") else "inWaiting")
 
@@ -669,7 +679,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return waitingbytes
 
     def _send(self, request):
-        """ Sends data on the underlying socket
+        """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
 
@@ -702,7 +712,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return 0
 
     def _wait_for_data(self):
-        """ Internal wait for data. """
+        """Wait for data."""
         size = 0
         more_data = False
         if self.timeout is not None and self.timeout:
@@ -723,7 +733,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return size
 
     def _recv(self, size):
-        """ Reads data from the underlying descriptor
+        """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read
@@ -736,6 +746,7 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return result
 
     def is_socket_open(self):
+        """Check if socket is open."""
         if self.socket:
             if hasattr(self.socket, "is_open"):
                 return self.socket.is_open
@@ -743,13 +754,14 @@ class ModbusSerialClient(BaseModbusClient): # pylint: disable=too-many-instance-
         return False
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
         return f"ModbusSerialClient({self.method} baud[{self.baudrate}])"
 
     def __repr__(self):
+        """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
             f"method={self.method}, timeout={self.timeout}>"

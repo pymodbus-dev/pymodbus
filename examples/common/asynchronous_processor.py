@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Processor Example
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Processor Example.
 
 The following is a full example of a continuous client processor. Feel
 free to use it as a skeleton guide in implementing your own.
@@ -29,7 +28,7 @@ from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -51,10 +50,10 @@ UNIT = 0x01
 # callbacks.
 # --------------------------------------------------------------------------- #
 class ExampleProtocol(ModbusClientProtocol):
-    """ Example protocol. """
+    """Example protocol."""
 
     def __init__(self, framer, endpoint):
-        """ Initializes our custom protocol
+        """Initialize our custom protocol
 
         :param framer: The decoder to use to process messages
         :param endpoint: The endpoint to send results to
@@ -62,17 +61,16 @@ class ExampleProtocol(ModbusClientProtocol):
         ModbusClientProtocol.__init__(self, framer)
         self.endpoint = endpoint
         log.debug("Beginning the processing loop")
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
 
     def fetch_holding_registers(self):
-        """ Defer fetching holding registers
-        """
+        """Defer fetching holding registers"""
         log.debug("Starting the next cycle")
         data = self.read_holding_registers(*STATUS_REGS, unit=UNIT)
         data.addCallbacks(self.send_holding_registers, self.error_handler)
 
     def send_holding_registers(self, response):
-        """ Write values of holding registers, defer fetching coils
+        """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
         """
@@ -82,17 +80,17 @@ class ExampleProtocol(ModbusClientProtocol):
         result.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):
-        """ Write values of coils, trigger next cycle
+        """Write values of coils, trigger next cycle
 
         :param response: The response to process
         """
         self.endpoint.write(response.getBit(0))
         self.endpoint.write(response.getBit(1))
         self.endpoint.write(response.getBit(2))
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers) # pylint: disable=no-member
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
 
-    def error_handler(self, failure): # pylint: disable=no-self-use
-        """ Handle any twisted errors
+    def error_handler(self, failure):  # pylint: disable=no-self-use
+        """Handle any twisted errors
 
         :param failure: The error to handle
         """
@@ -111,17 +109,17 @@ class ExampleProtocol(ModbusClientProtocol):
 # It also persists data between client instances (think protocol singleton).
 # --------------------------------------------------------------------------- #
 class ExampleFactory(ClientFactory):
-    """ Example factory. """
+    """Example factory."""
 
     protocol = ExampleProtocol
 
     def __init__(self, framer, endpoint):
-        """ Remember things necessary for building a protocols """
+        """Remember things necessary for building a protocols"""
         self.framer = framer
         self.endpoint = endpoint
 
     def buildProtocol(self, _):
-        """ Create a protocol and start the reading cycle """
+        """Create a protocol and start the reading cycle"""
         proto = self.protocol(self.framer, self.endpoint)
         proto.factory = self
         return proto
@@ -137,10 +135,11 @@ class ExampleFactory(ClientFactory):
 #
 # How you start your client is really up to you.
 # --------------------------------------------------------------------------- #
-class SerialModbusClient(serialport.SerialPort): # pylint: disable=abstract-method
-    """ Serial modbus client. """
+class SerialModbusClient(serialport.SerialPort):  # pylint: disable=abstract-method
+    """Serial modbus client."""
+
     def __init__(self, factory, *args, **kwargs):
-        """ Setup the client and start listening on the serial port
+        """Do setup the client and start listening on the serial port
 
         :param factory: The factory to build clients with
         """
@@ -157,11 +156,11 @@ class SerialModbusClient(serialport.SerialPort): # pylint: disable=abstract-meth
 # - a context recorder
 # - a database or file recorder
 # --------------------------------------------------------------------------- #
-class LoggingLineReader: # pylint: disable=too-few-public-methods
-    """ Logging line reader. """
+class LoggingLineReader:  # pylint: disable=too-few-public-methods
+    """Logging line reader."""
 
-    def write(self, response): # pylint: disable=no-self-use
-        """ Handle the next modbus response
+    def write(self, response):  # pylint: disable=no-self-use
+        """Handle the next modbus response
 
         :param response: The response to process
         """
@@ -181,7 +180,7 @@ class LoggingLineReader: # pylint: disable=too-few-public-methods
 
 
 def main():
-    """ Main. """
+    """Run Main."""
     log.debug("Initializing the client")
     framer = ModbusFramer(ClientDecoder(), client=None)
     reader = LoggingLineReader()
@@ -189,7 +188,7 @@ def main():
     SerialModbusClient(factory, SERIAL_PORT, reactor)
     # factory = reactor.connectTCP("localhost", 502, factory)
     log.debug("Starting the client")
-    reactor.run() # pylint: disable=no-member
+    reactor.run()  # pylint: disable=no-member
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Client Extended Examples
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Client Extended Examples.
 
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus to perform the extended portions of the
@@ -46,7 +45,7 @@ from pymodbus.mei_message import (
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s '
           '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -54,7 +53,7 @@ UNIT = 0x01
 
 
 def execute_extended_requests():
-    """ Execute extended requests. """
+    """Execute extended requests."""
     # ------------------------------------------------------------------------#
     # choose the client you want
     # ------------------------------------------------------------------------#

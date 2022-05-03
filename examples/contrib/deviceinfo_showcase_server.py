@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Server Example to showcase Device Information
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Server Example to showcase Device Information.
 
 This server demonstrates the use of Device Information to provide information
 to clients about the device. This is part of the MODBUS specification, and
@@ -26,13 +25,13 @@ from pymodbus import __version__ as pymodbus_version
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -47,7 +46,7 @@ def run_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),

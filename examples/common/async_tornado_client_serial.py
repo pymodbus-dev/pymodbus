@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Client Examples.
 
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus using tornado.
@@ -36,12 +35,12 @@ UNIT = 0x01
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(future, callback):  # pylint: disable=redefined-outer-name
+    """Dassert."""
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value #nosec
+        assert value  # nosec
 
     def on_done(f_trans):
         if (exc := f_trans.exception()):
@@ -54,7 +53,7 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
 
 
 def _print(value):
-    """ Internal print """
+    """Print."""
     if hasattr(value, "bits"):
         result = value.bits
     elif hasattr(value, "registers"):
@@ -79,8 +78,8 @@ def _print(value):
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefined-outer-name
-    """ Begin async test. """
+def begin_asynchronous_test(client, protocol):  # NOSONAR pylint: disable=redefined-outer-name
+    """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
@@ -133,13 +132,13 @@ def begin_asynchronous_test(client, protocol): #NOSONAR pylint: disable=redefine
 # ---------------------------------------------------------------------------#
 
 def err(*args, **kwargs):
-    """" handle error. """
+    """Handle error."""
     txt = f"Err {args} {kwargs}"
     log.error(txt)
 
 
-def callback(protocol, future): # pylint: disable=redefined-outer-name
-    """ Callback. """
+def callback(protocol, future):  # pylint: disable=redefined-outer-name
+    """Call Callback."""
     log.debug("Client connected")
     if (exp := future.exception()):
         return err(exp)
@@ -159,9 +158,9 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP, # NOSONAR pylint: disable=unpacking-non-sequence
+    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP,  # NOSONAR pylint: disable=unpacking-non-sequence
                                                method="rtu",
-                                               port="/tmp/ptyp0", # nosec NOSONAR
+                                               port="/tmp/ptyp0",  # nosec NOSONAR
                                                baudrate=9600,
                                                timeout=2)
 

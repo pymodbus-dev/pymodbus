@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Test exceptions. """
+"""Test exceptions."""
 import unittest
 
 from pymodbus.exceptions import (
@@ -10,24 +10,25 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 
+
 class SimpleExceptionsTest(unittest.TestCase):
-    """ Unittest for the pymodbus.exceptions module. """
+    """Unittest for the pymodbus.exceptions module."""
 
     def setUp(self):
-        """ Initializes the test environment """
+        """Initialize the test environment"""
         self.exceptions = [
-                ModbusException("bad base"),
-                ModbusIOException("bad register"),
-                ParameterException("bad parameter"),
-                NotImplementedException("bad function"),
-                ConnectionException("bad connection"),
+            ModbusException("bad base"),
+            ModbusIOException("bad register"),
+            ParameterException("bad parameter"),
+            NotImplementedException("bad function"),
+            ConnectionException("bad connection"),
         ]
 
     def tearDown(self):
-        """ Cleans up the test environment """
+        """Clean up the test environment"""
 
     def test_exceptions(self):
-        """ Test all module exceptions """
+        """Test all module exceptions"""
         for exc in self.exceptions:
             try:
                 raise exc
@@ -36,8 +37,9 @@ class SimpleExceptionsTest(unittest.TestCase):
                 return
             self.fail("Excepted a ModbusExceptions")
 
-#---------------------------------------------------------------------------#
-# Main
-#---------------------------------------------------------------------------#
+
+# ---------------------------------------------------------------------------#
+#  Main
+# ---------------------------------------------------------------------------#
 if __name__ == "__main__":
     unittest.main()

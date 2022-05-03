@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Modbus Message Generator
---------------------------------------------------------------------------
+"""Modbus Message Generator.
 
 The following is an example of how to generate example encoded messages
 for the supplied modbus format:
@@ -11,7 +10,7 @@ for the supplied modbus format:
 * binary - `./generate-messages.py -f binary -m tx -b`
 """
 import logging
-from optparse import OptionParser # pylint: disable=deprecated-module
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import codecs as c
 # -------------------------------------------------------------------------- #
 # import all the available framers
@@ -194,7 +193,7 @@ _arguments = {
 # generate all the requested messages
 # -------------------------------------------------------------------------- #
 def generate_messages(framer, options):
-    """ A helper method to parse the command line options
+    """Parse the command line options
 
     :param framer: The framer to encode the messages with
     :param options: The message options to use
@@ -205,18 +204,18 @@ def generate_messages(framer, options):
         messages = _response_messages
     for message in messages:
         message = message(**_arguments)
-        print("%-44s = " % message.__class__.__name__) # pylint: disable=consider-using-f-string
+        print("%-44s = " % message.__class__.__name__)  # pylint: disable=consider-using-f-string
         packet = framer.buildPacket(message)
         if not options.ascii:
             packet = c.encode(packet, 'hex_codec').decode('utf-8')
-        print (f"{packet}\n")   # because ascii ends with a \r\n
+        print(f"{packet}\n")   # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
 # initialize our program settings
 # -------------------------------------------------------------------------- #
 def get_options():
-    """ A helper method to parse the command line options
+    """Parse the command line options
 
     :returns: The options manager
     """
@@ -248,21 +247,20 @@ def get_options():
 
 
 def main():
-    """ The main runner function
-    """
+    """Run main runner function"""
     option = get_options()
 
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             print("Logging is not supported on this system")
 
     framer = {
-        'tcp':    ModbusSocketFramer, # noqa E221
-        'rtu':    ModbusRtuFramer, # noqa E221
+        'tcp': ModbusSocketFramer,  # noqa E221
+        'rtu': ModbusRtuFramer,  # noqa E221
         'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer, # noqa E221
+        'ascii': ModbusAsciiFramer,  # noqa E221
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

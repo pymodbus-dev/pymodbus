@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asyncio Server Example
---------------------------------------------------------------------------
+"""Pymodbus Asyncio Server Example.
 
 The asyncio server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
@@ -28,13 +27,13 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 async def run_server():
-    """ Run server. """
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -105,7 +104,7 @@ async def run_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),
@@ -121,7 +120,7 @@ async def run_server():
     #                      defer_start=False)
 
     # 	deferred start:
-    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), #nosec
+    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020),  # nosec
                                   allow_reuse_address=True, defer_start=True)
 
     asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)

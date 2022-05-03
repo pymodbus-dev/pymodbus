@@ -1,5 +1,4 @@
-""" Async Modbus Client implementation based on Twisted, tornado and asyncio
-------------------------------------------------------------------------
+"""Async Modbus Client implementation based on Twisted, tornado and asyncio
 
 Example run::
 
@@ -28,14 +27,15 @@ Example run::
     # and future.result when using twisted
 
     # For asyncio the actual client is returned and event loop is asyncio loop
-
 """
+import logging
 import importlib.util
+
+
+_logger = logging.getLogger(__name__)
 
 if installed := importlib.util.find_spec('twisted'):
     # Import deprecated async client only if twisted is installed #338
-    from pymodbus.client.asynchronous.deprecated.asynchronous import *
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.warning("Importing deprecated clients. "
-                   "Dependency Twisted is Installed")
+    from pymodbus.client.asynchronous.deprecated.asynchronous import *  # noqa F403
+    _logger.warning("Importing deprecated clients. "
+                    "Dependency Twisted is Installed")

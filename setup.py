@@ -27,8 +27,8 @@ except ImportError:
 from pymodbus import __version__, __author__, __maintainer__
 
 CONSOLE_SCRIPTS = [
-            'pymodbus.console=pymodbus.repl.client.main:main'
-        ]
+    'pymodbus.console=pymodbus.repl.client.main:main'
+]
 CONSOLE_SCRIPTS.append('pymodbus.server=pymodbus.repl.server.main:server')
 with open('requirements.txt') as reqs:
     install_requires = [

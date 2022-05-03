@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Client Examples.
 
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus.
@@ -21,7 +20,7 @@ from pymodbus.client.asynchronous import schedulers
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -31,15 +30,15 @@ log.setLevel(logging.DEBUG)
 
 
 def err(*args, **kwargs):
-    """ Error. """
+    """Error."""
     txt = f"Err-{args}-{kwargs}"
     logging.error(txt)
 
 
-def dassert(deferred, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(deferred, callback):  # pylint: disable=redefined-outer-name
+    """Dassert."""
     def _assertor(value):
-        assert value #nosec
+        assert value  # nosec
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(err)
 
@@ -56,12 +55,12 @@ UNIT = 0x01
 
 
 def process_response(result):
-    """ Process response. """
+    """Process response."""
     log.debug(result)
 
 
 def example_requests(client):
-    """ Example requests. """
+    """Do example requests."""
     rr = client.read_coils(1, 1, unit=0x02)
     rr.addCallback(process_response)
     rr = client.read_holding_registers(1, 1, unit=0x02)
@@ -85,16 +84,16 @@ def example_requests(client):
 
 
 def stop_asynchronous_test(client):
-    """ Stop async test. """
+    """Stop async test."""
     # ----------------------------------------------------------------------- #
     # close the client at some time later
     # ----------------------------------------------------------------------- #
-    reactor.callLater(1, client.transport.loseConnection) # pylint: disable=no-member
-    reactor.callLater(2, reactor.stop) # pylint: disable=no-member
+    reactor.callLater(1, client.transport.loseConnection)  # pylint: disable=no-member
+    reactor.callLater(2, reactor.stop)  # pylint: disable=no-member
 
 
 def begin_asynchronous_test(client):
-    """ Begin async test. """
+    """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
     dassert(rq, lambda r: not r.isError())     # test for no error
@@ -136,7 +135,7 @@ def begin_asynchronous_test(client):
     # close the client at some time later
     # ----------------------------------------------------------------------- #
     # reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop) # pylint: disable=no-member
+    reactor.callLater(2, reactor.stop)  # pylint: disable=no-member
 
 # --------------------------------------------------------------------------- #
 # extra requests
@@ -164,6 +163,7 @@ def begin_asynchronous_test(client):
 
 
 if __name__ == "__main__":
-    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020) #NOSONAR pylint: disable=unpacking-non-sequence
+    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR,  # NOSONAR pylint: disable=unpacking-non-sequence
+                                              port=5020)
     deferred.addCallback(begin_asynchronous_test)
     deferred.addErrback(err)

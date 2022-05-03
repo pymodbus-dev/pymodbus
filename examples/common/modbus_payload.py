@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Payload Building/Decoding Example
---------------------------------------------------------------------------
+"""Pymodbus Payload Building/Decoding Example.
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
@@ -18,7 +17,7 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -29,7 +28,7 @@ ORDER_DICT = {
 
 
 def run_binary_payload_ex():
-    """ Run binary payload. """
+    """Run binary payload."""
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
@@ -85,8 +84,8 @@ def run_binary_payload_ex():
 
     # ----------------------------------------------------------------------- #
     combos = [(word_endian, byte_endian)
-        for word_endian in (Endian.Big, Endian.Little)
-            for byte_endian in (Endian.Big, Endian.Little)]
+              for word_endian in (Endian.Big, Endian.Little)
+              for byte_endian in (Endian.Big, Endian.Little)]
     for word_endian, byte_endian in combos:
         print("-" * 60)
         print(f"Word Order: {ORDER_DICT[word_endian]}")
@@ -163,11 +162,11 @@ def run_binary_payload_ex():
                                                      byteorder=byte_endian,
                                                      wordorder=word_endian)
 
-        assert decoder._byteorder == (builder._byteorder, #nosec pylint: disable=protected-access
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._byteorder == (builder._byteorder,  # nosec pylint: disable=protected-access
+                                      "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder") # noqa E501
 
-        assert decoder._wordorder == (builder._wordorder, #nosec pylint: disable=protected-access
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._wordorder == (builder._wordorder,  # nosec pylint: disable=protected-access
+                                      "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder") # noqa E501
 
         decoded = OrderedDict([
             ('string', decoder.decode_string(len(my_string))),
@@ -193,7 +192,8 @@ def run_binary_payload_ex():
         print("Decoded Data")
         print("-" * 60)
         for name, value in iter(decoded.items()):
-            print("%s\t" % name, hex(value) if isinstance(value, int) else value) # pylint: disable=consider-using-f-string
+            print("%s\t" % name, hex(value) if isinstance(value, int)  # pylint: disable=consider-using-f-string
+                  else value)
 
     # ----------------------------------------------------------------------- #
     # close the client

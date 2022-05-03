@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Client Examples
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Client Examples.
 
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus.
@@ -37,16 +36,18 @@ log.setLevel(logging.DEBUG)
 
 
 class CustomModbusResponse(ModbusResponse):
-    """ Custom modbus response. """
+    """Custom modbus response."""
+
     function_code = 55
     _rtu_byte_count_pos = 2
 
     def __init__(self, values=None, **kwargs):
+        """Initialize."""
         ModbusResponse.__init__(self, **kwargs)
         self.values = values or []
 
     def encode(self):
-        """ Encodes response pdu
+        """Encode response pdu
 
         :returns: The encoded packet message
         """
@@ -56,7 +57,7 @@ class CustomModbusResponse(ModbusResponse):
         return res
 
     def decode(self, data):
-        """ Decodes response pdu
+        """Decode response pdu
 
         :param data: The packet data to decode
         """
@@ -67,28 +68,27 @@ class CustomModbusResponse(ModbusResponse):
 
 
 class CustomModbusRequest(ModbusRequest):
-    """ Custom modbus request. """
+    """Custom modbus request."""
 
     function_code = 55
     _rtu_frame_size = 8
 
     def __init__(self, address=None, **kwargs):
-        """ Init. """
-
+        """Initialize."""
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = 16
 
     def encode(self):
-        """ Encode. """
+        """Encode."""
         return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        """ Decode. """
+        """Decode."""
         self.address, self.count = struct.unpack('>HH', data)
 
     def execute(self, context):
-        """ Execute. """
+        """Execute."""
         if not 1 <= self.count <= 0x7d0:
             return self.doException(ModbusExceptions.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
@@ -103,10 +103,10 @@ class CustomModbusRequest(ModbusRequest):
 
 
 class Read16CoilsRequest(ReadCoilsRequest):
-    """ Read 16 coils in one request. """
+    """Read 16 coils in one request."""
 
     def __init__(self, address, **kwargs):
-        """ Initializes a new instance
+        """Initialize a new instance
 
         :param address: The address to start reading from
         """

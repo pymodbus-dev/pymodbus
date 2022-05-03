@@ -1,5 +1,5 @@
-""" Pymodbus Server With Updating Thread
---------------------------------------------------------------------------
+"""Pymodbus Server With Updating Thread.
+
 This is an example of having a background thread updating the
 context in an SQLite4 database while the server is operating.
 
@@ -43,8 +43,9 @@ log.setLevel(logging.DEBUG)
 
 
 def updating_writer(parm1):
-    """ A worker process that runs every so often and
-    updates live values of the context which resides in an SQLite3 database.
+    """Run every so often,
+
+    and updates live values of the context which resides in an SQLite3 database.
     It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     """
@@ -57,8 +58,8 @@ def updating_writer(parm1):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999) #NOSONAR #nosec
-    rand_addr = random.randint(0, 65000) #NOSONAR #nosec
+    rand_value = random.randint(0, 9999)  # NOSONAR #nosec
+    rand_addr = random.randint(0, 65000)  # NOSONAR #nosec
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()
@@ -70,7 +71,7 @@ def updating_writer(parm1):
 
 
 def run_dbstore_update_server():
-    """ Run dbstore update server. """
+    """Run dbstore update server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -86,7 +87,7 @@ def run_dbstore_update_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'pymodbus Server',
         'ModelName': 'pymodbus Server',
         'MajorMinorRevision': version.short(),

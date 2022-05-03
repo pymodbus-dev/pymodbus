@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Performance Example
---------------------------------------------------------------------------
+"""Pymodbus Performance Example.
 
 The following is an quick performance check of the synchronous
 modbus client.
@@ -38,9 +37,9 @@ _thread_lock = Lock()
 # * cycles  - the total number of requests to send
 # * host    - the host to send the requests to
 # --------------------------------------------------------------------------- #
-workers = 10 # pylint: disable=invalid-name
-cycles = 1000 # pylint: disable=invalid-name
-host = '127.0.0.1' # pylint: disable=invalid-name
+workers = 10  # pylint: disable=invalid-name
+cycles = 1000  # pylint: disable=invalid-name
+host = '127.0.0.1'  # pylint: disable=invalid-name
 
 
 # --------------------------------------------------------------------------- #
@@ -51,8 +50,7 @@ host = '127.0.0.1' # pylint: disable=invalid-name
 # associated with each strategy.
 # --------------------------------------------------------------------------- #
 def single_client_test(n_host, n_cycles):
-    """ Performs a single threaded test of a synchronous
-    client against the specified host
+    """Perform a single threaded test of a synchronous client against the specified host
 
     :param host: The host to connect to
     :param cycles: The number of iterations to perform
@@ -68,14 +66,14 @@ def single_client_test(n_host, n_cycles):
         while count < n_cycles:
             client.read_holding_registers(10, 123, unit=1)
             count += 1
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         logger.exception("failed to run test successfully")
     txt = f"finished worker: {os.getpid()}"
     logger.debug(txt)
 
 
 def multiprocessing_test(func, extras):
-    """ Multiprocessing test. """
+    """Multiprocessing test."""
     start_time = time()
     procs = [mWorker(target=func, args=extras)
              for _ in range(workers)]
@@ -86,7 +84,7 @@ def multiprocessing_test(func, extras):
 
 
 def thread_test(func, extras):
-    """ Thread test. """
+    """Thread test."""
     start_time = time()
     procs = [tWorker(target=func, args=extras)
              for _ in range(workers)]
@@ -97,7 +95,7 @@ def thread_test(func, extras):
 
 
 def thread_pool_exe_test(func, extras):
-    """ Thread pool exe. """
+    """Thread pool exe."""
     start_time = time()
     with eWorker(max_workers=workers, thread_name_prefix="Perform") as exe:
         futures = {exe.submit(func, *extras): job for job in range(workers)}

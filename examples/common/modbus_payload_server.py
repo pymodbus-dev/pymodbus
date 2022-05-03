@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Server Payload Example
---------------------------------------------------------------------------
+"""Pymodbus Server Payload Example.
 
 If you want to initialize a server context with a complicated memory
 layout, you can actually use the payload builder.
@@ -24,13 +23,13 @@ from pymodbus.payload import BinaryPayloadBuilder
 # --------------------------------------------------------------------------- #
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_payload_server():
-    """ Run payload server. """
+    """Run payload server."""
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
@@ -72,7 +71,7 @@ def run_payload_server():
     identity = ModbusDeviceIdentification(info_name= {
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
+        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
         'ProductName': 'Pymodbus Server',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),

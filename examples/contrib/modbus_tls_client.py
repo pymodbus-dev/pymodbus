@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Simple Modbus TCP over TLS client
----------------------------------------------------------------------------
+"""Simple Modbus TCP over TLS client.
 
 This is a simple example of writing a modbus TCP over TLS client that uses
 Python builtin module ssl - TLS/SSL wrapper for socket objects for the TLS

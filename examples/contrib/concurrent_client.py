@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Concurrent Modbus Client
----------------------------------------------------------------------------
+"""Concurrent Modbus Client.
 
 This is an example of writing a high performance modbus client that allows
 a high level of concurrency by using worker threads/processes to handle
@@ -29,15 +28,16 @@ from pymodbus.client.common import ModbusClientMixin
 # -------------------------------------------------------------------------- #
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
-logging.basicConfig() # NOSONAR
+logging.basicConfig()  # NOSONAR
 
 
 # -------------------------------------------------------------------------- #
 # Initialize out concurrency primitives
 # -------------------------------------------------------------------------- #
-class _Primitives: # pylint: disable=too-few-public-methods)
-    """ This is a helper class used to group the
-    threading primitives depending on the type of
+class _Primitives:  # pylint: disable=too-few-public-methods)
+    """This is a helper class.
+
+    used to group the threading primitives depending on the type of
     worker situation we want to run (threads or processes).
     """
 
@@ -48,8 +48,7 @@ class _Primitives: # pylint: disable=too-few-public-methods)
 
     @classmethod
     def create(cls, in_process=False):
-        """ Initialize a new instance of the concurrency
-        primitives.
+        """Initialize a new instance of the concurrency primitives.
 
         :param in_process: True for threaded, False for processes
         :returns: An initialized instance of concurrency primitives
@@ -66,7 +65,7 @@ class _Primitives: # pylint: disable=too-few-public-methods)
 # We use named tuples here as they are very lightweight while giving us
 # all the benefits of classes.
 # -------------------------------------------------------------------------- #
-WorkRequest  = namedtuple('WorkRequest',  'request, work_id') # noqa 241
+WorkRequest = namedtuple('WorkRequest', 'request, work_id')  # noqa 241
 WorkResponse = namedtuple('WorkResponse', 'is_exception, work_id, response')
 
 
@@ -74,7 +73,9 @@ WorkResponse = namedtuple('WorkResponse', 'is_exception, work_id, response')
 # Define our worker processes
 # -------------------------------------------------------------------------- #
 def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
-    """ This worker process takes input requests, issues them on its
+    """Take input requests,
+
+    issues them on its
     client handle, and then sends the client response (success or failure)
     to the manager to deliver back to the application.
 
@@ -98,19 +99,21 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                 log.debug("executing request on thread: %s", workitem)
                 result = my_client.execute(workitem.request)
                 output_queue.put(WorkResponse(False, workitem.work_id, result))
-            except Exception as exc: # pylint: disable=broad-except
+            except Exception as exc:  # pylint: disable=broad-except
                 txt = f"error in worker thread: {threading.current_thread()}"
                 log.exception(txt)
                 output_queue.put(WorkResponse(True,
                                               workitem.work_id, exc))
-        except Exception: #nosec pylint: disable=broad-except
+        except Exception:  # nosec pylint: disable=broad-except
             pass
     log.info("request worker shutting down: %s", threading.current_thread())
 
 
 def _manager_worker_process(output_queue, my_futures, is_shutdown):
-    """ This worker process manages taking output responses and
-    tying them back to the future keyed on the initial transaction id.
+    """Take output responses and tying them back to the future.
+
+    keyed on the initial transaction id.
+
     Basically this can be thought of as the delivery worker.
 
     It should be noted that there are one of these threads and it must
@@ -136,7 +139,7 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
             txt = f"updated future result: {my_future}"
             log.debug(txt)
             del futures[workitem.work_id]
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             log.exception("error in manager")
     txt = f"manager worker shutting down: {threading.current_thread()}"
     log.info(txt)
@@ -146,15 +149,15 @@ def _manager_worker_process(output_queue, my_futures, is_shutdown):
 # Define our concurrent client
 # -------------------------------------------------------------------------- #
 class ConcurrentClient(ModbusClientMixin):
-    """ This is a high performance client that can be used
-    to read/write a large number of requests at once asynchronously.
+    """This is a high performance client.
+
+    that can be used to read/write a large number of requests at once asynchronously.
     This operates with a backing worker pool of processes or threads
     to achieve its performance.
     """
 
     def __init__(self, **kwargs):
-        """ Initialize a new instance of the client
-        """
+        """Initialize a new instance of the client."""
         worker_count = kwargs.get('count', multiprocessing.cpu_count())
         self.factory = kwargs.get('factory')
         primitives = _Primitives.create(kwargs.get('in_process', False))
@@ -174,7 +177,7 @@ class ConcurrentClient(ModbusClientMixin):
         self.workers.append(self.manager)
 
         # creating the request workers
-        for i in range(worker_count): #NOSONAR
+        for i in range(worker_count):  # NOSONAR
             worker = primitives.worker(
                 target=_client_worker_process,
                 args=(self.factory, self.input_queue, self.output_queue,
@@ -184,9 +187,7 @@ class ConcurrentClient(ModbusClientMixin):
             self.workers.append(worker)
 
     def shutdown(self):
-        """ Shutdown all the workers being used to
-        concurrently process the requests.
-        """
+        """Shutdown all the workersbeing used to concurrently process the requests."""
         log.info("stating to shut down workers")
         self.is_shutdown.set()
         # to wake up the manager
@@ -196,7 +197,9 @@ class ConcurrentClient(ModbusClientMixin):
         log.info("finished shutting down workers")
 
     def execute(self, request):
-        """ Given a request, enqueue it to be processed
+        """Given a request-
+
+        enqueue it to be processed
         and then return a future linked to the response
         of the call.
 
@@ -209,8 +212,9 @@ class ConcurrentClient(ModbusClientMixin):
         return fut
 
     def execute_silently(self, request):
-        """ Given a write request, enqueue it to
-        be processed without worrying about calling the
+        """Given a write request.
+
+        enqueue it to be processed without worrying about calling the
         application back (fire and forget)
 
         :param request: The request to execute
@@ -222,7 +226,7 @@ if __name__ == "__main__":
     from pymodbus.client.sync import ModbusTcpClient
 
     def client_factory():
-        """ Client factory. """
+        """Client factory."""
         log.debug("creating client for: %s", threading.current_thread())
         my_client = ModbusTcpClient('127.0.0.1', port=5020)
         my_client.connect()

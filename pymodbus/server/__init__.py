@@ -1,1 +1,1 @@
-""" Nothing special. """
+"""Nothing special."""

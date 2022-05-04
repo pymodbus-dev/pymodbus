@@ -309,10 +309,10 @@ class PackageDocumentationGenerator:
     """
 
     def __init__(
-        self, baseModules, destinationDirectory = ".",
-        recursion = 1, exclusions = (),
-        recursionStops = (),
-        formatter = None
+        self, baseModules, destinationDirectory=".",
+        recursion=1, exclusions=(),
+        recursionStops=(),
+        formatter=None
     ):
         """Initialize."""
         self.destinationDirectory = os.path.abspath(destinationDirectory)
@@ -411,7 +411,7 @@ class PackageDocumentationGenerator:
                         self.formatter.docmodule(
                             object,
                             object.__name__,
-                            packageContext = self,
+                            packageContext=self,
                         )
                     )
                     file = open(
@@ -466,10 +466,10 @@ if __name__ == "__main__":
 
     print("Building Pydoc API Documentation")
     PackageDocumentationGenerator(
-        baseModules = ['pymodbus', '__builtin__'],
-        destinationDirectory = "./html/",
-        exclusions = ['math', 'string', 'twisted'],
-        recursionStops = [],
+        baseModules=['pymodbus', '__builtin__'],
+        destinationDirectory="./html/",
+        exclusions=['math', 'string', 'twisted'],
+        recursionStops=[],
     ).process()
 
     if os.path.exists('../../../build'):

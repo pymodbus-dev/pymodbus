@@ -73,7 +73,7 @@ def run_updating_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
+    identity = ModbusDeviceIdentification(info_name={
         'VendorName': 'pymodbus',
         'ProductCode': 'PM',
         'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR

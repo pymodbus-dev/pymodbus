@@ -100,7 +100,7 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    ModbusDeviceIdentification(info_name= {
+    ModbusDeviceIdentification(info_name={
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
         'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR

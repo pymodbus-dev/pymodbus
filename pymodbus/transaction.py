@@ -343,7 +343,7 @@ class ModbusTransactionManager:
             if isinstance(self.client.framer, ModbusSocketFramer):
                 min_size = 8
             elif isinstance(self.client.framer, ModbusRtuFramer):
-                min_size = 2
+                min_size = 4
             elif isinstance(self.client.framer, ModbusAsciiFramer):
                 min_size = 5
             elif isinstance(self.client.framer, ModbusBinaryFramer):
@@ -362,7 +362,7 @@ class ModbusTransactionManager:
                 if isinstance(self.client.framer, ModbusSocketFramer):
                     func_code = int(read_min[-1])
                 elif isinstance(self.client.framer, ModbusRtuFramer):
-                    func_code = int(read_min[-1])
+                    func_code = int(read_min[1])
                 elif isinstance(self.client.framer, ModbusAsciiFramer):
                     func_code = int(read_min[3:5], 16)
                 elif isinstance(self.client.framer, ModbusBinaryFramer):
@@ -378,6 +378,12 @@ class ModbusTransactionManager:
                         )
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = h_size + length
+                    elif expected_response_length is None and isinstance(self.client.framer, ModbusRtuFramer):
+                        try:
+                            expected_response_length = self.client.framer.get_expected_response_length(read_min)
+                        except IndexError:
+                            # Could not determine response length with available bytes
+                            pass
                     if expected_response_length is not None:
                         expected_response_length -= min_size
                         total = expected_response_length + min_size

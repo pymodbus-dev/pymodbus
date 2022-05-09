@@ -9,9 +9,6 @@
     flake8-noqa
     mccabe
 
-- bandit
 - prettier
 - mypy
-- pylint
-   Activate disabled checks.
 

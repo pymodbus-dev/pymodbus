@@ -122,10 +122,10 @@ Examples Directory structure
 If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
 `Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
 
-Also, if you have questions, please create an issue so that others can benefit from the results and so that we can
-trace them. We get a lot of email and sometimes these requests
-get lost in the noise: `pymodbus google group <http://groups.google.com/group/pymodbus>`_ or 
-at `gitter <https://gitter.im/pymodbus_dev/Lobby>`_ or `github discussions <https://github.com/riptideio/pymodbus/discussions>`_
+Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
+so that others can benefit from the results.
+
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup informations.
 
 .. important::
    **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**

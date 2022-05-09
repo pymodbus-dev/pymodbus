@@ -477,14 +477,14 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
-        self.server_factory = self.loop.create_server(
+        self.server_factory = asyncio.ensure_future(self.loop.create_server(
             lambda: self.handler(self),
             *self.address,
             reuse_address=allow_reuse_address,
             reuse_port=allow_reuse_port,
             backlog=backlog,
             start_serving=not defer_start
-        )
+        ))
 
     async def serve_forever(self):
         """Start endless loop."""
@@ -593,7 +593,7 @@ class ModbusTlsServer(ModbusTcpServer):  # pylint: disable=too-many-instance-att
         # defer the initialization of the server
         self.server = None
         # start_serving is new in version 3.7
-        self.server_factory = self.loop.create_server(
+        self.server_factory = asyncio.ensure_future(self.loop.create_server(
             lambda: self.handler(self),
             *self.address,
             ssl=self.sslctx,
@@ -601,7 +601,7 @@ class ModbusTlsServer(ModbusTcpServer):  # pylint: disable=too-many-instance-att
             reuse_port=allow_reuse_port,
             backlog=backlog,
             start_serving=not defer_start
-        )
+        ))
 
 
 class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes

@@ -61,7 +61,10 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             _logger.error(
                 "Handler for serial port has been cancelled")
         else:
-            sock_name = self.protocol._sock.getsockname()  # pylint: disable=protected-access,no-member
+            if hasattr(self, "protocol"):
+                sock_name = self.protocol._sock.getsockname()  # pylint: disable=protected-access
+            else:
+                sock_name = "No socket"
             txt = f"Handler for UDP socket [{sock_name[1]}] has been canceled"
             _logger.error(txt)
 
@@ -141,7 +144,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         For ModbusDisconnectedRequestHandler, a single handle() coroutine will
         be started and maintained. Calling server_close will cancel that task.
-
         """
         reset_frame = False
         while self.running:
@@ -477,19 +479,21 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
-        self.server_factory = self.loop.create_server(
-            lambda: self.handler(self),
-            *self.address,
-            reuse_address=allow_reuse_address,
-            reuse_port=allow_reuse_port,
-            backlog=backlog,
-            start_serving=not defer_start
-        )
+        self.factory_parms = {
+            "reuse_address": allow_reuse_address,
+            "reuse_port": allow_reuse_port,
+            "backlog": backlog,
+            "start_serving": not defer_start,
+        }
 
     async def serve_forever(self):
         """Start endless loop."""
         if self.server is None:
-            self.server = await self.server_factory
+            self.server = await self.loop.create_server(
+                lambda: self.handler(self),
+                *self.address,
+                **self.factory_parms,
+            )
             self.serving.set_result(True)
             await self.server.serve_forever()
         else:
@@ -503,10 +507,11 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
             _logger.warning(txt)
             v_item.handler_task.cancel()
         self.active_connections = {}
-        self.server.close()
+        if self.server is not None:
+            self.server.close()
 
 
-class ModbusTlsServer(ModbusTcpServer):  # pylint: disable=too-many-instance-attributes
+class ModbusTlsServer(ModbusTcpServer):
     """A modbus threaded tls socket server.
 
     We inherit and overload the socket server so that we
@@ -514,7 +519,7 @@ class ModbusTlsServer(ModbusTcpServer):  # pylint: disable=too-many-instance-att
     server context instance.
     """
 
-    def __init__(self,  # NOSONAR pylint: disable=too-many-arguments,super-init-not-called
+    def __init__(self,  # NOSONAR pylint: disable=too-many-arguments
                  context,
                  framer=None,
                  identity=None,
@@ -565,43 +570,22 @@ class ModbusTlsServer(ModbusTcpServer):  # pylint: disable=too-many-instance-att
         :param response_manipulator: Callback method for
                         manipulating the response
         """
-        self.active_connections = {}
-        self.loop = loop or asyncio.get_event_loop()
-        self.allow_reuse_address = allow_reuse_address
-        self.decoder = ServerDecoder()
-        self.framer = framer or ModbusTlsFramer
-        self.address = address or ("", Defaults.Port)
-        self.handler = handler or ModbusConnectedRequestHandler
-        self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
-                                                Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable',
-                                           Defaults.broadcast_enable)
-        self.response_manipulator = kwargs.get("response_manipulator", None)
-        self.context = context or ModbusServerContext()
-        self.control = ModbusControlBlock()
-
-        if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity.update(identity)
-
+        super().__init__(
+            context,
+            framer=framer,
+            identity=identity,
+            address=address,
+            handler=handler,
+            allow_reuse_address=allow_reuse_address,
+            allow_reuse_port=allow_reuse_port,
+            defer_start=defer_start,
+            backlog=backlog,
+            loop=loop,
+            **kwargs,
+        )
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password,
                                       reqclicert)
-
-        # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
-        # constructors cannot be declared async, so we have to
-        # defer the initialization of the server
-        self.server = None
-        # start_serving is new in version 3.7
-        self.server_factory = self.loop.create_server(
-            lambda: self.handler(self),
-            *self.address,
-            ssl=self.sslctx,
-            reuse_address=allow_reuse_address,
-            reuse_port=allow_reuse_port,
-            backlog=backlog,
-            start_serving=not defer_start
-        )
+        self.factory_parms["ssl"] = self.sslctx
 
 
 class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
@@ -659,18 +643,20 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         self.stop_serving = self.loop.create_future()
         # asyncio future that will be done once server has started
         self.serving = self.loop.create_future()
-        self.server_factory = self.loop.create_datagram_endpoint(
-            lambda: self.handler(self),
-            local_addr=self.address,
-            reuse_address=allow_reuse_address,
-            reuse_port=allow_reuse_port,
-            allow_broadcast=True
-        )
+        self.factory_parms = {
+            "local_addr": self.address,
+            "reuse_address": allow_reuse_address,
+            "reuse_port": allow_reuse_port,
+            "allow_broadcast": True,
+        }
 
     async def serve_forever(self):
         """Start endless loop."""
         if self.protocol is None:
-            self.protocol, self.endpoint = await self.server_factory
+            self.protocol, self.endpoint = await self.loop.create_datagram_endpoint(
+                lambda: self.handler(self),
+                **self.factory_parms,
+            )
             self.serving.set_result(True)
             await self.stop_serving
         else:
@@ -680,10 +666,10 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
     def server_close(self):
         """Close server."""
         self.stop_serving.set_result(True)
-        if self.endpoint.handler_task is not None:
+        if self.endpoint is not None and self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()
-
-        self.protocol.close()
+        if self.protocol is not None:
+            self.protocol.close()
 
 
 class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes

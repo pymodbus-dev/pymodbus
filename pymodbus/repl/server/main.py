@@ -19,8 +19,6 @@ if sys.version_info > (3, 7):
 else:
     CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name
 
-_logger = logging.getLogger(__name__)
-
 
 @click.group("ReactiveModbusServer")
 @click.option("--host", default="localhost", help="Host address")
@@ -36,11 +34,12 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
     """Run server code."""
     FORMAT = ('%(asctime)-15s %(threadName)-15s'  # pylint: disable=invalid-name
               ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+    pymodbus_logger = logging.getLogger("pymodbus")
     logging.basicConfig(format=FORMAT)  # NOSONAR
     if verbose:
-        _logger.setLevel(logging.DEBUG)
+        pymodbus_logger.setLevel(logging.DEBUG)
     else:
-        _logger.setLevel(logging.ERROR)
+        pymodbus_logger.setLevel(logging.ERROR)
 
     ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
                "broadcast": broadcast_support}

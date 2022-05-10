@@ -25,7 +25,7 @@ python_version>="3.8"
 
 # install:repl
 aiohttp>=3.8.1
-click>=7.0
+click>=8.1.3
 prompt-toolkit==3.0.8
 
 # install:serial
@@ -72,19 +72,3 @@ pylint
 pytest
 pytest-cov
 tox
-
-
-
-
-
-
-
-# -------------------------------------------------------------------
-# if you want to run the tests or utilities like code coverage,
-# please run:
-#    pip3 install -r requirements-tests.txt
-#
-# if you want to build the documentation,
-# please run:
-#    pip3 install -r requirements-docs.txt
-# -------------------------------------------------------------------

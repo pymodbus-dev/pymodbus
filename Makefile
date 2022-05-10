@@ -35,7 +35,7 @@ reset:
 	$(MAKE) install
 
 check: install
-	@pip install --upgrade --quiet --requirement=requirements-checks.txt
+	@pip install --upgrade --quiet --requirement=requirements-tests.txt
 	@flake8
 
 

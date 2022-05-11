@@ -161,7 +161,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     the client handler for a connected protocol (TCP).
     """
 
-    def handle(self):  # pylint: disable=too-complex
+    def handle(self):
         """Call when we receive any data.
 
         until self.running becomes False.

@@ -181,7 +181,7 @@ def cli(client):  # noqa C901 NOSONAR pylint: disable=too-complex
             text = session.prompt('> ', complete_while_typing=True)
             if text.strip().lower() == 'help':
                 print_formatted_text(HTML("<u>Available commands:</u>"))
-                for cmd, obj in sorted(session.completer.commands.items()):  # pylint: disable=no-member
+                for cmd, obj in sorted(session.completer.commands.items()):
                     if cmd != 'help':
                         print_formatted_text(
                             HTML("<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string

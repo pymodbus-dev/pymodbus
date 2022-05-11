@@ -174,7 +174,7 @@ class ThreadSafeDataBlock(BaseModbusDataBlock):
             return self.block.setValues(address, values)
 
 
-if __name__ == "__main__":  # pylint: disable=too-complex
+if __name__ == "__main__":
 
     class AtomicCounter:
         """Atomic counter."""

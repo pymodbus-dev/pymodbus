@@ -117,7 +117,7 @@ class ModbusTransactionManager:
             return mbap.get('length') == exp_resp_len
         return True
 
-    def execute(self, request):  # NOSONAR pylint: disable=too-complex
+    def execute(self, request):  # NOSONAR
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -240,7 +240,7 @@ class ModbusTransactionManager:
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, packet, response_length,  # pylint: disable=too-complex
+    def _transact(self, packet, response_length,
                   full=False, broadcast=False):
         """Do a Write and Read transaction.
 
@@ -296,7 +296,7 @@ class ModbusTransactionManager:
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):  # NOSONAR pylint: disable=too-complex
+    def _recv(self, expected_response_length, full):  # NOSONAR
         """Receive."""
         total = None
         if not full:

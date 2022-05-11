@@ -29,7 +29,7 @@ style = Style.from_dict({
 class CmdCompleter(Completer):
     """Completer for Pymodbus REPL."""
 
-    def __init__(self, client=None, commands=None, ignore_case=True):  # pylint: disable=super-init-not-called
+    def __init__(self, client=None, commands=None, ignore_case=True):
         """Initialize.
 
         :param client: Modbus Client

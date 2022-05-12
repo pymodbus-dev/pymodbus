@@ -324,7 +324,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
 
         raise gen.Return(self)
 
-    def execute(self, request=None):  # NOSONAR pylint: disable=too-complex
+    def execute(self, request=None):  # NOSONAR
         """Execute a transaction.
 
         :param request: Request to be written on to the bus

@@ -1,5 +1,0 @@
-# flake8 configuration.
-[flake8]
-exclude = .tox,.git,__pycache__
-ignore = D211,D400,E251,E731,W503
-max-line-length = 120

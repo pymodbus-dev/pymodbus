@@ -60,7 +60,7 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from custom_message import CustomModbusRequest  # pylint: disable=import-error
+from custom_message import CustomModbusRequest
 
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer

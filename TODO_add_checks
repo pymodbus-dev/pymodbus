@@ -3,9 +3,7 @@
 2) new checks
 - flake8 addons:
     pycodestyle
-    pyflakes
     pydocstyle
-    flake8-comprehensions
 
 - prettier
 - mypy

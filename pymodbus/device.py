@@ -333,7 +333,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         :param object_ids: The specific object ids to read
         :returns: The requested data (id, length, value)
         """
-        return dict((oid, identity[oid]) for oid in object_ids if identity[oid])
+        return {oid: identity[oid] for oid in object_ids if identity[oid]}
 
 
 # ---------------------------------------------------------------------------#
@@ -408,7 +408,7 @@ class ModbusCountersHandler:
     .. note:: I threw the event counter in here for convenience
     """
 
-    __data = dict([(i, 0x0000) for i in range(9)])  # pylint: disable=consider-using-dict-comprehension
+    __data = {i: 0x0000 for i in range(9)}  # pylint: disable=consider-using-dict-comprehension
     __names = [
         'BusMessage',
         'BusCommunicationError',
@@ -441,7 +441,7 @@ class ModbusCountersHandler:
 
     def reset(self):
         """Clear all of the system counters."""
-        self.__data = dict([(i, 0x0000) for i in range(9)])  # pylint: disable=consider-using-dict-comprehension
+        self.__data = {i: 0x0000 for i in range(9)}  # pylint: disable=consider-using-dict-comprehension
 
     def summary(self):
         """Return a summary of the counters current status.
@@ -564,7 +564,7 @@ class ModbusControlBlock(Singleton):
 
         :param mode: The data transfer method in (RTU, ASCII)
         """
-        if mode in set(['ASCII', 'RTU']):
+        if mode in {'ASCII', 'RTU'}:
             self.__mode = mode  # pylint: disable=unused-private-member
 
     Mode = property(lambda s: s.__mode, _setMode)

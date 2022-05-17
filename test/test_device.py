@@ -300,7 +300,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
             [0, 0, 0, 0, 0, 0, 0, 0], [0, 0], [0], [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0], [0], [0], [0, 0], [0], [0], [0], [0], [0, 0],
             [0], [0], [0], [0], [0], [0, 0], [0], [0, 0, 0, 0, 0, 0, 0, 0]]
-        stats_summary = [x for x in statistics.summary()]  # pylint: disable=unnecessary-comprehension
+        stats_summary = [x for x in statistics.summary()]  # noqa: C416 pylint: disable=unnecessary-comprehension
         self.assertEqual(sorted(summary), sorted(stats_summary))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
 

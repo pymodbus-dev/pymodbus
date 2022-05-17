@@ -422,7 +422,7 @@ class ModbusTransactionTest(unittest.TestCase):  # pylint: disable=too-many-publ
         result = self._tls.decode_data(msg1)
         self.assertEqual({}, result)
         result = self._tls.decode_data(msg2)
-        self.assertEqual(dict(fcode=1), result)
+        self.assertEqual({'fcode': 1}, result)
         self._tls.advanceFrame()
 
     def framer_tls_incoming_packet(self):

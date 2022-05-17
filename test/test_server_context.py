@@ -64,7 +64,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def setUp(self):
         """Set up the test environment"""
-        self.slaves = dict((id, ModbusSlaveContext()) for id in range(10))
+        self.slaves = {id: ModbusSlaveContext() for id in range(10)}
         self.context = ModbusServerContext(slaves=self.slaves, single=False)
 
     def tearDown(self):
@@ -94,7 +94,7 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
 
     def test_multiple_context_set(self):
         """Test a setting multiple slave contexts"""
-        slaves = dict((id, ModbusSlaveContext()) for id in range(10))
+        slaves = {id: ModbusSlaveContext() for id in range(10)}
         for slave_id, slave in iter(slaves.items()):
             self.context[slave_id] = slave
         for slave_id, slave in iter(slaves.items()):

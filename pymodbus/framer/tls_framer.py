@@ -104,7 +104,7 @@ class ModbusTlsFramer(ModbusFramer):
         """Decode data."""
         if len(data) > self._hsize:
             (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0:self._hsize + 1])
-            return dict(fcode=fcode)
+            return {'fcode': fcode}
         return {}
 
     def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ

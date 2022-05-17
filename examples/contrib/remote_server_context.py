@@ -118,9 +118,9 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param result: The resulting data
         """
         if not result.isError():
-            if f_code in set(['d', 'c']):
+            if f_code in {'d', 'c'}:
                 return result.bits
-            if f_code in set(['h', 'i']):
+            if f_code in {'h', 'i'}:
                 return result.registers
             return None
         return result

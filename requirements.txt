@@ -66,6 +66,7 @@ coverage
 flake8
 flake8-docstrings
 flake8-noqa
+flake8-comprehensions
 isort
 pep8
 pyflakes

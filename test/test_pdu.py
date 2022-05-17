@@ -53,7 +53,7 @@ class SimplePduTest(unittest.TestCase):
         """Test all error methods"""
         request = ModbusRequest()
         request.function_code = 1
-        errors = dict((ModbusExceptions.decode(c), c) for c in range(1, 20))
+        errors = {ModbusExceptions.decode(c): c for c in range(1, 20)}
         for error, code in iter(errors.items()):
             result = request.doException(code)
             self.assertEqual(str(result), f"Exception Response(129, 1, {error})")

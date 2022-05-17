@@ -153,8 +153,8 @@ class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
 
         :param code: The code number to translate
         """
-        values = dict((v, k) for k, v in iter(cls.__dict__.items())
-                      if not k.startswith('__') and not callable(v))
+        values = {v: k for k, v in iter(cls.__dict__.items())
+                  if not k.startswith('__') and not callable(v)}
         return values.get(code, None)
 
 

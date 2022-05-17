@@ -124,7 +124,13 @@ class ModbusSocketFramer(ModbusFramer):
         if len(data) > self._hsize:
             tid, pid, length, uid, fcode = struct.unpack(SOCKET_FRAME_HEADER,
                                                          data[0:self._hsize + 1])
-            return dict(tid=tid, pid=pid, length=length, unit=uid, fcode=fcode)
+            return {
+                'tid': tid,
+                'pid': pid,
+                'length': length,
+                'unit': uid,
+                'fcode': fcode,
+            }
         return {}
 
     def processIncomingPacket(self, data, callback, unit, **kwargs):  # NOSONAR pylint: disable=arguments-differ

@@ -70,6 +70,7 @@ flake8-comprehensions
 isort
 pep8
 pyflakes
+pydocstyle
 pylint
 pytest
 pytest-cov

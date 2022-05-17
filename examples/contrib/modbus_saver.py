@@ -53,7 +53,7 @@ class ModbusDatastoreSaver:
 
         which calls the various callbacks which the sub classes will implement.
         """
-        with open(self.path, 'w') as self.file_handle:  # noqa E501 pylint: disable=attribute-defined-outside-init,unspecified-encoding
+        with open(self.path, 'w') as self.file_handle:  # noqa: E501 pylint: disable=attribute-defined-outside-init,unspecified-encoding
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)

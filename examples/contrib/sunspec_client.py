@@ -20,25 +20,25 @@ _logger.setLevel(logging.DEBUG)
 class SunspecDefaultValue:  # pylint: disable=too-few-public-methods
     """A collection of constants to indicate if a value is not implemented."""
 
-    Signed16 = 0x8000  # noqa E221
-    Unsigned16 = 0xffff  # noqa E221
-    Accumulator16 = 0x0000  # noqa E221
-    Scale = 0x8000  # noqa E221
-    Signed32 = 0x80000000  # noqa E221
-    Float32 = 0x7fc00000  # noqa E221
-    Unsigned32 = 0xffffffff  # noqa E221
-    Accumulator32 = 0x00000000  # noqa E221
-    Signed64 = 0x8000000000000000  # noqa E221
-    Unsigned64 = 0xffffffffffffffff  # noqa E221
-    Accumulator64 = 0x0000000000000000  # noqa E221
-    String = '\x00'  # noqa E221
+    Signed16 = 0x8000
+    Unsigned16 = 0xffff
+    Accumulator16 = 0x0000
+    Scale = 0x8000
+    Signed32 = 0x80000000
+    Float32 = 0x7fc00000
+    Unsigned32 = 0xffffffff
+    Accumulator32 = 0x00000000
+    Signed64 = 0x8000000000000000
+    Unsigned64 = 0xffffffffffffffff
+    Accumulator64 = 0x0000000000000000
+    String = '\x00'
 
 
 class SunspecStatus:  # pylint: disable=too-few-public-methods
     """Indicators of the current status of a sunspec device"""
 
-    Normal = 0x00000000  # noqa E221
-    Error = 0xfffffffe  # noqa E221
+    Normal = 0x00000000
+    Error = 0xfffffffe
     Unknown = 0xffffffff
 
 
@@ -54,70 +54,70 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
     # ---------------------------------------------
     # 0xx Common Models
     # ---------------------------------------------
-    CommonBlock = 1  # noqa E221
-    AggregatorBlock = 2  # noqa E221
+    CommonBlock = 1
+    AggregatorBlock = 2
 
     # ---------------------------------------------
     # 1xx Inverter Models
     # ---------------------------------------------
-    SinglePhaseIntegerInverter = 101  # noqa E221
-    SplitPhaseIntegerInverter = 102  # noqa E221
-    ThreePhaseIntegerInverter = 103  # noqa E221
-    SinglePhaseFloatsInverter = 103  # noqa E221
-    SplitPhaseFloatsInverter = 102  # noqa E221
-    ThreePhaseFloatsInverter = 103  # noqa E221
+    SinglePhaseIntegerInverter = 101
+    SplitPhaseIntegerInverter = 102
+    ThreePhaseIntegerInverter = 103
+    SinglePhaseFloatsInverter = 103
+    SplitPhaseFloatsInverter = 102
+    ThreePhaseFloatsInverter = 103
 
     # ---------------------------------------------
     # 2xx Meter Models
     # ---------------------------------------------
-    SinglePhaseMeter = 201  # noqa E221
-    SplitPhaseMeter = 201  # noqa E221
-    WyeConnectMeter = 201  # noqa E221
-    DeltaConnectMeter = 201  # noqa E221
+    SinglePhaseMeter = 201
+    SplitPhaseMeter = 201
+    WyeConnectMeter = 201
+    DeltaConnectMeter = 201
 
     # ---------------------------------------------
     # 3xx Environmental Models
     # ---------------------------------------------
-    BaseMeteorological = 301  # noqa E221
-    Irradiance = 302  # noqa E221
-    BackOfModuleTemperature = 303  # noqa E221
-    Inclinometer = 304  # noqa E221
-    Location = 305  # noqa E221
-    ReferencePoint = 306  # noqa E221
-    BaseMeteorological = 307  # noqa E221
-    MiniMeteorological = 308  # noqa E221
+    BaseMeteorological = 301
+    Irradiance = 302
+    BackOfModuleTemperature = 303
+    Inclinometer = 304
+    Location = 305
+    ReferencePoint = 306
+    BaseMeteorological = 307
+    MiniMeteorological = 308
 
     # ---------------------------------------------
     # 4xx String Combiner Models
     # ---------------------------------------------
-    BasicStringCombiner = 401  # noqa E221
-    AdvancedStringCombiner = 402  # noqa E221
+    BasicStringCombiner = 401
+    AdvancedStringCombiner = 402
 
     # ---------------------------------------------
     # 5xx Panel Models
     # ---------------------------------------------
-    PanelFloat = 501  # noqa E221
-    PanelInteger = 502  # noqa E221
+    PanelFloat = 501
+    PanelInteger = 502
 
     # ---------------------------------------------
     # 641xx outback_ Blocks
     # ---------------------------------------------
-    outback_device_identifier = 64110  # noqa E221
-    outback_charge_controller = 64111  # noqa E221
-    outback_fm_charge_controller = 64112  # noqa E221
-    outback_fx_inv_realtime = 64113  # noqa E221
-    outback_fx_inv_conf = 64114  # noqa E221
-    outback_split_phase_rad_inv = 64115  # noqa E221
-    outback_radian_inv_conf = 64116  # noqa E221
-    outback_single_phase_rad_inv_rt = 64117  # noqa E221
-    outback_flexnet_dc_realtime = 64118  # noqa E221
-    outback_flexnet_dc_conf = 64119  # noqa E221
-    outback_system_control = 64120  # noqa E221
+    outback_device_identifier = 64110
+    outback_charge_controller = 64111
+    outback_fm_charge_controller = 64112
+    outback_fx_inv_realtime = 64113
+    outback_fx_inv_conf = 64114
+    outback_split_phase_rad_inv = 64115
+    outback_radian_inv_conf = 64116
+    outback_single_phase_rad_inv_rt = 64117
+    outback_flexnet_dc_realtime = 64118
+    outback_flexnet_dc_conf = 64119
+    outback_system_control = 64120
 
     # ---------------------------------------------
     # 64xxx Vendor Extension Block
     # ---------------------------------------------
-    EndOfSunSpecMap = 65535  # noqa E221
+    EndOfSunSpecMap = 65535
 
     @classmethod
     def lookup(cls, code):
@@ -126,17 +126,17 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
         :param code: The device code to lookup
         :returns: The device model name, or None if none available
         """
-        values = dict((v, k) for k, v in cls.__dict__.iteritems()  # pylint: disable=no-member
-                      if not callable(v))
+        values = {(v, k) for k, v in cls.__dict__.iteritems()  # pylint: disable=no-member
+                  if not callable(v)}
         return values.get(code, None)
 
 
 class SunspecOffsets:  # pylint: disable=too-few-public-methods
     """Well known offsets that are used throughout the sunspec protocol"""
 
-    CommonBlock = 40000  # noqa E221
-    CommonBlockLength = 69  # noqa E221
-    AlternateCommonBlock = 50000  # noqa E221
+    CommonBlock = 40000
+    CommonBlockLength = 69
+    AlternateCommonBlock = 50000
 
 
 # --------------------------------------------------------------------------- #
@@ -228,17 +228,17 @@ class SunspecClient:
         length = SunspecOffsets.CommonBlockLength
         decoder = self.get_device_block(self.offset, length)
         return {
-            'SunSpec_ID': decoder.decode_32bit_uint(),  # noqa E221
-            'SunSpec_DID': decoder.decode_16bit_uint(),  # noqa E221
-            'SunSpec_Length': decoder.decode_16bit_uint(),  # noqa E221
-            'Manufacturer': decoder.decode_string(size=32),  # noqa E221
-            'Model': decoder.decode_string(size=32),  # noqa E221
-            'Options': decoder.decode_string(size=16),  # noqa E221
-            'Version': decoder.decode_string(size=16),  # noqa E221
-            'SerialNumber': decoder.decode_string(size=32),  # noqa E221
-            'DeviceAddress': decoder.decode_16bit_uint(),  # noqa E221
-            'Next_DID': decoder.decode_16bit_uint(),  # noqa E221
-            'Next_DID_Length': decoder.decode_16bit_uint(),  # noqa E221
+            'SunSpec_ID': decoder.decode_32bit_uint(),
+            'SunSpec_DID': decoder.decode_16bit_uint(),
+            'SunSpec_Length': decoder.decode_16bit_uint(),
+            'Manufacturer': decoder.decode_string(size=32),
+            'Model': decoder.decode_string(size=32),
+            'Options': decoder.decode_string(size=16),
+            'Version': decoder.decode_string(size=16),
+            'SerialNumber': decoder.decode_string(size=32),
+            'DeviceAddress': decoder.decode_16bit_uint(),
+            'Next_DID': decoder.decode_16bit_uint(),
+            'Next_DID_Length': decoder.decode_16bit_uint(),
         }
 
     def get_device_block(self, offset, size):

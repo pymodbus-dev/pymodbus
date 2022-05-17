@@ -95,7 +95,7 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         self.assertRaises(NotImplementedException, lambda: client.recv(None))
         self.assertRaises(NotImplementedException, lambda: client.__enter__())  # pylint: disable=unnecessary-lambda
         self.assertRaises(NotImplementedException, lambda: client.execute())  # pylint: disable=unnecessary-lambda
-        self.assertRaises(NotImplementedException, lambda: client.is_socket_open())  # noqa E501 pylint: disable=unnecessary-lambda
+        self.assertRaises(NotImplementedException, lambda: client.is_socket_open())  # noqa: E501 pylint: disable=unnecessary-lambda
         self.assertEqual("Null Transport", str(client))
         client.close()
         client.__exit__(0, 0, 0)

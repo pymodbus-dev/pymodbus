@@ -195,21 +195,21 @@ class ModbusTypeDecoder:
         """Initialize a new instance of the decoder"""
         self.default = lambda m: self.parse_16bit_uint
         self.parsers = {
-            'uint': self.parse_16bit_uint,  # noqa E221
-            'uint8': self.parse_8bit_uint,  # noqa E221
-            'uint16': self.parse_16bit_uint,  # noqa E221
-            'uint32': self.parse_32bit_uint,  # noqa E221
-            'uint64': self.parse_64bit_uint,  # noqa E221
-            'int': self.parse_16bit_int,  # noqa E221
-            'int8': self.parse_8bit_int,  # noqa E221
-            'int16': self.parse_16bit_int,  # noqa E221
-            'int32': self.parse_32bit_int,  # noqa E221
-            'int64': self.parse_64bit_int,  # noqa E221
-            'float': self.parse_32bit_float,  # noqa E221
-            'float32': self.parse_32bit_float,  # noqa E221
-            'float64': self.parse_64bit_float,  # noqa E221
-            'string': self.parse_32bit_int,  # noqa E221
-            'bits': self.parse_bits,  # noqa E221
+            'uint': self.parse_16bit_uint,
+            'uint8': self.parse_8bit_uint,
+            'uint16': self.parse_16bit_uint,
+            'uint32': self.parse_32bit_uint,
+            'uint64': self.parse_64bit_uint,
+            'int': self.parse_16bit_int,
+            'int8': self.parse_8bit_int,
+            'int16': self.parse_16bit_int,
+            'int32': self.parse_32bit_int,
+            'int64': self.parse_64bit_int,
+            'float': self.parse_32bit_float,
+            'float32': self.parse_32bit_float,
+            'float64': self.parse_64bit_float,
+            'string': self.parse_32bit_int,
+            'bits': self.parse_bits,
         }
 
     # ------------------------------------------------------------ #

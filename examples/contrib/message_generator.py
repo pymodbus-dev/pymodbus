@@ -257,10 +257,10 @@ def main():
             print("Logging is not supported on this system")
 
     framer = {
-        'tcp': ModbusSocketFramer,  # noqa E221
-        'rtu': ModbusRtuFramer,  # noqa E221
+        'tcp': ModbusSocketFramer,
+        'rtu': ModbusRtuFramer,
         'binary': ModbusBinaryFramer,
-        'ascii': ModbusAsciiFramer,  # noqa E221
+        'ascii': ModbusAsciiFramer,
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

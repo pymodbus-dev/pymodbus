@@ -81,7 +81,7 @@ def classify_class_attrs(cls):
             kind = "class method"
         elif isinstance(obj, property):
             kind = "property"
-        elif (inspect.ismethod(obj_via_getattr) or # noqa W504
+        elif (inspect.ismethod(obj_via_getattr) or  # noqa: W504
               inspect.ismethoddescriptor(obj_via_getattr)):
             kind = "method"
         else:
@@ -98,7 +98,7 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
     """Default formatter."""
 
-    def docmodule(self, object, name=None, mod=None, packageContext = None, *ignored):  # noqa C901
+    def docmodule(self, object, name=None, mod=None, packageContext=None, *ignored):  # noqa: C901
         """Produce HTML documentation for a module object."""
         my_name = object.__name__  # ignore the passed-in name
         parts = split(my_name, '.')
@@ -191,7 +191,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
         if classes:
             # FIX  classlist = map(lambda (key, value): value, classes)
             contents = [
-                self.formattree(inspect.getclasstree(classlist, 1), my_name)]  # noqa F821
+                self.formattree(inspect.getclasstree(classlist, 1), my_name)]  # noqa: F821
             for key, value in classes:
                 contents.append(self.document(value, key, my_name, fdict, cdict))
             result = result + self.bigsection(
@@ -264,7 +264,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
                         items.append(
                             self.modpkglink((modname, name, ispackage, isshadowed))
                         )
-                except:  # noqa E722 NOSONAR
+                except:  # noqa: E722 NOSONAR
                     items.append(
                         self.modpkglink((modname, name, ispackage, isshadowed))
                     )
@@ -440,8 +440,8 @@ class PackageDocumentationGenerator:
             for excludeObject in self.exclusions.values():
                 if hasattr(excludeObject, key) and excludeObject is not object:
                     if (
-                        getattr(excludeObject, key) is value or # noqa W504
-                        (hasattr(excludeObject, '__name__') and # noqa W504
+                        getattr(excludeObject, key) is value or  # noqa: W504
+                        (hasattr(excludeObject, '__name__') and  # noqa: W504
                          excludeObject.__name__ == "Numeric"
                          )
                     ):

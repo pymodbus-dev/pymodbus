@@ -65,6 +65,7 @@ codespell
 coverage
 flake8
 flake8-docstrings
+flake8-noqa
 isort
 pep8
 pyflakes

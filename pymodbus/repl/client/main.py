@@ -105,7 +105,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def cli(client):  # noqa C901 NOSONAR pylint: disable=too-complex
+def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
     """Run client definition."""
     use_keys = KeyBindings()
     history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))

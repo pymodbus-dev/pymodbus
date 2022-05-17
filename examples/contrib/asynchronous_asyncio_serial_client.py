@@ -78,9 +78,9 @@ async def start_async_test(client):
     assert rq.function_code < 0x80  # nosec test that we are not an error
 
     arguments = {
-        'read_address': 1,  # noqa E221
-        'read_count': 8,  # noqa E221
-        'write_address': 1,  # noqa E221
+        'read_address': 1,
+        'read_count': 8,
+        'write_address': 1,
         'write_registers': [20] * 8,
     }
     rq = await client.readwrite_registers(unit=UNIT, **arguments)

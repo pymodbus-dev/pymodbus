@@ -105,7 +105,7 @@ def run_async_server():
     # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
+    identity = ModbusDeviceIdentification(info_name={
         'VendorName': 'Pymodbus',
         'ModelName': 'Pymodbus Server',
         'MajorMinorRevision': version.short(),

@@ -68,7 +68,7 @@ def run_payload_server():
     # ----------------------------------------------------------------------- #
     # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
+    identity = ModbusDeviceIdentification(info_name={
         'VendorName': 'Pymodbus',
         'ProductCode': 'PM',
         'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR

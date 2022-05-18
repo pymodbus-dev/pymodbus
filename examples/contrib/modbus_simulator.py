@@ -20,14 +20,14 @@ _logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------------- #
 # Extra Global Functions
 # -------------------------------------------------------------------------- #
-# These are extra helper functions that don't belong in a class
+# These are extra helper functions that don"t belong in a class
 # -------------------------------------------------------------------------- #
 # import getpass
 
 
 def root_test():
     """Check to see if we are running as root"""
-    return True  # removed for the time being as it isn't portable
+    return True  # removed for the time being as it isn"t portable
     # return getpass.getuser() == "root"
 
 # -------------------------------------------------------------------------- #
@@ -51,7 +51,7 @@ class ConfigurationException(Exception):
 
         :returns: A string representation of the object
         """
-        return f'Configuration Error: {self.string}'
+        return f"Configuration Error: {self.string}"
 
 
 class Configuration:  # pylint: disable=too-few-public-methods
@@ -79,10 +79,10 @@ class Configuration:  # pylint: disable=too-few-public-methods
         """Parse the config file and creates a server context"""
         handle = pickle.load(self.file)  # nosec
         try:  # test for existence, or bomb
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
+            dsd = handle["di"]
+            csd = handle["ci"]
+            hsd = handle["hr"]
+            isd = handle["ir"]
         except Exception:
             raise ConfigurationException("Invalid Configuration")  # pylint: disable=raise-missing-from
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)

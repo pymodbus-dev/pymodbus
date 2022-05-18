@@ -31,7 +31,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
 
     def encode(self):
         """Encode the message."""
-        return b''
+        return b""
 
     def decode(self, data):
         """Decode data part of the message.
@@ -80,7 +80,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        return struct.pack('>B', self.status)
+        return struct.pack(">B", self.status)
 
     def decode(self, data):
         """Decode a the response.
@@ -107,13 +107,13 @@ class ReadExceptionStatusResponse(ModbusResponse):
 class GetCommEventCounterRequest(ModbusRequest):
     """This function code is used to get a status word.
 
-    And an event count from the remote device's communication event counter.
+    And an event count from the remote device"s communication event counter.
 
     By fetching the current count before and after a series of messages, a
     client can determine whether the messages were handled normally by the
     remote device.
 
-    The device's event counter is incremented once  for each successful
+    The device"s event counter is incremented once  for each successful
     message completion. It is not incremented for exception responses,
     poll commands, or fetch event counter commands.
 
@@ -131,7 +131,7 @@ class GetCommEventCounterRequest(ModbusRequest):
 
     def encode(self):
         """Encode the message."""
-        return b''
+        return b""
 
     def decode(self, data):
         """Decode data part of the message.
@@ -186,14 +186,14 @@ class GetCommEventCounterResponse(ModbusResponse):
             ready = ModbusStatus.Ready
         else:
             ready = ModbusStatus.Waiting
-        return struct.pack('>HH', ready, self.count)
+        return struct.pack(">HH", ready, self.count)
 
     def decode(self, data):
         """Decode a the response.
 
         :param data: The packet data to decode
         """
-        ready, self.count = struct.unpack('>HH', data)
+        ready, self.count = struct.unpack(">HH", data)
         self.status = (ready == ModbusStatus.Ready)
 
     def __str__(self):
@@ -238,7 +238,7 @@ class GetCommEventLogRequest(ModbusRequest):
 
     def encode(self):
         """Encode the message."""
-        return b''
+        return b""
 
     def decode(self, data):
         """Decode data part of the message.
@@ -252,10 +252,10 @@ class GetCommEventLogRequest(ModbusRequest):
         :returns: The populated response
         """
         results = {
-            'status': True,
-            'message_count': _MCB.Counter.BusMessage,
-            'event_count': _MCB.Counter.Event,
-            'events': _MCB.getEvents(),
+            "status": True,
+            "message_count": _MCB.Counter.BusMessage,
+            "event_count": _MCB.Counter.Event,
+            "events": _MCB.getEvents(),
         }
         return GetCommEventLogResponse(**results)
 
@@ -288,10 +288,10 @@ class GetCommEventLogResponse(ModbusResponse):
         :param events: The collection of events to send
         """
         ModbusResponse.__init__(self, **kwargs)
-        self.status = kwargs.get('status', True)
-        self.message_count = kwargs.get('message_count', 0)
-        self.event_count = kwargs.get('event_count', 0)
-        self.events = kwargs.get('events', [])
+        self.status = kwargs.get("status", True)
+        self.message_count = kwargs.get("message_count", 0)
+        self.event_count = kwargs.get("event_count", 0)
+        self.events = kwargs.get("events", [])
 
     def encode(self):
         """Encode the response.
@@ -302,10 +302,10 @@ class GetCommEventLogResponse(ModbusResponse):
             ready = ModbusStatus.Ready
         else:
             ready = ModbusStatus.Waiting
-        packet = struct.pack('>B', 6 + len(self.events))
-        packet += struct.pack('>H', ready)
-        packet += struct.pack('>HH', self.event_count, self.message_count)
-        packet += b''.join(struct.pack('>B', e) for e in self.events)
+        packet = struct.pack(">B", 6 + len(self.events))
+        packet += struct.pack(">H", ready)
+        packet += struct.pack(">HH", self.event_count, self.message_count)
+        packet += b"".join(struct.pack(">B", e) for e in self.events)
         return packet
 
     def decode(self, data):
@@ -314,10 +314,10 @@ class GetCommEventLogResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         length = int(data[0])
-        status = struct.unpack('>H', data[1:3])[0]
+        status = struct.unpack(">H", data[1:3])[0]
         self.status = (status == ModbusStatus.Ready)
-        self.event_count = struct.unpack('>H', data[3:5])[0]
-        self.message_count = struct.unpack('>H', data[5:7])[0]
+        self.event_count = struct.unpack(">H", data[3:5])[0]
+        self.message_count = struct.unpack(">H", data[5:7])[0]
 
         self.events = []
         for i in range(7, length + 1):
@@ -350,7 +350,7 @@ class ReportSlaveIdRequest(ModbusRequest):
 
     def encode(self):
         """Encode the message."""
-        return b''
+        return b""
 
     def decode(self, data):
         """Decode data part of the message.
@@ -365,7 +365,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         """
         report_slave_id_data = None
         if context:
-            report_slave_id_data = getattr(context, 'reportSlaveIdData', None)
+            report_slave_id_data = getattr(context, "reportSlaveIdData", None)
         if not report_slave_id_data:
             information = DeviceInformationFactory.get(_MCB)
 
@@ -378,7 +378,7 @@ class ReportSlaveIdRequest(ModbusRequest):
                     id_data.append(v_item.encode())
 
             identifier = b"-".join(id_data)
-            identifier = identifier or b'Pymodbus'
+            identifier = identifier or b"Pymodbus"
             report_slave_id_data = identifier
         return ReportSlaveIdResponse(report_slave_id_data)
 
@@ -399,7 +399,7 @@ class ReportSlaveIdResponse(ModbusResponse):
     function_code = 0x11
     _rtu_byte_count_pos = 2
 
-    def __init__(self, identifier=b'\x00', status=True, **kwargs):
+    def __init__(self, identifier=b"\x00", status=True, **kwargs):
         """Initialize a new instance.
 
         :param identifier: The identifier of the slave

@@ -60,7 +60,7 @@ class AsynchronousClientTest(unittest.TestCase):
         response.addErrback(handle_failure)
 
         self.assertTrue(protocol._connected)  # pylint: disable=protected-access
-        protocol.connectionLost('because')
+        protocol.connectionLost("because")
         self.assertFalse(protocol._connected)  # pylint: disable=protected-access
 
     def test_client_protocol_data_received(self):
@@ -68,7 +68,7 @@ class AsynchronousClientTest(unittest.TestCase):
         protocol = ModbusClientProtocol(ModbusSocketFramer(ClientDecoder()))
         protocol.connectionMade()
         out = []
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
         # setup existing request
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
@@ -167,8 +167,8 @@ class AsynchronousClientTest(unittest.TestCase):
         """Test the udp client protocol data received"""
         protocol = ModbusUdpClientProtocol()
         out = []
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
-        server = ('127.0.0.1', 12345)
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        server = ("127.0.0.1", 12345)
 
         # setup existing request
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access

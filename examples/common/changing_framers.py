@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # Initialize the client
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('localhost', port=5020, framer=ModbusFramer)
+    client = ModbusClient("localhost", port=5020, framer=ModbusFramer)
     client.connect()
 
     # ----------------------------------------------------------------------- #

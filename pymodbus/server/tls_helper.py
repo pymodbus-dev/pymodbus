@@ -14,7 +14,7 @@ def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None,
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
+    :param reqclicert: Force the sever request client"s certificate
     """
     if sslctx is None:
         # According to MODBUS/TCP Security Protocol Specification, it is

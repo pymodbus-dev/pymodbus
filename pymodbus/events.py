@@ -32,8 +32,8 @@ class RemoteReceiveEvent(ModbusEvent):
 
     The remote device stores this type of event byte when a query message
     is received. It is stored before the remote device processes the message.
-    This event is defined by bit 7 set to logic '1'. The other bits will be
-    set to a logic '1' if the corresponding condition is TRUE. The bit layout
+    This event is defined by bit 7 set to logic "1". The other bits will be
+    set to a logic "1" if the corresponding condition is TRUE. The bit layout
     is::
 
         Bit Contents
@@ -49,9 +49,9 @@ class RemoteReceiveEvent(ModbusEvent):
 
     def __init__(self, **kwargs):
         """Initialize a new event instance."""
-        self.overrun = kwargs.get('overrun', False)
-        self.listen = kwargs.get('listen', False)
-        self.broadcast = kwargs.get('broadcast', False)
+        self.overrun = kwargs.get("overrun", False)
+        self.listen = kwargs.get("listen", False)
+        self.broadcast = kwargs.get("broadcast", False)
 
     def encode(self):
         """Encode the status bits to an event message.
@@ -81,8 +81,8 @@ class RemoteSendEvent(ModbusEvent):
     processing a request message. It is stored if the remote device
     returned a normal or exception response, or no response.
 
-    This event is defined by bit 7 set to a logic '0', with bit 6 set to a '1'.
-    The other bits will be set to a logic '1' if the corresponding
+    This event is defined by bit 7 set to a logic "0", with bit 6 set to a "1".
+    The other bits will be set to a logic "1" if the corresponding
     condition is TRUE. The bit layout is::
 
         Bit Contents
@@ -99,12 +99,12 @@ class RemoteSendEvent(ModbusEvent):
 
     def __init__(self, **kwargs):
         """Initialize a new event instance."""
-        self.read = kwargs.get('read', False)
-        self.slave_abort = kwargs.get('slave_abort', False)
-        self.slave_busy = kwargs.get('slave_busy', False)
-        self.slave_nak = kwargs.get('slave_nak', False)
-        self.write_timeout = kwargs.get('write_timeout', False)
-        self.listen = kwargs.get('listen', False)
+        self.read = kwargs.get("read", False)
+        self.slave_abort = kwargs.get("slave_abort", False)
+        self.slave_busy = kwargs.get("slave_busy", False)
+        self.slave_nak = kwargs.get("slave_nak", False)
+        self.write_timeout = kwargs.get("write_timeout", False)
+        self.listen = kwargs.get("listen", False)
 
     def encode(self):
         """Encode the status bits to an event message.
@@ -140,7 +140,7 @@ class EnteredListenModeEvent(ModbusEvent):
     """
 
     value = 0x04
-    __encoded = b'\x04'
+    __encoded = b"\x04"
 
     def encode(self):
         """Encode the status bits to an event message.
@@ -155,7 +155,7 @@ class EnteredListenModeEvent(ModbusEvent):
         :param event: The event to decode
         """
         if event != self.__encoded:
-            raise ParameterException('Invalid decoded value')
+            raise ParameterException("Invalid decoded value")
 
 
 class CommunicationRestartEvent(ModbusEvent):
@@ -166,17 +166,17 @@ class CommunicationRestartEvent(ModbusEvent):
     function (code 08), with sub-function Restart Communications Option
     (code 00 01).
 
-    That function also places the remote device into a 'Continue on Error'
-    or 'Stop on Error' mode. If the remote device is placed  into 'Continue on
-    Error' mode, the event byte is added to the existing event log. If the
-    remote device is placed into 'Stop on Error' mode, the byte is added to
+    That function also places the remote device into a "Continue on Error"
+    or "Stop on Error" mode. If the remote device is placed  into "Continue on
+    Error" mode, the event byte is added to the existing event log. If the
+    remote device is placed into "Stop on Error" mode, the byte is added to
     the log and the rest of the log is cleared to zeros.
 
     The event is defined by a content of zero.
     """
 
     value = 0x00
-    __encoded = b'\x00'
+    __encoded = b"\x00"
 
     def encode(self):
         """Encode the status bits to an event message.
@@ -191,4 +191,4 @@ class CommunicationRestartEvent(ModbusEvent):
         :param event: The event to decode
         """
         if event != self.__encoded:
-            raise ParameterException('Invalid decoded value')
+            raise ParameterException("Invalid decoded value")

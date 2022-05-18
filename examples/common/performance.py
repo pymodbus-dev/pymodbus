@@ -38,7 +38,7 @@ _thread_lock = Lock()
 # --------------------------------------------------------------------------- #
 workers = 10  # pylint: disable=invalid-name
 cycles = 1000  # pylint: disable=invalid-name
-host = '127.0.0.1'  # pylint: disable=invalid-name
+host = "127.0.0.1"  # pylint: disable=invalid-name
 
 
 # --------------------------------------------------------------------------- #

@@ -19,7 +19,7 @@ sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 sslctx.verify_mode = ssl.CERT_REQUIRED
 sslctx.check_hostname = True
 
-# Prepare client's certificate which the server requires for TLS full handshake
+# Prepare client"s certificate which the server requires for TLS full handshake
 # sslctx.load_cert_chain(certfile="client.crt", keyfile="client.key",
 #                        password="pwd")
 
@@ -32,12 +32,12 @@ async def start_async_test(client):
     result = await client.read_coils(1, 8)
     print(result.bits)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # pass SSLContext which is the context here to ModbusTcpClient()
     # ----------------------------------------------------------------------- #
     loop, new_client = AsyncModbusTLSClient(ASYNC_IO,  # NOSONAR pylint: disable=unpacking-non-sequence
-                                            'test.host.com', 8020,  # NOSONAR
+                                            "test.host.com", 8020,  # NOSONAR
                                             sslctx=sslctx)
     loop.run_until_complete(start_async_test(new_client.protocol))
     loop.close()

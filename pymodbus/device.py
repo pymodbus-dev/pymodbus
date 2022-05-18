@@ -86,57 +86,57 @@ class ModbusPlusStatistics:
     """
 
     __data = OrderedDict({
-        'node_type_id': [0x00] * 2,  # 00
-        'software_version_number': [0x00] * 2,  # 01
-        'network_address': [0x00] * 2,  # 02
-        'mac_state_variable': [0x00] * 2,  # 03
-        'peer_status_code': [0x00] * 2,  # 04
-        'token_pass_counter': [0x00] * 2,  # 05
-        'token_rotation_time': [0x00] * 2,  # 06
+        "node_type_id": [0x00] * 2,  # 00
+        "software_version_number": [0x00] * 2,  # 01
+        "network_address": [0x00] * 2,  # 02
+        "mac_state_variable": [0x00] * 2,  # 03
+        "peer_status_code": [0x00] * 2,  # 04
+        "token_pass_counter": [0x00] * 2,  # 05
+        "token_rotation_time": [0x00] * 2,  # 06
 
-        'program_master_token_failed': [0x00],     # 07 hi
-        'data_master_token_failed': [0x00],     # 07 lo
-        'program_master_token_owner': [0x00],     # 08 hi
-        'data_master_token_owner': [0x00],     # 08 lo
-        'program_slave_token_owner': [0x00],     # 09 hi
-        'data_slave_token_owner': [0x00],     # 09 lo
-        'data_slave_command_transfer': [0x00],     # 10 hi
-        '__unused_10_lowbit': [0x00],     # 10 lo
+        "program_master_token_failed": [0x00],     # 07 hi
+        "data_master_token_failed": [0x00],     # 07 lo
+        "program_master_token_owner": [0x00],     # 08 hi
+        "data_master_token_owner": [0x00],     # 08 lo
+        "program_slave_token_owner": [0x00],     # 09 hi
+        "data_slave_token_owner": [0x00],     # 09 lo
+        "data_slave_command_transfer": [0x00],     # 10 hi
+        "__unused_10_lowbit": [0x00],     # 10 lo
 
-        'program_slave_command_transfer': [0x00],     # 11 hi
-        'program_master_rsp_transfer': [0x00],     # 11 lo
-        'program_slave_auto_logout': [0x00],     # 12 hi
-        'program_master_connect_status': [0x00],     # 12 lo
-        'receive_buffer_dma_overrun': [0x00],     # 13 hi
-        'pretransmit_deferral_error': [0x00],     # 13 lo
-        'frame_size_error': [0x00],     # 14 hi
-        'repeated_command_received': [0x00],     # 14 lo
-        'receiver_alignment_error': [0x00],     # 15 hi
-        'receiver_collision_abort_error': [0x00],     # 15 lo
-        'bad_packet_length_error': [0x00],     # 16 hi
-        'receiver_crc_error': [0x00],     # 16 lo
-        'transmit_buffer_dma_underrun': [0x00],     # 17 hi
-        'bad_link_address_error': [0x00],     # 17 lo
+        "program_slave_command_transfer": [0x00],     # 11 hi
+        "program_master_rsp_transfer": [0x00],     # 11 lo
+        "program_slave_auto_logout": [0x00],     # 12 hi
+        "program_master_connect_status": [0x00],     # 12 lo
+        "receive_buffer_dma_overrun": [0x00],     # 13 hi
+        "pretransmit_deferral_error": [0x00],     # 13 lo
+        "frame_size_error": [0x00],     # 14 hi
+        "repeated_command_received": [0x00],     # 14 lo
+        "receiver_alignment_error": [0x00],     # 15 hi
+        "receiver_collision_abort_error": [0x00],     # 15 lo
+        "bad_packet_length_error": [0x00],     # 16 hi
+        "receiver_crc_error": [0x00],     # 16 lo
+        "transmit_buffer_dma_underrun": [0x00],     # 17 hi
+        "bad_link_address_error": [0x00],     # 17 lo
 
-        'bad_mac_function_code_error': [0x00],     # 18 hi
-        'internal_packet_length_error': [0x00],     # 18 lo
-        'communication_failed_error': [0x00],     # 19 hi
-        'communication_retries': [0x00],     # 19 lo
-        'no_response_error': [0x00],     # 20 hi
-        'good_receive_packet': [0x00],     # 20 lo
-        'unexpected_path_error': [0x00],     # 21 hi
-        'exception_response_error': [0x00],     # 21 lo
-        'forgotten_transaction_error': [0x00],     # 22 hi
-        'unexpected_response_error': [0x00],     # 22 lo
+        "bad_mac_function_code_error": [0x00],     # 18 hi
+        "internal_packet_length_error": [0x00],     # 18 lo
+        "communication_failed_error": [0x00],     # 19 hi
+        "communication_retries": [0x00],     # 19 lo
+        "no_response_error": [0x00],     # 20 hi
+        "good_receive_packet": [0x00],     # 20 lo
+        "unexpected_path_error": [0x00],     # 21 hi
+        "exception_response_error": [0x00],     # 21 lo
+        "forgotten_transaction_error": [0x00],     # 22 hi
+        "unexpected_response_error": [0x00],     # 22 lo
 
-        'active_station_bit_map': [0x00] * 8,  # 23-26
-        'token_station_bit_map': [0x00] * 8,  # 27-30
-        'global_data_bit_map': [0x00] * 8,  # 31-34
-        'receive_buffer_use_bit_map': [0x00] * 8,  # 35-37
-        'data_master_output_path': [0x00] * 8,  # 38-41
-        'data_slave_input_path': [0x00] * 8,  # 42-45
-        'program_master_outptu_path': [0x00] * 8,  # 46-49
-        'program_slave_input_path': [0x00] * 8,  # 50-53
+        "active_station_bit_map": [0x00] * 8,  # 23-26
+        "token_station_bit_map": [0x00] * 8,  # 27-30
+        "global_data_bit_map": [0x00] * 8,  # 31-34
+        "receive_buffer_use_bit_map": [0x00] * 8,  # 35-37
+        "data_master_output_path": [0x00] * 8,  # 38-41
+        "data_slave_input_path": [0x00] * 8,  # 42-45
+        "program_master_outptu_path": [0x00] * 8,  # 46-49
+        "program_slave_input_path": [0x00] * 8,  # 50-53
     })
 
     def __init__(self):
@@ -186,26 +186,26 @@ class ModbusDeviceIdentification:
     """
 
     __data = {
-        0x00: '',  # VendorName
-        0x01: '',  # ProductCode
-        0x02: '',  # MajorMinorRevision
-        0x03: '',  # VendorUrl
-        0x04: '',  # ProductName
-        0x05: '',  # ModelName
-        0x06: '',  # UserApplicationName
-        0x07: '',  # reserved
-        0x08: '',  # reserved
+        0x00: "",  # VendorName
+        0x01: "",  # ProductCode
+        0x02: "",  # MajorMinorRevision
+        0x03: "",  # VendorUrl
+        0x04: "",  # ProductName
+        0x05: "",  # ModelName
+        0x06: "",  # UserApplicationName
+        0x07: "",  # reserved
+        0x08: "",  # reserved
         # 0x80 -> 0xFF are privatek
     }
 
     __names = [
-        'VendorName',
-        'ProductCode',
-        'MajorMinorRevision',
-        'VendorUrl',
-        'ProductName',
-        'ModelName',
-        'UserApplicationName',
+        "VendorName",
+        "ProductCode",
+        "MajorMinorRevision",
+        "VendorUrl",
+        "ProductName",
+        "ModelName",
+        "UserApplicationName",
     ]
 
     def __init__(self, info=None, info_name=None):
@@ -263,7 +263,7 @@ class ModbusDeviceIdentification:
 
         :param key: The register to read
         """
-        return self.__data.setdefault(key, '')
+        return self.__data.setdefault(key, "")
 
     def __str__(self):
         """Build a representation of the device.
@@ -408,17 +408,17 @@ class ModbusCountersHandler:
     .. note:: I threw the event counter in here for convenience
     """
 
-    __data = {i: 0x0000 for i in range(9)}  # pylint: disable=consider-using-dict-comprehension
+    __data = {i: 0x0000 for i in range(9)}
     __names = [
-        'BusMessage',
-        'BusCommunicationError',
-        'SlaveExceptionError',
-        'SlaveMessage',
-        'SlaveNoResponse',
-        'SlaveNAK',
-        'SlaveBusy',
-        'BusCharacterOverrun'
-        'Event '
+        "BusMessage",
+        "BusCommunicationError",
+        "SlaveExceptionError",
+        "SlaveMessage",
+        "SlaveNoResponse",
+        "SlaveNAK",
+        "SlaveBusy",
+        "BusCharacterOverrun"
+        "Event "
     ]
 
     def __iter__(self):
@@ -441,7 +441,7 @@ class ModbusCountersHandler:
 
     def reset(self):
         """Clear all of the system counters."""
-        self.__data = {i: 0x0000 for i in range(9)}  # pylint: disable=consider-using-dict-comprehension
+        self.__data = {i: 0x0000 for i in range(9)}
 
     def summary(self):
         """Return a summary of the counters current status.
@@ -479,11 +479,11 @@ class ModbusControlBlock(Singleton):
     should come from here.
     """
 
-    __mode = 'ASCII'
+    __mode = "ASCII"
     __diagnostic = [False] * 16
     __instance = None
     __listen_only = False
-    __delimiter = '\r'
+    __delimiter = "\r"
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()
@@ -524,7 +524,7 @@ class ModbusControlBlock(Singleton):
         :returns: The encoded events packet
         """
         events = [event.encode() for event in self.__events]
-        return b''.join(events)
+        return b"".join(events)
 
     def clearEvents(self):  # pylint: disable=invalid-name
         """Clear the current list of events."""
@@ -564,7 +564,7 @@ class ModbusControlBlock(Singleton):
 
         :param mode: The data transfer method in (RTU, ASCII)
         """
-        if mode in {'ASCII', 'RTU'}:
+        if mode in {"ASCII", "RTU"}:
             self.__mode = mode  # pylint: disable=unused-private-member
 
     Mode = property(lambda s: s.__mode, _setMode)

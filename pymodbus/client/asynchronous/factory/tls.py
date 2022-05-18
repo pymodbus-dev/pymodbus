@@ -13,12 +13,12 @@ def async_io_factory(host="127.0.0.1", port=Defaults.TLSPort, sslctx=None,
                      server_hostname=None, framer=None, **kwargs):
     """Create asyncio based asynchronous tls clients.
 
-    :param host: Target server's name, also matched for certificate
+    :param host: Target server"s name, also matched for certificate
     :param port: Port
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
-    :param certfile: The optional client's cert file path for TLS server request
-    :param keyfile: The optional client's key file path for TLS server request
-    :param password: The password for for decrypting client's private key file
+    :param certfile: The optional client"s cert file path for TLS server request
+    :param keyfile: The optional client"s key file path for TLS server request
+    :param password: The password for for decrypting client"s private key file
     :param framer: Modbus Framer
     :param source_address: Bind address
     :param timeout: Timeout in seconds
@@ -59,5 +59,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler '{scheduler}'"
+    txt = f"Invalid Scheduler \"{scheduler}\""
     raise Exception(txt)  # NOSONAR

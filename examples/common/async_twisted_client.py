@@ -18,8 +18,8 @@ from pymodbus.client.asynchronous import schedulers
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -120,10 +120,10 @@ def begin_asynchronous_test(client):
     dassert(rr, lambda r: r.registers == [17] * 8)      # test the expected value
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     rq = client.readwrite_registers(arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)

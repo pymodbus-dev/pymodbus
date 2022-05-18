@@ -10,9 +10,9 @@ def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None):
 
     :param sslctx: The user defined SSLContext to use for TLS (default None and
                    auto create)
-    :param certfile: The optional client's cert file path for TLS server request
-    :param keyfile: The optional client's key file path for TLS server request
-    :param password: The password for for decrypting client's private key file
+    :param certfile: The optional client"s cert file path for TLS server request
+    :param keyfile: The optional client"s key file path for TLS server request
+    :param password: The password for for decrypting client"s private key file
     """
     if sslctx is None:
         # According to MODBUS/TCP Security Protocol Specification, it is

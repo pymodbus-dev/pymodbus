@@ -22,7 +22,7 @@ try:
     print("Building Pydoctor API Documentation")
     main(sys.argv[1:])
 
-    if os.path.exists('../../../build'):
+    if os.path.exists("../../../build"):
         shutil.move("html", "../../../build/pydoctor")
 except:  # noqa: E722 NOSONAR pylint: disable=bare-except
     print("Pydoctor unavailable...not building")

@@ -32,7 +32,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         self.assertEqual(first, second)
 
     def test_modbus_decoder_interface(self):
-        """Test that the base class isn't implemented"""
+        """Test that the base class isn"t implemented"""
         x_base = None
         instance = IModbusDecoder()
         self.assertRaises(NotImplementedException, lambda: instance.decode(x_base))
@@ -42,7 +42,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
                           lambda: instance.register(x_base))
 
     def test_modbus_framer_interface(self):
-        """Test that the base class isn't implemented"""
+        """Test that the base class isn"t implemented"""
         x_base = None
         instance = IModbusFramer()
         self.assertRaises(NotImplementedException, instance.checkFrame)
@@ -59,7 +59,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
                           instance.buildPacket(x_base))
 
     def test_modbus_slave_context_interface(self):
-        """Test that the base class isn't implemented"""
+        """Test that the base class isn"t implemented"""
         x_base = None
         instance = IModbusSlaveContext()
         self.assertRaises(NotImplementedException, instance.reset)
@@ -68,7 +68,7 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         self.assertRaises(NotImplementedException, lambda: instance.setValues(x_base, x_base, x_base))
 
     def test_modbus_payload_builder_interface(self):
-        """Test that the base class isn't implemented"""
+        """Test that the base class isn"t implemented"""
         instance = IPayloadBuilder()
         self.assertRaises(NotImplementedException, lambda: instance.build())  # pylint: disable=unnecessary-lambda
 

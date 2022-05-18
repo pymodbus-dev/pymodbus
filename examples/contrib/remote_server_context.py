@@ -4,9 +4,9 @@ it works under the assumption that users would have a server context
 of the following form::
 
     server_context = {
-        0x00: client('host1.something.com'),
-        0x01: client('host2.something.com'),
-        0x02: client('host3.something.com')
+        0x00: client("host1.something.com"),
+        0x01: client("host2.something.com"),
+        0x02: client("host3.something.com")
     }
 
 This example is how to create a server context where the client is
@@ -14,9 +14,9 @@ pointing to the same host, but the requested slave id is used as the
 slave for the client::
 
     server_context = {
-        0x00: client('host1.something.com', 0x00),
-        0x01: client('host1.something.com', 0x01),
-        0x02: client('host1.something.com', 0x02)
+        0x00: client("host1.something.com", 0x00),
+        0x01: client("host1.something.com", 0x01),
+        0x02: client("host1.something.com", 0x02)
     }
 """
 import logging
@@ -118,9 +118,9 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         :param result: The resulting data
         """
         if not result.isError():
-            if f_code in {'d', 'c'}:
+            if f_code in {"d", "c"}:
                 return result.bits
-            if f_code in {'h', 'i'}:
+            if f_code in {"h", "i"}:
                 return result.registers
             return None
         return result
@@ -146,16 +146,16 @@ class RemoteServerContext:
         :param client: The client to retrieve values with
         """
         self.get_callbacks = {
-            'd': lambda a, c, s: client.read_discrete_inputs(a, c, s),  # pylint: disable=unnecessary-lambda
-            'c': lambda a, c, s: client.read_coils(a, c, s),  # pylint: disable=unnecessary-lambda
-            'h': lambda a, c, s: client.read_holding_registers(a, c, s),  # pylint: disable=unnecessary-lambda
-            'i': lambda a, c, s: client.read_input_registers(a, c, s),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, c, s: client.read_discrete_inputs(a, c, s),  # pylint: disable=unnecessary-lambda
+            "c": lambda a, c, s: client.read_coils(a, c, s),  # pylint: disable=unnecessary-lambda
+            "h": lambda a, c, s: client.read_holding_registers(a, c, s),  # pylint: disable=unnecessary-lambda
+            "i": lambda a, c, s: client.read_input_registers(a, c, s),  # pylint: disable=unnecessary-lambda
         }
         self.set_callbacks = {
-            'd': lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
-            'c': lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
-            'h': lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
-            'i': lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
+            "c": lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
+            "h": lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
+            "i": lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
         }
         self._client = client
         self.slaves = {}  # simply a cache
@@ -181,7 +181,7 @@ class RemoteServerContext:
         :param slave: slave The slave to check for existence
         :returns: True if the slave exists, False otherwise
         """
-        # we don't want to check the cache here as the
+        # we don"t want to check the cache here as the
         # slave may not exist yet or may not exist any
         # more. The best thing to do is try and fail.
         return True
@@ -192,14 +192,14 @@ class RemoteServerContext:
         :param slave: The slave context to set
         :param context: The new context to set for this slave
         """
-        raise NotImplementedException()  # doesn't make sense here
+        raise NotImplementedException()  # doesn"t make sense here
 
     def __delitem__(self, slave):
         """Use to access the slave context
 
         :param slave: The slave context to remove
         """
-        raise NotImplementedException()  # doesn't make sense here
+        raise NotImplementedException()  # doesn"t make sense here
 
     def __getitem__(self, slave):
         """Use to get access to a slave context

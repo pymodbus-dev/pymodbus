@@ -39,18 +39,18 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         self.payload = builder.build()
         self.write = {
             WriteSingleRegisterRequest(1, self.value):
-                b'\x00\x01\xab\xcd',
+                b"\x00\x01\xab\xcd",
             WriteSingleRegisterResponse(1, self.value):
-                b'\x00\x01\xab\xcd',
+                b"\x00\x01\xab\xcd",
             WriteMultipleRegistersRequest(1, self.values):
-                b'\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c',
+                b"\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c",
             WriteMultipleRegistersResponse(1, 5):
-                b'\x00\x01\x00\x05',
+                b"\x00\x01\x00\x05",
 
             WriteSingleRegisterRequest(1, self.payload[0],
-                                       skip_encode=True): b'\x00\x01\x12\x34',
+                                       skip_encode=True): b"\x00\x01\x12\x34",
             WriteMultipleRegistersRequest(1, self.payload,
-                                          skip_encode=True): b'\x00\x01\x00\x01\x02\x12\x34',
+                                          skip_encode=True): b"\x00\x01\x00\x01\x02\x12\x34",
         }
 
     def tearDown(self):
@@ -124,11 +124,11 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         """Test basic bit message encoding/decoding"""
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = handle.encode()
-        self.assertEqual(result, b'\x00\x00\x01\x01\x10\x10')
+        self.assertEqual(result, b"\x00\x00\x01\x01\x10\x10")
 
     def test_mask_write_register_request_decode(self):
         """Test basic bit message encoding/decoding"""
-        request = b'\x00\x04\x00\xf2\x00\x25'
+        request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterRequest()
         handle.decode(request)
         self.assertEqual(handle.address, 0x0004)
@@ -168,11 +168,11 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         """Test basic bit message encoding/decoding"""
         handle = MaskWriteRegisterResponse(0x0000, 0x0101, 0x1010)
         result = handle.encode()
-        self.assertEqual(result, b'\x00\x00\x01\x01\x10\x10')
+        self.assertEqual(result, b"\x00\x00\x01\x01\x10\x10")
 
     def test_mask_write_register_response_decode(self):
         """Test basic bit message encoding/decoding"""
-        request = b'\x00\x04\x00\xf2\x00\x25'
+        request = b"\x00\x04\x00\xf2\x00\x25"
         handle = MaskWriteRegisterResponse()
         handle.decode(request)
         self.assertEqual(handle.address, 0x0004)

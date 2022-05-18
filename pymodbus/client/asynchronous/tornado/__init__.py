@@ -33,7 +33,7 @@ class BaseTornadoClient(AsyncModbusClientMixin):
     def __init__(self, *args, **kwargs):
         """Initialize BaseTornadoClient.
 
-        ioloop to be passed as part of kwargs ('ioloop')
+        ioloop to be passed as part of kwargs ("ioloop")
         :param args:
         :param kwargs:
         """
@@ -136,7 +136,7 @@ class BaseTornadoSerialClient(AsyncModbusSerialClientMixin):
     def __init__(self, *args, **kwargs):
         """Initialize BaseTornadoSerialClient.
 
-        ioloop to be passed as part of kwargs ('ioloop')
+        ioloop to be passed as part of kwargs ("ioloop")
         :param args:
         :param kwargs:
         """
@@ -286,8 +286,8 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
         :param kwargs:
         """
         self.state = ModbusTransactionState.IDLE
-        self.timeout = kwargs.get('timeout', Defaults.Timeout)
-        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+        self.timeout = kwargs.get("timeout", Defaults.Timeout)
+        self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
         if self.baudrate > 19200:
             self.silent_interval = 1.75 / 1000  # ms
         else:
@@ -391,9 +391,9 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
                 self.io_loop.remove_handler(fd)
                 self.state = ModbusTransactionState.IDLE
                 self.framer.processIncomingPacket(
-                    b'',            # already sent via addToFrame()
+                    b"",            # already sent via addToFrame()
                     self._handle_response,
-                    0,              # don't care when `single=True`
+                    0,              # don"t care when `single=True`
                     single=True,
                     tid=request.transaction_id
                 )

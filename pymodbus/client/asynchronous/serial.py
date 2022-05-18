@@ -28,13 +28,13 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         :returns: The requested serial framer
         """
         method = method.lower()
-        if method == 'ascii':
+        if method == "ascii":
             return ModbusAsciiFramer(ClientDecoder())
-        if method == 'rtu':
+        if method == "rtu":
             return ModbusRtuFramer(ClientDecoder())
-        if method == 'binary':
+        if method == "binary":
             return ModbusBinaryFramer(ClientDecoder())
-        if method == 'socket':
+        if method == "socket":
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")

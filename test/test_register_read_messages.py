@@ -16,6 +16,9 @@ from pymodbus.pdu import ModbusExceptions
 
 from .modbus_mocks import MockContext, FakeList
 
+
+TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
+
 # ---------------------------------------------------------------------------#
 #  Fixture
 # ---------------------------------------------------------------------------#
@@ -34,24 +37,24 @@ class ReadRegisterMessagesTest(unittest.TestCase):
     def setUp(self):
         """Initialize the test environment and builds request/result encoding pairs."""
         arguments = {
-            'read_address': 1, 'read_count': 5,
-            'write_address': 1, 'write_registers': [0x00] * 5,
+            "read_address": 1, "read_count": 5,
+            "write_address": 1, "write_registers": [0x00] * 5,
         }
         self.value = 0xabcd
         self.values = [0xa, 0xb, 0xc]
         self.request_read = {
-            ReadRegistersRequestBase(1, 5): b'\x00\x01\x00\x05',
-            ReadHoldingRegistersRequest(1, 5): b'\x00\x01\x00\x05',
-            ReadInputRegistersRequest(1, 5): b'\x00\x01\x00\x05',
-            ReadWriteMultipleRegistersRequest(**arguments): b'\x00\x01\x00\x05\x00\x01\x00'
-            b'\x05\x0a\x00\x00\x00\x00\x00'
-            b'\x00\x00\x00\x00\x00',
+            ReadRegistersRequestBase(1, 5): b"\x00\x01\x00\x05",
+            ReadHoldingRegistersRequest(1, 5): b"\x00\x01\x00\x05",
+            ReadInputRegistersRequest(1, 5): b"\x00\x01\x00\x05",
+            ReadWriteMultipleRegistersRequest(**arguments): b"\x00\x01\x00\x05\x00\x01\x00"
+            b"\x05\x0a\x00\x00\x00\x00\x00"
+            b"\x00\x00\x00\x00\x00",
         }
         self.response_read = {
-            ReadRegistersResponseBase(self.values): b'\x06\x00\x0a\x00\x0b\x00\x0c',
-            ReadHoldingRegistersResponse(self.values): b'\x06\x00\x0a\x00\x0b\x00\x0c',
-            ReadInputRegistersResponse(self.values): b'\x06\x00\x0a\x00\x0b\x00\x0c',
-            ReadWriteMultipleRegistersResponse(self.values): b'\x06\x00\x0a\x00\x0b\x00\x0c',
+            ReadRegistersResponseBase(self.values): TEST_MESSAGE,
+            ReadHoldingRegistersResponse(self.values): TEST_MESSAGE,
+            ReadInputRegistersResponse(self.values): TEST_MESSAGE,
+            ReadWriteMultipleRegistersResponse(self.values): TEST_MESSAGE,
         }
 
     def tearDown(self):
@@ -167,7 +170,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
     def test_read_write_multiple_registers_request_decode(self):
         """Test read/write multiple registers."""
         request, response = next((k, v) for k, v in self.request_read.items()
-                                 if getattr(k, 'function_code', 0) == 23)
+                                 if getattr(k, "function_code", 0) == 23)
         request.decode(response)
         self.assertEqual(request.read_address, 0x01)
         self.assertEqual(request.write_address, 0x01)

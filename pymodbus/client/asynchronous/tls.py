@@ -21,13 +21,13 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         """Use scheduler async_io (asyncio)
 
         :param scheduler: Backend to use
-        :param host: Target server's name, also matched for certificate
+        :param host: Target server"s name, also matched for certificate
         :param port: Port
         :param framer: Modbus Framer to use
         :param sslctx: The SSLContext to use for TLS (default None and auto create)
-        :param certfile: The optional client's cert file path for TLS server request
-        :param keyfile: The optional client's key file path for TLS server request
-        :param password: The password for for decrypting client's private key file
+        :param certfile: The optional client"s cert file path for TLS server request
+        :param keyfile: The optional client"s key file path for TLS server request
+        :param password: The password for for decrypting client"s private key file
         :param source_address: source address specific to underlying backend
         :param timeout: Time out in seconds
         :param kwargs: Other extra args specific to Backend being used

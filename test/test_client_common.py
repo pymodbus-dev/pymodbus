@@ -58,8 +58,8 @@ class ModbusCommonClientTests(unittest.TestCase):
     def test_modbus_client_mixin_methods(self):
         """This tests that the mixing returns the correct request object"""
         arguments = {
-            'read_address': 1, 'read_count': 1,
-            'write_address': 1, 'write_registers': 1
+            "read_address": 1, "read_count": 1,
+            "write_address": 1, "write_registers": 1
         }
         self.assertTrue(
             isinstance(self.client.read_coils(1, 1), ReadCoilsRequest))

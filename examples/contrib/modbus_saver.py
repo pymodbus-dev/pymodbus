@@ -46,14 +46,14 @@ class ModbusDatastoreSaver:
         :param path: The output path to save to
         """
         self.context = context
-        self.path = path or 'modbus-context-dump'
+        self.path = path or "modbus-context-dump"
 
     def save(self):
         """Save the context to file.
 
         which calls the various callbacks which the sub classes will implement.
         """
-        with open(self.path, 'w') as self.file_handle:  # noqa: E501 pylint: disable=attribute-defined-outside-init,unspecified-encoding
+        with open(self.path, "w") as self.file_handle:  # noqa: E501 pylint: disable=attribute-defined-outside-init,unspecified-encoding
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)
@@ -100,10 +100,10 @@ class JsonDatastoreSaver(ModbusDatastoreSaver):
     _slave = None
 
     STORE_NAMES = {
-        'i': 'input-registers',
-        'd': 'discretes',
-        'h': 'holding-registers',
-        'c': 'coils',
+        "i": "input-registers",
+        "d": "discretes",
+        "h": "holding-registers",
+        "c": "coils",
     }
 
     def handle_save_start(self):
@@ -136,13 +136,13 @@ class CsvDatastoreSaver(ModbusDatastoreSaver):
     _context = None
     _store = None
     _line = None
-    NEWLINE = '\r\n'
+    NEWLINE = "\r\n"
     HEADER = "slave,store,address,value" + NEWLINE
     STORE_NAMES = {
-        'i': 'i',
-        'd': 'd',
-        'h': 'h',
-        'c': 'c',
+        "i": "i",
+        "d": "d",
+        "h": "h",
+        "c": "c",
     }
 
     def handle_save_start(self):
@@ -168,7 +168,7 @@ class CsvDatastoreSaver(ModbusDatastoreSaver):
     def handle_store_value(self, values):
         """Handle store value."""
         for val_a, val_v in values:
-            yield ','.join(self._line + [str(val_a), str(val_v)]) + self.NEWLINE
+            yield ",".join(self._line + [str(val_a), str(val_v)]) + self.NEWLINE
 
 
 class XmlDatastoreSaver(ModbusDatastoreSaver):
@@ -181,10 +181,10 @@ class XmlDatastoreSaver(ModbusDatastoreSaver):
     _store = None
 
     STORE_NAMES = {
-        'i': 'input-registers',
-        'd': 'discretes',
-        'h': 'holding-registers',
-        'c': 'coils',
+        "i": "input-registers",
+        "d": "discretes",
+        "h": "holding-registers",
+        "c": "coils",
     }
 
     def handle_save_start(self):

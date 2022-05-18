@@ -98,7 +98,7 @@ compiler.cdef("""
     int modbus_receive_from(modbus_t *ctx, int sockfd, uint8_t *req);
     int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
 """)
-LIB = compiler.dlopen('modbus')  # create our bindings
+LIB = compiler.dlopen("modbus")  # create our bindings
 
 # -------------------------------------------------------------------------- #
 # helper utilities
@@ -117,12 +117,12 @@ def set_float(value, data):
 
 def cast_to_int16(data):
     """Cast to int16."""
-    return int(compiler.cast('int16_t', data))
+    return int(compiler.cast("int16_t", data))
 
 
 def cast_to_int32(data):
     """Cast to int32."""
-    return int(compiler.cast('int32_t', data))
+    return int(compiler.cast("int32_t", data))
 
 
 class NotImplementedException(Exception):
@@ -137,12 +137,12 @@ class NotImplementedException(Exception):
 class LibmodbusLevel1Client:
     """A raw wrapper around the libmodbus c library.
 
-    Feel free to use it if you want increased performance and don't mind the
+    Feel free to use it if you want increased performance and don"t mind the
     entire protocol not being implemented.
     """
 
     @classmethod
-    def create_tcp_client(cls, my_host='127.0.0.1', my_port=Defaults.Port):
+    def create_tcp_client(cls, my_host="127.0.0.1", my_port=Defaults.Port):
         """Create a TCP modbus client for the supplied parameters.
 
         :param host: The host to connect to
@@ -163,11 +163,11 @@ class LibmodbusLevel1Client:
         :param baudrate: The baud rate to use for the serial device
         :returns: A new level1 client
         """
-        my_port = kwargs.get('port', '/dev/ttyS0')
-        baudrate = kwargs.get('baud', Defaults.Baudrate)
-        parity = kwargs.get('parity', Defaults.Parity)
-        bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        stopbits = kwargs.get('stopbits', Defaults.Stopbits)
+        my_port = kwargs.get("port", "/dev/ttyS0")
+        baudrate = kwargs.get("baud", Defaults.Baudrate)
+        parity = kwargs.get("parity", Defaults.Parity)
+        bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+        stopbits = kwargs.get("stopbits", Defaults.Stopbits)
         my_client = LIB.modbus_new_rtu(my_port, baudrate, parity, bytesize, stopbits)
         return cls(my_client)
 
@@ -346,22 +346,22 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __methods = {
-        'ReadCoilsRequest': lambda c, r: c.read_bits(r.address, r.count),
-        'ReadDiscreteInputsRequest': lambda c, r: c.read_input_bits(r.address,
+        "ReadCoilsRequest": lambda c, r: c.read_bits(r.address, r.count),
+        "ReadDiscreteInputsRequest": lambda c, r: c.read_input_bits(r.address,
                                                                     r.count),
-        'WriteSingleCoilRequest': lambda c, r: c.write_bit(r.address,
+        "WriteSingleCoilRequest": lambda c, r: c.write_bit(r.address,
                                                            r.value),
-        'WriteMultipleCoilsRequest': lambda c, r: c.write_bits(r.address,
+        "WriteMultipleCoilsRequest": lambda c, r: c.write_bits(r.address,
                                                                r.values),
-        'WriteSingleRegisterRequest': lambda c, r: c.write_register(r.address,
+        "WriteSingleRegisterRequest": lambda c, r: c.write_register(r.address,
                                                                     r.value),
-        'WriteMultipleRegistersRequest':
+        "WriteMultipleRegistersRequest":
             lambda c, r: c.write_registers(r.address, r.values),
-        'ReadHoldingRegistersRequest':
+        "ReadHoldingRegistersRequest":
             lambda c, r: c.read_registers(r.address, r.count),
-        'ReadInputRegistersRequest':
+        "ReadInputRegistersRequest":
             lambda c, r: c.read_input_registers(r.address, r.count),
-        'ReadWriteMultipleRegistersRequest':
+        "ReadWriteMultipleRegistersRequest":
             lambda c, r: c.read_and_write_registers(r.read_address,
                                                     r.read_count,
                                                     r.write_address,
@@ -374,23 +374,23 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __adapters = {
-        'ReadCoilsRequest':
+        "ReadCoilsRequest":
             lambda tx, rx: ReadCoilsResponse(list(rx)),
-        'ReadDiscreteInputsRequest':
+        "ReadDiscreteInputsRequest":
             lambda tx, rx: ReadDiscreteInputsResponse(list(rx)),
-        'WriteSingleCoilRequest':
+        "WriteSingleCoilRequest":
             lambda tx, rx: WriteSingleCoilResponse(tx.address, rx),
-        'WriteMultipleCoilsRequest':
+        "WriteMultipleCoilsRequest":
             lambda tx, rx: WriteMultipleCoilsResponse(tx.address, rx),
-        'WriteSingleRegisterRequest':
+        "WriteSingleRegisterRequest":
             lambda tx, rx: WriteSingleRegisterResponse(tx.address, rx),
-        'WriteMultipleRegistersRequest':
+        "WriteMultipleRegistersRequest":
             lambda tx, rx: WriteMultipleRegistersResponse(tx.address, rx),
-        'ReadHoldingRegistersRequest':
+        "ReadHoldingRegistersRequest":
             lambda tx, rx: ReadHoldingRegistersResponse(list(rx)),
-        'ReadInputRegistersRequest':
+        "ReadInputRegistersRequest":
             lambda tx, rx: ReadInputRegistersResponse(list(rx)),
-        'ReadWriteMultipleRegistersRequest':
+        "ReadWriteMultipleRegistersRequest":
             lambda tx, rx: ReadWriteMultipleRegistersResponse(list(rx)),
     }
 
@@ -464,10 +464,10 @@ class LibmodbusClient(ModbusClientMixin):
 # -------------------------------------------------------------------------- #
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # create our low level client
-    host = '127.0.0.1'  # pylint: disable=invalid-name
+    host = "127.0.0.1"  # pylint: disable=invalid-name
     port = 502  # pylint: disable=invalid-name
     protocol = LibmodbusLevel1Client.create_tcp_client(host, port)
 

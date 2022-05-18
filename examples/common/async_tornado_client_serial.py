@@ -23,8 +23,8 @@ from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 # configure the client logging
 # ---------------------------------------------------------------------------#
 
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -106,10 +106,10 @@ def begin_asynchronous_test(client, protocol):  # NOSONAR pylint: disable=redefi
     dassert(rr, _print)      # test the expected value
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     rq = client.readwrite_registers(**arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)

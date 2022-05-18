@@ -29,9 +29,9 @@ __________                          .______.                    _________
 
 
 SMALL_TITLE = "Pymodbus server..."
-BOTTOM_TOOLBAR = HTML('(MODBUS SERVER) <b><style bg="ansired">Press Ctrl+C or '
-                      'type "exit" to quit</style></b> Type "help" '
-                      'for list of available commands')
+BOTTOM_TOOLBAR = HTML("(MODBUS SERVER) <b><style bg=\"ansired\">Press Ctrl+C or "
+                      "type \"exit\" to quit</style></b> Type \"help\" "
+                      "for list of available commands")
 COMMAND_ARGS = ["response_type", "error_code", "delay_by",
                 "clear_after", "data_len"]
 RESPONSE_TYPES = ["normal", "error", "delayed", "empty", "stray"]
@@ -119,7 +119,7 @@ async def interactive_shell(server):  # NOSONAR
     if col > max_len:
         info(TITLE)
     else:
-        print_formatted_text(HTML(f'<u><b><style color="green">{SMALL_TITLE}</style></b></u>'))
+        print_formatted_text(HTML(f"<u><b><style color=\"green\">{SMALL_TITLE}</style></b></u>"))
     info("")
     completer = NestedCompleter.from_nested_dict(COMMANDS)
     session = PromptSession("SERVER > ",
@@ -147,7 +147,7 @@ async def interactive_shell(server):  # NOSONAR
                     warning(f"Invalid command or invalid usage of command - {command}")
                     continue
                 if len(command) == 1:
-                    warning(f"Usage: '{USAGE}'")
+                    warning(f"Usage: \"{USAGE}\"")
                 else:
                     args = command[1:]
                     skip_next = False
@@ -164,7 +164,7 @@ async def interactive_shell(server):  # NOSONAR
                                 skip_next = True
                             except IndexError:
                                 error(f"Missing value for argument - {arg}")
-                                warning("Usage: '{USAGE}'")
+                                warning("Usage: \"{USAGE}\"")
                                 break
                         valid = True
                         if arg == "response_type":

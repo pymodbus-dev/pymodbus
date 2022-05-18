@@ -26,17 +26,17 @@ class ModbusSlaveContext(IModbusSlaveContext):
 
         :param kwargs: Each element is a ModbusDataBlock
 
-            'di' - Discrete Inputs initializer
-            'co' - Coils initializer
-            'hr' - Holding Register initializer
-            'ir' - Input Registers iniatializer
+            "di" - Discrete Inputs initializer
+            "co" - Coils initializer
+            "hr" - Holding Register initializer
+            "ir" - Input Registers iniatializer
         """
         self.store = {}
-        self.store['d'] = kwargs.get('di', ModbusSequentialDataBlock.create())
-        self.store['c'] = kwargs.get('co', ModbusSequentialDataBlock.create())
-        self.store['i'] = kwargs.get('ir', ModbusSequentialDataBlock.create())
-        self.store['h'] = kwargs.get('hr', ModbusSequentialDataBlock.create())
-        self.zero_mode = kwargs.get('zero_mode', Defaults.ZeroMode)
+        self.store["d"] = kwargs.get("di", ModbusSequentialDataBlock.create())
+        self.store["c"] = kwargs.get("co", ModbusSequentialDataBlock.create())
+        self.store["i"] = kwargs.get("ir", ModbusSequentialDataBlock.create())
+        self.store["h"] = kwargs.get("hr", ModbusSequentialDataBlock.create())
+        self.zero_mode = kwargs.get("zero_mode", Defaults.ZeroMode)
 
     def __str__(self):
         """Return a string representation of the context.
@@ -95,7 +95,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """Register a datablock with the slave context.
 
         :param fc: function code (int)
-        :param fx: string representation of function code (e.g 'cf' )
+        :param fx: string representation of function code (e.g "cf" )
         :param datablock: datablock to associate with this function code
         :return:
         """

@@ -54,9 +54,9 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         """Test single context register."""
         request_db = [1, 2, 3]
         slave = ModbusSlaveContext()
-        slave.register(0xff, 'custom_request', request_db)
+        slave.register(0xff, "custom_request", request_db)
         self.assertEqual(slave.store["custom_request"], request_db)
-        self.assertEqual(slave.decode(0xff), 'custom_request')
+        self.assertEqual(slave.decode(0xff), "custom_request")
 
 
 class ModbusServerMultipleContextTest(unittest.TestCase):

@@ -4,7 +4,7 @@
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus.
 
-    with ModbusClient('127.0.0.1') as client:
+    with ModbusClient("127.0.0.1") as client:
         result = client.read_coils(1,10)
         print result
 """
@@ -53,7 +53,7 @@ class CustomModbusResponse(ModbusResponse):
         """
         res = struct.pack(">B", len(self.values) * 2)
         for register in self.values:
-            res += struct.pack('>H', register)
+            res += struct.pack(">H", register)
         return res
 
     def decode(self, data):
@@ -64,7 +64,7 @@ class CustomModbusResponse(ModbusResponse):
         byte_count = int(data[0])
         self.values = []
         for i in range(1, byte_count + 1, 2):
-            self.values.append(struct.unpack('>H', data[i:i + 2])[0])
+            self.values.append(struct.unpack(">H", data[i:i + 2])[0])
 
 
 class CustomModbusRequest(ModbusRequest):
@@ -81,11 +81,11 @@ class CustomModbusRequest(ModbusRequest):
 
     def encode(self):
         """Encode."""
-        return struct.pack('>HH', self.address, self.count)
+        return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data):
         """Decode."""
-        self.address, self.count = struct.unpack('>HH', data)
+        self.address, self.count = struct.unpack(">HH", data)
 
     def execute(self, context):
         """Execute."""
@@ -121,7 +121,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
 
 
 if __name__ == "__main__":
-    with ModbusClient(host='localhost', port=5020) as client:
+    with ModbusClient(host="localhost", port=5020) as client:
         client.register(CustomModbusResponse)
         request = CustomModbusRequest(1, unit=1)
         result = client.execute(request)

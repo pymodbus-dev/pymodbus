@@ -47,7 +47,7 @@ Steps:
 3. Register with ModbusSlaveContext,
     if your request has to access some values from the data-store.
     ```store = ModbusSlaveContext(...)
-       store.register(CustomModbusRequest.function_code, 'dummy_context_name')
+       store.register(CustomModbusRequest.function_code, "dummy_context_name")
     ```
 4. Pass CustomModbusRequest class as argument to Start<protocol>Server
     ```
@@ -75,8 +75,8 @@ from pymodbus.datastore import (
 # configure the service logging
 # --------------------------------------------------------------------------- #
 
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -90,22 +90,22 @@ def run_server():
         hr=ModbusSequentialDataBlock(0, [17] * 100),
         ir=ModbusSequentialDataBlock(0, [17] * 100))
 
-    store.register(CustomModbusRequest.function_code, 'cm',
+    store.register(CustomModbusRequest.function_code, "cm",
                    ModbusSequentialDataBlock(0, [17] * 100))
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(info_name={
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
+        "VendorName": "Pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "Pymodbus Server",
+        "ModelName": "Pymodbus Server",
+        "MajorMinorRevision": version.short(),
     })
 
     # ----------------------------------------------------------------------- #

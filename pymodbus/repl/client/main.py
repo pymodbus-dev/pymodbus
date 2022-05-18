@@ -10,13 +10,13 @@ import os.path
 try:
     import click
 except ImportError:
-    print("click not installed!! Install with 'pip install click'")
+    print("click not installed!! Install with \"pip install click\"")
     sys.exit(1)
 try:
     from prompt_toolkit import PromptSession, print_formatted_text
 except ImportError:
     print("prompt toolkit is not installed!! "
-          "Install with 'pip install prompt_toolkit --upgrade'")
+          "Install with \"pip install prompt_toolkit --upgrade\"")
     sys.exit(1)
 
 from prompt_toolkit.lexers import PygmentsLexer
@@ -39,24 +39,24 @@ from pymodbus.framer.rtu_framer import ModbusRtuFramer
 click.disable_unicode_literals_warning = True
 
 TITLE = (
-    r'----------------------------------------------------------------------------'
-    r'__________          _____             .___  __________              .__   '
-    r'\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  '
-    r' |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  '
-    r' |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__'
-    r' |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/'
-    r'           \/            \/            \/ \/        \/     \/|__|'
-    f'                                        v1.3.0 - {version}'
-    r'----------------------------------------------------------------------------'
+    r"----------------------------------------------------------------------------"
+    r"__________          _____             .___  __________              .__   "
+    r"\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  "
+    r" |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  "
+    r" |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__"
+    r" |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/"
+    r"           \/            \/            \/ \/        \/     \/|__|"
+    f"                                        v1.3.0 - {version}"
+    r"----------------------------------------------------------------------------"
 )
 _logger = logging.getLogger(__name__)
 
 
 style = Style.from_dict({
-    'completion-menu.completion': 'bg:#008888 #ffffff',
-    'completion-menu.completion.current': 'bg:#00aaaa #000000',
-    'scrollbar.background': 'bg:#88aaaa',
-    'scrollbar.button': 'bg:#222222',
+    "completion-menu.completion": "bg:#008888 #ffffff",
+    "completion-menu.completion.current": "bg:#00aaaa #000000",
+    "scrollbar.background": "bg:#88aaaa",
+    "scrollbar.button": "bg:#222222",
 })
 
 
@@ -65,8 +65,8 @@ def bottom_toolbar():
 
     :return:
     """
-    return HTML('Press <b><style bg="ansired">CTRL+D or exit </style></b>'
-                ' to exit! Type "help" for list of available commands')
+    return HTML("Press <b><style bg=\"ansired\">CTRL+D or exit </style></b>"
+                " to exit! Type \"help\" for list of available commands")
 
 
 class CaseInsenstiveChoice(click.Choice):
@@ -100,8 +100,8 @@ class NumericChoice(click.Choice):
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail('invalid choice: %s. (choose from %s)' %  # pylint: disable=consider-using-f-string
-                  (value, ', '.join(self.choices)), param, ctx)
+        self.fail("invalid choice: %s. (choose from %s)" %  # pylint: disable=consider-using-f-string
+                  (value, ", ".join(self.choices)), param, ctx)
         return None
 
 
@@ -110,7 +110,7 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
     use_keys = KeyBindings()
     history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
 
-    @use_keys.add('c-space')
+    @use_keys.add("c-space")
     def _(event):
         """Initialize autocompletion, or select the next completion."""
         buff = event.app.current_buffer
@@ -119,7 +119,7 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
         else:
             buff.start_completion(select_first=False)
 
-    @use_keys.add('enter', filter=has_selected_completion)
+    @use_keys.add("enter", filter=has_selected_completion)
     def _(event):
         """Make the enter key work as the tab key only when showing the menu."""
         event.current_buffer.complete_state = None
@@ -156,12 +156,12 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
                     skip_index = i + 1
                 except TypeError:
                     click.secho("Error parsing arguments!",
-                                fg='yellow')
+                                fg="yellow")
                     execute = False
                     break
                 except ValueError:
                     click.secho("Error parsing argument",
-                                fg='yellow')
+                                fg="yellow")
                     execute = False
                     break
         return kwargs, execute
@@ -173,23 +173,23 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
                             key_bindings=use_keys,
                             history=FileHistory(history_file),
                             auto_suggest=AutoSuggestFromHistory())
-    click.secho(f"{TITLE}", fg='green')
+    click.secho(f"{TITLE}", fg="green")
     result = None
     while True:  # pylint: disable=too-many-nested-blocks
         try:
 
-            text = session.prompt('> ', complete_while_typing=True)
-            if text.strip().lower() == 'help':
+            text = session.prompt("> ", complete_while_typing=True)
+            if text.strip().lower() == "help":
                 print_formatted_text(HTML("<u>Available commands:</u>"))
                 for cmd, obj in sorted(session.completer.commands.items()):
-                    if cmd != 'help':
+                    if cmd != "help":
                         print_formatted_text(
                             HTML("<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string
                                  "<seagreen>{:100s}"
                                  "</seagreen>".format(cmd, obj.help_text)))
 
                 continue
-            if text.strip().lower() == 'exit':
+            if text.strip().lower() == "exit":
                 raise EOFError()
             if text.strip().lower().startswith("client."):
                 try:
@@ -204,13 +204,13 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
                             result = Result(getattr(client, cmd)(**kwargs))
                         result.print_result()
                 except Exception as exc:  # pylint: disable=broad-except
-                    click.secho(repr(exc), fg='red')
+                    click.secho(repr(exc), fg="red")
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()
-                    if words[0] == 'result.raw':
+                    if words[0] == "result.raw":
                         result.raw()
-                    if words[0] == 'result.decode':
+                    if words[0] == "result.decode":
                         args = words[1:]
                         kwargs, execute = _process_args(args)
                         if execute:
@@ -220,12 +220,12 @@ def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
         except EOFError:
             break  # Control-D pressed.
         except Exception as exc:  # Handle all other exceptions pylint: disable=broad-except
-            click.secho(str(exc), fg='red')
+            click.secho(str(exc), fg="red")
 
-    click.secho('GoodBye!', fg='blue')
+    click.secho("GoodBye!", fg="blue")
 
 
-@click.group('pymodbus-repl')
+@click.group("pymodbus-repl")
 @click.version_option(version, message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
 @click.option("--broadcast-support", is_flag=True, default=False,
@@ -241,8 +241,8 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
          retry_on_error, retries, reset_socket):
     """Run Main."""
     if verbose:
-        use_format = ('%(asctime)-15s %(threadName)-15s '
-                      '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+        use_format = ("%(asctime)-15s %(threadName)-15s "
+                      "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
         logging.basicConfig(format=use_format)  # NOSONAR
         _logger.setLevel(logging.DEBUG)
     ctx.obj = {
@@ -258,7 +258,7 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
 @click.pass_context
 @click.option(
     "--host",
-    default='localhost',
+    default="localhost",
     help="Modbus TCP IP "
 )
 @click.option(
@@ -269,16 +269,16 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
 )
 @click.option(
     "--framer",
-    default='tcp',
+    default="tcp",
     type=str,
     help="Override the default packet framer tcp|rtu",
 )
 def tcp(ctx, host, port, framer):
     """Define TCP."""
-    kwargs = {'host': host, 'port': port}
+    kwargs = {"host": host, "port": port}
     kwargs.update(**ctx.obj)
-    if framer == 'rtu':
-        kwargs['framer'] = ModbusRtuFramer
+    if framer == "rtu":
+        kwargs["framer"] = ModbusRtuFramer
     client = ModbusTcpClient(**kwargs)
     cli(client)
 
@@ -287,7 +287,7 @@ def tcp(ctx, host, port, framer):
 @click.pass_context
 @click.option(
     "--method",
-    default='rtu',
+    default="rtu",
     type=str,
     help="Modbus Serial Mode (rtu/ascii)",
 )
@@ -316,15 +316,15 @@ def tcp(ctx, host, port, framer):
     help="Modbus RTU serial parity. "
          " Enable parity checking. Possible values: "
          "PARITY_NONE, PARITY_EVEN, PARITY_ODD PARITY_MARK, "
-         "PARITY_SPACE. Default to 'N'",
-    default='N',
-    type=CaseInsenstiveChoice(['N', 'E', 'O', 'M', 'S'])
+         "PARITY_SPACE. Default to \"N\"",
+    default="N",
+    type=CaseInsenstiveChoice(["N", "E", "O", "M", "S"])
 )
 @click.option(
     "--stopbits",
     help="Modbus RTU serial stop bits. "
          "Number of stop bits. Possible values: STOPBITS_ONE, "
-         "STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to '1'",
+         "STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO. Default to \"1\"",
     default="1",
     type=NumericChoice(["1", "1.5", "2"], float),
 )

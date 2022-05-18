@@ -99,9 +99,9 @@ def read_device_map(path):
     :returns: The input mapping file
     """
     devices = {}
-    with open(path, 'r') as stream:  # pylint: disable=unspecified-encoding
+    with open(path, "r") as stream:  # pylint: disable=unspecified-encoding
         for line in stream:
-            piece = line.strip().split(',')
+            piece = line.strip().split(",")
             devices[int(piece[0], 16)] = piece[1]
     return devices
 
@@ -121,12 +121,12 @@ def run_callback_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(info_name={
-        'VendorName': 'pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'pymodbus Server',
-        'ModelName': 'pymodbus Server',
-        'MajorMinorRevision': version.short(),
+        "VendorName": "pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "pymodbus Server",
+        "ModelName": "pymodbus Server",
+        "MajorMinorRevision": version.short(),
     })
 
     # ----------------------------------------------------------------------- #

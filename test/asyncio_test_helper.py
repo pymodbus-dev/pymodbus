@@ -28,7 +28,7 @@ def return_as_coroutine(return_value=None):
             return 42
 
         # in test module:
-        @mock.patch('mymod.asyncio.sleep')
+        @mock.patch("mymod.asyncio.sleep")
         def test_it(mock_sleep):
             mock_sleep.side_effect = return_as_coroutine()
             result = run_coroutine(my_coro_under_test)

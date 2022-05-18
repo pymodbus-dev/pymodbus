@@ -31,7 +31,7 @@ class SunspecDefaultValue:  # pylint: disable=too-few-public-methods
     Signed64 = 0x8000000000000000
     Unsigned64 = 0xffffffffffffffff
     Accumulator64 = 0x0000000000000000
-    String = '\x00'
+    String = "\x00"
 
 
 class SunspecStatus:  # pylint: disable=too-few-public-methods
@@ -228,17 +228,17 @@ class SunspecClient:
         length = SunspecOffsets.CommonBlockLength
         decoder = self.get_device_block(self.offset, length)
         return {
-            'SunSpec_ID': decoder.decode_32bit_uint(),
-            'SunSpec_DID': decoder.decode_16bit_uint(),
-            'SunSpec_Length': decoder.decode_16bit_uint(),
-            'Manufacturer': decoder.decode_string(size=32),
-            'Model': decoder.decode_string(size=32),
-            'Options': decoder.decode_string(size=16),
-            'Version': decoder.decode_string(size=16),
-            'SerialNumber': decoder.decode_string(size=32),
-            'DeviceAddress': decoder.decode_16bit_uint(),
-            'Next_DID': decoder.decode_16bit_uint(),
-            'Next_DID_Length': decoder.decode_16bit_uint(),
+            "SunSpec_ID": decoder.decode_32bit_uint(),
+            "SunSpec_DID": decoder.decode_16bit_uint(),
+            "SunSpec_Length": decoder.decode_16bit_uint(),
+            "Manufacturer": decoder.decode_string(size=32),
+            "Model": decoder.decode_string(size=32),
+            "Options": decoder.decode_string(size=16),
+            "Version": decoder.decode_string(size=16),
+            "SerialNumber": decoder.decode_string(size=32),
+            "DeviceAddress": decoder.decode_16bit_uint(),
+            "Next_DID": decoder.decode_16bit_uint(),
+            "Next_DID_Length": decoder.decode_16bit_uint(),
         }
 
     def get_device_block(self, offset, size):
@@ -275,10 +275,10 @@ class SunspecClient:
             model = decoder.decode_16bit_uint()
             length = decoder.decode_16bit_uint()
             blocks.append({
-                'model': model,
-                'name': SunspecModel.lookup(model),
-                'length': length,
-                'offset': offset + length + 2
+                "model": model,
+                "name": SunspecModel.lookup(model),
+                "length": length,
+                "offset": offset + length + 2
             })
             offset += length + 2
         return blocks

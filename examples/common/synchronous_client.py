@@ -4,7 +4,7 @@
 The following is an example of how to use the synchronous modbus client
 implementation from pymodbus.
 
-    with ModbusClient('127.0.0.1') as client:
+    with ModbusClient("127.0.0.1") as client:
         result = client.read_coils(1,10)
         print result
 """
@@ -20,8 +20,8 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s '
-          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s "
+          "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -42,7 +42,7 @@ def run_sync_client():
     # to use a custom implementation (say RTU over TCP). By default they use
     # the socket framer::
     #
-    #    client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
+    #    client = ModbusClient("localhost", port=5020, framer=ModbusRtuFramer)
     #
     # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
@@ -62,14 +62,14 @@ def run_sync_client():
     #
     # Here is an example of using these options::
     #
-    #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
+    #    client = ModbusClient("localhost", retries=3, retry_on_empty=True)
     # ------------------------------------------------------------------------#
-    client = ModbusClient('localhost', port=5020)
+    client = ModbusClient("localhost", port=5020)
     # from pymodbus.transaction import ModbusRtuFramer
-    # client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
-    # client = ModbusClient(method='binary', port='/dev/ptyp0', timeout=1)
-    # client = ModbusClient(method='ascii', port='/dev/ptyp0', timeout=1)
-    # client = ModbusClient(method='rtu', port='/dev/ptyp0', timeout=1,
+    # client = ModbusClient("localhost", port=5020, framer=ModbusRtuFramer)
+    # client = ModbusClient(method="binary", port="/dev/ptyp0", timeout=1)
+    # client = ModbusClient(method="ascii", port="/dev/ptyp0", timeout=1)
+    # client = ModbusClient(method="rtu", port="/dev/ptyp0", timeout=1,
     #                       baudrate=9600)
     client.connect()
 
@@ -147,10 +147,10 @@ def run_sync_client():
     assert not rr.isError()  # nosec test that we are not an error
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     log.debug("Read write registers simultaneously")
     rq = client.readwrite_registers(unit=UNIT, **arguments)

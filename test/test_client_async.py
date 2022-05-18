@@ -158,8 +158,8 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
 
     @pytest.mark.skipif(
-        sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
-        reason='Twisted serial requires pywin32 which is not compatible with PyPy',
+        sys.platform == "win32" and platform.python_implementation() == "PyPy",
+        reason="Twisted serial requires pywin32 which is not compatible with PyPy",
     )
     @pytest.mark.parametrize("method, framer", [("rtu", ModbusRtuFramer),
                                                 ("socket", ModbusSocketFramer),
@@ -169,9 +169,9 @@ class TestAsynchronousClient:
         """Test the serial twisted client client initialize"""
         with patch("serial.Serial"):
             from twisted.internet.serialport import SerialPort  # pylint: disable=import-outside-toplevel
-            with maybe_manage(sys.platform == 'win32', patch.object(
+            with maybe_manage(sys.platform == "win32", patch.object(
                     SerialPort, "_finishPortSetup")):
-                with patch('twisted.internet.reactor'):
+                with patch("twisted.internet.reactor"):
 
                     protocol, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
                         schedulers.REACTOR,
@@ -203,7 +203,7 @@ class TestAsynchronousClient:
                                                 ("ascii", ModbusAsciiFramer)])
     def test_serial_tornado_client(self, method, framer):  # pylint: disable=no-self-use
         """Test the serial tornado client client initialize"""
-        with maybe_manage(sys.platform in {'darwin', 'win32'}, patch.object(Serial, "open")):
+        with maybe_manage(sys.platform in {"darwin", "win32"}, patch.object(Serial, "open")):
             protocol, future = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
                 schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT)
             client = future.result()
@@ -237,12 +237,12 @@ class TestAsynchronousClient:
         loop.is_running.side_effect = lambda: False
         loop, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO, method=method, port=pytest.SERIAL_PORT, loop=loop,
-            baudrate=19200, parity='E', stopbits=2, bytesize=7)
+            baudrate=19200, parity="E", stopbits=2, bytesize=7)
         assert isinstance(client, AsyncioModbusSerialClient)  # nosec
         assert isinstance(client.framer, framer)  # nosec
         assert client.port == pytest.SERIAL_PORT  # nosec
         assert client.baudrate == 19200  # nosec
-        assert client.parity == 'E'  # nosec
+        assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec
         assert client.bytesize == 7  # nosec
         client.stop()

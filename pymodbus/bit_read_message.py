@@ -15,7 +15,7 @@ class ReadBitsRequestBase(ModbusRequest):
         """Initialize the read request data.
 
         :param address: The start address to read from
-        :param count: The number of bits after 'address' to read
+        :param count: The number of bits after "address" to read
         """
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
@@ -26,14 +26,14 @@ class ReadBitsRequestBase(ModbusRequest):
 
         :returns: The encoded pdu
         """
-        return struct.pack('>HH', self.address, self.count)
+        return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data):
         """Decode a request pdu.
 
         :param data: The packet data to decode
         """
-        self.address, self.count = struct.unpack('>HH', data)
+        self.address, self.count = struct.unpack(">HH", data)
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -102,7 +102,7 @@ class ReadBitsResponseBase(ModbusResponse):
         self.setBit(address, 0)
 
     def getBit(self, address):  # pylint: disable=invalid-name
-        """Get the specified bit's value.
+        """Get the specified bit"s value.
 
         :param address: The bit to query
         :returns: The value of the requested bit

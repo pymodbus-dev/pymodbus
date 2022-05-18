@@ -15,8 +15,8 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -32,7 +32,7 @@ def run_binary_payload_ex():
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('127.0.0.1', port=5020)
+    client = ModbusClient("127.0.0.1", port=5020)
     client.connect()
 
     # ----------------------------------------------------------------------- #
@@ -169,23 +169,23 @@ def run_binary_payload_ex():
                                       "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")  # noqa: E501
 
         decoded = OrderedDict([
-            ('string', decoder.decode_string(len(my_string))),
-            ('bits', decoder.decode_bits()),
-            ('8int', decoder.decode_8bit_int()),
-            ('8uint', decoder.decode_8bit_uint()),
-            ('16int', decoder.decode_16bit_int()),
-            ('16uint', decoder.decode_16bit_uint()),
-            ('32int', decoder.decode_32bit_int()),
-            ('32uint', decoder.decode_32bit_uint()),
-            ('16float', decoder.decode_16bit_float()),
-            ('16float2', decoder.decode_16bit_float()),
-            ('32float', decoder.decode_32bit_float()),
-            ('32float2', decoder.decode_32bit_float()),
-            ('64int', decoder.decode_64bit_int()),
-            ('64uint', decoder.decode_64bit_uint()),
-            ('ignore', decoder.skip_bytes(8)),
-            ('64float', decoder.decode_64bit_float()),
-            ('64float2', decoder.decode_64bit_float()),
+            ("string", decoder.decode_string(len(my_string))),
+            ("bits", decoder.decode_bits()),
+            ("8int", decoder.decode_8bit_int()),
+            ("8uint", decoder.decode_8bit_uint()),
+            ("16int", decoder.decode_16bit_int()),
+            ("16uint", decoder.decode_16bit_uint()),
+            ("32int", decoder.decode_32bit_int()),
+            ("32uint", decoder.decode_32bit_uint()),
+            ("16float", decoder.decode_16bit_float()),
+            ("16float2", decoder.decode_16bit_float()),
+            ("32float", decoder.decode_32bit_float()),
+            ("32float2", decoder.decode_32bit_float()),
+            ("64int", decoder.decode_64bit_int()),
+            ("64uint", decoder.decode_64bit_uint()),
+            ("ignore", decoder.skip_bytes(8)),
+            ("64float", decoder.decode_64bit_float()),
+            ("64float2", decoder.decode_64bit_float()),
         ])
 
         print("-" * 60)

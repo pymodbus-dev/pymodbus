@@ -149,10 +149,10 @@ class ModbusDataStoreTest(unittest.TestCase):
     def test_modbus_slave_context(self):
         """Test a modbus slave context"""
         store = {
-            'di': ModbusSequentialDataBlock(0, [False] * 10),
-            'co': ModbusSequentialDataBlock(0, [False] * 10),
-            'ir': ModbusSequentialDataBlock(0, [False] * 10),
-            'hr': ModbusSequentialDataBlock(0, [False] * 10),
+            "di": ModbusSequentialDataBlock(0, [False] * 10),
+            "co": ModbusSequentialDataBlock(0, [False] * 10),
+            "ir": ModbusSequentialDataBlock(0, [False] * 10),
+            "hr": ModbusSequentialDataBlock(0, [False] * 10),
         }
         context = ModbusSlaveContext(**store)
         self.assertNotEqual(str(context), None)
@@ -204,9 +204,9 @@ class RedisDataStoreTest(unittest.TestCase):
         mock_count = 3
         mock_offset = 0
         self.slave.client.mset = MagicMock()
-        self.slave.client.mget = MagicMock(return_value=['11'])
+        self.slave.client.mget = MagicMock(return_value=["11"])
 
-        for key in ('d', 'c', 'h', 'i'):
+        for key in ("d", "c", "h", "i"):
             self.assertTrue(
                 self.slave._val_callbacks[key](mock_offset, mock_count)  # pylint: disable=protected-access
             )
@@ -217,9 +217,9 @@ class RedisDataStoreTest(unittest.TestCase):
         mock_count = 3
         mock_offset = 0
         self.slave.client.mset = MagicMock()
-        self.slave.client.mget = MagicMock(return_value=['11', None])
+        self.slave.client.mget = MagicMock(return_value=["11", None])
 
-        for key in ('d', 'c', 'h', 'i'):
+        for key in ("d", "c", "h", "i"):
             self.assertFalse(
                 self.slave._val_callbacks[key](mock_offset, mock_count)  # pylint: disable=protected-access
             )
@@ -229,15 +229,15 @@ class RedisDataStoreTest(unittest.TestCase):
         self.slave._build_mapping()  # pylint: disable=protected-access
         mock_count = 3
         mock_offset = 0
-        self.slave.client.mget = MagicMock(return_value='11')
+        self.slave.client.mget = MagicMock(return_value="11")
 
-        for key in ('d', 'c'):
+        for key in ("d", "c"):
             resp = self.slave._get_callbacks[key](mock_offset, mock_count)  # pylint: disable=protected-access
             self.assertEqual(resp, [True, False, False])
 
-        for key in ('h', 'i'):
+        for key in ("h", "i"):
             resp = self.slave._get_callbacks[key](mock_offset, mock_count)  # pylint: disable=protected-access
-            self.assertEqual(resp, ['1', '1'])
+            self.assertEqual(resp, ["1", "1"])
 
     def test_set_callbacks(self):
         """Test set callbacks."""
@@ -247,14 +247,14 @@ class RedisDataStoreTest(unittest.TestCase):
         self.slave.client.mset = MagicMock()
         self.slave.client.mget = MagicMock()
 
-        for key in ('c', 'd'):
+        for key in ("c", "d"):
             self.slave._set_callbacks[key](mock_offset, [3])  # pylint: disable=protected-access
             k = f"pymodbus:{key}:{mock_offset}"
             self.slave.client.mset.assert_called_with(
-                {k: '\x01'}
+                {k: "\x01"}
             )
 
-        for key in ('h', 'i'):
+        for key in ("h", "i"):
             self.slave._set_callbacks[key](mock_offset, [3])  # pylint: disable=protected-access
             k = f"pymodbus:{key}:{mock_offset}"
             self.slave.client.mset.assert_called_with(
@@ -301,13 +301,13 @@ class SqlDataStoreTest(unittest.TestCase):
         self.mock_addr = random.randint(0, 65000)  # NOSONAR # nosec
         self.mock_values = random.sample(range(1, 100), 5)  # NOSONAR # nosec
         self.mock_function = 0x01
-        self.mock_type = 'h'
+        self.mock_type = "h"
         self.mock_offset = 0
         self.mock_count = 1
 
-        self.function_map = {2: 'd', 4: 'i'}
-        self.function_map.update([(i, 'h') for i in (3, 6, 16, 22, 23)])
-        self.function_map.update([(i, 'c') for i in (1, 5, 15)])
+        self.function_map = {2: "d", 4: "i"}
+        self.function_map.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+        self.function_map.update([(i, "c") for i in (1, 5, 15)])
 
     def tearDown(self):
         """Clean up the test environment"""
@@ -346,29 +346,29 @@ class SqlDataStoreTest(unittest.TestCase):
         """Test build set."""
         mock_set = [
             {
-                'index': 0,
-                'type': 'h',
-                'value': 11
+                "index": 0,
+                "type": "h",
+                "value": 11
             },
             {
-                'index': 1,
-                'type': 'h',
-                'value': 12
+                "index": 1,
+                "type": "h",
+                "value": 12
             }
         ]
-        self.assertListEqual(self.slave._build_set('h', 0, [11, 12]), mock_set)  # pylint: disable=protected-access
+        self.assertListEqual(self.slave._build_set("h", 0, [11, 12]), mock_set)  # pylint: disable=protected-access
 
     def test_check_success(self):
         """Test check success."""
         mock_success_results = [1, 2, 3]
         self.slave._get = MagicMock(return_value=mock_success_results)  # pylint: disable=protected-access
-        self.assertFalse(self.slave._check('h', 0, 1))  # pylint: disable=protected-access
+        self.assertFalse(self.slave._check("h", 0, 1))  # pylint: disable=protected-access
 
     def test_check_failure(self):
         """Test check failure."""
         mock_success_results = []
         self.slave._get = MagicMock(return_value=mock_success_results)  # pylint: disable=protected-access
-        self.assertTrue(self.slave._check('h', 0, 1))  # pylint: disable=protected-access
+        self.assertTrue(self.slave._check("h", 0, 1))  # pylint: disable=protected-access
 
     def test_get_values(self):
         """Test get values."""

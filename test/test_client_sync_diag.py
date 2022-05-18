@@ -40,19 +40,19 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
 
     def test_tcp_diag_client_connect(self):
         """Test the tcp sync diag client connection method"""
-        with patch.object(socket, 'create_connection') as mock_method:
+        with patch.object(socket, "create_connection") as mock_method:
             mock_method.return_value = object()
             client = ModbusTcpDiagClient()
             self.assertTrue(client.connect())
 
-        with patch.object(socket, 'create_connection') as mock_method:
+        with patch.object(socket, "create_connection") as mock_method:
             mock_method.side_effect = socket.error()
             client = ModbusTcpDiagClient()
             self.assertFalse(client.connect())
 
-    @patch('pymodbus.client.sync.time')
-    @patch('pymodbus.client.sync_diag.time')
-    @patch('pymodbus.client.sync.select')
+    @patch("pymodbus.client.sync.time")
+    @patch("pymodbus.client.sync_diag.time")
+    @patch("pymodbus.client.sync.select")
     def test_tcp_diag_client_recv(self, mock_select, mock_diag_time, mock_time):
         """Test the tcp sync diag client receive method"""
         mock_select.select.return_value = [True]
@@ -63,36 +63,36 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
 
         client.socket = mockSocket()
         # Test logging of non-delayed responses
-        self.assertIn(b'\x00', client._recv(None))  # pylint: disable=protected-access
-        self.assertEqual(b'\x00', client._recv(1))  # pylint: disable=protected-access
+        self.assertIn(b"\x00", client._recv(None))  # pylint: disable=protected-access
+        self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
 
-        # Fool diagnostic logger into thinking we're running late,
+        # Fool diagnostic logger into thinking we"re running late,
         # test logging of delayed responses
         mock_diag_time.time.side_effect = count(step=3)
-        self.assertEqual(b'\x00' * 4, client._recv(4))  # pylint: disable=protected-access
-        self.assertEqual(b'', client._recv(0))  # pylint: disable=protected-access
+        self.assertEqual(b"\x00" * 4, client._recv(4))  # pylint: disable=protected-access
+        self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
 
         mock_socket = MagicMock()
-        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
+        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.timeout = 3
         client.socket = mock_socket
-        self.assertEqual(b'\x00\x01\x02', client._recv(3))  # pylint: disable=protected-access
-        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02'])
-        self.assertEqual(b'\x00\x01', client._recv(2))  # pylint: disable=protected-access
+        self.assertEqual(b"\x00\x01\x02", client._recv(3))  # pylint: disable=protected-access
+        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
+        self.assertEqual(b"\x00\x01", client._recv(2))  # pylint: disable=protected-access
         mock_select.select.return_value = [False]
-        self.assertEqual(b'', client._recv(2))  # pylint: disable=protected-access
+        self.assertEqual(b"", client._recv(2))  # pylint: disable=protected-access
         client.socket = mockSocket()
         mock_select.select.return_value = [True]
-        self.assertIn(b'\x00', client._recv(None))  # pylint: disable=protected-access
+        self.assertIn(b"\x00", client._recv(None))  # pylint: disable=protected-access
 
         mock_socket = MagicMock()
         client.socket = mock_socket
-        mock_socket.recv.return_value = b''
+        mock_socket.recv.return_value = b""
         self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
 
-        mock_socket.recv.side_effect = iter([b'\x00', b'\x01', b'\x02', b''])
+        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])
         client.socket = mock_socket
-        self.assertEqual(b'\x00\x01\x02', client._recv(1024))  # pylint: disable=protected-access
+        self.assertEqual(b"\x00\x01\x02", client._recv(1024))  # pylint: disable=protected-access
 
     def test_tcp_diag_client_repr(self):
         """Test tcp diag client."""

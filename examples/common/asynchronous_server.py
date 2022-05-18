@@ -28,8 +28,8 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -96,22 +96,22 @@ def run_async_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
         ir=ModbusSequentialDataBlock(0, [17] * 100))
-    store.register(CustomModbusRequest.function_code, 'cm',
+    store.register(CustomModbusRequest.function_code, "cm",
                    ModbusSequentialDataBlock(0, [17] * 100))
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(info_name={
-        'VendorName': 'Pymodbus',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'Pymodbus Server',
+        "VendorName": "Pymodbus",
+        "ModelName": "Pymodbus Server",
+        "MajorMinorRevision": version.short(),
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "Pymodbus Server",
     })
 
     # ----------------------------------------------------------------------- #
@@ -139,15 +139,15 @@ def run_async_server():
 
     # RTU Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusRtuFramer)
+    #                   port="/dev/ttyp0", framer=ModbusRtuFramer)
 
     # ASCII Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusAsciiFramer)
+    #                   port="/dev/ttyp0", framer=ModbusAsciiFramer)
 
     # Binary Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusBinaryFramer)
+    #                   port="/dev/ttyp0", framer=ModbusBinaryFramer)
 
 
 if __name__ == "__main__":

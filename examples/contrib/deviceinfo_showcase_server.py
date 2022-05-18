@@ -23,8 +23,8 @@ from pymodbus import __version__ as pymodbus_version
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -41,15 +41,15 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(info_name={
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
+        "VendorName": "Pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "Pymodbus Server",
+        "ModelName": "Pymodbus Server",
+        "MajorMinorRevision": version.short(),
 
     })
 
@@ -80,8 +80,8 @@ def run_server():
     # response", if you use repeated OIDs, apply that rule to the entire
     # grouping of objects with the repeated OID.
     # ----------------------------------------------------------------------- #
-    identity[0x81] = [f'pymodbus {pymodbus_version}',
-                      f'pyserial {pyserial_version}']
+    identity[0x81] = [f"pymodbus {pymodbus_version}",
+                      f"pyserial {pyserial_version}"]
 
     # ----------------------------------------------------------------------- #
     # run the server you want
@@ -98,17 +98,17 @@ def run_server():
 
     # Ascii:
     # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
+    #                    port="/dev/ttyp0", timeout=1)
 
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+    #                   port="/dev/ttyp0", timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

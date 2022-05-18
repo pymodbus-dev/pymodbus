@@ -19,34 +19,34 @@ argspec = inspect.signature
 
 
 FORMATTERS = {
-    'int8': 'decode_8bit_int',
-    'int16': 'decode_16bit_int',
-    'int32': 'decode_32bit_int',
-    'int64': 'decode_64bit_int',
-    'uint8': 'decode_8bit_uint',
-    'uint16': 'decode_16bit_uint',
-    'uint32': 'decode_32bit_uint',
-    'uint64': 'decode_64bit_int',
-    'float16': 'decode_16bit_float',
-    'float32': 'decode_32bit_float',
-    'float64': 'decode_64bit_float',
+    "int8": "decode_8bit_int",
+    "int16": "decode_16bit_int",
+    "int32": "decode_32bit_int",
+    "int64": "decode_64bit_int",
+    "uint8": "decode_8bit_uint",
+    "uint16": "decode_16bit_uint",
+    "uint32": "decode_32bit_uint",
+    "uint64": "decode_64bit_int",
+    "float16": "decode_16bit_float",
+    "float32": "decode_32bit_float",
+    "float64": "decode_64bit_float",
 }
 
 
 DEFAULT_KWARGS = {
-    'unit': 'Slave address'
+    "unit": "Slave address"
 }
 
 OTHER_COMMANDS = {
     "result.raw": "Show RAW Result",
     "result.decode": "Decode register response to known formats",
 }
-EXCLUDE = ['execute', 'recv', 'send', 'trace', 'set_debug']
+EXCLUDE = ["execute", "recv", "send", "trace", "set_debug"]
 CLIENT_METHODS = [
-    'connect', 'close', 'idle_time', 'is_socket_open', 'get_port', 'set_port',
-    'get_stopbits', 'set_stopbits', 'get_bytesize', 'set_bytesize',
-    'get_parity', 'set_parity', 'get_baudrate', 'set_baudrate', 'get_timeout',
-    'set_timeout', 'get_serial_settings'
+    "connect", "close", "idle_time", "is_socket_open", "get_port", "set_port",
+    "get_stopbits", "set_stopbits", "get_bytesize", "set_bytesize",
+    "get_parity", "set_parity", "get_baudrate", "set_baudrate", "get_timeout",
+    "set_timeout", "get_serial_settings"
 
 ]
 CLIENT_ATTRIBUTES = []
@@ -71,7 +71,7 @@ class Command:
             self._params = signature.parameters
             self.args = self.create_completion()
         else:
-            self._params = ''
+            self._params = ""
 
         if self.name.startswith("client.") and unit:
             self.args.update(**DEFAULT_KWARGS)
@@ -102,7 +102,7 @@ class Command:
         words = {}
 
         def _create(entry, default):
-            if entry not in ['self', 'kwargs']:
+            if entry not in ["self", "kwargs"]:
                 if isinstance(default, (int, str)):
                     entry += f"={default}"
                 return entry
@@ -130,7 +130,7 @@ class Command:
         """
         cmd = cmd.strip()
         cmd = cmd.split("=")[0].strip()
-        return cmd, self.param_help.get(cmd, '')
+        return cmd, self.param_help.get(cmd, "")
 
     def __str__(self):
         """Return string representation."""
@@ -220,12 +220,12 @@ class Result:
         :param result: Response of a modbus command.
         """
         if isinstance(result, dict):  # Modbus response
-            self.function_code = result.pop('function_code', None)
+            self.function_code = result.pop("function_code", None)
             self.data = dict(result)
         else:
             self.data = result
 
-    def decode(self, formatters, byte_order='big', word_order='big'):
+    def decode(self, formatters, byte_order="big", word_order="big"):
         """Decode the register response to known formatters.
 
         :param formatters: int8/16/32/64, uint8/16/32/64, float32/64
@@ -247,7 +247,7 @@ class Result:
                       else Endian.Big)
         word_order = (Endian.Little if word_order.strip().lower() == "little"
                       else Endian.Big)
-        decoder = BinaryPayloadDecoder.fromRegisters(self.data.get('registers'),
+        decoder = BinaryPayloadDecoder.fromRegisters(self.data.get("registers"),
                                                      byteorder=byte_order,
                                                      wordorder=word_order)
         for formatter in formatters:
@@ -270,11 +270,11 @@ class Result:
         new_dict = OrderedDict()
         for k, v_item in use_dict.items():
             if isinstance(v_item, bytes):
-                v_item = v_item.decode('utf-8')
+                v_item = v_item.decode("utf-8")
             elif isinstance(v_item, dict):
                 v_item = self._process_dict(v_item)
             elif isinstance(v_item, (list, tuple)):
-                v_item = [v1.decode('utf-8') if isinstance(v1, bytes) else v1
+                v_item = [v1.decode("utf-8") if isinstance(v1, bytes) else v1
                           for v1 in v_item]
             new_dict[k] = v_item
         return new_dict
@@ -289,10 +289,10 @@ class Result:
         if isinstance(data, dict):
             data = self._process_dict(data)
         elif isinstance(data, (list, tuple)):
-            data = [v.decode('utf-8') if isinstance(v, bytes) else v
+            data = [v.decode("utf-8") if isinstance(v, bytes) else v
                     for v in data]
         elif isinstance(data, bytes):
-            data = data.decode('utf-8')
+            data = data.decode("utf-8")
         tokens = list(pygments.lex(json.dumps(data, indent=4),
                                    lexer=JsonLexer()))
         print_formatted_text(PygmentsTokens(tokens))

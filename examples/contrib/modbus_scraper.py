@@ -132,7 +132,7 @@ class ScraperProtocol(ModbusClientProtocol):
 # --------------------------------------------------------------------------- #
 # a factory for the example protocol
 # --------------------------------------------------------------------------- #
-# This is used to build client protocol's if you tie into twisted's method
+# This is used to build client protocol"s if you tie into twisted"s method
 # of processing. It basically produces client instances of the underlying
 # protocol::
 #
@@ -235,7 +235,7 @@ def get_options():
                       dest="output", default="datastore.pickle")
 
     parser.add_option("-p", "--port",
-                      help="The port to connect to", type='int',
+                      help="The port to connect to", type="int",
                       dest="port", default=502)
 
     parser.add_option("-s", "--server",
@@ -265,7 +265,7 @@ def main():
             print("Logging is not supported on this system")
 
     # split the query into a starting and ending range
-    query = [int(p) for p in options.query.split(':')]
+    query = [int(p) for p in options.query.split(":")]
 
     try:
         log.debug("Initializing the client")

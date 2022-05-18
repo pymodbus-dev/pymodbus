@@ -53,7 +53,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
         out = []
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
         # setup existing request
         response = client._build_response(0x00)  # pylint: disable=protected-access
@@ -61,7 +61,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
         client.on_receive(data)
         self.assertTrue(isinstance(response.result(), ReadCoilsResponse))
-        data = b''
+        data = b""
         out = []
         response = client._build_response(0x01)  # pylint: disable=protected-access
         client.on_receive(data)
@@ -226,7 +226,7 @@ class AsynchronousClientTest(unittest.TestCase):
         client.connect()
         client.stream = Mock()
         client.stream.write = Mock()
-        client.stream.connection.read.return_value = b''
+        client.stream.connection.read.return_value = b""
 
         request = ReadCoilsRequest(1, 1)
         response = client.execute(request)

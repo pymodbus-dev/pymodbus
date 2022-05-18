@@ -110,10 +110,10 @@ async def start_async_test(client):
     assert rq.function_code < 0x80  # nosec test that we are not an error
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     _logger.debug("Read write registers simultaneously")
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
@@ -184,7 +184,7 @@ def run_with_no_loop():
     _logger.debug("")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run with No loop
     _logger.debug("Running Async client")
     _logger.debug("------------------------------------------------------")

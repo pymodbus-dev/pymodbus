@@ -106,7 +106,7 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
                                         hr=ModbusSequentialDataBlock(0, [17] * 100),
                                         ir=ModbusSequentialDataBlock(0, [17] * 100))
         self.context = ModbusServerContext(slaves=self.store, single=True)
-        self.identity = ModbusDeviceIdentification(info_name={'VendorName': 'VendorName'})
+        self.identity = ModbusDeviceIdentification(info_name={"VendorName": "VendorName"})
         self.server = None
         self.task = None
         self.loop = None
@@ -155,12 +155,12 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
     async def start_server(self, do_forever=True, do_defer=True, do_tls=False, do_udp=False, do_ident=False):
         """Handle setup and control of tcp server."""
         args = {
-            'context': self.context,
-            'address': SERV_ADDR,
-            'defer_start': do_defer,
+            "context": self.context,
+            "address": SERV_ADDR,
+            "defer_start": do_defer,
         }
         if do_ident:
-            args['identity'] = self.identity
+            args["identity"] = self.identity
         if do_tls:
             self.server = await StartTlsServer(**args)
         elif do_udp:
@@ -177,7 +177,7 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
                 self.assertIsNotNone(self.server.server)
         elif not do_udp:  # pylint: disable=confusing-consecutive-elif
             self.assertIsNone(self.server.server)
-        self.assertEqual(self.server.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(self.server.control.Identity.VendorName, "VendorName")
         await asyncio.sleep(0.1)
 
     async def connect_server(self):
@@ -186,7 +186,7 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
         BasicClient.done = self.loop.create_future()
         BasicClient.eof = self.loop.create_future()
         random_port = self.server.server.sockets[0].getsockname()[1]  # get the random server port
-        BasicClient.transport, BasicClient.protocol = await self.loop.create_connection(BasicClient, host='127.0.0.1', port=random_port)
+        BasicClient.transport, BasicClient.protocol = await self.loop.create_connection(BasicClient, host="127.0.0.1", port=random_port)
         await asyncio.wait_for(BasicClient.connected, timeout=0.1)
         await asyncio.sleep(0.1)
 
@@ -209,10 +209,10 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
             await self.server.serve_forever()
 
     async def test_async_tcp_server_receive_data(self):
-        """Test data sent on socket is received by internals - doesn't not process data"""
-        BasicClient.data = b'\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
+        """Test data sent on socket is received by internals - doesn"t not process data"""
+        BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
-        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',  # NOSONAR
+        with patch("pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",  # NOSONAR
                    new_callable=Mock) as process:
             await self.connect_server()
             process.assert_called_once()
@@ -220,7 +220,7 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
 
     async def test_async_tcp_server_roundtrip(self):
         """Test sending and receiving data on tcp socket"""
-        expected_response = b'\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11'
+        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
         BasicClient.data = TEST_DATA  # unit 1, read register
         await self.start_server()
         await self.connect_server()
@@ -271,30 +271,30 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
     # -----------------------------------------------------------------------#
     async def test_async_start_tls_server_no_loop(self):
         """Test that the modbus tls asyncio server starts correctly"""
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_forever=False, do_ident=True)
-            self.assertEqual(self.server.control.Identity.VendorName, 'VendorName')
+            self.assertEqual(self.server.control.Identity.VendorName, "VendorName")
             self.assertIsNotNone(self.server.sslctx)
 
     async def test_async_start_tls_server(self):
         """Test that the modbus tls asyncio server starts correctly"""
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True, do_ident=True)
-            self.assertEqual(self.server.control.Identity.VendorName, 'VendorName')
+            self.assertEqual(self.server.control.Identity.VendorName, "VendorName")
             self.assertIsNotNone(self.server.sslctx)
 
     async def test_async_tls_server_serve_forever(self):
         """Test StartTcpServer serve_forever() method"""
-        with patch('asyncio.base_events.Server.serve_forever',
+        with patch("asyncio.base_events.Server.serve_forever",
                    new_callable=AsyncMock) as serve:
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+            with patch.object(ssl.SSLContext, "load_cert_chain"):
                 await self.start_server(do_tls=True, do_forever=False)
                 await self.server.serve_forever()
                 serve.assert_awaited()
 
     async def test_async_tls_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error"""
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ssl.SSLContext, "load_cert_chain"):
             await self.start_server(do_tls=True)
             with pytest.raises(RuntimeError):
                 await self.server.serve_forever()
@@ -306,18 +306,18 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
     async def test_async_start_udp_server_no_loop(self):
         """Test that the modbus udp asyncio server starts correctly"""
         await self.start_server(do_udp=True, do_forever=False, do_ident=True)
-        self.assertEqual(self.server.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(self.server.control.Identity.VendorName, "VendorName")
         self.assertIsNone(self.server.protocol)
 
     async def test_async_start_udp_server(self):
         """Test that the modbus udp asyncio server starts correctly"""
         await self.start_server(do_udp=True, do_ident=True)
-        self.assertEqual(self.server.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(self.server.control.Identity.VendorName, "VendorName")
         self.assertFalse(self.server.protocol is None)
 
     async def test_async_udp_server_serve_forever_start(self):
         """Test StartUdpServer serve_forever() method"""
-        with patch('asyncio.base_events.Server.serve_forever',
+        with patch("asyncio.base_events.Server.serve_forever",
                    new_callable=AsyncMock) as serve:
             await self.start_server(do_forever=False, do_ident=True)
             await self.server.serve_forever()
@@ -342,7 +342,7 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
     async def test_async_udp_server_receive_data(self):
         """Test that the sending data on datagram socket gets data pushed to framer"""
         await self.start_server(do_udp=True)
-        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
+        with patch("pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
                    new_callable=Mock) as process:
             self.server.endpoint.datagram_received(data=b"12345", addr=(SERV_IP, 12345))
             await asyncio.sleep(0.1)
@@ -352,12 +352,12 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
 
     async def test_async_udp_server_send_data(self):
         """Test that the modbus udp asyncio server correctly sends data outbound"""
-        BasicClient.dataTo = b'x\01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19'
+        BasicClient.dataTo = b"x\01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server(do_udp=True)
         random_port = self.server.protocol._sock.getsockname()[1]  # pylint: disable=protected-access
         received = self.server.endpoint.datagram_received = Mock(wraps=self.server.endpoint.datagram_received)
         await self.loop.create_datagram_endpoint(BasicClient,
-                                                 remote_addr=('127.0.0.1', random_port))
+                                                 remote_addr=("127.0.0.1", random_port))
         await asyncio.sleep(0.1)
         received.assert_called_once()
         self.assertEqual(received.call_args[0][0], BasicClient.dataTo)
@@ -367,30 +367,30 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
 
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket"""
-        expected_response = b'\x01\x00\x00\x00\x00\x05'\
-                            b'\x01\x03\x02\x00\x11'  # value of 17 as per context
+        expected_response = b"\x01\x00\x00\x00\x00\x05"\
+                            b"\x01\x03\x02\x00\x11"  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # unit 1, read register
         BasicClient.done = self.loop.create_future()
         await self.start_server(do_udp=True)
         random_port = self.server.protocol._sock.getsockname()[1]  # pylint: disable=protected-access
         transport, _ = await self.loop.create_datagram_endpoint(BasicClient,
-                                                                remote_addr=('127.0.0.1', random_port))
+                                                                remote_addr=("127.0.0.1", random_port))
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
         self.assertEqual(BasicClient.received_data, expected_response)
         transport.close()
 
     async def test_async_udp_server_exception(self):
         """Test sending garbage data on a TCP socket should drop the connection"""
-        BasicClient.dataTo = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
+        BasicClient.dataTo = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         BasicClient.connected = self.loop.create_future()
         BasicClient.done = self.loop.create_future()
         await self.start_server(do_udp=True)
-        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
+        with patch("pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
                    new_callable=lambda: Mock(side_effect=Exception)):
             # get the random server port pylint: disable=protected-access
             random_port = self.server.protocol._sock.getsockname()[1]
             _, _ = await self.loop.create_datagram_endpoint(BasicClient,
-                                                            remote_addr=('127.0.0.1', random_port))
+                                                            remote_addr=("127.0.0.1", random_port))
             await asyncio.wait_for(BasicClient.connected, timeout=0.1)
             self.assertFalse(BasicClient.done.done())
             self.assertFalse(self.server.protocol._sock._closed)  # pylint: disable=protected-access
@@ -409,9 +409,9 @@ class AsyncioServerTest(unittest.IsolatedAsyncioTestCase):  # pylint: disable=to
 
     async def test_async_tcp_server_exception(self):
         """Send garbage data on a TCP socket should drop the connection"""
-        BasicClient.data = b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF'
+        BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
         await self.start_server()
-        with patch('pymodbus.transaction.ModbusSocketFramer.processIncomingPacket',
+        with patch("pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
                    new_callable=lambda: Mock(side_effect=Exception)):
             await self.connect_server()
             await asyncio.wait_for(BasicClient.eof, timeout=0.1)

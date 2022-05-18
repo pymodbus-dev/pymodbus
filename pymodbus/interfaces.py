@@ -17,7 +17,7 @@ class Singleton:  # pylint: disable=too-few-public-methods
 
     def __new__(cls, *args, **kwargs):  # pylint: disable=unused-argument
         """Create a new instance."""
-        if '_inst' not in vars(cls):
+        if "_inst" not in vars(cls):
             cls._inst = object.__new__(cls)
         return cls._inst
 
@@ -114,7 +114,7 @@ class IModbusFramer:
     def getFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Get the next frame from the buffer.
 
-        :returns: The frame data or ''
+        :returns: The frame data or ""
         """
         raise NotImplementedException(
             "Method not implemented by derived class")
@@ -171,9 +171,9 @@ class IModbusSlaveContext:
             setValues(self, fx, address, values)
     """
 
-    __fx_mapper = {2: 'd', 4: 'i'}
-    __fx_mapper.update([(i, 'h') for i in (3, 6, 16, 22, 23)])
-    __fx_mapper.update([(i, 'c') for i in (1, 5, 15)])
+    __fx_mapper = {2: "d", 4: "i"}
+    __fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+    __fx_mapper.update([(i, "c") for i in (1, 5, 15)])
 
     def decode(self, fx):  # pylint: disable=invalid-name
         """Convert the function code to the datastore to.
@@ -239,7 +239,7 @@ class IPayloadBuilder:  # pylint: disable=too-few-public-methods
 # Exported symbols
 # --------------------------------------------------------------------------- #
 __all__ = [
-    'Singleton',
-    'IModbusDecoder', 'IModbusFramer', 'IModbusSlaveContext',
-    'IPayloadBuilder',
+    "Singleton",
+    "IModbusDecoder", "IModbusFramer", "IModbusSlaveContext",
+    "IPayloadBuilder",
 ]

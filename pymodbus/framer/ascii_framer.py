@@ -26,9 +26,9 @@ class ModbusAsciiFramer(ModbusFramer):
           1c        2c         2c         Nc     2c      2c
 
         * data can be 0 - 2x252 chars
-        * end is '\\r\\n' (Carriage return line feed), however the line feed
+        * end is "\\r\\n" (Carriage return line feed), however the line feed
           character can be changed via a special command
-        * start is ':'
+        * start is ":"
 
     This framer is used for serial transmission.  Unlike the RTU protocol,
     the data in this framer is transferred in plain text ascii.
@@ -39,10 +39,10 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
-        self._buffer = b''
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
         self._hsize = 0x02
-        self._start = b':'
+        self._start = b":"
         self._end = b"\r\n"
         self.decoder = decoder
         self.client = client
@@ -55,7 +55,7 @@ class ModbusAsciiFramer(ModbusFramer):
         if len(data) > 1:
             uid = int(data[1:3], 16)
             fcode = int(data[3:5], 16)
-            return {'unit': uid, 'fcode': fcode}
+            return {"unit": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -71,11 +71,11 @@ class ModbusAsciiFramer(ModbusFramer):
             start = 0
 
         if (end := self._buffer.find(self._end)) != -1:
-            self._header['len'] = end
-            self._header['uid'] = int(self._buffer[1:3], 16)
-            self._header['lrc'] = int(self._buffer[end - 2:end], 16)
+            self._header["len"] = end
+            self._header["uid"] = int(self._buffer[1:3], 16)
+            self._header["lrc"] = int(self._buffer[end - 2:end], 16)
             data = a2b_hex(self._buffer[start + 1:end - 2])
-            return checkLRC(data, self._header['lrc'])
+            return checkLRC(data, self._header["lrc"])
         return False
 
     def advanceFrame(self):
@@ -85,8 +85,8 @@ class ModbusAsciiFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header['len'] + 2:]
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = self._buffer[self._header["len"] + 2:]
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
 
     def isFrameReady(self):
         """Check if we should continue decode logic.
@@ -111,14 +111,14 @@ class ModbusAsciiFramer(ModbusFramer):
     def getFrame(self):
         """Get the next frame from the buffer.
 
-        :returns: The frame data or ''
+        :returns: The frame data or ""
         """
         start = self._hsize + 1
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
             return a2b_hex(buffer)
-        return b''
+        return b""
 
     def resetFrame(self):  # pylint: disable=invalid-name
         """Reset the entire message frame.
@@ -126,11 +126,11 @@ class ModbusAsciiFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
-        self._header = {'lrc': '0000', 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
 
     def populateResult(self, result):
         """Populate the modbus result header.
@@ -140,7 +140,7 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
+        result.unit_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -166,7 +166,7 @@ class ModbusAsciiFramer(ModbusFramer):
         """
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
-        single = kwargs.get('single', False)
+        single = kwargs.get("single", False)
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
@@ -178,7 +178,8 @@ class ModbusAsciiFramer(ModbusFramer):
                     self.advanceFrame()
                     callback(result)  # defer this
                 else:
-                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
+                    header_txt = self._header["uid"]
+                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
                     _logger.error(txt)
                     self.resetFrame()
             else:
@@ -200,9 +201,9 @@ class ModbusAsciiFramer(ModbusFramer):
         packet = bytearray()
         params = (message.unit_id, message.function_code)
         packet.extend(self._start)
-        packet.extend(('%02x%02x' % params).encode())  # pylint: disable=consider-using-f-string
+        packet.extend(("%02x%02x" % params).encode())  # pylint: disable=consider-using-f-string
         packet.extend(b2a_hex(encoded))
-        packet.extend(('%02x' % checksum).encode())  # pylint: disable=consider-using-f-string
+        packet.extend(("%02x" % checksum).encode())  # pylint: disable=consider-using-f-string
         packet.extend(self._end)
         return bytes(packet).upper()
 

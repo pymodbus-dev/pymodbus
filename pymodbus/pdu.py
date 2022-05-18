@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
-# Base PDU's
+# Base PDU"s
 # --------------------------------------------------------------------------- #
 class ModbusPDU:
     """Base class for all Modbus messages.
@@ -52,10 +52,10 @@ class ModbusPDU:
 
     def __init__(self, **kwargs):
         """Initialize the base data for a modbus request."""
-        self.transaction_id = kwargs.get('transaction', Defaults.TransactionId)
-        self.protocol_id = kwargs.get('protocol', Defaults.ProtocolId)
-        self.unit_id = kwargs.get('unit', Defaults.UnitId)
-        self.skip_encode = kwargs.get('skip_encode', False)
+        self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
+        self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
+        self.unit_id = kwargs.get("unit", Defaults.UnitId)
+        self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
 
     def encode(self):  # pylint: disable=no-self-use
@@ -80,9 +80,9 @@ class ModbusPDU:
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the PDU.
         """
-        if hasattr(cls, '_rtu_frame_size'):
+        if hasattr(cls, "_rtu_frame_size"):
             return cls._rtu_frame_size
-        if hasattr(cls, '_rtu_byte_count_pos'):
+        if hasattr(cls, "_rtu_byte_count_pos"):
             return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
         raise NotImplementedException(
             f"Cannot determine RTU frame size for {cls.__name__}")
@@ -132,7 +132,7 @@ class ModbusResponse(ModbusPDU):
 
 
 # --------------------------------------------------------------------------- #
-# Exception PDU's
+# Exception PDU"s
 # --------------------------------------------------------------------------- #
 class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
     """An enumeration of the valid modbus exceptions."""
@@ -154,7 +154,7 @@ class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
         :param code: The code number to translate
         """
         values = {v: k for k, v in iter(cls.__dict__.items())
-                  if not k.startswith('__') and not callable(v)}
+                  if not k.startswith("__") and not callable(v)}
         return values.get(code, None)
 
 
@@ -180,7 +180,7 @@ class ExceptionResponse(ModbusResponse):
 
         :returns: The encoded exception packet
         """
-        return struct.pack('>B', self.exception_code)
+        return struct.pack(">B", self.exception_code)
 
     def decode(self, data):
         """Decode a modbus exception response.
@@ -200,7 +200,7 @@ class ExceptionResponse(ModbusResponse):
 
 
 class IllegalFunctionRequest(ModbusRequest):
-    """Define the Modbus slave exception type 'Illegal Function'.
+    """Define the Modbus slave exception type "Illegal Function".
 
     This exception code is returned if the slave::
 
@@ -238,5 +238,5 @@ class IllegalFunctionRequest(ModbusRequest):
 
 
 __all__ = [
-    'ModbusRequest', 'ModbusResponse', 'ModbusExceptions',
-    'ExceptionResponse', 'IllegalFunctionRequest', ]
+    "ModbusRequest", "ModbusResponse", "ModbusExceptions",
+    "ExceptionResponse", "IllegalFunctionRequest", ]

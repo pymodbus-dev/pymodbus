@@ -101,10 +101,10 @@ def begin_asynchronous_test(client, protocol):  # pylint: disable=redefined-oute
     dassert(rr, _print)      # test the expected value
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     rq = client.readwrite_registers(**arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)

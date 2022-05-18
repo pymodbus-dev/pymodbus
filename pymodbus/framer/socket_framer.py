@@ -40,8 +40,8 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
-        self._header = {'tid': 0, 'pid': 0, 'len': 0, 'uid': 0}
+        self._buffer = b""
+        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
         self._hsize = 0x07
         self.decoder = decoder
         self.client = client
@@ -55,17 +55,17 @@ class ModbusSocketFramer(ModbusFramer):
         Return true if we were successful.
         """
         if self.isFrameReady():
-            (self._header['tid'], self._header['pid'],
-             self._header['len'], self._header['uid']) = struct.unpack(
-                '>HHHB', self._buffer[0:self._hsize])
+            (self._header["tid"], self._header["pid"],
+             self._header["len"], self._header["uid"]) = struct.unpack(
+                ">HHHB", self._buffer[0:self._hsize])
 
             # someone sent us an error? ignore it
-            if self._header['len'] < 2:
+            if self._header["len"] < 2:
                 self.advanceFrame()
             # we have at least a complete message, continue
-            elif len(self._buffer) - self._hsize + 1 >= self._header['len']:
+            elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
                 return True
-        # we don't have enough of a message yet, wait
+        # we don"t have enough of a message yet, wait
         return False
 
     def advanceFrame(self):
@@ -75,9 +75,9 @@ class ModbusSocketFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        length = self._hsize + self._header['len'] - 1
+        length = self._hsize + self._header["len"] - 1
         self._buffer = self._buffer[length:]
-        self._header = {'tid': 0, 'pid': 0, 'len': 0, 'uid': 0}
+        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 
     def isFrameReady(self):
         """Check if we should continue decode logic.
@@ -101,7 +101,7 @@ class ModbusSocketFramer(ModbusFramer):
 
         :returns: The next full frame buffer
         """
-        length = self._hsize + self._header['len'] - 1
+        length = self._hsize + self._header["len"] - 1
         return self._buffer[self._hsize:length]
 
     def populateResult(self, result):
@@ -112,9 +112,9 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.transaction_id = self._header['tid']
-        result.protocol_id = self._header['pid']
-        result.unit_id = self._header['uid']
+        result.transaction_id = self._header["tid"]
+        result.protocol_id = self._header["pid"]
+        result.unit_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -125,11 +125,11 @@ class ModbusSocketFramer(ModbusFramer):
             tid, pid, length, uid, fcode = struct.unpack(SOCKET_FRAME_HEADER,
                                                          data[0:self._hsize + 1])
             return {
-                'tid': tid,
-                'pid': pid,
-                'length': length,
-                'unit': uid,
-                'fcode': fcode,
+                "tid": tid,
+                "pid": pid,
+                "length": length,
+                "unit": uid,
+                "fcode": fcode,
             }
         return {}
 
@@ -164,7 +164,8 @@ class ModbusSocketFramer(ModbusFramer):
                     if self._validate_unit_id(unit, single):
                         self._process(callback)
                     else:
-                        txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
+                        header_txt = self._header["uid"]
+                        txt = f"Not a valid unit id - {header_txt}, ignoring!!"
                         _logger.debug(txt)
                         self.resetFrame()
                 else:
@@ -173,7 +174,7 @@ class ModbusSocketFramer(ModbusFramer):
             else:
                 if len(self._buffer):
                     # Possible error ???
-                    if self._header['len'] < 2:
+                    if self._header["len"] < 2:
                         self._process(callback, error=True)
                 break
 
@@ -194,11 +195,11 @@ class ModbusSocketFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
-        self._header = {'tid': 0, 'pid': 0, 'len': 0, 'uid': 0}
+        self._buffer = b""
+        self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 
     def getRawFrame(self):  # pylint: disable=invalid-name
         """Return the complete buffer."""

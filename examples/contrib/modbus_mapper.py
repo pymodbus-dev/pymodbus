@@ -20,17 +20,17 @@ requested functionality)::
     from pymodbus.client.sync import ModbusTcpClient
     from pymodbus.payload import BinaryModbusDecoder
 
-    template = ['address', 'size', 'function', 'name', 'description']
-    raw_mapping = csv_mapping_parser('input.csv', template)
+    template = ["address", "size", "function", "name", "description"]
+    raw_mapping = csv_mapping_parser("input.csv", template)
     mapping = mapping_decoder(raw_mapping)
 
     index, size = 1, 100
-    client = ModbusTcpClient('localhost')
+    client = ModbusTcpClient("localhost")
     response = client.read_holding_registers(index, size)
     decoder = BinaryModbusDecoder.fromRegisters(response.registers)
     while index < size:
-        print( "[{}]\t{}".format(i, mapping[i]['type'](decoder)))
-        index += mapping[i]['size']
+        print( "[{}]\t{}".format(i, mapping[i]["type"](decoder)))
+        index += mapping[i]["size"]
 
 Also, using the same input mapping parsers, we can generate
 populated slave contexts that can be run behind a modbus server::
@@ -40,8 +40,8 @@ populated slave contexts that can be run behind a modbus server::
     from pymodbus.client.ssync import StartTcpServer
     from pymodbus.datastore.context import ModbusServerContext
 
-    template = ['address', 'value', 'function', 'name', 'description']
-    raw_mapping = csv_mapping_parser('input.csv', template)
+    template = ["address", "value", "function", "name", "description"]
+    raw_mapping = csv_mapping_parser("input.csv", template)
     slave_context = modbus_context_decoder(raw_mapping)
     context = ModbusServerContext(slaves=slave_context, single=True)
     StartTcpServer(context)
@@ -74,21 +74,21 @@ def csv_mapping_parser(path, template):
     values will be stored, but not formatted by the application.
     So for example::
 
-        template = ['address', 'type', 'size', 'name', 'function']
-        mappings = json_mapping_parser('mapping.json', template)
+        template = ["address", "type", "size", "name", "function"]
+        mappings = json_mapping_parser("mapping.json", template)
 
     :param path: The path to the csv input file
     :param template: The row value template
     :returns: The decoded csv dictionary
     """
     mapping_blocks = defaultdict(dict)
-    with open(path, 'r') as handle:  # pylint: disable=unspecified-encoding
+    with open(path, "r") as handle:  # pylint: disable=unspecified-encoding
         reader = csv.reader(handle)
         reader.next()  # skip the csv header
         for row in reader:
             mapping = dict(zip(template, row))
-            mapping.pop('function')
-            aid = int(mapping['address'])
+            mapping.pop("function")
+            aid = int(mapping["address"])
             mapping_blocks[aid] = mapping
     return mapping_blocks
 
@@ -105,19 +105,19 @@ def json_mapping_parser(path, template):
     So for example::
 
         template = {
-            'Start': 'address',
-            'DataType': 'type',
-            'Length': 'size'
+            "Start": "address",
+            "DataType": "type",
+            "Length": "size"
             # the remaining keys will just pass through
         }
-        mappings = json_mapping_parser('mapping.json', template)
+        mappings = json_mapping_parser("mapping.json", template)
 
     :param path: The path to the csv input file
     :param template: The row value template
     :returns: The decoded csv dictionary
     """
     mapping_blocks = {}
-    with open(path, 'r') as handle:  # pylint: disable=unspecified-encoding
+    with open(path, "r") as handle:  # pylint: disable=unspecified-encoding
         for tid, rows in json.load(handle).iteritems():
             mappings = {}
             for key, values in rows.iteritems():
@@ -160,9 +160,9 @@ def modbus_context_decoder(mapping_blocks):
     blocks = defaultdict(dict)
     for block in mapping_blocks.itervalues():
         for mapping in block.itervalues():
-            value = int(mapping['value'])
-            address = int(mapping['address'])
-            function = mapping['function']
+            value = int(mapping["value"])
+            address = int(mapping["address"])
+            function = mapping["function"]
             blocks[function][address] = value
     return ModbusSlaveContext(**blocks)
 
@@ -184,7 +184,7 @@ class ModbusTypeDecoder:
         class CustomTypeDecoder(ModbusTypeDecoder):
             def __init__(self):
                 ModbusTypeDecode.__init__(self)
-                self.mapper['type-token'] = self.callback
+                self.mapper["type-token"] = self.callback
 
             def parse_my_bitfield(self, tokens):
                 return lambda d: d.decode_my_type()
@@ -195,21 +195,21 @@ class ModbusTypeDecoder:
         """Initialize a new instance of the decoder"""
         self.default = lambda m: self.parse_16bit_uint
         self.parsers = {
-            'uint': self.parse_16bit_uint,
-            'uint8': self.parse_8bit_uint,
-            'uint16': self.parse_16bit_uint,
-            'uint32': self.parse_32bit_uint,
-            'uint64': self.parse_64bit_uint,
-            'int': self.parse_16bit_int,
-            'int8': self.parse_8bit_int,
-            'int16': self.parse_16bit_int,
-            'int32': self.parse_32bit_int,
-            'int64': self.parse_64bit_int,
-            'float': self.parse_32bit_float,
-            'float32': self.parse_32bit_float,
-            'float64': self.parse_64bit_float,
-            'string': self.parse_32bit_int,
-            'bits': self.parse_bits,
+            "uint": self.parse_16bit_uint,
+            "uint8": self.parse_8bit_uint,
+            "uint16": self.parse_16bit_uint,
+            "uint32": self.parse_32bit_uint,
+            "uint64": self.parse_64bit_uint,
+            "int": self.parse_16bit_int,
+            "int8": self.parse_8bit_int,
+            "int16": self.parse_16bit_int,
+            "int32": self.parse_32bit_int,
+            "int64": self.parse_64bit_int,
+            "float": self.parse_32bit_float,
+            "float32": self.parse_32bit_float,
+            "float64": self.parse_64bit_float,
+            "string": self.parse_32bit_int,
+            "bits": self.parse_bits,
         }
 
     # ------------------------------------------------------------ #
@@ -313,6 +313,6 @@ def mapping_decoder(mapping_blocks, decoder=None):
     decoder = decoder or ModbusTypeDecoder()
     for block in mapping_blocks.itervalues():
         for mapping in block.itervalues():
-            mapping['address'] = int(mapping['address'])
-            mapping['size'] = int(mapping['size'])
-            mapping['type'] = decoder.parse(mapping['type'])
+            mapping["address"] = int(mapping["address"])
+            mapping["size"] = int(mapping["size"])
+            mapping["type"] = decoder.parse(mapping["type"])

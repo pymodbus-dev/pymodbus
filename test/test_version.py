@@ -15,9 +15,9 @@ class ModbusVersionTest(unittest.TestCase):
 
     def test_version_class(self):
         """Test version class."""
-        version = Version('test', 1, 2, 3, "sometag")
-        self.assertEqual(version.short(), '1.2.3.sometag')
-        self.assertEqual(str(version), '[test, version 1.2.3.sometag]')
+        version = Version("test", 1, 2, 3, "sometag")
+        self.assertEqual(version.short(), "1.2.3.sometag")
+        self.assertEqual(str(version), "[test, version 1.2.3.sometag]")
 
 
 # ---------------------------------------------------------------------------#

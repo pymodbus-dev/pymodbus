@@ -86,16 +86,16 @@ class RemoteSlaveContext(IModbusSlaveContext):
         if self.unit:
             kwargs["unit"] = self.unit
         self.__get_callbacks = {
-            'd': lambda a, c: self._client.read_discrete_inputs(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
-            'c': lambda a, c: self._client.read_coils(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
-            'h': lambda a, c: self._client.read_holding_registers(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
-            'i': lambda a, c: self._client.read_input_registers(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, c: self._client.read_discrete_inputs(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
+            "c": lambda a, c: self._client.read_coils(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
+            "h": lambda a, c: self._client.read_holding_registers(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
+            "i": lambda a, c: self._client.read_input_registers(a, c, **kwargs),  # pylint: disable=unnecessary-lambda
         }
         self.__set_callbacks = {
-            'd': lambda a, v: self._client.write_coils(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
-            'c': lambda a, v: self._client.write_coils(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
-            'h': lambda a, v: self._client.write_registers(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
-            'i': lambda a, v: self._client.write_registers(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, v: self._client.write_coils(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
+            "c": lambda a, v: self._client.write_coils(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
+            "h": lambda a, v: self._client.write_registers(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
+            "i": lambda a, v: self._client.write_registers(a, v, **kwargs),  # pylint: disable=unnecessary-lambda
         }
 
     def __extract_result(self, fc_as_hex, result):  # pylint: disable=no-self-use
@@ -104,9 +104,9 @@ class RemoteSlaveContext(IModbusSlaveContext):
         TODO make this consistent (values?)
         """
         if not result.isError():
-            if fc_as_hex in {'d', 'c'}:
+            if fc_as_hex in {"d", "c"}:
                 return result.bits
-            if fc_as_hex in {'h', 'i'}:
+            if fc_as_hex in {"h", "i"}:
                 return result.registers
         else:
             return result

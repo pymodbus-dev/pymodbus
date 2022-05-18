@@ -71,6 +71,7 @@ isort
 pep8
 pyflakes
 pydocstyle
+pycodestyle
 pylint
 pytest
 pytest-cov

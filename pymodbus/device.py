@@ -295,11 +295,11 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
     __lookup = {
         DeviceInformation.Basic: lambda c, r, i: c.__gets(r, list(range(i, 0x03))),  # pylint: disable=protected-access
         DeviceInformation.Regular: lambda c, r, i: c.__gets(r, list(range(i, 0x07))  # pylint: disable=protected-access
-                                                            if c.__get(r, i)[i] else list(range(0, 0x07))),  # noqa E501 pylint: disable=protected-access
+                                                            if c.__get(r, i)[i] else list(range(0, 0x07))),  # noqa: E501 pylint: disable=protected-access
         DeviceInformation.Extended: lambda c, r, i: c.__gets(r,  # pylint: disable=protected-access
-                                                             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]  # noqa E501
-                                                             if c.__get(r, i)[i] else  # noqa E501 pylint: disable=protected-access
-                                                             [x for x in range(0, 0x100) if x not in range(0x07, 0x80)]),  # noqa E501
+                                                             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]  # noqa: E501
+                                                             if c.__get(r, i)[i] else  # noqa: E501 pylint: disable=protected-access
+                                                             [x for x in range(0, 0x100) if x not in range(0x07, 0x80)]),  # noqa: E501
         DeviceInformation.Specific: lambda c, r, i: c.__get(r, i),  # pylint: disable=protected-access
     }
 

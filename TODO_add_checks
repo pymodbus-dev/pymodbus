@@ -6,8 +6,6 @@
     pyflakes
     pydocstyle
     flake8-comprehensions
-    flake8-noqa
-    mccabe
 
 - prettier
 - mypy

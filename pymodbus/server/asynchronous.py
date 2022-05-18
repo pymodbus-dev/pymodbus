@@ -4,7 +4,7 @@ import threading
 from binascii import b2a_hex
 from twisted.internet import protocol
 from twisted.internet.protocol import ServerFactory
-from twisted.internet import reactor  # noqa F401 pylint: disable=unused-import
+from twisted.internet import reactor  # noqa: F401 pylint: disable=unused-import
 
 from pymodbus.constants import Defaults
 from pymodbus.utilities import hexlify_packets

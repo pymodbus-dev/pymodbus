@@ -384,7 +384,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
             fcode = self.framer.decode_data(self.framer.getRawFrame()).get("fcode", 0)
             if fcode and (
                 (fcode > 0x80 and len(self.framer.getRawFrame()) == exception_response_length)
-                or  # noqa W504
+                or  # noqa: W504
                 (len(self.framer.getRawFrame()) == expected_response_length)
             ):
                 _clear_timer()

@@ -46,5 +46,5 @@ def run_coroutine(coro):
     except StopIteration as exc:
         # coro reached end pass on its return value:
         return exc.value
-    except:  # noqa E722 pylint: disable=try-except-raise
+    except:  # noqa: E722 pylint: disable=try-except-raise
         raise

@@ -57,7 +57,7 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :param data: The data to decode into the function code
         """
-        self.sub_function_code, self.message = struct.unpack('>HH', data)  # noqa E501 pylint: disable=attribute-defined-outside-init
+        self.sub_function_code, self.message = struct.unpack('>HH', data)  # noqa: E501 pylint: disable=attribute-defined-outside-init
 
     def get_response_pdu_size(self):
         """Get response pdu size.

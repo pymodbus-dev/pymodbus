@@ -65,7 +65,7 @@ class _Primitives:  # pylint: disable=too-few-public-methods)
 # We use named tuples here as they are very lightweight while giving us
 # all the benefits of classes.
 # -------------------------------------------------------------------------- #
-WorkRequest = namedtuple('WorkRequest', 'request, work_id')  # noqa 241
+WorkRequest = namedtuple('WorkRequest', 'request, work_id')
 WorkResponse = namedtuple('WorkResponse', 'is_exception, work_id, response')
 
 

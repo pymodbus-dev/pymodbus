@@ -195,10 +195,10 @@ def main():
             print(f"Logging is not supported on this system- {exc}")
 
     framer = {
-        'tcp': ModbusSocketFramer,  # noqa E221
-        'rtu': ModbusRtuFramer,  # noqa E221
+        'tcp': ModbusSocketFramer,
+        'rtu': ModbusRtuFramer,
         'binary': ModbusBinaryFramer,
-        'ascii': ModbusAsciiFramer,  # noqa E221
+        'ascii': ModbusAsciiFramer,
     }.get(option.framer or option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer, option.ascii)

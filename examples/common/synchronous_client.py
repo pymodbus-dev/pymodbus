@@ -147,9 +147,9 @@ def run_sync_client():
     assert not rr.isError()  # nosec test that we are not an error
 
     arguments = {
-        'read_address': 1,  # noqa E221
-        'read_count': 8,  # noqa E221
-        'write_address': 1,  # noqa E221
+        'read_address': 1,
+        'read_count': 8,
+        'write_address': 1,
         'write_registers': [20] * 8,
     }
     log.debug("Read write registers simultaneously")

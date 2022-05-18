@@ -14,7 +14,7 @@ from pymodbus.repl.client.helper import get_commands
 def has_selected_completion():
     """Check for selected completion."""
     complete_state = get_app().current_buffer.complete_state
-    return (complete_state is not None and  # noqa W504
+    return (complete_state is not None and  # noqa: W504
             complete_state.current_completion is not None)
 
 

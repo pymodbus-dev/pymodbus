@@ -35,7 +35,7 @@ from pymodbus.transaction import ModbusTlsFramer
 # --------------------------------------------------------------------------- #
 # Mock Classes
 # --------------------------------------------------------------------------- #
-class MockServer:  # noqa: E302 pylint: disable=too-few-public-methods
+class MockServer:  # pylint: disable=too-few-public-methods
     """Mock server."""
 
     def __init__(self):
@@ -49,7 +49,7 @@ class MockServer:  # noqa: E302 pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 
 
-class SynchronousServerTest(unittest.TestCase):  # noqa: E302
+class SynchronousServerTest(unittest.TestCase):
     """Unittest for the pymodbus.server.sync module."""
 
     # ----------------------------------------------------------------------- #
@@ -67,7 +67,7 @@ class SynchronousServerTest(unittest.TestCase):  # noqa: E302
         """Test the base class for all the clients"""
         request = ReadCoilsRequest(1, 1)
         address = ('server', 12345)
-        server = MockServer()  # noqa: E221
+        server = MockServer()
         with patch.object(ModbusBaseRequestHandler, 'handle') as mock_handle:
             with patch.object(ModbusBaseRequestHandler, 'send') as mock_send:
                 mock_handle.return_value = True

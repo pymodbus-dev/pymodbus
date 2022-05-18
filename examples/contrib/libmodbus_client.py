@@ -163,9 +163,9 @@ class LibmodbusLevel1Client:
         :param baudrate: The baud rate to use for the serial device
         :returns: A new level1 client
         """
-        my_port = kwargs.get('port', '/dev/ttyS0')  # noqa E221
+        my_port = kwargs.get('port', '/dev/ttyS0')
         baudrate = kwargs.get('baud', Defaults.Baudrate)
-        parity = kwargs.get('parity', Defaults.Parity)  # noqa E221
+        parity = kwargs.get('parity', Defaults.Parity)
         bytesize = kwargs.get('bytesize', Defaults.Bytesize)
         stopbits = kwargs.get('stopbits', Defaults.Stopbits)
         my_client = LIB.modbus_new_rtu(my_port, baudrate, parity, bytesize, stopbits)

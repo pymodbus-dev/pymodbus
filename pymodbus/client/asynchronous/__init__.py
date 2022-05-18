@@ -36,6 +36,6 @@ _logger = logging.getLogger(__name__)
 
 if installed := importlib.util.find_spec('twisted'):
     # Import deprecated async client only if twisted is installed #338
-    from pymodbus.client.asynchronous.deprecated.asynchronous import *  # noqa F403
+    from pymodbus.client.asynchronous.deprecated.asynchronous import *  # noqa: F401,F403
     _logger.warning("Importing deprecated clients. "
                     "Dependency Twisted is Installed")

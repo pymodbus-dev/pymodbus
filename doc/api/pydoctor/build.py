@@ -9,9 +9,11 @@ try:
     import os
     import shutil
     import pkg_resources
+
     pkg_resources.require("pydoctor")
 
     from pydoctor.driver import main  # pylint: disable=import-error
+
     sys.argv = """pydoctor.py --quiet
         --project-name=Pymodbus
         --project-url=http://code.google.com/p/pymodbus/

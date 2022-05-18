@@ -14,6 +14,7 @@ try:
     pkg_resources.require("epydoc")
 
     from epydoc.cli import cli  # pylint: disable=import-error
+
     sys.argv = """epydoc.py pymodbus
         --html --simple-term --quiet
         --include-log

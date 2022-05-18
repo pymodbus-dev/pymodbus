@@ -81,8 +81,11 @@ def classify_class_attrs(cls):
             kind = "class method"
         elif isinstance(obj, property):
             kind = "property"
-        elif (inspect.ismethod(obj_via_getattr) or  # noqa: W504
-              inspect.ismethoddescriptor(obj_via_getattr)):
+        elif inspect.ismethod(
+            obj_via_getattr
+        ) or inspect.ismethoddescriptor(
+            obj_via_getattr
+        ):
             kind = "method"
         else:
             kind = "data"
@@ -98,15 +101,18 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
     """Default formatter."""
 
-    def docmodule(self, object, name=None, mod=None, packageContext=None, *ignored):  # noqa: C901
+    def docmodule(  # NOSONAR # noqa: C901
+        self, object, name=None, mod=None, packageContext=None, *ignored  # NOSONAR
+    ):  # noqa: C901
         """Produce HTML documentation for a module object."""
         my_name = object.__name__  # ignore the passed-in name
         parts = split(my_name, ".")
         links = []
         for i in range(len(parts) - 1):
             links.append(
-                "<a href=\"%s.html\"><font color=\"#ffffff\">%s</font></a>" %
-                (join(parts[:i + 1], "."), parts[i]))
+                '<a href="%s.html"><font color="#ffffff">%s</font></a>'
+                % (join(parts[: i + 1], "."), parts[i])
+            )
         linkedname = join(links + parts[-1:], ".")
         head = "<big><big><strong>%s</strong></big></big>" % linkedname
         try:
@@ -114,8 +120,9 @@ class DefaultFormatter(pydoc.HTMLDoc):
             url = path
             if sys.platform == "win32":
                 import nturl2path
+
                 url = nturl2path.pathname2url(path)
-            filelink = "<a href=\"file:%s\">%s</a>" % (url, path)
+            filelink = '<a href="file:%s">%s</a>' % (url, path)
         except TypeError:
             filelink = "(built-in)"
         info = []
@@ -129,7 +136,8 @@ class DefaultFormatter(pydoc.HTMLDoc):
         if info:
             head = head + " (%s)" % join(info, ", ")
         result = self.heading(
-            head, "#ffffff", "#7799ee", "<a href=\".\">index</a><br>" + filelink)
+            head, "#ffffff", "#7799ee", '<a href=".">index</a><br>' + filelink
+        )
 
         modules = inspect.getmembers(object, inspect.ismodule)
 
@@ -185,23 +193,25 @@ class DefaultFormatter(pydoc.HTMLDoc):
         elif modules:
             # FIX   contents = self.multicolumn(
             # FIX   modules, lambda (key, value), s=self: s.modulelink(value))
-            result = result + self.bigsection(
-                "Modules", "#fffff", "#aa55cc", contents)
+            result = result + self.bigsection("Modules", "#fffff", "#aa55cc", contents)
 
         if classes:
             # FIX  classlist = map(lambda (key, value): value, classes)
             contents = [
-                self.formattree(inspect.getclasstree(classlist, 1), my_name)]  # noqa: F821
+                self.formattree(inspect.getclasstree(classlist, 1), my_name)  # noqa: F821
+            ]
             for key, value in classes:
                 contents.append(self.document(value, key, my_name, fdict, cdict))
             result = result + self.bigsection(
-                "Classes", "#ffffff", "#ee77aa", join(contents))
+                "Classes", "#ffffff", "#ee77aa", join(contents)
+            )
         if funcs:
             contents = []
             for key, value in funcs:
                 contents.append(self.document(value, key, my_name, fdict, cdict))
             result = result + self.bigsection(
-                "Functions", "#ffffff", "#eeaa77", join(contents))
+                "Functions", "#ffffff", "#eeaa77", join(contents)
+            )
         if data:
             contents = []
             for key, value in data:
@@ -210,15 +220,14 @@ class DefaultFormatter(pydoc.HTMLDoc):
                 except Exception:  # nosec
                     pass
             result = result + self.bigsection(
-                "Data", "#ffffff", "#55aa55", join(contents, "<br>\n"))
+                "Data", "#ffffff", "#55aa55", join(contents, "<br>\n")
+            )
         if hasattr(object, "__author__"):
             contents = self.markup(str(object.__author__), self.preformat)
-            result = result + self.bigsection(
-                "Author", "#ffffff", "#7799ee", contents)
+            result = result + self.bigsection("Author", "#ffffff", "#7799ee", contents)
         if hasattr(object, "__credits__"):
             contents = self.markup(str(object.__credits__), self.preformat)
-            result = result + self.bigsection(
-                "Credits", "#ffffff", "#7799ee", contents)
+            result = result + self.bigsection("Credits", "#ffffff", "#7799ee", contents)
 
         return result
 
@@ -226,9 +235,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
         """Make a link for a class."""
         name, module = object.__name__, sys.modules.get(object.__module__)
         if hasattr(module, name) and getattr(module, name) is object:
-            return "<a href=\"%s.html#%s\">%s</a>" % (
-                module.__name__, name, name
-            )
+            return '<a href="%s.html#%s">%s</a>' % (module.__name__, name, name)
         return pydoc.classname(object, modname)
 
     def moduleSection(self, object, packageContext):
@@ -269,11 +276,9 @@ class DefaultFormatter(pydoc.HTMLDoc):
                         self.modpkglink((modname, name, ispackage, isshadowed))
                     )
             contents = string.join(items, "<br>")
-            result = self.bigsection(
-                "Package Contents", "#ffffff", "#aa55cc", contents)
+            result = self.bigsection("Package Contents", "#ffffff", "#aa55cc", contents)
         elif modules:
-            result = self.bigsection(
-                "Modules", "#fffff", "#aa55cc", contents)
+            result = self.bigsection("Modules", "#fffff", "#aa55cc", contents)
         else:
             result = ""
         return result
@@ -309,10 +314,13 @@ class PackageDocumentationGenerator:
     """
 
     def __init__(
-        self, baseModules, destinationDirectory=".",
-        recursion=1, exclusions=(),
+        self,
+        baseModules,  # NOSONAR
+        destinationDirectory=".",  # NOSONAR
+        recursion=1,
+        exclusions=(),
         recursionStops=(),
-        formatter=None
+        formatter=None,
     ):
         """Initialize."""
         self.destinationDirectory = os.path.abspath(destinationDirectory)
@@ -329,8 +337,10 @@ class PackageDocumentationGenerator:
             try:
                 self.exclusions[exclusion] = pydoc.locate(exclusion)
             except pydoc.ErrorDuringImport:
-                self.warn("""Unable to import the module %s which was specified as an exclusion module""" %
-                          (repr(exclusion)))
+                self.warn(
+                    """Unable to import the module %s which was specified as an exclusion module"""
+                    % (repr(exclusion))
+                )
         self.formatter = formatter or DefaultFormatter()
         for base in baseModules:
             self.addBase(base)
@@ -349,7 +359,10 @@ class PackageDocumentationGenerator:
             self.baseSpecifiers[specifier] = pydoc.locate(specifier)
             self.pending.append(specifier)
         except pydoc.ErrorDuringImport:
-            self.warn("""Unable to import the module %s which was specified as a base module""" % (repr(specifier)))
+            self.warn(
+                """Unable to import the module %s which was specified as a base module"""
+                % (repr(specifier))
+            )
 
     def addInteresting(self, specifier):
         """Add a module to the list of interesting modules."""
@@ -398,13 +411,19 @@ class PackageDocumentationGenerator:
                     pass
                 except pydoc.ErrorDuringImport as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
-                    self.warn("""Unable to import the module %s""" % (repr(self.pending[0])))
+                    self.warn(
+                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                    )
                 except (SystemError, SystemExit) as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
-                    self.warn("""Unable to import the module %s""" % (repr(self.pending[0])))
+                    self.warn(
+                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                    )
                 except Exception as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
-                    self.warn("""Unable to import the module %s""" % (repr(self.pending[0])))
+                    self.warn(
+                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                    )
                 else:
                     page = self.formatter.page(
                         pydoc.describe(object),
@@ -412,7 +431,7 @@ class PackageDocumentationGenerator:
                             object,
                             object.__name__,
                             packageContext=self,
-                        )
+                        ),
                     )
                     file = open(
                         os.path.join(
@@ -439,11 +458,9 @@ class PackageDocumentationGenerator:
         for key, value in objectList[:]:
             for excludeObject in self.exclusions.values():
                 if hasattr(excludeObject, key) and excludeObject is not object:
-                    if (
-                        getattr(excludeObject, key) is value or  # noqa: W504
-                        (hasattr(excludeObject, "__name__") and  # noqa: W504
-                         excludeObject.__name__ == "Numeric"
-                         )
+                    if getattr(excludeObject, key) is value or (
+                        hasattr(excludeObject, "__name__")
+                        and excludeObject.__name__ == "Numeric"
                     ):
                         objectList[:] = [(k, o) for k, o in objectList if k != key]
 

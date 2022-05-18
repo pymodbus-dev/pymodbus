@@ -21,6 +21,7 @@ import os
 import sys
 from recommonmark.transform import AutoStructify
 from pymodbus import __version__
+
 parent_dir = os.path.abspath(os.pardir)
 # examples = os.path.join(parent_dir, "examples")
 example_contrib = os.path.join(parent_dir, "examples/contrib")
@@ -45,7 +46,6 @@ github_doc_root = "https://github.com/riptideio/pymodbus/tree/master/doc/"  # py
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 
-# extensions = ["sphinx.ext.autodoc", "m2r", "recommonmark"]
 extensions = ["sphinx.ext.autodoc", "m2r2"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,7 +59,6 @@ templates_path = ["_templates"]
 # }
 
 source_suffix = [".rst", ".md"]
-# source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"  # pylint: disable=invalid-name
@@ -141,15 +140,12 @@ latex_elements = {
     # The paper size ("letterpaper" or "a4paper").
     #
     # "papersize": "letterpaper",
-
     # The font size ("10pt", "11pt" or "12pt").
     #
     # "pointsize": "10pt",
-
     # Additional stuff for the LaTeX preamble.
     #
     # "preamble": "",
-
     # Latex figure (float) alignment
     #
     # "figure_align": "htbp",
@@ -159,8 +155,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [  # NOSONAR
-    (master_doc, "PyModbus.tex", "PyModbus Documentation",  # NOSONAR
-     "Sanjay", "manual"),
+    (
+        master_doc,
+        "PyModbus.tex",
+        "PyModbus Documentation",  # NOSONAR
+        "Sanjay",
+        "manual",
+    ),
 ]
 
 
@@ -168,10 +169,7 @@ latex_documents = [  # NOSONAR
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, "pymodbus", "PyModbus Documentation",
-     [author], 1)
-]
+man_pages = [(master_doc, "pymodbus", "PyModbus Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -180,18 +178,26 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, "PyModbus", "PyModbus Documentation",
-     author, "PyModbus", "One line description of project.",
-     "Miscellaneous"),
+    (
+        master_doc,
+        "PyModbus",
+        "PyModbus Documentation",
+        author,
+        "PyModbus",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 
 def setup(app):
     """Do setup."""
-    app.add_config_value("recommonmark_config", {
-        "url_resolver": lambda url: github_doc_root + url,
-        "auto_toc_tree_section": "Contents",
-    },
-        True
+    app.add_config_value(
+        "recommonmark_config",
+        {
+            "url_resolver": lambda url: github_doc_root + url,
+            "auto_toc_tree_section": "Contents",
+        },
+        True,
     )
     app.add_transform(AutoStructify)

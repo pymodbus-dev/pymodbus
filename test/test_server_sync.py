@@ -66,15 +66,15 @@ class SynchronousServerTest(unittest.TestCase):
     def test_base_handler_methods(self):
         """Test the base class for all the clients"""
         request = ReadCoilsRequest(1, 1)
-        address = ('server', 12345)
+        address = ("server", 12345)
         server = MockServer()
-        with patch.object(ModbusBaseRequestHandler, 'handle') as mock_handle:
-            with patch.object(ModbusBaseRequestHandler, 'send') as mock_send:
+        with patch.object(ModbusBaseRequestHandler, "handle") as mock_handle:
+            with patch.object(ModbusBaseRequestHandler, "send") as mock_send:
                 mock_handle.return_value = True
                 mock_send.return_value = True
                 handler = ModbusBaseRequestHandler(request, address, server)
                 self.assertEqual(handler.running, True)
-                self.assertEqual(handler.framer, 'framer')
+                self.assertEqual(handler.framer, "framer")
 
                 handler.execute(request)
                 self.assertEqual(mock_send.call_count, 1)
@@ -267,18 +267,18 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_tcp_server_close(self):
         """Test that the synchronous TCP server closes correctly"""
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
         server = ModbusTcpServer(context=None, identity=identity, bind_and_activate=False)
-        server.threads.append(Mock(**{'running': True}))
+        server.threads.append(Mock(**{"running": True}))
         server.server_close()
-        self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(server.control.Identity.VendorName, "VendorName")
         self.assertFalse(server.threads[0].running)
 
     def test_tcp_server_process(self):
         """Test that the synchronous TCP server processes requests"""
-        with patch('socketserver.ThreadingTCPServer') as mock_server:
+        with patch("socketserver.ThreadingTCPServer") as mock_server:
             server = ModbusTcpServer(None)
-            server.process_request('request', 'client')
+            server.process_request("request", "client")
             self.assertTrue(mock_server.process_request.called)
 
     # ----------------------------------------------------------------------- #
@@ -286,7 +286,7 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_tls_ssl_ctx_provider(self):
         """Test that sslctx_provider() produce SSLContext correctly"""
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ssl.SSLContext, "load_cert_chain"):
             sslctx = sslctx_provider(reqclicert=True)
             self.assertIsNotNone(sslctx)
             self.assertEqual(type(sslctx), ssl.SSLContext)
@@ -298,9 +298,9 @@ class SynchronousServerTest(unittest.TestCase):
 
     def test_tls_server_init(self):
         """Test that the synchronous TLS server initial correctly"""
-        with patch.object(socketserver.TCPServer, 'server_activate'):
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
-                identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        with patch.object(socketserver.TCPServer, "server_activate"):
+            with patch.object(ssl.SSLContext, "load_cert_chain"):
+                identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
                 server = ModbusTlsServer(context=None, identity=identity,
                                          reqclicert=True,
                                          bind_and_activate=False)
@@ -313,21 +313,21 @@ class SynchronousServerTest(unittest.TestCase):
 
     def test_tls_server_close(self):
         """Test that the synchronous TLS server closes correctly"""
-        with patch.object(ssl.SSLContext, 'load_cert_chain'):
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        with patch.object(ssl.SSLContext, "load_cert_chain"):
+            identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
             server = ModbusTlsServer(context=None, identity=identity,
                                      bind_and_activate=False)
-            server.threads.append(Mock(**{'running': True}))
+            server.threads.append(Mock(**{"running": True}))
             server.server_close()
-            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+            self.assertEqual(server.control.Identity.VendorName, "VendorName")
             self.assertFalse(server.threads[0].running)
 
     def test_tls_server_process(self):
         """Test that the synchronous TLS server processes requests"""
-        with patch('socketserver.ThreadingTCPServer') as mock_server:
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch("socketserver.ThreadingTCPServer") as mock_server:
+            with patch.object(ssl.SSLContext, "load_cert_chain"):
                 server = ModbusTlsServer(None)
-                server.process_request('request', 'client')
+                server.process_request("request", "client")
                 self.assertTrue(mock_server.process_request.called)
 
     # ----------------------------------------------------------------------- #
@@ -335,21 +335,21 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_udp_server_close(self):
         """Test that the synchronous UDP server closes correctly"""
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
         server = ModbusUdpServer(context=None, identity=identity,
                                  bind_and_activate=False)
         server.server_activate()
-        server.threads.append(Mock(**{'running': True}))
+        server.threads.append(Mock(**{"running": True}))
         server.server_close()
-        self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(server.control.Identity.VendorName, "VendorName")
         self.assertFalse(server.threads[0].running)
 
     def test_udp_server_process(self):
         """Test that the synchronous UDP server processes requests"""
-        with patch('socketserver.ThreadingUDPServer') as mock_server:
+        with patch("socketserver.ThreadingUDPServer") as mock_server:
             server = ModbusUdpServer(None)
-            request = ('data', 'socket')
-            server.process_request(request, 'client')
+            request = ("data", "socket")
+            server.process_request(request, "client")
             self.assertTrue(mock_server.process_request.called)
 
     # ----------------------------------------------------------------------- #
@@ -357,27 +357,27 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_serial_server_connect(self):
         """Test serial server connect."""
-        with patch.object(serial, 'Serial') as mock_serial:
+        with patch.object(serial, "Serial") as mock_serial:
             mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
-            mock_serial.read = lambda size: '\x00' * size
-            identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+            mock_serial.read = lambda size: "\x00" * size
+            identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
             server = ModbusSerialServer(context=None, identity=identity, port="dummy")
             self.assertEqual(server.handler.__class__.__name__, "CustomSingleRequestHandler")
-            self.assertEqual(server.control.Identity.VendorName, 'VendorName')
+            self.assertEqual(server.control.Identity.VendorName, "VendorName")
 
             server._connect()  # pylint: disable=protected-access
 
-        with patch.object(serial, 'Serial') as mock_serial:
+        with patch.object(serial, "Serial") as mock_serial:
             mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
-            mock_serial.read = lambda size: '\x00' * size
+            mock_serial.read = lambda size: "\x00" * size
             mock_serial.side_effect = serial.SerialException()
             server = ModbusSerialServer(None, port="dummy")
             self.assertEqual(server.socket, None)
 
     def test_serial_server_serve_forever(self):  # pylint: disable=no-self-use
         """Test that the synchronous serial server closes correctly"""
-        with patch.object(serial, 'Serial'):
-            with patch('pymodbus.server.sync.CustomSingleRequestHandler') as mock_handler:
+        with patch.object(serial, "Serial"):
+            with patch("pymodbus.server.sync.CustomSingleRequestHandler") as mock_handler:
                 server = ModbusSerialServer(None)
                 instance = mock_handler.return_value
                 instance.response_manipulator.side_effect = server.server_close
@@ -386,7 +386,7 @@ class SynchronousServerTest(unittest.TestCase):
 
     def test_serial_server_close(self):  # pylint: disable=no-self-use
         """Test that the synchronous serial server closes correctly"""
-        with patch.object(serial, 'Serial') as mock_serial:
+        with patch.object(serial, "Serial") as mock_serial:
             instance = mock_serial.return_value
             server = ModbusSerialServer(None)
             server.server_close()
@@ -397,24 +397,24 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_start_tcp_server(self):  # pylint: disable=no-self-use
         """Test the tcp server starting factory"""
-        with patch.object(ModbusTcpServer, 'serve_forever'):
+        with patch.object(ModbusTcpServer, "serve_forever"):
             StartTcpServer(bind_and_activate=False)
 
     def test_start_tls_server(self):  # pylint: disable=no-self-use
         """Test the tls server starting factory"""
-        with patch.object(ModbusTlsServer, 'serve_forever'):
-            with patch.object(ssl.SSLContext, 'load_cert_chain'):
+        with patch.object(ModbusTlsServer, "serve_forever"):
+            with patch.object(ssl.SSLContext, "load_cert_chain"):
                 StartTlsServer(bind_and_activate=False)
 
     def test_start_udp_server(self):  # pylint: disable=no-self-use
         """Test the udp server starting factory"""
-        with patch.object(ModbusUdpServer, 'serve_forever'):
-            with patch.object(socketserver.UDPServer, 'server_bind'):
+        with patch.object(ModbusUdpServer, "serve_forever"):
+            with patch.object(socketserver.UDPServer, "server_bind"):
                 StartUdpServer()
 
     def test_start_serial_server(self):  # pylint: disable=no-self-use
         """Test the serial server starting factory"""
-        with patch.object(ModbusSerialServer, 'serve_forever'):
+        with patch.object(ModbusSerialServer, "serve_forever"):
             StartSerialServer(port=pytest.SERIAL_PORT)
 
 

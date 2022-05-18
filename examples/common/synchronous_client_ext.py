@@ -43,8 +43,8 @@ from pymodbus.mei_message import (
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s '
-          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s "
+          "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -64,12 +64,12 @@ def execute_extended_requests():
     # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
     # ------------------------------------------------------------------------#
-    client = ModbusClient(method='rtu', port="/dev/ptyp0")
-    # client = ModbusClient(method='ascii', port="/dev/ptyp0")
-    # client = ModbusClient(method='binary', port="/dev/ptyp0")
-    # client = ModbusClient('127.0.0.1', port=5020)
+    client = ModbusClient(method="rtu", port="/dev/ptyp0")
+    # client = ModbusClient(method="ascii", port="/dev/ptyp0")
+    # client = ModbusClient(method="binary", port="/dev/ptyp0")
+    # client = ModbusClient("127.0.0.1", port=5020)
     # from pymodbus.transaction import ModbusRtuFramer
-    # client = ModbusClient('127.0.0.1', port=5020, framer=ModbusRtuFramer)
+    # client = ModbusClient("127.0.0.1", port=5020, framer=ModbusRtuFramer)
     client.connect()
 
     # ----------------------------------------------------------------------- #

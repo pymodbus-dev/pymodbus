@@ -25,8 +25,8 @@ class SqlSlaveContext(IModbusSlaveContext):
 
         :param kwargs: Each element is a ModbusDataBlock
         """
-        self.table = kwargs.get('table', 'pymodbus')
-        self.database = kwargs.get('database', 'sqlite:///pymodbus.db')
+        self.table = kwargs.get("table", "pymodbus")
+        self.database = kwargs.get("database", "sqlite:///pymodbus.db")
         self._db_create(self.table, self.database)
 
     def __str__(self):
@@ -95,10 +95,10 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._engine = sqlalchemy.create_engine(database, echo=False)
         self._metadata = sqlalchemy.MetaData(self._engine)
         self._table = sqlalchemy.Table(table, self._metadata,
-                                       sqlalchemy.Column('type', sqltypes.String(1)),
-                                       sqlalchemy.Column('index', sqltypes.Integer),
-                                       sqlalchemy.Column('value', sqltypes.Integer),
-                                       UniqueConstraint('type', 'index', name='key'))
+                                       sqlalchemy.Column("type", sqltypes.String(1)),
+                                       sqlalchemy.Column("index", sqltypes.Integer),
+                                       sqlalchemy.Column("value", sqltypes.Integer),
+                                       UniqueConstraint("type", "index", name="key"))
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
 
@@ -119,7 +119,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(self, type, offset, values, prefix=''):  # pylint: disable=no-self-use,redefined-builtin
+    def _build_set(self, type, offset, values, prefix=""):  # pylint: disable=no-self-use,redefined-builtin
         """Generate the sql update context.
 
         :param type: The key prefix to use
@@ -130,9 +130,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = []
         for index, value in enumerate(values):
             result.append({
-                prefix + 'type': type,
-                prefix + 'index': offset + index,
-                'value': value
+                prefix + "type": type,
+                prefix + "index": offset + index,
+                "value": value
             })
         return result
 
@@ -162,11 +162,11 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param offset: The address offset to start at
         :param values: The values to set
         """
-        context = self._build_set(type, offset, values, prefix='x_')
-        query = self._table.update().values(value='value')
+        context = self._build_set(type, offset, values, prefix="x_")
+        query = self._table.update().values(value="value")
         query = query.where(and_(
-            self._table.c.type == bindparam('x_type'),
-            self._table.c.index == bindparam('x_index')))
+            self._table.c.type == bindparam("x_type"),
+            self._table.c.index == bindparam("x_index")))
         result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 

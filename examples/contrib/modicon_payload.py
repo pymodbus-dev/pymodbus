@@ -38,7 +38,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a string
         """
-        return ''.join(self._payload)
+        return "".join(self._payload)
 
     def reset(self):
         """Reset the payload buffer"""
@@ -54,7 +54,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         """
         string = str(self)
         length = len(string)
-        string = string + ('\x00' * (length % 2))
+        string = string + ("\x00" * (length % 2))
         return [string[i:i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
@@ -74,7 +74,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'B'
+        fstring = self._endian + "B"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_uint(self, value):
@@ -82,7 +82,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'H'
+        fstring = self._endian + "H"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_uint(self, value):
@@ -90,7 +90,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'I'
+        fstring = self._endian + "I"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
@@ -100,7 +100,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'b'
+        fstring = self._endian + "b"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_int(self, value):
@@ -108,7 +108,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'h'
+        fstring = self._endian + "h"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_int(self, value):
@@ -116,7 +116,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'i'
+        fstring = self._endian + "i"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
@@ -126,7 +126,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'f'
+        fstring = self._endian + "f"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
@@ -136,7 +136,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 's'
+        fstring = self._endian + "s"
         for i in value:
             self._payload.append(pack(fstring, i))
 
@@ -175,9 +175,9 @@ class ModiconPayloadDecoder:
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
-            payload = ''.join(pack('>H', x) for x in registers)
+            payload = "".join(pack(">H", x) for x in registers)
             return ModiconPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of registers supplied')
+        raise ParameterException("Invalid collection of registers supplied")
 
     @staticmethod
     def from_coils(coils, endian=Endian.Little):
@@ -194,7 +194,7 @@ class ModiconPayloadDecoder:
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
             return ModiconPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of coils supplied')
+        raise ParameterException("Invalid collection of coils supplied")
 
     def reset(self):
         """Reset the decoder pointer back to the start"""
@@ -203,21 +203,21 @@ class ModiconPayloadDecoder:
     def decode_8bit_uint(self):
         """Decode a 8 bit unsigned int from the buffer"""
         self._pointer += 1
-        fstring = self._endian + 'B'
+        fstring = self._endian + "B"
         handle = self._payload[self._pointer - 1:self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_uint(self):
         """Decode a 16 bit unsigned int from the buffer"""
         self._pointer += 2
-        fstring = self._endian + 'H'
+        fstring = self._endian + "H"
         handle = self._payload[self._pointer - 2:self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_uint(self):
         """Decode a 32 bit unsigned int from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'I'
+        fstring = self._endian + "I"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
@@ -225,21 +225,21 @@ class ModiconPayloadDecoder:
     def decode_8bit_int(self):
         """Decode a 8 bit signed int from the buffer"""
         self._pointer += 1
-        fstring = self._endian + 'b'
+        fstring = self._endian + "b"
         handle = self._payload[self._pointer - 1:self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_int(self):
         """Decode a 16 bit signed int from the buffer"""
         self._pointer += 2
-        fstring = self._endian + 'h'
+        fstring = self._endian + "h"
         handle = self._payload[self._pointer - 2:self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_int(self):
         """Decode a 32 bit signed int from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'i'
+        fstring = self._endian + "i"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
@@ -247,7 +247,7 @@ class ModiconPayloadDecoder:
     def decode_32bit_float(self):
         """Decode a float from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'f'
+        fstring = self._endian + "f"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]

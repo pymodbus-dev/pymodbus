@@ -19,10 +19,10 @@ def has_selected_completion():
 
 
 style = Style.from_dict({
-    'completion-menu.completion': 'bg:#008888 #ffffff',
-    'completion-menu.completion.current': 'bg:#00aaaa #000000',
-    'scrollbar.background': 'bg:#88aaaa',
-    'scrollbar.button': 'bg:#222222',
+    "completion-menu.completion": "bg:#008888 #ffffff",
+    "completion-menu.completion.current": "bg:#00aaaa #000000",
+    "scrollbar.background": "bg:#88aaaa",
+    "scrollbar.button": "bg:#222222",
 })
 
 
@@ -37,7 +37,7 @@ class CmdCompleter(Completer):
         :param ignore_case: Ignore Case while looking up for commands
         """
         self._commands = commands or get_commands(client)
-        self._commands['help'] = ""
+        self._commands["help"] = ""
         self._command_names = self._commands.keys()
         self.ignore_case = ignore_case
 
@@ -124,20 +124,20 @@ class CmdCompleter(Completer):
                 if not isinstance(v, str)
                 else v for k, v in self._commands.items()
             }
-            meta = lambda x: (x, c_meta.get(x, ''))
+            meta = lambda x: (x, c_meta.get(x, ""))
         else:
             if not list(filter(lambda cmd: any(x == cmd for x in words),
                                self._command_names)):
                 # yield commands
                 pass
 
-            if ' ' in text:
+            if " " in text:
                 command = self.arg_completions(words, word_before_cursor)
                 commands = list(command.get_completion())
                 commands = list(filter(lambda cmd: not(any(cmd in x for x in words)), commands))
                 meta = command.get_meta
         for command in commands:
             if self._get_completions(command, word_before_cursor):
-                _, display_meta = meta(command) if meta else ('', '')
+                _, display_meta = meta(command) if meta else ("", "")
                 yield Completion(command, -len(word_before_cursor),
                                  display_meta=display_meta)

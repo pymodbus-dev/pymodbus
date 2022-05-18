@@ -123,7 +123,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     ProtocolId = 0
     UnitId = 0x00
     Baudrate = 19200
-    Parity = 'N'
+    Parity = "N"
     Bytesize = 8
     Stopbits = 1
     ZeroMode = False
@@ -190,9 +190,9 @@ class Endian(Singleton):  # pylint: disable=too-few-public-methods
        python struct module for my convenience.
     """
 
-    Auto = '@'
-    Big = '>'
-    Little = '<'
+    Auto = "@"
+    Big = ">"
+    Little = "<"
 
 
 class ModbusPlusOperation(Singleton):  # pylint: disable=too-few-public-methods

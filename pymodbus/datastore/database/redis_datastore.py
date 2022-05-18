@@ -23,10 +23,10 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param port: The port to connect to
         :param prefix: A prefix for the keys
         """
-        host = kwargs.get('host', 'localhost')
-        port = kwargs.get('port', 6379)
-        self.prefix = kwargs.get('prefix', 'pymodbus')
-        self.client = kwargs.get('client', redis.Redis(host=host, port=port))
+        host = kwargs.get("host", "localhost")
+        port = kwargs.get("port", 6379)
+        self.prefix = kwargs.get("prefix", "pymodbus")
+        self.client = kwargs.get("client", redis.Redis(host=host, port=port))
         self._build_mapping()
 
     def __str__(self):
@@ -92,29 +92,29 @@ class RedisSlaveContext(IModbusSlaveContext):
     def _build_mapping(self):
         """Build the function code mapper."""
         self._val_callbacks = {
-            'd': lambda o, c: self._val_bit('d', o, c),
-            'c': lambda o, c: self._val_bit('c', o, c),
-            'h': lambda o, c: self._val_reg('h', o, c),
-            'i': lambda o, c: self._val_reg('i', o, c),
+            "d": lambda o, c: self._val_bit("d", o, c),
+            "c": lambda o, c: self._val_bit("c", o, c),
+            "h": lambda o, c: self._val_reg("h", o, c),
+            "i": lambda o, c: self._val_reg("i", o, c),
         }
         self._get_callbacks = {
-            'd': lambda o, c: self._get_bit('d', o, c),
-            'c': lambda o, c: self._get_bit('c', o, c),
-            'h': lambda o, c: self._get_reg('h', o, c),
-            'i': lambda o, c: self._get_reg('i', o, c),
+            "d": lambda o, c: self._get_bit("d", o, c),
+            "c": lambda o, c: self._get_bit("c", o, c),
+            "h": lambda o, c: self._get_reg("h", o, c),
+            "i": lambda o, c: self._get_reg("i", o, c),
         }
         self._set_callbacks = {
-            'd': lambda o, v: self._set_bit('d', o, v),
-            'c': lambda o, v: self._set_bit('c', o, v),
-            'h': lambda o, v: self._set_reg('h', o, v),
-            'i': lambda o, v: self._set_reg('i', o, v),
+            "d": lambda o, v: self._set_bit("d", o, v),
+            "c": lambda o, v: self._set_bit("c", o, v),
+            "h": lambda o, v: self._set_reg("h", o, v),
+            "i": lambda o, v: self._set_reg("i", o, v),
         }
 
     # --------------------------------------------------------------------------#
     #  Redis discrete implementation
     # --------------------------------------------------------------------------#
     _bit_size = 16
-    _bit_default = '\x00' * (_bit_size % 8)
+    _bit_default = "\x00" * (_bit_size % 8)
 
     def _get_bit_values(self, key, offset, count):
         """Abstract getting bit values.
@@ -152,7 +152,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         """
         response = self._get_bit_values(key, offset, count)
         response = (r or self._bit_default for r in response)
-        result = ''.join(response)
+        result = "".join(response)
         result = unpack_bitstring(result)
         return result[offset:offset + count]
 
@@ -170,8 +170,8 @@ class RedisSlaveContext(IModbusSlaveContext):
 
         current = self._get_bit_values(key, offset, count)
         current = (r or self._bit_default for r in current)
-        current = ''.join(current)
-        current = current[0:offset] + value.decode('utf-8') + current[offset + count:]
+        current = "".join(current)
+        current = current[0:offset] + value.decode("utf-8") + current[offset + count:]
         final = (current[s:s + self._bit_size] for s in range(0, count, self._bit_size))
 
         key = self._get_prefix(key)
@@ -183,7 +183,7 @@ class RedisSlaveContext(IModbusSlaveContext):
     #  Redis register implementation
     # --------------------------------------------------------------------------#
     _reg_size = 16
-    _reg_default = '\x00' * (_reg_size % 8)
+    _reg_default = "\x00" * (_reg_size % 8)
 
     def _get_reg_values(self, key, offset, count):
         """Abstract getting register values.

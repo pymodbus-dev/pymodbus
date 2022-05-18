@@ -11,22 +11,22 @@ from pymodbus.exceptions import ConnectionException
 _logger = logging.getLogger(__name__)
 
 LOG_MSGS = {
-    'conn_msg': 'Connecting to modbus device %s',
-    'connfail_msg': 'Connection to (%s, %s) failed: %s',
-    'discon_msg': 'Disconnecting from modbus device %s',
-    'timelimit_read_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes in timelimit read',
-    'timeout_msg':
-        'Modbus device timeout after %.4f seconds, '
-        'returned %s bytes %s',
-    'delay_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes of %s expected',
-    'read_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes of %s expected',
-    'unexpected_dc_msg': '%s %s'}
+    "conn_msg": "Connecting to modbus device %s",
+    "connfail_msg": "Connection to (%s, %s) failed: %s",
+    "discon_msg": "Disconnecting from modbus device %s",
+    "timelimit_read_msg":
+        "Modbus device read took %.4f seconds, "
+        "returned %s bytes in timelimit read",
+    "timeout_msg":
+        "Modbus device timeout after %.4f seconds, "
+        "returned %s bytes %s",
+    "delay_msg":
+        "Modbus device read took %.4f seconds, "
+        "returned %s bytes of %s expected",
+    "read_msg":
+        "Modbus device read took %.4f seconds, "
+        "returned %s bytes of %s expected",
+    "unexpected_dc_msg": "%s %s"}
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
@@ -57,7 +57,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
     # pylint: disable=no-member
 
-    def __init__(self, host='127.0.0.1', port=Defaults.Port,
+    def __init__(self, host="127.0.0.1", port=Defaults.Port,
                  framer=ModbusSocketFramer, **kwargs):
         """Initialize a client instance.
 
@@ -65,7 +65,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
-        :param source_address: The source address tuple to bind to (default ('', 0))
+        :param source_address: The source address tuple to bind to (default ("", 0))
         :param timeout: The timeout to use for this socket (default Defaults.Timeout)
         :param warn_delay_limit: Log reads that take longer than this as warning.
                Default True sets it to half of "timeout". None never logs these as
@@ -74,7 +74,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         """
-        self.warn_delay_limit = kwargs.get('warn_delay_limit', True)
+        self.warn_delay_limit = kwargs.get("warn_delay_limit", True)
         super().__init__(host, port, framer, **kwargs)
         if self.warn_delay_limit is True:
             self.warn_delay_limit = self.timeout / 2
@@ -124,8 +124,8 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
             return result
         except ConnectionException as exc:
-            # Only log actual network errors, "if not self.socket" then it's a internal code issue
-            if 'Connection unexpectedly closed' in exc.string:
+            # Only log actual network errors, "if not self.socket" then it"s a internal code issue
+            if "Connection unexpectedly closed" in exc.string:
                 _logger.error(self.unexpected_dc_msg, self, exc)
             raise ConnectionException from exc
 
@@ -134,7 +134,8 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
         elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
-            read_type = f"of {size if size else 'in timelimit read'} expected"
+            size_txt = size if size else "in timelimit read"
+            read_type = f"of {size_txt} expected"
             _logger.warning(self.timeout_msg, delay, result_len, read_type)
         else:
             _logger.warning(self.delay_msg, delay, result_len, size)

@@ -173,7 +173,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
         short.  Hence, this is unreliable.
 
         To respond to Modbus...Server.server_close() (which clears each
-        handler's self.running), derive from this class to provide an
+        handler"s self.running), derive from this class to provide an
         alternative handler that awakens from time to time when no input is
         available and checks self.running.
         Use Modbus...Server( handler=... ) keyword to supply the alternative
@@ -254,7 +254,7 @@ class ModbusDisconnectedRequestHandler(ModbusBaseRequestHandler):
                 data, self.socket = self.request
                 if not data:
                     self.running = False
-                    data = b''
+                    data = b""
                 if _logger.isEnabledFor(logging.DEBUG):
                     txt = f"Handling data: {hexlify_packets(data)}"
                     _logger.debug(txt)
@@ -336,9 +336,9 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusConnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.pop('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.pop("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.pop('broadcast_enable',
+        self.broadcast_enable = kwargs.pop("broadcast_enable",
                                            Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -401,7 +401,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client's certificate
+        :param reqclicert: Force the sever request client"s certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler
         :param allow_reuse_address: Whether the server will allow the
@@ -457,9 +457,9 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.pop('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.pop("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.pop('broadcast_enable',
+        self.broadcast_enable = kwargs.pop("broadcast_enable",
                                            Defaults.broadcast_enable)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -527,20 +527,20 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
-        self.device = kwargs.get('port', 0)
-        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
-        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        self.parity = kwargs.get('parity', Defaults.Parity)
-        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-        self.timeout = kwargs.get('timeout', Defaults.Timeout)
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.device = kwargs.get("port", 0)
+        self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+        self.bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+        self.parity = kwargs.get("parity", Defaults.Parity)
+        self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
+        self.timeout = kwargs.get("timeout", Defaults.Timeout)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable',
+        self.broadcast_enable = kwargs.get("broadcast_enable",
                                            Defaults.broadcast_enable)
         self.socket = None
         if self._connect():
             self.is_running = True
-            self._build_handler(kwargs.get('handler',
+            self._build_handler(kwargs.get("handler",
                                            CustomSingleRequestHandler))
 
     def _connect(self):
@@ -636,7 +636,7 @@ def StartTlsServer(context=None,  # NOSONAR pylint: disable=invalid-name,dangero
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
+    :param reqclicert: Force the sever request client"s certificate
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     :param ignore_missing_slaves: True to not send errors on a request to a
@@ -664,7 +664,7 @@ def StartUdpServer(context=None, identity=None, address=None,  # pylint: disable
     :param ignore_missing_slaves: True to not send errors on a request
                                     to a missing slave
     """
-    framer = kwargs.pop('framer', ModbusSocketFramer)
+    framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)
@@ -690,7 +690,7 @@ def StartSerialServer(context=None,  # NOSONAR pylint: disable=invalid-name, dan
     :param ignore_missing_slaves: True to not send errors on a request to a
                                   missing slave
     """
-    framer = kwargs.pop('framer', ModbusAsciiFramer)
+    framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)

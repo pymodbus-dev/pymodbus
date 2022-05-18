@@ -175,17 +175,17 @@ _response_messages = [
 # their default values.
 # -------------------------------------------------------------------------- #
 _arguments = {
-    'address': 0x12,
-    'count': 0x08,
-    'value': 0x01,
-    'values': [0x01] * 8,
-    'read_address': 0x12,
-    'read_count': 0x08,
-    'write_address': 0x12,
-    'write_registers': [0x01] * 8,
-    'transaction': 0x01,
-    'protocol': 0x00,
-    'unit': 0xff,
+    "address": 0x12,
+    "count": 0x08,
+    "value": 0x01,
+    "values": [0x01] * 8,
+    "read_address": 0x12,
+    "read_count": 0x08,
+    "write_address": 0x12,
+    "write_registers": [0x01] * 8,
+    "transaction": 0x01,
+    "protocol": 0x00,
+    "unit": 0xff,
 }
 
 
@@ -207,7 +207,7 @@ def generate_messages(framer, options):
         print("%-44s = " % message.__class__.__name__)  # pylint: disable=consider-using-f-string
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = c.encode(packet, 'hex_codec').decode('utf-8')
+            packet = c.encode(packet, "hex_codec").decode("utf-8")
         print(f"{packet}\n")   # because ascii ends with a \r\n
 
 
@@ -240,7 +240,7 @@ def get_options():
 
     parser.add_option("-m", "--messages",
                       help="The messages to encode (rx, tx)",
-                      dest="messages", default='rx')
+                      dest="messages", default="rx")
 
     (opt, _) = parser.parse_args()
     return opt
@@ -257,10 +257,10 @@ def main():
             print("Logging is not supported on this system")
 
     framer = {
-        'tcp': ModbusSocketFramer,
-        'rtu': ModbusRtuFramer,
-        'binary': ModbusBinaryFramer,
-        'ascii': ModbusAsciiFramer,
+        "tcp": ModbusSocketFramer,
+        "rtu": ModbusRtuFramer,
+        "binary": ModbusBinaryFramer,
+        "ascii": ModbusAsciiFramer,
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

@@ -77,11 +77,12 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         """
         try:
             if hasattr(transport,
-                       'get_extra_info') and transport.get_extra_info(
-                    'sockname') is not None:
-                txt = f"Socket [{transport.get_extra_info('sockname')[:2]}] opened"
+                       "get_extra_info") and transport.get_extra_info(
+                    "sockname") is not None:
+                sockname = transport.get_extra_info("sockname")[:2]
+                txt = f"Socket [{sockname}] opened"
                 _logger.debug(txt)
-            elif hasattr(transport, 'serial'):
+            elif hasattr(transport, "serial"):
                 txt = f"Serial connection opened on port: {transport.serial.port}"
                 _logger.debug(txt)
             else:
@@ -126,7 +127,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
-        the ModbusBaseRequestHandler class's callback Future.
+        the ModbusBaseRequestHandler class"s callback Future.
 
         This callback future gets data from either
         asyncio.DatagramProtocol.datagram_received or
@@ -183,7 +184,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 # for UDP sockets, simply reset the frame
                 if isinstance(self, ModbusConnectedRequestHandler):
                     client_addr = self.client_address[:2]
-                    txt = f"Unknown exception '{exc}' on stream {client_addr} forcing disconnect"
+                    txt = f"Unknown exception \"{exc}\" on stream {client_addr} forcing disconnect"
                     _logger.error(txt)
                     self.transport.close()
                 else:
@@ -281,7 +282,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         """Call when a connection is made."""
         super().connection_made(transport)
 
-        self.client_address = transport.get_extra_info('peername')  # pylint: disable=attribute-defined-outside-init
+        self.client_address = transport.get_extra_info("peername")  # pylint: disable=attribute-defined-outside-init
         self.server.active_connections[self.client_address] = self
         txt = f"TCP client connection established [{self.client_address[:2]}]"
         _logger.debug(txt)
@@ -390,7 +391,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     def connection_lost(self, call_exc):
         super().connection_lost(call_exc)
         _logger.debug("Serial connection lost")
-        if hasattr(self.server, 'on_connection_lost'):
+        if hasattr(self.server, "on_connection_lost"):
             self.server.on_connection_lost()
 
     def data_received(self, data):
@@ -466,9 +467,9 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusConnectedRequestHandler
         self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable',
+        self.broadcast_enable = kwargs.get("broadcast_enable",
                                            Defaults.broadcast_enable)
         self.response_manipulator = kwargs.get("response_manipulator", None)
         if isinstance(identity, ModbusDeviceIdentification):
@@ -550,7 +551,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client's certificate
+        :param reqclicert: Force the sever request client"s certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler. The handler class
                         receives connection create/teardown events
@@ -628,9 +629,9 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.Port)
         self.handler = handler or ModbusDisconnectedRequestHandler
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable',
+        self.broadcast_enable = kwargs.get("broadcast_enable",
                                            Defaults.broadcast_enable)
         self.response_manipulator = kwargs.get("response_manipulator", None)
 
@@ -706,18 +707,18 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         :param response_manipulator: Callback method for
                     manipulating the response
         """
-        self.bytesize = kwargs.get('bytesize', Defaults.Bytesize)
-        self.parity = kwargs.get('parity', Defaults.Parity)
-        self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
-        self.timeout = kwargs.get('timeout', Defaults.Timeout)
-        self.device = kwargs.get('port', 0)
-        self.stopbits = kwargs.get('stopbits', Defaults.Stopbits)
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.bytesize = kwargs.get("bytesize", Defaults.Bytesize)
+        self.parity = kwargs.get("parity", Defaults.Parity)
+        self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
+        self.timeout = kwargs.get("timeout", Defaults.Timeout)
+        self.device = kwargs.get("port", 0)
+        self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
-        self.broadcast_enable = kwargs.get('broadcast_enable',
+        self.broadcast_enable = kwargs.get("broadcast_enable",
                                            Defaults.broadcast_enable)
-        self.auto_reconnect = kwargs.get('auto_reconnect', False)
-        self.reconnect_delay = kwargs.get('reconnect_delay', 2)
+        self.auto_reconnect = kwargs.get("auto_reconnect", False)
+        self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None
         self.handler = kwargs.get("handler") or ModbusSingleRequestHandler
         self.framer = framer or ModbusRtuFramer
@@ -731,7 +732,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.protocol = None
         self.transport = None
         self.control = ModbusControlBlock()
-        identity = kwargs.get('identity')
+        identity = kwargs.get("identity")
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
@@ -852,7 +853,7 @@ async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
+    :param reqclicert: Force the sever request client"s certificate
     :param allow_reuse_address: Whether the server will allow the reuse of an
                                 address.
     :param allow_reuse_port: Whether the server will allow the reuse of a port.
@@ -894,7 +895,7 @@ async def StartUdpServer(context=None,  # NOSONAR pylint: disable=invalid-name,d
     :param ignore_missing_slaves: True to not send errors on a request
                                     to a missing slave
     """
-    framer = kwargs.pop('framer', ModbusSocketFramer)
+    framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
 
     for func in custom_functions:
@@ -924,7 +925,7 @@ async def StartSerialServer(context=None, identity=None,  # NOSONAR pylint: disa
     :param ignore_missing_slaves: True to not send errors on a request to a
                                   missing slave
     """
-    framer = kwargs.pop('framer', ModbusAsciiFramer)
+    framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)

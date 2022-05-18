@@ -48,7 +48,7 @@ class ModbusTcpProtocol(protocol.Protocol):
     def connectionLost(self, reason):  # pylint: disable=signature-differs
         """Call when a client disconnects.
 
-        :param reason: The client's reason for disconnecting
+        :param reason: The client"s reason for disconnecting
         """
         txt = f"Client Disconnected: {reason}"
         _logger.debug(txt)
@@ -131,7 +131,7 @@ class ModbusServerFactory(ServerFactory):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -162,7 +162,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get('ignore_missing_slaves',
+        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
                                                 Defaults.IgnoreMissingSlaves)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -316,8 +316,8 @@ def StartSerialServer(context,  # NOSONAR pylint: disable=invalid-name,dangerous
     from twisted.internet import reactor as local_reactor  # pylint: disable=import-outside-toplevel,reimported
     from twisted.internet.serialport import SerialPort  # pylint: disable=import-outside-toplevel
 
-    port = kwargs.get('port', '/dev/ttyS0')
-    baudrate = kwargs.get('baudrate', Defaults.Baudrate)
+    port = kwargs.get("port", "/dev/ttyS0")
+    baudrate = kwargs.get("baudrate", Defaults.Baudrate)
     bytesize = kwargs.get("bytesize", Defaults.Bytesize)
     stopbits = kwargs.get("stopbits", Defaults.Stopbits)
     parity = kwargs.get("parity", Defaults.Parity)

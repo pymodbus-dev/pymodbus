@@ -46,7 +46,7 @@ class SimplePduTest(unittest.TestCase):
 
         result = self.exception.encode()
         self.exception.decode(result)
-        self.assertEqual(result, b'\x01')
+        self.assertEqual(result, b"\x01")
         self.assertEqual(self.exception.exception_code, 1)
 
     def test_request_exception_factory(self):
@@ -61,24 +61,24 @@ class SimplePduTest(unittest.TestCase):
     def test_calculate_rtu_frame_size(self):
         """Test the calculation of Modbus/RTU frame sizes"""
         self.assertRaises(NotImplementedException,
-                          ModbusRequest.calculateRtuFrameSize, b'')
+                          ModbusRequest.calculateRtuFrameSize, b"")
         ModbusRequest._rtu_frame_size = 5  # pylint: disable=protected-access
-        self.assertEqual(ModbusRequest.calculateRtuFrameSize(b''), 5)
+        self.assertEqual(ModbusRequest.calculateRtuFrameSize(b""), 5)
         del ModbusRequest._rtu_frame_size
 
         ModbusRequest._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         self.assertEqual(ModbusRequest.calculateRtuFrameSize(
-            b'\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6'), 0x05 + 5)
+            b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 0x05 + 5)
         del ModbusRequest._rtu_byte_count_pos
 
         self.assertRaises(NotImplementedException,
-                          ModbusResponse.calculateRtuFrameSize, b'')
+                          ModbusResponse.calculateRtuFrameSize, b"")
         ModbusResponse._rtu_frame_size = 12  # pylint: disable=protected-access
-        self.assertEqual(ModbusResponse.calculateRtuFrameSize(b''), 12)
+        self.assertEqual(ModbusResponse.calculateRtuFrameSize(b""), 12)
         del ModbusResponse._rtu_frame_size
         ModbusResponse._rtu_byte_count_pos = 2  # pylint: disable=protected-access
         self.assertEqual(ModbusResponse.calculateRtuFrameSize(
-            b'\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6'), 0x05 + 5)
+            b"\x11\x01\x05\xcd\x6b\xb2\x0e\x1b\x45\xe6"), 0x05 + 5)
         del ModbusResponse._rtu_byte_count_pos
 
 

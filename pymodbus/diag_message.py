@@ -39,7 +39,7 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :returns: The encoded packet
         """
-        packet = struct.pack('>H', self.sub_function_code)
+        packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
                 packet += self.message.encode()
@@ -47,9 +47,9 @@ class DiagnosticStatusRequest(ModbusRequest):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:
-                    packet += struct.pack('>H', piece)
+                    packet += struct.pack(">H", piece)
             elif isinstance(self.message, int):
-                packet += struct.pack('>H', self.message)
+                packet += struct.pack(">H", self.message)
         return packet
 
     def decode(self, data):
@@ -57,7 +57,7 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :param data: The data to decode into the function code
         """
-        self.sub_function_code, self.message = struct.unpack('>HH', data)  # noqa: E501 pylint: disable=attribute-defined-outside-init
+        self.sub_function_code, self.message = struct.unpack(">HH", data)  # noqa: E501 pylint: disable=attribute-defined-outside-init
 
     def get_response_pdu_size(self):
         """Get response pdu size.
@@ -95,7 +95,7 @@ class DiagnosticStatusResponse(ModbusResponse):
 
         :returns: The encoded packet
         """
-        packet = struct.pack('>H', self.sub_function_code)
+        packet = struct.pack(">H", self.sub_function_code)
         if self.message is not None:
             if isinstance(self.message, str):
                 packet += self.message.encode()
@@ -103,9 +103,9 @@ class DiagnosticStatusResponse(ModbusResponse):
                 packet += self.message
             elif isinstance(self.message, list):
                 for piece in self.message:
-                    packet += struct.pack('>H', piece)
+                    packet += struct.pack(">H", piece)
             elif isinstance(self.message, int):
-                packet += struct.pack('>H', self.message)
+                packet += struct.pack(">H", self.message)
         return packet
 
     def decode(self, data):
@@ -116,8 +116,8 @@ class DiagnosticStatusResponse(ModbusResponse):
         word_len = len(data) // 2
         if len(data) % 2:
             word_len += 1
-            data = data + b'0'
-        data = struct.unpack('>' + 'H' * word_len, data)
+            data = data + b"0"
+        data = struct.unpack(">" + "H" * word_len, data)
         self.sub_function_code, self.message = data[0], data[1:]  # pylint: disable=attribute-defined-outside-init
 
 
@@ -286,7 +286,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 #  Diagnostic Sub Code 02
 # ---------------------------------------------------------------------------#
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
-    """The contents of the remote device's 16-bit diagnostic register are returned in the response."""
+    """The contents of the remote device"s 16-bit diagnostic register are returned in the response."""
 
     sub_function_code = 0x0002
 
@@ -303,7 +303,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
     """Return diagnostic register.
 
-    The contents of the remote device's 16-bit diagnostic register are
+    The contents of the remote device"s 16-bit diagnostic register are
     returned in the response
     """
 
@@ -316,7 +316,7 @@ class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
 class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
     """Change ascii input delimiter.
 
-    The character 'CHAR' passed in the request data field becomes the end of
+    The character "CHAR" passed in the request data field becomes the end of
     message delimiter for future messages (replacing the default LF
     character). This function is useful in cases of a Line Feed is not
     required at the end of ASCII messages.
@@ -337,7 +337,7 @@ class ChangeAsciiInputDelimiterRequest(DiagnosticStatusSimpleRequest):
 class ChangeAsciiInputDelimiterResponse(DiagnosticStatusSimpleResponse):
     """Change ascii input delimiter.
 
-    The character 'CHAR' passed in the request data field becomes the end of
+    The character "CHAR" passed in the request data field becomes the end of
     message delimiter for future messages (replacing the default LF
     character). This function is useful in cases of a Line Feed is not
     required at the end of ASCII messages.
@@ -753,9 +753,9 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
     In addition to the Function code (08) and Subfunction code
     (00 15 hex) in the query, a two-byte Operation field is used
-    to specify either a 'Get Statistics' or a 'Clear Statistics'
-    operation.  The two operations are exclusive - the 'Get'
-    operation cannot clear the statistics, and the 'Clear'
+    to specify either a "Get Statistics" or a "Clear Statistics"
+    operation.  The two operations are exclusive - the "Get"
+    operation cannot clear the statistics, and the "Clear"
     operation does not return statistics prior to clearing
     them. Statistics are also cleared on power-up of the slave
     device.
@@ -802,8 +802,8 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
         :returns: The encoded packet
         """
-        packet = struct.pack('>H', self.sub_function_code)
-        packet += struct.pack('>H', self.message)
+        packet = struct.pack(">H", self.sub_function_code)
+        packet += struct.pack(">H", self.message)
         return packet
 
 

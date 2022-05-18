@@ -14,7 +14,7 @@ try:
     from aiohttp import web
 except ImportError:
     print("Reactive server requires aiohttp. "
-          "Please install with 'pip install aiohttp' and try again.")
+          "Please install with \"pip install aiohttp\" and try again.")
     sys.exit(1)
 
 from pymodbus.version import version as pymodbus_version
@@ -82,7 +82,7 @@ Reactive Modbus Server started.
 
 ===========================================================================
 Example Usage:
-curl -X POST http://{}:{} -d '{{"response_type": "error", "error_code": 4}}'
+curl -X POST http://{}:{} -d "{{"response_type": "error", "error_code": 4}}"
 ===========================================================================
 """
 
@@ -126,7 +126,7 @@ class ReactiveServer:
     def _add_routes(self):
         """Add routes."""
         self._web_app.add_routes([
-            web.post('/', self._response_manipulator)])
+            web.post("/", self._response_manipulator)])
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task after startup.
@@ -263,7 +263,7 @@ class ReactiveServer:
 
     @classmethod
     def create_identity(cls, vendor="Pymodbus", product_code="PM",
-                        vendor_url='http://github.com/riptideio/pymodbus/',  # NOSONAR
+                        vendor_url="http://github.com/riptideio/pymodbus/",  # NOSONAR
                         product_name="Pymodbus Server",
                         model_name="Reactive Server",
                         version=pymodbus_version.short()):
@@ -278,12 +278,12 @@ class ReactiveServer:
         :return: ModbusIdentity object
         """
         identity = ModbusDeviceIdentification(info_name={
-            'VendorName': vendor,
-            'ProductCode': product_code,
-            'VendorUrl': vendor_url,
-            'ProductName': product_name,
-            'ModelName': model_name,
-            'MajorMinorRevision': version,
+            "VendorName": vendor,
+            "ProductCode": product_code,
+            "VendorUrl": vendor_url,
+            "ProductName": product_name,
+            "ModelName": model_name,
+            "MajorMinorRevision": version,
         })
 
         return identity

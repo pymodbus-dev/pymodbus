@@ -17,7 +17,7 @@ class ModbusException(Exception):
 
     def __str__(self):
         """Return string representation."""
-        return f'Modbus Error: {self.string}'
+        return f"Modbus Error: {self.string}"
 
     def isError(self):  # pylint: disable=no-self-use,(invalid-name
         """Error"""
@@ -102,7 +102,7 @@ class MessageRegisterException(ModbusException):
 
     def __init__(self, string=""):
         """Initialize."""
-        message = f'[Error registering message] {string}'
+        message = f"[Error registering message] {string}"
         ModbusException.__init__(self, message)
 
 

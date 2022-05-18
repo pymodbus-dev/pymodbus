@@ -113,9 +113,9 @@ class TestAsyncioClient:
     def test_initialization_serial_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization serial in loop."""
         _, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port='/tmp/ptyp0', baudrate=9600, method='rtu')  # NOSONAR #nosec
+            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu")  # NOSONAR #nosec
 
-        assert client.port == '/tmp/ptyp0'  # nosec NOSONAR
+        assert client.port == "/tmp/ptyp0"  # nosec NOSONAR
         assert client.baudrate == 9600  # nosec
 
     def test_factory_reset_wait_before_reconnect(self):  # pylint: disable=no-self-use
@@ -165,7 +165,7 @@ class TestAsyncioClient:
         assert client.connected  # nosec
         assert client.protocol is mock.sentinel.PROTOCOL  # nosec
 
-    @mock.patch('pymodbus.client.asynchronous.async_io.asyncio.ensure_future')
+    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
     def test_factory_protocol_lost_connection(self, mock_async):  # pylint: disable=no-self-use
         """Test factory protocol lost connection."""
         mock_protocol_class = mock.MagicMock()
@@ -186,8 +186,8 @@ class TestAsyncioClient:
 
         client.connected = True
         with mock.patch(
-                'pymodbus.client.asynchronous.async_io.'
-                'ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
+                "pymodbus.client.asynchronous.async_io."
+                "ReconnectingAsyncioModbusTcpClient._reconnect") as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
@@ -204,19 +204,19 @@ class TestAsyncioClient:
         client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class)
         await client.start(mock.sentinel.HOST, mock.sentinel.PORT)
 
-    @mock.patch('pymodbus.client.asynchronous.async_io.asyncio.ensure_future')
+    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
     def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=no-self-use
         """Test factory start failing and retried."""
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
-        mock_loop.create_connection = mock.MagicMock(side_effect=Exception('Did not work.'))
+        mock_loop.create_connection = mock.MagicMock(side_effect=Exception("Did not work."))
         client = ReconnectingAsyncioModbusTcpClient(
             protocol_class=mock_protocol_class, loop=mock_loop)
 
         # check whether reconnect is called upon failed connection attempt:
         with mock.patch(
-                'pymodbus.client.asynchronous.async_io'
-                '.ReconnectingAsyncioModbusTcpClient._reconnect') as mock_reconnect:
+                "pymodbus.client.asynchronous.async_io"
+                ".ReconnectingAsyncioModbusTcpClient._reconnect") as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
@@ -225,7 +225,7 @@ class TestAsyncioClient:
                     mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
 
     # @pytest.mark.asyncio
-    @mock.patch('pymodbus.client.asynchronous.async_io.asyncio.sleep')
+    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.sleep")
     def test_factory_reconnect(self, mock_sleep):  # pylint: disable=no-self-use
         """Test factory reconnect."""
         mock_protocol_class = mock.MagicMock()
@@ -302,7 +302,7 @@ class TestAsyncioClient:
         protocol.connection_made(transport)
         assert protocol.transport == transport  # nosec
         assert protocol.connected  # nosec
-        data = b'\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04'
+        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
         # setup existing request
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access

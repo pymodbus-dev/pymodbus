@@ -26,8 +26,8 @@ from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 
@@ -53,7 +53,7 @@ class Decoder:
 
         :param message: The message to decode
         """
-        value = message if self.encode else c.encode(message, 'hex_codec')
+        value = message if self.encode else c.encode(message, "hex_codec")
         print("=" * 80)
         print(f"Decoding Message {value}")
         print("=" * 80)
@@ -88,7 +88,7 @@ class Decoder:
 
         :param message: The message to print
         """
-        print("%-15s = %s" % ('name', message.__class__.__name__))  # NOSONAR pylint: disable=consider-using-f-string
+        print("%-15s = %s" % ("name", message.__class__.__name__))  # NOSONAR pylint: disable=consider-using-f-string
         for (k_dict, v_dict) in message.__dict__.items():
             if isinstance(v_dict, dict):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
@@ -102,7 +102,7 @@ class Decoder:
                     print("%-15s . %s" % ("", line))  # pylint: disable=consider-using-f-string
             else:
                 print("%-15s = %s" % (k_dict, hex(v_dict)))  # pylint: disable=consider-using-f-string
-        print("%-15s = %s" % ('documentation', message.__doc__))  # pylint: disable=consider-using-f-string
+        print("%-15s = %s" % ("documentation", message.__doc__))  # pylint: disable=consider-using-f-string
 
 
 # -------------------------------------------------------------------------- #
@@ -171,16 +171,16 @@ def get_messages(option):
             option.message = msg
 
         if not option.ascii:
-            option.message = c.decode(option.message.encode(), 'hex_codec')
+            option.message = c.decode(option.message.encode(), "hex_codec")
         yield option.message
     elif option.file:
         with open(option.file, "r") as handle:  # pylint: disable=unspecified-encoding
             for line in handle:
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
                 if not option.ascii:
                     line = line.strip()
-                    line = line.decode('hex')
+                    line = line.decode("hex")
                 yield line
 
 
@@ -195,10 +195,10 @@ def main():
             print(f"Logging is not supported on this system- {exc}")
 
     framer = {
-        'tcp': ModbusSocketFramer,
-        'rtu': ModbusRtuFramer,
-        'binary': ModbusBinaryFramer,
-        'ascii': ModbusAsciiFramer,
+        "tcp": ModbusSocketFramer,
+        "rtu": ModbusRtuFramer,
+        "binary": ModbusBinaryFramer,
+        "ascii": ModbusAsciiFramer,
     }.get(option.framer or option.parser, ModbusSocketFramer)
 
     decoder = Decoder(framer, option.ascii)

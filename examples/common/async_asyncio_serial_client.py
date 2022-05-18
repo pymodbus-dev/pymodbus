@@ -103,10 +103,10 @@ async def start_async_test(client):  # pylint: disable=redefined-outer-name
         assert rq.function_code < 0x80  # nosec test that we are not an error
 
         arguments = {
-            'read_address': 1,
-            'read_count': 8,
-            'write_address': 1,
-            'write_registers': [20] * 8,
+            "read_address": 1,
+            "read_count": 8,
+            "write_address": 1,
+            "write_registers": [20] * 8,
         }
         log.debug("Read write registers simultaneously")
         rq = await client.readwrite_registers(unit=UNIT, **arguments)
@@ -120,14 +120,14 @@ async def start_async_test(client):  # pylint: disable=redefined-outer-name
     await asyncio.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # For testing on linux based systems you can use socat to create serial
     # ports
     # ----------------------------------------------------------------------- #
     # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
     # link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-    loop, client = ModbusClient(schedulers.ASYNC_IO, port='/tmp/ttyp0',  # nosec pylint: disable=unpacking-non-sequence
+    loop, client = ModbusClient(schedulers.ASYNC_IO, port="/tmp/ttyp0",  # nosec pylint: disable=unpacking-non-sequence
                                 baudrate=9600, method="rtu")
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()

@@ -11,7 +11,7 @@ Datastore Implementation
 -------------------------
 
 There are two ways that the server datastore can be implemented.
-The first is a complete range from 'address' start to 'count'
+The first is a complete range from "address" start to "count"
 number of indices.  This can be thought of as a straight array::
 
     data = range(1, 1 + count)
@@ -20,7 +20,7 @@ number of indices.  This can be thought of as a straight array::
 The other way that the datastore can be implemented (and how
 many devices implement it) is a associate-array::
 
-    data = {1:'1', 3:'3', ..., count:'count'}
+    data = {1:"1", 3:"3", ..., count:"count"}
     [1,3,...,count]
 
 The difference between the two is that the latter will allow
@@ -138,7 +138,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param values: Either a list or a dictionary of values
         """
         self.address = address
-        if hasattr(values, '__iter__'):
+        if hasattr(values, "__iter__"):
             self.values = list(values)
         else:
             self.values = [values]
@@ -276,7 +276,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         if isinstance(values, dict):
             _process_as_dict(values)
             return
-        if hasattr(values, '__iter__'):
+        if hasattr(values, "__iter__"):
             values = dict(enumerate(values))
         elif values is None:
             values = {}  # Must make a new dict here per instance

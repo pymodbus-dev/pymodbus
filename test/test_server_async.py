@@ -24,11 +24,11 @@ from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 # --------------------------------------------------------------------------- #
 # Fixture
 # --------------------------------------------------------------------------- #
-
+PATCH_TWISTER = "twisted.internet.reactor"
 
 no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
-    sys.platform == 'win32' and platform.python_implementation() == 'PyPy',
-    reason='Twisted serial requires pywin32 which is not compatible with PyPy',
+    sys.platform == "win32" and platform.python_implementation() == "PyPy",
+    reason="Twisted serial requires pywin32 which is not compatible with PyPy",
 )
 
 
@@ -40,7 +40,7 @@ class AsynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def setUp(self):
         """Initialize the test environment."""
-        values = {i: '' for i in range(10)}
+        values = {i: "" for i in range(10)}
         ModbusDeviceIdentification(info=values)
 
     def tearDown(self):
@@ -51,7 +51,7 @@ class AsynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def test_tcp_server_startup(self):
         """Test that the modbus tcp asynchronous server starts correctly"""
-        with patch('twisted.internet.reactor') as mock_reactor:
+        with patch(PATCH_TWISTER) as mock_reactor:
             console = False
             call_count = 1
             StartTcpServer(context=None, console=console)
@@ -161,11 +161,11 @@ class AsynchronousServerTest(unittest.TestCase):
     def test_modbus_server_factory(self):
         """Test the base class for all the clients"""
         factory = ModbusServerFactory(store=None)
-        self.assertEqual(factory.control.Identity.VendorName, '')
+        self.assertEqual(factory.control.Identity.VendorName, "")
 
-        identity = ModbusDeviceIdentification(info_name={'VendorName': 'VendorName'})
+        identity = ModbusDeviceIdentification(info_name={"VendorName": "VendorName"})
         factory = ModbusServerFactory(store=None, identity=identity)
-        self.assertEqual(factory.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(factory.control.Identity.VendorName, "VendorName")
 
     # ----------------------------------------------------------------------- #
     # Test ModbusUdpProtocol
@@ -173,15 +173,15 @@ class AsynchronousServerTest(unittest.TestCase):
     def test_udp_server_initialize(self):
         """Test UDP server."""
         protocol = ModbusUdpProtocol(store=None)
-        self.assertEqual(protocol.control.Identity.VendorName, '')
+        self.assertEqual(protocol.control.Identity.VendorName, "")
 
-        identity = ModbusDeviceIdentification(info={0x00: 'VendorName'})
+        identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
         protocol = ModbusUdpProtocol(store=None, identity=identity)
-        self.assertEqual(protocol.control.Identity.VendorName, 'VendorName')
+        self.assertEqual(protocol.control.Identity.VendorName, "VendorName")
 
     def test_udp_server_startup(self):
         """Test that the modbus udp asynchronous server starts correctly"""
-        with patch('twisted.internet.reactor') as mock_reactor:
+        with patch(PATCH_TWISTER) as mock_reactor:
             StartUdpServer(context=None)
             self.assertEqual(mock_reactor.listenUDP.call_count, 1)
             self.assertEqual(mock_reactor.run.call_count, 1)
@@ -190,7 +190,7 @@ class AsynchronousServerTest(unittest.TestCase):
     @patch("twisted.internet.serialport.SerialPort")
     def test_serial_server_startup(self, mock_sp):  # pylint: disable=unused-argument
         """Test that the modbus serial asynchronous server starts correctly"""
-        with patch('twisted.internet.reactor') as mock_reactor:
+        with patch(PATCH_TWISTER) as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
@@ -198,7 +198,7 @@ class AsynchronousServerTest(unittest.TestCase):
     @patch("twisted.internet.serialport.SerialPort")
     def test_stop_server_from_main_thread(self, mock_sp):  # pylint: disable=unused-argument
         """Stop asynchronous server."""
-        with patch('twisted.internet.reactor') as mock_reactor:
+        with patch(PATCH_TWISTER) as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
             StopServer()
@@ -208,7 +208,7 @@ class AsynchronousServerTest(unittest.TestCase):
     @patch("twisted.internet.serialport.SerialPort")
     def test_stop_server_from_thread(self, mock_sp):  # pylint: disable=unused-argument
         """Stop asynchronous server from child thread."""
-        with patch('twisted.internet.reactor') as mock_reactor:
+        with patch(PATCH_TWISTER) as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
             self.assertEqual(mock_reactor.run.call_count, 1)
             mythread = Thread(target=StopServer)

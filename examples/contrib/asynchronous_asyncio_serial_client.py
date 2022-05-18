@@ -78,10 +78,10 @@ async def start_async_test(client):
     assert rq.function_code < 0x80  # nosec test that we are not an error
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     rq = await client.readwrite_registers(unit=UNIT, **arguments)
     rr = await client.read_holding_registers(1, 8, unit=UNIT)
@@ -90,16 +90,16 @@ async def start_async_test(client):
     assert rr.registers == [20] * 8  # nosec test the expected value
 
 
-# create_serial_connection doesn't allow to pass arguments
+# create_serial_connection doesn"t allow to pass arguments
 # to protocol so that this is kind of workaround
 def make_protocol():
     """Make protocol."""
     return ModbusClientProtocol(framer=ModbusRtuFramer(ClientDecoder()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    coro = create_serial_connection(loop, make_protocol, '/tmp/ttyp0',  # nosec NOSONAR
+    coro = create_serial_connection(loop, make_protocol, "/tmp/ttyp0",  # nosec NOSONAR
                                     baudrate=9600)
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     loop.run_until_complete(start_async_test(protocol))

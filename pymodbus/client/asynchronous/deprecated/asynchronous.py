@@ -89,7 +89,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no 
         self._connected = False
         for tid in list(self.transaction):
             self.transaction.getTransaction(tid).errback(Failure(
-                ConnectionException('Connection lost during request')))
+                ConnectionException("Connection lost during request")))
 
     def dataReceived(self, data):
         """Get response, check for valid message, decode result.
@@ -125,7 +125,7 @@ class ModbusClientProtocol(protocol.Protocol, ModbusClientMixin):  # pragma: no 
         """
         if not self._connected:
             return defer.fail(Failure(
-                ConnectionException('Client is not connected')))
+                ConnectionException("Client is not connected")))
 
         deferred = defer.Deferred()
         self.transaction.addTransaction(deferred, tid)

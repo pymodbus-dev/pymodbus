@@ -32,7 +32,7 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
+        self._buffer = b""
         self._header = {}
         self._hsize = 0x0
         self.decoder = decoder
@@ -50,7 +50,7 @@ class ModbusTlsFramer(ModbusFramer):
             # we have at least a complete message, continue
             if len(self._buffer) - self._hsize >= 1:
                 return True
-        # we don't have enough of a message yet, wait
+        # we don"t have enough of a message yet, wait
         return False
 
     def advanceFrame(self):
@@ -60,7 +60,7 @@ class ModbusTlsFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = b''
+        self._buffer = b""
         self._header = {}
 
     def isFrameReady(self):
@@ -104,7 +104,7 @@ class ModbusTlsFramer(ModbusFramer):
         """Decode data."""
         if len(data) > self._hsize:
             (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0:self._hsize + 1])
-            return {'fcode': fcode}
+            return {"fcode": fcode}
         return {}
 
     def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ
@@ -163,10 +163,10 @@ class ModbusTlsFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
+        self._buffer = b""
 
     def getRawFrame(self):  # pylint: disable=invalid-name
         """Return the complete buffer."""

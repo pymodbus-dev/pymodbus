@@ -52,7 +52,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :returns: The byte encoded message
         """
-        result = struct.pack('>H', self.address)
+        result = struct.pack(">H", self.address)
         if self.value:
             result += _turn_coil_on
         else:
@@ -64,7 +64,7 @@ class WriteSingleCoilRequest(ModbusRequest):
 
         :param data: The packet data to decode
         """
-        self.address, value = struct.unpack('>HH', data)
+        self.address, value = struct.unpack(">HH", data)
         self.value = (value == ModbusStatus.On)
 
     def execute(self, context):
@@ -122,7 +122,7 @@ class WriteSingleCoilResponse(ModbusResponse):
 
         :return: The byte encoded message
         """
-        result = struct.pack('>H', self.address)
+        result = struct.pack(">H", self.address)
         if self.value:
             result += _turn_coil_on
         else:
@@ -134,7 +134,7 @@ class WriteSingleCoilResponse(ModbusResponse):
 
         :param data: The packet data to decode
         """
-        self.address, value = struct.unpack('>HH', data)
+        self.address, value = struct.unpack(">HH", data)
         self.value = (value == ModbusStatus.On)
 
     def __str__(self):
@@ -153,8 +153,8 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     coil numbered 1 is addressed as 0.
 
     The requested ON/OFF states are specified by contents of the request
-    data field. A logical '1' in a bit position of the field requests the
-    corresponding output to be ON. A logical '0' requests it to be OFF."
+    data field. A logical "1" in a bit position of the field requests the
+    corresponding output to be ON. A logical "0" requests it to be OFF."
     """
 
     function_code = 15
@@ -170,7 +170,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         self.address = address
         if not values:
             values = []
-        elif not hasattr(values, '__iter__'):
+        elif not hasattr(values, "__iter__"):
             values = [values]
         self.values = values
         self.byte_count = (len(self.values) + 7) // 8
@@ -182,7 +182,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         """
         count = len(self.values)
         self.byte_count = (count + 7) // 8
-        packet = struct.pack('>HHB', self.address, count, self.byte_count)
+        packet = struct.pack(">HHB", self.address, count, self.byte_count)
         packet += pack_bitstring(self.values)
         return packet
 
@@ -191,7 +191,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
 
         :param data: The packet data to decode
         """
-        self.address, count, self.byte_count = struct.unpack('>HHB', data[0:5])
+        self.address, count, self.byte_count = struct.unpack(">HHB", data[0:5])
         values = unpack_bitstring(data[5:])
         self.values = values[:count]
 
@@ -253,14 +253,14 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        return struct.pack('>HH', self.address, self.count)
+        return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data):
         """Decode a write coils response.
 
         :param data: The packet data to decode
         """
-        self.address, self.count = struct.unpack('>HH', data)
+        self.address, self.count = struct.unpack(">HH", data)
 
     def __str__(self):
         """Return a string representation of the instance.

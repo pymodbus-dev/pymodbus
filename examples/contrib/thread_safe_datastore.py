@@ -181,8 +181,8 @@ if __name__ == "__main__":
 
         def __init__(self, **kwargs):
             """Init."""
-            self.counter = kwargs.get('start', 0)
-            self.finish = kwargs.get('finish', 1000)
+            self.counter = kwargs.get("start", 0)
+            self.finish = kwargs.get("finish", 1000)
             self.lock = threading.Lock()
 
         def increment(self, count=1):

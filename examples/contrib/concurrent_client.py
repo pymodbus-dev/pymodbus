@@ -42,9 +42,9 @@ class _Primitives:  # pylint: disable=too-few-public-methods)
     """
 
     def __init__(self, **kwargs):
-        self.queue = kwargs.get('queue')
-        self.event = kwargs.get('event')
-        self.worker = kwargs.get('worker')
+        self.queue = kwargs.get("queue")
+        self.event = kwargs.get("event")
+        self.worker = kwargs.get("worker")
 
     @classmethod
     def create(cls, in_process=False):
@@ -65,8 +65,8 @@ class _Primitives:  # pylint: disable=too-few-public-methods)
 # We use named tuples here as they are very lightweight while giving us
 # all the benefits of classes.
 # -------------------------------------------------------------------------- #
-WorkRequest = namedtuple('WorkRequest', 'request, work_id')
-WorkResponse = namedtuple('WorkResponse', 'is_exception, work_id, response')
+WorkRequest = namedtuple("WorkRequest", "request, work_id")
+WorkResponse = namedtuple("WorkResponse", "is_exception, work_id, response")
 
 
 # -------------------------------------------------------------------------- #
@@ -164,9 +164,9 @@ class ConcurrentClient(ModbusClientMixin):
 
     def __init__(self, **kwargs):
         """Initialize a new instance of the client."""
-        worker_count = kwargs.get('count', multiprocessing.cpu_count())
-        self.factory = kwargs.get('factory')
-        primitives = _Primitives.create(kwargs.get('in_process', False))
+        worker_count = kwargs.get("count", multiprocessing.cpu_count())
+        self.factory = kwargs.get("factory")
+        primitives = _Primitives.create(kwargs.get("in_process", False))
         self.is_shutdown = primitives.event()  # process shutdown condition
         self.input_queue = primitives.queue()  # input requests to process
         self.output_queue = primitives.queue()  # output results to return
@@ -210,7 +210,7 @@ class ConcurrentClient(ModbusClientMixin):
         of the call.
 
         :param request: The request to execute
-        :returns: A future linked to the call's response
+        :returns: A future linked to the call"s response
         """
         fut, work_id = Future(), next(self.counter)
         self.input_queue.put(WorkRequest(request, work_id))
@@ -235,7 +235,7 @@ if __name__ == "__main__":
         """Client factory."""
         txt = f"creating client for: {threading.current_thread()}"
         log.debug(txt)
-        my_client = ModbusTcpClient('127.0.0.1', port=5020)
+        my_client = ModbusTcpClient("127.0.0.1", port=5020)
         my_client.connect()
         return client
 

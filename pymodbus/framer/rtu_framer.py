@@ -58,10 +58,10 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
         self._hsize = 0x01
-        self._end = b'\x0d\x0a'
+        self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.decoder = decoder
         self.client = client
@@ -74,7 +74,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
-            return {'unit': uid, 'fcode': fcode}
+            return {"unit": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -87,9 +87,9 @@ class ModbusRtuFramer(ModbusFramer):
         """
         try:
             self.populateHeader()
-            frame_size = self._header['len']
+            frame_size = self._header["len"]
             data = self._buffer[:frame_size - 2]
-            crc = self._header['crc']
+            crc = self._header["crc"]
             crc_val = (int(crc[0]) << 8) + int(crc[1])
             return checkCRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
@@ -102,9 +102,9 @@ class ModbusRtuFramer(ModbusFramer):
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header['len']:]
+        self._buffer = self._buffer[self._header["len"]:]
         _logger.debug("Frame advanced, resetting header!!")
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def resetFrame(self):  # pylint: disable=invalid-name
         """Reset the entire message frame.
@@ -112,14 +112,14 @@ class ModbusRtuFramer(ModbusFramer):
         This allows us to skip over errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
         txt = (f"Resetting frame - Current Frame in "
                f"buffer - {hexlify_packets(self._buffer)}")
         _logger.debug(txt)
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def isFrameReady(self):
         """Check if we should continue decode logic.
@@ -152,16 +152,16 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header['uid'] = int(data[0])
+        self._header["uid"] = int(data[0])
         func_code = int(data[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         size = pdu_class.calculateRtuFrameSize(data)
-        self._header['len'] = size
+        self._header["len"] = size
 
         if len(data) < size:
             # crc yet not available
             raise IndexError
-        self._header['crc'] = data[size - 2:size]
+        self._header["crc"] = data[size - 2:size]
 
     def addToFrame(self, message):
         """Add the received data to the buffer handle.
@@ -173,16 +173,16 @@ class ModbusRtuFramer(ModbusFramer):
     def getFrame(self):
         """Get the next frame from the buffer.
 
-        :returns: The frame data or ''
+        :returns: The frame data or ""
         """
         start = self._hsize
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
             txt = f"Getting Frame - {hexlify_packets(buffer)}"
             _logger.debug(txt)
             return buffer
-        return b''
+        return b""
 
     def populateResult(self, result):
         """Populate the modbus result header.
@@ -192,8 +192,8 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
-        result.transaction_id = self._header['uid']
+        result.unit_id = self._header["uid"]
+        result.transaction_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -226,7 +226,8 @@ class ModbusRtuFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
+                    header_txt = self._header["uid"]
+                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
                     _logger.debug(txt)
                     self.resetFrame()
             else:

@@ -52,13 +52,13 @@ class ModbusTransactionManager:
         """
         self.tid = Defaults.TransactionId
         self.client = client
-        self.backoff = kwargs.get('backoff', Defaults.Backoff) or 0.3
-        self.retry_on_empty = kwargs.get('retry_on_empty',
+        self.backoff = kwargs.get("backoff", Defaults.Backoff) or 0.3
+        self.retry_on_empty = kwargs.get("retry_on_empty",
                                          Defaults.RetryOnEmpty)
-        self.retry_on_invalid = kwargs.get('retry_on_invalid',
+        self.retry_on_invalid = kwargs.get("retry_on_invalid",
                                            Defaults.RetryOnInvalid)
-        self.retries = kwargs.get('retries', Defaults.Retries) or 1
-        self.reset_socket = kwargs.get('reset_socket', True)
+        self.retries = kwargs.get("retries", Defaults.Retries) or 1
+        self.reset_socket = kwargs.get("reset_socket", True)
         self._transaction_lock = RLock()
         self._no_response_devices = []
         if client:
@@ -110,11 +110,11 @@ class ModbusTransactionManager:
             return False
 
         mbap = self.client.framer.decode_data(response)
-        if mbap.get('unit') != request.unit_id or mbap.get('fcode') & 0x7F != request.function_code:
+        if mbap.get("unit") != request.unit_id or mbap.get("fcode") & 0x7F != request.function_code:
             return False
 
-        if 'length' in mbap and exp_resp_len:
-            return mbap.get('length') == exp_resp_len
+        if "length" in mbap and exp_resp_len:
+            return mbap.get("length") == exp_resp_len
         return True
 
     def execute(self, request):  # NOSONAR
@@ -134,7 +134,7 @@ class ModbusTransactionManager:
                     self.client.framer.resetFrame()
                 if (broadcast := (self.client.broadcast_enable and not request.unit_id)):
                     self._transact(request, None, broadcast=True)
-                    response = b'Broadcast write sent - no response expected'
+                    response = b"Broadcast write sent - no response expected"
                 else:
                     expected_response_length = None
                     if not isinstance(self.client.framer, ModbusSocketFramer):
@@ -205,8 +205,8 @@ class ModbusTransactionManager:
                             self.client.close()
                     if hasattr(self.client, "state"):
                         _logger.debug("Changing transaction state from "
-                                      "'PROCESSING REPLY' to "
-                                      "'TRANSACTION_COMPLETE'")
+                                      "\"PROCESSING REPLY\" to "
+                                      "\"TRANSACTION_COMPLETE\"")
                         self.client.state = (
                             ModbusTransactionState.TRANSACTION_COMPLETE)
 
@@ -225,7 +225,7 @@ class ModbusTransactionManager:
         txt = f"Retry on {reason} response - {retries}"
         _logger.debug(txt)
         _logger.debug("Changing transaction state from "
-                      "'WAITING_FOR_REPLY' to 'RETRYING'")
+                      "\"WAITING_FOR_REPLY\" to \"RETRYING\"")
         self.client.state = ModbusTransactionState.RETRYING
         if self.backoff:
             delay = 2 ** (self.retries - retries) * self.backoff
@@ -260,22 +260,22 @@ class ModbusTransactionManager:
             size = self._send(packet)
             if isinstance(size, bytes) and self.client.state == ModbusTransactionState.RETRYING:
                 _logger.debug("Changing transaction state from "
-                              "'RETRYING' to 'PROCESSING REPLY'")
+                              "\"RETRYING\" to \"PROCESSING REPLY\"")
                 self.client.state = ModbusTransactionState.PROCESSING_REPLY
                 return size, None
             if broadcast:
                 if size:
-                    _logger.debug("Changing transaction state from 'SENDING' "
-                                  "to 'TRANSACTION_COMPLETE'")
+                    _logger.debug("Changing transaction state from \"SENDING\" "
+                                  "to \"TRANSACTION_COMPLETE\"")
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
-                return b'', None
+                return b"", None
             if size:
-                _logger.debug("Changing transaction state from 'SENDING' "
-                              "to 'WAITING FOR REPLY'")
+                _logger.debug("Changing transaction state from \"SENDING\" "
+                              "to \"WAITING FOR REPLY\"")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
             if hasattr(self.client, "handle_local_echo") and self.client.handle_local_echo is True:
                 if self._recv(size, full) != packet:
-                    return b'', "Wrong local echo"
+                    return b"", "Wrong local echo"
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
@@ -289,7 +289,7 @@ class ModbusTransactionManager:
             txt = f"Transaction failed. ({msg}) "
             _logger.debug(txt)
             last_exception = msg
-            result = b''
+            result = b""
         return result, last_exception
 
     def _send(self, packet, retrying=False):  # NOSONAR pylint: disable=unused-argument
@@ -346,7 +346,7 @@ class ModbusTransactionManager:
             else:
                 total = expected_response_length
         else:
-            read_min = b''
+            read_min = b""
             total = expected_response_length
         result = self.client.framer.recvPacket(expected_response_length)
         result = read_min + result
@@ -363,7 +363,7 @@ class ModbusTransactionManager:
             _logger.debug("No response received to unbounded read !!!!")
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
             _logger.debug("Changing transaction state from "
-                          "'WAITING FOR REPLY' to 'PROCESSING REPLY'")
+                          "\"WAITING FOR REPLY\" to \"PROCESSING REPLY\"")
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 

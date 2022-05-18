@@ -26,19 +26,19 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
     def setUp(self):
         """Do setup."""
         self.info = {
-            0x00: 'Bashwork',               # VendorName
-            0x01: 'PTM',                    # ProductCode
-            0x02: '1.0',                    # MajorMinorRevision
-            0x03: 'http://internets.com',  # NOSONAR VendorUrl
-            0x04: 'pymodbus',               # ProductName
-            0x05: 'bashwork',               # ModelName
-            0x06: 'unittest',               # UserApplicationName
-            0x07: 'x',                      # reserved
-            0x08: 'x',                      # reserved
-            0x10: 'reserved',               # reserved
-            0x80: 'custom1',                # device specific start
-            0x82: 'custom2',                # device specific
-            0xFF: 'customlast',             # device specific last
+            0x00: "Bashwork",               # VendorName
+            0x01: "PTM",                    # ProductCode
+            0x02: "1.0",                    # MajorMinorRevision
+            0x03: "http://internets.com",  # NOSONAR VendorUrl
+            0x04: "pymodbus",               # ProductName
+            0x05: "bashwork",               # ModelName
+            0x06: "unittest",               # UserApplicationName
+            0x07: "x",                      # reserved
+            0x08: "x",                      # reserved
+            0x10: "reserved",               # reserved
+            0x80: "custom1",                # device specific start
+            0x82: "custom2",                # device specific
+            0xFF: "customlast",             # device specific last
         }
         self.ident = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
@@ -54,33 +54,33 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
     def test_update_identity(self):
         """Test device identification reading"""
         self.control.Identity.update(self.ident)
-        self.assertEqual(self.control.Identity.VendorName, 'Bashwork')
-        self.assertEqual(self.control.Identity.ProductCode, 'PTM')
-        self.assertEqual(self.control.Identity.MajorMinorRevision, '1.0')
-        self.assertEqual(self.control.Identity.VendorUrl, 'http://internets.com')  # NOSONAR
-        self.assertEqual(self.control.Identity.ProductName, 'pymodbus')
-        self.assertEqual(self.control.Identity.ModelName, 'bashwork')
-        self.assertEqual(self.control.Identity.UserApplicationName, 'unittest')
+        self.assertEqual(self.control.Identity.VendorName, "Bashwork")
+        self.assertEqual(self.control.Identity.ProductCode, "PTM")
+        self.assertEqual(self.control.Identity.MajorMinorRevision, "1.0")
+        self.assertEqual(self.control.Identity.VendorUrl, "http://internets.com")  # NOSONAR
+        self.assertEqual(self.control.Identity.ProductName, "pymodbus")
+        self.assertEqual(self.control.Identity.ModelName, "bashwork")
+        self.assertEqual(self.control.Identity.UserApplicationName, "unittest")
 
     def test_device_identification_factory(self):
         """Test device identification reading"""
         self.control.Identity.update(self.ident)
         result = DeviceInformationFactory.get(self.control, DeviceInformation.Specific, 0x00)
-        self.assertEqual(result[0x00], 'Bashwork')
+        self.assertEqual(result[0x00], "Bashwork")
 
         result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x00)
-        self.assertEqual(result[0x00], 'Bashwork')
-        self.assertEqual(result[0x01], 'PTM')
-        self.assertEqual(result[0x02], '1.0')
+        self.assertEqual(result[0x00], "Bashwork")
+        self.assertEqual(result[0x01], "PTM")
+        self.assertEqual(result[0x02], "1.0")
 
         result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x00)
-        self.assertEqual(result[0x00], 'Bashwork')
-        self.assertEqual(result[0x01], 'PTM')
-        self.assertEqual(result[0x02], '1.0')
-        self.assertEqual(result[0x03], 'http://internets.com')  # NOSONAR
-        self.assertEqual(result[0x04], 'pymodbus')
-        self.assertEqual(result[0x05], 'bashwork')
-        self.assertEqual(result[0x06], 'unittest')
+        self.assertEqual(result[0x00], "Bashwork")
+        self.assertEqual(result[0x01], "PTM")
+        self.assertEqual(result[0x02], "1.0")
+        self.assertEqual(result[0x03], "http://internets.com")  # NOSONAR
+        self.assertEqual(result[0x04], "pymodbus")
+        self.assertEqual(result[0x05], "bashwork")
+        self.assertEqual(result[0x06], "unittest")
 
     def test_device_identification_factory_lookup(self):
         """Test device identification factory lookup."""
@@ -116,17 +116,17 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
 
     def test_modbus_device_identification_get(self):
         """Test device identification reading"""
-        self.assertEqual(self.ident[0x00], 'Bashwork')
-        self.assertEqual(self.ident[0x01], 'PTM')
-        self.assertEqual(self.ident[0x02], '1.0')
-        self.assertEqual(self.ident[0x03], 'http://internets.com')  # NOSONAR
-        self.assertEqual(self.ident[0x04], 'pymodbus')
-        self.assertEqual(self.ident[0x05], 'bashwork')
-        self.assertEqual(self.ident[0x06], 'unittest')
-        self.assertNotEqual(self.ident[0x07], 'x')
-        self.assertNotEqual(self.ident[0x08], 'x')
-        self.assertNotEqual(self.ident[0x10], 'reserved')
-        self.assertEqual(self.ident[0x54], '')
+        self.assertEqual(self.ident[0x00], "Bashwork")
+        self.assertEqual(self.ident[0x01], "PTM")
+        self.assertEqual(self.ident[0x02], "1.0")
+        self.assertEqual(self.ident[0x03], "http://internets.com")  # NOSONAR
+        self.assertEqual(self.ident[0x04], "pymodbus")
+        self.assertEqual(self.ident[0x05], "bashwork")
+        self.assertEqual(self.ident[0x06], "unittest")
+        self.assertNotEqual(self.ident[0x07], "x")
+        self.assertNotEqual(self.ident[0x08], "x")
+        self.assertNotEqual(self.ident[0x10], "reserved")
+        self.assertEqual(self.ident[0x54], "")
 
     def test_modbus_device_identification_summary(self):
         """Test device identification summary creation"""
@@ -136,23 +136,23 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
 
     def test_modbus_device_identification_set(self):
         """Test a device identification writing"""
-        self.ident[0x07] = 'y'
-        self.ident[0x08] = 'y'
-        self.ident[0x10] = 'public'
-        self.ident[0x54] = 'testing'
+        self.ident[0x07] = "y"
+        self.ident[0x08] = "y"
+        self.ident[0x10] = "public"
+        self.ident[0x54] = "testing"
 
-        self.assertNotEqual('y', self.ident[0x07])
-        self.assertNotEqual('y', self.ident[0x08])
-        self.assertEqual('public', self.ident[0x10])
-        self.assertEqual('testing', self.ident[0x54])
+        self.assertNotEqual("y", self.ident[0x07])
+        self.assertNotEqual("y", self.ident[0x08])
+        self.assertEqual("public", self.ident[0x10])
+        self.assertEqual("testing", self.ident[0x54])
 
     def test_modbus_control_block_ascii_modes(self):
         """Test a server control block ascii mode"""
         self.assertEqual(id(self.control), id(ModbusControlBlock()))
-        self.control.Mode = 'RTU'
-        self.assertEqual('RTU', self.control.Mode)
-        self.control.Mode = 'FAKE'
-        self.assertNotEqual('FAKE', self.control.Mode)
+        self.control.Mode = "RTU"
+        self.assertEqual("RTU", self.control.Mode)
+        self.control.Mode = "FAKE"
+        self.assertNotEqual("FAKE", self.control.Mode)
 
     def test_modbus_control_block_counters(self):
         """Tests the MCB counters methods"""
@@ -169,7 +169,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
 
     def test_modbus_control_block_update(self):
         """Tests the MCB counters update methods"""
-        values = {'SlaveMessage': 5, 'BusMessage': 5}
+        values = {"SlaveMessage": 5, "BusMessage": 5}
         self.control.Counter.BusMessage += 1
         self.control.Counter.SlaveMessage += 1
         self.control.Counter.update(values)
@@ -209,12 +209,12 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
 
     def test_modbus_control_block_delimiter(self):
         """Tests the MCB delimiter setting methods"""
-        self.control.Delimiter = b'\r'
-        self.assertEqual(self.control.Delimiter, b'\r')
-        self.control.Delimiter = '='
-        self.assertEqual(self.control.Delimiter, b'=')
+        self.control.Delimiter = b"\r"
+        self.assertEqual(self.control.Delimiter, b"\r")
+        self.control.Delimiter = "="
+        self.assertEqual(self.control.Delimiter, b"=")
         self.control.Delimiter = 61
-        self.assertEqual(self.control.Delimiter, b'=')
+        self.assertEqual(self.control.Delimiter, b"=")
 
     def test_modbus_control_block_diagnostic(self):
         """Tests the MCB delimiter setting methods"""
@@ -279,7 +279,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         self.control.addEvent(event)
         self.assertEqual(self.control.Events, [event])
         packet = self.control.getEvents()
-        self.assertEqual(packet, b'\x40')
+        self.assertEqual(packet, b"\x40")
 
     def test_modbus_plus_statistics(self):
         """Test device identification reading"""

@@ -24,8 +24,8 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -98,15 +98,15 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     ModbusDeviceIdentification(info_name={
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
+        "VendorName": "Pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "Pymodbus Server",
+        "ModelName": "Pymodbus Server",
+        "MajorMinorRevision": version.short(),
     })
 
     # ----------------------------------------------------------------------- #
@@ -124,7 +124,7 @@ def run_server():
     #                certfile="server.crt", keyfile="server.key", password="pwd",
     #                address=("0.0.0.0", 8020))
 
-    # Tls and force require client's certificate for TLS full handshake:
+    # Tls and force require client"s certificate for TLS full handshake:
     # StartTlsServer(context, identity=identity,
     #                certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
     #                address=("0.0.0.0", 8020))
@@ -136,17 +136,17 @@ def run_server():
     #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     # Ascii:
     # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
+    #                    port="/dev/ttyp0", timeout=1)
 
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/tmp/ttyp0', timeout=.005, baudrate=9600)
+    #                   port="/tmp/ttyp0", timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

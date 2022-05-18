@@ -32,7 +32,7 @@ try:
     print("Building Epydoc API Documentation")
     cli()
 
-    if os.path.exists('../../../build'):
+    if os.path.exists("../../../build"):
         shutil.move("html", "../../../build/epydoc")
 except Exception:  # pylint: disable=broad-except
     traceback.print_exc(file=sys.stdout)

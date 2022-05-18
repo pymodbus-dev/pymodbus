@@ -48,7 +48,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         """Test basic bit message encoding/decoding"""
         for i in range(20):
             handle = ReadBitsRequestBase(i, i)
-            result = struct.pack('>HH', i, i)
+            result = struct.pack(">HH", i, i)
             self.assertEqual(handle.encode(), result)
             handle.decode(result)
             self.assertEqual((handle.address, handle.count), (i, i))
@@ -76,8 +76,8 @@ class ModbusBitMessageTests(unittest.TestCase):
     def test_bit_read_base_requests(self):
         """Test bit read request encoding"""
         messages = {
-            ReadBitsRequestBase(12, 14): b'\x00\x0c\x00\x0e',
-            ReadBitsResponseBase([1, 0, 1, 1, 0]): b'\x01\x0d'
+            ReadBitsRequestBase(12, 14): b"\x00\x0c\x00\x0e",
+            ReadBitsResponseBase([1, 0, 1, 1, 0]): b"\x01\x0d"
         }
         for request, expected in iter(messages.items()):
             self.assertEqual(request.encode(), expected)

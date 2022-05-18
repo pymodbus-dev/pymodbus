@@ -63,7 +63,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
         :returns: The byte encoded packet
         """
-        packet = struct.pack('>BBB', self.sub_function_code,
+        packet = struct.pack(">BBB", self.sub_function_code,
                              self.read_code, self.object_id)
         return packet
 
@@ -72,7 +72,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
         :param data: The incoming data
         """
-        params = struct.unpack('>BBB', data)
+        params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
     def execute(self, context):  # NOSONAR pylint: disable=unused-argument
@@ -116,7 +116,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         count = int(buffer[7])
 
         while count > 0:
-            _, object_length = struct.unpack('>BB', buffer[size:size + 2])
+            _, object_length = struct.unpack(">BB", buffer[size:size + 2])
             size += object_length + 2
             count -= 1
         return size + 2
@@ -141,7 +141,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.space_left -= (2 + len(data))
         if self.space_left <= 0:
             raise _OutOfSpaceException(object_id)
-        encoded_obj = struct.pack('>BB', object_id, len(data))
+        encoded_obj = struct.pack(">BB", object_id, len(data))
         if isinstance(data, bytes):
             encoded_obj += data
         else:
@@ -154,10 +154,10 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        packet = struct.pack('>BBB', self.sub_function_code,
+        packet = struct.pack(">BBB", self.sub_function_code,
                              self.read_code, self.conformity)
         self.space_left = 253 - 6
-        objects = b''
+        objects = b""
         try:
             for (object_id, data) in iter(self.information.items()):
                 if isinstance(data, list):
@@ -169,7 +169,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
             self.next_object_id = exc.oid
             self.more_follows = MoreData.KeepReading
 
-        packet += struct.pack('>BBB', self.more_follows, self.next_object_id,
+        packet += struct.pack(">BBB", self.more_follows, self.next_object_id,
                               self.number_of_objects)
         packet += objects
         return packet
@@ -179,14 +179,14 @@ class ReadDeviceInformationResponse(ModbusResponse):
 
         :param data: The packet data to decode
         """
-        params = struct.unpack('>BBBBBB', data[0:6])
+        params = struct.unpack(">BBBBBB", data[0:6])
         self.sub_function_code, self.read_code = params[0:2]
         self.conformity, self.more_follows = params[2:4]
         self.next_object_id, self.number_of_objects = params[4:6]
         self.information, count = {}, 6  # skip the header information
 
         while count < len(data):
-            object_id, object_length = struct.unpack('>BB', data[count:count + 2])
+            object_id, object_length = struct.unpack(">BB", data[count:count + 2])
             count += object_length + 2
             if object_id not in self.information.keys():
                 self.information[object_id] = data[count - object_length:count]

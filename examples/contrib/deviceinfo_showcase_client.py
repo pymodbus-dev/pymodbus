@@ -22,8 +22,8 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s '
-          '%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s "
+          "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -44,7 +44,7 @@ def run_sync_client():
     # to use a custom implementation (say RTU over TCP). By default they use
     # the socket framer::
     #
-    #    client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
+    #    client = ModbusClient("localhost", port=5020, framer=ModbusRtuFramer)
     #
     # It should be noted that you can supply an ipv4 or an ipv6 host address
     # for both the UDP and TCP clients.
@@ -58,14 +58,14 @@ def run_sync_client():
     #
     # Here is an example of using these options::
     #
-    #    client = ModbusClient('localhost', retries=3, retry_on_empty=True)
+    #    client = ModbusClient("localhost", retries=3, retry_on_empty=True)
     # ------------------------------------------------------------------------#
-    client = ModbusClient('localhost', port=5020)
+    client = ModbusClient("localhost", port=5020)
     # from pymodbus.transaction import ModbusRtuFramer
-    # client = ModbusClient('localhost', port=5020, framer=ModbusRtuFramer)
-    # client = ModbusClient(method='binary', port='/dev/ptyp0', timeout=1)
-    # client = ModbusClient(method='ascii', port='/dev/ptyp0', timeout=1)
-    # client = ModbusClient(method='rtu', port='/dev/ptyp0', timeout=1,
+    # client = ModbusClient("localhost", port=5020, framer=ModbusRtuFramer)
+    # client = ModbusClient(method="binary", port="/dev/ptyp0", timeout=1)
+    # client = ModbusClient(method="ascii", port="/dev/ptyp0", timeout=1)
+    # client = ModbusClient(method="rtu", port="/dev/ptyp0", timeout=1,
     #                       baudrate=9600)
     client.connect()
 
@@ -99,7 +99,7 @@ def run_sync_client():
     # specifically listed in the Modbus specification
     # ----------------------------------------------------------------------- #
     device_id = ModbusDeviceIdentification(info=information)
-    print('Product Name : ', device_id.ProductName)
+    print("Product Name : ", device_id.ProductName)
 
     # ----------------------------------------------------------------------- #
     # close the client

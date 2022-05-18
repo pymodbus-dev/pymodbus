@@ -82,7 +82,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a string
         """
-        return ''.join(self._payload)
+        return "".join(self._payload)
 
     def reset(self):
         """Reset the payload buffer"""
@@ -98,7 +98,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         """
         string = str(self)
         length = len(string)
-        string = string + ('\x00' * (length % 2))
+        string = string + ("\x00" * (length % 2))
         return [string[i:i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
@@ -123,7 +123,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         size = size or count_bcd_digits(value)
         while size > 0:
             nibble = value & 0xf
-            encoded.append(pack('B', nibble))
+            encoded.append(pack("B", nibble))
             value >>= 4
             size -= 1
         self._payload.extend(encoded)
@@ -169,9 +169,9 @@ class BcdPayloadDecoder:
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
-            payload = ''.join(pack('>H', x) for x in registers)
+            payload = "".join(pack(">H", x) for x in registers)
             return BinaryPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of registers supplied')
+        raise ParameterException("Invalid collection of registers supplied")
 
     @staticmethod
     def fromCoils(coils, endian=Endian.Little):  # pylint: disable=invalid-name
@@ -188,7 +188,7 @@ class BcdPayloadDecoder:
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
             return BinaryPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of coils supplied')
+        raise ParameterException("Invalid collection of coils supplied")
 
     def reset(self):
         """Reset the decoder pointer back to the start"""

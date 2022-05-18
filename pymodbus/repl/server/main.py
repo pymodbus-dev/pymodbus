@@ -32,8 +32,8 @@ else:
 @click.pass_context
 def server(ctx, host, web_port, broadcast_support, repl, verbose):
     """Run server code."""
-    FORMAT = ('%(asctime)-15s %(threadName)-15s'  # pylint: disable=invalid-name
-              ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+    FORMAT = ("%(asctime)-15s %(threadName)-15s"  # pylint: disable=invalid-name
+              " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
     pymodbus_logger = logging.getLogger("pymodbus")
     logging.basicConfig(format=FORMAT)  # NOSONAR
     if verbose:
@@ -108,5 +108,5 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         print("Done!!!!!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     server()  # pylint: disable=no-value-for-parameter

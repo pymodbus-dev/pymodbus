@@ -31,11 +31,11 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :returns: The encoded packet
         """
-        packet = struct.pack('>H', self.address)
+        packet = struct.pack(">H", self.address)
         if self.skip_encode:
             packet += self.value
         else:
-            packet += struct.pack('>H', self.value)
+            packet += struct.pack(">H", self.value)
         return packet
 
     def decode(self, data):
@@ -43,7 +43,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
 
         :param data: The request to decode
         """
-        self.address, self.value = struct.unpack('>HH', data)
+        self.address, self.value = struct.unpack(">HH", data)
 
     def execute(self, context):
         """Run a write single register request against a datastore.
@@ -100,14 +100,14 @@ class WriteSingleRegisterResponse(ModbusResponse):
 
         :returns: The encoded packet
         """
-        return struct.pack('>HH', self.address, self.value)
+        return struct.pack(">HH", self.address, self.value)
 
     def decode(self, data):
         """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
-        self.address, self.value = struct.unpack('>HH', data)
+        self.address, self.value = struct.unpack(">HH", data)
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -144,7 +144,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         self.address = address
         if values is None:
             values = []
-        elif not hasattr(values, '__iter__'):
+        elif not hasattr(values, "__iter__"):
             values = [values]
         self.values = values
         self.count = len(self.values)
@@ -155,12 +155,12 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :returns: The encoded packet
         """
-        packet = struct.pack('>HHB', self.address, self.count, self.byte_count)
+        packet = struct.pack(">HHB", self.address, self.count, self.byte_count)
         if self.skip_encode:
-            return packet + b''.join(self.values)
+            return packet + b"".join(self.values)
 
         for value in self.values:
-            packet += struct.pack('>H', value)
+            packet += struct.pack(">H", value)
 
         return packet
 
@@ -170,10 +170,10 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :param data: The request to decode
         """
         self.address, self.count, \
-            self.byte_count = struct.unpack('>HHB', data[:5])
+            self.byte_count = struct.unpack(">HHB", data[:5])
         self.values = []  # reset
         for idx in range(5, (self.count * 2) + 5, 2):
-            self.values.append(struct.unpack('>H', data[idx:idx + 2])[0])
+            self.values.append(struct.unpack(">H", data[idx:idx + 2])[0])
 
     def execute(self, context):
         """Run a write single register request against a datastore.
@@ -232,14 +232,14 @@ class WriteMultipleRegistersResponse(ModbusResponse):
 
         :returns: The encoded packet
         """
-        return struct.pack('>HH', self.address, self.count)
+        return struct.pack(">HH", self.address, self.count)
 
     def decode(self, data):
         """Decode a write single register packet packet request.
 
         :param data: The request to decode
         """
-        self.address, self.count = struct.unpack('>HH', data)
+        self.address, self.count = struct.unpack(">HH", data)
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -254,7 +254,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     """This function code is used to modify the contents.
 
     Of a specified holding register using a combination of an AND mask,
-    an OR mask, and the register's current contents.
+    an OR mask, and the register"s current contents.
     The function can be used to set or clear individual bits in the register.
     """
 
@@ -279,7 +279,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
 
         :returns: The byte encoded packet
         """
-        return struct.pack('>HHH', self.address, self.and_mask,
+        return struct.pack(">HHH", self.address, self.and_mask,
                            self.or_mask)
 
     def decode(self, data):
@@ -287,7 +287,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
 
         :param data: The data to decode into the address
         """
-        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH',
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH",
                                                                   data)
 
     def execute(self, context):
@@ -336,7 +336,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        return struct.pack('>HHH', self.address, self.and_mask,
+        return struct.pack(">HHH", self.address, self.and_mask,
                            self.or_mask)
 
     def decode(self, data):
@@ -344,7 +344,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
 
         :param data: The packet data to decode
         """
-        self.address, self.and_mask, self.or_mask = struct.unpack('>HHH',
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH",
                                                                   data)
 
 

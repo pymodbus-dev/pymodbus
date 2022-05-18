@@ -58,7 +58,7 @@ def dict_property(store, index):
     :param index: The index into the store to close over
     :returns: An initialized property set
     """
-    if hasattr(store, '__call__'):
+    if hasattr(store, "__call__"):
         getter = lambda self: store(self)[index]
         setter = lambda self, value: store(self).__setitem__(index, value)
     elif isinstance(store, str):
@@ -85,20 +85,20 @@ def pack_bitstring(bits):
         bits   = [False, True, False, True]
         result = pack_bitstring(bits)
     """
-    ret = b''
+    ret = b""
     i = packed = 0
     for bit in bits:
         if bit:
             packed += 128
         i += 1
         if i == 8:
-            ret += struct.pack('>B', packed)
+            ret += struct.pack(">B", packed)
             i = packed = 0
         else:
             packed >>= 1
     if 0 < i < 8:
         packed >>= (7 - i)
-        ret += struct.pack('>B', packed)
+        ret += struct.pack(">B", packed)
     return ret
 
 
@@ -109,7 +109,7 @@ def unpack_bitstring(string):
 
     example::
 
-        bytes  = 'bytes to decode'
+        bytes  = "bytes to decode"
         result = unpack_bitstring(bytes)
     """
     byte_count = len(string)
@@ -163,7 +163,7 @@ def computeCRC(data):  # NOSONAR pylint: disable=invalid-name
     For modbus, this is only used on the binary serial protocols (in this
     case RTU).
 
-    The difference between modbus's crc16 and a normal crc16
+    The difference between modbus"s crc16 and a normal crc16
     is that modbus starts the crc value out at 0xffff.
 
     :param data: The data to create a crc16 of
@@ -243,7 +243,7 @@ def hexlify_packets(packet):
     :return:
     """
     if not packet:
-        return ''
+        return ""
     return " ".join([hex(int(x)) for x in packet])
 
 
@@ -251,6 +251,6 @@ def hexlify_packets(packet):
 # Exported symbols
 # --------------------------------------------------------------------------- #
 __all__ = [
-    'pack_bitstring', 'unpack_bitstring', 'default',
-    'computeCRC', 'checkCRC', 'computeLRC', 'checkLRC', 'rtuFrameSize'
+    "pack_bitstring", "unpack_bitstring", "default",
+    "computeCRC", "checkCRC", "computeLRC", "checkLRC", "rtuFrameSize"
 ]

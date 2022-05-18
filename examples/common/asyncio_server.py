@@ -25,8 +25,8 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = ("%(asctime)-15s %(threadName)-15s"
+          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -99,15 +99,15 @@ async def run_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(info_name={
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/',  # NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
+        "VendorName": "Pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+        "ProductName": "Pymodbus Server",
+        "ModelName": "Pymodbus Server",
+        "MajorMinorRevision": version.short(),
     })
 
     # ----------------------------------------------------------------------- #
@@ -136,7 +136,7 @@ async def run_server():
     #                      allow_reuse_address=True, allow_reuse_port=True,
     #                      defer_start=False)
 
-    # Tls and force require client's certificate for TLS full handshake:
+    # Tls and force require client"s certificate for TLS full handshake:
     # await StartTlsServer(context, identity=identity,
     #                      address=("localhost", 8020),
     #                      certfile="server.crt", keyfile="server.key",
@@ -152,17 +152,17 @@ async def run_server():
 
     # Ascii:
     # await StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1, autoreconnect=True)
+    #                    port="/dev/ttyp0", timeout=1, autoreconnect=True)
 
     # RTU:
     # await StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                    port='/dev/ttyp0', timeout=.005, baudrate=9600, autoreconnect=True)
+    #                    port="/dev/ttyp0", timeout=.005, baudrate=9600, autoreconnect=True)
 
     # Binary
     # await StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

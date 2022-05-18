@@ -80,7 +80,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         fstring = self._byteorder + "H"
         payload = [pack(fstring, word) for word in payload]
-        payload = b''.join(payload)
+        payload = b"".join(payload)
 
         return payload
 
@@ -89,14 +89,14 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :returns: The payload buffer as a string
         """
-        return b''.join(self._payload)
+        return b"".join(self._payload)
 
     def __str__(self):
         """Return the payload buffer as a string.
 
         :returns: The payload buffer as a string
         """
-        return self.to_string().decode('utf-8')
+        return self.to_string().decode("utf-8")
 
     def reset(self):
         """Reset the payload buffer."""
@@ -107,8 +107,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :returns: The register layout to use as a block
         """
-        # fstring = self._byteorder+'H'
-        fstring = '!H'
+        # fstring = self._byteorder+"H"
+        fstring = "!H"
         payload = self.build()
         if self._repack:
             payload = [unpack(self._byteorder + "H", value)[0] for value in payload]
@@ -124,7 +124,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         """
         payload = self.to_registers()
         coils = [bool(int(bit)) for reg
-                 in payload for bit in format(reg, '016b')]
+                 in payload for bit in format(reg, "016b")]
         return coils
 
     def build(self):
@@ -137,7 +137,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         """
         string = self.to_string()
         length = len(string)
-        string = string + (b'\x00' * (length % 2))
+        string = string + (b"\x00" * (length % 2))
         return [string[i:i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
@@ -157,7 +157,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'B'
+        fstring = self._byteorder + "B"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_uint(self, value):
@@ -165,7 +165,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'H'
+        fstring = self._byteorder + "H"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_uint(self, value):
@@ -173,8 +173,8 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'I'
-        # fstring = self._byteorder + 'I'
+        fstring = "I"
+        # fstring = self._byteorder + "I"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -183,7 +183,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'Q'
+        fstring = "Q"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -192,7 +192,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'b'
+        fstring = self._byteorder + "b"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_int(self, value):
@@ -200,7 +200,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = self._byteorder + 'h'
+        fstring = self._byteorder + "h"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_int(self, value):
@@ -208,7 +208,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'i'
+        fstring = "i"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -217,7 +217,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'q'
+        fstring = "q"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -226,7 +226,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'e'
+        fstring = "e"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -235,7 +235,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'f'
+        fstring = "f"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -244,7 +244,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
 
         :param value: The value to add to the buffer
         """
-        fstring = 'd'
+        fstring = "d"
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
@@ -254,7 +254,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         :param value: The value to add to the buffer
         """
         value = make_byte_string(value)
-        fstring = self._byteorder + str(len(value)) + 's'
+        fstring = self._byteorder + str(len(value)) + "s"
         self._payload.append(pack(fstring, value))
 
 
@@ -300,9 +300,9 @@ class BinaryPayloadDecoder:
         """
         _logger.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
-            payload = b''.join(pack('!H', x) for x in registers)
+            payload = b"".join(pack("!H", x) for x in registers)
             return cls(payload, byteorder, wordorder)
-        raise ParameterException('Invalid collection of registers supplied')
+        raise ParameterException("Invalid collection of registers supplied")
 
     @classmethod
     def bit_chunks(cls, coils, size=8):
@@ -323,15 +323,15 @@ class BinaryPayloadDecoder:
         :returns: An initialized PayloadDecoder
         """
         if isinstance(coils, list):
-            payload = b''
-            if (padding := len(coils) % 8):    # Pad zero's
+            payload = b""
+            if (padding := len(coils) % 8):    # Pad zero"s
                 extra = [False] * padding
                 coils = extra + coils
             chunks = cls.bit_chunks(coils)
             for chunk in chunks:
                 payload += pack_bitstring(chunk[::-1])
             return cls(payload, byteorder)
-        raise ParameterException('Invalid collection of coils supplied')
+        raise ParameterException("Invalid collection of coils supplied")
 
     def _unpack_words(self, fstring, handle):
         """Unpack words based on the word order and byte order.
@@ -351,9 +351,9 @@ class BinaryPayloadDecoder:
             handle = list(reversed(handle))
 
         # Repack as unsigned Integer
-        handle = [pack(self._byteorder + 'H', p) for p in handle]
+        handle = [pack(self._byteorder + "H", p) for p in handle]
         _logger.debug(handle)
-        handle = b''.join(handle)
+        handle = b"".join(handle)
         return handle
 
     def reset(self):
@@ -363,7 +363,7 @@ class BinaryPayloadDecoder:
     def decode_8bit_uint(self):
         """Decode a 8 bit unsigned int from the buffer."""
         self._pointer += 1
-        fstring = self._byteorder + 'B'
+        fstring = self._byteorder + "B"
         handle = self._payload[self._pointer - 1:self._pointer]
         handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
@@ -371,7 +371,7 @@ class BinaryPayloadDecoder:
     def decode_bits(self):
         """Decode a byte worth of bits from the buffer."""
         self._pointer += 1
-        # fstring = self._endian + 'B'
+        # fstring = self._endian + "B"
         handle = self._payload[self._pointer - 1:self._pointer]
         handle = make_byte_string(handle)
         return unpack_bitstring(handle)
@@ -379,7 +379,7 @@ class BinaryPayloadDecoder:
     def decode_16bit_uint(self):
         """Decode a 16 bit unsigned int from the buffer."""
         self._pointer += 2
-        fstring = self._byteorder + 'H'
+        fstring = self._byteorder + "H"
         handle = self._payload[self._pointer - 2:self._pointer]
         handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
@@ -387,8 +387,8 @@ class BinaryPayloadDecoder:
     def decode_32bit_uint(self):
         """Decode a 32 bit unsigned int from the buffer."""
         self._pointer += 4
-        fstring = 'I'
-        # fstring = 'I'
+        fstring = "I"
+        # fstring = "I"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -396,7 +396,7 @@ class BinaryPayloadDecoder:
     def decode_64bit_uint(self):
         """Decode a 64 bit unsigned int from the buffer."""
         self._pointer += 8
-        fstring = 'Q'
+        fstring = "Q"
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -404,7 +404,7 @@ class BinaryPayloadDecoder:
     def decode_8bit_int(self):
         """Decode a 8 bit signed int from the buffer."""
         self._pointer += 1
-        fstring = self._byteorder + 'b'
+        fstring = self._byteorder + "b"
         handle = self._payload[self._pointer - 1:self._pointer]
         handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
@@ -412,7 +412,7 @@ class BinaryPayloadDecoder:
     def decode_16bit_int(self):
         """Decode a 16 bit signed int from the buffer."""
         self._pointer += 2
-        fstring = self._byteorder + 'h'
+        fstring = self._byteorder + "h"
         handle = self._payload[self._pointer - 2:self._pointer]
         handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
@@ -420,7 +420,7 @@ class BinaryPayloadDecoder:
     def decode_32bit_int(self):
         """Decode a 32 bit signed int from the buffer."""
         self._pointer += 4
-        fstring = 'i'
+        fstring = "i"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -428,7 +428,7 @@ class BinaryPayloadDecoder:
     def decode_64bit_int(self):
         """Decode a 64 bit signed int from the buffer."""
         self._pointer += 8
-        fstring = 'q'
+        fstring = "q"
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -436,7 +436,7 @@ class BinaryPayloadDecoder:
     def decode_16bit_float(self):
         """Decode a 16 bit float from the buffer."""
         self._pointer += 2
-        fstring = 'e'
+        fstring = "e"
         handle = self._payload[self._pointer - 2:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -444,7 +444,7 @@ class BinaryPayloadDecoder:
     def decode_32bit_float(self):
         """Decode a 32 bit float from the buffer."""
         self._pointer += 4
-        fstring = 'f'
+        fstring = "f"
         handle = self._payload[self._pointer - 4:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -452,7 +452,7 @@ class BinaryPayloadDecoder:
     def decode_64bit_float(self):
         """Decode a 64 bit float(double) from the buffer."""
         self._pointer += 8
-        fstring = 'd'
+        fstring = "d"
         handle = self._payload[self._pointer - 8:self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]

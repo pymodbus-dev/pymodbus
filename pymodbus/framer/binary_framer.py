@@ -63,7 +63,7 @@ class ModbusBinaryFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = struct.unpack('>B', data[1:2])[0]
             fcode = struct.unpack('>B', data[2:3])[0]
-            return dict(unit=uid, fcode=fcode)
+            return {'unit': uid, 'fcode': fcode}
         return {}
 
     def checkFrame(self):

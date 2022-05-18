@@ -40,7 +40,7 @@ class AsynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     def setUp(self):
         """Initialize the test environment."""
-        values = dict((i, '') for i in range(10))
+        values = {i: '' for i in range(10)}
         ModbusDeviceIdentification(info=values)
 
     def tearDown(self):

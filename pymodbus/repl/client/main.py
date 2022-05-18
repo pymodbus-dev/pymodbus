@@ -275,7 +275,7 @@ def main(ctx, verbose, broadcast_support, retry_on_empty,
 )
 def tcp(ctx, host, port, framer):
     """Define TCP."""
-    kwargs = dict(host=host, port=port)
+    kwargs = {'host': host, 'port': port}
     kwargs.update(**ctx.obj)
     if framer == 'rtu':
         kwargs['framer'] = ModbusRtuFramer

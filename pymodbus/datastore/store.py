@@ -293,7 +293,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param use_as_default: Use the values as default
         """
         if isinstance(values, dict):
-            new_offsets = list(set(list(values.keys())) - set(list(self.values.keys())))
+            new_offsets = list(set(list(values.keys())) - set(list(self.values.keys())))  # noqa: C414
             if new_offsets and not self.mutable:
                 raise ParameterException(f"Offsets {new_offsets} not in range")
             self._process_values(values)

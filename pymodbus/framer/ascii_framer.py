@@ -55,7 +55,7 @@ class ModbusAsciiFramer(ModbusFramer):
         if len(data) > 1:
             uid = int(data[1:3], 16)
             fcode = int(data[3:5], 16)
-            return dict(unit=uid, fcode=fcode)
+            return {'unit': uid, 'fcode': fcode}
         return {}
 
     def checkFrame(self):

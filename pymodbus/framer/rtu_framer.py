@@ -74,7 +74,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
-            return dict(unit=uid, fcode=fcode)
+            return {'unit': uid, 'fcode': fcode}
         return {}
 
     def checkFrame(self):

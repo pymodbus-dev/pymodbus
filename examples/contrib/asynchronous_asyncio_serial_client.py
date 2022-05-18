@@ -99,8 +99,9 @@ def make_protocol():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    coro = create_serial_connection(loop, make_protocol, "/tmp/ttyp0",  # nosec NOSONAR
-                                    baudrate=9600)
+    coro = create_serial_connection(
+        loop, make_protocol, "/tmp/ttyp0", baudrate=9600  # nosec NOSONAR
+    )
     transport, protocol = loop.run_until_complete(asyncio.gather(coro))[0]
     loop.run_until_complete(start_async_test(protocol))
     loop.close()

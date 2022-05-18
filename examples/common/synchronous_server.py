@@ -7,25 +7,31 @@ pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
 import logging
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
+
 # from pymodbus.server.sync import StartTcpServer #NOSONAR
 # from pymodbus.server.sync import StartTlsServer #NOSONAR
 # from pymodbus.server.sync import StartUdpServer #NOSONAR
 # from pymodbus.server.sync import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
+
 # from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -91,7 +97,8 @@ def run_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
     ModbusServerContext(slaves=store, single=True)
 
@@ -100,14 +107,16 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    ModbusDeviceIdentification(info_name={
-        "VendorName": "Pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "Pymodbus Server",
-        "ModelName": "Pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

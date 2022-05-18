@@ -53,7 +53,9 @@ class ModbusDatastoreSaver:
 
         which calls the various callbacks which the sub classes will implement.
         """
-        with open(self.path, "w") as self.file_handle:  # noqa: E501 pylint: disable=attribute-defined-outside-init,unspecified-encoding
+        with open(  # pylint: disable=unspecified-encoding
+            self.path, "w"
+        ) as self.file_handle:  # pylint: disable=attribute-defined-outside-init
             self.handle_save_start()
             for slave_name, slave in self.context:
                 self.handle_slave_start(slave_name)
@@ -190,11 +192,15 @@ class XmlDatastoreSaver(ModbusDatastoreSaver):
     def handle_save_start(self):
         """Handle save start."""
         self._context = xml.Element("context")
-        self._root = xml.ElementTree(self._context)  # pylint: disable=attribute-defined-outside-init
+        self._root = xml.ElementTree(  # pylint: disable=attribute-defined-outside-init
+            self._context
+        )
 
     def handle_slave_start(self, slave):
         """Handle slave start."""
-        self._slave = xml.SubElement(self._context, "slave")  # pylint: disable=attribute-defined-outside-init
+        self._slave = xml.SubElement(  # pylint: disable=attribute-defined-outside-init
+            self._context, "slave"
+        )
         self._slave.set("id", str(slave))
 
     def handle_store_start(self, store):

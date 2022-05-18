@@ -69,9 +69,9 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         """
         txt = f"validate[{fx}] {address}:{count}"
         _logger.debug(txt)
-        result = self.context.get_callbacks[self.decode(fx)](address,
-                                                             count,
-                                                             self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](
+            address, count, self.unit_id
+        )
         return not result.isError()
 
     def getValues(self, fx, address, count=1):
@@ -84,9 +84,9 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         """
         txt = f"get values[{fx}] {address}:{count}"
         _logger.debug(txt)
-        result = self.context.get_callbacks[self.decode(fx)](address,
-                                                             count,
-                                                             self.unit_id)
+        result = self.context.get_callbacks[self.decode(fx)](
+            address, count, self.unit_id
+        )
         return self.__extract_result(self.decode(fx), result)
 
     def setValues(self, fx, address, values):
@@ -98,9 +98,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         """
         txt = f"set values[{fx}] {address}:{len(values)}"
         _logger.debug(txt)
-        self.context.set_callbacks[self.decode(fx)](address,
-                                                    values,
-                                                    self.unit_id)
+        self.context.set_callbacks[self.decode(fx)](address, values, self.unit_id)
 
     def __str__(self):
         """Return a string representation of the context
@@ -125,6 +123,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
             return None
         return result
 
+
 # -------------------------------------------------------------------------- #
 # Server Context
 # -------------------------------------------------------------------------- #
@@ -146,16 +145,32 @@ class RemoteServerContext:
         :param client: The client to retrieve values with
         """
         self.get_callbacks = {
-            "d": lambda a, c, s: client.read_discrete_inputs(a, c, s),  # pylint: disable=unnecessary-lambda
-            "c": lambda a, c, s: client.read_coils(a, c, s),  # pylint: disable=unnecessary-lambda
-            "h": lambda a, c, s: client.read_holding_registers(a, c, s),  # pylint: disable=unnecessary-lambda
-            "i": lambda a, c, s: client.read_input_registers(a, c, s),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, c, s: client.read_discrete_inputs(  # pylint: disable=unnecessary-lambda
+                a, c, s
+            ),
+            "c": lambda a, c, s: client.read_coils(  # pylint: disable=unnecessary-lambda
+                a, c, s
+            ),
+            "h": lambda a, c, s: client.read_holding_registers(  # pylint: disable=unnecessary-lambda
+                a, c, s
+            ),
+            "i": lambda a, c, s: client.read_input_registers(  # pylint: disable=unnecessary-lambda
+                a, c, s
+            ),
         }
         self.set_callbacks = {
-            "d": lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
-            "c": lambda a, v, s: client.write_coils(a, v, s),  # pylint: disable=unnecessary-lambda
-            "h": lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
-            "i": lambda a, v, s: client.write_registers(a, v, s),  # pylint: disable=unnecessary-lambda
+            "d": lambda a, v, s: client.write_coils(  # pylint: disable=unnecessary-lambda
+                a, v, s
+            ),
+            "c": lambda a, v, s: client.write_coils(  # pylint: disable=unnecessary-lambda
+                a, v, s
+            ),
+            "h": lambda a, v, s: client.write_registers(  # pylint: disable=unnecessary-lambda
+                a, v, s
+            ),
+            "i": lambda a, v, s: client.write_registers(  # pylint: disable=unnecessary-lambda
+                a, v, s
+            ),
         }
         self._client = client
         self.slaves = {}  # simply a cache

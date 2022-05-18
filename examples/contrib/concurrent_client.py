@@ -105,8 +105,7 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
             except Exception as exc:  # pylint: disable=broad-except
                 txt = f"error in worker thread: {threading.current_thread()}"
                 log.exception(txt)
-                output_queue.put(WorkResponse(True,
-                                              workitem.work_id, exc))
+                output_queue.put(WorkResponse(True, workitem.work_id, exc))
         except Exception:  # nosec pylint: disable=broad-except
             pass
     txt = f"request worker shutting down: {threading.current_thread()}"
@@ -170,14 +169,14 @@ class ConcurrentClient(ModbusClientMixin):
         self.is_shutdown = primitives.event()  # process shutdown condition
         self.input_queue = primitives.queue()  # input requests to process
         self.output_queue = primitives.queue()  # output results to return
-        self.futures = {}                 # mapping of tid -> future
-        self.workers = []                 # handle to our worker threads
+        self.futures = {}  # mapping of tid -> future
+        self.workers = []  # handle to our worker threads
         self.counter = itertools.count()
 
         # creating the response manager
         self.manager = threading.Thread(
             target=_manager_worker_process,
-            args=(self.output_queue, self.futures, self.is_shutdown)
+            args=(self.output_queue, self.futures, self.is_shutdown),
         )
         self.manager.start()
         self.workers.append(self.manager)
@@ -186,8 +185,12 @@ class ConcurrentClient(ModbusClientMixin):
         for i in range(worker_count):  # NOSONAR
             worker = primitives.worker(
                 target=_client_worker_process,
-                args=(self.factory, self.input_queue, self.output_queue,
-                      self.is_shutdown)
+                args=(
+                    self.factory,
+                    self.input_queue,
+                    self.output_queue,
+                    self.is_shutdown,
+                ),
             )
             worker.start()
             self.workers.append(worker)

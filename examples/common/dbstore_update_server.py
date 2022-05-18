@@ -29,6 +29,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
@@ -63,8 +64,7 @@ def updating_writer(parm1):
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()
-    context[slave_id].setValues(writefunction, rand_addr, [rand_value],
-                                update=False)
+    context[slave_id].setValues(writefunction, rand_addr, [rand_value], update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
     txt = f"Values from datastore: {values}"
     log.debug(txt)
@@ -76,7 +76,7 @@ def run_dbstore_update_server():
     # initialize your data store
     # ----------------------------------------------------------------------- #
 
-    block = ModbusSequentialDataBlock(0x00, [0] * 0xff)
+    block = ModbusSequentialDataBlock(0x00, [0] * 0xFF)
     store = SqlSlaveContext(block)
 
     context = ModbusServerContext(slaves={1: store}, single=False)
@@ -84,14 +84,16 @@ def run_dbstore_update_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "pymodbus Server",
-        "ModelName": "pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

@@ -13,6 +13,7 @@ from threading import Lock, Thread as tWorker
 from concurrent.futures import ThreadPoolExecutor as eWorker, as_completed
 from time import time
 from pymodbus.client.sync import ModbusTcpClient
+
 # from pymodbus.client.sync import ModbusSerialClient #NOSONAR
 
 try:
@@ -74,19 +75,17 @@ def single_client_test(n_host, n_cycles):
 def multiprocessing_test(func, extras):
     """Multiprocessing test."""
     start_time = time()
-    procs = [mWorker(target=func, args=extras)
-             for _ in range(workers)]
+    procs = [mWorker(target=func, args=extras) for _ in range(workers)]
 
-    any(p.start() for p in procs)   # start the workers
-    any(p.join() for p in procs)   # wait for the workers to finish
+    any(p.start() for p in procs)  # start the workers
+    any(p.join() for p in procs)  # wait for the workers to finish
     return start_time
 
 
 def thread_test(func, extras):
     """Thread test."""
     start_time = time()
-    procs = [tWorker(target=func, args=extras)
-             for _ in range(workers)]
+    procs = [tWorker(target=func, args=extras) for _ in range(workers)]
 
     any(p.start() for p in procs)  # start the workers
     any(p.join() for p in procs)  # wait for the workers to finish
@@ -101,6 +100,7 @@ def thread_pool_exe_test(func, extras):
         for future in as_completed(futures):
             future.result()
     return start_time
+
 
 # --------------------------------------------------------------------------- #
 # run our test and check results
@@ -136,6 +136,8 @@ if __name__ == "__main__":
         start = tester(single_client_test, args)
         stop = time()
         print(f"{(1.0 * cycles) / (stop - start)} requests/second")
-        print(f"time taken to complete {cycles} cycle by "
-              f"{workers} workers is {stop - start} seconds")
+        print(
+            f"time taken to complete {cycles} cycle by "
+            f"{workers} workers is {stop - start} seconds"
+        )
         print()

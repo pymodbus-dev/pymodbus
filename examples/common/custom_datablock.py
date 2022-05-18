@@ -14,6 +14,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
@@ -61,14 +62,16 @@ def run_custom_db_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
 
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "pymodbus Server",
-        "ModelName": "pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

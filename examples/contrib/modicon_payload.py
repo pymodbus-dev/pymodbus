@@ -55,7 +55,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         string = str(self)
         length = len(string)
         string = string + ("\x00" * (length % 2))
-        return [string[i:i + 2] for i in range(0, length, 2)]
+        return [string[i : i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         """Add a collection of bits to be encoded
@@ -204,21 +204,21 @@ class ModiconPayloadDecoder:
         """Decode a 8 bit unsigned int from the buffer"""
         self._pointer += 1
         fstring = self._endian + "B"
-        handle = self._payload[self._pointer - 1:self._pointer]
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_uint(self):
         """Decode a 16 bit unsigned int from the buffer"""
         self._pointer += 2
         fstring = self._endian + "H"
-        handle = self._payload[self._pointer - 2:self._pointer]
+        handle = self._payload[self._pointer - 2 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_uint(self):
         """Decode a 32 bit unsigned int from the buffer"""
         self._pointer += 4
         fstring = self._endian + "I"
-        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
@@ -226,21 +226,21 @@ class ModiconPayloadDecoder:
         """Decode a 8 bit signed int from the buffer"""
         self._pointer += 1
         fstring = self._endian + "b"
-        handle = self._payload[self._pointer - 1:self._pointer]
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_int(self):
         """Decode a 16 bit signed int from the buffer"""
         self._pointer += 2
         fstring = self._endian + "h"
-        handle = self._payload[self._pointer - 2:self._pointer]
+        handle = self._payload[self._pointer - 2 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_int(self):
         """Decode a 32 bit signed int from the buffer"""
         self._pointer += 4
         fstring = self._endian + "i"
-        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
@@ -248,14 +248,14 @@ class ModiconPayloadDecoder:
         """Decode a float from the buffer"""
         self._pointer += 4
         fstring = self._endian + "f"
-        handle = self._payload[self._pointer - 4:self._pointer]
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
     def decode_bits(self):
         """Decode a byte worth of bits from the buffer"""
         self._pointer += 1
-        handle = self._payload[self._pointer - 1:self._pointer]
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack_bitstring(handle)
 
     def decode_string(self, size=1):
@@ -264,7 +264,7 @@ class ModiconPayloadDecoder:
         :param size: The size of the string to decode
         """
         self._pointer += size
-        return self._payload[self._pointer - size:self._pointer]
+        return self._payload[self._pointer - size : self._pointer]
 
 
 # -------------------------------------------------------------------------- #

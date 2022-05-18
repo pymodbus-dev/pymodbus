@@ -15,6 +15,7 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
+
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use
 # --------------------------------------------------------------------------- #
@@ -32,8 +33,8 @@ log = logging.getLogger("pymodbus")
 # --------------------------------------------------------------------------- #
 # Define some constants
 # --------------------------------------------------------------------------- #
-COUNT = 8    # The number of bits/registers to read at once
-DELAY = 0    # The delay between subsequent reads
+COUNT = 8  # The number of bits/registers to read at once
+DELAY = 0  # The delay between subsequent reads
 SLAVE = 0x01  # The slave unit id to read from
 
 # --------------------------------------------------------------------------- #
@@ -63,7 +64,9 @@ class ScraperProtocol(ModbusClientProtocol):
         super().connectionMade()
         log.debug("Beginning the processing loop")
         self.address = self.factory.starting
-        reactor.callLater(DELAY, self.scrape_holding_registers)  # pylint: disable=no-member
+        reactor.callLater(  # pylint: disable=no-member
+            DELAY, self.scrape_holding_registers
+        )
 
     def connection_lost(self, reason):  # pylint: disable=no-self-use,unused-argument
         """Call when the client disconnects from the server.
@@ -119,7 +122,9 @@ class ScraperProtocol(ModbusClientProtocol):
             self.endpoint.finalize()
             self.transport.loseConnection()
         else:
-            reactor.callLater(DELAY, self.scrape_holding_registers)  # pylint: disable=no-member
+            reactor.callLater(  # pylint: disable=no-member
+                DELAY, self.scrape_holding_registers
+            )
 
     def error_handler(self, failure):  # pylint: disable=no-self-use
         """Handle any twisted errors
@@ -202,7 +207,8 @@ class LoggingContextReader:
             di=ModbusSequentialDataBlock.create(),
             co=ModbusSequentialDataBlock.create(),
             hr=ModbusSequentialDataBlock.create(),
-            ir=ModbusSequentialDataBlock.create())
+            ir=ModbusSequentialDataBlock.create(),
+        )
 
     def write(self, response):
         """Handle the next modbus response
@@ -230,25 +236,43 @@ def get_options():
     """
     parser = OptionParser()
 
-    parser.add_option("-o", "--output",
-                      help="The resulting output file for the scrape",
-                      dest="output", default="datastore.pickle")
+    parser.add_option(
+        "-o",
+        "--output",
+        help="The resulting output file for the scrape",
+        dest="output",
+        default="datastore.pickle",
+    )
 
-    parser.add_option("-p", "--port",
-                      help="The port to connect to", type="int",
-                      dest="port", default=502)
+    parser.add_option(
+        "-p",
+        "--port",
+        help="The port to connect to",
+        type="int",
+        dest="port",
+        default=502,
+    )
 
-    parser.add_option("-s", "--server",
-                      help="The server to scrape",
-                      dest="host", default="127.0.0.1")
+    parser.add_option(
+        "-s", "--server", help="The server to scrape", dest="host", default="127.0.0.1"
+    )
 
-    parser.add_option("-r", "--range",
-                      help="The address range to scan",
-                      dest="query", default="0:1000")
+    parser.add_option(
+        "-r",
+        "--range",
+        help="The address range to scan",
+        dest="query",
+        default="0:1000",
+    )
 
-    parser.add_option("-d", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-d",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
     (opt, _) = parser.parse_args()
     return opt
@@ -275,7 +299,9 @@ def main():
 
         # how to connect based on TCP vs Serial clients
         if isinstance(framer, ModbusSocketFramer):
-            reactor.connectTCP(options.host, options.port, factory)  # pylint: disable=no-member
+            reactor.connectTCP(  # pylint: disable=no-member
+                options.host, options.port, factory
+            )
         else:
             SerialModbusClient(factory, options.port, reactor)
 
@@ -284,6 +310,7 @@ def main():
         log.debug("Finished scraping the client")
     except Exception as exc:  # pylint: disable=broad-except
         print(exc)
+
 
 # --------------------------------------------------------------------------- #
 # Main jumper

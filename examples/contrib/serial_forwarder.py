@@ -14,6 +14,7 @@ from pymodbus.server.sync import StartTcpServer as StartServer
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.datastore import ModbusServerContext
+
 # from pymodbus.datastore import ModbusSlaveContext #NOSONAR
 
 # --------------------------------------------------------------------------- #

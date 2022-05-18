@@ -12,6 +12,7 @@ for the supplied modbus format:
 import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import codecs as c
+
 # -------------------------------------------------------------------------- #
 # import all the available framers
 # -------------------------------------------------------------------------- #
@@ -50,7 +51,10 @@ from pymodbus.other_message import (
     ReadExceptionStatusRequest,
     ReportSlaveIdResponse,
 )
-from pymodbus.mei_message import ReadDeviceInformationResponse, ReadDeviceInformationRequest
+from pymodbus.mei_message import (
+    ReadDeviceInformationResponse,
+    ReadDeviceInformationRequest,
+)
 from pymodbus.register_read_message import (
     ReadWriteMultipleRegistersResponse,
     ReadInputRegistersResponse,
@@ -87,19 +91,15 @@ _request_messages = [
     WriteSingleRegisterRequest,
     WriteSingleCoilRequest,
     ReadWriteMultipleRegistersRequest,
-
     ReadExceptionStatusRequest,
     GetCommEventCounterRequest,
     GetCommEventLogRequest,
     ReportSlaveIdRequest,
-
     ReadFileRecordRequest,
     WriteFileRecordRequest,
     MaskWriteRegisterRequest,
     ReadFifoQueueRequest,
-
     ReadDeviceInformationRequest,
-
     modbus_diag.ReturnQueryDataRequest,
     modbus_diag.RestartCommunicationsOptionRequest,
     modbus_diag.ReturnDiagnosticRegisterRequest,
@@ -116,7 +116,7 @@ _request_messages = [
     modbus_diag.ReturnSlaveBusCharacterOverrunCountRequest,
     modbus_diag.ReturnIopOverrunCountRequest,
     modbus_diag.ClearOverrunCountRequest,
-    modbus_diag.GetClearModbusPlusRequest
+    modbus_diag.GetClearModbusPlusRequest,
 ]
 
 
@@ -133,19 +133,15 @@ _response_messages = [
     WriteSingleRegisterResponse,
     WriteSingleCoilResponse,
     ReadWriteMultipleRegistersResponse,
-
     ReadExceptionStatusResponse,
     GetCommEventCounterResponse,
     GetCommEventLogResponse,
     ReportSlaveIdResponse,
-
     ReadFileRecordResponse,
     WriteFileRecordResponse,
     MaskWriteRegisterResponse,
     ReadFifoQueueResponse,
-
     ReadDeviceInformationResponse,
-
     modbus_diag.ReturnQueryDataResponse,
     modbus_diag.RestartCommunicationsOptionResponse,
     modbus_diag.ReturnDiagnosticRegisterResponse,
@@ -162,7 +158,7 @@ _response_messages = [
     modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
     modbus_diag.ReturnIopOverrunCountResponse,
     modbus_diag.ClearOverrunCountResponse,
-    modbus_diag.GetClearModbusPlusResponse
+    modbus_diag.GetClearModbusPlusResponse,
 ]
 
 
@@ -185,7 +181,7 @@ _arguments = {
     "write_registers": [0x01] * 8,
     "transaction": 0x01,
     "protocol": 0x00,
-    "unit": 0xff,
+    "unit": 0xFF,
 }
 
 
@@ -204,11 +200,13 @@ def generate_messages(framer, options):
         messages = _response_messages
     for message in messages:
         message = message(**_arguments)
-        print("%-44s = " % message.__class__.__name__)  # pylint: disable=consider-using-f-string
+        print(
+            "%-44s = " % message.__class__.__name__  # pylint: disable=consider-using-f-string
+        )
         packet = framer.buildPacket(message)
         if not options.ascii:
             packet = c.encode(packet, "hex_codec").decode("utf-8")
-        print(f"{packet}\n")   # because ascii ends with a \r\n
+        print(f"{packet}\n")  # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
@@ -221,26 +219,47 @@ def get_options():
     """
     parser = OptionParser()
 
-    parser.add_option("-f", "--framer",
-                      help="The type of framer to use "
-                           "(tcp, rtu, binary, ascii)",
-                      dest="framer", default="tcp")
+    parser.add_option(
+        "-f",
+        "--framer",
+        help="The type of framer to use (tcp, rtu, binary, ascii)",
+        dest="framer",
+        default="tcp",
+    )
 
-    parser.add_option("-D", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
-    parser.add_option("-a", "--ascii",
-                      help="The indicates that the message is ascii",
-                      action="store_true", dest="ascii", default=True)
+    parser.add_option(
+        "-a",
+        "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true",
+        dest="ascii",
+        default=True,
+    )
 
-    parser.add_option("-b", "--binary",
-                      help="The indicates that the message is binary",
-                      action="store_false", dest="ascii")
+    parser.add_option(
+        "-b",
+        "--binary",
+        help="The indicates that the message is binary",
+        action="store_false",
+        dest="ascii",
+    )
 
-    parser.add_option("-m", "--messages",
-                      help="The messages to encode (rx, tx)",
-                      dest="messages", default="rx")
+    parser.add_option(
+        "-m",
+        "--messages",
+        help="The messages to encode (rx, tx)",
+        dest="messages",
+        default="rx",
+    )
 
     (opt, _) = parser.parse_args()
     return opt

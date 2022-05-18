@@ -16,6 +16,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 
@@ -42,7 +43,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         self.queue = queue
 
         values = {k: 0 for k in devices.keys()}
-        values[0xbeef] = len(values)  # the number of devices
+        values[0xBEEF] = len(values)  # the number of devices
         super().__init__(values)
 
     def setValues(self, address, value):  # pylint: disable=arguments-differ
@@ -53,6 +54,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         """
         super().setValues(address, value)
         self.queue.put((self.devices.get(address, None), value))
+
 
 # --------------------------------------------------------------------------- #
 # define your callback process
@@ -83,6 +85,7 @@ def device_writer(queue):
         if not device:
             continue
         # do any logic here to update your devices
+
 
 # --------------------------------------------------------------------------- #
 # initialize your device map
@@ -120,14 +123,16 @@ def run_callback_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "pymodbus Server",
-        "ModelName": "pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

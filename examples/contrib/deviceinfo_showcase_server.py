@@ -8,11 +8,13 @@ empty server.
 """
 import logging
 from serial import __version__ as pyserial_version
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
+
 # from pymodbus.server.sync import StartUdpServer #NOSONAR
 # from pymodbus.server.sync import StartSerialServer #NOSONAR
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR
@@ -23,8 +25,10 @@ from pymodbus import __version__ as pymodbus_version
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -43,15 +47,16 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "Pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "Pymodbus Server",
-        "ModelName": "Pymodbus Server",
-        "MajorMinorRevision": version.short(),
-
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # Add an example which is long enough to force the ReadDeviceInformation
@@ -59,11 +64,13 @@ def run_server():
     # information.
     # ----------------------------------------------------------------------- #
 
-    identity[0x80] = "Lorem ipsum dolor sit amet, consectetur adipiscing " \
-                     "elit. Vivamus rhoncus massa turpis, sit amet " \
-                     "ultrices orci semper ut. Aliquam tristique sapien in " \
-                     "lacus pharetra, in convallis nunc consectetur. Nunc " \
-                     "velit elit, vehicula tempus tempus sed. "
+    identity[0x80] = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing "
+        "elit. Vivamus rhoncus massa turpis, sit amet "
+        "ultrices orci semper ut. Aliquam tristique sapien in "
+        "lacus pharetra, in convallis nunc consectetur. Nunc "
+        "velit elit, vehicula tempus tempus sed. "
+    )
 
     # ----------------------------------------------------------------------- #
     # Add an example with repeated object IDs. The MODBUS specification is
@@ -80,8 +87,7 @@ def run_server():
     # response", if you use repeated OIDs, apply that rule to the entire
     # grouping of objects with the repeated OID.
     # ----------------------------------------------------------------------- #
-    identity[0x81] = [f"pymodbus {pymodbus_version}",
-                      f"pyserial {pyserial_version}"]
+    identity[0x81] = [f"pymodbus {pymodbus_version}", f"pyserial {pyserial_version}"]
 
     # ----------------------------------------------------------------------- #
     # run the server you want

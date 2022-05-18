@@ -30,10 +30,9 @@ if __name__ == "__main__":
     log.setLevel(logging.ERROR)
     handlers = [
         Handlers.RotatingFileHandler("logfile", maxBytes=1024 * 1024),
-        Handlers.SMTPHandler("mx.host.com",
-                             "pymodbus@host.com",
-                             ["support@host.com"],
-                             "Pymodbus"),
+        Handlers.SMTPHandler(
+            "mx.host.com", "pymodbus@host.com", ["support@host.com"], "Pymodbus"
+        ),
         Handlers.SysLogHandler(facility="daemon"),
         Handlers.DatagramHandler("localhost", 12345),
     ]

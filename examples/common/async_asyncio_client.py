@@ -15,6 +15,7 @@ from threading import Thread
 # Import the required asynchronous client
 # ----------------------------------------------------------------------- #
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
+
 # from pymodbus.client.asynchronous.udp import (
 #     AsyncModbusUDPClient as ModbusClient)
 from pymodbus.client.asynchronous import schedulers
@@ -132,8 +133,8 @@ def run_with_not_running_loop():
     assert not loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
     new_loop, client = ModbusClient(  # NOSONAR pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO,
-        port=5020, loop=loop)
+        schedulers.ASYNC_IO, port=5020, loop=loop
+    )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------------RUN_WITH_NOT_RUNNING_LOOP---------------")
@@ -162,10 +163,14 @@ async def run_with_already_running_loop():
     asyncio.sleep(1)
     assert loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
-    loop, client = ModbusClient(schedulers.ASYNC_IO,  # NOSONAR pylint: disable=unpacking-non-sequence
-                                port=5020, loop=loop)
+    loop, client = ModbusClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+        schedulers.ASYNC_IO,  # NOSONAR
+        port=5020,
+        loop=loop,
+    )  # NOSONAR
     future = asyncio.run_coroutine_threadsafe(
-        start_async_test(client.protocol), loop=loop)
+        start_async_test(client.protocol), loop=loop
+    )
     future.add_done_callback(done)
     while not future.done():
         time.sleep(0.1)
@@ -177,7 +182,9 @@ async def run_with_already_running_loop():
 def run_with_no_loop():
     """Create a loop."""
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
-    loop, client = ModbusClient(schedulers.ASYNC_IO, port=5020)  # NOSONAR pylint: disable=unpacking-non-sequence
+    loop, client = ModbusClient(  # NOSONAR  # pylint: disable=unpacking-non-sequence
+        schedulers.ASYNC_IO, port=5020
+    )  # NOSONAR
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------DONE RUN_WITH_NO_LOOP-------------")

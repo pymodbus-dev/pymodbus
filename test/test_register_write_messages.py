@@ -32,25 +32,24 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def setUp(self):
         """Initialize the test environment and builds request/result encoding pairs."""
-        self.value = 0xabcd
-        self.values = [0xa, 0xb, 0xc]
+        self.value = 0xABCD
+        self.values = [0xA, 0xB, 0xC]
         builder = BinaryPayloadBuilder(byteorder=Endian.Big)
         builder.add_16bit_uint(0x1234)
         self.payload = builder.build()
         self.write = {
-            WriteSingleRegisterRequest(1, self.value):
-                b"\x00\x01\xab\xcd",
-            WriteSingleRegisterResponse(1, self.value):
-                b"\x00\x01\xab\xcd",
-            WriteMultipleRegistersRequest(1, self.values):
-                b"\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c",
-            WriteMultipleRegistersResponse(1, 5):
-                b"\x00\x01\x00\x05",
-
-            WriteSingleRegisterRequest(1, self.payload[0],
-                                       skip_encode=True): b"\x00\x01\x12\x34",
-            WriteMultipleRegistersRequest(1, self.payload,
-                                          skip_encode=True): b"\x00\x01\x00\x01\x02\x12\x34",
+            WriteSingleRegisterRequest(1, self.value): b"\x00\x01\xab\xcd",
+            WriteSingleRegisterResponse(1, self.value): b"\x00\x01\xab\xcd",
+            WriteMultipleRegistersRequest(
+                1, self.values
+            ): b"\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c",
+            WriteMultipleRegistersResponse(1, 5): b"\x00\x01\x00\x05",
+            WriteSingleRegisterRequest(
+                1, self.payload[0], skip_encode=True
+            ): b"\x00\x01\x12\x34",
+            WriteMultipleRegistersRequest(
+                1, self.payload, skip_encode=True
+            ): b"\x00\x01\x00\x01\x02\x12\x34",
         }
 
     def tearDown(self):
@@ -65,7 +64,9 @@ class WriteRegisterMessagesTest(unittest.TestCase):
     def test_register_write_requests_decode(self):
         """Test register write requests decode."""
         addresses = [1, 1, 1, 1]
-        values = sorted(self.write.items(), key=lambda x: str(x))  # pylint: disable=unnecessary-lambda
+        values = sorted(
+            self.write.items(), key=lambda x: str(x)  # pylint: disable=unnecessary-lambda
+        )
         for packet, address in zip(values, addresses):
             request, response = packet
             request.decode(response)
@@ -84,11 +85,11 @@ class WriteRegisterMessagesTest(unittest.TestCase):
     def test_write_single_register_request(self):
         """Test write single register request."""
         context = MockContext()
-        request = WriteSingleRegisterRequest(0x00, 0xf0000)
+        request = WriteSingleRegisterRequest(0x00, 0xF0000)
         result = request.execute(context)
         self.assertEqual(result.exception_code, ModbusExceptions.IllegalValue)
 
-        request.value = 0x00ff
+        request.value = 0x00FF
         result = request.execute(context)
         self.assertEqual(result.exception_code, ModbusExceptions.IllegalAddress)
 
@@ -132,7 +133,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         handle = MaskWriteRegisterRequest()
         handle.decode(request)
         self.assertEqual(handle.address, 0x0004)
-        self.assertEqual(handle.and_mask, 0x00f2)
+        self.assertEqual(handle.and_mask, 0x00F2)
         self.assertEqual(handle.or_mask, 0x0025)
 
     def test_mask_write_register_request_execute(self):
@@ -147,18 +148,15 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         context = MockContext(valid=False, default=0x0000)
         handle = MaskWriteRegisterRequest(0x0000, -1, 0x1010)
         result = handle.execute(context)
-        self.assertEqual(ModbusExceptions.IllegalValue,
-                         result.exception_code)
+        self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, -1)
         result = handle.execute(context)
-        self.assertEqual(ModbusExceptions.IllegalValue,
-                         result.exception_code)
+        self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
 
         handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
         result = handle.execute(context)
-        self.assertEqual(ModbusExceptions.IllegalAddress,
-                         result.exception_code)
+        self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
 
         # -----------------------------------------------------------------------#
         # Mask Write Register Response
@@ -176,7 +174,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         handle = MaskWriteRegisterResponse()
         handle.decode(request)
         self.assertEqual(handle.address, 0x0004)
-        self.assertEqual(handle.and_mask, 0x00f2)
+        self.assertEqual(handle.and_mask, 0x00F2)
         self.assertEqual(handle.or_mask, 0x0025)
 
 

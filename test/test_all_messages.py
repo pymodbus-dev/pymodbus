@@ -44,8 +44,10 @@ class ModbusAllMessagesTests(unittest.TestCase):
     def setUp(self):
         """Initialize the test environment and builds request/result encoding pairs."""
         arguments = {
-            "read_address": 1, "read_count": 1,
-            "write_address": 1, "write_registers": 1
+            "read_address": 1,
+            "read_count": 1,
+            "write_address": 1,
+            "write_registers": 1,
         }
         self.requests = [
             lambda unit: ReadCoilsRequest(1, 5, unit=unit),

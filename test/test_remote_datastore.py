@@ -17,7 +17,9 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
         """Test a modbus remote slave context"""
         context = RemoteSlaveContext(None)
         self.assertNotEqual(str(context), None)
-        self.assertRaises(NotImplementedException, lambda: context.reset())  # pylint: disable=unnecessary-lambda
+        self.assertRaises(
+            NotImplementedException, lambda: context.reset()  # pylint: disable=unnecessary-lambda
+        )
 
     def test_remote_slave_set_values(self):  # pylint: disable=no-self-use
         """Test setting values against a remote slave context"""

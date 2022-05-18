@@ -7,7 +7,9 @@ import pytest
 from pymodbus.client.asynchronous.async_io import (
     BaseModbusAsyncClientProtocol,
     ReconnectingAsyncioModbusTcpClient,
-    ModbusClientProtocol, ModbusUdpClientProtocol)
+    ModbusClientProtocol,
+    ModbusUdpClientProtocol,
+)
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ConnectionException
@@ -18,7 +20,11 @@ from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
-protocols = [BaseModbusAsyncClientProtocol, ModbusUdpClientProtocol, ModbusClientProtocol]
+protocols = [
+    BaseModbusAsyncClientProtocol,
+    ModbusUdpClientProtocol,
+    ModbusClientProtocol,
+]
 
 
 class TestAsyncioClient:
@@ -31,7 +37,9 @@ class TestAsyncioClient:
         assert protocol.transport is None  # nosec
         assert not protocol._connected  # nosec pylint: disable=protected-access
 
-    def test_protocol_connection_state_propagation_to_factory(self):  # pylint: disable=no-self-use
+    def test_protocol_connection_state_propagation_to_factory(
+        self,
+    ):  # pylint: disable=no-self-use
         """Test protocol connection state progration to factory."""
         protocol = ModbusClientProtocol()
         assert protocol.factory is None  # nosec
@@ -43,16 +51,22 @@ class TestAsyncioClient:
         protocol.connection_made(mock.sentinel.TRANSPORT)
         assert protocol.transport is mock.sentinel.TRANSPORT  # nosec
         protocol.factory.protocol_made_connection.assert_called_once_with(  # pylint: disable=no-member
-            protocol)
-        assert not protocol.factory.protocol_lost_connection.call_count  # nosec pylint: disable=no-member
+            protocol
+        )
+        assert (
+            not protocol.factory.protocol_lost_connection.call_count  # nosec pylint: disable=no-member
+        )
 
         protocol.factory.reset_mock()
 
         protocol.connection_lost(mock.sentinel.REASON)
         assert protocol.transport is None  # nosec
-        assert not protocol.factory.protocol_made_connection.call_count  # nosec pylint: disable=no-member
+        assert (
+            not protocol.factory.protocol_made_connection.call_count  # nosec pylint: disable=no-member
+        )
         protocol.factory.protocol_lost_connection.assert_called_once_with(  # pylint: disable=no-member
-            protocol)
+            protocol
+        )
         protocol.raise_future = mock.MagicMock()
         request = mock.MagicMock()
         protocol.transaction.addTransaction(request, 1)
@@ -70,7 +84,8 @@ class TestAsyncioClient:
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         assert not client.connected  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
@@ -80,8 +95,10 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     async def test_initialization_tcp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tcp in loop."""
-        _, client = AsyncModbusTCPClient(schedulers.ASYNC_IO,  # NOSONAR pylint: disable=unpacking-non-sequence
-                                         port=5020)
+        _, client = AsyncModbusTCPClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+            schedulers.ASYNC_IO,
+            port=5020,
+        )
         client = await client
 
         assert not client.connected  # nosec
@@ -91,7 +108,9 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     async def test_initialization_udp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization udp in loop."""
-        _, client = AsyncModbusUDPClient(schedulers.ASYNC_IO, port=5020)  # pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusUDPClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+            schedulers.ASYNC_IO, port=5020
+        )
         client = await client
 
         assert client.connected  # nosec
@@ -102,7 +121,8 @@ class TestAsyncioClient:
     async def test_initialization_tls_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tls in loop."""
         _, client = AsyncModbusTLSClient(  # NOSONAR pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port=5020)
+            schedulers.ASYNC_IO, port=5020
+        )
         client = await client
 
         assert not client.connected  # nosec
@@ -113,8 +133,8 @@ class TestAsyncioClient:
     def test_initialization_serial_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization serial in loop."""
         _, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu")  # NOSONAR #nosec
-
+            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu"  # NOSONAR #nosec
+        )
         assert client.port == "/tmp/ptyp0"  # nosec NOSONAR
         assert client.baudrate == 9600  # nosec
 
@@ -123,7 +143,8 @@ class TestAsyncioClient:
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         initial_delay = client.delay_ms
         assert initial_delay > 0  # nosec
         client.delay_ms *= 2
@@ -137,7 +158,8 @@ class TestAsyncioClient:
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         assert not client.connected  # nosec
         client.stop()
         assert not client.connected  # nosec
@@ -154,7 +176,8 @@ class TestAsyncioClient:
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         assert not client.connected  # nosec
         assert client.protocol is None  # nosec
         client.protocol_made_connection(mock.sentinel.PROTOCOL)
@@ -166,12 +189,15 @@ class TestAsyncioClient:
         assert client.protocol is mock.sentinel.PROTOCOL  # nosec
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
-    def test_factory_protocol_lost_connection(self, mock_async):  # pylint: disable=no-self-use
+    def test_factory_protocol_lost_connection(
+        self, mock_async
+    ):  # pylint: disable=no-self-use
         """Test factory protocol lost connection."""
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         assert not client.connected  # nosec
         assert client.protocol is None  # nosec
 
@@ -186,14 +212,16 @@ class TestAsyncioClient:
 
         client.connected = True
         with mock.patch(
-                "pymodbus.client.asynchronous.async_io."
-                "ReconnectingAsyncioModbusTcpClient._reconnect") as mock_reconnect:
+            "pymodbus.client.asynchronous.async_io."
+            "ReconnectingAsyncioModbusTcpClient._reconnect"
+        ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
             if sys.version_info == (3, 7):
                 mock_async.assert_called_once_with(
-                    mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
+                    mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop
+                )
         assert not client.connected  # nosec
         assert client.protocol is None  # nosec
 
@@ -205,24 +233,31 @@ class TestAsyncioClient:
         await client.start(mock.sentinel.HOST, mock.sentinel.PORT)
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
-    def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=no-self-use
+    def test_factory_start_failing_and_retried(
+        self, mock_async
+    ):  # pylint: disable=no-self-use
         """Test factory start failing and retried."""
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
-        mock_loop.create_connection = mock.MagicMock(side_effect=Exception("Did not work."))
+        mock_loop.create_connection = mock.MagicMock(
+            side_effect=Exception("Did not work.")
+        )
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
 
         # check whether reconnect is called upon failed connection attempt:
         with mock.patch(
-                "pymodbus.client.asynchronous.async_io"
-                ".ReconnectingAsyncioModbusTcpClient._reconnect") as mock_reconnect:
+            "pymodbus.client.asynchronous.async_io"
+            ".ReconnectingAsyncioModbusTcpClient._reconnect"
+        ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
             mock_reconnect.assert_called_once_with()
             if sys.version_info == (3, 7):
                 mock_async.assert_called_once_with(
-                    mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop)
+                    mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop
+                )
 
     # @pytest.mark.asyncio
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.sleep")
@@ -232,7 +267,8 @@ class TestAsyncioClient:
         mock_sleep.side_effect = return_as_coroutine()
         mock_loop = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop)
+            protocol_class=mock_protocol_class, loop=mock_loop
+        )
         client.delay_ms = 5000
 
         run_coroutine(client._reconnect())  # pylint: disable=protected-access
@@ -240,7 +276,9 @@ class TestAsyncioClient:
         assert mock_loop.create_connection.call_count == 1  # nosec
 
     @pytest.mark.parametrize("protocol", protocols)
-    def test_client_protocol_connection_made(self, protocol):  # pylint: disable=no-self-use
+    def test_client_protocol_connection_made(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the client protocol close."""
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
@@ -270,7 +308,9 @@ class TestAsyncioClient:
 
     @pytest.mark.skip("To fix")
     @pytest.mark.parametrize("protocol", protocols)
-    def test_client_protocol_connection_lost(self, protocol):  # pylint: disable=no-self-use
+    def test_client_protocol_connection_lost(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the client protocol connection lost"""
         framer = ModbusSocketFramer(None)
         protocol = protocol(framer=framer, timeout=0)
@@ -295,7 +335,9 @@ class TestAsyncioClient:
             assert protocol.factory.protocol_lost_connection.call_count == 1  # nosec
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_data_received(self, protocol):  # pylint: disable=no-self-use
+    async def test_client_protocol_data_received(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the client protocol data received"""
         protocol = protocol(ModbusSocketFramer(ClientDecoder()))
         transport = mock.MagicMock()
@@ -316,7 +358,9 @@ class TestAsyncioClient:
     # @pytest.mark.skip("To fix")
     @pytest.mark.asyncio
     @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_execute(self, protocol):  # pylint: disable=no-self-use
+    async def test_client_protocol_execute(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the client protocol execute method"""
         framer = ModbusSocketFramer(None)
         protocol = protocol(framer=framer)
@@ -335,7 +379,9 @@ class TestAsyncioClient:
         assert response == f_trans  # nosec
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_handle_response(self, protocol):  # pylint: disable=no-self-use
+    async def test_client_protocol_handle_response(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the client protocol handles responses"""
         protocol = protocol()
         transport = mock.MagicMock()
@@ -356,15 +402,22 @@ class TestAsyncioClient:
         assert result == reply  # nosec
 
     @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_build_response(self, protocol):  # pylint: disable=no-self-use
+    async def test_client_protocol_build_response(
+        self, protocol
+    ):  # pylint: disable=no-self-use
         """Test the udp client protocol builds responses"""
         protocol = protocol()
-        assert not len(list(protocol.transaction))  # nosec pylint: disable=use-implicit-booleaness-not-len
-
-        response = protocol._buildResponse(0x00)  # nosec pylint: disable=protected-access
+        assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
+            list(protocol.transaction)
+        )
+        response = protocol._buildResponse(  # nosec pylint: disable=protected-access
+            0x00
+        )
         excp = response.exception()
         assert isinstance(excp, ConnectionException)  # nosec
-        assert not len(list(protocol.transaction))  # nosec pylint: disable=use-implicit-booleaness-not-len
+        assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
+            list(protocol.transaction)
+        )
 
         protocol._connected = True  # pylint: disable=protected-access
         protocol._buildResponse(0x00)  # pylint: disable=protected-access

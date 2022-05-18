@@ -16,7 +16,7 @@ from pymodbus.server.asynchronous import (
     StartUdpServer,
     StartSerialServer,
     StopServer,
-    _is_main_thread
+    _is_main_thread,
 )
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
@@ -120,7 +120,9 @@ class AsynchronousServerTest(unittest.TestCase):
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
         protocol.ignore_missing_slaves = True
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertEqual(protocol._execute(request), None)  # pylint: disable=protected-access
+        self.assertEqual(
+            protocol._execute(request), None  # pylint: disable=protected-access
+        )
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
@@ -153,7 +155,9 @@ class AsynchronousServerTest(unittest.TestCase):
         self.assertTrue(protocol.transport.write.called)
 
         mock_data = MockMsg(resp=False, msg="helloworld")
-        self.assertEqual(protocol._send(mock_data), None)  # pylint: disable=protected-access
+        self.assertEqual(
+            protocol._send(mock_data), None  # pylint: disable=protected-access
+        )
 
     # ----------------------------------------------------------------------- #
     # Test ModbusServerFactory
@@ -196,7 +200,9 @@ class AsynchronousServerTest(unittest.TestCase):
 
     @no_twisted_serial_on_windows_with_pypy
     @patch("twisted.internet.serialport.SerialPort")
-    def test_stop_server_from_main_thread(self, mock_sp):  # pylint: disable=unused-argument
+    def test_stop_server_from_main_thread(
+        self, mock_sp
+    ):  # pylint: disable=unused-argument
         """Stop asynchronous server."""
         with patch(PATCH_TWISTER) as mock_reactor:
             StartSerialServer(context=None, port=pytest.SERIAL_PORT)
@@ -272,7 +278,9 @@ class AsynchronousServerTest(unittest.TestCase):
         # CASE-2: NoSuchSlaveException with ignore_missing_slaves = true
         protocol.ignore_missing_slaves = True
         request.execute.side_effect = NoSuchSlaveException()
-        self.assertEqual(protocol._execute(request, mock_addr), None)  # pylint: disable=protected-access
+        self.assertEqual(
+            protocol._execute(request, mock_addr), None  # pylint: disable=protected-access
+        )
 
         # test other exceptions
         request.execute.side_effect = ModbusIOException()
@@ -282,6 +290,7 @@ class AsynchronousServerTest(unittest.TestCase):
     def test_stop_server(self):
         """Test stop server."""
         from twisted.internet import reactor  # pylint: disable=import-outside-toplevel
+
         reactor.stop = MagicMock()
         StopServer()
 

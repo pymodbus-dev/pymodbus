@@ -36,7 +36,9 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         ModbusClientProtocol.__init__(self, framer)
         log.debug("Beginning the processing loop")
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
+        reactor.callLater(  # pylint: disable=no-member
+            CLIENT_DELAY, self.fetch_holding_registers
+        )
 
     def fetch_holding_registers(self):
         """Defer fetching holding registers"""
@@ -62,7 +64,9 @@ class ExampleProtocol(ModbusClientProtocol):
         log.info(response.getBit(0))
         log.info(response.getBit(1))
         log.info(response.getBit(2))
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
+        reactor.callLater(  # pylint: disable=no-member
+            CLIENT_DELAY, self.fetch_holding_registers
+        )
 
     def error_handler(self, failure):  # pylint: disable=no-self-use
         """Handle any twisted errors
@@ -74,11 +78,14 @@ class ExampleProtocol(ModbusClientProtocol):
 
 if __name__ == "__main__":
     import time
-    proto, client = AsyncModbusSerialClient(schedulers.REACTOR,  # pylint: disable=unpacking-non-sequence
-                                            method="rtu",
-                                            port=SERIAL_PORT,
-                                            timeout=2,
-                                            proto_cls=ExampleProtocol)
+
+    proto, client = AsyncModbusSerialClient(  # NOSONAR  # pylint: disable=unpacking-non-sequence
+        schedulers.REACTOR,
+        method="rtu",
+        port=SERIAL_PORT,
+        timeout=2,
+        proto_cls=ExampleProtocol,
+    )   # NOSONAR
     proto.start()
     time.sleep(10)  # Wait for operation to complete
     # proto.stop()

@@ -21,13 +21,16 @@ from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 # from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 # from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
+
 # from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -61,7 +64,9 @@ class ExampleProtocol(ModbusClientProtocol):
         ModbusClientProtocol.__init__(self, framer)
         self.endpoint = endpoint
         log.debug("Beginning the processing loop")
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
+        reactor.callLater(  # pylint: disable=no-member
+            CLIENT_DELAY, self.fetch_holding_registers
+        )
 
     def fetch_holding_registers(self):
         """Defer fetching holding registers"""
@@ -87,7 +92,9 @@ class ExampleProtocol(ModbusClientProtocol):
         self.endpoint.write(response.getBit(0))
         self.endpoint.write(response.getBit(1))
         self.endpoint.write(response.getBit(2))
-        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)  # pylint: disable=no-member
+        reactor.callLater(  # pylint: disable=no-member
+            CLIENT_DELAY, self.fetch_holding_registers
+        )
 
     def error_handler(self, failure):  # pylint: disable=no-self-use
         """Handle any twisted errors
@@ -166,6 +173,7 @@ class LoggingLineReader:  # pylint: disable=too-few-public-methods
         """
         txt = f"Read Data: {response}"
         log.info(txt)
+
 
 # --------------------------------------------------------------------------- #
 # start running the processor

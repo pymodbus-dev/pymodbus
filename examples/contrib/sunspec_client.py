@@ -21,15 +21,15 @@ class SunspecDefaultValue:  # pylint: disable=too-few-public-methods
     """A collection of constants to indicate if a value is not implemented."""
 
     Signed16 = 0x8000
-    Unsigned16 = 0xffff
+    Unsigned16 = 0xFFFF
     Accumulator16 = 0x0000
     Scale = 0x8000
     Signed32 = 0x80000000
-    Float32 = 0x7fc00000
-    Unsigned32 = 0xffffffff
+    Float32 = 0x7FC00000
+    Unsigned32 = 0xFFFFFFFF
     Accumulator32 = 0x00000000
     Signed64 = 0x8000000000000000
-    Unsigned64 = 0xffffffffffffffff
+    Unsigned64 = 0xFFFFFFFFFFFFFFFF
     Accumulator64 = 0x0000000000000000
     String = "\x00"
 
@@ -38,14 +38,14 @@ class SunspecStatus:  # pylint: disable=too-few-public-methods
     """Indicators of the current status of a sunspec device"""
 
     Normal = 0x00000000
-    Error = 0xfffffffe
-    Unknown = 0xffffffff
+    Error = 0xFFFFFFFE
+    Unknown = 0xFFFFFFFF
 
 
 class SunspecIdentifier:  # pylint: disable=too-few-public-methods
     """Assigned identifiers that are pre-assigned by the sunspec protocol."""
 
-    Sunspec = 0x53756e53
+    Sunspec = 0x53756E53
 
 
 class SunspecModel:  # pylint: disable=too-few-public-methods
@@ -126,8 +126,11 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
         :param code: The device code to lookup
         :returns: The device model name, or None if none available
         """
-        values = {(v, k) for k, v in cls.__dict__.iteritems()  # pylint: disable=no-member
-                  if not callable(v)}
+        values = {
+            (v, k)
+            for k, v in cls.__dict__.iteritems()  # pylint: disable=no-member
+            if not callable(v)
+        }
         return values.get(code, None)
 
 
@@ -150,12 +153,14 @@ def defer_or_apply(func):  # NOSONAR pylint: disable=unused-argument
 
     :param func: The function to decorate
     """
+
     def closure(future, adapt):
         if isinstance(future, Deferred):
             defer = Deferred()
             future.addCallback(lambda r: defer.callback(adapt(r)))
             return defer
         return adapt(future)
+
     return closure
 
 
@@ -193,7 +198,7 @@ class SunspecDecoder(BinaryPayloadDecoder):
         :param size: The size of the string to decode
         """
         self._pointer += size
-        string = self._payload[self._pointer - size:self._pointer]
+        string = self._payload[self._pointer - size : self._pointer]
         return string.split(SunspecDefaultValue.String)[0]
 
 
@@ -274,12 +279,14 @@ class SunspecClient:
             decoder = self.get_device_block(offset, 2)
             model = decoder.decode_16bit_uint()
             length = decoder.decode_16bit_uint()
-            blocks.append({
-                "model": model,
-                "name": SunspecModel.lookup(model),
-                "length": length,
-                "offset": offset + length + 2
-            })
+            blocks.append(
+                {
+                    "model": model,
+                    "name": SunspecModel.lookup(model),
+                    "length": length,
+                    "offset": offset + length + 2,
+                }
+            )
             offset += length + 2
         return blocks
 
@@ -295,7 +302,9 @@ if __name__ == "__main__":
     for key, value in common.iteritems():
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
-        print("{:<20}: {}".format(key, value))  # pylint: disable=consider-using-f-string
+        print(
+            "{:<20}: {}".format(key, value)  # pylint: disable=consider-using-f-string
+        )
 
     # print out all the available device blocks
     blocks = client.get_all_device_blocks()

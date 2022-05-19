@@ -30,6 +30,7 @@ def root_test():
     return True  # removed for the time being as it isn"t portable
     # return getpass.getuser() == "root"
 
+
 # -------------------------------------------------------------------------- #
 # Helper Classes
 # -------------------------------------------------------------------------- #
@@ -73,7 +74,9 @@ class Configuration:  # pylint: disable=too-few-public-methods
             self.file = open(config, "rb")  # pylint: disable=consider-using-with
         except Exception as exc:
             _logger.critical(str(exc))
-            raise ConfigurationException(f"File not found {config}")  # pylint: disable=raise-missing-from
+            raise ConfigurationException(  # pylint: disable=raise-missing-from
+                f"File not found {config}"
+            )
 
     def parse(self):
         """Parse the config file and creates a server context"""
@@ -84,9 +87,12 @@ class Configuration:  # pylint: disable=too-few-public-methods
             hsd = handle["hr"]
             isd = handle["ir"]
         except Exception:
-            raise ConfigurationException("Invalid Configuration")  # pylint: disable=raise-missing-from
+            raise ConfigurationException(  # pylint: disable=raise-missing-from
+                "Invalid Configuration"
+            )
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
+
 
 # -------------------------------------------------------------------------- #
 # Main start point
@@ -96,12 +102,17 @@ class Configuration:  # pylint: disable=too-few-public-methods
 def main():
     """Server launcher"""
     parser = OptionParser()
-    parser.add_option("-c", "--conf",
-                      help="The configuration file to load",
-                      dest="file")
-    parser.add_option("-D", "--debug",
-                      help="Turn on to enable tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-c", "--conf", help="The configuration file to load", dest="file"
+    )
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Turn on to enable tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
     (opt, _) = parser.parse_args()
 
     # enable debugging information
@@ -119,6 +130,7 @@ def main():
     except ConfigurationException as err:
         print(err)
         parser.print_help()
+
 
 # -------------------------------------------------------------------------- #
 # Main jumper

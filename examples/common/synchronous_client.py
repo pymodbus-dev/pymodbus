@@ -14,14 +14,17 @@ import logging
 # import the various client implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 # from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s "
-          "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s "
+    "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)

@@ -20,6 +20,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
@@ -67,20 +68,23 @@ def run_updating_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "pymodbus Server",
-        "ModelName": "pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

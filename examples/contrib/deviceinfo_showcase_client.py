@@ -6,10 +6,12 @@ about servers connected to the client. This is part of the MODBUS specification,
 and uses the MEI 0x2B 0x0E request / response.
 """
 import logging
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 # from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 
@@ -22,8 +24,10 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s "
-          "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s "
+    "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -82,14 +86,19 @@ def run_sync_client():
 
     while not rr or rr.more_follows:
         next_object_id = rr.next_object_id if rr else 0
-        rq = ReadDeviceInformationRequest(read_code=0x03, unit=UNIT,
-                                          object_id=next_object_id)
+        rq = ReadDeviceInformationRequest(
+            read_code=0x03, unit=UNIT, object_id=next_object_id
+        )
         rr = client.execute(rq)
         information.update(rr.information)
         log.debug(rr)
 
     print("Device Information : ")
-    for key in information.keys():  # pylint: disable=consider-iterating-dictionary,consider-using-dict-items
+    for (
+        key
+    ) in (
+        information.keys()  # pylint: disable=consider-iterating-dictionary
+    ):
         print(key, information[key])
 
     # ----------------------------------------------------------------------- #

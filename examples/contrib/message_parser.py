@@ -24,10 +24,13 @@ from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.transaction import ModbusBinaryFramer
 from pymodbus.transaction import ModbusAsciiFramer
 from pymodbus.transaction import ModbusRtuFramer
+
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 
@@ -35,6 +38,7 @@ log = logging.getLogger()
 # -------------------------------------------------------------------------- #
 # build a quick wrapper around the framers
 # -------------------------------------------------------------------------- #
+
 
 class Decoder:
     """Decoder."""
@@ -59,7 +63,7 @@ class Decoder:
         print("=" * 80)
         decoders = [
             self.framer(ServerDecoder(), client=None),
-            self.framer(ClientDecoder(), client=None)
+            self.framer(ClientDecoder(), client=None),
         ]
         for decoder in decoders:
             print(f"{decoder.decoder.__class__.__name__}")
@@ -67,7 +71,9 @@ class Decoder:
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
-                    unit = decoder._header.get("uid", 0x00)  # pylint: disable=protected-access
+                    unit = decoder._header.get(  # pylint: disable=protected-access
+                        "uid", 0x00
+                    )
                     decoder.advanceFrame()
                     decoder.processIncomingPacket(message, self.report, unit)
                 else:
@@ -88,21 +94,31 @@ class Decoder:
 
         :param message: The message to print
         """
-        print("%-15s = %s" % ("name", message.__class__.__name__))  # NOSONAR pylint: disable=consider-using-f-string
+        print(
+            "%-15s = %s" % ("name", message.__class__.__name__)  # NOSONAR # pylint: disable=consider-using-f-string
+        )  # NOSONAR
         for (k_dict, v_dict) in message.__dict__.items():
             if isinstance(v_dict, dict):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 for k_item, v_item in v_dict.items():
-                    print("  %-12s => %s" % (k_item, v_item))  # pylint: disable=consider-using-f-string
+                    print(
+                        "  %-12s => %s" % (k_item, v_item)  # pylint: disable=consider-using-f-string
+                    )
 
-            elif isinstance(v_dict, collections.Iterable):
+            elif isinstance(v_dict, collections.Iterable):  # pylint: disable=no-member
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):
-                    print("%-15s . %s" % ("", line))  # pylint: disable=consider-using-f-string
+                    print(
+                        "%-15s . %s" % ("", line)  # NOSONAR  # pylint: disable=consider-using-f-string
+                    )
             else:
-                print("%-15s = %s" % (k_dict, hex(v_dict)))  # pylint: disable=consider-using-f-string
-        print("%-15s = %s" % ("documentation", message.__doc__))  # pylint: disable=consider-using-f-string
+                print(
+                    "%-15s = %s" % (k_dict, hex(v_dict))  # NOSONAR  # pylint: disable=consider-using-f-string
+                )
+        print(
+            "%-15s = %s" % ("documentation", message.__doc__)  # pylint: disable=consider-using-f-string
+        )
 
 
 # -------------------------------------------------------------------------- #
@@ -115,37 +131,66 @@ def get_options():
     """
     parser = OptionParser()
 
-    parser.add_option("-p", "--parser",
-                      help="The type of parser to use "
-                           "(tcp, rtu, binary, ascii)",
-                      dest="parser", default="tcp")
+    parser.add_option(
+        "-p",
+        "--parser",
+        help="The type of parser to use (tcp, rtu, binary, ascii)",
+        dest="parser",
+        default="tcp",
+    )
 
-    parser.add_option("-D", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
-    parser.add_option("-m", "--message",
-                      help="The message to parse",
-                      dest="message", default=None)
+    parser.add_option(
+        "-m", "--message", help="The message to parse", dest="message", default=None
+    )
 
-    parser.add_option("-a", "--ascii",
-                      help="The indicates that the message is ascii",
-                      action="store_true", dest="ascii", default=False)
+    parser.add_option(
+        "-a",
+        "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true",
+        dest="ascii",
+        default=False,
+    )
 
-    parser.add_option("-b", "--binary",
-                      help="The indicates that the message is binary",
-                      action="store_false", dest="ascii")
+    parser.add_option(
+        "-b",
+        "--binary",
+        help="The indicates that the message is binary",
+        action="store_false",
+        dest="ascii",
+    )
 
-    parser.add_option("-f", "--file",
-                      help="The file containing messages to parse",
-                      dest="file", default=None)
+    parser.add_option(
+        "-f",
+        "--file",
+        help="The file containing messages to parse",
+        dest="file",
+        default=None,
+    )
 
-    parser.add_option("-t", "--transaction",
-                      help="If the incoming message is in hexadecimal format",
-                      action="store_true", dest="transaction", default=False)
-    parser.add_option("--framer",
-                      help="Framer to use", dest="framer", default=None,
-                      )
+    parser.add_option(
+        "-t",
+        "--transaction",
+        help="If the incoming message is in hexadecimal format",
+        action="store_true",
+        dest="transaction",
+        default=False,
+    )
+    parser.add_option(
+        "--framer",
+        help="Framer to use",
+        dest="framer",
+        default=None,
+    )
 
     (opt, arg) = parser.parse_args()
 

@@ -59,7 +59,8 @@ from pymodbus.register_write_message import (
 # --------------------------------------------------------------------------- #
 
 compiler = FFI()
-compiler.cdef("""
+compiler.cdef(
+    """
     typedef struct _modbus modbus_t;
 
     int modbus_connect(modbus_t *ctx);
@@ -97,7 +98,8 @@ compiler.cdef("""
     int modbus_receive(modbus_t *ctx, uint8_t *req);
     int modbus_receive_from(modbus_t *ctx, int sockfd, uint8_t *req);
     int modbus_receive_confirmation(modbus_t *ctx, uint8_t *rsp);
-""")
+"""
+)
 LIB = compiler.dlopen("modbus")  # create our bindings
 
 # -------------------------------------------------------------------------- #
@@ -191,7 +193,9 @@ class LibmodbusLevel1Client:
         :param slave: The new slave to operate against
         :returns: The resulting slave to operate against
         """
-        self.slave = self._execute(LIB.modbus_set_slave, slave)  # pylint: disable=no-member
+        self.slave = self._execute(  # pylint: disable=no-member
+            LIB.modbus_set_slave, slave
+        )
         return self.slave
 
     def connect(self):
@@ -313,7 +317,9 @@ class LibmodbusLevel1Client:
         self.__execute(LIB.modbus_read_input_registers, address, count, result)
         return result
 
-    def read_and_write_registers(self, read_address, read_count, write_address, write_registers):
+    def read_and_write_registers(
+        self, read_address, read_count, write_address, write_registers
+    ):
         """Read/write registers.
 
         :param read_address: The address to start reading from
@@ -324,10 +330,17 @@ class LibmodbusLevel1Client:
         """
         write_count = len(write_registers)
         read_result = compiler.new("uint16_t[]", read_count)
-        self.__execute(LIB.modbus_write_and_read_registers,
-                       write_address, write_count, write_registers,
-                       read_address, read_count, read_result)
+        self.__execute(
+            LIB.modbus_write_and_read_registers,
+            write_address,
+            write_count,
+            write_registers,
+            read_address,
+            read_count,
+            read_result,
+        )
         return read_result
+
 
 # -------------------------------------------------------------------------- #
 # level2 client
@@ -347,25 +360,22 @@ class LibmodbusClient(ModbusClientMixin):
 
     __methods = {
         "ReadCoilsRequest": lambda c, r: c.read_bits(r.address, r.count),
-        "ReadDiscreteInputsRequest": lambda c, r: c.read_input_bits(r.address,
-                                                                    r.count),
-        "WriteSingleCoilRequest": lambda c, r: c.write_bit(r.address,
-                                                           r.value),
-        "WriteMultipleCoilsRequest": lambda c, r: c.write_bits(r.address,
-                                                               r.values),
-        "WriteSingleRegisterRequest": lambda c, r: c.write_register(r.address,
-                                                                    r.value),
-        "WriteMultipleRegistersRequest":
-            lambda c, r: c.write_registers(r.address, r.values),
-        "ReadHoldingRegistersRequest":
-            lambda c, r: c.read_registers(r.address, r.count),
-        "ReadInputRegistersRequest":
-            lambda c, r: c.read_input_registers(r.address, r.count),
-        "ReadWriteMultipleRegistersRequest":
-            lambda c, r: c.read_and_write_registers(r.read_address,
-                                                    r.read_count,
-                                                    r.write_address,
-                                                    r.write_registers),
+        "ReadDiscreteInputsRequest": lambda c, r: c.read_input_bits(r.address, r.count),
+        "WriteSingleCoilRequest": lambda c, r: c.write_bit(r.address, r.value),
+        "WriteMultipleCoilsRequest": lambda c, r: c.write_bits(r.address, r.values),
+        "WriteSingleRegisterRequest": lambda c, r: c.write_register(r.address, r.value),
+        "WriteMultipleRegistersRequest": lambda c, r: c.write_registers(
+            r.address, r.values
+        ),
+        "ReadHoldingRegistersRequest": lambda c, r: c.read_registers(
+            r.address, r.count
+        ),
+        "ReadInputRegistersRequest": lambda c, r: c.read_input_registers(
+            r.address, r.count
+        ),
+        "ReadWriteMultipleRegistersRequest": lambda c, r: c.read_and_write_registers(
+            r.read_address, r.read_count, r.write_address, r.write_registers
+        ),
     }
 
     # ----------------------------------------------------------------------- #
@@ -374,24 +384,31 @@ class LibmodbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
 
     __adapters = {
-        "ReadCoilsRequest":
-            lambda tx, rx: ReadCoilsResponse(list(rx)),
-        "ReadDiscreteInputsRequest":
-            lambda tx, rx: ReadDiscreteInputsResponse(list(rx)),
-        "WriteSingleCoilRequest":
-            lambda tx, rx: WriteSingleCoilResponse(tx.address, rx),
-        "WriteMultipleCoilsRequest":
-            lambda tx, rx: WriteMultipleCoilsResponse(tx.address, rx),
-        "WriteSingleRegisterRequest":
-            lambda tx, rx: WriteSingleRegisterResponse(tx.address, rx),
-        "WriteMultipleRegistersRequest":
-            lambda tx, rx: WriteMultipleRegistersResponse(tx.address, rx),
-        "ReadHoldingRegistersRequest":
-            lambda tx, rx: ReadHoldingRegistersResponse(list(rx)),
-        "ReadInputRegistersRequest":
-            lambda tx, rx: ReadInputRegistersResponse(list(rx)),
-        "ReadWriteMultipleRegistersRequest":
-            lambda tx, rx: ReadWriteMultipleRegistersResponse(list(rx)),
+        "ReadCoilsRequest": lambda tx, rx: ReadCoilsResponse(list(rx)),
+        "ReadDiscreteInputsRequest": lambda tx, rx: ReadDiscreteInputsResponse(
+            list(rx)
+        ),
+        "WriteSingleCoilRequest": lambda tx, rx: WriteSingleCoilResponse(
+            tx.address, rx
+        ),
+        "WriteMultipleCoilsRequest": lambda tx, rx: WriteMultipleCoilsResponse(
+            tx.address, rx
+        ),
+        "WriteSingleRegisterRequest": lambda tx, rx: WriteSingleRegisterResponse(
+            tx.address, rx
+        ),
+        "WriteMultipleRegistersRequest": lambda tx, rx: WriteMultipleRegistersResponse(
+            tx.address, rx
+        ),
+        "ReadHoldingRegistersRequest": lambda tx, rx: ReadHoldingRegistersResponse(
+            list(rx)
+        ),
+        "ReadInputRegistersRequest": lambda tx, rx: ReadInputRegistersResponse(
+            list(rx)
+        ),
+        "ReadWriteMultipleRegistersRequest": lambda tx, rx: ReadWriteMultipleRegistersResponse(
+            list(rx)
+        ),
     }
 
     def __init__(self, my_client):
@@ -425,8 +442,7 @@ class LibmodbusClient(ModbusClientMixin):
         adapter = self.__adapters.get(method, None)
 
         if not operation or not adapter:
-            raise NotImplementedException("Method not "
-                                          "implemented: " + operation)
+            raise NotImplementedException("Method not implemented: " + operation)
 
         response = operation(self.client, request)
         return adapter(request, response)
@@ -458,6 +474,7 @@ class LibmodbusClient(ModbusClientMixin):
     def __exit__(self, klass, value, traceback):
         """Implement the client with exit block"""
         self.client.close()
+
 
 # -------------------------------------------------------------------------- #
 # main example runner

@@ -36,7 +36,7 @@ def convert_from_bcd(bcd):
     """
     place, decimal = 1, 0
     while bcd > 0:
-        nibble = bcd & 0xf
+        nibble = bcd & 0xF
         decimal += nibble * place
         bcd >>= 4
         place *= 10
@@ -99,7 +99,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         string = str(self)
         length = len(string)
         string = string + ("\x00" * (length % 2))
-        return [string[i:i + 2] for i in range(0, length, 2)]
+        return [string[i : i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         """Add a collection of bits to be encoded
@@ -122,7 +122,7 @@ class BcdPayloadBuilder(IPayloadBuilder):
         value = convert_to_bcd(value)
         size = size or count_bcd_digits(value)
         while size > 0:
-            nibble = value & 0xf
+            nibble = value & 0xF
             encoded.append(pack("B", nibble))
             value >>= 4
             size -= 1
@@ -197,13 +197,13 @@ class BcdPayloadDecoder:
     def decode_int(self, size=1):
         """Decode a int or long from the buffer"""
         self._pointer += size
-        handle = self._payload[self._pointer - size:self._pointer]
+        handle = self._payload[self._pointer - size : self._pointer]
         return convert_from_bcd(handle)
 
     def decode_bits(self):
         """Decode a byte worth of bits from the buffer"""
         self._pointer += 1
-        handle = self._payload[self._pointer - 1:self._pointer]
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack_bitstring(handle)
 
     def decode_string(self, size=1):
@@ -212,7 +212,7 @@ class BcdPayloadDecoder:
         :param size: The size of the string to decode
         """
         self._pointer += size
-        return self._payload[self._pointer - size:self._pointer]
+        return self._payload[self._pointer - size : self._pointer]
 
 
 # --------------------------------------------------------------------------- #

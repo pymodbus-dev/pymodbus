@@ -75,8 +75,10 @@ from pymodbus.datastore import (
 # configure the service logging
 # --------------------------------------------------------------------------- #
 
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -88,10 +90,14 @@ def run_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
-    store.register(CustomModbusRequest.function_code, "cm",
-                   ModbusSequentialDataBlock(0, [17] * 100))
+    store.register(
+        CustomModbusRequest.function_code,
+        "cm",
+        ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
@@ -99,21 +105,27 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name={
-        "VendorName": "Pymodbus",
-        "ProductCode": "PM",
-        "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
-        "ProductName": "Pymodbus Server",
-        "ModelName": "Pymodbus Server",
-        "MajorMinorRevision": version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    StartTcpServer(context, identity=identity, address=("localhost", 5020),
-                   custom_functions=[CustomModbusRequest])
+    StartTcpServer(
+        context,
+        identity=identity,
+        address=("localhost", 5020),
+        custom_functions=[CustomModbusRequest],
+    )
 
 
 if __name__ == "__main__":

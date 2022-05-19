@@ -64,7 +64,7 @@ class CustomModbusResponse(ModbusResponse):
         byte_count = int(data[0])
         self.values = []
         for i in range(1, byte_count + 1, 2):
-            self.values.append(struct.unpack(">H", data[i:i + 2])[0])
+            self.values.append(struct.unpack(">H", data[i : i + 2])[0])
 
 
 class CustomModbusRequest(ModbusRequest):
@@ -89,13 +89,13 @@ class CustomModbusRequest(ModbusRequest):
 
     def execute(self, context):
         """Execute."""
-        if not 1 <= self.count <= 0x7d0:
+        if not 1 <= self.count <= 0x7D0:
             return self.doException(ModbusExceptions.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(ModbusExceptions.IllegalAddress)
-        values = context.getValues(self.function_code, self.address,
-                                   self.count)
+        values = context.getValues(self.function_code, self.address, self.count)
         return CustomModbusResponse(values)
+
 
 # --------------------------------------------------------------------------- #
 # This could also have been defined as
@@ -111,6 +111,7 @@ class Read16CoilsRequest(ReadCoilsRequest):
         :param address: The address to start reading from
         """
         ReadCoilsRequest.__init__(self, address, 16, **kwargs)
+
 
 # --------------------------------------------------------------------------- #
 # execute the request with your client

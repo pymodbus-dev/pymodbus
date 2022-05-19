@@ -23,8 +23,10 @@ from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 # configure the client logging
 # ---------------------------------------------------------------------------#
 
-FORMAT = ("%(asctime)-15s %(threadName)-15s"
-          " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -43,7 +45,7 @@ def dassert(future, callback):  # pylint: disable=redefined-outer-name
         assert value  # nosec
 
     def on_done(f_trans):
-        if (exc := f_trans.exception()):
+        if exc := f_trans.exception():
             log.debug(exc)
             return _assertor(False)
 
@@ -78,32 +80,34 @@ def _print(value):
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(client, protocol):  # NOSONAR pylint: disable=redefined-outer-name
+def begin_asynchronous_test(
+    client, protocol
+):  # NOSONAR pylint: disable=redefined-outer-name
     """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)          # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)         # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_discrete_inputs(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)         # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_register(1, 10, unit=UNIT)
     rr = client.read_holding_registers(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)       # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_registers(1, [10] * 8, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)      # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     arguments = {
         "read_address": 1,
@@ -113,8 +117,8 @@ def begin_asynchronous_test(client, protocol):  # NOSONAR pylint: disable=redefi
     }
     rq = client.readwrite_registers(**arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.registers == [20] * 8)      # test the expected value
-    dassert(rr, _print)      # test the expected value
+    dassert(rq, lambda r: r.registers == [20] * 8)  # test the expected value
+    dassert(rr, _print)  # test the expected value
 
     # -----------------------------------------------------------------------#
     # close the client at some time later
@@ -131,6 +135,7 @@ def begin_asynchronous_test(client, protocol):  # NOSONAR pylint: disable=redefi
 # directory, or start a pymodbus server.
 # ---------------------------------------------------------------------------#
 
+
 def err(*args, **kwargs):
     """Handle error."""
     txt = f"Err {args} {kwargs}"
@@ -140,7 +145,7 @@ def err(*args, **kwargs):
 def callback(protocol, future):  # pylint: disable=redefined-outer-name
     """Call Callback."""
     log.debug("Client connected")
-    if (exp := future.exception()):
+    if exp := future.exception():
         return err(exp)
 
     client = future.result()
@@ -158,11 +163,13 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient(schedulers.IO_LOOP,  # NOSONAR pylint: disable=unpacking-non-sequence
-                                               method="rtu",
-                                               port="/tmp/ptyp0",  # nosec NOSONAR
-                                               baudrate=9600,
-                                               timeout=2)
+    protocol, future = AsyncModbusSerialClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+        schedulers.IO_LOOP,  # NOSONAR
+        method="rtu",
+        port="/tmp/ptyp0",  # nosec NOSONAR
+        baudrate=9600,
+        timeout=2,
+    )  # NOSONAR
 
     # Asci
     # from pymodbus.transaction import ModbusAsciiFramer

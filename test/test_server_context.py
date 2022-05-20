@@ -22,13 +22,15 @@ class ModbusServerSingleContextTest(unittest.TestCase):
 
     def test_single_context_gets(self):
         """Test getting on a single context"""
-        for slave_id in range(0, 0xff):
+        for slave_id in range(0, 0xFF):
             self.assertEqual(self.slave, self.context[slave_id])
 
     def test_single_context_deletes(self):
         """Test removing on multiple context"""
+
         def _test():
             del self.context[0x00]
+
         self.assertRaises(NoSuchSlaveException, _test)
 
     def test_single_context_iter(self):
@@ -54,9 +56,9 @@ class ModbusServerSingleContextTest(unittest.TestCase):
         """Test single context register."""
         request_db = [1, 2, 3]
         slave = ModbusSlaveContext()
-        slave.register(0xff, "custom_request", request_db)
+        slave.register(0xFF, "custom_request", request_db)
         self.assertEqual(slave.store["custom_request"], request_db)
-        self.assertEqual(slave.decode(0xff), "custom_request")
+        self.assertEqual(slave.decode(0xFF), "custom_request")
 
 
 class ModbusServerMultipleContextTest(unittest.TestCase):

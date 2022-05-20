@@ -26,19 +26,19 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
     def setUp(self):
         """Do setup."""
         self.info = {
-            0x00: "Bashwork",               # VendorName
-            0x01: "PTM",                    # ProductCode
-            0x02: "1.0",                    # MajorMinorRevision
+            0x00: "Bashwork",  # VendorName
+            0x01: "PTM",  # ProductCode
+            0x02: "1.0",  # MajorMinorRevision
             0x03: "http://internets.com",  # NOSONAR VendorUrl
-            0x04: "pymodbus",               # ProductName
-            0x05: "bashwork",               # ModelName
-            0x06: "unittest",               # UserApplicationName
-            0x07: "x",                      # reserved
-            0x08: "x",                      # reserved
-            0x10: "reserved",               # reserved
-            0x80: "custom1",                # device specific start
-            0x82: "custom2",                # device specific
-            0xFF: "customlast",             # device specific last
+            0x04: "pymodbus",  # ProductName
+            0x05: "bashwork",  # ModelName
+            0x06: "unittest",  # UserApplicationName
+            0x07: "x",  # reserved
+            0x08: "x",  # reserved
+            0x10: "reserved",  # reserved
+            0x80: "custom1",  # device specific start
+            0x82: "custom2",  # device specific
+            0xFF: "customlast",  # device specific last
         }
         self.ident = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
@@ -57,7 +57,9 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         self.assertEqual(self.control.Identity.VendorName, "Bashwork")
         self.assertEqual(self.control.Identity.ProductCode, "PTM")
         self.assertEqual(self.control.Identity.MajorMinorRevision, "1.0")
-        self.assertEqual(self.control.Identity.VendorUrl, "http://internets.com")  # NOSONAR
+        self.assertEqual(
+            self.control.Identity.VendorUrl, "http://internets.com"  # NOSONAR
+        )
         self.assertEqual(self.control.Identity.ProductName, "pymodbus")
         self.assertEqual(self.control.Identity.ModelName, "bashwork")
         self.assertEqual(self.control.Identity.UserApplicationName, "unittest")
@@ -65,15 +67,21 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
     def test_device_identification_factory(self):
         """Test device identification reading"""
         self.control.Identity.update(self.ident)
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Specific, 0x00)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Specific, 0x00
+        )
         self.assertEqual(result[0x00], "Bashwork")
 
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x00)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Basic, 0x00
+        )
         self.assertEqual(result[0x00], "Bashwork")
         self.assertEqual(result[0x01], "PTM")
         self.assertEqual(result[0x02], "1.0")
 
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x00)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Regular, 0x00
+        )
         self.assertEqual(result[0x00], "Bashwork")
         self.assertEqual(result[0x01], "PTM")
         self.assertEqual(result[0x02], "1.0")
@@ -84,30 +92,60 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
 
     def test_device_identification_factory_lookup(self):
         """Test device identification factory lookup."""
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x00)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Basic, 0x00
+        )
         self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Basic, 0x02)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Basic, 0x02
+        )
         self.assertEqual(sorted(result.keys()), [0x02])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x00)
-        self.assertEqual(sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x01)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Regular, 0x00
+        )
+        self.assertEqual(
+            sorted(result.keys()), [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06]
+        )
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Regular, 0x01
+        )
         self.assertEqual(sorted(result.keys()), [0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Regular, 0x05)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Regular, 0x05
+        )
         self.assertEqual(sorted(result.keys()), [0x05, 0x06])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x00)
-        self.assertEqual(sorted(result.keys()),
-                         [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x02)
-        self.assertEqual(sorted(result.keys()), [0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x06)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x00
+        )
+        self.assertEqual(
+            sorted(result.keys()),
+            [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF],
+        )
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x02
+        )
+        self.assertEqual(
+            sorted(result.keys()), [0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF]
+        )
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x06
+        )
         self.assertEqual(sorted(result.keys()), [0x06, 0x80, 0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x80)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x80
+        )
         self.assertEqual(sorted(result.keys()), [0x80, 0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x82)
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x82
+        )
         self.assertEqual(sorted(result.keys()), [0x82, 0xFF])
-        result = DeviceInformationFactory.get(self.control, DeviceInformation.Extended, 0x81)
-        self.assertEqual(sorted(result.keys()),
-                         [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF])
+        result = DeviceInformationFactory.get(
+            self.control, DeviceInformation.Extended, 0x81
+        )
+        self.assertEqual(
+            sorted(result.keys()),
+            [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x80, 0x82, 0xFF],
+        )
 
     def test_basic_commands(self):
         """Test device identification reading"""
@@ -196,7 +234,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
             self.control.Counter.SlaveMessage += 1
             self.control.Counter.SlaveNAK += 1
             self.control.Counter.BusCharacterOverrun += 1
-        self.assertEqual(0xa9, self.control.Counter.summary())
+        self.assertEqual(0xA9, self.control.Counter.summary())
         self.control.Counter.reset()
         self.assertEqual(0x00, self.control.Counter.summary())
 
@@ -294,13 +332,57 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         """Test modbus plus statistics helper methods"""
         statistics = ModbusPlusStatistics()
         summary = [
-            [0], [0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0], [0],
-            [0, 0, 0, 0, 0, 0, 0, 0], [0], [0], [0], [0], [0, 0], [0], [0], [0], [0],
-            [0], [0], [0], [0, 0], [0], [0], [0], [0], [0, 0, 0, 0, 0, 0, 0, 0], [0],
-            [0, 0, 0, 0, 0, 0, 0, 0], [0, 0], [0], [0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0], [0], [0], [0, 0], [0], [0], [0], [0], [0, 0],
-            [0], [0], [0], [0], [0], [0, 0], [0], [0, 0, 0, 0, 0, 0, 0, 0]]
-        stats_summary = [x for x in statistics.summary()]  # noqa: C416 pylint: disable=unnecessary-comprehension
+            [0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0, 0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0, 0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0],
+            [0],
+            [0, 0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0, 0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0],
+            [0, 0],
+            [0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        stats_summary = [  # noqa: C416 pylint: disable=unnecessary-comprehension
+            x for x in statistics.summary()
+        ]
         self.assertEqual(sorted(summary), sorted(stats_summary))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
 

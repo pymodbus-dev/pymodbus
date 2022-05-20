@@ -7,7 +7,7 @@ from pymodbus.client.asynchronous.twisted import (
     ModbusClientProtocol,
     ModbusUdpClientProtocol,
     ModbusSerClientProtocol,
-    ModbusTcpClientProtocol
+    ModbusTcpClientProtocol,
 )
 from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.twisted import ModbusClientFactory
@@ -56,6 +56,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
         def handle_failure(failure):
             self.assertTrue(isinstance(failure.value, ConnectionException))
+
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
         response.addErrback(handle_failure)
 
@@ -72,7 +73,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # setup existing request
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.addCallback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
 
         protocol.dataReceived(data)
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
@@ -104,7 +107,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # handle existing cases
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.addCallback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
         protocol._handleResponse(reply)  # pylint: disable=protected-access
         self.assertEqual(out[0], reply)
 
@@ -115,6 +120,7 @@ class AsynchronousClientTest(unittest.TestCase):
 
         def handle_failure(failure):
             self.assertTrue(isinstance(failure.value, ConnectionException))
+
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
         response.addErrback(handle_failure)
         self.assertEqual(0, len(list(protocol.transaction)))
@@ -172,7 +178,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # setup existing request
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.addCallback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
 
         protocol.datagramReceived(data, server)
         self.assertTrue(isinstance(out[0], ReadCoilsResponse))
@@ -201,7 +209,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # handle existing cases
         response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        response.addCallback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.addCallback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
         protocol._handleResponse(reply)  # pylint: disable=protected-access
         self.assertEqual(out[0], reply)
 

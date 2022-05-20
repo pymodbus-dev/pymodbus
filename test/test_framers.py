@@ -32,10 +32,14 @@ def binary_framer():
     return ModbusBinaryFramer(ClientDecoder())
 
 
-@pytest.mark.parametrize("framer", [ModbusRtuFramer,
-                                    ModbusAsciiFramer,
-                                    ModbusBinaryFramer,
-                                    ])
+@pytest.mark.parametrize(
+    "framer",
+    [
+        ModbusRtuFramer,
+        ModbusAsciiFramer,
+        ModbusBinaryFramer,
+    ],
+)
 def test_framer_initialization(framer):
     """Test framer initialization."""
     decoder = ClientDecoder()
@@ -44,25 +48,39 @@ def test_framer_initialization(framer):
     assert framer._buffer == b""  # nosec pylint: disable=protected-access
     assert framer.decoder == decoder  # nosec
     if isinstance(framer, ModbusAsciiFramer):
-        assert framer._header == {"lrc": "0000", "len": 0, "uid": 0x00}  # nosec pylint: disable=protected-access
+        assert framer._header == {  # nosec pylint: disable=protected-access
+            "lrc": "0000",
+            "len": 0,
+            "uid": 0x00,
+        }
         assert framer._hsize == 0x02  # nosec pylint: disable=protected-access
         assert framer._start == b":"  # nosec pylint: disable=protected-access
         assert framer._end == b"\r\n"  # nosec pylint: disable=protected-access
     elif isinstance(framer, ModbusRtuFramer):
-        assert framer._header == {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}  # nosec pylint: disable=protected-access
+        assert framer._header == {  # nosec pylint: disable=protected-access
+            "uid": 0x00,
+            "len": 0,
+            "crc": b"\x00\x00",
+        }
         assert framer._hsize == 0x01  # nosec pylint: disable=protected-access
         assert framer._end == b"\x0d\x0a"  # nosec pylint: disable=protected-access
         assert framer._min_frame_size == 4  # nosec pylint: disable=protected-access
     else:
-        assert framer._header == {"crc": 0x0000, "len": 0, "uid": 0x00}  # nosec pylint: disable=protected-access
+        assert framer._header == {  # nosec pylint: disable=protected-access
+            "crc": 0x0000,
+            "len": 0,
+            "uid": 0x00,
+        }
         assert framer._hsize == 0x01  # nosec pylint: disable=protected-access
         assert framer._start == b"\x7b"  # nosec pylint: disable=protected-access
         assert framer._end == b"\x7d"  # nosec pylint: disable=protected-access
-        assert framer._repeat == [b"}"[0], b"{"[0]]  # nosec pylint: disable=protected-access
+        assert framer._repeat == [  # nosec pylint: disable=protected-access
+            b"}"[0],
+            b"{"[0],
+        ]
 
 
-@pytest.mark.parametrize("data", [(b"", {}),
-                                  (b"abcd", {"fcode": 98, "unit": 97})])
+@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "unit": 97})])
 def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test decode data."""
     data, expected = data
@@ -70,12 +88,15 @@ def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     assert decoded == expected  # nosec
 
 
-@pytest.mark.parametrize("data", [
-    (b"", False),
-    (b"\x02\x01\x01\x00Q\xcc", True),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", True),  # valid frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", False),  # invalid frame CRC
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        (b"", False),
+        (b"\x02\x01\x01\x00Q\xcc", True),
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", True),  # valid frame
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", False),  # invalid frame CRC
+    ],
+)
 def test_check_frame(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test check frame."""
     data, expected = data
@@ -83,12 +104,18 @@ def test_check_frame(rtu_framer, data):  # pylint: disable=redefined-outer-name
     assert expected == rtu_framer.checkFrame()  # nosec
 
 
-@pytest.mark.parametrize("data", [
-    (b"", {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}, b""),
-    (b"abcd", {"uid": 0x00, "len": 2, "crc": b"\x00\x00"}, b"cd"),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x12\x03",  # real case, frame size is 11
-     {"uid": 0x00, "len": 11, "crc": b"\x00\x00"}, b"\x12\x03"),
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        (b"", {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}, b""),
+        (b"abcd", {"uid": 0x00, "len": 2, "crc": b"\x00\x00"}, b"cd"),
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x12\x03",  # real case, frame size is 11
+            {"uid": 0x00, "len": 11, "crc": b"\x00\x00"},
+            b"\x12\x03",
+        ),
+    ],
+)
 def test_rtu_advance_framer(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test rtu advance framer."""
     before_buf, before_header, after_buf = data
@@ -96,7 +123,11 @@ def test_rtu_advance_framer(rtu_framer, data):  # pylint: disable=redefined-oute
     rtu_framer._buffer = before_buf  # pylint: disable=protected-access
     rtu_framer._header = before_header  # pylint: disable=protected-access
     rtu_framer.advanceFrame()
-    assert rtu_framer._header == {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}  # nosec pylint: disable=protected-access
+    assert rtu_framer._header == {  # nosec pylint: disable=protected-access
+        "uid": 0x00,
+        "len": 0,
+        "crc": b"\x00\x00",
+    }
     assert rtu_framer._buffer == after_buf  # nosec pylint: disable=protected-access
 
 
@@ -105,19 +136,26 @@ def test_rtu_reset_framer(rtu_framer, data):  # pylint: disable=redefined-outer-
     """Test rtu reset framer."""
     rtu_framer._buffer = data  # pylint: disable=protected-access
     rtu_framer.resetFrame()
-    assert rtu_framer._header == {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}  # nosec pylint: disable=protected-access
+    assert rtu_framer._header == {  # nosec pylint: disable=protected-access
+        "uid": 0x00,
+        "len": 0,
+        "crc": b"\x00\x00",
+    }
     assert rtu_framer._buffer == b""  # nosec pylint: disable=protected-access
 
 
-@pytest.mark.parametrize("data", [
-    (b"", False),
-    (b"\x11", False),
-    (b"\x11\x03", False),
-    (b"\x11\x03\x06", False),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49", False),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", True),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD", True),
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        (b"", False),
+        (b"\x11", False),
+        (b"\x11\x03", False),
+        (b"\x11\x03\x06", False),
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49", False),
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", True),
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD", True),
+    ],
+)
 def test_is_frame_ready(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test is frame ready."""
     data, expected = data
@@ -126,24 +164,37 @@ def test_is_frame_ready(rtu_framer, data):  # pylint: disable=redefined-outer-na
     assert rtu_framer.isFrameReady() == expected  # nosec
 
 
-@pytest.mark.parametrize("data", [
-    b"",
-    b"\x11",
-    b"\x11\x03",
-    b"\x11\x03\x06",
-    b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x43",
-])
-def test_rtu_populate_header_fail(rtu_framer, data):  # pylint: disable=redefined-outer-name
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"",
+        b"\x11",
+        b"\x11\x03",
+        b"\x11\x03\x06",
+        b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x43",
+    ],
+)
+def test_rtu_populate_header_fail(
+    rtu_framer, data
+):  # pylint: disable=redefined-outer-name
     """Test rtu populate header fail."""
     with pytest.raises(IndexError):
         rtu_framer.populateHeader(data)
 
 
-@pytest.mark.parametrize("data", [
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", {"crc": b"\x49\xAD", "uid": 17, "len": 11}),
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", {
-        "crc": b"\x49\xAD", "uid": 17, "len": 11})
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
+            {"crc": b"\x49\xAD", "uid": 17, "len": 11},
+        ),
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03",
+            {"crc": b"\x49\xAD", "uid": 17, "len": 11},
+        ),
+    ],
+)
 def test_rtu_populate_header(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test rtu populate header."""
     buffer, expected = data
@@ -173,25 +224,49 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
     assert result.unit_id == 255  # nosec
 
 
-@pytest.mark.parametrize("data", [
-    (b"\x11", 17, False, False),  # not complete frame
-    (b"\x11\x03", 17, False, False),  # not complete frame
-    (b"\x11\x03\x06", 17, False, False),  # not complete frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43", 17, False, False),  # not complete frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40", 17, False, False),  # not complete frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49", 17, False, False),  # not complete frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", 17, True, False),  # bad crc
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", 17, False, True),  # good frame
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", 16, True, False),  # incorrect unit id
-    (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, False, True),
-    # good frame + part of next frame
-])
+@pytest.mark.parametrize(
+    "data",
+    [
+        (b"\x11", 17, False, False),  # not complete frame
+        (b"\x11\x03", 17, False, False),  # not complete frame
+        (b"\x11\x03\x06", 17, False, False),  # not complete frame
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43", 17, False, False),  # not complete frame
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40",
+            17,
+            False,
+            False,
+        ),  # not complete frame
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49",
+            17,
+            False,
+            False,
+        ),  # not complete frame
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", 17, True, False),  # bad crc
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
+            17,
+            False,
+            True,
+        ),  # good frame
+        (
+            b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
+            16,
+            True,
+            False,
+        ),  # incorrect unit id
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, False, True),
+        # good frame + part of next frame
+    ],
+)
 def test_rtu_incoming_packet(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test rtu process incoming packet."""
     buffer, units, reset_called, process_called = data
 
-    with patch.object(rtu_framer, "_process") as mock_process, \
-            patch.object(rtu_framer, "resetFrame") as mock_reset:
+    with patch.object(rtu_framer, "_process") as mock_process, patch.object(
+        rtu_framer, "resetFrame"
+    ) as mock_reset:
         rtu_framer.processIncomingPacket(buffer, Mock(), units)
         assert mock_process.call_count == (1 if process_called else 0)  # nosec
         assert mock_reset.call_count == (1 if reset_called else 0)  # nosec
@@ -230,6 +305,7 @@ def test_recv_packet(rtu_framer):  # pylint: disable=redefined-outer-name
 
 def test_process(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test process."""
+
     def callback(res):
         return res
 
@@ -241,18 +317,23 @@ def test_process(rtu_framer):  # pylint: disable=redefined-outer-name
 def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test get raw frame."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
-    assert rtu_framer.getRawFrame() == rtu_framer._buffer  # nosec pylint: disable=protected-access
+    assert (
+        rtu_framer.getRawFrame() == rtu_framer._buffer  # nosec pylint: disable=protected-access
+    )
 
 
 def test_validate_unit_id(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test validate unit."""
     rtu_framer.populateHeader(TEST_MESSAGE)
-    assert rtu_framer._validate_unit_id([0], False)  # nosec pylint: disable=protected-access
-    assert rtu_framer._validate_unit_id([1], True)  # nosec pylint: disable=protected-access
+    assert rtu_framer._validate_unit_id(  # nosec pylint: disable=protected-access
+        [0], False
+    )
+    assert rtu_framer._validate_unit_id(  # nosec pylint: disable=protected-access
+        [1], True
+    )
 
 
-@pytest.mark.parametrize("data", [b":010100010001FC\r\n",
-                         b""])
+@pytest.mark.parametrize("data", [b":010100010001FC\r\n", b""])
 def test_decode_ascii_data(ascii_framer, data):  # pylint: disable=redefined-outer-name
     """Test decode ascii."""
     data = ascii_framer.decode_data(data)

@@ -8,7 +8,7 @@ from pymodbus.client.asynchronous.tornado import (
     BaseTornadoClient,
     AsyncModbusSerialClient,
     AsyncModbusUDPClient,
-    AsyncModbusTCPClient
+    AsyncModbusTCPClient,
 )
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.factory import ClientDecoder
@@ -48,7 +48,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_base_client_on_receive(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_base_client_on_receive(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the BaseTornado client data received"""
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -57,7 +59,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # setup existing request
         response = client._build_response(0x00)  # pylint: disable=protected-access
-        response.add_done_callback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.add_done_callback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
 
         client.on_receive(data)
         self.assertTrue(isinstance(response.result(), ReadCoilsResponse))
@@ -65,12 +69,16 @@ class AsynchronousClientTest(unittest.TestCase):
         out = []
         response = client._build_response(0x01)  # pylint: disable=protected-access
         client.on_receive(data)
-        response.add_done_callback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.add_done_callback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
         self.assertFalse(out)
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_base_client_execute(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_base_client_execute(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the BaseTornado client execute method"""
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -84,7 +92,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_base_client_handle_response(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_base_client_handle_response(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the BaseTornado client handles responses"""
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -98,13 +108,17 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # handle existing cases
         response = client._build_response(0x00)  # pylint: disable=protected-access
-        response.add_done_callback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.add_done_callback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
         client._handle_response(reply)  # pylint: disable=protected-access
         self.assertEqual(response.result(), reply)
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_base_client_build_response(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_base_client_build_response(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the BaseTornado client client builds responses"""
         client = BaseTornadoClient()
         self.assertEqual(0, len(list(client.transaction)))
@@ -136,7 +150,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_tcp_client_connect(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_tcp_client_connect(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the tornado tcp client client connect"""
         client = AsyncModbusTCPClient(port=5020)
         self.assertTrue(client.port, 5020)
@@ -146,7 +162,9 @@ class AsynchronousClientTest(unittest.TestCase):
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.IOStream")
-    def test_tcp_client_disconnect(self, mock_iostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_tcp_client_disconnect(
+        self, mock_iostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the tornado tcp client client disconnect"""
         client = AsyncModbusTCPClient(port=5020)
         client.connect()
@@ -166,10 +184,11 @@ class AsynchronousClientTest(unittest.TestCase):
     # -----------------------------------------------------------------------#
     def test_serial_client_init(self):
         """Test the tornado serial client client initialize"""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+        )
         self.assertEqual(0, len(list(client.transaction)))
         self.assertTrue(isinstance(client.framer, ModbusRtuFramer))
 
@@ -180,12 +199,15 @@ class AsynchronousClientTest(unittest.TestCase):
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")
     @patch("pymodbus.client.asynchronous.tornado.Serial")
-    def test_serial_client_connect(self, mock_serial, mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_serial_client_connect(
+        self, mock_serial, mock_seriostream, mock_ioloop
+    ):  # pylint: disable=unused-argument
         """Test the tornado serial client client connect"""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+        )
         self.assertTrue(client.port, pytest.SERIAL_PORT)
         self.assertFalse(client._connected)  # pylint: disable=protected-access
         client.connect()
@@ -195,13 +217,18 @@ class AsynchronousClientTest(unittest.TestCase):
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")
     @patch("pymodbus.client.asynchronous.tornado.Serial")
-    def test_serial_client_disconnect(self, mock_serial,  # pylint: disable=unused-argument
-                                      mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_serial_client_disconnect(
+        self,
+        mock_serial,  # pylint: disable=unused-argument
+        mock_seriostream,  # pylint: disable=unused-argument
+        mock_ioloop,  # pylint: disable=unused-argument
+    ):
         """Test the tornado serial client client disconnect"""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+        )
         client.connect()
         self.assertTrue(client._connected)  # pylint: disable=protected-access
 
@@ -216,13 +243,16 @@ class AsynchronousClientTest(unittest.TestCase):
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")
     @patch("pymodbus.client.asynchronous.tornado.Serial")
-    def test_serial_client_execute(self, mock_serial, mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_serial_client_execute(
+        self, mock_serial, mock_seriostream, mock_ioloop  # pylint: disable=unused-argument
+    ):
         """Test the tornado serial client client execute method"""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT,
-                                         timeout=0)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+            timeout=0,
+        )
         client.connect()
         client.stream = Mock()
         client.stream.write = Mock()
@@ -236,13 +266,18 @@ class AsynchronousClientTest(unittest.TestCase):
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")
     @patch("pymodbus.client.asynchronous.tornado.Serial")
-    def test_serial_client_handle_response(self, mock_serial,  # pylint: disable=unused-argument
-                                           mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_serial_client_handle_response(
+        self,
+        mock_serial,  # pylint: disable=unused-argument
+        mock_seriostream,  # pylint: disable=unused-argument
+        mock_ioloop,  # pylint: disable=unused-argument
+    ):
         """Test the tornado serial client client handles responses"""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+        )
         client.connect()
         out = []
         reply = ReadCoilsRequest(1, 1)
@@ -254,26 +289,33 @@ class AsynchronousClientTest(unittest.TestCase):
 
         # handle existing cases
         response = client._build_response(0x00)  # pylint: disable=protected-access
-        response.add_done_callback(lambda v: out.append(v))  # pylint: disable=unnecessary-lambda
+        response.add_done_callback(
+            lambda v: out.append(v)  # pylint: disable=unnecessary-lambda
+        )
         client._handle_response(reply)  # pylint: disable=protected-access
         self.assertEqual(response.result(), reply)
 
     @patch("pymodbus.client.asynchronous.tornado.IOLoop")
     @patch("pymodbus.client.asynchronous.tornado.SerialIOStream")
     @patch("pymodbus.client.asynchronous.tornado.Serial")
-    def test_serial_client_build_response(self,
-                                          mock_serial,  # pylint: disable=unused-argument
-                                          mock_seriostream, mock_ioloop):  # pylint: disable=unused-argument
+    def test_serial_client_build_response(
+        self,
+        mock_serial,  # pylint: disable=unused-argument
+        mock_seriostream,
+        mock_ioloop,
+    ):  # pylint: disable=unused-argument
         """Test the tornado serial client client builds responses."""
-        client = AsyncModbusSerialClient(ioloop=schedulers.IO_LOOP,
-                                         framer=ModbusRtuFramer(
-                                             ClientDecoder()),
-                                         port=pytest.SERIAL_PORT)
+        client = AsyncModbusSerialClient(
+            ioloop=schedulers.IO_LOOP,
+            framer=ModbusRtuFramer(ClientDecoder()),
+            port=pytest.SERIAL_PORT,
+        )
         self.assertEqual(0, len(list(client.transaction)))
 
         def handle_failure(failure):
             exc = failure.exception()
             self.assertTrue(isinstance(exc, ConnectionException))
+
         response = client._build_response(0x00)  # pylint: disable=protected-access
         response.add_done_callback(handle_failure)
         self.assertEqual(0, len(list(client.transaction)))

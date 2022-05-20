@@ -52,40 +52,51 @@ class SimpleDataStoreTest(unittest.TestCase):
     def setUp(self):
         """Do setup."""
         self.requests = [
-            (RestartCommunicationsOptionRequest,
-                b"\x00\x01\x00\x00", b"\x00\x01\xff\x00"),
-            (ReturnDiagnosticRegisterRequest,
-                b"\x00\x02\x00\x00", b"\x00\x02\x00\x00"),
-            (ChangeAsciiInputDelimiterRequest,
-                b"\x00\x03\x00\x00", b"\x00\x03\x00\x00"),
-            (ForceListenOnlyModeRequest,
-                b"\x00\x04\x00\x00", b"\x00\x04"),
-            (ReturnQueryDataRequest,
-                b"\x00\x00\x00\x00", b"\x00\x00\x00\x00"),
-            (ClearCountersRequest,
-                b"\x00\x0a\x00\x00", b"\x00\x0a\x00\x00"),
-            (ReturnBusMessageCountRequest,
-                b"\x00\x0b\x00\x00", b"\x00\x0b\x00\x00"),
-            (ReturnBusCommunicationErrorCountRequest,
-                b"\x00\x0c\x00\x00", b"\x00\x0c\x00\x00"),
-            (ReturnBusExceptionErrorCountRequest,
-                b"\x00\x0d\x00\x00", b"\x00\x0d\x00\x00"),
-            (ReturnSlaveMessageCountRequest,
-                b"\x00\x0e\x00\x00", b"\x00\x0e\x00\x00"),
-            (ReturnSlaveNoResponseCountRequest,
-                b"\x00\x0f\x00\x00", b"\x00\x0f\x00\x00"),
-            (ReturnSlaveNAKCountRequest,
-                b"\x00\x10\x00\x00", b"\x00\x10\x00\x00"),
-            (ReturnSlaveBusyCountRequest,
-                b"\x00\x11\x00\x00", b"\x00\x11\x00\x00"),
-            (ReturnSlaveBusCharacterOverrunCountRequest,
-                b"\x00\x12\x00\x00", b"\x00\x12\x00\x00"),
-            (ReturnIopOverrunCountRequest,
-                b"\x00\x13\x00\x00", b"\x00\x13\x00\x00"),
-            (ClearOverrunCountRequest,
-                b"\x00\x14\x00\x00", b"\x00\x14\x00\x00"),
-            (GetClearModbusPlusRequest,
-                b"\x00\x15\x00\x00", b"\x00\x15\x00\x00" + b"\x00\x00" * 55),
+            (
+                RestartCommunicationsOptionRequest,
+                b"\x00\x01\x00\x00",
+                b"\x00\x01\xff\x00",
+            ),
+            (ReturnDiagnosticRegisterRequest, b"\x00\x02\x00\x00", b"\x00\x02\x00\x00"),
+            (
+                ChangeAsciiInputDelimiterRequest,
+                b"\x00\x03\x00\x00",
+                b"\x00\x03\x00\x00",
+            ),
+            (ForceListenOnlyModeRequest, b"\x00\x04\x00\x00", b"\x00\x04"),
+            (ReturnQueryDataRequest, b"\x00\x00\x00\x00", b"\x00\x00\x00\x00"),
+            (ClearCountersRequest, b"\x00\x0a\x00\x00", b"\x00\x0a\x00\x00"),
+            (ReturnBusMessageCountRequest, b"\x00\x0b\x00\x00", b"\x00\x0b\x00\x00"),
+            (
+                ReturnBusCommunicationErrorCountRequest,
+                b"\x00\x0c\x00\x00",
+                b"\x00\x0c\x00\x00",
+            ),
+            (
+                ReturnBusExceptionErrorCountRequest,
+                b"\x00\x0d\x00\x00",
+                b"\x00\x0d\x00\x00",
+            ),
+            (ReturnSlaveMessageCountRequest, b"\x00\x0e\x00\x00", b"\x00\x0e\x00\x00"),
+            (
+                ReturnSlaveNoResponseCountRequest,
+                b"\x00\x0f\x00\x00",
+                b"\x00\x0f\x00\x00",
+            ),
+            (ReturnSlaveNAKCountRequest, b"\x00\x10\x00\x00", b"\x00\x10\x00\x00"),
+            (ReturnSlaveBusyCountRequest, b"\x00\x11\x00\x00", b"\x00\x11\x00\x00"),
+            (
+                ReturnSlaveBusCharacterOverrunCountRequest,
+                b"\x00\x12\x00\x00",
+                b"\x00\x12\x00\x00",
+            ),
+            (ReturnIopOverrunCountRequest, b"\x00\x13\x00\x00", b"\x00\x13\x00\x00"),
+            (ClearOverrunCountRequest, b"\x00\x14\x00\x00", b"\x00\x14\x00\x00"),
+            (
+                GetClearModbusPlusRequest,
+                b"\x00\x15\x00\x00",
+                b"\x00\x15\x00\x00" + b"\x00\x00" * 55,
+            ),
         ]
 
         self.responses = [
@@ -127,7 +138,9 @@ class SimpleDataStoreTest(unittest.TestCase):
         """Testing diagnostic request messages encoding"""
         request = DiagnosticStatusSimpleRequest(b"\x12\x34")
         request.sub_function_code = 0x1234
-        self.assertRaises(NotImplementedException, lambda: request.execute())  # pylint: disable=unnecessary-lambda
+        self.assertRaises(
+            NotImplementedException, lambda: request.execute()  # pylint: disable=unnecessary-lambda
+        )
         self.assertEqual(request.encode(), b"\x12\x34\x12\x34")
         DiagnosticStatusSimpleResponse(None)
 

@@ -15,6 +15,7 @@ from pymodbus.bit_read_message import ReadBitsResponseBase
 from pymodbus.pdu import ModbusExceptions
 
 from .modbus_mocks import MockContext
+
 res = [True] * 21
 res.extend([False] * 3)
 # ---------------------------------------------------------------------------#
@@ -77,7 +78,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         """Test bit read request encoding"""
         messages = {
             ReadBitsRequestBase(12, 14): b"\x00\x0c\x00\x0e",
-            ReadBitsResponseBase([1, 0, 1, 1, 0]): b"\x01\x0d"
+            ReadBitsResponseBase([1, 0, 1, 1, 0]): b"\x01\x0d",
         }
         for request, expected in iter(messages.items()):
             self.assertEqual(request.encode(), expected)
@@ -91,8 +92,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalValue,
-                             result.exception_code)
+            self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
 
     def test_bit_read_message_execute_address_errors(self):
         """Test bit read request encoding"""

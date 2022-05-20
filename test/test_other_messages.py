@@ -54,7 +54,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         request = pymodbus_message.GetCommEventCounterRequest()
         request.decode(b"\x12")
         self.assertEqual(request.encode(), b"")
-        self.assertEqual(request.execute().function_code, 0x0b)
+        self.assertEqual(request.execute().function_code, 0x0B)
 
         response = pymodbus_message.GetCommEventCounterResponse(0x12)
         self.assertEqual(response.encode(), b"\x00\x00\x00\x12")
@@ -70,7 +70,7 @@ class ModbusOtherMessageTest(unittest.TestCase):
         request = pymodbus_message.GetCommEventLogRequest()
         request.decode(b"\x12")
         self.assertEqual(request.encode(), b"")
-        self.assertEqual(request.execute().function_code, 0x0c)
+        self.assertEqual(request.execute().function_code, 0x0C)
 
         response = pymodbus_message.GetCommEventLogResponse()
         self.assertEqual(response.encode(), b"\x06\x00\x00\x00\x00\x00\x00")
@@ -142,7 +142,9 @@ class ModbusOtherMessageTest(unittest.TestCase):
             self.assertEqual(request.encode(), b"")
             self.assertEqual(request.execute().function_code, 0x11)
 
-            response = pymodbus_message.ReportSlaveIdResponse(request.execute().identifier, True)
+            response = pymodbus_message.ReportSlaveIdResponse(
+                request.execute().identifier, True
+            )
 
             self.assertEqual(response.encode(), b"\tPymodbus\xff")
             response.decode(b"\x03\x12\x00")

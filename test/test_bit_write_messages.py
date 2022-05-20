@@ -39,8 +39,8 @@ class ModbusBitMessageTests(unittest.TestCase):
     def test_bit_write_base_requests(self):
         """Test bit write base."""
         messages = {
-            WriteSingleCoilRequest(1, 0xabcd): b"\x00\x01\xff\x00",
-            WriteSingleCoilResponse(1, 0xabcd): b"\x00\x01\xff\x00",
+            WriteSingleCoilRequest(1, 0xABCD): b"\x00\x01\xff\x00",
+            WriteSingleCoilResponse(1, 0xABCD): b"\x00\x01\xff\x00",
             WriteMultipleCoilsRequest(1, [True] * 5): b"\x00\x01\x00\x05\x01\x1f",
             WriteMultipleCoilsResponse(1, 5): b"\x00\x01\x00\x05",
         }
@@ -49,9 +49,7 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_bit_write_message_get_response_pdu(self):
         """Test bit write message."""
-        requests = {
-            WriteSingleCoilRequest(1, 0xabcd): 5
-        }
+        requests = {WriteSingleCoilRequest(1, 0xABCD): 5}
         for request, expected in iter(requests.items()):
             pdu_len = request.get_response_pdu_size()
             self.assertEqual(pdu_len, expected)
@@ -126,8 +124,8 @@ class ModbusBitMessageTests(unittest.TestCase):
     def test_serializing_to_string(self):
         """Test serializing to string."""
         requests = [
-            WriteSingleCoilRequest(1, 0xabcd),
-            WriteSingleCoilResponse(1, 0xabcd),
+            WriteSingleCoilRequest(1, 0xABCD),
+            WriteSingleCoilResponse(1, 0xABCD),
             WriteMultipleCoilsRequest(1, [True] * 5),
             WriteMultipleCoilsResponse(1, 5),
         ]

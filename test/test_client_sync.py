@@ -69,17 +69,16 @@ class mockSocket:  # NOSONAR pylint: disable=invalid-name
 
 inet_pton_skipif = pytest.mark.skipif(
     sys.platform == "win32" and sys.version_info < (3, 4),
-    reason=(
-        "Uses socket.inet_pton() which wasn't available on Windows until"
-        " 3.4.",
-    )
+    reason=("Uses socket.inet_pton() which wasn't available on Windows until 3.4.",),
 )
 
 
 # ---------------------------------------------------------------------------#
 # Fixture
 # ---------------------------------------------------------------------------#
-class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
+class SynchronousClientTest(
+    unittest.TestCase
+):  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.client.sync module."""
 
     # -----------------------------------------------------------------------#
@@ -90,12 +89,21 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         """Test the base class for all the clients"""
         client = BaseModbusClient(None)
         client.transaction = None
-        self.assertRaises(NotImplementedException, lambda: client.connect())  # pylint: disable=unnecessary-lambda
+        self.assertRaises(
+            NotImplementedException, lambda: client.connect()  # pylint: disable=unnecessary-lambda
+
+        )
         self.assertRaises(NotImplementedException, lambda: client.send(None))
         self.assertRaises(NotImplementedException, lambda: client.recv(None))
-        self.assertRaises(NotImplementedException, lambda: client.__enter__())  # pylint: disable=unnecessary-lambda
-        self.assertRaises(NotImplementedException, lambda: client.execute())  # pylint: disable=unnecessary-lambda
-        self.assertRaises(NotImplementedException, lambda: client.is_socket_open())  # noqa: E501 pylint: disable=unnecessary-lambda
+        self.assertRaises(
+            NotImplementedException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda
+        )
+        self.assertRaises(
+            NotImplementedException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
+        )
+        self.assertRaises(
+            NotImplementedException, lambda: client.is_socket_open()  # pylint: disable=unnecessary-lambda
+        )
         self.assertEqual("Null Transport", str(client))
         client.close()
         client.__exit__(0, 0, 0)
@@ -122,8 +130,12 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
 
         # a unsuccessful connect
         client.connect = lambda: False
-        self.assertRaises(ConnectionException, lambda: client.__enter__())  # pylint: disable=unnecessary-lambda
-        self.assertRaises(ConnectionException, lambda: client.execute())  # pylint: disable=unnecessary-lambda
+        self.assertRaises(
+            ConnectionException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda
+        )
+        self.assertRaises(
+            ConnectionException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
+        )
 
     # -----------------------------------------------------------------------#
     # Test UDP Client
@@ -157,14 +169,18 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_udp_client_address_family(self):
         """Test the Udp client get address family method"""
         client = ModbusUdpClient()
-        self.assertEqual(socket.AF_INET,
-                         client._get_address_family("127.0.0.1"))  # pylint: disable=protected-access
-        self.assertEqual(socket.AF_INET6, client._get_address_family("::1"))  # pylint: disable=protected-access
+        self.assertEqual(
+            socket.AF_INET, client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
+        )
+        self.assertEqual(
+            socket.AF_INET6, client._get_address_family("::1")  # pylint: disable=protected-access
+        )
 
     @inet_pton_skipif
     def test_udp_client_connect(self):
         """Test the Udp client connection method"""
         with patch.object(socket, "socket") as mock_method:
+
             class DummySocket:  # pylint: disable=too-few-public-methods
                 """Dummy socket."""
 
@@ -189,7 +205,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_udp_client_send(self):
         """Test the udp client send method"""
         client = ModbusUdpClient()
-        self.assertRaises(ConnectionException, lambda: client._send(None))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
@@ -198,17 +216,23 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_udp_client_recv(self):
         """Test the udp client receive method"""
         client = ModbusUdpClient()
-        self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
-        self.assertEqual(b"\x00" * 4, client._recv(4))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00" * 4, client._recv(4)  # pylint: disable=protected-access
+        )
 
     def test_udp_client_repr(self):
         """Test udp client representation."""
         client = ModbusUdpClient()
-        rep = f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "\
-              f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
+        rep = (
+            f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
+            f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
+        )
         self.assertEqual(repr(client), rep)
 
     # -----------------------------------------------------------------------#
@@ -263,7 +287,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_tcp_client_send(self):
         """Test the tcp client send method"""
         client = ModbusTcpClient()
-        self.assertRaises(ConnectionException, lambda: client._send(None))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
@@ -276,19 +302,27 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         mock_select.select.return_value = [True]
         mock_time.time.side_effect = count()
         client = ModbusTcpClient()
-        self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
-        self.assertEqual(b"\x00" * 4, client._recv(4))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00" * 4, client._recv(4)  # pylint: disable=protected-access
+        )
 
         mock_socket = MagicMock()
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.socket = mock_socket
         client.timeout = 3
-        self.assertEqual(b"\x00\x01\x02", client._recv(3))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00\x01\x02", client._recv(3)  # pylint: disable=protected-access
+        )
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
-        self.assertEqual(b"\x00\x01", client._recv(2))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00\x01", client._recv(2)  # pylint: disable=protected-access
+        )
         mock_select.select.return_value = [False]
         self.assertEqual(b"", client._recv(2))  # pylint: disable=protected-access
         client.socket = mockSocket()
@@ -298,25 +332,33 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         mock_socket = MagicMock()
         mock_socket.recv.return_value = b""
         client.socket = mock_socket
-        self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+        )
 
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])
         client.socket = mock_socket
-        self.assertEqual(b"\x00\x01\x02", client._recv(1024))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00\x01\x02", client._recv(1024)  # pylint: disable=protected-access
+        )
 
     def test_tcp_client_repr(self):
         """Test tcp client."""
         client = ModbusTcpClient()
-        rep = f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "\
-              f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
+        rep = (
+            f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
+            f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
+        )
         self.assertEqual(repr(client), rep)
 
     def test_tcp_client_register(self):
         """Test tcp client."""
+
         class CustomRequest:  # pylint: disable=too-few-public-methods
             """Dummy custom request."""
 
             function_code = 79
+
         client = ModbusTcpClient()
         client.framer = Mock()
         client.register(CustomRequest)
@@ -389,7 +431,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_tls_client_send(self):
         """Test the tls client send method"""
         client = ModbusTlsClient()
-        self.assertRaises(ConnectionException, lambda: client._send(None))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
@@ -399,13 +443,17 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_tls_client_recv(self, mock_time):
         """Test the tls client receive method"""
         client = ModbusTlsClient()
-        self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+        )
 
         mock_time.time.side_effect = count()
 
         client.socket = mockSocket()
         self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
-        self.assertEqual(b"\x00" * 4, client._recv(4))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00" * 4, client._recv(4)  # pylint: disable=protected-access
+        )
 
         client.timeout = 2
         self.assertIn(b"\x00", client._recv(None))  # pylint: disable=protected-access
@@ -414,24 +462,32 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.socket = mock_socket
         client.timeout = 3
-        self.assertEqual(b"\x00\x01\x02", client._recv(3))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00\x01\x02", client._recv(3)  # pylint: disable=protected-access
+        )
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
-        self.assertEqual(b"\x00\x01", client._recv(2))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00\x01", client._recv(2)  # pylint: disable=protected-access
+        )
 
     def test_tls_client_repr(self):
         """Test tls client."""
         client = ModbusTlsClient()
-        rep = f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "\
-              f"ipaddr={client.host}, port={client.port}, sslctx={client.sslctx}, "\
-              f"timeout={client.timeout}>"
+        rep = (
+            f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
+            f"ipaddr={client.host}, port={client.port}, sslctx={client.sslctx}, "
+            f"timeout={client.timeout}>"
+        )
         self.assertEqual(repr(client), rep)
 
     def test_tls_client_register(self):
         """Test tls client."""
+
         class CustomeRequest:  # pylint: disable=too-few-public-methods
             """Dummy custom request."""
 
             function_code = 79
+
         client = ModbusTlsClient()
         client.framer = Mock()
         client.register(CustomeRequest)
@@ -445,16 +501,21 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         """Test sync serial client."""
         client = ModbusSerialClient()
         self.assertNotEqual(client, None)
-        self.assertTrue(isinstance(ModbusSerialClient(method="ascii").framer,
-                                   ModbusAsciiFramer))
-        self.assertTrue(isinstance(ModbusSerialClient(method="rtu").framer,
-                                   ModbusRtuFramer))
-        self.assertTrue(isinstance(ModbusSerialClient(method="binary").framer,
-                                   ModbusBinaryFramer))
-        self.assertTrue(isinstance(ModbusSerialClient(method="socket").framer,
-                                   ModbusSocketFramer))
-        self.assertRaises(ParameterException,
-                          lambda: ModbusSerialClient(method="something"))
+        self.assertTrue(
+            isinstance(ModbusSerialClient(method="ascii").framer, ModbusAsciiFramer)
+        )
+        self.assertTrue(
+            isinstance(ModbusSerialClient(method="rtu").framer, ModbusRtuFramer)
+        )
+        self.assertTrue(
+            isinstance(ModbusSerialClient(method="binary").framer, ModbusBinaryFramer)
+        )
+        self.assertTrue(
+            isinstance(ModbusSerialClient(method="socket").framer, ModbusSocketFramer)
+        )
+        self.assertRaises(
+            ParameterException, lambda: ModbusSerialClient(method="something")
+        )
 
     def test_sync_serial_rtu_client_timeouts(self):
         """Test sync serial rtu."""
@@ -486,7 +547,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         # rtu connect/disconnect
         rtu_client = ModbusSerialClient(method="rtu", strict=True)
         self.assertTrue(rtu_client.connect())
-        self.assertEqual(rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout)
+        self.assertEqual(
+            rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
+        )
         rtu_client.close()
 
         # already closed socket
@@ -521,7 +584,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         mock_serial.in_waiting = None
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient()
-        self.assertRaises(ConnectionException, lambda: client._send(None))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+        )
         # client.connect()
         client.socket = mock_serial
         client.state = 0
@@ -536,7 +601,9 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
         mock_serial.read = lambda x: b"1" * x
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient()
-        self.assertRaises(ConnectionException, lambda: client._send(None))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+        )
         # client.connect()
         client.socket = mock_serial
         client.state = 0
@@ -547,11 +614,15 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_serial_client_recv(self):
         """Test the serial client receive method"""
         client = ModbusSerialClient()
-        self.assertRaises(ConnectionException, lambda: client._recv(1024))  # pylint: disable=protected-access
+        self.assertRaises(
+            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+        )
 
         client.socket = mockSocket()
         self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
-        self.assertEqual(b"\x00" * 4, client._recv(4))  # pylint: disable=protected-access
+        self.assertEqual(
+            b"\x00" * 4, client._recv(4)  # pylint: disable=protected-access
+        )
         client.socket = MagicMock()
         client.socket.read.return_value = b""
         self.assertEqual(b"", client._recv(None))  # pylint: disable=protected-access
@@ -563,8 +634,10 @@ class SynchronousClientTest(unittest.TestCase):  # pylint: disable=too-many-publ
     def test_serial_client_repr(self):
         """Test serial client."""
         client = ModbusSerialClient()
-        rep = f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "\
-              f"method={client.method}, timeout={client.timeout}>"
+        rep = (
+            f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
+            f"method={client.method}, timeout={client.timeout}>"
+        )
         self.assertEqual(repr(client), rep)
 
 

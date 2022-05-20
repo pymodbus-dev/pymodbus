@@ -77,13 +77,13 @@ class SimpleUtilityTest(unittest.TestCase):
 
     def test_longitudinal_redundancycheck(self):
         """Test the longitudinal redundancy check code"""
-        self.assertTrue(checkLRC(self.data, 0x1c))
-        self.assertTrue(checkLRC(self.string, 0x0c))
+        self.assertTrue(checkLRC(self.data, 0x1C))
+        self.assertTrue(checkLRC(self.string, 0x0C))
 
     def test_cyclic_redundancy_check(self):
         """Test the cyclic redundancy check code"""
-        self.assertTrue(checkCRC(self.data, 0xe2db))
-        self.assertTrue(checkCRC(self.string, 0x889e))
+        self.assertTrue(checkCRC(self.data, 0xE2DB))
+        self.assertTrue(checkCRC(self.string, 0x889E))
 
 
 # ---------------------------------------------------------------------------#

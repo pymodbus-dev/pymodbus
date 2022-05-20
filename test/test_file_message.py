@@ -66,13 +66,11 @@ class ModbusBitMessageTests(unittest.TestCase):
 
         handle.address = -1
         result = handle.execute(context)
-        self.assertEqual(ModbusExceptions.IllegalValue,
-                         result.exception_code)
+        self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
 
         handle.values = [0x00] * 33
         result = handle.execute(context)
-        self.assertEqual(ModbusExceptions.IllegalValue,
-                         result.exception_code)
+        self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
 
     def test_read_fifo_queue_request_error(self):
         """Test basic bit message encoding/decoding"""
@@ -108,17 +106,26 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_file_record_length(self):
         """Test file record length generation"""
-        record = FileRecord(file_number=0x01, record_number=0x02,
-                            record_data=b"\x00\x01\x02\x04")
+        record = FileRecord(
+            file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
+        )
         self.assertEqual(record.record_length, 0x02)
         self.assertEqual(record.response_length, 0x05)
 
     def test_file_record_compare(self):
         """Test file record comparison operations"""
-        record1 = FileRecord(file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04")
-        record2 = FileRecord(file_number=0x01, record_number=0x02, record_data=b"\x00\x0a\x0e\x04")
-        record3 = FileRecord(file_number=0x02, record_number=0x03, record_data=b"\x00\x01\x02\x04")
-        record4 = FileRecord(file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04")
+        record1 = FileRecord(
+            file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
+        )
+        record2 = FileRecord(
+            file_number=0x01, record_number=0x02, record_data=b"\x00\x0a\x0e\x04"
+        )
+        record3 = FileRecord(
+            file_number=0x02, record_number=0x03, record_data=b"\x00\x01\x02\x04"
+        )
+        record4 = FileRecord(
+            file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x04"
+        )
         self.assertTrue(record1 == record4)
         self.assertTrue(record1 != record2)
         self.assertNotEqual(record1, record2)
@@ -150,10 +157,12 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_read_file_record_request_rtu_frame_size(self):
         """Test basic bit message encoding/decoding"""
-        request = b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
+        request = (
+            b"\x00\x00\x0e\x06\x00\x04\x00\x01\x00\x02\x06\x00\x03\x00\x09\x00\x02"
+        )
         handle = ReadFileRecordRequest()
         size = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0e + 5)
+        self.assertEqual(size, 0x0E + 5)
 
     def test_read_file_record_request_execute(self):
         """Test basic bit message encoding/decoding"""
@@ -174,8 +183,9 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_read_file_record_response_decode(self):
         """Test basic bit message encoding/decoding"""
-        record = FileRecord(file_number=0x00, record_number=0x00,
-                            record_data=b"\x0d\xfe\x00\x20")
+        record = FileRecord(
+            file_number=0x00, record_number=0x00, record_data=b"\x0d\xfe\x00\x20"
+        )
         request = b"\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
         handle.decode(request)
@@ -186,7 +196,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         request = b"\x00\x00\x0c\x05\x06\x0d\xfe\x00\x20\x05\x05\x06\x33\xcd\x00\x40"
         handle = ReadFileRecordResponse()
         size = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0c + 5)
+        self.assertEqual(size, 0x0C + 5)
 
     # -----------------------------------------------------------------------#
     #  Write File Record Request
@@ -194,16 +204,22 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_write_file_record_request_encode(self):
         """Test basic bit message encoding/decoding"""
-        records = [FileRecord(file_number=0x01, record_number=0x02,
-                              record_data=b"\x00\x01\x02\x03")]
+        records = [
+            FileRecord(
+                file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x03"
+            )
+        ]
         handle = WriteFileRecordRequest(records)
         result = handle.encode()
         self.assertEqual(result, b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03")
 
     def test_write_file_record_request_decode(self):
         """Test basic bit message encoding/decoding"""
-        record = FileRecord(file_number=0x04, record_number=0x07,
-                            record_data=b"\x06\xaf\x04\xbe\x10\x0d")
+        record = FileRecord(
+            file_number=0x04,
+            record_number=0x07,
+            record_data=b"\x06\xaf\x04\xbe\x10\x0d",
+        )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
         handle.decode(request)
@@ -214,7 +230,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordRequest()
         size = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0d + 5)
+        self.assertEqual(size, 0x0D + 5)
 
     def test_write_file_record_request_execute(self):
         """Test basic bit message encoding/decoding"""
@@ -228,16 +244,22 @@ class ModbusBitMessageTests(unittest.TestCase):
 
     def test_write_file_record_response_encode(self):
         """Test basic bit message encoding/decoding"""
-        records = [FileRecord(file_number=0x01, record_number=0x02,
-                              record_data=b"\x00\x01\x02\x03")]
+        records = [
+            FileRecord(
+                file_number=0x01, record_number=0x02, record_data=b"\x00\x01\x02\x03"
+            )
+        ]
         handle = WriteFileRecordResponse(records)
         result = handle.encode()
         self.assertEqual(result, b"\x0b\x06\x00\x01\x00\x02\x00\x02\x00\x01\x02\x03")
 
     def test_write_file_record_response_decode(self):
         """Test basic bit message encoding/decoding"""
-        record = FileRecord(file_number=0x04, record_number=0x07,
-                            record_data=b"\x06\xaf\x04\xbe\x10\x0d")
+        record = FileRecord(
+            file_number=0x04,
+            record_number=0x07,
+            record_data=b"\x06\xaf\x04\xbe\x10\x0d",
+        )
         request = b"\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
         handle.decode(request)
@@ -248,7 +270,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         request = b"\x00\x00\x0d\x06\x00\x04\x00\x07\x00\x03\x06\xaf\x04\xbe\x10\x0d"
         handle = WriteFileRecordResponse()
         size = handle.calculateRtuFrameSize(request)
-        self.assertEqual(size, 0x0d + 5)
+        self.assertEqual(size, 0x0D + 5)
 
 
 # ---------------------------------------------------------------------------#

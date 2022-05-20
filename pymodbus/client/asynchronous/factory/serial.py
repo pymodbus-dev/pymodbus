@@ -4,8 +4,10 @@ import asyncio
 
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.thread import EventLoopThread
-from pymodbus.client.asynchronous.async_io import (ModbusClientProtocol,
-                                                   AsyncioModbusSerialClient)
+from pymodbus.client.asynchronous.async_io import (
+    ModbusClientProtocol,
+    AsyncioModbusSerialClient,
+)
 from pymodbus.factory import ClientDecoder
 
 
@@ -21,8 +23,12 @@ def reactor_factory(port, framer, **kwargs):
     :return: event_loop_thread and twisted serial client
     """
     from twisted.internet import reactor  # pylint: disable=import-outside-toplevel
-    from twisted.internet.serialport import SerialPort  # pylint: disable=import-outside-toplevel
-    from twisted.internet.protocol import ClientFactory  # pylint: disable=import-outside-toplevel
+    from twisted.internet.serialport import (  # pylint: disable=import-outside-toplevel
+        SerialPort,
+    )
+    from twisted.internet.protocol import (  # pylint: disable=import-outside-toplevel
+        ClientFactory,
+    )
 
     class SerialClientFactory(ClientFactory):
         """Define serial client factory."""
@@ -51,8 +57,12 @@ def reactor_factory(port, framer, **kwargs):
             proto = SerialClientFactory(framer, proto_cls).buildProtocol()
             SerialPort.__init__(self, proto, *args, **kwargs)
 
-    proto = EventLoopThread("reactor", reactor.run, reactor.stop,  # pylint: disable=no-member
-                            installSignalHandlers=0)
+    proto = EventLoopThread(
+        "reactor",
+        reactor.run,  # pylint: disable=no-member
+        reactor.stop,  # pylint: disable=no-member
+        installSignalHandlers=0,
+    )
     ser_client = SerialModbusClient(framer, port, reactor, **kwargs)
 
     return proto, ser_client
@@ -68,7 +78,8 @@ def io_loop_factory(port=None, framer=None, **kwargs):
     """
     from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
     from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
-        AsyncModbusSerialClient as Client)
+        AsyncModbusSerialClient as Client,
+    )
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
@@ -121,5 +132,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler \"{scheduler}\""
+    txt = f'Invalid Scheduler "{scheduler}"'
     raise Exception(txt)  # NOSONAR

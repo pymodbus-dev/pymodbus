@@ -10,8 +10,14 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
     """Create twisted udp asynchronous client.
 
     :param host: Host IP address
@@ -25,8 +31,14 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     raise NotImplementedError()
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
     """Create Tornado based asynchronous udp clients.
 
     :param host: Host IP address
@@ -38,14 +50,19 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :return: event_loop_thread and tornado future
     """
     from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as \
-        Client  # pylint: disable=import-outside-toplevel
+    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
+        AsyncModbusUDPClient as Client,
+    )
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, **kwargs)
-    protocol = EventLoopThread("ioloop", IOLoop.current().start,
-                               IOLoop.current().stop)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        **kwargs,
+    )
+    protocol = EventLoopThread("ioloop", IOLoop.current().start, IOLoop.current().stop)
     protocol.start()
     future = client.connect()
 
@@ -98,5 +115,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler \"{scheduler}\""
+    txt = f'Invalid Scheduler "{scheduler}"'
     raise Exception(txt)

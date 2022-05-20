@@ -166,8 +166,7 @@ class ServerDecoder(IModbusDecoder):
     def __init__(self):
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {
-            f.function_code: f for f in self.__function_table}
+        self.__lookup = {f.function_code: f for f in self.__function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -208,9 +207,10 @@ class ServerDecoder(IModbusDecoder):
             request = IllegalFunctionRequest(function_code)
         else:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
-                str(self.__lookup[function_code]).split(".")[-1].rstrip(  # pylint: disable=use-maxsplit-arg
-                    "\">\""),
-                function_code
+                str(self.__lookup[function_code])  # pylint: disable=use-maxsplit-arg
+                .split(".")[-1]
+                .rstrip('">"'),
+                function_code,
             )
             txt = f"Factory Request[{fc_string}]"
             _logger.debug(txt)
@@ -218,7 +218,7 @@ class ServerDecoder(IModbusDecoder):
 
         if hasattr(request, "sub_function_code"):
             lookup = self.__sub_lookup.get(request.function_code, {})
-            if (subtype := lookup.get(request.sub_function_code, None)):
+            if subtype := lookup.get(request.sub_function_code, None):
                 request.__class__ = subtype
 
         return request
@@ -231,15 +231,17 @@ class ServerDecoder(IModbusDecoder):
         """
         if function and not issubclass(function, ModbusRequest):
             raise MessageRegisterException(
-                f"\"{function.__class__.__name__}\" is Not a valid Modbus Message"
+                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusRequest` ")
+                "`pymodbus.pdu.ModbusRequest` "
+            )
         self.__lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = {}
             self.__sub_lookup[function.function_code][
-                function.sub_function_code] = function
+                function.sub_function_code
+            ] = function
 
 
 # --------------------------------------------------------------------------- #
@@ -296,8 +298,7 @@ class ClientDecoder(IModbusDecoder):
     def __init__(self):
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {f.function_code: f
-                         for f in self.__function_table}
+        self.__lookup = {f.function_code: f for f in self.__function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -337,14 +338,16 @@ class ClientDecoder(IModbusDecoder):
         fc_string = function_code = int(data[0])
         if function_code in self.__lookup:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
-                str(self.__lookup[function_code]).split(".")[-1].rstrip("\">\""),  # pylint: disable=use-maxsplit-arg
-                function_code
+                str(self.__lookup[function_code])  # pylint: disable=use-maxsplit-arg
+                .split(".")[-1]
+                .rstrip('">"'),
+                function_code,
             )
         txt = f"Factory Response[{fc_string}]"
         _logger.debug(txt)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
-            code = function_code & 0x7f  # strip error portion
+            code = function_code & 0x7F  # strip error portion
             response = ExceptionResponse(code, ecode.IllegalFunction)
         if not response:
             raise ModbusException(f"Unknown response {function_code}")
@@ -352,12 +355,14 @@ class ClientDecoder(IModbusDecoder):
 
         if hasattr(response, "sub_function_code"):
             lookup = self.__sub_lookup.get(response.function_code, {})
-            if (subtype := lookup.get(response.sub_function_code, None)):
+            if subtype := lookup.get(response.sub_function_code, None):
                 response.__class__ = subtype
 
         return response
 
-    def register(self, function=None, sub_function=None, force=False):  # pylint: disable=unused-argument
+    def register(
+        self, function=None, sub_function=None, force=False
+    ):  # pylint: disable=unused-argument
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
@@ -367,15 +372,17 @@ class ClientDecoder(IModbusDecoder):
         """
         if function and not issubclass(function, ModbusResponse):
             raise MessageRegisterException(
-                f"\"{function.__class__.__name__}\" is Not a valid Modbus Message"
+                f'"{function.__class__.__name__}" is Not a valid Modbus Message'
                 ". Class needs to be derived from "
-                "`pymodbus.pdu.ModbusResponse` ")
+                "`pymodbus.pdu.ModbusResponse` "
+            )
         self.__lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = {}
             self.__sub_lookup[function.function_code][
-                function.sub_function_code] = function
+                function.sub_function_code
+            ] = function
 
 
 # --------------------------------------------------------------------------- #

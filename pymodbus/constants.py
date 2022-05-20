@@ -162,11 +162,11 @@ class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods
        This indicates that the given modbus slave is not running
     """
 
-    Waiting = 0xffff
+    Waiting = 0xFFFF
     Ready = 0x0000
-    On = 0xff00  # pylint: disable=invalid-name
+    On = 0xFF00  # pylint: disable=invalid-name
     Off = 0x0000
-    SlaveOn = 0xff
+    SlaveOn = 0xFF
     SlaveOff = 0x00
 
 
@@ -266,7 +266,10 @@ class MoreData(Singleton):  # pylint: disable=too-few-public-methods
 #  Exported Identifiers
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "Defaults", "ModbusStatus", "Endian",
+    "Defaults",
+    "ModbusStatus",
+    "Endian",
     "ModbusPlusOperation",
-    "DeviceInformation", "MoreData",
+    "DeviceInformation",
+    "MoreData",
 ]

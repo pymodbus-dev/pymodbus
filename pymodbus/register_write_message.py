@@ -51,7 +51,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         """
-        if not 0 <= self.value <= 0xffff:
+        if not 0 <= self.value <= 0xFFFF:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
@@ -115,7 +115,9 @@ class WriteSingleRegisterResponse(ModbusResponse):
         :returns: A string representation of the instance
         """
         params = (self.address, self.value)
-        return "WriteRegisterResponse %d => %d" % params  # pylint: disable=consider-using-f-string
+        return (
+            "WriteRegisterResponse %d => %d" % params  # pylint: disable=consider-using-f-string
+        )
 
 
 # ---------------------------------------------------------------------------#
@@ -169,11 +171,10 @@ class WriteMultipleRegistersRequest(ModbusRequest):
 
         :param data: The request to decode
         """
-        self.address, self.count, \
-            self.byte_count = struct.unpack(">HHB", data[:5])
+        self.address, self.count, self.byte_count = struct.unpack(">HHB", data[:5])
         self.values = []  # reset
         for idx in range(5, (self.count * 2) + 5, 2):
-            self.values.append(struct.unpack(">H", data[idx:idx + 2])[0])
+            self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
 
     def execute(self, context):
         """Run a write single register request against a datastore.
@@ -181,7 +182,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized response, exception message otherwise
         """
-        if not 1 <= self.count <= 0x07b:
+        if not 1 <= self.count <= 0x07B:
             return self.doException(merror.IllegalValue)
         if self.byte_count != self.count * 2:
             return self.doException(merror.IllegalValue)
@@ -205,7 +206,9 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :returns: A string representation of the instance
         """
         params = (self.address, self.count)
-        return "WriteMultipleRegisterRequest %d => %d" % params  # pylint: disable=consider-using-f-string
+        return (
+            "WriteMultipleRegisterRequest %d => %d" % params  # pylint: disable=consider-using-f-string
+        )
 
 
 class WriteMultipleRegistersResponse(ModbusResponse):
@@ -247,7 +250,9 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         :returns: A string representation of the instance
         """
         params = (self.address, self.count)
-        return "WriteMultipleRegisterResponse (%d,%d)" % params  # pylint: disable=consider-using-f-string
+        return (
+            "WriteMultipleRegisterResponse (%d,%d)" % params  # pylint: disable=consider-using-f-string
+        )
 
 
 class MaskWriteRegisterRequest(ModbusRequest):
@@ -261,8 +266,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
-                 **kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs):
         """Initialize a new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
@@ -279,16 +283,14 @@ class MaskWriteRegisterRequest(ModbusRequest):
 
         :returns: The byte encoded packet
         """
-        return struct.pack(">HHH", self.address, self.and_mask,
-                           self.or_mask)
+        return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
     def decode(self, data):
         """Decode the incoming request.
 
         :param data: The data to decode into the address
         """
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH",
-                                                                  data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
     def execute(self, context):
         """Run a mask write register request against the store.
@@ -296,17 +298,16 @@ class MaskWriteRegisterRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: The populated response
         """
-        if not 0x0000 <= self.and_mask <= 0xffff:
+        if not 0x0000 <= self.and_mask <= 0xFFFF:
             return self.doException(merror.IllegalValue)
-        if not 0x0000 <= self.or_mask <= 0xffff:
+        if not 0x0000 <= self.or_mask <= 0xFFFF:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, 1)[0]
-        values = ((values & self.and_mask) | self.or_mask)
+        values = (values & self.and_mask) | self.or_mask
         context.setValues(self.function_code, self.address, [values])
-        return MaskWriteRegisterResponse(self.address, self.and_mask,
-                                         self.or_mask)
+        return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
 
 
 class MaskWriteRegisterResponse(ModbusResponse):
@@ -318,8 +319,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
     function_code = 0x16
     _rtu_frame_size = 10
 
-    def __init__(self, address=0x0000, and_mask=0xffff, or_mask=0x0000,
-                 **kwargs):
+    def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs):
         """Initialize new instance.
 
         :param address: The mask pointer address (0x0000 to 0xffff)
@@ -336,23 +336,24 @@ class MaskWriteRegisterResponse(ModbusResponse):
 
         :returns: The byte encoded message
         """
-        return struct.pack(">HHH", self.address, self.and_mask,
-                           self.or_mask)
+        return struct.pack(">HHH", self.address, self.and_mask, self.or_mask)
 
     def decode(self, data):
         """Decode a the response.
 
         :param data: The packet data to decode
         """
-        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH",
-                                                                  data)
+        self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
 
 
 # ---------------------------------------------------------------------------#
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "WriteSingleRegisterRequest", "WriteSingleRegisterResponse",
-    "WriteMultipleRegistersRequest", "WriteMultipleRegistersResponse",
-    "MaskWriteRegisterRequest", "MaskWriteRegisterResponse"
+    "WriteSingleRegisterRequest",
+    "WriteSingleRegisterResponse",
+    "WriteMultipleRegistersRequest",
+    "WriteMultipleRegistersResponse",
+    "MaskWriteRegisterRequest",
+    "MaskWriteRegisterResponse",
 ]

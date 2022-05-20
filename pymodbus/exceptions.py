@@ -122,9 +122,13 @@ class TimeOutException(ModbusException):
 # Exported symbols
 # --------------------------------------------------------------------------- #
 __all__ = [
-    "ModbusException", "ModbusIOException",
-    "ParameterException", "NotImplementedException",
-    "ConnectionException", "NoSuchSlaveException",
+    "ModbusException",
+    "ModbusIOException",
+    "ParameterException",
+    "NotImplementedException",
+    "ConnectionException",
+    "NoSuchSlaveException",
     "InvalidMessageReceivedException",
-    "MessageRegisterException", "TimeOutException"
+    "MessageRegisterException",
+    "TimeOutException",
 ]

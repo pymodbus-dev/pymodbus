@@ -52,8 +52,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 # Connected Client Protocols
 # --------------------------------------------------------------------------- #
-class ModbusClientProtocol(protocol.Protocol,
-                           AsyncModbusClientMixin):
+class ModbusClientProtocol(protocol.Protocol, AsyncModbusClientMixin):
     """This represents the base modbus client protocol.
 
     All the application layer code is deferred to a higher level wrapper.
@@ -87,8 +86,9 @@ class ModbusClientProtocol(protocol.Protocol,
         _logger.debug(txt)
         self._connected = False
         for tid in list(self.transaction):
-            self.transaction.getTransaction(tid).errback(Failure(
-                ConnectionException("Connection lost during request")))
+            self.transaction.getTransaction(tid).errback(
+                Failure(ConnectionException("Connection lost during request"))
+            )
 
     def dataReceived(self, data):
         """Get response, check for valid message, decode result.
@@ -96,8 +96,7 @@ class ModbusClientProtocol(protocol.Protocol,
         :param data: The data returned from the server
         """
         unit = self.framer.decode_data(data).get("unit", 0)
-        self.framer.processIncomingPacket(data, self._handleResponse,
-                                          unit=unit)
+        self.framer.processIncomingPacket(data, self._handleResponse, unit=unit)
 
     def execute(self, request=None):
         """Start the producer to send the next request to consumer.write(Frame(request))."""
@@ -108,7 +107,9 @@ class ModbusClientProtocol(protocol.Protocol,
         self.transport.write(packet)
         return self._buildResponse(request.transaction_id)
 
-    def _handleResponse(self, reply, **kwargs):  # pylint: disable=invalid-name,unused-argument
+    def _handleResponse(
+        self, reply, **kwargs
+    ):  # pylint: disable=invalid-name,unused-argument
         """Handle the processed response and link to correct deferred.
 
         :param reply: The reply to process
@@ -128,8 +129,7 @@ class ModbusClientProtocol(protocol.Protocol,
         :returns: A defer linked to the latest request
         """
         if not self._connected:
-            return defer.fail(Failure(
-                ConnectionException("Client is not connected")))
+            return defer.fail(Failure(ConnectionException("Client is not connected")))
 
         deferred = defer.Deferred()
         self.transaction.addTransaction(deferred, tid)
@@ -168,8 +168,7 @@ class ModbusSerClientProtocol(ModbusClientProtocol):
 # --------------------------------------------------------------------------- #
 # Not Connected Client Protocol
 # --------------------------------------------------------------------------- #
-class ModbusUdpClientProtocol(protocol.DatagramProtocol,
-                              AsyncModbusClientMixin):
+class ModbusUdpClientProtocol(protocol.DatagramProtocol, AsyncModbusClientMixin):
     """This represents the base modbus client protocol.
 
     All the application layer code is deferred to a higher level wrapper.
@@ -193,7 +192,9 @@ class ModbusUdpClientProtocol(protocol.DatagramProtocol,
         self.transport.write(packet, (self.host, self.port))
         return self._buildResponse(request.transaction_id)
 
-    def _handleResponse(self, reply, **kwargs):  # pylint: disable=invalid-name,unused-argument
+    def _handleResponse(
+        self, reply, **kwargs
+    ):  # pylint: disable=invalid-name,unused-argument
         """Handle the processed response and link to correct deferred.
 
         :param reply: The reply to process
@@ -225,13 +226,10 @@ class ModbusClientFactory(protocol.ReconnectingClientFactory):
 
     protocol = ModbusClientProtocol
 
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
 
-__all__ = [
-    "ModbusClientProtocol",
-    "ModbusUdpClientProtocol",
-    "ModbusClientFactory"
-]
+__all__ = ["ModbusClientProtocol", "ModbusUdpClientProtocol", "ModbusClientFactory"]

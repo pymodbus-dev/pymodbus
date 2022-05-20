@@ -14,19 +14,15 @@ LOG_MSGS = {
     "conn_msg": "Connecting to modbus device %s",
     "connfail_msg": "Connection to (%s, %s) failed: %s",
     "discon_msg": "Disconnecting from modbus device %s",
-    "timelimit_read_msg":
-        "Modbus device read took %.4f seconds, "
-        "returned %s bytes in timelimit read",
-    "timeout_msg":
-        "Modbus device timeout after %.4f seconds, "
-        "returned %s bytes %s",
-    "delay_msg":
-        "Modbus device read took %.4f seconds, "
-        "returned %s bytes of %s expected",
-    "read_msg":
-        "Modbus device read took %.4f seconds, "
-        "returned %s bytes of %s expected",
-    "unexpected_dc_msg": "%s %s"}
+    "timelimit_read_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes in timelimit read",
+    "timeout_msg": "Modbus device timeout after %.4f seconds, returned %s bytes %s",
+    "delay_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes of %s expected",
+    "read_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes of %s expected",
+    "unexpected_dc_msg": "%s %s",
+}
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
@@ -57,8 +53,9 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
     # pylint: disable=no-member
 
-    def __init__(self, host="127.0.0.1", port=Defaults.Port,
-                 framer=ModbusSocketFramer, **kwargs):
+    def __init__(
+        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+    ):
         """Initialize a client instance.
 
         The keys of LOG_MSGS can be used in kwargs to customize the messages.
@@ -95,7 +92,8 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
-                source_address=self.source_address)
+                source_address=self.source_address,
+            )
         except socket.error as msg:
             _logger.error(self.connfail_msg, self.host, self.port, msg)
             self.close()
@@ -133,7 +131,9 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         """Log delayed response."""
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
-        elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
+        elif (
+            (not result_len) or (size and result_len < size)
+        ) and delay >= self.timeout:
             size_txt = size if size else "in timelimit read"
             read_type = f"of {size_txt} expected"
             _logger.warning(self.timeout_msg, delay, result_len, read_type)
@@ -157,13 +157,13 @@ def get_client():
 
     :returns: ModbusTcpClient or a child class thereof
     """
-    return ModbusTcpDiagClient if _logger.isEnabledFor(logging.ERROR) else ModbusTcpClient
+    return (
+        ModbusTcpDiagClient if _logger.isEnabledFor(logging.ERROR) else ModbusTcpClient
+    )
 
 
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
-__all__ = [
-    "ModbusTcpDiagClient", "get_client"
-]
+__all__ = ["ModbusTcpDiagClient", "get_client"]

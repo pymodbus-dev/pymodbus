@@ -10,7 +10,10 @@ import json
 import click
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
-    ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
+    ReactiveServer,
+    DEFAULT_FRAMER,
+    DEFUALT_HANDLERS,
+)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
@@ -23,17 +26,28 @@ else:
 @click.group("ReactiveModbusServer")
 @click.option("--host", default="localhost", help="Host address")
 @click.option("--web-port", default=8080, help="Web app port")
-@click.option("--broadcast-support", is_flag=True,
-              default=False, help="Support broadcast messages")
-@click.option("--repl/--no-repl", is_flag=True,
-              default=True, help="Enable/Disable repl for server")
-@click.option("--verbose", is_flag=True,
-              help="Run with debug logs enabled for pymodbus")
+@click.option(
+    "--broadcast-support",
+    is_flag=True,
+    default=False,
+    help="Support broadcast messages",
+)
+@click.option(
+    "--repl/--no-repl",
+    is_flag=True,
+    default=True,
+    help="Enable/Disable repl for server",
+)
+@click.option(
+    "--verbose", is_flag=True, help="Run with debug logs enabled for pymodbus"
+)
 @click.pass_context
 def server(ctx, host, web_port, broadcast_support, repl, verbose):
     """Run server code."""
-    FORMAT = ("%(asctime)-15s %(threadName)-15s"  # pylint: disable=invalid-name
-              " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s")
+    FORMAT = (  # pylint: disable=invalid-name
+        "%(asctime)-15s %(threadName)-15s"
+        " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+    )
     pymodbus_logger = logging.getLogger("pymodbus")
     logging.basicConfig(format=FORMAT)  # NOSONAR
     if verbose:
@@ -41,32 +55,58 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
     else:
         pymodbus_logger.setLevel(logging.ERROR)
 
-    ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
-               "broadcast": broadcast_support}
+    ctx.obj = {
+        "repl": repl,
+        "host": host,
+        "web_port": web_port,
+        "broadcast": broadcast_support,
+    }
 
 
 @server.command("run")
-@click.option("--modbus-server", default="tcp",
-              type=click.Choice(["tcp", "serial", "tls", "udp"],
-                                case_sensitive=False),
-              help="Modbus server")
-@click.option("--modbus-framer", default="socket",
-              type=click.Choice(["socket", "rtu", "tls", "ascii", "binary"],
-                                case_sensitive=False),
-              help="Modbus framer to use")
+@click.option(
+    "--modbus-server",
+    default="tcp",
+    type=click.Choice(["tcp", "serial", "tls", "udp"], case_sensitive=False),
+    help="Modbus server",
+)
+@click.option(
+    "--modbus-framer",
+    default="socket",
+    type=click.Choice(
+        ["socket", "rtu", "tls", "ascii", "binary"], case_sensitive=False
+    ),
+    help="Modbus framer to use",
+)
 @click.option("--modbus-port", default="5020", help="Modbus port")
-@click.option("--modbus-unit-id", default=[1], type=int,
-              multiple=True, help="Modbus unit id")
-@click.option("--modbus-config", type=click.Path(exists=True),
-              help="Path to additional modbus server config")
-@click.option("-r", "--randomize", default=0, help="Randomize every `r` reads."
-                                                   " 0=never, 1=always, "
-                                                   "2=every-second-read, "
-                                                   "and so on. "
-                                                   "Applicable IR and DI.")
+@click.option(
+    "--modbus-unit-id", default=[1], type=int, multiple=True, help="Modbus unit id"
+)
+@click.option(
+    "--modbus-config",
+    type=click.Path(exists=True),
+    help="Path to additional modbus server config",
+)
+@click.option(
+    "-r",
+    "--randomize",
+    default=0,
+    help="Randomize every `r` reads."
+    " 0=never, 1=always, "
+    "2=every-second-read, "
+    "and so on. "
+    "Applicable IR and DI.",
+)
 @click.pass_context
-def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
-        modbus_config, randomize):
+def run(
+    ctx,
+    modbus_server,
+    modbus_framer,
+    modbus_port,
+    modbus_unit_id,
+    modbus_config,
+    randomize,
+):
     """Run Reactive Modbus server.
 
     Exposing REST endpoint for response manipulation.
@@ -90,11 +130,15 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
 
     modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
-    app = ReactiveServer.factory(modbus_server, framer,
-                                 modbus_port=modbus_port,
-                                 unit=modbus_unit_id,
-                                 loop=loop,
-                                 **web_app_config, **modbus_config)
+    app = ReactiveServer.factory(
+        modbus_server,
+        framer,
+        modbus_port=modbus_port,
+        unit=modbus_unit_id,
+        loop=loop,
+        **web_app_config,
+        **modbus_config
+    )
     try:
         if repl:
             loop.run_until_complete(app.run_async())

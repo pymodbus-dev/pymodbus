@@ -100,7 +100,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :return:
         """
         self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
-        self._IModbusSlaveContext__fx_mapper[function_code] = fc_as_hex  # pylint: disable=no-member
+        self._IModbusSlaveContext__fx_mapper[  # pylint: disable=no-member
+            function_code
+        ] = fc_as_hex
 
 
 class ModbusServerContext:
@@ -148,7 +150,7 @@ class ModbusServerContext:
         """
         if self.single:
             slave = Defaults.UnitId
-        if 0xf7 >= slave >= 0x00:
+        if 0xF7 >= slave >= 0x00:
             self._slaves[slave] = context
         else:
             raise NoSuchSlaveException(f"slave index :{slave} out of range")
@@ -158,7 +160,7 @@ class ModbusServerContext:
 
         :param slave: The slave context to remove
         """
-        if not self.single and (0xf7 >= slave >= 0x00):
+        if not self.single and (0xF7 >= slave >= 0x00):
             del self._slaves[slave]
         else:
             raise NoSuchSlaveException(f"slave index: {slave} out of range")
@@ -173,7 +175,9 @@ class ModbusServerContext:
             slave = Defaults.UnitId
         if slave in self._slaves:
             return self._slaves.get(slave)
-        raise NoSuchSlaveException(f"slave - {slave} does not exist, or is out of range")
+        raise NoSuchSlaveException(
+            f"slave - {slave} does not exist, or is out of range"
+        )
 
     def slaves(self):
         """Define slaves."""

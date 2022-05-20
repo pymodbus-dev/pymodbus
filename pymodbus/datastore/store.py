@@ -78,12 +78,16 @@ class BaseModbusDataBlock:
         :param value: The default value to set to the fields
         """
         self.default_value = value  # pylint: disable=attribute-defined-outside-init
-        self.values = [self.default_value] * count  # pylint: disable=attribute-defined-outside-init
+        self.values = [  # pylint: disable=attribute-defined-outside-init
+            self.default_value
+        ] * count
         self.address = 0x00  # pylint: disable=attribute-defined-outside-init
 
     def reset(self):
         """Reset the datastore to the initialized default value."""
-        self.values = [self.default_value] * len(self.values)  # pylint: disable=attribute-defined-outside-init
+        self.values = [self.default_value] * len(  # pylint: disable=attribute-defined-outside-init
+            self.values
+        )
 
     def validate(self, address, count=1):  # pylint: disable=no-self-use
         """Check to see if the request is in range.
@@ -94,7 +98,9 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Address Check")
 
-    def getValues(self, address, count=1):  # NOSONAR pylint: disable=invalid-name,no-self-use
+    def getValues(  # NOSONAR pylint: disable=invalid-name,no-self-use
+        self, address, count=1
+    ):
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -103,7 +109,9 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(self, address, values):  # NOSONAR pylint: disable=invalid-name,no-self-use
+    def setValues(  # NOSONAR pylint: disable=invalid-name,no-self-use
+        self, address, values
+    ):
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -161,8 +169,8 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :param count: The number of values to test for
         :returns: True if the request in within range, False otherwise
         """
-        result = (self.address <= address)
-        result &= ((self.address + len(self.values)) >= (address + count))
+        result = self.address <= address
+        result &= (self.address + len(self.values)) >= (address + count)
         return result
 
     def getValues(self, address, count=1):
@@ -173,7 +181,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         :returns: The requested values from a:a+c
         """
         start = address - self.address
-        return self.values[start:start + count]
+        return self.values[start : start + count]
 
     def setValues(self, address, values):
         """Set the requested values of the datastore.
@@ -184,7 +192,7 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         if not isinstance(values, list):
             values = [values]
         start = address - self.address
-        self.values[start:start + len(values)] = values
+        self.values[start : start + len(values)] = values
 
 
 class ModbusSparseDataBlock(BaseModbusDataBlock):
@@ -266,6 +274,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
 
     def _process_values(self, values):
         """Process values."""
+
         def _process_as_dict(values):
             for idx, val in iter(values.items()):
                 if isinstance(val, (list, tuple)):
@@ -273,6 +282,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                         self.values[idx + i] = v_item
                 else:
                     self.values[idx] = int(val)
+
         if isinstance(values, dict):
             _process_as_dict(values)
             return
@@ -281,8 +291,9 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         elif values is None:
             values = {}  # Must make a new dict here per instance
         else:
-            raise ParameterException("Values for datastore must "
-                                     "be a list or dictionary")
+            raise ParameterException(
+                "Values for datastore must be a list or dictionary"
+            )
         _process_as_dict(values)
 
     def setValues(self, address, values, use_as_default=False):
@@ -293,7 +304,9 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param use_as_default: Use the values as default
         """
         if isinstance(values, dict):
-            new_offsets = list(set(list(values.keys())) - set(list(self.values.keys())))  # noqa: C414
+            new_offsets = list(
+                set(values.keys()) - set(self.values.keys())
+            )
             if new_offsets and not self.mutable:
                 raise ParameterException(f"Offsets {new_offsets} not in range")
             self._process_values(values)

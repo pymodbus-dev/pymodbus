@@ -94,11 +94,14 @@ class SqlSlaveContext(IModbusSlaveContext):
         """
         self._engine = sqlalchemy.create_engine(database, echo=False)
         self._metadata = sqlalchemy.MetaData(self._engine)
-        self._table = sqlalchemy.Table(table, self._metadata,
-                                       sqlalchemy.Column("type", sqltypes.String(1)),
-                                       sqlalchemy.Column("index", sqltypes.Integer),
-                                       sqlalchemy.Column("value", sqltypes.Integer),
-                                       UniqueConstraint("type", "index", name="key"))
+        self._table = sqlalchemy.Table(
+            table,
+            self._metadata,
+            sqlalchemy.Column("type", sqltypes.String(1)),
+            sqlalchemy.Column("index", sqltypes.Integer),
+            sqlalchemy.Column("value", sqltypes.Integer),
+            UniqueConstraint("type", "index", name="key"),
+        )
         self._table.create(checkfirst=True)
         self._connection = self._engine.connect()
 
@@ -110,16 +113,20 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         :returns: The resulting values
         """
-        query = self._table.select(and_(
-            self._table.c.type == type,
-            self._table.c.index >= offset,
-            self._table.c.index <= offset + count - 1)
+        query = self._table.select(
+            and_(
+                self._table.c.type == type,
+                self._table.c.index >= offset,
+                self._table.c.index <= offset + count - 1,
+            )
         )
         query = query.order_by(self._table.c.index.asc())
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(self, type, offset, values, prefix=""):  # pylint: disable=no-self-use,redefined-builtin
+    def _build_set(
+        self, type, offset, values, prefix=""
+    ):  # pylint: disable=no-self-use,redefined-builtin
         """Generate the sql update context.
 
         :param type: The key prefix to use
@@ -129,17 +136,23 @@ class SqlSlaveContext(IModbusSlaveContext):
         """
         result = []
         for index, value in enumerate(values):
-            result.append({
-                prefix + "type": type,
-                prefix + "index": offset + index,
-                "value": value
-            })
+            result.append(
+                {
+                    prefix + "type": type,
+                    prefix + "index": offset + index,
+                    "value": value,
+                }
+            )
         return result
 
-    def _check(self, type, offset, values):  # NOSONAR pylint: disable=unused-argument,redefined-builtin
+    def _check(
+        self, type, offset, values  # NOSONAR pylint: disable=unused-argument,redefined-builtin
+    ):
         """Check."""
         result = self._get(type, offset, count=1)
-        return False if len(result) > 0 else True  # pylint: disable=simplifiable-if-expression
+        return (
+            False if len(result) > 0 else True  # pylint: disable=simplifiable-if-expression
+        )
 
     def _set(self, type, offset, values):  # pylint: disable=redefined-builtin
         """Set.
@@ -164,9 +177,12 @@ class SqlSlaveContext(IModbusSlaveContext):
         """
         context = self._build_set(type, offset, values, prefix="x_")
         query = self._table.update().values(value="value")
-        query = query.where(and_(
-            self._table.c.type == bindparam("x_type"),
-            self._table.c.index == bindparam("x_index")))
+        query = query.where(
+            and_(
+                self._table.c.type == bindparam("x_type"),
+                self._table.c.index == bindparam("x_index"),
+            )
+        )
         result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
@@ -178,9 +194,12 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param count: The number of bits to read
         :returns: The result of the validation
         """
-        query = self._table.select(and_(
-            self._table.c.type == type,
-            self._table.c.index >= offset,
-            self._table.c.index <= offset + count - 1))
+        query = self._table.select(
+            and_(
+                self._table.c.type == type,
+                self._table.c.index >= offset,
+                self._table.c.index <= offset + count - 1,
+            )
+        )
         result = self._connection.execute(query).fetchall()
         return len(result) == count

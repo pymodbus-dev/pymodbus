@@ -39,7 +39,9 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, context=None):  # NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
+        self, context=None  # NOSONAR
+    ):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -95,7 +97,10 @@ class ReadExceptionStatusResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         arguments = (self.function_code, self.status)
-        return "ReadExceptionStatusResponse(%d, %s)" % arguments  # pylint: disable=consider-using-f-string
+        return (
+            "ReadExceptionStatusResponse(%d, %s)" % arguments  # pylint: disable=consider-using-f-string
+        )
+
 
 # Encapsulate interface transport 43, 14
 # CANopen general reference 43, 13
@@ -122,7 +127,7 @@ class GetCommEventCounterRequest(ModbusRequest):
     (code 00 01) or Clear Counters and Diagnostic Register (code 00 0A).
     """
 
-    function_code = 0x0b
+    function_code = 0x0B
     _rtu_frame_size = 4
 
     def __init__(self, **kwargs):
@@ -139,7 +144,9 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, context=None):  # NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
+        self, context=None  # NOSONAR
+    ):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -165,7 +172,7 @@ class GetCommEventCounterResponse(ModbusResponse):
     will be all zeros.
     """
 
-    function_code = 0x0b
+    function_code = 0x0B
     _rtu_frame_size = 8
 
     def __init__(self, count=0x0000, **kwargs):
@@ -194,7 +201,7 @@ class GetCommEventCounterResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         ready, self.count = struct.unpack(">HH", data)
-        self.status = (ready == ModbusStatus.Ready)
+        self.status = ready == ModbusStatus.Ready
 
     def __str__(self):
         """Build a representation of the response.
@@ -202,7 +209,9 @@ class GetCommEventCounterResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         arguments = (self.function_code, self.count, self.status)
-        return "GetCommEventCounterResponse(%d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+        return (
+            "GetCommEventCounterResponse(%d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+        )
 
 
 # ---------------------------------------------------------------------------#
@@ -229,7 +238,7 @@ class GetCommEventLogRequest(ModbusRequest):
     flushes the oldest byte from the field.
     """
 
-    function_code = 0x0c
+    function_code = 0x0C
     _rtu_frame_size = 4
 
     def __init__(self, **kwargs):
@@ -246,7 +255,9 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, context=None):  # NOSONAR pylint: disable=no-self-use,unused-argument
+    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
+        self, context=None  # NOSONAR
+    ):
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -276,7 +287,7 @@ class GetCommEventLogResponse(ModbusResponse):
     field defines the total length of the data in these four field
     """
 
-    function_code = 0x0c
+    function_code = 0x0C
     _rtu_byte_count_pos = 2
 
     def __init__(self, **kwargs):
@@ -315,7 +326,7 @@ class GetCommEventLogResponse(ModbusResponse):
         """
         length = int(data[0])
         status = struct.unpack(">H", data[1:3])[0]
-        self.status = (status == ModbusStatus.Ready)
+        self.status = status == ModbusStatus.Ready
         self.event_count = struct.unpack(">H", data[3:5])[0]
         self.message_count = struct.unpack(">H", data[5:7])[0]
 
@@ -328,8 +339,15 @@ class GetCommEventLogResponse(ModbusResponse):
 
         :returns: The string representation of the response
         """
-        arguments = (self.function_code, self.status, self.message_count, self.event_count)
-        return "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+        arguments = (
+            self.function_code,
+            self.status,
+            self.message_count,
+            self.event_count,
+        )
+        return (
+            "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+        )
 
 
 # ---------------------------------------------------------------------------#
@@ -434,7 +452,7 @@ class ReportSlaveIdResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         self.byte_count = int(data[0])
-        self.identifier = data[1:self.byte_count + 1]
+        self.identifier = data[1 : self.byte_count + 1]
         status = int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
@@ -444,7 +462,10 @@ class ReportSlaveIdResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         arguments = (self.function_code, self.identifier, self.status)
-        return "ReportSlaveIdResponse(%s, %s, %s)" % arguments  # pylint: disable=consider-using-f-string
+        return (
+            "ReportSlaveIdResponse(%s, %s, %s)" % arguments  # pylint: disable=consider-using-f-string
+        )
+
 
 # ---------------------------------------------------------------------------#
 #  TODO Make these only work on serial #NOSONAR pylint: disable=fixme
@@ -456,8 +477,12 @@ class ReportSlaveIdResponse(ModbusResponse):
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "ReadExceptionStatusRequest", "ReadExceptionStatusResponse",
-    "GetCommEventCounterRequest", "GetCommEventCounterResponse",
-    "GetCommEventLogRequest", "GetCommEventLogResponse",
-    "ReportSlaveIdRequest", "ReportSlaveIdResponse",
+    "ReadExceptionStatusRequest",
+    "ReadExceptionStatusResponse",
+    "GetCommEventCounterRequest",
+    "GetCommEventCounterResponse",
+    "GetCommEventLogRequest",
+    "GetCommEventLogResponse",
+    "ReportSlaveIdRequest",
+    "ReportSlaveIdResponse",
 ]

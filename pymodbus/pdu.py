@@ -85,7 +85,8 @@ class ModbusPDU:
         if hasattr(cls, "_rtu_byte_count_pos"):
             return rtuFrameSize(buffer, cls._rtu_byte_count_pos)
         raise NotImplementedException(
-            f"Cannot determine RTU frame size for {cls.__name__}")
+            f"Cannot determine RTU frame size for {cls.__name__}"
+        )
 
 
 class ModbusRequest(ModbusPDU):
@@ -101,7 +102,9 @@ class ModbusRequest(ModbusPDU):
         :param exception: The exception to return
         :raises: An exception response
         """
-        exc = ExceptionResponse(self.function_code, exception)  # pylint: disable=no-member
+        exc = ExceptionResponse(
+            self.function_code, exception  # pylint: disable=no-member
+        )
         _logger.error(exc)
         return exc
 
@@ -153,8 +156,11 @@ class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
 
         :param code: The code number to translate
         """
-        values = {v: k for k, v in iter(cls.__dict__.items())
-                  if not k.startswith("__") and not callable(v)}
+        values = {
+            v: k
+            for k, v in iter(cls.__dict__.items())
+            if not k.startswith("__") and not callable(v)
+        }
         return values.get(code, None)
 
 
@@ -196,7 +202,9 @@ class ExceptionResponse(ModbusResponse):
         """
         message = ModbusExceptions.decode(self.exception_code)
         parameters = (self.function_code, self.original_code, message)
-        return "Exception Response(%d, %d, %s)" % parameters  # pylint: disable=consider-using-f-string
+        return (
+            "Exception Response(%d, %d, %s)" % parameters  # pylint: disable=consider-using-f-string
+        )
 
 
 class IllegalFunctionRequest(ModbusRequest):
@@ -232,11 +240,16 @@ class IllegalFunctionRequest(ModbusRequest):
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)
 
+
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
 
 __all__ = [
-    "ModbusRequest", "ModbusResponse", "ModbusExceptions",
-    "ExceptionResponse", "IllegalFunctionRequest", ]
+    "ModbusRequest",
+    "ModbusResponse",
+    "ModbusExceptions",
+    "ExceptionResponse",
+    "IllegalFunctionRequest",
+]

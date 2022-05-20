@@ -14,16 +14,20 @@ from pymodbus.repl.client.helper import get_commands
 def has_selected_completion():
     """Check for selected completion."""
     complete_state = get_app().current_buffer.complete_state
-    return (complete_state is not None and  # noqa: W504
-            complete_state.current_completion is not None)
+    return (
+        complete_state is not None
+        and complete_state.current_completion is not None
+    )
 
 
-style = Style.from_dict({
-    "completion-menu.completion": "bg:#008888 #ffffff",
-    "completion-menu.completion.current": "bg:#00aaaa #000000",
-    "scrollbar.background": "bg:#88aaaa",
-    "scrollbar.button": "bg:#222222",
-})
+style = Style.from_dict(
+    {
+        "completion-menu.completion": "bg:#008888 #ffffff",
+        "completion-menu.completion.current": "bg:#00aaaa #000000",
+        "scrollbar.background": "bg:#88aaaa",
+        "scrollbar.button": "bg:#222222",
+    }
+)
 
 
 class CmdCompleter(Completer):
@@ -51,7 +55,9 @@ class CmdCompleter(Completer):
         """Return command names."""
         return self._commands.keys()
 
-    def completing_command(self, words, word_before_cursor):  # pylint: disable=no-self-use
+    def completing_command(
+        self, words, word_before_cursor
+    ):  # pylint: disable=no-self-use
         """Determine if we are dealing with supported command.
 
         :param words: Input text broken in to word tokens.
@@ -71,7 +77,9 @@ class CmdCompleter(Completer):
         """
         return len(words) > 1 and len(word_before_cursor)
 
-    def arg_completions(self, words, word_before_cursor):  # pylint: disable=unused-argument
+    def arg_completions(
+        self, words, word_before_cursor
+    ):  # pylint: disable=unused-argument
         """Generate arguments completions based on the input.
 
         :param words: The input text broken into word tokens.
@@ -120,24 +128,27 @@ class CmdCompleter(Completer):
         if self.completing_command(words, word_before_cursor):
             commands = self._command_names
             c_meta = {
-                k: v.help_text
-                if not isinstance(v, str)
-                else v for k, v in self._commands.items()
+                k: v.help_text if not isinstance(v, str) else v
+                for k, v in self._commands.items()
             }
             meta = lambda x: (x, c_meta.get(x, ""))
         else:
-            if not list(filter(lambda cmd: any(x == cmd for x in words),
-                               self._command_names)):
+            if not list(
+                filter(lambda cmd: any(x == cmd for x in words), self._command_names)
+            ):
                 # yield commands
                 pass
 
             if " " in text:
                 command = self.arg_completions(words, word_before_cursor)
                 commands = list(command.get_completion())
-                commands = list(filter(lambda cmd: not(any(cmd in x for x in words)), commands))
+                commands = list(
+                    filter(lambda cmd: not (any(cmd in x for x in words)), commands)
+                )
                 meta = command.get_meta
         for command in commands:
             if self._get_completions(command, word_before_cursor):
                 _, display_meta = meta(command) if meta else ("", "")
-                yield Completion(command, -len(word_before_cursor),
-                                 display_meta=display_meta)
+                yield Completion(
+                    command, -len(word_before_cursor), display_meta=display_meta
+                )

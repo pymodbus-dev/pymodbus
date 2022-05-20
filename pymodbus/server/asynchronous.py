@@ -42,8 +42,7 @@ class ModbusTcpProtocol(protocol.Protocol):
         """
         txt = f"Client Connected [{self.transport.getHost()}]"
         _logger.debug(txt)
-        self.framer = self.factory.framer(decoder=self.factory.decoder,
-                                          client=None)
+        self.framer = self.factory.framer(decoder=self.factory.decoder, client=None)
 
     def connectionLost(self, reason):  # pylint: disable=signature-differs
         """Call when a client disconnects.
@@ -64,9 +63,9 @@ class ModbusTcpProtocol(protocol.Protocol):
         if not self.factory.control.ListenOnly:
             units = self.factory.store.slaves()
             single = self.factory.store.single
-            self.framer.processIncomingPacket(data, self._execute,
-                                              single=single,
-                                              unit=units)
+            self.framer.processIncomingPacket(
+                data, self._execute, single=single, unit=units
+            )
 
     def _execute(self, request):
         """Execute the request and returns the result.
@@ -131,8 +130,9 @@ class ModbusServerFactory(ServerFactory):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -162,8 +162,9 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         self.store = store or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.access = ModbusAccessControl()
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves",
-                                                Defaults.IgnoreMissingSlaves)
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -231,12 +232,15 @@ def _is_main_thread():
     return True
 
 
-def StartTcpServer(context,  # NOSONAR pylint: disable=dangerous-default-value,invalid-name
-                   identity=None, address=None,
-                   console=False,  # NOSONAR pylint: disable=unused-argument,
-                   defer_reactor_run=False,
-                   custom_functions=[],
-                   **kwargs):
+def StartTcpServer(  # NOSONAR pylint: disable=dangerous-default-value,invalid-name
+    context,
+    identity=None,
+    address=None,
+    console=False,  # NOSONAR pylint: disable=unused-argument,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs,
+):
     """Start the Modbus Async TCP server.
 
     :param context: The server data context
@@ -250,7 +254,9 @@ def StartTcpServer(context,  # NOSONAR pylint: disable=dangerous-default-value,i
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
-    from twisted.internet import reactor as local_reactor  # pylint: disable=import-outside-toplevel,reimported
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
+        reactor as local_reactor,
+    )
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
@@ -260,13 +266,23 @@ def StartTcpServer(context,  # NOSONAR pylint: disable=dangerous-default-value,i
 
     txt = f"Starting Modbus TCP Server on {address}"
     _logger.info(txt)
-    local_reactor.listenTCP(address[1], factory, interface=address[0])  # pylint: disable=no-member
+    local_reactor.listenTCP(  # pylint: disable=no-member
+        address[1], factory, interface=address[0]
+    )
     if not defer_reactor_run:
-        local_reactor.run(installSignalHandlers=_is_main_thread())  # pylint: disable=no-member
+        local_reactor.run(  # pylint: disable=no-member
+            installSignalHandlers=_is_main_thread()
+        )
 
 
-def StartUdpServer(context, identity=None, address=None,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                   defer_reactor_run=False, custom_functions=[], **kwargs):
+def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context,
+    identity=None,
+    address=None,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs,
+):
     """Start the Modbus Async Udp server.
 
     :param context: The server data context
@@ -279,7 +295,9 @@ def StartUdpServer(context, identity=None, address=None,  # NOSONAR pylint: disa
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     """
-    from twisted.internet import reactor as local_reactor  # pylint: disable=import-outside-toplevel,reimported
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
+        reactor as local_reactor,
+    )
 
     address = address or ("", Defaults.Port)
     framer = kwargs.pop("framer", ModbusSocketFramer)
@@ -289,14 +307,23 @@ def StartUdpServer(context, identity=None, address=None,  # NOSONAR pylint: disa
 
     txt = f"Starting Modbus UDP Server on {address}"
     _logger.info(txt)
-    local_reactor.listenUDP(address[1], server, interface=address[0])  # pylint: disable=no-member
+    local_reactor.listenUDP(  # pylint: disable=no-member
+        address[1], server, interface=address[0]
+    )
     if not defer_reactor_run:
-        local_reactor.run(installSignalHandlers=_is_main_thread())  # pylint: disable=no-member
+        local_reactor.run(  # pylint: disable=no-member
+            installSignalHandlers=_is_main_thread()
+        )
 
 
-def StartSerialServer(context,  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
-                      identity=None, framer=ModbusAsciiFramer,
-                      defer_reactor_run=False, custom_functions=[], **kwargs):
+def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+    context,
+    identity=None,
+    framer=ModbusAsciiFramer,
+    defer_reactor_run=False,
+    custom_functions=[],
+    **kwargs,
+):
     """Start the Modbus Async Serial server.
 
     :param context: The server data context
@@ -313,8 +340,12 @@ def StartSerialServer(context,  # NOSONAR pylint: disable=invalid-name,dangerous
         supported by server instance.
 
     """
-    from twisted.internet import reactor as local_reactor  # pylint: disable=import-outside-toplevel,reimported
-    from twisted.internet.serialport import SerialPort  # pylint: disable=import-outside-toplevel
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
+        reactor as local_reactor,
+    )
+    from twisted.internet.serialport import (  # pylint: disable=import-outside-toplevel
+        SerialPort,
+    )
 
     port = kwargs.get("port", "/dev/ttyS0")
     baudrate = kwargs.get("baudrate", Defaults.Baudrate)
@@ -333,17 +364,30 @@ def StartSerialServer(context,  # NOSONAR pylint: disable=invalid-name,dangerous
 
     local_protocol = factory.buildProtocol(None)
     SerialPort.getHost = lambda self: port  # hack for logging
-    SerialPort(local_protocol,  # pylint: disable=unexpected-keyword-arg
-               port, local_reactor, baudrate=baudrate, parity=parity,
-               stopbits=stopbits, timeout=timeout, xonxoff=xonxoff,
-               rtscts=rtscts, bytesize=bytesize)
+    SerialPort(  # pylint: disable=unexpected-keyword-arg
+        local_protocol,
+        port,
+        local_reactor,
+        baudrate=baudrate,
+        parity=parity,
+        stopbits=stopbits,
+        timeout=timeout,
+        xonxoff=xonxoff,
+        rtscts=rtscts,
+        bytesize=bytesize,
+    )
     if not defer_reactor_run:
-        local_reactor.run(installSignalHandlers=_is_main_thread())  # pylint: disable=no-member
+        local_reactor.run(  # pylint: disable=no-member
+            installSignalHandlers=_is_main_thread()
+        )
 
 
 def StopServer():  # NOSONAR pylint: disable=invalid-name
     """Stop Async Server."""
-    from twisted.internet import reactor as local_reactor  # pylint: disable=import-outside-toplevel,reimported
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
+        reactor as local_reactor,
+    )
+
     if _is_main_thread():
         local_reactor.stop()
         _logger.debug("Stopping server from main thread")
@@ -355,6 +399,4 @@ def StopServer():  # NOSONAR pylint: disable=invalid-name
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
-__all__ = [
-    "StartTcpServer", "StartUdpServer", "StartSerialServer", "StopServer"
-]
+__all__ = ["StartTcpServer", "StartUdpServer", "StartSerialServer", "StopServer"]

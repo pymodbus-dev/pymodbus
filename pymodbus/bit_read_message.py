@@ -146,7 +146,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: The initializes response message, exception message otherwise
         """
-        if not 1 <= self.count <= 0x7d0:
+        if not 1 <= self.count <= 0x7D0:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -207,7 +207,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: The initializes response message, exception message otherwise
         """
-        if not 1 <= self.count <= 0x7d0:
+        if not 1 <= self.count <= 0x7D0:
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -243,6 +243,8 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "ReadCoilsRequest", "ReadCoilsResponse",
-    "ReadDiscreteInputsRequest", "ReadDiscreteInputsResponse",
+    "ReadCoilsRequest",
+    "ReadCoilsResponse",
+    "ReadDiscreteInputsRequest",
+    "ReadDiscreteInputsResponse",
 ]

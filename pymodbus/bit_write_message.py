@@ -65,7 +65,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         :param data: The packet data to decode
         """
         self.address, value = struct.unpack(">HH", data)
-        self.value = (value == ModbusStatus.On)
+        self.value = value == ModbusStatus.On
 
     def execute(self, context):
         """Run a write coil request against a datastore.
@@ -135,7 +135,7 @@ class WriteSingleCoilResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         self.address, value = struct.unpack(">HH", data)
-        self.value = (value == ModbusStatus.On)
+        self.value = value == ModbusStatus.On
 
     def __str__(self):
         """Return a string representation of the instance.
@@ -202,7 +202,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: The populated response or exception message
         """
         count = len(self.values)
-        if not 1 <= count <= 0x07b0:
+        if not 1 <= count <= 0x07B0:
             return self.doException(merror.IllegalValue)
         if self.byte_count != (count + 7) // 8:
             return self.doException(merror.IllegalValue)
@@ -218,7 +218,9 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         :returns: A string representation of the instance
         """
         params = (self.address, len(self.values))
-        return "WriteNCoilRequest (%d) => %d " % params  # pylint: disable=consider-using-f-string
+        return (
+            "WriteNCoilRequest (%d) => %d " % params  # pylint: disable=consider-using-f-string
+        )
 
     def get_response_pdu_size(self):  # pylint: disable=no-self-use
         """Get response pdu size.
@@ -274,6 +276,8 @@ class WriteMultipleCoilsResponse(ModbusResponse):
 #  Exported symbols
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "WriteSingleCoilRequest", "WriteSingleCoilResponse",
-    "WriteMultipleCoilsRequest", "WriteMultipleCoilsResponse",
+    "WriteSingleCoilRequest",
+    "WriteSingleCoilResponse",
+    "WriteMultipleCoilsRequest",
+    "WriteMultipleCoilsResponse",
 ]

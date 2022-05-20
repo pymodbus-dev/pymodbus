@@ -85,7 +85,7 @@ class ModbusTlsFramer(ModbusFramer):
 
         :returns: The next full frame buffer
         """
-        return self._buffer[self._hsize:]
+        return self._buffer[self._hsize :]
 
     def populateResult(self, result):
         """Populate the modbus result.
@@ -103,11 +103,13 @@ class ModbusTlsFramer(ModbusFramer):
     def decode_data(self, data):
         """Decode data."""
         if len(data) > self._hsize:
-            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0:self._hsize + 1])
+            (fcode,) = struct.unpack(TLS_FRAME_HEADER, data[0 : self._hsize + 1])
             return {"fcode": fcode}
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):  # pylint: disable=arguments-differ
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -181,5 +183,6 @@ class ModbusTlsFramer(ModbusFramer):
         packet = struct.pack(TLS_FRAME_HEADER, message.function_code)
         packet += data
         return packet
+
 
 # __END__

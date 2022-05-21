@@ -4,3 +4,19 @@ omit =
     pymodbus/internal/*
     pymodbus/server/asyncio.py
     pymodbus/server/reactive/*
+
+    test/TO_DO_REWRITE
+    examples/common/tornado_twister
+    examples/contrib/tornado_twister
+
+    pymodbus/client/asynchronous/__init__.py
+    pymodbus/client/asynchronous/deprecated/*
+    pymodbus/client/asynchronous/thread.py
+    pymodbus/client/asynchronous/tornado/*
+    pymodbus/client/asynchronous/twisted/*
+    pymodbus/client/factory/serial.py
+    pymodbus/client/factory/tcp.py
+    pymodbus/client/factory/udp.py
+    pymodbus/server/async_io.py
+    pymodbus/server/asynchronous.py
+    version.py

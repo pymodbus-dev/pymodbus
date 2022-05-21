@@ -485,7 +485,7 @@ if __name__ == "__main__":
     PackageDocumentationGenerator(
         baseModules=["pymodbus", "__builtin__"],
         destinationDirectory="./html/",
-        exclusions=["math", "string", "twisted"],
+        exclusions=["math", "string"],
         recursionStops=[],
     ).process()
 

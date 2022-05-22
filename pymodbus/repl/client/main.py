@@ -6,7 +6,7 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 from __future__ import absolute_import, unicode_literals
 import logging
 import sys
-import os.path
+import pathlib
 
 try:
     import click
@@ -39,18 +39,17 @@ from pymodbus.framer.rtu_framer import ModbusRtuFramer
 
 click.disable_unicode_literals_warning = True
 
-TITLE = (
-'----------------------------------------------------------------------------'
-'__________          _____             .___  __________              .__   '
-'\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  ' # pylint: disable=anomalous-backslash-in-string
-' |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  ' # pylint: disable=anomalous-backslash-in-string
-' |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__' # pylint: disable=anomalous-backslash-in-string
-' |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/' # pylint: disable=anomalous-backslash-in-string
-'           \/            \/            \/ \/        \/     \/|__|' # pylint: disable=anomalous-backslash-in-string
-f'                                        v1.3.0 - {version}'
-'----------------------------------------------------------------------------'
-)
-_logger = logging.getLogger(__name__)
+TITLE = f"""
+----------------------------------------------------------------------------
+__________          _____             .___  __________              .__   
+\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  
+ |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  
+ |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
+ |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
+           \/            \/            \/ \/        \/     \/|__|
+                                        v1.3.0 - {version}         
+----------------------------------------------------------------------------
+"""
 
 
 style = Style.from_dict({
@@ -92,11 +91,11 @@ class NumericChoice(click.Choice):
 
         if ctx is not None and ctx.token_normalize_func is not None:
             value = ctx.token_normalize_func(value)
-            for choice in self.casted_choices: # pylint: disable=no-member
+            for choice in self.casted_choices:  # pylint: disable=no-member
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail('invalid choice: %s. (choose from %s)' % # pylint: disable=consider-using-f-string
+        self.fail('invalid choice: %s. (choose from %s)' %   # pylint: disable=consider-using-f-string
                   (value, ', '.join(self.choices)), param, ctx)
         return None
 
@@ -104,7 +103,7 @@ class NumericChoice(click.Choice):
 def cli(client): #NOSONAR pylint: disable=too-complex
     """Client definition."""
     use_keys = KeyBindings()
-    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
+    history_file = pathlib.Path.home().joinpath(".pymodhis")
 
     @use_keys.add('c-space')
     def _(event):
@@ -170,7 +169,7 @@ def cli(client): #NOSONAR pylint: disable=too-complex
                             key_bindings=use_keys,
                             history=FileHistory(history_file),
                             auto_suggest=AutoSuggestFromHistory())
-    click.secho(f"{TITLE}", fg='green')
+    click.secho(TITLE, fg='green')
     result = None
     while True: # pylint: disable=too-many-nested-blocks
         try:

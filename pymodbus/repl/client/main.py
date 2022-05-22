@@ -1,7 +1,7 @@
 """Pymodbus REPL Entry point."""
 import logging
-import os.path
 import sys
+import pathlib
 
 try:
     import click
@@ -39,18 +39,17 @@ from pymodbus.transaction import (
 
 click.disable_unicode_literals_warning = True
 
-TITLE = (
-    r"----------------------------------------------------------------------------"
-    r"__________          _____             .___  __________              .__   "
-    r"\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |  "
-    r" |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |  "
-    r" |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__"
-    r" |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/"
-    r"           \/            \/            \/ \/        \/     \/|__|"
-    f"                                        v1.3.0 - {version}"
-    r"----------------------------------------------------------------------------"
-)
-_logger = logging.getLogger(__name__)
+TITLE = f"""
+----------------------------------------------------------------------------
+__________          _____             .___  __________              .__
+\______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |
+ |     ___<   |  |/  \ /  \ /  _ \ / __ |    |       _// __ \\\____ \|  |
+ |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
+ |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
+           \/            \/            \/ \/        \/     \/|__|
+                                        v1.3.0 - {version}
+----------------------------------------------------------------------------
+"""
 
 
 style = Style.from_dict(
@@ -104,22 +103,15 @@ class NumericChoice(click.Choice):
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail(
-            "invalid choice: %s. (choose from %s)"  # pylint: disable=consider-using-f-string
-            % (
-                value,
-                ", ".join(self.choices),
-            ),
-            param,
-            ctx,
-        )
+        self.fail('invalid choice: %s. (choose from %s)' %   # pylint: disable=consider-using-f-string
+                  (value, ', '.join(self.choices)), param, ctx)
         return None
 
 
 def cli(client):  # noqa: C901 pylint: disable=too-complex
     """Run client definition."""
     use_keys = KeyBindings()
-    history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
+    history_file = pathlib.Path.home().joinpath(".pymodhis")
 
     @use_keys.add("c-space")
     def _(event):
@@ -175,17 +167,14 @@ def cli(client):  # noqa: C901 pylint: disable=too-complex
                     break
         return kwargs, execute
 
-    session = PromptSession(
-        lexer=PygmentsLexer(PythonLexer),
-        completer=CmdCompleter(client),
-        style=style,
-        complete_while_typing=True,
-        bottom_toolbar=bottom_toolbar,
-        key_bindings=use_keys,
-        history=FileHistory(history_file),
-        auto_suggest=AutoSuggestFromHistory(),
-    )
-    click.secho(f"{TITLE}", fg="green")
+    session = PromptSession(lexer=PygmentsLexer(PythonLexer),
+                            completer=CmdCompleter(client), style=style,
+                            complete_while_typing=True,
+                            bottom_toolbar=bottom_toolbar,
+                            key_bindings=use_keys,
+                            history=FileHistory(history_file),
+                            auto_suggest=AutoSuggestFromHistory())
+    click.secho(TITLE, fg='green')
     result = None
     while True:  # pylint: disable=too-many-nested-blocks
         try:

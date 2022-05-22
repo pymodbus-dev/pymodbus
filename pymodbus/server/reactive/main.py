@@ -287,7 +287,7 @@ class ReactiveServer:
         return identity
 
     @classmethod
-    def create_context(cls, data_block=None, unit=1, single=False):
+    def create_context(cls, data_block=None, unit=[1], single=False):
         """Create Modbus context.
 
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
@@ -295,34 +295,36 @@ class ReactiveServer:
         :param single: To run as a single slave
         :return: ModbusServerContext object
         """
-        block = {}
         data_block = data_block or DEFAULT_DATA_BLOCK
-        for modbus_entity, block_desc in data_block.items():
-            start_address = block_desc.get("start_address", 0)
-            default_count = block_desc.get("count", 0)
-            default_value = block_desc.get("value", 0)
-            default_values = [default_value] * default_count
-            sparse = block_desc.get("sparse", False)
-            db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
-            if sparse:
-                if not (address_map := block_desc.get("address_map")):
-                    address_map = random.sample(
-                        range(start_address + 1, default_count), default_count - 1
-                    )
-                    address_map.insert(0, 0)
-                block[modbus_entity] = {
-                    add: val for add in sorted(address_map) for val in default_values
-                }
-            else:
-                block[modbus_entity] = db(start_address, default_values)
+        if not isinstance(unit, list):
+            unit = [unit]
+        slaves = {}
+        for i in unit:
+            block = {}
+            for modbus_entity, block_desc in data_block.items():
+                start_address = block_desc.get("start_address", 0)
+                default_count = block_desc.get("count", 0)
+                default_value = block_desc.get("value", 0)
+                default_values = [default_value] * default_count
+                sparse = block_desc.get("sparse", False)
+                db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
+                if sparse:
+                    if not (address_map := block_desc.get("address_map")):
+                        address_map = random.sample(
+                            range(start_address + 1, default_count), default_count - 1
+                        )
+                        address_map.insert(0, 0)
+                    block[modbus_entity] = {
+                        add: val for add in sorted(address_map) for val in default_values
+                    }
+                else:
+                    block[modbus_entity] = db(start_address, default_values)
 
-        slave_context = ModbusSlaveContext(**block, zero_mode=True)
-        if not single:
-            slaves = {}
-            for i in unit:
+            slave_context = ModbusSlaveContext(**block, zero_mode=True)
+            if not single:
                 slaves[i] = slave_context
-        else:
-            slaves = slave_context
+            else:
+                slaves = slave_context
         server_context = ModbusServerContext(slaves, single=single)
         return server_context
 

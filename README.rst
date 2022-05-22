@@ -134,14 +134,30 @@ If you think, that something in the code is broken/not running well, please `ope
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
 ------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~
+Pymodbus REPL Client
+~~~~~~~~~~~~~~~~~~~~~
+
 Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
-For more info on REPL refer  `Pymodbus REPL <https://github.com/riptideio/pymodbus/tree/master/pymodbus/repl>`_
+For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
 
 .. image:: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
+
+~~~~~~~~~~~~~~~~~~~~~
+Pymodbus REPL Server
+~~~~~~~~~~~~~~~~~~~~~
+
+Pymodbus also comes with a REPL server to quickly run an asynchronous server with additional capabilities out of the box like simulating errors, delay, mangled messages etc.
+
+For more infor on REPL Server refer `Pymodbus REPL Server <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+
+.. image:: https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg
+   :target: https://youtu.be/OutaVz0JkWg
 
 ------------------------------------------------------------
 Installing

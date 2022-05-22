@@ -26,6 +26,7 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
+        :raises Exception: Failure
         """
         method = method.lower()
         if method == "ascii":

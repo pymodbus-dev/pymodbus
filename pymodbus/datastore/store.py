@@ -44,6 +44,7 @@ or a range read to fail.
 I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
+# pylint: disable=missing-type-doc
 import logging
 
 from pymodbus.exceptions import NotImplementedException, ParameterException
@@ -94,7 +95,7 @@ class BaseModbusDataBlock:
 
         :param address: The starting address
         :param count: The number of values to test for
-        :returns: True if the request in within range, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Datastore Address Check")
 
@@ -105,7 +106,7 @@ class BaseModbusDataBlock:
 
         :param address: The starting address
         :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
@@ -116,6 +117,7 @@ class BaseModbusDataBlock:
 
         :param address: The starting address
         :param values: The values to store
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
@@ -302,6 +304,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         :param use_as_default: Use the values as default
+        :raises ParameterException:
         """
         if isinstance(values, dict):
             new_offsets = list(

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc
 """Doxygen API Builder."""
 import os
 import shutil

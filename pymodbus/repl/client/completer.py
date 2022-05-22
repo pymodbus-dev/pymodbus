@@ -3,6 +3,7 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+# pylint: disable=missing-type-doc
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
@@ -100,7 +101,7 @@ class CmdCompleter(Completer):
     def word_matches(self, word, word_before_cursor):
         """Match the word and word before cursor.
 
-        :param words: The input text broken into word tokens.
+        :param word: The input text broken into word tokens.
         :param word_before_cursor: The current word before the cursor, \
             which might be one or more blank spaces.
         :return: True if matched.

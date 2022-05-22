@@ -3,6 +3,7 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+# pylint: disable=missing-type-doc
 import struct
 
 
@@ -127,7 +128,7 @@ def unpack_bitstring(string):
 def make_byte_string(byte_string):
     """Return byte string from a given string, python3 specific fix.
 
-    :param s:
+    :param byte_string:
     :return:
     """
     if isinstance(byte_string, str):

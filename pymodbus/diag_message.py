@@ -3,6 +3,7 @@
 These need to be tied into a the current server context
 or linked to the appropriate data
 """
+# pylint: disable=missing-type-doc
 import struct
 
 from pymodbus.constants import ModbusStatus, ModbusPlusOperation

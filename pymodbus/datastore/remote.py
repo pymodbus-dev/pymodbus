@@ -1,4 +1,5 @@
 """Remote datastore."""
+# pylint: disable=missing-type-doc
 import logging
 
 from pymodbus.exceptions import NotImplementedException

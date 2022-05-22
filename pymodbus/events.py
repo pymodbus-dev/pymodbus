@@ -4,6 +4,7 @@ An event byte returned by the Get Communications Event Log function
 can be any one of four types. The type is defined by bit 7
 (the high-order bit) in each byte. It may be further defined by bit 6.
 """
+# pylint: disable=missing-type-doc
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.exceptions import ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
@@ -15,7 +16,7 @@ class ModbusEvent:
     def encode(self):  # pylint: disable=no-self-use
         """Encode the status bits to an event message.
 
-        :returns: The encoded event message
+        :raises NotImplementedException:
         """
         raise NotImplementedException()
 
@@ -23,6 +24,7 @@ class ModbusEvent:
         """Decode the event message to its status bits.
 
         :param event: The event to decode
+        :raises NotImplementedException:
         """
         raise NotImplementedException()
 
@@ -159,6 +161,7 @@ class EnteredListenModeEvent(ModbusEvent):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
+        :raises ParameterException:
         """
         if event != self.__encoded:
             raise ParameterException("Invalid decoded value")
@@ -195,6 +198,7 @@ class CommunicationRestartEvent(ModbusEvent):
         """Decode the event message to its status bits.
 
         :param event: The event to decode
+        :raises ParameterException:
         """
         if event != self.__encoded:
             raise ParameterException("Invalid decoded value")

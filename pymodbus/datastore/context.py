@@ -1,4 +1,5 @@
 """Context for datastore."""
+# pylint: disable=missing-type-doc
 import logging
 
 from pymodbus.exceptions import NoSuchSlaveException
@@ -53,7 +54,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
     def validate(self, fc_as_hex, address, count=1):
         """Validate the request to make sure it is in range.
 
-        :param fx: The function we are working with
+        :param fc_as_hex: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
@@ -67,7 +68,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
     def getValues(self, fc_as_hex, address, count=1):
         """Get `count` values from datastore.
 
-        :param fx: The function we are working with
+        :param fc_as_hex: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
@@ -81,7 +82,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
     def setValues(self, fc_as_hex, address, values):
         """Set the datastore with the supplied values.
 
-        :param fx: The function we are working with
+        :param fc_as_hex: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
@@ -94,10 +95,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
     def register(self, function_code, fc_as_hex, datablock=None):
         """Register a datablock with the slave context.
 
-        :param fc: function code (int)
-        :param fx: string representation of function code (e.g "cf" )
+        :param function_code: function code (int)
+        :param fc_as_hex: string representation of function code (e.g "cf" )
         :param datablock: datablock to associate with this function code
-        :return:
         """
         self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
         self._IModbusSlaveContext__fx_mapper[  # pylint: disable=no-member
@@ -147,6 +147,7 @@ class ModbusServerContext:
 
         :param slave: The slave context to set
         :param context: The new context to set for this slave
+        :raises NoSuchSlaveException:
         """
         if self.single:
             slave = Defaults.UnitId
@@ -159,6 +160,7 @@ class ModbusServerContext:
         """Use to access the slave context.
 
         :param slave: The slave context to remove
+        :raises NoSuchSlaveException:
         """
         if not self.single and (0xF7 >= slave >= 0x00):
             del self._slaves[slave]
@@ -170,6 +172,7 @@ class ModbusServerContext:
 
         :param slave: The slave context to get
         :returns: The requested slave context
+        :raises NoSuchSlaveException:
         """
         if self.single:
             slave = Defaults.UnitId

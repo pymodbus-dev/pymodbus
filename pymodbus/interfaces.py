@@ -3,6 +3,7 @@
 A collection of base classes that are used throughout
 the pymodbus library.
 """
+# pylint: disable=missing-type-doc
 from pymodbus.exceptions import NotImplementedException
 
 TEXT_METHOD = "Method not implemented by derived class"
@@ -41,7 +42,7 @@ class IModbusDecoder:
         """Decode a given packet.
 
         :param message: The raw modbus request packet
-        :return: The decoded modbus message or None if error
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -51,7 +52,7 @@ class IModbusDecoder:
         """Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
-        :returns: The class of the PDU that has a matching `function_code`.
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -59,7 +60,7 @@ class IModbusDecoder:
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
-        :return:
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -76,7 +77,7 @@ class IModbusFramer:
     def checkFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Check and decode the next frame.
 
-        :returns: True if we successful, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -96,6 +97,7 @@ class IModbusFramer:
         data to the buffer handle.
 
         :param message: The most recent packet
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -105,14 +107,14 @@ class IModbusFramer:
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
 
-        :returns: True if ready, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
     def getFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
         """Get the next frame from the buffer.
 
-        :returns: The frame data or ""
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -125,6 +127,7 @@ class IModbusFramer:
         to the result header. This may not be needed for serial messages.
 
         :param result: The response packet
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -144,6 +147,7 @@ class IModbusFramer:
 
         :param data: The new packet data
         :param callback: The function to send results to
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -154,7 +158,7 @@ class IModbusFramer:
         request / response message.
 
         :param message: The request/response to send
-        :returns: The built packet
+        :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
@@ -193,7 +197,7 @@ class IModbusSlaveContext:
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
-        :returns: True if the request in within range, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException("validate context values")
 
@@ -205,7 +209,7 @@ class IModbusSlaveContext:
         :param fx: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
+        :raises NotImplementedException:
         """
         raise NotImplementedException("get context values")
 
@@ -217,6 +221,7 @@ class IModbusSlaveContext:
         :param fx: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
+        :raises NotImplementedException:
         """
         raise NotImplementedException("set context values")
 
@@ -234,7 +239,7 @@ class IPayloadBuilder:  # pylint: disable=too-few-public-methods
         This list is two bytes per element and can
         thus be treated as a list of registers.
 
-        :returns: The payload buffer as a list
+        :raises NotImplementedException:
         """
         raise NotImplementedException("set context values")
 

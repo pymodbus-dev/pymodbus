@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-any-param-doc,differing-param-doc
 """Pymodbus Server With Updating Thread.
 
 This is an example of having a background thread updating the

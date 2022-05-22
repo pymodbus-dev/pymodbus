@@ -1,4 +1,5 @@
 """Sync client."""
+# pylint: disable=missing-type-doc
 import logging
 import socket
 import select
@@ -56,7 +57,7 @@ class BaseModbusClient(ModbusClientMixin):
     def connect(self):  # pylint: disable=no-self-use
         """Connect to the modbus remote host.
 
-        :returns: True if connection succeeded, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Method not implemented by derived class")
 
@@ -66,7 +67,7 @@ class BaseModbusClient(ModbusClientMixin):
     def is_socket_open(self):
         """Check whether the underlying socket/serial is open or not.
 
-        :returns: True if socket/serial is open, False otherwise
+        :raises NotImplementedException:
         """
         raise NotImplementedException(
             f"is_socket_open() not implemented by {self.__str__()}"
@@ -83,7 +84,7 @@ class BaseModbusClient(ModbusClientMixin):
         """Send data on the underlying socket.
 
         :param request: The encoded request to send
-        :return: The number of bytes written
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Method not implemented by derived class")
 
@@ -95,7 +96,7 @@ class BaseModbusClient(ModbusClientMixin):
         """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
-        :return: The bytes read
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Method not implemented by derived class")
 
@@ -107,6 +108,7 @@ class BaseModbusClient(ModbusClientMixin):
 
         :param request: The request to process
         :returns: The result of the request execution
+        :raises ConnectionException:
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
@@ -119,6 +121,7 @@ class BaseModbusClient(ModbusClientMixin):
         """Implement the client with enter block.
 
         :returns: The current instance of the client
+        :raises ConnectionException:
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
@@ -164,7 +167,6 @@ class BaseModbusClient(ModbusClientMixin):
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
-        :return:
         """
         self.framer.decoder.register(function)
 
@@ -244,6 +246,7 @@ class ModbusTcpClient(BaseModbusClient):
 
         :param request: The encoded request to send
         :return: The number of bytes written
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -262,9 +265,7 @@ class ModbusTcpClient(BaseModbusClient):
         :return: The bytes read if the peer sent a response, or a zero-length
                  response if no data packets were received from the client at
                  all.
-        :raises: ConnectionException if the socket is not initialized, or the
-                 peer either has closed the connection before this method is
-                 invoked or closes it before sending any data before timeout.
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -330,7 +331,7 @@ class ModbusTcpClient(BaseModbusClient):
                until it was determined that the remote closed the
                socket
         :return: The more than zero bytes read from the remote end
-        :raises: ConnectionException If the remote end didn"t send any
+        :raises ConnectionException: If the remote end didn't send any
                  data at all before closing the connection.
         """
         self.close()
@@ -431,6 +432,7 @@ class ModbusTlsClient(ModbusTcpClient):
 
         :param size: The number of bytes to read
         :return: The bytes read
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -551,6 +553,7 @@ class ModbusUdpClient(BaseModbusClient):
 
         :param request: The encoded request to send
         :return: The number of bytes written
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -563,6 +566,7 @@ class ModbusUdpClient(BaseModbusClient):
 
         :param size: The number of bytes to read
         :return: The bytes read
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -651,6 +655,8 @@ class ModbusSerialClient(
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
+        :raises ConnectionException:
+        :raises ParameterException:
         """
         method = method.lower()
         if method == "ascii":
@@ -714,6 +720,7 @@ class ModbusSerialClient(
 
         :param request: The encoded request to send
         :return: The number of bytes written
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())
@@ -764,6 +771,7 @@ class ModbusSerialClient(
 
         :param size: The number of bytes to read
         :return: The bytes read
+        :raises ConnectionException:
         """
         if not self.socket:
             raise ConnectionException(self.__str__())

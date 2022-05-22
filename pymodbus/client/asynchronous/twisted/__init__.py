@@ -30,6 +30,7 @@ Another example::
        reactor.callLater(1, process)
        reactor.run()
 """
+# pylint: skip-file
 import logging
 
 from twisted.internet import defer, protocol

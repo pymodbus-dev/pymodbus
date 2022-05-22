@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc
 """Pymodbus Performance Example.
 
 The following is an quick performance check of the synchronous
@@ -52,8 +53,8 @@ host = "127.0.0.1"  # pylint: disable=invalid-name
 def single_client_test(n_host, n_cycles):
     """Perform a single threaded test of a synchronous client against the specified host
 
-    :param host: The host to connect to
-    :param cycles: The number of iterations to perform
+    :param n_host: The host to connect to
+    :param n_cycles: The number of iterations to perform
     """
     logger = log_to_stderr()
     logger.setLevel(logging.WARNING)

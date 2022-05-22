@@ -8,6 +8,7 @@ it does help keep things organized).
 Regardless of how many functions are added to the lookup, O(1) behavior is
 kept as a result of a pre-computed lookup dictionary.
 """
+# pylint: disable=missing-type-doc
 import logging
 
 from pymodbus.pdu import IllegalFunctionRequest
@@ -227,7 +228,7 @@ class ServerDecoder(IModbusDecoder):
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
-        :return:
+        :raises MessageRegisterException:
         """
         if function and not issubclass(function, ModbusRequest):
             raise MessageRegisterException(
@@ -334,6 +335,7 @@ class ClientDecoder(IModbusDecoder):
 
         :param data: The response packet to decode
         :returns: The decoded request or an exception response object
+        :raises ModbusException:
         """
         fc_string = function_code = int(data[0])
         if function_code in self.__lookup:
@@ -368,7 +370,7 @@ class ClientDecoder(IModbusDecoder):
         :param function: Custom function class to register
         :param sub_function: Custom sub function class to register
         :param force: Force update the existing class
-        :return:
+        :raises MessageRegisterException:
         """
         if function and not issubclass(function, ModbusResponse):
             raise MessageRegisterException(

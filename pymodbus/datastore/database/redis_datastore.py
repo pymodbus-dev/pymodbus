@@ -1,4 +1,5 @@
 """Datastore using redis."""
+# pylint: disable=missing-type-doc
 import logging
 import redis
 from pymodbus.interfaces import IModbusSlaveContext

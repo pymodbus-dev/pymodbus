@@ -1,4 +1,5 @@
 """Ascii_framer."""
+# pylint: disable=missing-type-doc
 import logging
 import struct
 from binascii import b2a_hex, a2b_hex
@@ -163,8 +164,8 @@ class ModbusAsciiFramer(ModbusFramer):
         :param callback: The function to send results to
         :param unit: Process if unit id matches, ignore otherwise (could be a
                list of unit ids (server) or single unit id(client/server))
-        :param single: True or False (If True, ignore unit address validation)
-
+        :param kwargs:
+        :raises ModbusIOException:
         """
         if not isinstance(unit, (list, tuple)):
             unit = [unit]

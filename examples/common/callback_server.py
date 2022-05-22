@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc
 """Pymodbus Server With Callbacks.
 
 This is an example of adding callbacks to a running modbus server

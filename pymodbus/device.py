@@ -4,6 +4,7 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+# pylint: disable=missing-type-doc
 from collections import OrderedDict
 import struct
 

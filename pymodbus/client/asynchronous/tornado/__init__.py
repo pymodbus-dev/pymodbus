@@ -1,4 +1,5 @@
 """Asynchronous framework adapter for tornado."""
+# pylint: skip-file
 import logging
 import abc
 import time

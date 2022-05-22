@@ -1,4 +1,5 @@
 """Contains base classes for modbus request/response/error packets."""
+# pylint: disable=missing-type-doc
 import logging
 import struct
 
@@ -69,7 +70,7 @@ class ModbusPDU:
         """Decode data part of the message.
 
         :param data: is a string object
-        :raises: A not implemented exception
+        :raises NotImplementedException:
         """
         raise NotImplementedException()
 
@@ -79,6 +80,7 @@ class ModbusPDU:
 
         :param buffer: A buffer containing the data that have been received.
         :returns: The number of bytes in the PDU.
+        :raises NotImplementedException:
         """
         if hasattr(cls, "_rtu_frame_size"):
             return cls._rtu_frame_size

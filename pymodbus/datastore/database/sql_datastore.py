@@ -1,4 +1,5 @@
 """Datastore using SQL."""
+# pylint: disable=missing-type-doc
 import logging
 import sqlalchemy
 import sqlalchemy.types as sqltypes
@@ -157,7 +158,7 @@ class SqlSlaveContext(IModbusSlaveContext):
     def _set(self, type, offset, values):  # pylint: disable=redefined-builtin
         """Set.
 
-        :param key: The type prefix to use
+        :param type: The type prefix to use
         :param offset: The address offset to start at
         :param values: The values to set
         """

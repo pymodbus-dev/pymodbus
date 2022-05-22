@@ -2,10 +2,10 @@
 formats:
     - epub
     - pdf
-requirements_file: requirements-docs.txt
+requirements_file: requirements.txt
 python:
     extra_requirements:
         - twisted
         - tornado
         - documents
-    version: 3.5
+    version: 3.8

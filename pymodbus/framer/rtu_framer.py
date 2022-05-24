@@ -132,7 +132,7 @@ class ModbusRtuFramer(ModbusFramer):
         :returns: True if ready, False otherwise
         """
         size = self._header.get('len', 0)
-        if size == 0 and len(self._buffer) > self._hsize:
+        if not size and len(self._buffer) > self._hsize:
             try:
                 # Frame is ready only if populateHeader() successfully
                 # populates crc field which finishes RTU frame otherwise,

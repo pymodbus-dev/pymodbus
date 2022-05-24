@@ -582,8 +582,6 @@ class FifoTransactionManager(ModbusTransactionManager):
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
-
-
 __all__ = [
     "FifoTransactionManager",
     "DictTransactionManager",

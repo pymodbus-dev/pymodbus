@@ -14,8 +14,6 @@ Subpackages
     pymodbus.client.asynchronous.asyncio
     pymodbus.client.asynchronous.factory
     pymodbus.client.asynchronous.schedulers
-    pymodbus.client.asynchronous.tornado
-    pymodbus.client.asynchronous.twisted
 
 Submodules
 ----------

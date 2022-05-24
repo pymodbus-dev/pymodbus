@@ -8,8 +8,6 @@ General
 - Test/update examples
 - update code to satisfy black
 - update code to satisfy mypy
-- convert tornado to a plugin
-- convert twister to a plugin
 - get coverage > 98%
 - clean raise to be at frame level
 - solve "TO FIX" in code

@@ -5,7 +5,5 @@ formats:
 requirements_file: requirements.txt
 python:
     extra_requirements:
-        - twisted
-        - tornado
         - documents
     version: 3.8

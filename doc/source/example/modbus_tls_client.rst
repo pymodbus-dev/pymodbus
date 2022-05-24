@@ -1,4 +1,4 @@
 ==================================================
-Dbstore Update Server Example
+Modbus Tls client Example
 ==================================================
-.. literalinclude:: ../../../examples/common/dbstore_update_server.py
+.. literalinclude:: ../../../examples/contrib/modbus_tls_client.py

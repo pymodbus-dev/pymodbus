@@ -140,7 +140,7 @@ def get_factory(scheduler):
     """Get protocol factory based on the backend scheduler being used.
 
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
-    :return
+    :return: new factory
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory

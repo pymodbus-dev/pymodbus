@@ -153,11 +153,9 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header["uid"] = int(data[0])
-        func_code = int(data[1])
-        pdu_class = self.decoder.lookupPduClass(func_code)
-        size = pdu_class.calculateRtuFrameSize(data)
-        self._header["len"] = size
+        self._header['uid'] = int(data[0])
+        size = self.get_expected_response_length(data)
+        self._header['len'] = size
 
         if len(data) < size:
             # crc yet not available
@@ -330,5 +328,15 @@ class ModbusRtuFramer(ModbusFramer):
         _logger.debug(txt)
         return self._buffer
 
+    def get_expected_response_length(self, data):
+        """Get the expected response length.
+
+        :param data: Message data read so far
+        :raises IndexError: If not enough data to read byte count
+        :return: Total frame size
+        """
+        func_code = int(data[1])
+        pdu_class = self.decoder.lookupPduClass(func_code)
+        return pdu_class.calculateRtuFrameSize(data)
 
 # __END__

@@ -1,4 +1,7 @@
 [run]
+include =
+    pymodbus/
+    test/
 omit =
     pymodbus/repl/*
     pymodbus/internal/*

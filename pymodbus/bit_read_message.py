@@ -58,7 +58,7 @@ class ReadBitsRequestBase(ModbusRequest):
 
 class ReadBitsResponseBase(ModbusResponse):
     """Base class for Messages responding to bit-reading values.
-    
+
     The requested bits can be found in the .bits list.
     """
 
@@ -174,6 +174,7 @@ class ReadCoilsResponse(ReadBitsResponseBase):
 
     The requested coils can be found in boolean form in the .bits list.
     """
+
     function_code = 1
 
     def __init__(self, values=None, **kwargs):
@@ -236,6 +237,7 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     The requested coils can be found in boolean form in the .bits list.
     """
+
     function_code = 2
 
     def __init__(self, values=None, **kwargs):

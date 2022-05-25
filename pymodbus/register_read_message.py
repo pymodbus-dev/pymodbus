@@ -148,6 +148,7 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
 
     The requested registers can be found in the .registers list.
     """
+
     function_code = 3
 
     def __init__(self, values=None, **kwargs):
@@ -203,6 +204,7 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
 
     The requested registers can be found in the .registers list.
     """
+
     function_code = 4
 
     def __init__(self, values=None, **kwargs):
@@ -341,6 +343,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
     The requested registers can be found in the .registers list.
     """
+
     function_code = 23
     _rtu_byte_count_pos = 2
 

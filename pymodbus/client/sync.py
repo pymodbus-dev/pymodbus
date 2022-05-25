@@ -36,6 +36,7 @@ class BaseModbusClient(ModbusClientMixin):
     Derived classes simply need to implement the transport methods and set the correct
     framer.
     """
+
     def __init__(self, framer, **kwargs):
         """Initialize a client instance.
 
@@ -160,7 +161,7 @@ class BaseModbusClient(ModbusClientMixin):
             _logger.exception(exc)
 
     def register(self, function):
-        """Registers a function and sub function class with the decoder
+        """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register
         :return:

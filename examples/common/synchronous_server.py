@@ -13,14 +13,14 @@ import logging
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 
-from pymodbus.server.sync import StartTcpServer #NOSONAR
-# from pymodbus.server.sync import StartTlsServer #NOSONAR
-# from pymodbus.server.sync import StartUdpServer #NOSONAR
-# from pymodbus.server.sync import StartSerialServer #NOSONAR
+from pymodbus.server.sync import StartTcpServer  # NOSONAR
+# from pymodbus.server.sync import StartTlsServer # NOSONAR
+# from pymodbus.server.sync import StartUdpServer # NOSONAR
+# from pymodbus.server.sync import StartSerialServer # NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 
-# from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
+# from pymodbus.datastore import ModbusSparseDataBlock  # NOSONAR
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR

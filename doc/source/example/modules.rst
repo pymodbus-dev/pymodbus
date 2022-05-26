@@ -8,6 +8,7 @@ Examples
 
    async_asyncio_client
    async_asyncio_serial_client
+   asyncio_server
    asynchronous_asyncio_modbus_tls_client
    callback_server
    changing_framers
@@ -20,6 +21,7 @@ Examples
    synchronous_client
    synchronous_client_ext
    synchronous_server
+   updating_server
 
    asynchronous_asyncio_serial_client
    bcd_payload

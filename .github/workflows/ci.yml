@@ -159,6 +159,10 @@ jobs:
           PIP_NO_CLEAN: 1
         run: |
           tox -vv -e ${{ matrix.python.tox }}
+      - name: Document generation
+        run: |
+          cd doc
+          make html
       - name: Coverage Processing
         if: matrix.task.coverage
         run: |

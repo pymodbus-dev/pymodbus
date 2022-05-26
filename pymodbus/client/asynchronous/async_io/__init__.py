@@ -43,6 +43,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """Call when a connection is made.
 
         The transport argument is the transport representing the connection.
+
         :param transport:
         :return:
         """
@@ -56,6 +57,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """Call when the connection is lost or closed.
 
         The argument is either an exception object or None
+
         :param reason:
         :return:
         """
@@ -69,24 +71,33 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """Call when some data is received.
 
         data is a non-empty bytes object containing the incoming data.
+
         :param data:
         :return:
         """
         self._data_received(data)
 
     def create_future(self):  # pylint: disable=no-self-use
-        """Create asyncio Future object."""
+        """Help function to create asyncio Future object.
+
+        :return:
+        """
         return asyncio.Future()
 
     def resolve_future(self, my_future, result):  # pylint: disable=no-self-use
-        """Resolve future."""
+        """Resolve the completed future and sets the result.
+
+        :param my_future:
+        :param result:
+        :return:
+        """
         if not my_future.done():
             my_future.set_result(result)
 
     def raise_future(self, my_future, exc):  # pylint: disable=no-self-use
-        """Set exception of a future if not done
+        """Set exception of a future if not done.
 
-        :param f:
+        :param my_future:
         :param exc:
         :return:
         """
@@ -183,6 +194,7 @@ class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
         """Call when some data is received.
 
         data is a non-empty bytes object containing the incoming data.
+
         :param data:
         :return:
         """
@@ -219,7 +231,7 @@ class ReconnectingAsyncioModbusTcpClient:
     DELAY_MAX_MS = 1000 * 60 * 5
 
     def __init__(self, protocol_class=None, loop=None, **kwargs):
-        """Initialize ReconnectingAsyncioModbusTcpClient
+        """Initialize ReconnectingAsyncioModbusTcpClient.
 
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Event loop to use
@@ -258,7 +270,10 @@ class ReconnectingAsyncioModbusTcpClient:
         return await self._connect()
 
     def stop(self):
-        """Stop client."""
+        """Stop client.
+
+        :return:
+        """
         # prevent reconnect:
         self.host = None
 
@@ -606,7 +621,7 @@ class AsyncioModbusUdpClient:
     """Client to connect to modbus device over UDP."""
 
     def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
-        """Initialize Asyncio Modbus UDP Client
+        """Initialize Asyncio Modbus UDP Client.
 
         :param host: Host IP address
         :param port: Port to connect
@@ -627,7 +642,10 @@ class AsyncioModbusUdpClient:
         self._proto_args = kwargs
 
     def stop(self):
-        """Stop connection."""
+        """Stop connection.
+
+        :return:
+        """
         # prevent reconnect:
         # self.host = None
 
@@ -753,7 +771,10 @@ class AsyncioModbusSerialClient:
         return self._connected_event.is_set()
 
     async def connect(self):
-        """Connect Async client."""
+        """Connect Async client.
+
+        :return:
+        """
         _logger.debug(TEXT_CONNECTING)
         try:
             await create_serial_connection(

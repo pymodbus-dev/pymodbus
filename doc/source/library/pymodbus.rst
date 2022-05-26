@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
 
     pymodbus.client
+    pymodbus.constants
     pymodbus.datastore
     pymodbus.framer
     pymodbus.internal
@@ -37,15 +38,6 @@ pymodbus\.bit\_write\_message module
     :members:
     :undoc-members:
     :show-inheritance:
-
-pymodbus\.constants module
---------------------------
-
-.. automodule:: pymodbus.constants
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :noindex:
 
 pymodbus\.device module
 -----------------------

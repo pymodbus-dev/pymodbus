@@ -45,6 +45,7 @@ pymodbus\.constants module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 pymodbus\.device module
 -----------------------
@@ -133,6 +134,7 @@ pymodbus\.pdu module
     :members:
     :undoc-members:
     :show-inheritance:
+    :noindex:
 
 pymodbus\.register\_read\_message module
 ----------------------------------------

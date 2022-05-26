@@ -6,7 +6,6 @@ General
 - add all modbus control into server
 - add correct transaction handling (retry, fail, etc)
 - Test/update examples
-- update code to satisfy black
 - update code to satisfy mypy
 - get coverage > 98%
 - clean raise to be at frame level

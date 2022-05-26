@@ -203,6 +203,7 @@ To get a specific version:
     git checkout tags/vX.Y.Z -b vX.Y.Z    
 
 Then::
+   pip install -r requirements.txt
    pip install -e .
    
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is imidiatly available as if installed.
@@ -237,7 +238,6 @@ That said, the current work mainly involves polishing the library and
 solving issues:
 
   * Get version 3.0.0 released
-  * Make PEP-8 compatible and pylint, flake8, black and mypy ready
   * Fixing bugs/feature requests
   * Architecture documentation
   * Functional testing against any reference we can find
@@ -247,21 +247,27 @@ solving issues:
 Development Instructions
 ------------------------------------------------------------
 The current code base is compatible python >= 3.8.
-Use make to perform a range of activities
+Here are some of the common commands to perform a range of activities
 
 ::
+   pip install -r requirements.txt   install all requirements
+   pip install -e .                  source directory is "release", usefull for testing
 
-    $ make
-       Makefile for pymodbus
+   tox -e py38 (or py39, py310, pypy38) Run pytest on source code
 
-    Usage:
+   tox -e pylint                     Run pylint on source code
+   tox -e codespell                  Run codespell on source code
+   tox -e bandit                     Run bandit on source code
+   tox -e flake8                     Run flake8 on source code
+   tox -e black                      Run black on source code
 
-     make install    install the package in a virtual environment
-     make reset      recreate the virtual environment
-     make check      check coding style (PEP-8, PEP-257)
-     make test       run the test suite, report coverage
-     make tox        run the tests on all Python versions
-     make clean      cleanup all temporary files 
+------------------------------------------------------------
+Generate documentation
+------------------------------------------------------------
+::
+   cd doc
+   make clean
+   make html
 
 ------------------------------------------------------------
 Contributing

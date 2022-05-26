@@ -1,7 +1,7 @@
-pymodbus\.internal package
+pymodbus\.constants package
 ==========================
 
-.. automodule:: pymodbus.internal
+.. automodule:: pymodbus.constants
     :members:
     :undoc-members:
     :show-inheritance:

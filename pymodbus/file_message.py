@@ -90,7 +90,8 @@ class ReadFileRecordRequest(ModbusRequest):
         :param records: The file record requests to be read
         """
         ModbusRequest.__init__(self, **kwargs)
-        self.records = records or []
+        self.records  = records or []
+        self.count = 0
 
     def encode(self):
         """Encode the request packet.
@@ -136,7 +137,16 @@ class ReadFileRecordRequest(ModbusRequest):
         # is too big, return an error.
         files = []
         return ReadFileRecordResponse(files)
+    
+    def get_response_pdu_size(self):
+        """
+        Func_code (1 byte) + Byte Count(1 byte) + Byte Count2 (1 byte) + Reference Type (1 byte) + registers per record
+        :return: 
+        """
+        for record in self.records:
+            self.count += record.record_length
 
+        return 4 + self.count
 
 class ReadFileRecordResponse(ModbusResponse):
     """Read file record response.

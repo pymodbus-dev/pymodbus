@@ -3,7 +3,6 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
-import sys
 import logging
 import asyncio
 import json
@@ -17,10 +16,7 @@ from pymodbus.server.reactive.main import (
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
-if sys.version_info > (3, 7):
-    CANCELLED_ERROR = asyncio.exceptions.CancelledError
-else:
-    CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name
+CANCELLED_ERROR = asyncio.exceptions.CancelledError
 
 
 @click.group("ReactiveModbusServer")

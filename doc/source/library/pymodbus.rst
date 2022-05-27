@@ -15,7 +15,6 @@ Subpackages
     pymodbus.constants
     pymodbus.datastore
     pymodbus.framer
-    pymodbus.internal
     pymodbus.server
     pymodbus.repl
 

@@ -197,6 +197,7 @@ jobs:
             # continue_on_error: true
           - name: Docs
             tox: docs
+            # continue_on_error: true
         os:
           - name: Linux
             runs-on: ubuntu-latest

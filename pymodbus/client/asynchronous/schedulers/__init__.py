@@ -1,6 +1,4 @@
-""" Backend schedulers to use with generic Async clients. """
-from __future__ import unicode_literals
-
+"""Backend schedulers to use with generic Async clients."""
 
 REACTOR = "reactor"
 IO_LOOP = "io_loop"

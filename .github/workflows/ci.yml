@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - master
+      - dev_jan
     tags:
       - v*
   pull_request:
@@ -190,7 +191,10 @@ jobs:
             # continue_on_error: true
           - name: flake8
             tox: flake8
-            continue_on_error: true
+            # continue_on_error: true
+          - name: black
+            tox: black
+            # continue_on_error: true
           - name: Docs
             tox: docs
         os:

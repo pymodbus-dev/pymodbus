@@ -1,3 +1,9 @@
+version 3.0.0dev4
+----------------------------------------------------------
+* Documentation updates
+* PEP8 compatibale code
+* More tooling and CI updates
+
 version 3.0.0dev3
 ----------------------------------------------------------
 * Remove python2 compatibility code (#564)

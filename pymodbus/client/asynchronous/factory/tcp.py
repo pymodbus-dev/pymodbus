@@ -1,7 +1,4 @@
-""" Factory to create asynchronous tcp clients based on twisted/tornado/asyncio
-"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
+"""Factory to create asynchronous tcp clients based on twisted/tornado/asyncio."""
 import logging
 import asyncio
 
@@ -13,9 +10,16 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None, # pylint: disable=unused-argument
-                    source_address=None, timeout=None, **kwargs):
-    """ Factory to create twisted tcp asynchronous client
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,  # pylint: disable=unused-argument
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
+    """Create twisted tcp asynchronous client.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -24,12 +28,17 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None, # pylint:
     :param kwargs:
     :return: event_loop_thread and twisted_deferred
     """
-    from twisted.internet import reactor, protocol # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.twisted import ModbusTcpClientProtocol # pylint: disable=import-outside-toplevel
+    from twisted.internet import (  # pylint: disable=import-outside-toplevel
+        reactor,
+        protocol,
+    )
+    from pymodbus.client.asynchronous.twisted import (  # pylint: disable=import-outside-toplevel
+        ModbusTcpClientProtocol,
+    )
 
-    deferred = protocol.ClientCreator(
-        reactor, ModbusTcpClientProtocol
-    ).connectTCP(host, port, timeout=timeout, bindAddress=source_address)
+    deferred = protocol.ClientCreator(reactor, ModbusTcpClientProtocol).connectTCP(
+        host, port, timeout=timeout, bindAddress=source_address
+    )
 
     callback = kwargs.get("callback")
     errback = kwargs.get("errback")
@@ -40,16 +49,27 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None, # pylint:
     if errback:
         deferred.addErrback(errback)
 
-    protocol = EventLoopThread("reactor", reactor.run, reactor.stop, # pylint: disable=no-member
-                               installSignalHandlers=0)
+    protocol = EventLoopThread(
+        "reactor",
+        reactor.run,  # pylint: disable=no-member
+        reactor.stop,  # pylint: disable=no-member
+        installSignalHandlers=0,
+    )
     protocol.start()
 
     return protocol, deferred
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
-    """ Factory to create Tornado based asynchronous tcp clients
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
+    """Create Tornado based asynchronous tcp clients.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -58,17 +78,24 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :param kwargs:
     :return: event_loop_thread and tornado future
     """
-    from tornado.ioloop import IOLoop # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import AsyncModbusTCPClient as \
-        Client # pylint: disable=import-outside-toplevel
+    from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
+    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
+        AsyncModbusTCPClient as Client,
+    )
 
     ioloop = IOLoop()
     protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
     protocol.start()
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, ioloop=ioloop, **kwargs)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        ioloop=ioloop,
+        **kwargs,
+    )
 
     future = client.connect()
 
@@ -76,7 +103,8 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
-    """ Factory to create asyncio based asynchronous tcp clients
+    """Create asyncio based asynchronous tcp clients.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -85,7 +113,6 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     :param kwargs:
     :return: asyncio event loop and tcp client
     """
-
     try:
         loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
     except RuntimeError:
@@ -110,9 +137,10 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """Get protocol factory based on the backend scheduler being used.
+
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
-    :return
+    :return: new factory
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory
@@ -123,5 +151,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler '{scheduler}'"
-    raise Exception(txt) #NOSONAR
+    txt = f'Invalid Scheduler "{scheduler}"'
+    raise Exception(txt)  # NOSONAR

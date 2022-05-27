@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Client Examples
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Client Examples.
 
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus using Tornado.
@@ -29,15 +28,15 @@ _logger.setLevel(logging.DEBUG)
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback): # pylint: disable=redefined-outer-name
-    """ Dassert. """
+def dassert(future, callback):  # pylint: disable=redefined-outer-name
+    """Dassert."""
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value #nosec
+        assert value  # nosec
 
     def on_done(f_trans):
-        if (exc := f_trans.exception()):
+        if exc := f_trans.exception():
             _logger.debug(exc)
             return _assertor(False)
 
@@ -47,7 +46,7 @@ def dassert(future, callback): # pylint: disable=redefined-outer-name
 
 
 def _print(value):
-    """ Internal print. """
+    """Print."""
     if hasattr(value, "bits"):
         result = value.bits
     elif hasattr(value, "registers"):
@@ -74,49 +73,50 @@ UNIT = 0x01
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(client, protocol): # pylint: disable=redefined-outer-name
-    """ Begin async test. """
+def begin_asynchronous_test(client, protocol):  # pylint: disable=redefined-outer-name
+    """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)          # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_coils(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)         # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
     rr = client.read_discrete_inputs(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)         # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_register(1, 10, unit=UNIT)
     rr = client.read_holding_registers(1, 1, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)       # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     rq = client.write_registers(1, [10] * 8, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.function_code < 0x80)     # test for no error
-    dassert(rr, _print)      # test the expected value
+    dassert(rq, lambda r: r.function_code < 0x80)  # test for no error
+    dassert(rr, _print)  # test the expected value
 
     arguments = {
-        'read_address': 1,
-        'read_count': 8,
-        'write_address': 1,
-        'write_registers': [20] * 8,
+        "read_address": 1,
+        "read_count": 8,
+        "write_address": 1,
+        "write_registers": [20] * 8,
     }
     rq = client.readwrite_registers(**arguments, unit=UNIT)
     rr = client.read_input_registers(1, 8, unit=UNIT)
-    dassert(rq, lambda r: r.registers == [20] * 8)      # test the expected value
-    dassert(rr, _print)      # test the expected value
+    dassert(rq, lambda r: r.registers == [20] * 8)  # test the expected value
+    dassert(rr, _print)  # test the expected value
 
     # -----------------------------------------------------------------------#
     # close the client at some time later
     # -----------------------------------------------------------------------#
     IOLoop.current().add_timeout(IOLoop.current().time() + 1, client.close)
     IOLoop.current().add_timeout(IOLoop.current().time() + 2, protocol.stop)
+
 
 # ---------------------------------------------------------------------------#
 # choose the client you want
@@ -128,15 +128,15 @@ def begin_asynchronous_test(client, protocol): # pylint: disable=redefined-outer
 
 
 def err(*args, **kwargs):
-    """ Error. """
+    """Error."""
     txt = f"Err {args} {kwargs}"
     _logger.error(txt)
 
 
-def callback(protocol, future): # pylint: disable=redefined-outer-name
-    """ Callback. """
+def callback(protocol, future):  # pylint: disable=redefined-outer-name
+    """Call as callback."""
     _logger.debug("Client connected")
-    if (exp := future.exception()):
+    if exp := future.exception():
         return err(exp)
 
     client = future.result()
@@ -144,5 +144,7 @@ def callback(protocol, future): # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    protocol, future = ModbusClient(schedulers.IO_LOOP, port=5020) #NOSONAR pylint: disable=unpacking-non-sequence
+    protocol, future = ModbusClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+        schedulers.IO_LOOP, port=5020
+    )  # NOSONAR
     future.add_done_callback(functools.partial(callback, protocol))

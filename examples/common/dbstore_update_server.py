@@ -1,5 +1,5 @@
-""" Pymodbus Server With Updating Thread
---------------------------------------------------------------------------
+"""Pymodbus Server With Updating Thread.
+
 This is an example of having a background thread updating the
 context in an SQLite4 database while the server is operating.
 
@@ -29,6 +29,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
@@ -43,8 +44,9 @@ log.setLevel(logging.DEBUG)
 
 
 def updating_writer(parm1):
-    """ A worker process that runs every so often and
-    updates live values of the context which resides in an SQLite3 database.
+    """Run every so often,
+
+    and updates live values of the context which resides in an SQLite3 database.
     It should be noted that there is a race condition for the update.
     :param arguments: The input arguments to the call
     """
@@ -57,25 +59,24 @@ def updating_writer(parm1):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999) #NOSONAR #nosec
-    rand_addr = random.randint(0, 65000) #NOSONAR #nosec
+    rand_value = random.randint(0, 9999)  # NOSONAR #nosec
+    rand_addr = random.randint(0, 65000)  # NOSONAR #nosec
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()
-    context[slave_id].setValues(writefunction, rand_addr, [rand_value],
-                                update=False)
+    context[slave_id].setValues(writefunction, rand_addr, [rand_value], update=False)
     values = context[slave_id].getValues(readfunction, rand_addr, count)
     txt = f"Values from datastore: {values}"
     log.debug(txt)
 
 
 def run_dbstore_update_server():
-    """ Run dbstore update server. """
+    """Run dbstore update server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
 
-    block = ModbusSequentialDataBlock(0x00, [0] * 0xff)
+    block = ModbusSequentialDataBlock(0x00, [0] * 0xFF)
     store = SqlSlaveContext(block)
 
     context = ModbusServerContext(slaves={1: store}, single=False)
@@ -83,14 +84,16 @@ def run_dbstore_update_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'pymodbus Server',
-        'ModelName': 'pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

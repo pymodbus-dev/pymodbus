@@ -35,12 +35,12 @@ reset:
 	$(MAKE) install
 
 check: install
-	@pip install --upgrade --quiet --requirement=requirements-checks.txt
+	@pip install --upgrade --quiet --requirement=requirements-tests.txt
 	@flake8
 
 
 test: install
-	@pip install --upgrade --quiet --requirement=requirements-tests.txt
+	@pip install --upgrade --quiet --requirement=requirements.txt
 	@pip install --upgrade pip --quiet
 	@pytest --cov=pymodbus/ --cov-report term-missing  test
 	@coverage report --fail-under=85 -i
@@ -50,7 +50,7 @@ tox: install
 	@pip install --upgrade --quiet tox && tox
 
 docs: install
-	@pip install --upgrade --quiet --requirement=requirements-docs.txt
+	@pip install --upgrade --quiet --requirement=requirements.txt
 	@cd doc && make clean && make html
 
 publish: install

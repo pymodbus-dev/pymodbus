@@ -17,11 +17,11 @@ PyModbus - A Python Modbus Stack
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release with support to python2.7.x and is in maintenance mode.
+Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.0dev4 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0dev3>`_ is the current prerelease of 3.0.0 (Supports only Python >=3.8)
+Version `3.0.0dev4 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0dev3>`_ is the current prerelease of 3.0.0 (Supports Python >=3.8).
 
-Remark: "Supports only" means that we only test with those versions, lower versions (e.g. 3.7) might work typically depending on the actual setup.
+Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
 
 .. important::
    **Note 3.0.0 is a major release with a number of incompatible changes.**
@@ -32,18 +32,15 @@ Summary
 
 Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous core. The preferred mode for asynchronous communication is asyncio, however for the moment twisted and tornado are also supported (due to be removed or converted to a plugin in a later version).
 
-Supported modbus communication modes:
-- tcp
-- rtu-over-tcp
-- udp
-- serial
-- tls
+Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
 Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.
 
-Requires Python >= 3.7
+Pymodbus also provides a lot os ready to use examples as well as a server/client simulator which can be controlled via REST Api and can be easily integrated into test suites.
 
-The tests are run against Python 3.7, 3.8, 3.9 and 3.10.
+Requires Python >= 3.8
+
+The tests are run against Python 3.8, 3.9, 3.10 on Windows, Linux and MacOS.
 
 ------------------------------------------------------------
 Features
@@ -69,7 +66,7 @@ Server Features
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
   * asynchronous(powered by twisted) and synchronous versions
   * Full server control context (device information, counters, etc)
-  * A number of backing contexts (database, redis, sqlite, a slave device)
+  * A number of backend contexts (database, redis, sqlite, a slave device) as datastore
 
 ^^^^^^^^^^^
 Use Cases
@@ -77,7 +74,7 @@ Use Cases
 
 Although most system administrators will find little need for a Modbus
 server on any modern hardware, they may find the need to query devices on
-their network for status (PDU, PDR, UPS, etc).  Since the library is written
+their network for status (PDU, PDR, UPS, etc). Since the library is written
 in python, it allows for easy scripting and/or integration into their existing
 solutions.
 
@@ -125,15 +122,14 @@ Examples Directory structure
 If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
 `Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
 
-Also, if you have questions, please ask them on the mailing list
-so that others can benefit from the results and so that I can
-trace them. I get a lot of email and sometimes these requests
-get lost in the noise: `pymodbus google group <http://groups.google.com/group/pymodbus>`_ or 
-at `gitter <https://gitter.im/pymodbus_dev/Lobby>`_ or `github discussions <https://github.com/riptideio/pymodbus/discussions>`_
+Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
+so that others can benefit from the results.
+
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup informations.
 
 .. important::
    **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
-   **If using tornado make sure the tornado version is `4.5.3`.Other versions of tornado can break the implementation**
+   **If using tornado make sure the tornado version is `4.5.3` other versions of tornado can break the implementation**
 
 
 ------------------------------------------------------------
@@ -159,27 +155,40 @@ permissions or a virtualenv currently running)::
     easy_install -U pymodbus
     pip install  -U pymodbus
 
+This will install a base version of pymodbus.
+
+To install pymodbus with options run:
+
+    pip install -U pymodbus[<option>,...]
+    
+Available options are:
+
+- **repl**, installs pymodbus REPL.
+
+- **serial**, installs serial drivers.
+
+- **datastore**, installs databases (SQLAlchemy and Redit) for datastore.
+
+- **twisted**, installs twisted as alternative to asyncio (will be removed in a future version).
+
+- **tornado**, installs tornado as alternative to asyncio (will be removed in a future version).
+
+- **documentation**, installs tools to generate documentation.
+
+- **development**, installs development tools needed to enable test/check of pymodbus changes.
+
+
 Or to install a specific release::
 
     pip install  -U pymodbus==X.Y.Z
     easy_install -U pymodbus==X.Y.Z
 
-To Install pymodbus with twisted support run::
-
-    pip install -U pymodbus[twisted]
-
-To Install pymodbus with tornado support run::
-
-    pip install -U pymodbus[tornado]
-
-To Install pymodbus REPL::
-
-    pip install -U pymodbus[repl]
-
 Otherwise you can pull the trunk source and install from there::
 
     git clone git://github.com/bashwork/pymodbus.git
     cd pymodbus
+    pip install -r requirements.txt
+    
     
 To get latest release (for now v2.5.3 with python 2.7 support)::
 
@@ -194,7 +203,9 @@ To get a specific version:
     git checkout tags/vX.Y.Z -b vX.Y.Z    
 
 Then::
-    python setup.py install
+   pip install -e .
+   
+This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is imidiatly available as if installed.
 
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
@@ -235,7 +246,7 @@ solving issues:
 ------------------------------------------------------------
 Development Instructions
 ------------------------------------------------------------
-The current code base is compatible python >= 3.7.
+The current code base is compatible python >= 3.8.
 Use make to perform a range of activities
 
 ::

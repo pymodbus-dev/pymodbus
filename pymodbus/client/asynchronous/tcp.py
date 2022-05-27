@@ -1,7 +1,4 @@
 """TCP communication."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import logging
 from pymodbus.client.asynchronous.factory.tcp import get_factory
 from pymodbus.constants import Defaults
@@ -9,16 +6,25 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTCPClient: # pylint: disable=too-few-public-methods
-    """ Actual Async Serial Client to be used.
+class AsyncModbusTCPClient:  # pylint: disable=too-few-public-methods
+    """Actual Async Serial Client to be used.
 
     To use do::
-
         from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
     """
-    def __new__(cls, scheduler, host="127.0.0.1", port=Defaults.Port,
-                framer=None, source_address=None, timeout=None, **kwargs):
-        """ Scheduler to use:
+
+    def __new__(
+        cls,
+        scheduler,
+        host="127.0.0.1",
+        port=Defaults.Port,
+        framer=None,
+        source_address=None,
+        timeout=None,
+        **kwargs
+    ):
+        """Scheduler to use:
+
             - reactor (Twisted)
             - io_loop (Tornado)
             - async_io (asyncio)
@@ -32,7 +38,12 @@ class AsyncModbusTCPClient: # pylint: disable=too-few-public-methods
         :return:
         """
         factory_class = get_factory(scheduler)
-        yieldable = factory_class(host=host, port=port, framer=framer,
-                                  source_address=source_address,
-                                  timeout=timeout, **kwargs)
+        yieldable = factory_class(
+            host=host,
+            port=port,
+            framer=framer,
+            source_address=source_address,
+            timeout=timeout,
+            **kwargs
+        )
         return yieldable

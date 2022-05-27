@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Logging Examples
---------------------------------------------------------------------------
-"""
+"""Pymodbus Logging Examples."""
 import logging
 import logging.handlers as Handlers
 
@@ -21,22 +19,21 @@ if __name__ == "__main__":
     # * pymodbus.client.*   - all logging messages involving the client
     # * pymodbus.protocol.* - all logging messages inside the protocol layer
     # ----------------------------------------------------------------------- #
-    log = logging.getLogger('pymodbus.server')
+    log = logging.getLogger("pymodbus.server")
     log.setLevel(logging.ERROR)
 
     # ----------------------------------------------------------------------- #
     # This will send the error messages to the specified handlers:
     # * docs.python.org/library/logging.html
     # ----------------------------------------------------------------------- #
-    log = logging.getLogger('pymodbus')
+    log = logging.getLogger("pymodbus")
     log.setLevel(logging.ERROR)
     handlers = [
         Handlers.RotatingFileHandler("logfile", maxBytes=1024 * 1024),
-        Handlers.SMTPHandler("mx.host.com",
-                             "pymodbus@host.com",
-                             ["support@host.com"],
-                             "Pymodbus"),
+        Handlers.SMTPHandler(
+            "mx.host.com", "pymodbus@host.com", ["support@host.com"], "Pymodbus"
+        ),
         Handlers.SysLogHandler(facility="daemon"),
-        Handlers.DatagramHandler('localhost', 12345),
+        Handlers.DatagramHandler("localhost", 12345),
     ]
-    [log.addHandler(h) for h in handlers] # pylint: disable=expression-not-assigned
+    [log.addHandler(h) for h in handlers]  # pylint: disable=expression-not-assigned

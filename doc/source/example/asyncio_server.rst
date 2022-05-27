@@ -1,4 +1,4 @@
 ==================================================
-Dbstore Update Server Example
+Asyncio Server Example
 ==================================================
-.. literalinclude:: ../../../examples/common/dbstore_update_server.py
+.. literalinclude:: ../../../examples/common/asyncio_server.py

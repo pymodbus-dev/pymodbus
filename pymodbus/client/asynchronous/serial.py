@@ -1,14 +1,11 @@
-""" SERIAL communication. """
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
+"""SERIAL communication."""
 import logging
 from pymodbus.client.asynchronous.factory.serial import get_factory
 from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusAsciiFramer,
     ModbusBinaryFramer,
-    ModbusSocketFramer
+    ModbusSocketFramer,
 )
 from pymodbus.factory import ClientDecoder
 from pymodbus.exceptions import ParameterException
@@ -16,43 +13,40 @@ from pymodbus.exceptions import ParameterException
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient: # pylint: disable=too-few-public-methods
-    """ Actual Async Serial Client to be used.
+class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
+    """Actual Async Serial Client to be used.
 
     To use do::
-
         from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
     """
+
     @classmethod
     def _framer(cls, method):
-        """ Returns the requested framer
+        """Return the requested framer
 
         :method: The serial framer to instantiate
         :returns: The requested serial framer
         """
         method = method.lower()
-        if method == 'ascii':
+        if method == "ascii":
             return ModbusAsciiFramer(ClientDecoder())
-        if method == 'rtu':
+        if method == "rtu":
             return ModbusRtuFramer(ClientDecoder())
-        if method == 'binary':
+        if method == "binary":
             return ModbusBinaryFramer(ClientDecoder())
-        if method == 'socket':
+        if method == "socket":
             return ModbusSocketFramer(ClientDecoder())
 
         raise ParameterException("Invalid framer method requested")
 
-    def __new__(cls, scheduler, method, port,  **kwargs):
-        """ Scheduler to use:
-            - reactor (Twisted)
-            - io_loop (Tornado)
-            - async_io (asyncio)
-        The methods to connect are::
+    def __new__(cls, scheduler, method, port, **kwargs):
+        """Use scheduler reactor (Twisted), io_loop (Tornado), async_io (asyncio).
 
+        The methods to connect are::
           - ascii
           - rtu
           - binary
-        : param scheduler: Backend to use
+        :param scheduler: Backend to use
         :param method: The method to use for connection
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use

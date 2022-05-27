@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Simple Asynchronous Modbus TCP over TLS client
----------------------------------------------------------------------------
+"""Simple Asynchronous Modbus TCP over TLS client.
 
 This is a simple example of writing a asynchronous modbus TCP over TLS client
 that uses Python builtin module ssl - TLS/SSL wrapper for socket objects for
@@ -20,24 +19,29 @@ sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 sslctx.verify_mode = ssl.CERT_REQUIRED
 sslctx.check_hostname = True
 
-# Prepare client's certificate which the server requires for TLS full handshake
+# Prepare client"s certificate which the server requires for TLS full handshake
 # sslctx.load_cert_chain(certfile="client.crt", keyfile="client.key",
 #                        password="pwd")
 
 
 async def start_async_test(client):
-    """ Start async test. """
+    """Start async test."""
     result = await client.read_coils(1, 8)
     print(result.bits)
     await client.write_coils(1, [False] * 3)
     result = await client.read_coils(1, 8)
     print(result.bits)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # pass SSLContext which is the context here to ModbusTcpClient()
     # ----------------------------------------------------------------------- #
-    loop, new_client = AsyncModbusTLSClient(ASYNC_IO, 'test.host.com', 8020, #NOSONAR pylint: disable=unpacking-non-sequence
-                                        sslctx=sslctx)
+    loop, new_client = AsyncModbusTLSClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+        ASYNC_IO,
+        "test.host.com",
+        8020,  # NOSONAR
+        sslctx=sslctx,
+    )  # NOSONAR
     loop.run_until_complete(start_async_test(new_client.protocol))
     loop.close()

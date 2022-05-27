@@ -11,27 +11,24 @@ from pymodbus.exceptions import ConnectionException
 _logger = logging.getLogger(__name__)
 
 LOG_MSGS = {
-    'conn_msg': 'Connecting to modbus device %s',
-    'connfail_msg': 'Connection to (%s, %s) failed: %s',
-    'discon_msg': 'Disconnecting from modbus device %s',
-    'timelimit_read_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes in timelimit read',
-    'timeout_msg':
-        'Modbus device timeout after %.4f seconds, '
-        'returned %s bytes %s',
-    'delay_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes of %s expected',
-    'read_msg':
-        'Modbus device read took %.4f seconds, '
-        'returned %s bytes of %s expected',
-    'unexpected_dc_msg': '%s %s'}
+    "conn_msg": "Connecting to modbus device %s",
+    "connfail_msg": "Connection to (%s, %s) failed: %s",
+    "discon_msg": "Disconnecting from modbus device %s",
+    "timelimit_read_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes in timelimit read",
+    "timeout_msg": "Modbus device timeout after %.4f seconds, returned %s bytes %s",
+    "delay_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes of %s expected",
+    "read_msg": "Modbus device read took %.4f seconds, "
+    "returned %s bytes of %s expected",
+    "unexpected_dc_msg": "%s %s",
+}
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
-    """ Variant of pymodbus.client.sync.ModbusTcpClient with additional
-    logging to diagnose network issues.
+    """Variant of pymodbus.client.sync.ModbusTcpClient.
+
+    With additional logging to diagnose network issues.
 
     The following events are logged:
 
@@ -56,15 +53,16 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
     # pylint: disable=no-member
 
-    def __init__(self, host='127.0.0.1', port=Defaults.Port,
-                 framer=ModbusSocketFramer, **kwargs):
-        """ Initialize a client instance
+    def __init__(
+        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+    ):
+        """Initialize a client instance.
 
         The keys of LOG_MSGS can be used in kwargs to customize the messages.
 
         :param host: The host to connect to (default 127.0.0.1)
         :param port: The modbus port to connect to (default 502)
-        :param source_address: The source address tuple to bind to (default ('', 0))
+        :param source_address: The source address tuple to bind to (default ("", 0))
         :param timeout: The timeout to use for this socket (default Defaults.Timeout)
         :param warn_delay_limit: Log reads that take longer than this as warning.
                Default True sets it to half of "timeout". None never logs these as
@@ -73,7 +71,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
         .. note:: The host argument will accept ipv4 and ipv6 hosts
         """
-        self.warn_delay_limit = kwargs.get('warn_delay_limit', True)
+        self.warn_delay_limit = kwargs.get("warn_delay_limit", True)
         super().__init__(host, port, framer, **kwargs)
         if self.warn_delay_limit is True:
             self.warn_delay_limit = self.timeout / 2
@@ -83,7 +81,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.__dict__[k_item] = kwargs.get(k_item, v_item)
 
     def connect(self):
-        """ Connect to the modbus tcp server
+        """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
         """
@@ -94,15 +92,15 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
-                source_address=self.source_address)
+                source_address=self.source_address,
+            )
         except socket.error as msg:
             _logger.error(self.connfail_msg, self.host, self.port, msg)
             self.close()
         return self.socket is not None
 
     def close(self):
-        """ Closes the underlying socket connection
-        """
+        """Close the underlying socket connection."""
         if self.socket:
             _logger.info(self.discon_msg, self)
             self.socket.close()
@@ -124,23 +122,26 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
             return result
         except ConnectionException as exc:
-            # Only log actual network errors, "if not self.socket" then it's a internal code issue
-            if 'Connection unexpectedly closed' in exc.string:
+            # Only log actual network errors, "if not self.socket" then it"s a internal code issue
+            if "Connection unexpectedly closed" in exc.string:
                 _logger.error(self.unexpected_dc_msg, self, exc)
             raise ConnectionException from exc
 
     def _log_delayed_response(self, result_len, size, delay):
-        """ Internal log delayed response. """
+        """Log delayed response."""
         if not size and result_len > 0:
             _logger.info(self.timelimit_read_msg, delay, result_len)
-        elif ((not result_len) or (size and result_len < size)) and delay >= self.timeout:
-            read_type = f"of {size if size else 'in timelimit read'} expected"
+        elif (
+            (not result_len) or (size and result_len < size)
+        ) and delay >= self.timeout:
+            size_txt = size if size else "in timelimit read"
+            read_type = f"of {size_txt} expected"
             _logger.warning(self.timeout_msg, delay, result_len, read_type)
         else:
             _logger.warning(self.delay_msg, delay, result_len, size)
 
     def __str__(self):
-        """ Builds a string representation of the connection
+        """Build a string representation of the connection.
 
         :returns: The string representation
         """
@@ -148,7 +149,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
 
 def get_client():
-    """ Returns an appropriate client based on logging level
+    """Return an appropriate client based on logging level.
 
     This will be ModbusTcpDiagClient by default, or the parent class
     if the log level is such that the diagnostic client will not log
@@ -156,13 +157,13 @@ def get_client():
 
     :returns: ModbusTcpClient or a child class thereof
     """
-    return ModbusTcpDiagClient if _logger.isEnabledFor(logging.ERROR) else ModbusTcpClient
+    return (
+        ModbusTcpDiagClient if _logger.isEnabledFor(logging.ERROR) else ModbusTcpClient
+    )
 
 
 # --------------------------------------------------------------------------- #
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
-__all__ = [
-    "ModbusTcpDiagClient", "get_client"
-]
+__all__ = ["ModbusTcpDiagClient", "get_client"]

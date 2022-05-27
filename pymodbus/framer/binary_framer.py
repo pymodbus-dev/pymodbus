@@ -1,4 +1,4 @@
-""" Binary framer. """
+"""Binary framer."""
 import logging
 import struct
 from pymodbus.exceptions import ModbusIOException
@@ -18,14 +18,14 @@ BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 
 class ModbusBinaryFramer(ModbusFramer):
-    """ Modbus Binary Frame Controller::
+    """Modbus Binary Frame Controller.
 
         [ Start ][Address ][ Function ][ Data ][ CRC ][ End ]
           1b        1b         1b         Nb     2b     1b
 
         * data can be 0 - 2x252 chars
-        * end is   '}'
-        * start is '{'
+        * end is   "}"
+        * start is "{"
 
     The idea here is that we implement the RTU protocol, however,
     instead of using timing for message delimiting, we use start
@@ -42,16 +42,16 @@ class ModbusBinaryFramer(ModbusFramer):
     """
 
     def __init__(self, decoder, client=None):
-        """ Initializes a new instance of the framer
+        """Initialize a new instance of the framer.
 
         :param decoder: The decoder implementation to use
         """
-        self._buffer = b''
-        self._header = {'crc': 0x0000, 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
         self._hsize = 0x01
-        self._start = b'\x7b'  # {
-        self._end = b'\x7d'  # }
-        self._repeat = [b'}'[0], b'{'[0]] # python3 hack
+        self._start = b"\x7b"  # {
+        self._end = b"\x7d"  # }
+        self._repeat = [b"}"[0], b"{"[0]]  # python3 hack
         self.decoder = decoder
         self.client = client
 
@@ -59,15 +59,15 @@ class ModbusBinaryFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
-        """ Decode data. """
+        """Decode data."""
         if len(data) > self._hsize:
-            uid = struct.unpack('>B', data[1:2])[0]
-            fcode = struct.unpack('>B', data[2:3])[0]
-            return dict(unit=uid, fcode=fcode)
+            uid = struct.unpack(">B", data[1:2])[0]
+            fcode = struct.unpack(">B", data[2:3])[0]
+            return {"unit": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
-        """ Check and decode the next frame
+        """Check and decode the next frame.
 
         :returns: True if we are successful, False otherwise
         """
@@ -78,24 +78,26 @@ class ModbusBinaryFramer(ModbusFramer):
             self._buffer = self._buffer[start:]
 
         if (end := self._buffer.find(self._end)) != -1:
-            self._header['len'] = end
-            self._header['uid'] = struct.unpack('>B', self._buffer[1:2])[0]
-            self._header['crc'] = struct.unpack('>H', self._buffer[end - 2:end])[0]
-            data = self._buffer[start + 1:end - 2]
-            return checkCRC(data, self._header['crc'])
+            self._header["len"] = end
+            self._header["uid"] = struct.unpack(">B", self._buffer[1:2])[0]
+            self._header["crc"] = struct.unpack(">H", self._buffer[end - 2 : end])[0]
+            data = self._buffer[start + 1 : end - 2]
+            return checkCRC(data, self._header["crc"])
         return False
 
     def advanceFrame(self):
-        """ Skip over the current framed message
+        """Skip over the current framed message.
+
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-        self._buffer = self._buffer[self._header['len'] + 2:]
-        self._header = {'crc':0x0000, 'len':0, 'uid':0x00}
+        self._buffer = self._buffer[self._header["len"] + 2 :]
+        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
     def isFrameReady(self):
-        """ Check if we should continue decode logic
+        """Check if we should continue decode logic.
+
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
 
@@ -104,7 +106,8 @@ class ModbusBinaryFramer(ModbusFramer):
         return len(self._buffer) > 1
 
     def addToFrame(self, message):
-        """ Add the next message to the frame buffer
+        """Add the next message to the frame buffer.
+
         This should be used before the decoding while loop to add the received
         data to the buffer handle.
 
@@ -113,32 +116,34 @@ class ModbusBinaryFramer(ModbusFramer):
         self._buffer += message
 
     def getFrame(self):
-        """ Get the next frame from the buffer
+        """Get the next frame from the buffer.
 
-        :returns: The frame data or ''
+        :returns: The frame data or ""
         """
         start = self._hsize + 1
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
             return buffer
-        return b''
+        return b""
 
     def populateResult(self, result):
-        """ Populates the modbus result header
+        """Populate the modbus result header.
 
         The serial packets do not have any header information
         that is copied.
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
+        result.unit_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs): # pylint: disable=arguments-differ
-        """ The new packet processing pattern
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
+        """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -159,7 +164,7 @@ class ModbusBinaryFramer(ModbusFramer):
         self.addToFrame(data)
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
-        single = kwargs.get('single', False)
+        single = kwargs.get("single", False)
         while self.isFrameReady():
             if self.checkFrame():
                 if self._validate_unit_id(unit, single):
@@ -169,7 +174,8 @@ class ModbusBinaryFramer(ModbusFramer):
                     self.advanceFrame()
                     callback(result)  # defer or push to a thread?
                 else:
-                    txt = f"Not a valid unit id - {self._header['uid']}, ignoring!!"
+                    header_txt = self._header["uid"]
+                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
                     _logger.debug(txt)
                     self.resetFrame()
                     break
@@ -180,21 +186,22 @@ class ModbusBinaryFramer(ModbusFramer):
                 break
 
     def buildPacket(self, message):
-        """ Creates a ready to send modbus packet
+        """Create a ready to send modbus packet.
 
         :param message: The request/response to send
         :returns: The encoded packet
         """
         data = self._preflight(message.encode())
-        packet = struct.pack(BINARY_FRAME_HEADER,
-                             message.unit_id,
-                             message.function_code) + data
+        packet = (
+            struct.pack(BINARY_FRAME_HEADER, message.unit_id, message.function_code)
+            + data
+        )
         packet += struct.pack(">H", computeCRC(packet))
         packet = self._start + packet + self._end
         return packet
 
     def _preflight(self, data):
-        """ Preflight buffer test
+        """Do preflight buffer test.
 
         This basically scans the buffer for start and end
         tags and if found, escapes them.
@@ -209,16 +216,17 @@ class ModbusBinaryFramer(ModbusFramer):
             array.append(item)
         return bytes(array)
 
-    def resetFrame(self): # pylint: disable=invalid-name
-        """ Reset the entire message frame.
+    def resetFrame(self):  # pylint: disable=invalid-name
+        """Reset the entire message frame.
+
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        self._buffer = b''
-        self._header = {'crc': 0x0000, 'len': 0, 'uid': 0x00}
+        self._buffer = b""
+        self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
 
 # __END__

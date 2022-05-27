@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Synchronous Server Example
---------------------------------------------------------------------------
+"""Pymodbus Synchronous Server Example.
 
 The synchronous server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
@@ -8,32 +7,38 @@ pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
 import logging
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-# from pymodbus.server.sync import StartTcpServer #NOSONAR
-# from pymodbus.server.sync import StartTlsServer #NOSONAR
-# from pymodbus.server.sync import StartUdpServer #NOSONAR
-# from pymodbus.server.sync import StartSerialServer #NOSONAR
+
+from pymodbus.server.sync import StartTcpServer  # NOSONAR
+# from pymodbus.server.sync import StartTlsServer # NOSONAR
+# from pymodbus.server.sync import StartUdpServer # NOSONAR
+# from pymodbus.server.sync import StartSerialServer # NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
-# from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
+
+# from pymodbus.datastore import ModbusSparseDataBlock  # NOSONAR
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
-    """ Run server. """
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -92,29 +97,32 @@ def run_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
-    ModbusServerContext(slaves=store, single=True)
+    context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    ModbusDeviceIdentification(info_name= {
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    # StartTcpServer(context, identity=identity, address=("", 5020))
+    StartTcpServer(context, identity=identity, address=("", 5020))
     #
     # TCP with different framer
     # StartTcpServer(context, identity=identity,
@@ -125,7 +133,7 @@ def run_server():
     #                certfile="server.crt", keyfile="server.key", password="pwd",
     #                address=("0.0.0.0", 8020))
 
-    # Tls and force require client's certificate for TLS full handshake:
+    # Tls and force require client"s certificate for TLS full handshake:
     # StartTlsServer(context, identity=identity,
     #                certfile="server.crt", keyfile="server.key", password="pwd", reqclicert=True,
     #                address=("0.0.0.0", 8020))
@@ -137,17 +145,17 @@ def run_server():
     #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     # Ascii:
     # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
+    #                    port="/dev/ttyp0", timeout=1)
 
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/tmp/ttyp0', timeout=.005, baudrate=9600)
+    #                   port="/tmp/ttyp0", timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

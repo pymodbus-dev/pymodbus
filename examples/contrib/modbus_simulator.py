@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-""" An example of creating a fully implemented modbus server
+"""An example of creating a fully implemented modbus server.
+
 with read/write data as well as user configurable base data
 """
 import logging
-import pickle #nosec
-from optparse import OptionParser # pylint: disable=deprecated-module
+import pickle  # nosec
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
@@ -19,15 +20,16 @@ _logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------------- #
 # Extra Global Functions
 # -------------------------------------------------------------------------- #
-# These are extra helper functions that don't belong in a class
+# These are extra helper functions that don"t belong in a class
 # -------------------------------------------------------------------------- #
 # import getpass
 
 
 def root_test():
-    """ Simple test to see if we are running as root """
-    return True  # removed for the time being as it isn't portable
+    """Check to see if we are running as root"""
+    return True  # removed for the time being as it isn"t portable
     # return getpass.getuser() == "root"
+
 
 # -------------------------------------------------------------------------- #
 # Helper Classes
@@ -35,10 +37,10 @@ def root_test():
 
 
 class ConfigurationException(Exception):
-    """ Exception for configuration error """
+    """Exception for configuration error"""
 
     def __init__(self, string):
-        """ Initializes the ConfigurationException instance
+        """Initialize the ConfigurationException instance
 
         :param string: The message to append to the exception
         """
@@ -46,16 +48,15 @@ class ConfigurationException(Exception):
         self.string = string
 
     def __str__(self):
-        """ Builds a representation of the object
+        """Build a representation of the object
 
         :returns: A string representation of the object
         """
-        return f'Configuration Error: {self.string}'
+        return f"Configuration Error: {self.string}"
 
 
-class Configuration: # pylint: disable=too-few-public-methods
-    """ Class used to parse configuration file and create and modbus
-    datastore.
+class Configuration:  # pylint: disable=too-few-public-methods
+    """Class used to parse configuration file and create and modbus datastore.
 
     The format of the configuration file is actually just a
     python pickle, which is a compressed memory dump from
@@ -63,30 +64,35 @@ class Configuration: # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, config):
-        """ Tries to load a configuration file, lets the file not
-        found exception fall through
+        """Try to load a configuration file.
+
+        lets the file not found exception fall through
 
         :param config: The pickled datastore
         """
         try:
-            self.file = open(config, "rb") # pylint: disable=consider-using-with
+            self.file = open(config, "rb")  # pylint: disable=consider-using-with
         except Exception as exc:
             _logger.critical(str(exc))
-            raise ConfigurationException(f"File not found {config}") # pylint: disable=raise-missing-from
+            raise ConfigurationException(  # pylint: disable=raise-missing-from
+                f"File not found {config}"
+            )
 
     def parse(self):
-        """ Parses the config file and creates a server context
-        """
-        handle = pickle.load(self.file) #nosec
+        """Parse the config file and creates a server context"""
+        handle = pickle.load(self.file)  # nosec
         try:  # test for existence, or bomb
-            dsd = handle['di']
-            csd = handle['ci']
-            hsd = handle['hr']
-            isd = handle['ir']
+            dsd = handle["di"]
+            csd = handle["ci"]
+            hsd = handle["hr"]
+            isd = handle["ir"]
         except Exception:
-            raise ConfigurationException("Invalid Configuration") # pylint: disable=raise-missing-from
+            raise ConfigurationException(  # pylint: disable=raise-missing-from
+                "Invalid Configuration"
+            )
         slave = ModbusSlaveContext(d=dsd, c=csd, h=hsd, i=isd)
         return ModbusServerContext(slaves=slave)
+
 
 # -------------------------------------------------------------------------- #
 # Main start point
@@ -94,14 +100,19 @@ class Configuration: # pylint: disable=too-few-public-methods
 
 
 def main():
-    """ Server launcher """
+    """Server launcher"""
     parser = OptionParser()
-    parser.add_option("-c", "--conf",
-                      help="The configuration file to load",
-                      dest="file")
-    parser.add_option("-D", "--debug",
-                      help="Turn on to enable tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-c", "--conf", help="The configuration file to load", dest="file"
+    )
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Turn on to enable tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
     (opt, _) = parser.parse_args()
 
     # enable debugging information
@@ -109,7 +120,7 @@ def main():
         try:
             server_log.setLevel(logging.DEBUG)
             protocol_log.setLevel(logging.DEBUG)
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             print("Logging is not supported on this system")
 
     # parse configuration file and run
@@ -119,6 +130,7 @@ def main():
     except ConfigurationException as err:
         print(err)
         parser.print_help()
+
 
 # -------------------------------------------------------------------------- #
 # Main jumper

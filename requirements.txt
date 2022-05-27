@@ -1,44 +1,78 @@
 # -------------------------------------------------------------------
-# if want to use the pymodbus serial stack, uncomment these
+# Python packages used by pymodbus.
 # -------------------------------------------------------------------
-# pyserial>=3.4
-# -------------------------------------------------------------------
-# if you want to run the tests and code coverage, uncomment these
-# -------------------------------------------------------------------
-#coverage==4.4
-#mock==2.0.0
-#nose==1.3.7
-#pep8==1.7.0
-# -------------------------------------------------------------------
-# if you want to use the Twisted asynchronous version, uncomment these
-# -------------------------------------------------------------------
-#Twisted==17.1.0
-#zope.interface==4.4.0
-#pyasn1==0.2.3
-#wsgiref==0.1.2
-#cryptography==1.8.1
+# This file install all requirements used by pymodbus, and are
+# intented for developers who have cloned the repository.
+#
+# pymodbus is only being tested on python version 3.8, 3.9 and 3.10
+# depending on the usage profile it might work on other versions.
+python_version>="3.8"
 
 # -------------------------------------------------------------------
-# if you want to use the Tornado asynchronous version, uncomment these
+# Required packages.
 # -------------------------------------------------------------------
-# tornado==4.5.2
+# install:required
+
 
 # -------------------------------------------------------------------
-# if you want to use the Asyncio asynchronous version, uncomment these
+# optional packages.
 # -------------------------------------------------------------------
-# pyserial-asyncio==0.4.0;python_version>="3.4"
+# These packages are optional for the runtime, but demanded for
+# document generation, development and test.
+#
+# these packages can be installed like:
+#    pip install pymodbus[serial]
+
+# install:repl
+aiohttp>=3.8.1
+click>=8.1.3
+prompt-toolkit==3.0.8
+
+# install:serial
+pyserial>=3.5
+pyserial-asyncio==0.6
+
+# install:datastore
+redis>=2.10.6
+sqlalchemy>=1.1.15
+
+# install:twisted
+twisted[conch,serial]>=20.3.0
+
+# install:tornado
+tornado==4.5.3
+
 
 # -------------------------------------------------------------------
-# if you want to build the documentation, uncomment these
+# documentation, everything needed to generate documentation.
 # -------------------------------------------------------------------
-#Jinja2==2.9.6
-#Pygments==2.2.0
-#Sphinx==1.5.5
-#docutils==0.13.1
-#pydoctor==16.3.0
+# install:documentation
+humanfriendly
+m2r2
+recommonmark
+Sphinx
+sphinx-rtd-theme
+
 
 # -------------------------------------------------------------------
-# if you want to use pymodbus REPL
+# development, everything needed to develop/test/check.
 # -------------------------------------------------------------------
-# click>=6.7
-# prompt-toolkit==2.0.4
+# install:development]
+asynctest
+bandit
+black
+codespell
+coverage
+flake8
+flake8-docstrings
+flake8-noqa
+flake8-comprehensions
+isort
+pep8
+pyflakes
+pydocstyle
+pycodestyle
+pylint
+pytest
+pytest-cov
+tox

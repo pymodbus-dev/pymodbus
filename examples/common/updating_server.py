@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Server With Updating Thread
+"""Pymodbus Server With Updating Thread.
 
 This is an example of having a background thread updating the
 context while the server is operating. This can also be done with
@@ -20,6 +20,7 @@ from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
 
 # --------------------------------------------------------------------------- #
@@ -38,8 +39,9 @@ log.setLevel(logging.DEBUG)
 
 
 def updating_writer(extra):
-    """ A worker process that runs every so often and
-    updates live values of the context. It should be noted
+    """Run every so often,
+
+    and updates live values of the context. It should be noted
     that there is a race condition for the update.
 
     :param arguments: The input arguments to the call
@@ -57,7 +59,7 @@ def updating_writer(extra):
 
 
 def run_updating_server():
-    """ Run updating server. """
+    """Run updating server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -66,20 +68,23 @@ def run_updating_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'pymodbus Server',
-        'ModelName': 'pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want

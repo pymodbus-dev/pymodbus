@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Modbus Message Generator
---------------------------------------------------------------------------
+"""Modbus Message Generator.
 
 The following is an example of how to generate example encoded messages
 for the supplied modbus format:
@@ -11,8 +10,9 @@ for the supplied modbus format:
 * binary - `./generate-messages.py -f binary -m tx -b`
 """
 import logging
-from optparse import OptionParser # pylint: disable=deprecated-module
+from optparse import OptionParser  # pylint: disable=deprecated-module
 import codecs as c
+
 # -------------------------------------------------------------------------- #
 # import all the available framers
 # -------------------------------------------------------------------------- #
@@ -51,7 +51,10 @@ from pymodbus.other_message import (
     ReadExceptionStatusRequest,
     ReportSlaveIdResponse,
 )
-from pymodbus.mei_message import ReadDeviceInformationResponse, ReadDeviceInformationRequest
+from pymodbus.mei_message import (
+    ReadDeviceInformationResponse,
+    ReadDeviceInformationRequest,
+)
 from pymodbus.register_read_message import (
     ReadWriteMultipleRegistersResponse,
     ReadInputRegistersResponse,
@@ -88,19 +91,15 @@ _request_messages = [
     WriteSingleRegisterRequest,
     WriteSingleCoilRequest,
     ReadWriteMultipleRegistersRequest,
-
     ReadExceptionStatusRequest,
     GetCommEventCounterRequest,
     GetCommEventLogRequest,
     ReportSlaveIdRequest,
-
     ReadFileRecordRequest,
     WriteFileRecordRequest,
     MaskWriteRegisterRequest,
     ReadFifoQueueRequest,
-
     ReadDeviceInformationRequest,
-
     modbus_diag.ReturnQueryDataRequest,
     modbus_diag.RestartCommunicationsOptionRequest,
     modbus_diag.ReturnDiagnosticRegisterRequest,
@@ -117,7 +116,7 @@ _request_messages = [
     modbus_diag.ReturnSlaveBusCharacterOverrunCountRequest,
     modbus_diag.ReturnIopOverrunCountRequest,
     modbus_diag.ClearOverrunCountRequest,
-    modbus_diag.GetClearModbusPlusRequest
+    modbus_diag.GetClearModbusPlusRequest,
 ]
 
 
@@ -134,19 +133,15 @@ _response_messages = [
     WriteSingleRegisterResponse,
     WriteSingleCoilResponse,
     ReadWriteMultipleRegistersResponse,
-
     ReadExceptionStatusResponse,
     GetCommEventCounterResponse,
     GetCommEventLogResponse,
     ReportSlaveIdResponse,
-
     ReadFileRecordResponse,
     WriteFileRecordResponse,
     MaskWriteRegisterResponse,
     ReadFifoQueueResponse,
-
     ReadDeviceInformationResponse,
-
     modbus_diag.ReturnQueryDataResponse,
     modbus_diag.RestartCommunicationsOptionResponse,
     modbus_diag.ReturnDiagnosticRegisterResponse,
@@ -163,7 +158,7 @@ _response_messages = [
     modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
     modbus_diag.ReturnIopOverrunCountResponse,
     modbus_diag.ClearOverrunCountResponse,
-    modbus_diag.GetClearModbusPlusResponse
+    modbus_diag.GetClearModbusPlusResponse,
 ]
 
 
@@ -176,17 +171,17 @@ _response_messages = [
 # their default values.
 # -------------------------------------------------------------------------- #
 _arguments = {
-    'address': 0x12,
-    'count': 0x08,
-    'value': 0x01,
-    'values': [0x01] * 8,
-    'read_address': 0x12,
-    'read_count': 0x08,
-    'write_address': 0x12,
-    'write_registers': [0x01] * 8,
-    'transaction': 0x01,
-    'protocol': 0x00,
-    'unit': 0xff,
+    "address": 0x12,
+    "count": 0x08,
+    "value": 0x01,
+    "values": [0x01] * 8,
+    "read_address": 0x12,
+    "read_count": 0x08,
+    "write_address": 0x12,
+    "write_registers": [0x01] * 8,
+    "transaction": 0x01,
+    "protocol": 0x00,
+    "unit": 0xFF,
 }
 
 
@@ -194,7 +189,7 @@ _arguments = {
 # generate all the requested messages
 # -------------------------------------------------------------------------- #
 def generate_messages(framer, options):
-    """ A helper method to parse the command line options
+    """Parse the command line options
 
     :param framer: The framer to encode the messages with
     :param options: The message options to use
@@ -205,64 +200,86 @@ def generate_messages(framer, options):
         messages = _response_messages
     for message in messages:
         message = message(**_arguments)
-        print("%-44s = " % message.__class__.__name__) # pylint: disable=consider-using-f-string
+        print(
+            "%-44s = " % message.__class__.__name__  # pylint: disable=consider-using-f-string
+        )
         packet = framer.buildPacket(message)
         if not options.ascii:
-            packet = c.encode(packet, 'hex_codec').decode('utf-8')
-        print (f"{packet}\n")   # because ascii ends with a \r\n
+            packet = c.encode(packet, "hex_codec").decode("utf-8")
+        print(f"{packet}\n")  # because ascii ends with a \r\n
 
 
 # -------------------------------------------------------------------------- #
 # initialize our program settings
 # -------------------------------------------------------------------------- #
 def get_options():
-    """ A helper method to parse the command line options
+    """Parse the command line options
 
     :returns: The options manager
     """
     parser = OptionParser()
 
-    parser.add_option("-f", "--framer",
-                      help="The type of framer to use "
-                           "(tcp, rtu, binary, ascii)",
-                      dest="framer", default="tcp")
+    parser.add_option(
+        "-f",
+        "--framer",
+        help="The type of framer to use (tcp, rtu, binary, ascii)",
+        dest="framer",
+        default="tcp",
+    )
 
-    parser.add_option("-D", "--debug",
-                      help="Enable debug tracing",
-                      action="store_true", dest="debug", default=False)
+    parser.add_option(
+        "-D",
+        "--debug",
+        help="Enable debug tracing",
+        action="store_true",
+        dest="debug",
+        default=False,
+    )
 
-    parser.add_option("-a", "--ascii",
-                      help="The indicates that the message is ascii",
-                      action="store_true", dest="ascii", default=True)
+    parser.add_option(
+        "-a",
+        "--ascii",
+        help="The indicates that the message is ascii",
+        action="store_true",
+        dest="ascii",
+        default=True,
+    )
 
-    parser.add_option("-b", "--binary",
-                      help="The indicates that the message is binary",
-                      action="store_false", dest="ascii")
+    parser.add_option(
+        "-b",
+        "--binary",
+        help="The indicates that the message is binary",
+        action="store_false",
+        dest="ascii",
+    )
 
-    parser.add_option("-m", "--messages",
-                      help="The messages to encode (rx, tx)",
-                      dest="messages", default='rx')
+    parser.add_option(
+        "-m",
+        "--messages",
+        help="The messages to encode (rx, tx)",
+        dest="messages",
+        default="rx",
+    )
 
     (opt, _) = parser.parse_args()
     return opt
 
 
 def main():
-    """ The main runner function
-    """
+    """Run main runner function"""
     option = get_options()
 
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             print("Logging is not supported on this system")
 
     framer = {
-        'tcp':    ModbusSocketFramer, # noqa E221
-        'rtu':    ModbusRtuFramer, # noqa E221
-        'binary': ModbusBinaryFramer,
-        'ascii':  ModbusAsciiFramer, # noqa E221
+        "tcp": ModbusSocketFramer,
+        "rtu": ModbusRtuFramer,
+        "binary": ModbusBinaryFramer,
+        "ascii": ModbusAsciiFramer,
     }.get(option.framer, ModbusSocketFramer)(None)
 
     generate_messages(framer, option)

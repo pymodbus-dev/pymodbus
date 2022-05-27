@@ -1,4 +1,6 @@
-""" Copyright (c) 2020 by RiptideIO
+"""Repl server main.
+
+Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
 import sys
@@ -8,7 +10,10 @@ import json
 import click
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.server.reactive.main import (
-    ReactiveServer, DEFAULT_FRAMER, DEFUALT_HANDLERS)
+    ReactiveServer,
+    DEFAULT_FRAMER,
+    DEFUALT_HANDLERS,
+)
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.repl.server.cli import run_repl
 
@@ -18,6 +23,7 @@ else:
     CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name
 
 _logger = logging.getLogger(__name__)
+
 
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
 
@@ -53,8 +59,12 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
         pymodbus_logger.setLevel(logging.ERROR)
         logger.setLevel(logging.ERROR)
 
-    ctx.obj = {"repl": repl, "host": host, "web_port": web_port,
-               "broadcast": broadcast_support}
+    ctx.obj = {
+        "repl": repl,
+        "host": host,
+        "web_port": web_port,
+        "broadcast": broadcast_support,
+    }
 
 
 @server.command("run", context_settings=CONTEXT_SETTING)
@@ -92,7 +102,7 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
     if modbus_config:
-        with open(modbus_config) as my_file: # pylint: disable=unspecified-encoding
+        with open(modbus_config) as my_file:  # pylint: disable=unspecified-encoding
             modbus_config = json.load(my_file)
     else:
         modbus_config = DEFUALT_CONFIG
@@ -108,11 +118,15 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
 
     modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
-    app = ReactiveServer.factory(modbus_server, framer,
-                                 modbus_port=modbus_port,
-                                 unit=modbus_unit_id,
-                                 loop=loop,
-                                 **web_app_config, **modbus_config)
+    app = ReactiveServer.factory(
+        modbus_server,
+        framer,
+        modbus_port=modbus_port,
+        unit=modbus_unit_id,
+        loop=loop,
+        **web_app_config,
+        **modbus_config
+    )
     try:
         if repl:
             loop.run_until_complete(app.run_async())
@@ -126,5 +140,5 @@ def run(ctx, modbus_server, modbus_framer, modbus_port, modbus_unit_id,
         print("Done!!!!!")
 
 
-if __name__ == '__main__':
-    server() # pylint: disable=no-value-for-parameter
+if __name__ == "__main__":
+    server()  # pylint: disable=no-value-for-parameter

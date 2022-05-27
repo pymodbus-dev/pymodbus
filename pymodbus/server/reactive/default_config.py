@@ -1,4 +1,3 @@
-
 DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
   "tcp": {
     "handler": "ModbusConnectedRequestHandler",

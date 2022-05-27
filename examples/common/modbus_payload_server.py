@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Server Payload Example
---------------------------------------------------------------------------
+"""Pymodbus Server Payload Example.
 
 If you want to initialize a server context with a complicated memory
 layout, you can actually use the payload builder.
@@ -16,27 +15,29 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.constants import Endian
+
 # from pymodbus.payload import BinaryPayloadDecoder #NOSONAR
 from pymodbus.payload import BinaryPayloadBuilder
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_payload_server():
-    """ Run payload server. """
+    """Run payload server."""
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
-    builder = BinaryPayloadBuilder(byteorder=Endian.Little,
-                                   wordorder=Endian.Little)
-    builder.add_string('abcdefgh')
+    builder = BinaryPayloadBuilder(byteorder=Endian.Little, wordorder=Endian.Little)
+    builder.add_string("abcdefgh")
     builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
     builder.add_8bit_int(-0x12)
     builder.add_8bit_uint(0x12)
@@ -67,16 +68,18 @@ def run_payload_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #

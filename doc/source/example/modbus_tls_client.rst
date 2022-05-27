@@ -1,4 +1,4 @@
 ==================================================
-Async Twisted Client Example
+Modbus Tls client Example
 ==================================================
-.. literalinclude:: ../../../examples/common/async_twisted_client.py
+.. literalinclude:: ../../../examples/contrib/modbus_tls_client.py

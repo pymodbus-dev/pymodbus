@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asyncio Server Example
---------------------------------------------------------------------------
+"""Pymodbus Asyncio Server Example.
 
 The asyncio server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
@@ -15,26 +14,30 @@ import asyncio
 
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
+
 # from pymodbus.server.async_io import StartTlsServer #NOSONAR
 # from pymodbus.server.async_io import StartUdpServer #NOSONAR
 # from pymodbus.server.async_io import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
+
 # from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 async def run_server():
-    """ Run server. """
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -93,23 +96,26 @@ async def run_server():
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'Pymodbus',
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'Pymodbus Server',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want
@@ -121,8 +127,13 @@ async def run_server():
     #                      defer_start=False)
 
     # 	deferred start:
-    server = await StartTcpServer(context, identity=identity, address=("0.0.0.0", 5020), #nosec
-                                  allow_reuse_address=True, defer_start=True)
+    server = await StartTcpServer(
+        context,
+        identity=identity,
+        address=("0.0.0.0", 5020),  # nosec
+        allow_reuse_address=True,
+        defer_start=True,
+    )
 
     asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
     await server.serve_forever()
@@ -137,7 +148,7 @@ async def run_server():
     #                      allow_reuse_address=True, allow_reuse_port=True,
     #                      defer_start=False)
 
-    # Tls and force require client's certificate for TLS full handshake:
+    # Tls and force require client"s certificate for TLS full handshake:
     # await StartTlsServer(context, identity=identity,
     #                      address=("localhost", 8020),
     #                      certfile="server.crt", keyfile="server.key",
@@ -153,17 +164,17 @@ async def run_server():
 
     # Ascii:
     # await StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1, autoreconnect=True)
+    #                    port="/dev/ttyp0", timeout=1, autoreconnect=True)
 
     # RTU:
     # await StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                    port='/dev/ttyp0', timeout=.005, baudrate=9600, autoreconnect=True)
+    #                    port="/dev/ttyp0", timeout=.005, baudrate=9600, autoreconnect=True)
 
     # Binary
     # await StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

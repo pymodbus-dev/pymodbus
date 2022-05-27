@@ -1,5 +1,4 @@
-""" Modbus Client Common
-----------------------------------
+"""Modbus Client Common.
 
 This is a common client mixin that can be used by
 both the synchronous and asynchronous clients to
@@ -27,8 +26,9 @@ from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusClientMixin:
-    """ This is a modbus client mixin that provides additional factory
-    methods for all the current modbus methods. This can be used
+    """Modbus client mixin that provides additional factory methods.
+
+    for all the current modbus methods. This can be used
     instead of the normal pattern of::
 
        # instead of this
@@ -40,12 +40,13 @@ class ModbusClientMixin:
        client = ModbusClient(...)
        response = client.read_coils(1, 10)
     """
+
     state = ModbusTransactionState.IDLE
     last_frame_end = 0
     silent_interval = 0
 
     def read_coils(self, address, count=1, **kwargs):
-        """ Read coils.
+        """Read coils.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
@@ -53,10 +54,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = ReadCoilsRequest(address, count, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def read_discrete_inputs(self, address, count=1, **kwargs):
-        """ Read discrete inputs.
+        """Read discrete inputs.
 
         :param address: The starting address to read from
         :param count: The number of discretes to read
@@ -64,10 +65,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = ReadDiscreteInputsRequest(address, count, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def write_coil(self, address, value, **kwargs):
-        """ write_coil.
+        """Write_coil.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
@@ -75,10 +76,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = WriteSingleCoilRequest(address, value, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def write_coils(self, address, values, **kwargs):
-        """ write coils.
+        """Write coils.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
@@ -86,10 +87,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = WriteMultipleCoilsRequest(address, values, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def write_register(self, address, value, **kwargs):
-        """ write register.
+        """Write register.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
@@ -97,10 +98,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = WriteSingleRegisterRequest(address, value, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def write_registers(self, address, values, **kwargs):
-        """ write registers.
+        """Write registers.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
@@ -108,10 +109,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = WriteMultipleRegistersRequest(address, values, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def read_holding_registers(self, address, count=1, **kwargs):
-        """ Read holding registers.
+        """Read holding registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
@@ -119,10 +120,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = ReadHoldingRegistersRequest(address, count, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def read_input_registers(self, address, count=1, **kwargs):
-        """ Read input registers.
+        """Read input registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
@@ -130,10 +131,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = ReadInputRegistersRequest(address, count, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def readwrite_registers(self, *args, **kwargs):
-        """ Read/Write registers
+        """Read/Write registers
 
         :param read_address: The address to start reading from
         :param read_count: The number of registers to read from address
@@ -143,10 +144,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
     def mask_write_register(self, *args, **kwargs):
-        """ Mask write register.
+        """Mask write register.
 
         :param address: The address of the register to write
         :param and_mask: The and bitmask to apply to the register address
@@ -155,9 +156,10 @@ class ModbusClientMixin:
         :returns: A deferred response handle
         """
         request = MaskWriteRegisterRequest(*args, **kwargs)
-        return self.execute(request) # pylint: disable=no-member
+        return self.execute(request)  # pylint: disable=no-member
 
-#---------------------------------------------------------------------------#
-# Exported symbols
-#---------------------------------------------------------------------------#
-__all__ = [ 'ModbusClientMixin' ]
+
+# ---------------------------------------------------------------------------#
+#  Exported symbols
+# ---------------------------------------------------------------------------#
+__all__ = ["ModbusClientMixin"]

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Payload Building/Decoding Example
---------------------------------------------------------------------------
+"""Pymodbus Payload Building/Decoding Example.
 
 # Run modbus_payload_server.py or synchronous_server.py to check the behavior
 """
@@ -16,24 +15,23 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 # configure the client logging
 # --------------------------------------------------------------------------- #
 
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-ORDER_DICT = {
-    "<": "LITTLE",
-    ">": "BIG"
-}
+ORDER_DICT = {"<": "LITTLE", ">": "BIG"}
 
 
 def run_binary_payload_ex():
-    """ Run binary payload. """
+    """Run binary payload."""
     # ----------------------------------------------------------------------- #
     # We are going to use a simple client to send our requests
     # ----------------------------------------------------------------------- #
-    client = ModbusClient('127.0.0.1', port=5020)
+    client = ModbusClient("127.0.0.1", port=5020)
     client.connect()
 
     # ----------------------------------------------------------------------- #
@@ -84,16 +82,17 @@ def run_binary_payload_ex():
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
     # ----------------------------------------------------------------------- #
-    combos = [(word_endian, byte_endian)
+    combos = [
+        (word_endian, byte_endian)
         for word_endian in (Endian.Big, Endian.Little)
-            for byte_endian in (Endian.Big, Endian.Little)]
+        for byte_endian in (Endian.Big, Endian.Little)
+    ]
     for word_endian, byte_endian in combos:
         print("-" * 60)
         print(f"Word Order: {ORDER_DICT[word_endian]}")
         print(f"Byte Order: {ORDER_DICT[byte_endian]}")
         print()
-        builder = BinaryPayloadBuilder(byteorder=byte_endian,
-                                       wordorder=word_endian)
+        builder = BinaryPayloadBuilder(byteorder=byte_endian, wordorder=word_endian)
         my_string = "abcdefgh"
         builder.add_string(my_string)
         builder.add_bits([0, 1, 0, 1, 1, 0, 1, 0])
@@ -159,41 +158,52 @@ def run_binary_payload_ex():
         print("-" * 60)
         print(result.registers)
         print("\n")
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                     byteorder=byte_endian,
-                                                     wordorder=word_endian)
+        decoder = BinaryPayloadDecoder.fromRegisters(
+            result.registers, byteorder=byte_endian, wordorder=word_endian
+        )
 
-        assert decoder._byteorder == (builder._byteorder, #nosec pylint: disable=protected-access
-                "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._byteorder == (  # nosec # pylint: disable=protected-access
+            builder._byteorder,  # nosec # pylint: disable=protected-access
+            "Make sure byteorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder",
+        )
 
-        assert decoder._wordorder == (builder._wordorder, #nosec pylint: disable=protected-access
-                "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder")
+        assert decoder._wordorder == (  # nosec # pylint: disable=protected-access
+            builder._wordorder,  # nosec # pylint: disable=protected-access
+            "Make sure wordorder is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder",
+        )
 
-        decoded = OrderedDict([
-            ('string', decoder.decode_string(len(my_string))),
-            ('bits', decoder.decode_bits()),
-            ('8int', decoder.decode_8bit_int()),
-            ('8uint', decoder.decode_8bit_uint()),
-            ('16int', decoder.decode_16bit_int()),
-            ('16uint', decoder.decode_16bit_uint()),
-            ('32int', decoder.decode_32bit_int()),
-            ('32uint', decoder.decode_32bit_uint()),
-            ('16float', decoder.decode_16bit_float()),
-            ('16float2', decoder.decode_16bit_float()),
-            ('32float', decoder.decode_32bit_float()),
-            ('32float2', decoder.decode_32bit_float()),
-            ('64int', decoder.decode_64bit_int()),
-            ('64uint', decoder.decode_64bit_uint()),
-            ('ignore', decoder.skip_bytes(8)),
-            ('64float', decoder.decode_64bit_float()),
-            ('64float2', decoder.decode_64bit_float()),
-        ])
+        decoded = OrderedDict(
+            [
+                ("string", decoder.decode_string(len(my_string))),
+                ("bits", decoder.decode_bits()),
+                ("8int", decoder.decode_8bit_int()),
+                ("8uint", decoder.decode_8bit_uint()),
+                ("16int", decoder.decode_16bit_int()),
+                ("16uint", decoder.decode_16bit_uint()),
+                ("32int", decoder.decode_32bit_int()),
+                ("32uint", decoder.decode_32bit_uint()),
+                ("16float", decoder.decode_16bit_float()),
+                ("16float2", decoder.decode_16bit_float()),
+                ("32float", decoder.decode_32bit_float()),
+                ("32float2", decoder.decode_32bit_float()),
+                ("64int", decoder.decode_64bit_int()),
+                ("64uint", decoder.decode_64bit_uint()),
+                ("ignore", decoder.skip_bytes(8)),
+                ("64float", decoder.decode_64bit_float()),
+                ("64float2", decoder.decode_64bit_float()),
+            ]
+        )
 
         print("-" * 60)
         print("Decoded Data")
         print("-" * 60)
         for name, value in iter(decoded.items()):
-            print("%s\t" % name, hex(value) if isinstance(value, int) else value) # pylint: disable=consider-using-f-string
+            print(
+                "%s\t" % name,  # pylint: disable=consider-using-f-string
+                hex(value)
+                if isinstance(value, int)
+                else value,
+            )
 
     # ----------------------------------------------------------------------- #
     # close the client

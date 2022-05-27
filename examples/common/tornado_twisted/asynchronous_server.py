@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-""" Pymodbus Asynchronous Server Example
---------------------------------------------------------------------------
+"""Pymodbus Asynchronous Server Example.
 
 The asynchronous server is a high performance implementation using the
 twisted library as its backend.  This allows it to scale to many thousands
@@ -11,33 +10,37 @@ of nodes which can be helpful for testing monitoring software.
 # --------------------------------------------------------------------------- #
 import logging
 
-from custom_message import CustomModbusRequest # pylint: disable=import-error
+from custom_message import CustomModbusRequest
 
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
+
 # from pymodbus.server.asynchronous import StartUdpServer #NOSONAR
 # from pymodbus.server.asynchronous import StartSerialServer #NOSONAR
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-#from pymodbus.transaction import ( #NOSONAR
+
+# from pymodbus.transaction import ( #NOSONAR
 #    ModbusRtuFramer, #NOSONAR
 #    ModbusAsciiFramer, #NOSONAR
 #    ModbusBinaryFramer, #NOSONAR
-#) #NOSONAR
+# ) #NOSONAR
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
-logging.basicConfig(format=FORMAT) #NOSONAR
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)  # NOSONAR
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_async_server():
-    """ Run async server. """
+    """Run async server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
@@ -96,24 +99,30 @@ def run_async_server():
         co=ModbusSequentialDataBlock(0, [17] * 100),
         di=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
-    store.register(CustomModbusRequest.function_code, 'cm',
-                   ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
+    store.register(
+        CustomModbusRequest.function_code,
+        "cm",
+        ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(info_name= {
-        'VendorName': 'Pymodbus',
-        'ModelName': 'Pymodbus Server',
-        'MajorMinorRevision': version.short(),
-        'ProductCode': 'PM',
-        'VendorUrl': 'http://github.com/riptideio/pymodbus/', #NOSONAR
-        'ProductName': 'Pymodbus Server',
-    })
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+            "ProductCode": "PM",
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "ProductName": "Pymodbus Server",
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want
@@ -121,8 +130,12 @@ def run_async_server():
 
     # TCP Server
 
-    StartTcpServer(context, identity=identity, address=("localhost", 5020),
-                   custom_functions=[CustomModbusRequest])
+    StartTcpServer(
+        context,
+        identity=identity,
+        address=("localhost", 5020),
+        custom_functions=[CustomModbusRequest],
+    )
 
     # TCP Server with deferred reactor run
 
@@ -140,15 +153,15 @@ def run_async_server():
 
     # RTU Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusRtuFramer)
+    #                   port="/dev/ttyp0", framer=ModbusRtuFramer)
 
     # ASCII Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusAsciiFramer)
+    #                   port="/dev/ttyp0", framer=ModbusAsciiFramer)
 
     # Binary Server
     # StartSerialServer(context, identity=identity,
-    #                   port='/dev/ttyp0', framer=ModbusBinaryFramer)
+    #                   port="/dev/ttyp0", framer=ModbusBinaryFramer)
 
 
 if __name__ == "__main__":

@@ -3,15 +3,8 @@
 2) new checks
 - flake8 addons:
     pycodestyle
-    pyflakes
     pydocstyle
-    flake8-comprehensions
-    flake8-noqa
-    mccabe
 
-- bandit
 - prettier
 - mypy
-- pylint
-   Activate disabled checks.
 

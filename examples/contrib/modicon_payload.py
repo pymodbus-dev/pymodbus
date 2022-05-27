@@ -1,5 +1,4 @@
-""" Modbus Modicon Payload Builder
------------------------------------------------------------
+"""Modbus Modicon Payload Builder.
 
 This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a
@@ -14,8 +13,9 @@ from pymodbus.exceptions import ParameterException
 
 
 class ModiconPayloadBuilder(IPayloadBuilder):
-    """ A utility that helps build modicon encoded payload
-    messages to be written with the various modbus messages.
+    """A utility that helps build modicon encoded payload messages.
+
+    to be written with the various modbus messages.
     example::
 
         builder = ModiconPayloadBuilder()
@@ -25,7 +25,7 @@ class ModiconPayloadBuilder(IPayloadBuilder):
     """
 
     def __init__(self, payload=None, endian=Endian.Little):
-        """ Initialize a new instance of the payload builder
+        """Initialize a new instance of the payload builder
 
         :param payload: Raw payload data to initialize with
         :param endian: The endianness of the payload
@@ -34,19 +34,18 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         self._endian = endian
 
     def __str__(self):
-        """ Return the payload buffer as a string
+        """Return the payload buffer as a string
 
         :returns: The payload buffer as a string
         """
-        return ''.join(self._payload)
+        return "".join(self._payload)
 
     def reset(self):
-        """ Reset the payload buffer
-        """
+        """Reset the payload buffer"""
         self._payload = []
 
     def build(self):
-        """ Return the payload buffer as a list
+        """Return the payload buffer as a list
 
         This list is two bytes per element and can
         thus be treated as a list of registers.
@@ -55,11 +54,11 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         """
         string = str(self)
         length = len(string)
-        string = string + ('\x00' * (length % 2))
-        return [string[i:i + 2] for i in range(0, length, 2)]
+        string = string + ("\x00" * (length % 2))
+        return [string[i : i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
-        """ Adds a collection of bits to be encoded
+        """Add a collection of bits to be encoded
 
         If these are less than a multiple of eight,
         they will be left padded with 0 bits to make
@@ -71,81 +70,81 @@ class ModiconPayloadBuilder(IPayloadBuilder):
         self._payload.append(value)
 
     def add_8bit_uint(self, value):
-        """ Adds a 8 bit unsigned int to the buffer
+        """Add a 8 bit unsigned int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'B'
+        fstring = self._endian + "B"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_uint(self, value):
-        """ Adds a 16 bit unsigned int to the buffer
+        """Add a 16 bit unsigned int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'H'
+        fstring = self._endian + "H"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_uint(self, value):
-        """ Adds a 32 bit unsigned int to the buffer
+        """Add a 32 bit unsigned int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'I'
+        fstring = self._endian + "I"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
 
     def add_8bit_int(self, value):
-        """ Adds a 8 bit signed int to the buffer
+        """Add a 8 bit signed int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'b'
+        fstring = self._endian + "b"
         self._payload.append(pack(fstring, value))
 
     def add_16bit_int(self, value):
-        """ Adds a 16 bit signed int to the buffer
+        """Add a 16 bit signed int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'h'
+        fstring = self._endian + "h"
         self._payload.append(pack(fstring, value))
 
     def add_32bit_int(self, value):
-        """ Adds a 32 bit signed int to the buffer
+        """Add a 32 bit signed int to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'i'
+        fstring = self._endian + "i"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
 
     def add_32bit_float(self, value):
-        """ Adds a 32 bit float to the buffer
+        """Add a 32 bit float to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 'f'
+        fstring = self._endian + "f"
         handle = pack(fstring, value)
         handle = handle[2:] + handle[:2]
         self._payload.append(handle)
 
     def add_string(self, value):
-        """ Adds a string to the buffer
+        """Add a string to the buffer
 
         :param value: The value to add to the buffer
         """
-        fstring = self._endian + 's'
+        fstring = self._endian + "s"
         for i in value:
             self._payload.append(pack(fstring, i))
 
 
 class ModiconPayloadDecoder:
-    """ A utility that helps decode modicon encoded payload
-    messages from a modbus response message. What follows is
-    a simple example::
+    """A utility that helps decode modicon encoded payload messages from a modbus response message.
+
+    What follows is a simple example::
 
         decoder = ModiconPayloadDecoder(payload)
         first   = decoder.decode_8bit_uint()
@@ -153,8 +152,7 @@ class ModiconPayloadDecoder:
     """
 
     def __init__(self, payload, endian):
-
-        """ Initialize a new payload decoder
+        """Initialize a new payload decoder
 
         :param payload: The payload to decode with
         """
@@ -164,8 +162,9 @@ class ModiconPayloadDecoder:
 
     @staticmethod
     def from_registers(registers, endian=Endian.Little):
-        """ Initialize a payload decoder with the result of
-        reading a collection of registers from a modbus device.
+        """Initialize a payload decoder.
+
+        with the result of reading a collection of registers from a modbus device.
 
         The registers are treated as a list of 2 byte values.
         We have to do this because of how the data has already
@@ -176,14 +175,15 @@ class ModiconPayloadDecoder:
         :returns: An initialized PayloadDecoder
         """
         if isinstance(registers, list):  # repack into flat binary
-            payload = ''.join(pack('>H', x) for x in registers)
+            payload = "".join(pack(">H", x) for x in registers)
             return ModiconPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of registers supplied')
+        raise ParameterException("Invalid collection of registers supplied")
 
     @staticmethod
     def from_coils(coils, endian=Endian.Little):
-        """ Initialize a payload decoder with the result of
-        reading a collection of coils from a modbus device.
+        """Initialize a payload decoder.
+
+        with the result of reading a collection of coils from a modbus device.
 
         The coils are treated as a list of bit(boolean) values.
 
@@ -194,86 +194,77 @@ class ModiconPayloadDecoder:
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
             return ModiconPayloadDecoder(payload, endian)
-        raise ParameterException('Invalid collection of coils supplied')
+        raise ParameterException("Invalid collection of coils supplied")
 
     def reset(self):
-        """ Reset the decoder pointer back to the start
-        """
+        """Reset the decoder pointer back to the start"""
         self._pointer = 0x00
 
     def decode_8bit_uint(self):
-        """ Decodes a 8 bit unsigned int from the buffer
-        """
+        """Decode a 8 bit unsigned int from the buffer"""
         self._pointer += 1
-        fstring = self._endian + 'B'
-        handle = self._payload[self._pointer - 1:self._pointer]
+        fstring = self._endian + "B"
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_uint(self):
-        """ Decodes a 16 bit unsigned int from the buffer
-        """
+        """Decode a 16 bit unsigned int from the buffer"""
         self._pointer += 2
-        fstring = self._endian + 'H'
-        handle = self._payload[self._pointer - 2:self._pointer]
+        fstring = self._endian + "H"
+        handle = self._payload[self._pointer - 2 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_uint(self):
-        """ Decodes a 32 bit unsigned int from the buffer
-        """
+        """Decode a 32 bit unsigned int from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'I'
-        handle = self._payload[self._pointer - 4:self._pointer]
+        fstring = self._endian + "I"
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
     def decode_8bit_int(self):
-        """ Decodes a 8 bit signed int from the buffer
-        """
+        """Decode a 8 bit signed int from the buffer"""
         self._pointer += 1
-        fstring = self._endian + 'b'
-        handle = self._payload[self._pointer - 1:self._pointer]
+        fstring = self._endian + "b"
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_16bit_int(self):
-        """ Decodes a 16 bit signed int from the buffer
-        """
+        """Decode a 16 bit signed int from the buffer"""
         self._pointer += 2
-        fstring = self._endian + 'h'
-        handle = self._payload[self._pointer - 2:self._pointer]
+        fstring = self._endian + "h"
+        handle = self._payload[self._pointer - 2 : self._pointer]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_int(self):
-        """ Decodes a 32 bit signed int from the buffer
-        """
+        """Decode a 32 bit signed int from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'i'
-        handle = self._payload[self._pointer - 4:self._pointer]
+        fstring = self._endian + "i"
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
     def decode_32bit_float(self):
-        """ Decodes a float from the buffer
-        """
+        """Decode a float from the buffer"""
         self._pointer += 4
-        fstring = self._endian + 'f'
-        handle = self._payload[self._pointer - 4:self._pointer]
+        fstring = self._endian + "f"
+        handle = self._payload[self._pointer - 4 : self._pointer]
         handle = handle[2:] + handle[:2]
         return unpack(fstring, handle)[0]
 
     def decode_bits(self):
-        """ Decodes a byte worth of bits from the buffer
-        """
+        """Decode a byte worth of bits from the buffer"""
         self._pointer += 1
-        handle = self._payload[self._pointer - 1:self._pointer]
+        handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack_bitstring(handle)
 
     def decode_string(self, size=1):
-        """ Decodes a string from the buffer
+        """Decode a string from the buffer
 
         :param size: The size of the string to decode
         """
         self._pointer += size
-        return self._payload[self._pointer - size:self._pointer]
+        return self._payload[self._pointer - size : self._pointer]
 
 
 # -------------------------------------------------------------------------- #

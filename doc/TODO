@@ -2,20 +2,12 @@
 General
 ---------------------------------------------------------------------------
 
-- reorganize code into folder namespaces
-- put protocol code in protocol namespace
 - make framer read header->read header.length
-  - maybe just for sync 
-- finish clients (and interface)
 - add all modbus control into server
 - add correct transaction handling (retry, fail, etc)
-- finish remaining functions
-- update code to satisfy pylint
+- Test/update examples
 - update code to satisfy black
-- update code to satisfy flake8
 - update code to satisfy mypy
-- convert tornado to a plugin
-- convert twister to a plugin
 - get coverage > 98%
 - clean raise to be at frame level
 - solve "TO FIX" in code

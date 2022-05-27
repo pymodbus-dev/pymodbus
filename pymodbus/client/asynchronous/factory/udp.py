@@ -1,6 +1,4 @@
 """UDP implementation."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 import asyncio
 
@@ -12,9 +10,16 @@ from pymodbus.constants import Defaults
 _logger = logging.getLogger(__name__)
 
 
-def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                    source_address=None, timeout=None, **kwargs):
-    """ Factory to create twisted udp asynchronous client
+def reactor_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
+    """Create twisted udp asynchronous client.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -26,9 +31,16 @@ def reactor_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     raise NotImplementedError()
 
 
-def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
-                   source_address=None, timeout=None, **kwargs):
-    """ Factory to create Tornado based asynchronous udp clients
+def io_loop_factory(
+    host="127.0.0.1",
+    port=Defaults.Port,
+    framer=None,
+    source_address=None,
+    timeout=None,
+    **kwargs,
+):
+    """Create Tornado based asynchronous udp clients.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -37,15 +49,20 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
     :param kwargs:
     :return: event_loop_thread and tornado future
     """
-    from tornado.ioloop import IOLoop # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import AsyncModbusUDPClient as \
-        Client # pylint: disable=import-outside-toplevel
+    from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
+    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
+        AsyncModbusUDPClient as Client,
+    )
 
-    client = Client(host=host, port=port, framer=framer,
-                    source_address=source_address,
-                    timeout=timeout, **kwargs)
-    protocol = EventLoopThread("ioloop", IOLoop.current().start,
-                               IOLoop.current().stop)
+    client = Client(
+        host=host,
+        port=port,
+        framer=framer,
+        source_address=source_address,
+        timeout=timeout,
+        **kwargs,
+    )
+    protocol = EventLoopThread("ioloop", IOLoop.current().start, IOLoop.current().stop)
     protocol.start()
     future = client.connect()
 
@@ -53,7 +70,8 @@ def io_loop_factory(host="127.0.0.1", port=Defaults.Port, framer=None,
 
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
-    """ Factory to create asyncio based asynchronous udp clients
+    """Create asyncio based asynchronous udp clients.
+
     :param host: Host IP address
     :param port: Port
     :param framer: Modbus Framer
@@ -83,9 +101,10 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
 
 
 def get_factory(scheduler):
-    """ Gets protocol factory based on the backend scheduler being used
+    """Get protocol factory based on the backend scheduler being used.
+
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
-    :return
+    :return: new factory
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory
@@ -96,5 +115,5 @@ def get_factory(scheduler):
 
     txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
-    txt = f"Invalid Scheduler '{scheduler}'"
+    txt = f'Invalid Scheduler "{scheduler}"'
     raise Exception(txt)

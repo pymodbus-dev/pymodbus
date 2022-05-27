@@ -109,6 +109,14 @@ class WriteSingleRegisterResponse(ModbusResponse):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
+    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+        """Get response pdu size.
+
+        Func_code (1 byte) + Starting Address (2 byte) + And_mask (2 Bytes) + OrMask (2 Bytes)
+        :return:
+        """
+        return 1 + 2 + 2 + 2
+
     def __str__(self):
         """Return a string representation of the instance.
 

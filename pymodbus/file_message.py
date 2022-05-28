@@ -91,6 +91,7 @@ class ReadFileRecordRequest(ModbusRequest):
         """
         ModbusRequest.__init__(self, **kwargs)
         self.records = records or []
+        self.count = 0
 
     def encode(self):
         """Encode the request packet.
@@ -136,6 +137,19 @@ class ReadFileRecordRequest(ModbusRequest):
         # is too big, return an error.
         files = []
         return ReadFileRecordResponse(files)
+
+    def get_response_pdu_size(self):
+        """Get response pdu size.
+
+        Func_code (1 byte) + Response Byte Count(1 byte) +
+            N * (File Response Byte Count (1 byte) + Reference Type (1 byte) + 2 * registers to read for file record)
+            where N = record sub-request count.
+        """
+        self.count = 0
+        for record in self.records:
+            self.count += record.record_length * 2 + 2 if record.record_length else 0
+
+        return 2 + self.count
 
 
 class ReadFileRecordResponse(ModbusResponse):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc
 """Modbus Message Generator.
 
 The following is an example of how to generate example encoded messages

@@ -2,6 +2,7 @@
 
 Currently none of these messages are implemented
 """
+# pylint: disable=missing-type-doc
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse

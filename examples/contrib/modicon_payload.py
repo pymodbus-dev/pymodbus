@@ -1,3 +1,4 @@
+# pylint: disable=missing-type-doc,missing-raises-doc
 """Modbus Modicon Payload Builder.
 
 This is an example of building a custom payload builder

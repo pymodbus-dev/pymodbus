@@ -1,4 +1,5 @@
 """Register Writing Request/Response Messages."""
+# pylint: disable=missing-type-doc
 import struct
 from pymodbus.pdu import ModbusRequest
 from pymodbus.pdu import ModbusResponse

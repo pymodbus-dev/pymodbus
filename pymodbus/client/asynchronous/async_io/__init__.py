@@ -1,4 +1,5 @@
 """Asynchronous framework adapter for asyncio."""
+# pylint: disable=missing-type-doc
 import logging
 import socket
 import asyncio
@@ -45,7 +46,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         The transport argument is the transport representing the connection.
 
         :param transport:
-        :return:
         """
         self.transport = transport
         self._connection_made()
@@ -59,7 +59,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         The argument is either an exception object or None
 
         :param reason:
-        :return:
         """
         self.transport = None
         self._connection_lost(reason)
@@ -73,15 +72,11 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         data is a non-empty bytes object containing the incoming data.
 
         :param data:
-        :return:
         """
         self._data_received(data)
 
     def create_future(self):  # pylint: disable=no-self-use
-        """Help function to create asyncio Future object.
-
-        :return:
-        """
+        """Help function to create asyncio Future object."""
         return asyncio.Future()
 
     def resolve_future(self, my_future, result):  # pylint: disable=no-self-use
@@ -89,7 +84,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
         :param my_future:
         :param result:
-        :return:
         """
         if not my_future.done():
             my_future.set_result(result)
@@ -99,7 +93,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
         :param my_future:
         :param exc:
-        :return:
         """
         if not my_future.done():
             my_future.set_exception(exc)
@@ -155,6 +148,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """Handle the processed response and link to correct deferred
 
         :param reply: The reply to process
+        :param kwargs: The rest
         """
         if reply is not None:
             tid = reply.transaction_id
@@ -196,7 +190,6 @@ class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
         data is a non-empty bytes object containing the incoming data.
 
         :param data:
-        :return:
         """
         self._data_received(data)
 
@@ -270,10 +263,7 @@ class ReconnectingAsyncioModbusTcpClient:
         return await self._connect()
 
     def stop(self):
-        """Stop client.
-
-        :return:
-        """
+        """Stop client."""
         # prevent reconnect:
         self.host = None
 
@@ -642,10 +632,7 @@ class AsyncioModbusUdpClient:
         self._proto_args = kwargs
 
     def stop(self):
-        """Stop connection.
-
-        :return:
-        """
+        """Stop connection."""
         # prevent reconnect:
         # self.host = None
 
@@ -771,10 +758,7 @@ class AsyncioModbusSerialClient:
         return self._connected_event.is_set()
 
     async def connect(self):
-        """Connect Async client.
-
-        :return:
-        """
+        """Connect Async client."""
         _logger.debug(TEXT_CONNECTING)
         try:
             await create_serial_connection(

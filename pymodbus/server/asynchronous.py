@@ -1,4 +1,5 @@
 """Implementation of a Twisted Modbus Server."""
+# pylint: disable=missing-type-doc
 import logging
 import threading
 from binascii import b2a_hex
@@ -172,7 +173,8 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         """Call when we receive any data.
 
-        :param data: The data sent by the client
+        :param datagram: The data sent by the client
+        :param addr: The address
         """
         txt = f"Client Connected [{addr}]"
         _logger.debug(txt)
@@ -187,6 +189,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
         """Execute the request and return the result.
 
         :param request: The decoded request message
+        :param addr: The address
         """
         try:
             context = self.store[request.unit_id]
@@ -244,15 +247,14 @@ def StartTcpServer(  # NOSONAR pylint: disable=dangerous-default-value,invalid-n
     """Start the Modbus Async TCP server.
 
     :param context: The server data context
-    :param identify: The server identity to use (default empty)
+    :param identity: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
     :param console: A flag indicating if you want the debug console
-    :param ignore_missing_slaves: True to not send errors on a request \
-    to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
     of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
+    :param kwargs:
     """
     from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
         reactor as local_reactor,
@@ -286,14 +288,13 @@ def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-va
     """Start the Modbus Async Udp server.
 
     :param context: The server data context
-    :param identify: The server identity to use (default empty)
+    :param identity: The server identity to use (default empty)
     :param address: An optional (interface, port) to bind to.
-    :param ignore_missing_slaves: True to not send errors on a request \
-    to a missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part \
     of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
+    :param kwargs:
     """
     from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
         reactor as local_reactor,
@@ -327,18 +328,13 @@ def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default
     """Start the Modbus Async Serial server.
 
     :param context: The server data context
-    :param identify: The server identity to use (default empty)
+    :param identity: The server identity to use (default empty)
     :param framer: The framer to use (default ModbusAsciiFramer)
-    :param port: The serial port to attach to
-    :param baudrate: The baud rate to use for the serial device
-    :param console: A flag indicating if you want the debug console
-    :param ignore_missing_slaves: True to not send errors on a request to a
-           missing slave
     :param defer_reactor_run: True/False defer running reactor.run() as part
            of starting server, to be explicitly started by the user
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-
+    :param kwargs:
     """
     from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
         reactor as local_reactor,

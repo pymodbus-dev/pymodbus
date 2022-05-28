@@ -60,8 +60,6 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from custom_message import CustomModbusRequest
-
 from pymodbus.version import version
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
@@ -70,6 +68,7 @@ from pymodbus.datastore import (
     ModbusSlaveContext,
     ModbusServerContext,
 )
+from .custom_message import CustomModbusRequest  # pylint: disable=relative-beyond-top-level
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

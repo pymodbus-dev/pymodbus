@@ -1,4 +1,5 @@
 """Framer start."""
+# pylint: disable=missing-type-doc
 from pymodbus.interfaces import IModbusFramer
 
 # Unit ID, Function Code

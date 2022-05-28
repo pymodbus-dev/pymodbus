@@ -3,6 +3,7 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+# pylint: disable=missing-type-doc
 import json
 from collections import OrderedDict
 import inspect
@@ -251,7 +252,6 @@ class Result:
         :param formatters: int8/16/32/64, uint8/16/32/64, float32/64
         :param byte_order: little/big
         :param word_order: little/big
-        :return: Decoded Value
         """
         # Read Holding Registers (3)
         # Read Input Registers (4)
@@ -281,10 +281,7 @@ class Result:
             self.print_result(decoded)
 
     def raw(self):
-        """Return raw result dict.
-
-        :return:
-        """
+        """Return raw result dict."""
         self.print_result()
 
     def _process_dict(self, use_dict):
@@ -306,7 +303,6 @@ class Result:
         """Print result object pretty.
 
         :param data: Data to be printed.
-        :return:
         """
         data = data or self.data
         if isinstance(data, dict):

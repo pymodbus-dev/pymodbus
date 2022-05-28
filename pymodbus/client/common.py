@@ -4,6 +4,7 @@ This is a common client mixin that can be used by
 both the synchronous and asynchronous clients to
 simplify the interface.
 """
+# pylint: disable=missing-type-doc
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,
     ReadDiscreteInputsRequest,
@@ -50,7 +51,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = ReadCoilsRequest(address, count, **kwargs)
@@ -61,7 +62,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to read from
         :param count: The number of discretes to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = ReadDiscreteInputsRequest(address, count, **kwargs)
@@ -72,7 +73,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = WriteSingleCoilRequest(address, value, **kwargs)
@@ -83,7 +84,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = WriteMultipleCoilsRequest(address, values, **kwargs)
@@ -94,7 +95,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = WriteSingleRegisterRequest(address, value, **kwargs)
@@ -105,7 +106,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = WriteMultipleRegistersRequest(address, values, **kwargs)
@@ -116,7 +117,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to read from
         :param count: The number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = ReadHoldingRegistersRequest(address, count, **kwargs)
@@ -127,7 +128,7 @@ class ModbusClientMixin:
 
         :param address: The starting address to read from
         :param count: The number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = ReadInputRegistersRequest(address, count, **kwargs)
@@ -136,11 +137,8 @@ class ModbusClientMixin:
     def readwrite_registers(self, *args, **kwargs):
         """Read/Write registers
 
-        :param read_address: The address to start reading from
-        :param read_count: The number of registers to read from address
-        :param write_address: The address to start writing to
-        :param write_registers: The registers to write to the specified address
-        :param unit: The slave unit this request is targeting
+        :param args:
+        :param kwargs:
         :returns: A deferred response handle
         """
         request = ReadWriteMultipleRegistersRequest(*args, **kwargs)
@@ -149,10 +147,7 @@ class ModbusClientMixin:
     def mask_write_register(self, *args, **kwargs):
         """Mask write register.
 
-        :param address: The address of the register to write
-        :param and_mask: The and bitmask to apply to the register address
-        :param or_mask: The or bitmask to apply to the register address
-        :param unit: The slave unit this request is targeting
+        :args:
         :returns: A deferred response handle
         """
         request = MaskWriteRegisterRequest(*args, **kwargs)

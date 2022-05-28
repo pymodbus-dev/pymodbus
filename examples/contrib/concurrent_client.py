@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc
 """Concurrent Modbus Client.
 
 This is an example of writing a high performance modbus client that allows

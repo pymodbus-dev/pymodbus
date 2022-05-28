@@ -1,4 +1,5 @@
 """Factory to create asynchronous tcp clients based on twisted/tornado/asyncio."""
+# pylint: disable=missing-type-doc
 import logging
 import asyncio
 
@@ -107,9 +108,6 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
 
     :param host: Host IP address
     :param port: Port
-    :param framer: Modbus Framer
-    :param source_address: Bind address
-    :param timeout: Timeout in seconds
     :param kwargs:
     :return: asyncio event loop and tcp client
     """
@@ -141,6 +139,7 @@ def get_factory(scheduler):
 
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
     :return: new factory
+    :raises Exception: Failure
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory

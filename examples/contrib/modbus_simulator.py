@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-raises-doc
 """An example of creating a fully implemented modbus server.
 
 with read/write data as well as user configurable base data

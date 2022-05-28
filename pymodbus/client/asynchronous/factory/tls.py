@@ -1,4 +1,5 @@
 """Factory to create asynchronous tls clients based on asyncio."""
+# pylint: disable=missing-type-doc
 import logging
 import asyncio
 
@@ -22,12 +23,8 @@ def async_io_factory(
     :param host: Target server"s name, also matched for certificate
     :param port: Port
     :param sslctx: The SSLContext to use for TLS (default None and auto create)
-    :param certfile: The optional client"s cert file path for TLS server request
-    :param keyfile: The optional client"s key file path for TLS server request
-    :param password: The password for for decrypting client"s private key file
+    :param server_hostname: Bind address
     :param framer: Modbus Framer
-    :param source_address: Bind address
-    :param timeout: Timeout in seconds
     :param kwargs:
     :return: asyncio event loop and tcp client
     """
@@ -61,7 +58,8 @@ def get_factory(scheduler):
     """Get protocol factory based on the backend scheduler being used.
 
     :param scheduler: ASYNC_IO
-    :return
+    :return: protocol object
+    :raises Exception: Failure
     """
     if scheduler == schedulers.ASYNC_IO:
         return async_io_factory

@@ -3,6 +3,7 @@
 A collection of utilities for building and decoding
 modbus messages payloads.
 """
+# pylint: disable=missing-type-doc
 import logging
 
 from struct import pack, unpack
@@ -60,6 +61,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         # Pack values back based on correct byte order   #
         # ---------------------------------------------- #
 
+        :param fstring:
         :param value: Value to be packed
         :return:
         """
@@ -141,7 +143,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
         they will be left padded with 0 bits to make
         it so.
 
-        :param value: The value to add to the buffer
+        :param values: The value to add to the buffer
         """
         value = pack_bitstring(values)
         self._payload.append(value)
@@ -295,6 +297,7 @@ class BinaryPayloadDecoder:
         :param byteorder: The Byte order of each word
         :param wordorder: The endianness of the word (when wordcount is >= 2)
         :returns: An initialized PayloadDecoder
+        :raises ParameterException:
         """
         _logger.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
@@ -321,7 +324,9 @@ class BinaryPayloadDecoder:
 
         :param coils: The coil results to initialize with
         :param byteorder: The endianness of the payload
+        :param wordorder: The endianness of the payload
         :returns: An initialized PayloadDecoder
+        :raises ParameterException:
         """
         if isinstance(coils, list):
             payload = b""
@@ -342,6 +347,7 @@ class BinaryPayloadDecoder:
         # Change Word order if little endian word order  #
         # Pack values back based on correct byte order   #
         # ---------------------------------------------- #
+        :param fstring:
         :param handle: Value to be unpacked
         :return:
         """

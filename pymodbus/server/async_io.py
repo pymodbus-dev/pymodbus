@@ -1,4 +1,5 @@
 """Implementation of a Threaded Modbus Server."""
+# pylint: disable=missing-type-doc
 import logging
 import warnings
 from binascii import b2a_hex
@@ -212,6 +213,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         """Call with the resulting message.
 
         :param request: The decoded request message
+        :param addr: the address
         """
         broadcast = False
         try:
@@ -273,14 +275,15 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
     def _send_(self, data):  # pragma: no cover pylint: disable=no-self-use
         """Send a request (string) to the network.
 
-        :param message: The unencoded modbus response
+        :param data: The unencoded modbus response
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Method not implemented by derived class")
 
     async def _recv_(self):  # pragma: no cover pylint: disable=no-self-use
         """Receive data from the network.
 
-        :return:
+        :raises NotImplementedException:
         """
         raise NotImplementedException("Method not implemented by derived class")
 
@@ -866,8 +869,7 @@ async def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     :param defer_start: if set, a coroutine which can be started and stopped
             will be returned. Otherwise, the server will be immediately spun
             up without the ability to shut it off from within the asyncio loop
-    :param ignore_missing_slaves: True to not send errors on a request to a
-                                      missing slave
+    :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
@@ -915,8 +917,7 @@ async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     :param defer_start: if set, a coroutine which can be started and stopped
             will be returned. Otherwise, the server will be immediately spun
             up without the ability to shut it off from within the asyncio loop
-    :param ignore_missing_slaves: True to not send errors on a request to a
-                                      missing slave
+    :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
@@ -959,9 +960,8 @@ async def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     :param address: An optional (interface, port) to bind to.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param framer: The framer to operate with (default ModbusSocketFramer)
-    :param ignore_missing_slaves: True to not send errors on a request
-                                    to a missing slave
+    :param defer_start: start with delay
+    :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
@@ -987,15 +987,7 @@ async def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-d
     :param identity: An optional identify structure
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param framer: The framer to operate with (default ModbusAsciiFramer)
-    :param port: The serial port to attach to
-    :param stopbits: The number of stop bits to use
-    :param bytesize: The bytesize of the serial messages
-    :param parity: Which kind of parity to use
-    :param baudrate: The baud rate to use for the serial device
-    :param timeout: The timeout to use for the serial device
-    :param ignore_missing_slaves: True to not send errors on a request to a
-                                  missing slave
+    :param kwargs: The rest
     """
     framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)

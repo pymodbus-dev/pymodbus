@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc
 """Pymodbus Synchronous Client Examples.
 
 The following is an example of how to use the synchronous modbus client

@@ -3,6 +3,7 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+# pylint: disable=missing-type-doc
 import functools
 from pymodbus.pdu import ModbusExceptions, ExceptionResponse
 from pymodbus.exceptions import ModbusIOException
@@ -95,7 +96,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :returns: List of register values
         """
         resp = super().read_coils(address, count, **kwargs)  # pylint: disable=no-member
@@ -108,7 +109,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return: List of bits
         """
         resp = super().read_discrete_inputs(  # pylint: disable=no-member
@@ -124,7 +125,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param value: bit value to write
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().write_coil(address, value, **kwargs)  # pylint: disable=no-member
@@ -136,7 +137,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param values: list of bit values to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().write_coils(  # pylint: disable=no-member
@@ -150,7 +151,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param value: register value to write
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().write_register(  # pylint: disable=no-member
@@ -164,7 +165,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param values: list of register value to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().write_registers(  # pylint: disable=no-member
@@ -177,7 +178,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: starting register offset to read from
         :param count: Number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().read_holding_registers(  # pylint: disable=no-member
@@ -192,7 +193,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: starting register offset to read from to
         :param count: Number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().read_input_registers(  # pylint: disable=no-member
@@ -214,7 +215,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
         :param write_registers: List of register values to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().readwrite_registers(  # pylint: disable=no-member
@@ -236,7 +237,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param address: Reference address of register
         :param and_mask: And Mask
         :param or_mask: OR Mask
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         resp = super().mask_write_register(  # pylint: disable=no-member
@@ -256,7 +257,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param read_code:  Read Device ID code (0x01/0x02/0x03/0x04)
         :param object_id: Identification of the first object to obtain.
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReadDeviceInformationRequest(read_code, object_id, **kwargs)
@@ -276,7 +277,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     def report_slave_id(self, **kwargs):
         """Report information about remote slave ID.
 
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReportSlaveIdRequest(**kwargs)
@@ -295,10 +296,8 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         In a remote device.
 
-        :param unit: The slave unit this request is targeting
-
+        :param kwargs:
         :return:
-
         """
         request = ReadExceptionStatusRequest(**kwargs)
         resp = self.execute(request)  # pylint: disable=no-member
@@ -311,10 +310,8 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         From the remote device"s communication event counter.
 
-        :param unit: The slave unit this request is targeting
-
+        :param kwargs:
         :return:
-
         """
         request = GetCommEventCounterRequest(**kwargs)
         resp = self.execute(request)  # pylint: disable=no-member
@@ -332,7 +329,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         Event count, message count, and a field of event
         bytes from the remote device.
 
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = GetCommEventLogRequest(**kwargs)
@@ -362,7 +359,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Loop back data sent in response.
 
         :param message: Message to be looped back
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnQueryDataRequest(message, **kwargs)
@@ -374,7 +371,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         Serial interface and clear all of its communications event counters.
 
         :param toggle: Toggle Status [ON(0xff00)/OFF(0x0000]
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = RestartCommunicationsOptionRequest(toggle, **kwargs)
@@ -384,7 +381,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Read 16-bit diagnostic register.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnDiagnosticRegisterRequest(data, **kwargs)
@@ -394,7 +391,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Change message delimiter for future requests.
 
         :param data: New delimiter character
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ChangeAsciiInputDelimiterRequest(data, **kwargs)
@@ -404,7 +401,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Force addressed remote device to its Listen Only Mode.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ForceListenOnlyModeRequest(data, **kwargs)
@@ -414,7 +411,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Clear all counters and diag registers.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ClearCountersRequest(data, **kwargs)
@@ -424,7 +421,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of message detected on bus by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusMessageCountRequest(data, **kwargs)
@@ -434,7 +431,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of CRC errors received by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusCommunicationErrorCountRequest(data, **kwargs)
@@ -444,7 +441,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of Modbus exceptions returned by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusExceptionErrorCountRequest(data, **kwargs)
@@ -454,7 +451,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of messages addressed to remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveMessageCountRequest(data, **kwargs)
@@ -464,7 +461,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of No responses by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveNoResponseCountRequest(data, **kwargs)
@@ -474,7 +471,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of NO ACK exceptions sent by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveNAKCountRequest(data, **kwargs)
@@ -484,7 +481,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of server busy exceptions sent by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveBusyCountRequest(data, **kwargs)
@@ -496,7 +493,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         By remote slave due to character overrun condition.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveBusCharacterOverrunCountRequest(data, **kwargs)
@@ -506,7 +503,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Return count of iop overrun errors by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnIopOverrunCountRequest(data, **kwargs)
@@ -516,7 +513,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Clear over run counter.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ClearOverrunCountRequest(data, **kwargs)
@@ -526,7 +523,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Get/clear stats of remote modbus plus device.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = GetClearModbusPlusRequest(  # pylint: disable=too-many-function-args

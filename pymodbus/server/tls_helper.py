@@ -1,4 +1,5 @@
 """TLS helper for Modbus TLS Server."""
+# pylint: disable=missing-type-doc
 import ssl
 
 

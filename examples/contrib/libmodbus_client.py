@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc,missing-raises-doc
 """Libmodbus Protocol Wrapper.
 
 What follows is an example wrapper of the libmodbus library

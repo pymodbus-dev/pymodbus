@@ -1,3 +1,4 @@
+# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc,missing-raises-doc,missing-any-param-doc
 """Modbus BCD Payload Builder.
 
 This is an example of building a custom payload builder

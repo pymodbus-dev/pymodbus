@@ -1,4 +1,5 @@
 """Factory to create asynchronous serial clients based on twisted/tornado/asyncio."""
+# pylint: disable=missing-type-doc
 import logging
 import asyncio
 
@@ -122,6 +123,7 @@ def get_factory(scheduler):
 
     :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
     :return:
+    :raises Exception: Failure
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory

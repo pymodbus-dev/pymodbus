@@ -1,5 +1,5 @@
 """Collection of transaction based abstractions."""
-
+# pylint: disable=missing-type-doc
 import logging
 import struct
 import socket
@@ -272,6 +272,7 @@ class ModbusTransactionManager:
         :param response_length:  Expected response length
         :param full: the target device was notorious for its no response. Dont
             waste time this time by partial querying
+        :param broadcast:
         :return: response
         """
         last_exception = None
@@ -428,6 +429,7 @@ class ModbusTransactionManager:
 
         :param request: The request to hold on to
         :param tid: The overloaded transaction id to use
+        :raises NotImplementedException:
         """
         raise NotImplementedException("addTransaction")
 
@@ -437,6 +439,7 @@ class ModbusTransactionManager:
         If the transaction does not exist, None is returned
 
         :param tid: The transaction to retrieve
+        :raises NotImplementedException:
         """
         raise NotImplementedException("getTransaction")
 
@@ -444,6 +447,7 @@ class ModbusTransactionManager:
         """Remove a transaction matching the referenced tid.
 
         :param tid: The transaction to remove
+        :raises NotImplementedException:
         """
         raise NotImplementedException("delTransaction")
 

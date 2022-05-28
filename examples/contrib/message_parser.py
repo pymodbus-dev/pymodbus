@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc,missing-any-param-doc
 """Modbus Message Parser.
 
 The following is an example of how to parse modbus messages
@@ -105,7 +106,7 @@ class Decoder:
                         "  %-12s => %s" % (k_item, v_item)  # pylint: disable=consider-using-f-string
                     )
 
-            elif isinstance(v_dict, collections.Iterable):
+            elif isinstance(v_dict, collections.Iterable):  # pylint: disable=no-member
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):

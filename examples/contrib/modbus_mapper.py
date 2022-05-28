@@ -1,3 +1,4 @@
+# pylint: disable=missing-type-doc,differing-param-doc
 r"""This is used to generate decoder blocks.
 
 so that non-programmers can define the

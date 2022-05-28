@@ -3,6 +3,7 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
+# pylint: disable=missing-type-doc
 import os
 import sys
 import asyncio
@@ -133,7 +134,6 @@ class ReactiveServer:
         """Start Modbus server as asyncio task after startup.
 
         :param app: Webapp
-        :return:
         """
         try:
             if hasattr(asyncio, "create_task"):
@@ -162,7 +162,6 @@ class ReactiveServer:
         """Stop modbus server.
 
         :param app: Webapp
-        :return:
         """
         logger.info("Stopping modbus server")
         if isinstance(self._modbus_server, ModbusSerialServer):
@@ -190,7 +189,6 @@ class ReactiveServer:
         """Update manipulator config. Resets previous counters.
 
         :param config: Manipulator config (dict)
-        :return:
         """
         self._counter = 0
         self._manipulator_config = config
@@ -241,10 +239,7 @@ class ReactiveServer:
         return response, skip_encoding
 
     def run(self):
-        """Run Web app.
-
-        :return:
-        """
+        """Run Web app."""
 
         def _info(message):
             msg = HINT.format(message, self._host, self._port)
@@ -254,10 +249,7 @@ class ReactiveServer:
         web.run_app(self._web_app, host=self._host, port=self._port, print=_info)
 
     async def run_async(self):
-        """Run Web app.
-
-        :return:
-        """
+        """Run Web app."""
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)

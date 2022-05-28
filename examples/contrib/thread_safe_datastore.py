@@ -1,3 +1,4 @@
+# pylint: disable=missing-type-doc
 """Thread safe datastore."""
 import threading
 from contextlib import contextmanager

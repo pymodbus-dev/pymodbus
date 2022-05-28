@@ -31,26 +31,17 @@ class EventLoopThread:
         self._event_loop.daemon = True
 
     def _start(self):
-        """Start the backend event loop
-
-        :return:
-        """
+        """Start the backend event loop."""
         self._start_loop(*self._args, **self._kwargs)
 
     def start(self):
-        """Start the backend event loop
-
-        :return:
-        """
+        """Start the backend event loop."""
         txt = f'Starting Event Loop: "PyModbus_{self._name}"'
         _logger.info(txt)
         self._event_loop.start()
 
     def stop(self):
-        """Stop the backend event loop
-
-        :return:
-        """
+        """Stop the backend event loop."""
         txt = f'Stopping Event Loop: "PyModbus_{self._name}"'
         _logger.info(txt)
         self._stop_loop()

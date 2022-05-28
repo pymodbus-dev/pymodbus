@@ -80,7 +80,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for request in iter(self.write.keys()):
-            self.assertTrue(str(request) is not None)  # NOSONAR
+            self.assertTrue(str(request) is not None)
 
     def test_write_single_register_request(self):
         """Test write single register request."""

@@ -126,13 +126,13 @@ class ReadFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # NOSONAR pylint: disable=unused-argument,no-self-use
+    def execute(self, context):  # pylint: disable=unused-argument,no-self-use
         """Run a read exception status request against the store.
 
         :param context: The datastore to request from
         :returns: The populated response
         """
-        # TODO do some new context operation here #NOSONAR pylint: disable=fixme
+        # TODO do some new context operation here # pylint: disable=fixme
         # if file number, record number, or address + length
         # is too big, return an error.
         files = []
@@ -250,13 +250,13 @@ class WriteFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # NOSONAR pylint: disable=unused-argument
+    def execute(self, context):  # pylint: disable=unused-argument
         """Run the write file record request against the context.
 
         :param context: The datastore to request from
         :returns: The populated response
         """
-        # TODO do some new context operation here #NOSONAR pylint: disable=fixme
+        # TODO do some new context operation here # pylint: disable=fixme
         # if file number, record number, or address + length
         # is too big, return an error.
         return WriteFileRecordResponse(self.records)
@@ -355,7 +355,7 @@ class ReadFifoQueueRequest(ModbusRequest):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, context):  # NOSONAR pylint: disable=unused-argument
+    def execute(self, context):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :param context: The datastore to request from
@@ -365,7 +365,7 @@ class ReadFifoQueueRequest(ModbusRequest):
             return self.doException(merror.IllegalValue)
         if len(self.values) > 31:
             return self.doException(merror.IllegalValue)
-        # TODO pull the values from some context #NOSONAR pylint: disable=fixme
+        # TODO pull the values from some context # pylint: disable=fixme
         return ReadFifoQueueResponse(self.values)
 
 

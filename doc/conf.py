@@ -154,11 +154,11 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [  # NOSONAR
+latex_documents = [
     (
         master_doc,
         "PyModbus.tex",
-        "PyModbus Documentation",  # NOSONAR
+        "PyModbus Documentation",
         "Sanjay",
         "manual",
     ),

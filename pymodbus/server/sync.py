@@ -639,7 +639,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 # Creation Factories
 # --------------------------------------------------------------------------- #
-def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -663,7 +663,7 @@ def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-va
     server.serve_forever()
 
 
-def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -708,7 +708,7 @@ def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-va
     server.serve_forever()
 
 
-def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -731,7 +731,7 @@ def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-va
     server.serve_forever()
 
 
-def StartSerialServer(  # NOSONAR pylint: disable=invalid-name, dangerous-default-value
+def StartSerialServer(  # pylint: disable=invalid-name, dangerous-default-value
     context=None,
     identity=None,
     custom_functions=[],

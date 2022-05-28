@@ -79,7 +79,7 @@ class TestAsynchronousClient:
         self, mock_iostream, mock_ioloop
     ):  # pylint: disable=no-self-use,unused-argument
         """Test the TCP tornado client client initialize"""
-        protocol, future = AsyncModbusTCPClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        protocol, future = AsyncModbusTCPClient(  # ylint: disable=unpacking-non-sequence
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder())
         )
         client = future.result()
@@ -116,7 +116,7 @@ class TestAsynchronousClient:
 
     def test_tls_asyncio_client(self):  # pylint: disable=no-self-use
         """Test the TLS AsyncIO client."""
-        _, client = AsyncModbusTLSClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO
         )
         assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
@@ -137,7 +137,7 @@ class TestAsynchronousClient:
         self, mock_iostream, mock_ioloop
     ):  # pylint: disable=no-self-use,unused-argument
         """Test the udp tornado client client initialize"""
-        protocol, future = AsyncModbusUDPClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        protocol, future = AsyncModbusUDPClient(  # pylint: disable=unpacking-non-sequence
             schedulers.IO_LOOP, framer=ModbusSocketFramer(ClientDecoder())
         )
         client = future.result()
@@ -202,7 +202,7 @@ class TestAsynchronousClient:
             ):
                 with patch("twisted.internet.reactor"):
 
-                    protocol, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+                    protocol, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
                         schedulers.REACTOR,
                         method=method,
                         port=pytest.SERIAL_PORT,
@@ -250,7 +250,7 @@ class TestAsynchronousClient:
         with maybe_manage(
             sys.platform in {"darwin", "win32"}, patch.object(Serial, "open")
         ):
-            protocol, future = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+            protocol, future = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
                 schedulers.IO_LOOP, method=method, port=pytest.SERIAL_PORT
             )
             client = future.result()
@@ -292,7 +292,7 @@ class TestAsynchronousClient:
         """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False
-        loop, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        loop, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO,
             method=method,
             port=pytest.SERIAL_PORT,

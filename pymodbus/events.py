@@ -130,7 +130,7 @@ class RemoteSendEvent(ModbusEvent):
 
         :param event: The event to decode
         """
-        # NOSONAR todo fix the start byte count
+        # todo fix the start byte count # pylint: disable=fixme
         bits = unpack_bitstring(event)
         self.read = bits[0]
         self.slave_abort = bits[1]

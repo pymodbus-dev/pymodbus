@@ -22,7 +22,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 # --------------------------------------------------------------------------- #
 # import the twisted libraries we need
@@ -80,7 +80,7 @@ def run_updating_server():
         info_name={
             "VendorName": "pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
             "MajorMinorRevision": version.short(),

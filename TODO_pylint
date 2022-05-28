@@ -1,5 +1,4 @@
 Resolve:
-#NOSONAR (indirect through solving pylint)
 noqa
 
 pylint general:

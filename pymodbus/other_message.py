@@ -40,8 +40,8 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
-        self, context=None  # NOSONAR
+    def execute(  # pylint: disable=no-self-use,unused-argument
+        self, context=None
     ):
         """Run a read exception status request against the store.
 
@@ -108,7 +108,7 @@ class ReadExceptionStatusResponse(ModbusResponse):
 
 
 # ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+#  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
 class GetCommEventCounterRequest(ModbusRequest):
     """This function code is used to get a status word.
@@ -145,8 +145,8 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
-        self, context=None  # NOSONAR
+    def execute(  # pylint: disable=no-self-use,unused-argument
+        self, context=None
     ):
         """Run a read exception status request against the store.
 
@@ -216,7 +216,7 @@ class GetCommEventCounterResponse(ModbusResponse):
 
 
 # ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+#  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
 class GetCommEventLogRequest(ModbusRequest):
     """This function code is used to get a status word.
@@ -256,8 +256,8 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # NOSONAR pylint: disable=no-self-use,unused-argument
-        self, context=None  # NOSONAR
+    def execute(  # pylint: disable=no-self-use,unused-argument
+        self, context=None
     ):
         """Run a read exception status request against the store.
 
@@ -352,7 +352,7 @@ class GetCommEventLogResponse(ModbusResponse):
 
 
 # ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+#  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
 class ReportSlaveIdRequest(ModbusRequest):
     """This function code is used to read the description of the type.
@@ -469,7 +469,7 @@ class ReportSlaveIdResponse(ModbusResponse):
 
 
 # ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial #NOSONAR pylint: disable=fixme
+#  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
 # report device identification 43, 14
 

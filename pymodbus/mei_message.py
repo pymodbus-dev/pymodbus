@@ -77,7 +77,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
         params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    def execute(self, context):  # NOSONAR pylint: disable=unused-argument
+    def execute(self, context):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :param context: The datastore to request from

@@ -32,7 +32,7 @@ FORMAT = (
     "%(asctime)-15s %(threadName)-15s"
     " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 )
-logging.basicConfig(format=FORMAT)  # NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 
 
@@ -96,8 +96,8 @@ class Decoder:
         :param message: The message to print
         """
         print(
-            "%-15s = %s" % ("name", message.__class__.__name__)  # NOSONAR # pylint: disable=consider-using-f-string
-        )  # NOSONAR
+            "%-15s = %s" % ("name", message.__class__.__name__)  # pylint: disable=consider-using-f-string
+        )
         for (k_dict, v_dict) in message.__dict__.items():
             if isinstance(v_dict, dict):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
@@ -111,11 +111,11 @@ class Decoder:
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):
                     print(
-                        "%-15s . %s" % ("", line)  # NOSONAR  # pylint: disable=consider-using-f-string
+                        "%-15s . %s" % ("", line)  # pylint: disable=consider-using-f-string
                     )
             else:
                 print(
-                    "%-15s = %s" % (k_dict, hex(v_dict))  # NOSONAR  # pylint: disable=consider-using-f-string
+                    "%-15s = %s" % (k_dict, hex(v_dict))  # pylint: disable=consider-using-f-string
                 )
         print(
             "%-15s = %s" % ("documentation", message.__doc__)  # pylint: disable=consider-using-f-string

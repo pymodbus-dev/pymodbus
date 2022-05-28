@@ -320,7 +320,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
 
         raise gen.Return(self)
 
-    def execute(self, request=None):  # NOSONAR
+    def execute(self, request=None):
         """Execute a transaction.
 
         :param request: Request to be written on to the bus
@@ -411,7 +411,7 @@ class AsyncModbusSerialClient(BaseTornadoSerialClient):
         txt = f"expected_response_length = {expected_response_length}"
         _logger.debug(txt)
 
-        # NOSONAR TODO: calculate once
+        # TODO: calculate once
         exception_response_length = (
             self.transaction._calculate_exception_length()  # pylint: disable=protected-access
         )

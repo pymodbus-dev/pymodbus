@@ -31,7 +31,7 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
 
-# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer #NOSONAR
+# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -60,8 +60,8 @@ def updating_writer(parm1):
 
     # import pdb; pdb.set_trace()
 
-    rand_value = random.randint(0, 9999)  # NOSONAR #nosec
-    rand_addr = random.randint(0, 65000)  # NOSONAR #nosec
+    rand_value = random.randint(0, 9999)  # nosec
+    rand_addr = random.randint(0, 65000)  # nosec
     txt = f"Writing to datastore: {rand_addr}, {rand_value}"
     log.debug(txt)
     # import pdb; pdb.set_trace()
@@ -89,7 +89,7 @@ def run_dbstore_update_server():
         info_name={
             "VendorName": "pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
             "MajorMinorRevision": version.short(),

@@ -225,7 +225,7 @@ class AsyncioServerTest(
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
         with patch(
-            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",  # NOSONAR
+            "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",
             new_callable=Mock,
         ) as process:
             await self.connect_server()

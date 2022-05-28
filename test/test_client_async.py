@@ -56,7 +56,7 @@ class TestAsynchronousClient:
 
     def test_tls_asyncio_client(self):  # pylint: disable=no-self-use
         """Test the TLS AsyncIO client."""
-        _, client = AsyncModbusTLSClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO
         )
         assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
@@ -103,7 +103,7 @@ class TestAsynchronousClient:
         """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False
-        loop, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        loop, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO,
             method=method,
             port=pytest.SERIAL_PORT,

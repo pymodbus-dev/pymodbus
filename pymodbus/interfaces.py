@@ -46,7 +46,7 @@ class IModbusDecoder:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def lookupPduClass(  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def lookupPduClass(  # pylint: disable=no-self-use,invalid-name
         self, function_code
     ):
         """Use `function_code` to determine the class of the PDU.
@@ -74,14 +74,14 @@ class IModbusFramer:
     rtu, ascii).
     """
 
-    def checkFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def checkFrame(self):  # pylint: disable=no-self-use,invalid-name
         """Check and decode the next frame.
 
         :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def advanceFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def advanceFrame(self):  # pylint: disable=no-self-use,invalid-name
         """Skip over the current framed message.
 
         This allows us to skip over the current message after we have processed
@@ -90,7 +90,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def addToFrame(self, message):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def addToFrame(self, message):  # pylint: disable=no-self-use,invalid-name
         """Add the next message to the frame buffer.
 
         This should be used before the decoding while loop to add the received
@@ -101,7 +101,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def isFrameReady(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def isFrameReady(self):  # pylint: disable=no-self-use,invalid-name
         """Check if we should continue decode logic.
 
         This is meant to be used in a while loop in the decoding phase to let
@@ -111,14 +111,14 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def getFrame(self):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def getFrame(self):  # pylint: disable=no-self-use,invalid-name
         """Get the next frame from the buffer.
 
         :raises NotImplementedException:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def populateResult(  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def populateResult(  # pylint: disable=no-self-use,invalid-name
         self, result
     ):
         """Populate the modbus result with current frame header.
@@ -131,7 +131,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def processIncomingPacket(  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def processIncomingPacket(  # pylint: disable=no-self-use,invalid-name
         self, data, callback
     ):
         """Process new packet pattern.
@@ -151,7 +151,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def buildPacket(self, message):  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def buildPacket(self, message):  # pylint: disable=no-self-use,invalid-name
         """Create a ready to send modbus packet.
 
         The raw packet is built off of a fully populated modbus
@@ -201,7 +201,7 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("validate context values")
 
-    def getValues(  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def getValues(  # pylint: disable=no-self-use,invalid-name
         self, fx, address, count=1
     ):
         """Get `count` values from datastore.
@@ -213,7 +213,7 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("get context values")
 
-    def setValues(  # NOSONAR pylint: disable=no-self-use,invalid-name
+    def setValues(  # pylint: disable=no-self-use,invalid-name
         self, fx, address, values
     ):
         """Set the datastore with the supplied values.

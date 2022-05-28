@@ -45,7 +45,7 @@ def server(ctx, host, web_port, broadcast_support, repl, verbose):
         " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
     )
     pymodbus_logger = logging.getLogger("pymodbus")
-    logging.basicConfig(format=FORMAT)  # NOSONAR
+    logging.basicConfig(format=FORMAT)
     if verbose:
         pymodbus_logger.setLevel(logging.DEBUG)
     else:

@@ -23,7 +23,7 @@ FORMAT = (
     "%(asctime)-15s %(threadName)-15s"
     " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 )
-logging.basicConfig(format=FORMAT)  # NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -171,8 +171,8 @@ def begin_asynchronous_test(client):
 
 
 if __name__ == "__main__":
-    protocol, deferred = AsyncModbusTCPClient(   # NOSONAR # pylint: disable=unpacking-non-sequence
-        schedulers.REACTOR, port=5020  # NOSONAR
-    )  # NOSONAR
+    protocol, deferred = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
+        schedulers.REACTOR, port=5020
+    )
     deferred.addCallback(begin_asynchronous_test)
     deferred.addErrback(err)

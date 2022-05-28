@@ -3,7 +3,16 @@
 This is the single location for storing default
 values for the servers and clients.
 """
+import logging
+
 from pymodbus.interfaces import Singleton
+
+# set logging format and default level for library.
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
+    datefmt="%H:%M:%S",
+    level=logging.WARNING
+)
 
 
 class Defaults(Singleton):  # pylint: disable=too-few-public-methods

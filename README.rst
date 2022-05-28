@@ -12,6 +12,9 @@ PyModbus - A Python Modbus Stack
 .. image:: http://pepy.tech/badge/pymodbus
    :target: http://pepy.tech/project/pymodbus 
    :alt: Downloads
+.. image:: https://github.com/riptideio/pymodbus/workflows/CI/badge.svg?branch=dev
+    :target: https://github.com/riptideio/pymodbus/actions?query=workflow%3Abuild
+    :alt: Build Status
    
 ------------------------------------------------------------
 Supported versions

@@ -15,8 +15,8 @@ Examples
    custom_datablock
    custom_message
    modbus_logging
-   modbus_payload
-   modbus_payload_server
+   payload_client
+   payload_server
    performance
    synchronous_client
    synchronous_client_ext

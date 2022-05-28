@@ -1,4 +1,4 @@
 ==================================================
 Modbus Payload Example
 ==================================================
-.. literalinclude:: ../../../examples/common/modbus_payload.py
+.. literalinclude:: ../../../examples/common/payload_client.py

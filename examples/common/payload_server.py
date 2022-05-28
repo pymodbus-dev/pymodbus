@@ -1,37 +1,30 @@
-#!/usr/bin/env python3
 """Pymodbus Server Payload Example.
 
-If you want to initialize a server context with a complicated memory
-layout, you can actually use the payload builder.
+This example shows how to initialize a server with a
+complicated memory layout using builder.
 """
 import logging
+import asyncio
 
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server.async_io import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusSlaveContext,
+    ModbusServerContext,
+)
 from pymodbus.constants import Endian
-
-# from pymodbus.payload import BinaryPayloadDecoder #NOSONAR
 from pymodbus.payload import BinaryPayloadBuilder
 
-# --------------------------------------------------------------------------- #
-# configure the service logging
-# --------------------------------------------------------------------------- #
-FORMAT = (
-    "%(asctime)-15s %(threadName)-15s"
-    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-)
-logging.basicConfig(format=FORMAT)  # NOSONAR
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+# set logging level for library.
+logging.getLogger().setLevel(logging.DEBUG)
 
 
-def run_payload_server():
+async def run_payload_server():
     """Run payload server."""
     # ----------------------------------------------------------------------- #
     # build your payload
@@ -57,18 +50,21 @@ def run_payload_server():
 
     # ----------------------------------------------------------------------- #
     # use that payload in the data store
-    # ----------------------------------------------------------------------- #
     # Here we use the same reference block for each underlying store.
     # ----------------------------------------------------------------------- #
 
     block = ModbusSequentialDataBlock(1, builder.to_registers())
-    store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
+    store = ModbusSlaveContext(
+        di=block,
+        co=block,
+        hr=block,
+        ir=block
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- #
-    # If you don"t set this or any fields, they are defaulted to empty strings.
+    # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(
         info_name={
@@ -80,11 +76,16 @@ def run_payload_server():
             "MajorMinorRevision": version.short(),
         }
     )
-    # ----------------------------------------------------------------------- #
-    # run the server you want
-    # ----------------------------------------------------------------------- #
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
+    server = await StartTcpServer(
+        context,
+        identity=identity,
+        address=("0.0.0.0", 5020),
+        allow_reuse_address=True,
+        defer_start=True
+    )
 
+    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
+    await server.serve_forever()
 
 if __name__ == "__main__":
-    run_payload_server()
+    asyncio.run(run_payload_server())

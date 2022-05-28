@@ -262,7 +262,7 @@ class ReactiveServer:
         cls,
         vendor="Pymodbus",
         product_code="PM",
-        vendor_url="http://github.com/riptideio/pymodbus/",  # NOSONAR
+        vendor_url="http://github.com/riptideio/pymodbus/",
         product_name="Pymodbus Server",
         model_name="Reactive Server",
         version=pymodbus_version.short(),
@@ -310,7 +310,7 @@ class ReactiveServer:
             db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
             if sparse:
                 if not (address_map := block_desc.get("address_map")):
-                    address_map = random.sample(  # NOSONAR
+                    address_map = random.sample(
                         range(start_address + 1, default_count), default_count - 1
                     )
                     address_map.insert(0, 0)

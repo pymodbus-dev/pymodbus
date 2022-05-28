@@ -279,7 +279,7 @@ class BinaryPayloadDecoder:
         self._wordorder = wordorder
 
     @classmethod
-    def fromRegisters(  # NOSONAR pylint: disable=invalid-name
+    def fromRegisters(  # pylint: disable=invalid-name
         cls,
         registers,
         byteorder=Endian.Little,
@@ -312,12 +312,12 @@ class BinaryPayloadDecoder:
         return chunks
 
     @classmethod
-    def fromCoils(  # NOSONAR pylint: disable=invalid-name
+    def fromCoils(  # pylint: disable=invalid-name
         cls,
         coils,
         byteorder=Endian.Little,
         wordorder=Endian.Big,
-    ):  # NOSONAR pylint: disable=unused-argument
+    ):  # pylint: disable=unused-argument
         """Initialize a payload decoder with the result of reading of coils.
 
         The coils are treated as a list of bit(boolean) values.

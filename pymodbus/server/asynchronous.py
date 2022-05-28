@@ -235,11 +235,11 @@ def _is_main_thread():
     return True
 
 
-def StartTcpServer(  # NOSONAR pylint: disable=dangerous-default-value,invalid-name
+def StartTcpServer(  # pylint: disable=dangerous-default-value,invalid-name
     context,
     identity=None,
     address=None,
-    console=False,  # NOSONAR pylint: disable=unused-argument,
+    console=False,  # pylint: disable=unused-argument,
     defer_reactor_run=False,
     custom_functions=[],
     **kwargs,
@@ -277,7 +277,7 @@ def StartTcpServer(  # NOSONAR pylint: disable=dangerous-default-value,invalid-n
         )
 
 
-def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context,
     identity=None,
     address=None,
@@ -317,7 +317,7 @@ def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-va
         )
 
 
-def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+def StartSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context,
     identity=None,
     framer=ModbusAsciiFramer,
@@ -378,7 +378,7 @@ def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default
         )
 
 
-def StopServer():  # NOSONAR pylint: disable=invalid-name
+def StopServer():  # pylint: disable=invalid-name
     """Stop Async Server."""
     from twisted.internet import (  # pylint: disable=import-outside-toplevel,reimported
         reactor as local_reactor,

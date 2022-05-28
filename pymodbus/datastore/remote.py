@@ -56,7 +56,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
-        # NOSONAR TODO deal with deferreds
+        # TODO deal with deferreds # pylint: disable=fixme
         txt = f"get values[{fc_as_hex}] {address}:{count}"
         _logger.debug(txt)
         result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
@@ -69,7 +69,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param address: The starting address
         :param values: The new values to be set
         """
-        # NOSONAR TODO deal with deferreds
+        # TODO deal with deferreds # pylint: disable=fixme
         txt = f"set values[{fc_as_hex}] {address}:{len(values)}"
         _logger.debug(txt)
         self.__set_callbacks[self.decode(fc_as_hex)](address, values)

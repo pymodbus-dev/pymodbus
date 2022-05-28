@@ -101,8 +101,8 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
     """Default formatter."""
 
-    def docmodule(  # NOSONAR # noqa: C901
-        self, object, name=None, mod=None, packageContext=None, *ignored  # NOSONAR
+    def docmodule(  # noqa: C901
+        self, object, name=None, mod=None, packageContext=None, *ignored
     ):  # noqa: C901
         """Produce HTML documentation for a module object."""
         my_name = object.__name__  # ignore the passed-in name
@@ -271,7 +271,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
                         items.append(
                             self.modpkglink((modname, name, ispackage, isshadowed))
                         )
-                except:  # noqa: E722 NOSONAR
+                except:  # noqa: E722
                     items.append(
                         self.modpkglink((modname, name, ispackage, isshadowed))
                     )
@@ -315,8 +315,8 @@ class PackageDocumentationGenerator:
 
     def __init__(
         self,
-        baseModules,  # NOSONAR
-        destinationDirectory=".",  # NOSONAR
+        baseModules,
+        destinationDirectory=".",
         recursion=1,
         exclusions=(),
         recursionStops=(),
@@ -412,17 +412,17 @@ class PackageDocumentationGenerator:
                 except pydoc.ErrorDuringImport as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
                     self.warn(
-                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                        """Unable to import the module %s""" % (repr(self.pending[0]))
                     )
                 except (SystemError, SystemExit) as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
                     self.warn(
-                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                        """Unable to import the module %s""" % (repr(self.pending[0]))
                     )
                 except Exception as value:
                     self.info("""   ... FAILED %s""" % (repr(value)))
                     self.warn(
-                        """Unable to import the module %s""" % (repr(self.pending[0]))  # NOSONAR
+                        """Unable to import the module %s""" % (repr(self.pending[0]))
                     )
                 else:
                     page = self.formatter.page(

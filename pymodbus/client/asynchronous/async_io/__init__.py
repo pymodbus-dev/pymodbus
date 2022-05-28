@@ -125,7 +125,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """Write transport."""
         return self.transport.write(packet)
 
-    def _execute(self, request, **kwargs):  # NOSONAR pylint: disable=unused-argument
+    def _execute(self, request, **kwargs):  # pylint: disable=unused-argument
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)

@@ -13,17 +13,17 @@ import logging
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 
-from pymodbus.server.sync import StartTcpServer  # NOSONAR
-# from pymodbus.server.sync import StartTlsServer # NOSONAR
-# from pymodbus.server.sync import StartUdpServer # NOSONAR
-# from pymodbus.server.sync import StartSerialServer # NOSONAR
+from pymodbus.server.sync import StartTcpServer
+# from pymodbus.server.sync import StartTlsServer
+# from pymodbus.server.sync import StartUdpServer
+# from pymodbus.server.sync import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 
-# from pymodbus.datastore import ModbusSparseDataBlock  # NOSONAR
+# from pymodbus.datastore import ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer #NOSONAR
+# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -32,7 +32,7 @@ FORMAT = (
     "%(asctime)-15s %(threadName)-15s"
     " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 )
-logging.basicConfig(format=FORMAT)  # NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -111,7 +111,7 @@ def run_server():
         info_name={
             "VendorName": "Pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),

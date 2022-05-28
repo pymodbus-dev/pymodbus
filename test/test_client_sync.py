@@ -25,7 +25,7 @@ from pymodbus.utilities import hexlify_packets
 # ---------------------------------------------------------------------------#
 # Mock Classes
 # ---------------------------------------------------------------------------#
-class mockSocket:  # NOSONAR pylint: disable=invalid-name
+class mockSocket:  # pylint: disable=invalid-name
     """Mock socket."""
 
     timeout = 2
@@ -54,11 +54,11 @@ class mockSocket:  # NOSONAR pylint: disable=invalid-name
         """Receive from."""
         return [b"\x00" * size]
 
-    def sendto(self, msg, *args):  # NOSONAR pylint: disable=no-self-use,unused-argument
+    def sendto(self, msg, *args):  # pylint: disable=no-self-use,unused-argument
         """Send to."""
         return len(msg)
 
-    def setblocking(self, flag):  # NOSONAR pylint: disable=no-self-use,unused-argument
+    def setblocking(self, flag):  # pylint: disable=no-self-use,unused-argument
         """Set blocking."""
         return None
 

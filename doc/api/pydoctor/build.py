@@ -26,5 +26,5 @@ try:
 
     if os.path.exists("../../../build"):
         shutil.move("html", "../../../build/pydoctor")
-except:  # noqa: E722 NOSONAR pylint: disable=bare-except
+except:  # noqa: E722 pylint: disable=bare-except
     print("Pydoctor unavailable...not building")

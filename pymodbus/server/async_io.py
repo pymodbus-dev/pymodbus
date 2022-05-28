@@ -130,7 +130,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             )
             _logger.error(txt)
 
-    async def handle(self):  # NOSONAR
+    async def handle(self):
         """Return Asyncio coroutine which represents a single conversation.
 
         between the modbus slave and master
@@ -183,7 +183,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 single = self.server.context.single
                 self.framer.processIncomingPacket(
                     data=data,
-                    callback=lambda x: self.execute(x, *addr),  # NOSONAR
+                    callback=lambda x: self.execute(x, *addr),
                     unit=units,
                     single=single,
                 )
@@ -550,24 +550,24 @@ class ModbusTlsServer(ModbusTcpServer):
     server context instance.
     """
 
-    def __init__(  # NOSONAR pylint: disable=too-many-arguments
-        self,  # NOSONAR
-        context,  # NOSONAR
-        framer=None,  # NOSONAR
-        identity=None,  # NOSONAR
-        address=None,  # NOSONAR
-        sslctx=None,  # NOSONAR
-        certfile=None,  # NOSONAR
-        keyfile=None,  # NOSONAR
-        password=None,  # NOSONAR
-        reqclicert=False,  # NOSONAR
-        handler=None,  # NOSONAR
-        allow_reuse_address=False,  # NOSONAR
-        allow_reuse_port=False,  # NOSONAR
-        defer_start=False,  # NOSONAR
-        backlog=20,  # NOSONAR
-        loop=None,  # NOSONAR
-        **kwargs,  # NOSONAR
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        context,
+        framer=None,
+        identity=None,
+        address=None,
+        sslctx=None,
+        certfile=None,
+        keyfile=None,
+        password=None,
+        reqclicert=False,
+        handler=None,
+        allow_reuse_address=False,
+        allow_reuse_port=False,
+        defer_start=False,
+        backlog=20,
+        loop=None,
+        **kwargs,
     ):
         """Overloaded initializer for the socket server.
 
@@ -851,7 +851,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 
 
-async def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+async def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -884,7 +884,7 @@ async def StartTcpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     return server
 
 
-async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
+async def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
     context=None,
     identity=None,
     address=None,
@@ -945,7 +945,7 @@ async def StartTlsServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     return server
 
 
-async def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+async def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     address=None,
@@ -975,7 +975,7 @@ async def StartUdpServer(  # NOSONAR pylint: disable=invalid-name,dangerous-defa
     return server
 
 
-async def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-default-value
+async def StartSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     custom_functions=[],
@@ -997,7 +997,7 @@ async def StartSerialServer(  # NOSONAR pylint: disable=invalid-name,dangerous-d
     await server.serve_forever()
 
 
-def StopServer():  # NOSONAR pylint: disable=invalid-name
+def StopServer():  # pylint: disable=invalid-name
     """Stop Async Server."""
     warnings.warn(
         "deprecated API for asyncio. Call server_close() on "

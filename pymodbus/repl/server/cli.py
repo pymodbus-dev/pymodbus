@@ -113,7 +113,7 @@ def print_help():
         )
 
 
-async def interactive_shell(server):  # NOSONAR
+async def interactive_shell(server):
     """Run CLI interactive shell."""
     col = get_terminal_width()
     max_len = max([len(t) for t in TITLE.split("\n")])

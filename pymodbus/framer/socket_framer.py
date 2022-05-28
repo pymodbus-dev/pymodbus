@@ -138,7 +138,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(  # NOSONAR pylint: disable=arguments-differ
+    def processIncomingPacket(  # pylint: disable=arguments-differ
         self, data, callback, unit, **kwargs
     ):
         """Process new packet pattern.

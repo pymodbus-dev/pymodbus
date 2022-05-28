@@ -92,7 +92,7 @@ class Command:
         doc = filter(lambda d: d, self.doc)
         cmd_help = list(
             filter(
-                lambda x: not x.startswith(":param") and not x.startswith(":return"),  # NOSONAR
+                lambda x: not x.startswith(":param") and not x.startswith(":return"),
                 doc,
             )
         )

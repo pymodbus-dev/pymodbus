@@ -274,25 +274,25 @@ class ModbusDeviceIdentification:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    VendorName = dict_property(  # NOSONAR
+    VendorName = dict_property(
         lambda s: s.__data, 0  # pylint: disable=protected-access
     )
-    ProductCode = dict_property(  # NOSONAR
+    ProductCode = dict_property(
         lambda s: s.__data, 1  # pylint: disable=protected-access
     )
-    MajorMinorRevision = dict_property(  # NOSONAR
+    MajorMinorRevision = dict_property(
         lambda s: s.__data, 2  # pylint: disable=protected-access
     )
-    VendorUrl = dict_property(  # NOSONAR
+    VendorUrl = dict_property(
         lambda s: s.__data, 3  # pylint: disable=protected-access
     )
-    ProductName = dict_property(  # NOSONAR
+    ProductName = dict_property(
         lambda s: s.__data, 4  # pylint: disable=protected-access
     )
-    ModelName = dict_property(  # NOSONAR
+    ModelName = dict_property(
         lambda s: s.__data, 5  # pylint: disable=protected-access
     )
-    UserApplicationName = dict_property(  # NOSONAR
+    UserApplicationName = dict_property(
         lambda s: s.__data, 6  # pylint: disable=protected-access
     )
 
@@ -341,7 +341,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         return cls.__lookup[read_code](cls, identity, object_id)
 
     @classmethod
-    def __get(  # NOSONAR pylint: disable=unused-private-member
+    def __get(  # pylint: disable=unused-private-member
         cls, identity, object_id
     ):
         """Read a single object_id from the device information.
@@ -353,7 +353,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         return {object_id: identity[object_id]}
 
     @classmethod
-    def __gets(  # NOSONAR pylint: disable=unused-private-member
+    def __gets(  # pylint: disable=unused-private-member
         cls, identity, object_ids
     ):
         """Read multiple object_ids from the device information.
@@ -486,31 +486,31 @@ class ModbusCountersHandler:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    BusMessage = dict_property(  # NOSONAR
+    BusMessage = dict_property(
         lambda s: s.__data, 0  # pylint: disable=protected-access
     )
-    BusCommunicationError = dict_property(  # NOSONAR
+    BusCommunicationError = dict_property(
         lambda s: s.__data, 1  # pylint: disable=protected-access
     )
-    BusExceptionError = dict_property(  # NOSONAR
+    BusExceptionError = dict_property(
         lambda s: s.__data, 2  # pylint: disable=protected-access
     )
-    SlaveMessage = dict_property(  # NOSONAR
+    SlaveMessage = dict_property(
         lambda s: s.__data, 3  # pylint: disable=protected-access
     )
-    SlaveNoResponse = dict_property(  # NOSONAR
+    SlaveNoResponse = dict_property(
         lambda s: s.__data, 4  # pylint: disable=protected-access
     )
-    SlaveNAK = dict_property(  # NOSONAR
+    SlaveNAK = dict_property(
         lambda s: s.__data, 5  # pylint: disable=protected-access
     )
-    SlaveBusy = dict_property(  # NOSONAR
+    SlaveBusy = dict_property(
         lambda s: s.__data, 6  # pylint: disable=protected-access
     )
-    BusCharacterOverrun = dict_property(  # NOSONAR
+    BusCharacterOverrun = dict_property(
         lambda s: s.__data, 7  # pylint: disable=protected-access
     )
-    Event = dict_property(  # NOSONAR
+    Event = dict_property(
         lambda s: s.__data, 8  # pylint: disable=protected-access
     )
 

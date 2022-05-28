@@ -127,9 +127,9 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
     # link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-    loop, client = ModbusClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+    loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
         schedulers.ASYNC_IO,
-        port="/tmp/ttyp0",  # NOSONAR # nosec
+        port="/tmp/ttyp0",  # nosec
         baudrate=9600,
         method="rtu",
     )

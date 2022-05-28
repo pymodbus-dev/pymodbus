@@ -95,7 +95,7 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     async def test_initialization_tcp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tcp in loop."""
-        _, client = AsyncModbusTCPClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO,
             port=5020,
         )
@@ -108,7 +108,7 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     async def test_initialization_udp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization udp in loop."""
-        _, client = AsyncModbusUDPClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusUDPClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO, port=5020
         )
         client = await client
@@ -120,7 +120,7 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     async def test_initialization_tls_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tls in loop."""
-        _, client = AsyncModbusTLSClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+        _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO, port=5020
         )
         client = await client
@@ -132,10 +132,10 @@ class TestAsyncioClient:
     @pytest.mark.asyncio
     def test_initialization_serial_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization serial in loop."""
-        _, client = AsyncModbusSerialClient(  # NOSONAR pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu"  # NOSONAR #nosec
+        _, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
+            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu"  # nosec
         )
-        assert client.port == "/tmp/ptyp0"  # nosec NOSONAR
+        assert client.port == "/tmp/ptyp0"  # nosec
         assert client.baudrate == 9600  # nosec
 
     def test_factory_reset_wait_before_reconnect(self):  # pylint: disable=no-self-use

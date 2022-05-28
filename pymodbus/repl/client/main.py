@@ -117,7 +117,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def cli(client):  # noqa: C901 NOSONAR pylint: disable=too-complex
+def cli(client):  # noqa: C901 pylint: disable=too-complex
     """Run client definition."""
     use_keys = KeyBindings()
     history_file = os.path.normpath(os.path.expanduser("~/.pymodhis"))
@@ -278,7 +278,7 @@ def main(
             "%(asctime)-15s %(threadName)-15s "
             "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
         )
-        logging.basicConfig(format=use_format)  # NOSONAR
+        logging.basicConfig(format=use_format)
         _logger.setLevel(logging.DEBUG)
     ctx.obj = {
         "broadcast": broadcast_support,

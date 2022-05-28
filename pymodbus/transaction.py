@@ -116,7 +116,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):  # NOSONAR
+    def execute(self, request):
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -205,7 +205,7 @@ class ModbusTransactionManager:
                         else:
                             break
                         # full = False
-                    addTransaction = partial(  # NOSONAR pylint: disable=invalid-name
+                    addTransaction = partial(  # pylint: disable=invalid-name
                         self.addTransaction,
                         tid=request.transaction_id,
                     )
@@ -257,7 +257,7 @@ class ModbusTransactionManager:
             _logger.debug(txt)
         self.client.connect()
         if hasattr(self.client, "_in_waiting"):
-            if (  # NOSONAR
+            if (
                 in_waiting := self.client._in_waiting()  # pylint: disable=protected-access
             ):
                 if response_length == in_waiting:
@@ -311,7 +311,7 @@ class ModbusTransactionManager:
                 hasattr(self.client, "handle_local_echo")
                 and self.client.handle_local_echo is True
             ):
-                if self._recv(size, full) != packet:  # NOSONAR
+                if self._recv(size, full) != packet:
                     return b"", "Wrong local echo"
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
@@ -332,11 +332,11 @@ class ModbusTransactionManager:
             result = b""
         return result, last_exception
 
-    def _send(self, packet, retrying=False):  # NOSONAR pylint: disable=unused-argument
+    def _send(self, packet, retrying=False):  # pylint: disable=unused-argument
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):  # NOSONAR
+    def _recv(self, expected_response_length, full):
         """Receive."""
         total = None
         if not full:
@@ -419,7 +419,7 @@ class ModbusTransactionManager:
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 
-    def addTransaction(  # NOSONAR pylint: disable=invalid-name,no-self-use
+    def addTransaction(  # pylint: disable=invalid-name,no-self-use
         self, request, tid=None
     ):
         """Add a transaction to the handler.

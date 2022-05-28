@@ -29,7 +29,7 @@ from pymodbus.client.common import ModbusClientMixin
 # -------------------------------------------------------------------------- #
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
-logging.basicConfig()  # NOSONAR
+logging.basicConfig()
 
 
 # -------------------------------------------------------------------------- #
@@ -183,7 +183,7 @@ class ConcurrentClient(ModbusClientMixin):
         self.workers.append(self.manager)
 
         # creating the request workers
-        for i in range(worker_count):  # NOSONAR
+        for i in range(worker_count):
             worker = primitives.worker(
                 target=_client_worker_process,
                 args=(

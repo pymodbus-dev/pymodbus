@@ -75,7 +75,7 @@ class ModbusPDU:
         raise NotImplementedException()
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):  # NOSONAR pylint: disable=invalid-name
+    def calculateRtuFrameSize(cls, buffer):  # pylint: disable=invalid-name
         """Calculate the size of a PDU.
 
         :param buffer: A buffer containing the data that have been received.

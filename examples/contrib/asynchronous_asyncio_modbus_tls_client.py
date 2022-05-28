@@ -37,11 +37,11 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # pass SSLContext which is the context here to ModbusTcpClient()
     # ----------------------------------------------------------------------- #
-    loop, new_client = AsyncModbusTLSClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+    loop, new_client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
         ASYNC_IO,
         "test.host.com",
-        8020,  # NOSONAR
+        8020,
         sslctx=sslctx,
-    )  # NOSONAR
+    )
     loop.run_until_complete(start_async_test(new_client.protocol))
     loop.close()

@@ -15,14 +15,14 @@ import asyncio
 from pymodbus.version import version
 from pymodbus.server.async_io import StartTcpServer
 
-# from pymodbus.server.async_io import StartTlsServer #NOSONAR
-# from pymodbus.server.async_io import StartUdpServer #NOSONAR
-# from pymodbus.server.async_io import StartSerialServer #NOSONAR
+# from pymodbus.server.async_io import StartTlsServer
+# from pymodbus.server.async_io import StartUdpServer
+# from pymodbus.server.async_io import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.datastore import ModbusSequentialDataBlock
 
-# from pymodbus.datastore import ModbusSparseDataBlock #NOSONAR
+# from pymodbus.datastore import ModbusSparseDataBlock
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -31,7 +31,7 @@ FORMAT = (
     "%(asctime)-15s %(threadName)-15s"
     " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 )
-logging.basicConfig(format=FORMAT)  # NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -110,7 +110,7 @@ async def run_server():
         info_name={
             "VendorName": "Pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),

@@ -18,7 +18,7 @@ log.setLevel(logging.DEBUG)
 # state a few constants
 # ---------------------------------------------------------------------------#
 
-SERIAL_PORT = "/tmp/ptyp0"  # nosec NOSONAR
+SERIAL_PORT = "/tmp/ptyp0"  # nosec
 STATUS_REGS = (1, 2)
 STATUS_COILS = (1, 3)
 CLIENT_DELAY = 1
@@ -79,13 +79,13 @@ class ExampleProtocol(ModbusClientProtocol):
 if __name__ == "__main__":
     import time
 
-    proto, client = AsyncModbusSerialClient(  # NOSONAR  # pylint: disable=unpacking-non-sequence
+    proto, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
         schedulers.REACTOR,
         method="rtu",
         port=SERIAL_PORT,
         timeout=2,
         proto_cls=ExampleProtocol,
-    )   # NOSONAR
+    ) 
     proto.start()
     time.sleep(10)  # Wait for operation to complete
     # proto.stop()

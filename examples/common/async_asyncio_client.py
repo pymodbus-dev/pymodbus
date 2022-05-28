@@ -132,7 +132,7 @@ def run_with_not_running_loop():
     loop = asyncio.new_event_loop()
     assert not loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
-    new_loop, client = ModbusClient(  # NOSONAR pylint: disable=unpacking-non-sequence
+    new_loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
         schedulers.ASYNC_IO, port=5020, loop=loop
     )
     loop.run_until_complete(start_async_test(client.protocol))
@@ -163,11 +163,11 @@ async def run_with_already_running_loop():
     asyncio.sleep(1)
     assert loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
-    loop, client = ModbusClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO,  # NOSONAR
+    loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
+        schedulers.ASYNC_IO,
         port=5020,
         loop=loop,
-    )  # NOSONAR
+    )
     future = asyncio.run_coroutine_threadsafe(
         start_async_test(client.protocol), loop=loop
     )
@@ -182,9 +182,9 @@ async def run_with_already_running_loop():
 def run_with_no_loop():
     """Create a loop."""
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
-    loop, client = ModbusClient(  # NOSONAR  # pylint: disable=unpacking-non-sequence
+    loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
         schedulers.ASYNC_IO, port=5020
-    )  # NOSONAR
+    )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------DONE RUN_WITH_NO_LOOP-------------")

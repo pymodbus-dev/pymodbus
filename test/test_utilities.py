@@ -16,7 +16,7 @@ class DictPropertyTester:  # pylint: disable=too-few-public-methods
         """Initialize."""
         self.test = {1: "a"}
         self._test = {2: "b"}
-        self.__test = {3: "c"}  # NOSONAR pylint: disable=unused-private-member
+        self.__test = {3: "c"}  # pylint: disable=unused-private-member
 
     l_1 = dict_property(lambda s: s.test, 1)
     l_2 = dict_property(lambda s: s._test, 2)  # pylint: disable=protected-access

@@ -162,7 +162,7 @@ def __generate_crc16_table():
 __crc16_table = __generate_crc16_table()
 
 
-def computeCRC(data):  # NOSONAR pylint: disable=invalid-name
+def computeCRC(data):  # pylint: disable=invalid-name
     """Compute a crc16 on the passed in string.
 
     For modbus, this is only used on the binary serial protocols (in this
@@ -182,7 +182,7 @@ def computeCRC(data):  # NOSONAR pylint: disable=invalid-name
     return swapped
 
 
-def checkCRC(data, check):  # NOSONAR pylint: disable=invalid-name
+def checkCRC(data, check):  # pylint: disable=invalid-name
     """Check if the data matches the passed in CRC.
 
     :param data: The data to create a crc16 of
@@ -192,7 +192,7 @@ def checkCRC(data, check):  # NOSONAR pylint: disable=invalid-name
     return computeCRC(data) == check
 
 
-def computeLRC(data):  # NOSONAR pylint: disable=invalid-name
+def computeLRC(data):  # pylint: disable=invalid-name
     """Use to compute the longitudinal redundancy check against a string.
 
     This is only used on the serial ASCII
@@ -208,7 +208,7 @@ def computeLRC(data):  # NOSONAR pylint: disable=invalid-name
     return lrc & 0xFF
 
 
-def checkLRC(data, check):  # NOSONAR pylint: disable=invalid-name
+def checkLRC(data, check):  # pylint: disable=invalid-name
     """Check if the passed in data matches the LRC.
 
     :param data: The data to calculate
@@ -218,7 +218,7 @@ def checkLRC(data, check):  # NOSONAR pylint: disable=invalid-name
     return computeLRC(data) == check
 
 
-def rtuFrameSize(data, byte_count_pos):  # NOSONAR pylint: disable=invalid-name
+def rtuFrameSize(data, byte_count_pos):  # pylint: disable=invalid-name
     """Calculate the size of the frame based on the byte count.
 
     :param data: The buffer containing the frame.

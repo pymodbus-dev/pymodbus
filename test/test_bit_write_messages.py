@@ -131,7 +131,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = str(request)
-            self.assertTrue(result is not None and len(result))  # NOSONAR
+            self.assertTrue(result is not None and len(result))
 
 
 # ---------------------------------------------------------------------------#

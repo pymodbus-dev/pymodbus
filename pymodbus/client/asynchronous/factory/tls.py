@@ -67,4 +67,4 @@ def get_factory(scheduler):
     txt = f"Allowed Schedulers: {schedulers.ASYNC_IO}"
     _logger.warning(txt)
     txt = f'Invalid Scheduler "{scheduler}"'
-    raise Exception(txt)  # NOSONAR
+    raise Exception(txt)

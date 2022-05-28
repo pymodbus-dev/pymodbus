@@ -15,17 +15,17 @@ from custom_message import CustomModbusRequest
 from pymodbus.version import version
 from pymodbus.server.asynchronous import StartTcpServer
 
-# from pymodbus.server.asynchronous import StartUdpServer #NOSONAR
-# from pymodbus.server.asynchronous import StartSerialServer #NOSONAR
+# from pymodbus.server.asynchronous import StartUdpServer
+# from pymodbus.server.asynchronous import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-# from pymodbus.transaction import ( #NOSONAR
-#    ModbusRtuFramer, #NOSONAR
-#    ModbusAsciiFramer, #NOSONAR
-#    ModbusBinaryFramer, #NOSONAR
-# ) #NOSONAR
+# from pymodbus.transaction import (
+#    ModbusRtuFramer,
+#    ModbusAsciiFramer,
+#    ModbusBinaryFramer,
+# )
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -34,7 +34,7 @@ FORMAT = (
     "%(asctime)-15s %(threadName)-15s"
     " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 )
-logging.basicConfig(format=FORMAT)  # NOSONAR
+logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -119,7 +119,7 @@ def run_async_server():
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",  # NOSONAR
+            "VendorUrl": "http://github.com/riptideio/pymodbus/",
             "ProductName": "Pymodbus Server",
         }
     )

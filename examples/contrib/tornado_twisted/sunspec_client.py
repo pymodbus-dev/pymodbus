@@ -145,7 +145,7 @@ class SunspecOffsets:  # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Common Functions
 # --------------------------------------------------------------------------- #
-def defer_or_apply(func):  # NOSONAR pylint: disable=unused-argument
+def defer_or_apply(func):  # pylint: disable=unused-argument
     """Apply an adapter method.
 
     to a result regardless if it is a deferred

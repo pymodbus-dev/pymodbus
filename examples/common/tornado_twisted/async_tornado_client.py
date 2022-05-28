@@ -144,7 +144,7 @@ def callback(protocol, future):  # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    protocol, future = ModbusClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
+    protocol, future = ModbusClient( # pylint: disable=unpacking-non-sequence
         schedulers.IO_LOOP, port=5020
-    )  # NOSONAR
+    )
     future.add_done_callback(functools.partial(callback, protocol))

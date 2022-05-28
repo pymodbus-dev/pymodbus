@@ -193,9 +193,9 @@ class ReadRegisterMessagesTest(unittest.TestCase):
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for request in iter(self.request_read.keys()):
-            self.assertTrue(str(request) is not None)  # NOSONAR
+            self.assertTrue(str(request) is not None)
         for request in iter(self.response_read.keys()):
-            self.assertTrue(str(request) is not None)  # NOSONAR
+            self.assertTrue(str(request) is not None)
 
 
 # ---------------------------------------------------------------------------#

@@ -82,7 +82,7 @@ def _print(value):
 
 def begin_asynchronous_test(
     client, protocol
-):  # NOSONAR pylint: disable=redefined-outer-name
+):  # pylint: disable=redefined-outer-name
     """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
@@ -163,13 +163,13 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient(  # NOSONAR # pylint: disable=unpacking-non-sequence
-        schedulers.IO_LOOP,  # NOSONAR
+    protocol, future = AsyncModbusSerialClient( # pylint: disable=unpacking-non-sequence
+        schedulers.IO_LOOP,
         method="rtu",
-        port="/tmp/ptyp0",  # nosec NOSONAR
+        port="/tmp/ptyp0",  # nosec
         baudrate=9600,
         timeout=2,
-    )  # NOSONAR
+    )
 
     # Asci
     # from pymodbus.transaction import ModbusAsciiFramer

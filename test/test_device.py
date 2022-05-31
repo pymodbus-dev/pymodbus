@@ -42,6 +42,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         }
         self.ident = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
+        self.control.Identity.update(self.info)
         self.access = ModbusAccessControl()
         self.control.reset()
 
@@ -50,6 +51,47 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         del self.ident
         del self.control
         del self.access
+
+    def test_multiple_identities(self):
+        """Test that ModbusDeviceIdentification can be duplicated."""
+        first_ident = ModbusDeviceIdentification()
+        second_ident = ModbusDeviceIdentification()
+        first_ident.VendorName = "first id"
+        second_ident.VendorName = "second id"
+        self.assertEqual(first_ident.VendorName, "first id")
+        self.assertEqual(second_ident.VendorName, "second id")
+        self.assertTrue(first_ident.VendorName is not second_ident.VendorName)
+        self.assertTrue(first_ident.VendorName is not self.control.Identity.VendorName)
+        self.assertTrue(second_ident.VendorName is not self.control.Identity.VendorName)
+        self.assertTrue(first_ident.VendorName is not self.ident)
+        self.assertTrue(second_ident.VendorName is not self.ident)
+
+        first_control = ModbusControlBlock()
+        second_control = ModbusControlBlock()
+        first_control.Identity.VendorName = "first control"
+        second_control.Identity.VendorName = "second control"
+        self.assertEqual(first_control.Identity.VendorName, "first control")
+        self.assertEqual(second_control.Identity.VendorName, "second control")
+        self.assertTrue(first_control is not second_control)
+        self.assertTrue(first_control.Identity is not second_control.Identity)
+        self.assertTrue(first_control.Identity is not self.control.Identity)
+        self.assertTrue(second_control.Identity is not self.control.Identity)
+        self.assertTrue(first_control.Identity is not second_control.Identity)
+
+
+        # first_control.Identity.VendorName = "Control first"
+        # second_control.Identity.VendorName = "Control second"
+        # self.assertEqual(first_ident.VendorName, "")
+        # self.assertEqual(second_ident.VendorName, "")
+        # self.assertEqual(first_control.Identity.VendorName, "Control first")
+        # self.assertEqual(second_control.Identity.VendorName, "Control second")
+
+        # first_ident.VendorName = "Ident first"
+        # second_ident.VendorName = "Ident second"
+        # self.assertEqual(first_ident.VendorName, "Ident first")
+        # self.assertEqual(second_ident.VendorName, "Ident second")
+        # self.assertEqual(first_control.Identity.VendorName, "Control first")
+        # self.assertEqual(second_control.Identity.VendorName, "Control second")
 
     def test_update_identity(self):
         """Test device identification reading"""

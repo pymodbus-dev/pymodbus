@@ -66,33 +66,6 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         self.assertTrue(first_ident.VendorName is not self.ident)
         self.assertTrue(second_ident.VendorName is not self.ident)
 
-        first_control = ModbusControlBlock()
-        second_control = ModbusControlBlock()
-        first_control.Identity.VendorName = "first control"
-        second_control.Identity.VendorName = "second control"
-        self.assertEqual(first_control.Identity.VendorName, "first control")
-        self.assertEqual(second_control.Identity.VendorName, "second control")
-        self.assertTrue(first_control is not second_control)
-        self.assertTrue(first_control.Identity is not second_control.Identity)
-        self.assertTrue(first_control.Identity is not self.control.Identity)
-        self.assertTrue(second_control.Identity is not self.control.Identity)
-        self.assertTrue(first_control.Identity is not second_control.Identity)
-
-
-        # first_control.Identity.VendorName = "Control first"
-        # second_control.Identity.VendorName = "Control second"
-        # self.assertEqual(first_ident.VendorName, "")
-        # self.assertEqual(second_ident.VendorName, "")
-        # self.assertEqual(first_control.Identity.VendorName, "Control first")
-        # self.assertEqual(second_control.Identity.VendorName, "Control second")
-
-        # first_ident.VendorName = "Ident first"
-        # second_ident.VendorName = "Ident second"
-        # self.assertEqual(first_ident.VendorName, "Ident first")
-        # self.assertEqual(second_ident.VendorName, "Ident second")
-        # self.assertEqual(first_control.Identity.VendorName, "Control first")
-        # self.assertEqual(second_control.Identity.VendorName, "Control second")
-
     def test_update_identity(self):
         """Test device identification reading"""
         self.control.Identity.update(self.ident)

@@ -7,7 +7,8 @@ when a value is written to it. In order for this to work, it needs
 a device-mapping file.
 """
 import logging
-from multiprocessing import Queue, Process
+from multiprocessing import Queue
+from threading import Thread
 
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
@@ -138,8 +139,8 @@ def run_callback_server():
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
-    proc = Process(target=device_writer, args=(queue,))
-    proc.start()
+    thread = Thread(target=device_writer, args=(queue,))
+    thread.start()
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
 

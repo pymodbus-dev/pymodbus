@@ -30,7 +30,7 @@ Remark: "Supports" means that we only test with those versions, lower versions (
 Summary
 ------------------------------------------------------------
 
-Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous core. The preferred mode for asynchronous communication is asyncio, however for the moment twisted and tornado are also supported (due to be removed or converted to a plugin in a later version).
+Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous core. The preferred mode for asynchronous communication is asyncio, however for the moment twisted are also supported (due to be removed or converted to a plugin in a later version).
 
 Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
@@ -53,7 +53,7 @@ Client Features
   * Full read/write protocol on discrete and register
   * Most of the extended protocol (diagnostic/file/pipe/setting/information)
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by asyncio/twisted/tornado) and synchronous versions
+  * asynchronous(powered by asyncio/twisted) and synchronous versions
   * Payload builder/decoder utilities
   * Pymodbus REPL for quick tests
   * Customable framer to allow for custom implementations
@@ -129,7 +129,6 @@ If you think, that something in the code is broken/not running well, please `ope
 
 .. important::
    **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
-   **If using tornado make sure the tornado version is `4.5.3` other versions of tornado can break the implementation**
 
 
 ------------------------------------------------------------
@@ -170,8 +169,6 @@ Available options are:
 - **datastore**, installs databases (SQLAlchemy and Redit) for datastore.
 
 - **twisted**, installs twisted as alternative to asyncio (will be removed in a future version).
-
-- **tornado**, installs tornado as alternative to asyncio (will be removed in a future version).
 
 - **documentation**, installs tools to generate documentation.
 

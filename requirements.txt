@@ -74,6 +74,5 @@ pydocstyle
 pycodestyle
 pylint
 pytest
-pytest-asyncio
 pytest-cov
 tox

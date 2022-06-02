@@ -58,22 +58,22 @@ sphinx-rtd-theme
 # development, everything needed to develop/test/check.
 # -------------------------------------------------------------------
 # install:development]
-asynctest
-bandit
-black
-codespell
-coverage
-flake8
-flake8-docstrings
-flake8-noqa
-flake8-comprehensions
-isort
-pep8
-pyflakes
-pydocstyle
-pycodestyle
-pylint
-pytest
-pytest-asyncio
-pytest-cov
-tox
+asynctest==0.13.0
+bandit==1.7.4
+black==22.3.0
+codespell==2.1.0
+coverage==6.4
+flake8==4.0.1
+flake8-docstrings==1.6.0
+flake8-noqa==1.2.2
+flake8-comprehensions==3.10.0
+isort==5.10.1
+pep8==1.7.1
+pyflakes==2.4.0
+pydocstyle==6.1.1
+pycodestyle==2.8.0
+pylint==2.13.9
+pytest==7.1.2
+pytest-asyncio==0.18.3
+pytest-cov==3.0.0
+tox==3.25.0

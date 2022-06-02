@@ -1,4 +1,4 @@
-# pylint: disable=missing-type-doc,differing-param-doc
+# pylint: disable=missing-type-doc
 r"""This is used to generate decoder blocks.
 
 so that non-programmers can define the
@@ -133,10 +133,6 @@ def xml_mapping_parser():
 
     return a mapping layout that can be used to decode an new block.
 
-    .. note:: The input of the xml file is defined as
-    follows::
-
-    :param path: The path to the xml input file
     :returns: The decoded csv dictionary
     """
 

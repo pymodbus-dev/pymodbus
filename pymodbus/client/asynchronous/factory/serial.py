@@ -1,4 +1,4 @@
-"""Factory to create asynchronous serial clients based on twisted/tornado/asyncio."""
+"""Factory to create asynchronous serial clients based on twisted/asyncio."""
 # pylint: disable=missing-type-doc
 import logging
 import asyncio
@@ -69,29 +69,6 @@ def reactor_factory(port, framer, **kwargs):
     return proto, ser_client
 
 
-def io_loop_factory(port=None, framer=None, **kwargs):
-    """Create Tornado based asynchronous serial clients.
-
-    :param port:  Serial port
-    :param framer: Modbus Framer
-    :param kwargs:
-    :return: event_loop_thread and tornado future
-    """
-    from tornado.ioloop import IOLoop  # pylint: disable=import-outside-toplevel
-    from pymodbus.client.asynchronous.tornado import (  # pylint: disable=import-outside-toplevel
-        AsyncModbusSerialClient as Client,
-    )
-
-    ioloop = IOLoop()
-    protocol = EventLoopThread("ioloop", ioloop.start, ioloop.stop)
-    protocol.start()
-    client = Client(port=port, framer=framer, ioloop=ioloop, **kwargs)
-
-    future = client.connect()
-
-    return protocol, future
-
-
 def async_io_factory(port=None, framer=None, **kwargs):
     """Create asyncio based asynchronous serial clients.
 
@@ -121,18 +98,16 @@ def async_io_factory(port=None, framer=None, **kwargs):
 def get_factory(scheduler):
     """Get protocol factory based on the backend scheduler being used.
 
-    :param scheduler: REACTOR/IO_LOOP/ASYNC_IO
+    :param scheduler: REACTOR/ASYNC_IO
     :return:
     :raises Exception: Failure
     """
     if scheduler == schedulers.REACTOR:
         return reactor_factory
-    if scheduler == schedulers.IO_LOOP:
-        return io_loop_factory
     if scheduler == schedulers.ASYNC_IO:
         return async_io_factory
 
-    txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.IO_LOOP}, {schedulers.ASYNC_IO}"
+    txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.ASYNC_IO}"
     _logger.warning(txt)
     txt = f'Invalid Scheduler "{scheduler}"'
     raise Exception(txt)

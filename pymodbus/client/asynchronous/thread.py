@@ -8,7 +8,6 @@ _logger = logging.getLogger(__name__)
 class EventLoopThread:
     """Event loop controlling the backend event loops.
 
-    io_loop for tornado,
     reactor for twisted,
     event_loop for Asyncio
     """

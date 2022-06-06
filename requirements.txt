@@ -39,9 +39,6 @@ sqlalchemy>=1.1.15
 # install:twisted
 twisted[conch,serial]>=20.3.0
 
-# install:tornado
-tornado==4.5.3
-
 
 # -------------------------------------------------------------------
 # documentation, everything needed to generate documentation.

@@ -1,4 +1,4 @@
-"""Async Modbus Client implementation based on Twisted, tornado and asyncio
+"""Async Modbus Client implementation based on Twisted and asyncio
 
 Example run::
 
@@ -10,9 +10,6 @@ Example run::
     from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as Client
     from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as Client
 
-    # For tornado based asynchronous client use
-    event_loop, future = Client(schedulers.IO_LOOP, port=5020)
-
     # For twisted based asynchronous client use
     event_loop, future = Client(schedulers.REACTOR, port=5020)
 
@@ -22,9 +19,6 @@ Example run::
     # Here event_loop is a thread which would control the backend and future is
     # a Future/deferred object which would be used to
     # add call backs to run asynchronously.
-
-    # The Actual client could be accessed with future.result() with Tornado
-    # and future.result when using twisted
 
     # For asyncio the actual client is returned and event loop is asyncio loop
 """

@@ -763,7 +763,7 @@ class ModbusSerialClient(
             if available and available != size:
                 more_data = True
                 size = available
-            time.sleep(0.01)
+            time.sleep(0.02)
         return size
 
     def _recv(self, size):

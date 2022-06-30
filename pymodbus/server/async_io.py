@@ -726,14 +726,14 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     handler = None
 
     def __init__(
-        self, context, framer=None, identity=None, **kwargs
+        self, context, framer=ModbusRtuFramer, identity=None, **kwargs
     ):  # pragma: no cover
         """Initialize the socket server.
 
         If the identity structure is not passed in, the ModbusControlBlock
         uses its own empty structure.
         :param context: The ModbusServerContext datastore
-        :param framer: The framer strategy to use
+        :param framer: The framer strategy to use, default ModbusRtuFramer
         :param identity: An optional identify structure
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use

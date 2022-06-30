@@ -113,6 +113,7 @@ class TestAsynchronousClient:
             parity="E",
             stopbits=2,
             bytesize=7,
+            timeout=1,
         )
         assert isinstance(client, AsyncioModbusSerialClient)  # nosec
         assert isinstance(client.framer, framer)  # nosec

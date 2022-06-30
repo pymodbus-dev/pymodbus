@@ -89,7 +89,7 @@ def async_io_factory(port=None, framer=None, **kwargs):
     if not loop.is_running():
         loop.run_until_complete(coro())
     else:  # loop is not asyncio.get_event_loop():
-        future = asyncio.run_coroutine_threadsafe(coro, loop=loop)
+        future = asyncio.run_coroutine_threadsafe(coro(), loop=loop)
         future.result()
 
     return loop, client

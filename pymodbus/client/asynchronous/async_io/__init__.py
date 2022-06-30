@@ -267,10 +267,8 @@ class ReconnectingAsyncioModbusTcpClient:
         # prevent reconnect:
         self.host = None
 
-        if self.connected:
-            if self.protocol:
-                if self.protocol.transport:
-                    self.protocol.transport.close()
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
@@ -359,10 +357,8 @@ class AsyncioModbusTcpClient:
 
     def stop(self):
         """Stop the client."""
-        if self.connected:
-            if self.protocol:
-                if self.protocol.transport:
-                    self.protocol.transport.close()
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
@@ -537,10 +533,8 @@ class ReconnectingAsyncioModbusUdpClient:
         # prevent reconnect:
         self.host = None
 
-        if self.connected:
-            if self.protocol:
-                if self.protocol.transport:
-                    self.protocol.transport.close()
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
@@ -636,10 +630,8 @@ class AsyncioModbusUdpClient:
         # prevent reconnect:
         # self.host = None
 
-        if self.connected:
-            if self.protocol:
-                if self.protocol.transport:
-                    self.protocol.transport.close()
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
@@ -741,10 +733,8 @@ class AsyncioModbusSerialClient:
 
     def stop(self):
         """Stop connection."""
-        if self._connected:
-            if self.protocol:
-                if self.protocol.transport:
-                    self.protocol.transport.close()
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
 
     def _create_protocol(self):
         """Create protocol."""

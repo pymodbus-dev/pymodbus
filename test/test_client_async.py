@@ -93,7 +93,8 @@ class TestAsynchronousClient:
             ("ascii", ModbusAsciiFramer),
         ],
     )
-    def test_serial_asyncio_client(  # pylint: disable=no-self-use
+    @pytest.mark.asyncio
+    async def test_serial_asyncio_client(  # pylint: disable=no-self-use
         self,
         mock_gather,  # pylint: disable=unused-argument
         mock_event_loop,
@@ -120,6 +121,7 @@ class TestAsynchronousClient:
         assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec
         assert client.bytesize == 7  # nosec
+        asyncio.wait_for(client.connect(), timeout=1)
         client.stop()
         loop.stop()
 

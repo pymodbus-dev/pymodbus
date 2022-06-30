@@ -115,7 +115,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         socket itself will result in this call.
         """
         try:
-            self.handler_task.cancel()
+            if self.handler_task:
+                self.handler_task.cancel()
             if call_exc is None:
                 self._log_exception()
             elif hasattr(self, "client_address"):  # TCP connection

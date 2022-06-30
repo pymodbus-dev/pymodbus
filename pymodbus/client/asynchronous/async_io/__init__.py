@@ -733,7 +733,7 @@ class AsyncioModbusSerialClient:
 
     def stop(self):
         """Stop connection."""
-        if self.connected and self.protocol and self.protocol.transport:
+        if self._connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
     def _create_protocol(self):

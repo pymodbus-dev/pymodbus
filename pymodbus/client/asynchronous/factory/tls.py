@@ -1,7 +1,7 @@
 """Factory to create asynchronous tls clients based on asyncio."""
 # pylint: disable=missing-type-doc
-import logging
 import asyncio
+import logging
 
 from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.async_io import init_tls_client

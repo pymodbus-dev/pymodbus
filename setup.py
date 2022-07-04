@@ -6,16 +6,16 @@
 # initialization
 # --------------------------------------------------------------------------- #
 try:  # if not installed, install and proceed
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 try:
     from setup_commands import command_classes
 except ImportError:
     command_classes = {}
-from pymodbus import __version__, __author__, __maintainer__
+from pymodbus import __author__, __maintainer__, __version__
 
 dependencies = {}
 with open('requirements.txt') as reqs:

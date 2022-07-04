@@ -4,12 +4,13 @@ This fixture tests the functionality of all the
 mei based request/response messages:
 """
 import unittest
+
+from pymodbus.constants import DeviceInformation
+from pymodbus.device import ModbusControlBlock
 from pymodbus.mei_message import (
     ReadDeviceInformationRequest,
     ReadDeviceInformationResponse,
 )
-from pymodbus.constants import DeviceInformation
-from pymodbus.device import ModbusControlBlock
 
 # ---------------------------------------------------------------------------#
 #  Fixture

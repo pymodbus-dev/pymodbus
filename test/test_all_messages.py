@@ -1,32 +1,33 @@
 #!/usr/bin/env python3
 """Test all messages."""
 import unittest
-from pymodbus.constants import Defaults
+
 from pymodbus.bit_read_message import (
-    ReadDiscreteInputsResponse,
+    ReadCoilsRequest,
     ReadCoilsResponse,
     ReadDiscreteInputsRequest,
-    ReadCoilsRequest,
+    ReadDiscreteInputsResponse,
 )
 from pymodbus.bit_write_message import (
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilResponse,
-    WriteSingleCoilRequest,
     WriteMultipleCoilsRequest,
+    WriteMultipleCoilsResponse,
+    WriteSingleCoilRequest,
+    WriteSingleCoilResponse,
 )
+from pymodbus.constants import Defaults
 from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersResponse,
-    ReadInputRegistersResponse,
+    ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
     ReadInputRegistersRequest,
+    ReadInputRegistersResponse,
     ReadWriteMultipleRegistersRequest,
-    ReadHoldingRegistersRequest,
+    ReadWriteMultipleRegistersResponse,
 )
 from pymodbus.register_write_message import (
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterResponse,
     WriteMultipleRegistersRequest,
+    WriteMultipleRegistersResponse,
     WriteSingleRegisterRequest,
+    WriteSingleRegisterResponse,
 )
 
 # ---------------------------------------------------------------------------#

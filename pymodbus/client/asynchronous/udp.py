@@ -1,7 +1,8 @@
 """UDP communication."""
 import logging
-from pymodbus.constants import Defaults
+
 from pymodbus.client.asynchronous.factory.udp import get_factory
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 

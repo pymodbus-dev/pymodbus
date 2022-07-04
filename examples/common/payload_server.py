@@ -3,22 +3,23 @@
 This example shows how to initialize a server with a
 complicated memory layout using builder.
 """
-import logging
 import asyncio
+import logging
+
+from pymodbus.constants import Endian
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+)
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.payload import BinaryPayloadBuilder
+from pymodbus.server.async_io import StartTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-from pymodbus.server.async_io import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import (
-    ModbusSequentialDataBlock,
-    ModbusSlaveContext,
-    ModbusServerContext,
-)
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadBuilder
 
 # set logging level for library.
 logging.getLogger().setLevel(logging.DEBUG)

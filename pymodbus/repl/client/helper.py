@@ -3,17 +3,18 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
-# pylint: disable=missing-type-doc
-import json
 from collections import OrderedDict
 import inspect
+
+# pylint: disable=missing-type-doc
+import json
+
+from prompt_toolkit import print_formatted_text
+from prompt_toolkit.formatted_text import HTML, PygmentsTokens
 import pygments
 from pygments.lexers.data import JsonLexer
-from prompt_toolkit.formatted_text import PygmentsTokens, HTML
-from prompt_toolkit import print_formatted_text
 
 from pymodbus.payload import BinaryPayloadDecoder, Endian
-
 
 predicate = inspect.isfunction
 argspec = inspect.signature

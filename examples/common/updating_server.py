@@ -16,11 +16,14 @@ import logging
 # --------------------------------------------------------------------------- #
 from twisted.internet.task import LoopingCall
 
-from pymodbus.version import version
-from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+)
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.version import version
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 

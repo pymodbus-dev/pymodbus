@@ -3,9 +3,9 @@
 import logging
 import struct
 
-from pymodbus.interfaces import Singleton
-from pymodbus.exceptions import NotImplementedException
 from pymodbus.constants import Defaults
+from pymodbus.exceptions import NotImplementedException
+from pymodbus.interfaces import Singleton
 from pymodbus.utilities import rtuFrameSize
 
 # --------------------------------------------------------------------------- #

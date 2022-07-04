@@ -6,11 +6,11 @@ that can be used in the pymodbus library. Below is a
 simple modicon encoded builder and decoder.
 """
 from struct import pack, unpack
+
 from pymodbus.constants import Endian
-from pymodbus.interfaces import IPayloadBuilder
-from pymodbus.utilities import pack_bitstring
-from pymodbus.utilities import unpack_bitstring
 from pymodbus.exceptions import ParameterException
+from pymodbus.interfaces import IPayloadBuilder
+from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
 class ModiconPayloadBuilder(IPayloadBuilder):

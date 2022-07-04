@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """Test client tornado."""
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import pytest
 
-from pymodbus.client.asynchronous.tornado import (
-    BaseTornadoClient,
-    AsyncModbusSerialClient,
-    AsyncModbusUDPClient,
-    AsyncModbusTCPClient,
-)
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.client.asynchronous import schedulers
-from pymodbus.factory import ClientDecoder
+from pymodbus.client.asynchronous.tornado import (
+    AsyncModbusSerialClient,
+    AsyncModbusTCPClient,
+    AsyncModbusUDPClient,
+    BaseTornadoClient,
+)
 from pymodbus.client.asynchronous.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.factory import ClientDecoder
+from pymodbus.transaction import ModbusRtuFramer, ModbusSocketFramer
 
 # ---------------------------------------------------------------------------#
 # Fixture

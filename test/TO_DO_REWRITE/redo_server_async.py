@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 """Test server async."""
-import sys
 import platform
+import sys
 from threading import Thread
 import time
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.asynchronous import ModbusTcpProtocol, ModbusUdpProtocol
-from pymodbus.server.asynchronous import ModbusServerFactory
+from pymodbus.exceptions import ModbusIOException, NoSuchSlaveException
 from pymodbus.server.asynchronous import (
+    ModbusServerFactory,
+    ModbusTcpProtocol,
+    ModbusUdpProtocol,
+    StartSerialServer,
     StartTcpServer,
     StartUdpServer,
-    StartSerialServer,
     StopServer,
     _is_main_thread,
 )
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.exceptions import NoSuchSlaveException, ModbusIOException
 
 # --------------------------------------------------------------------------- #
 # Fixture

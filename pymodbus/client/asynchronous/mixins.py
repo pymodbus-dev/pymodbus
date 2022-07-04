@@ -1,10 +1,10 @@
 """Mix ins."""
 import logging
+
 from pymodbus.client.sync import BaseModbusClient
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
-
 
 _logger = logging.getLogger(__name__)
 

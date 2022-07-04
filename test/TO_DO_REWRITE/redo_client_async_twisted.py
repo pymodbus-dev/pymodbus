@@ -3,17 +3,17 @@
 import unittest
 from unittest.mock import Mock
 
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
 from pymodbus.client.asynchronous.twisted import (
+    ModbusClientFactory,
     ModbusClientProtocol,
-    ModbusUdpClientProtocol,
     ModbusSerClientProtocol,
     ModbusTcpClientProtocol,
+    ModbusUdpClientProtocol,
 )
-from pymodbus.factory import ClientDecoder
-from pymodbus.client.asynchronous.twisted import ModbusClientFactory
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.factory import ClientDecoder
+from pymodbus.transaction import ModbusRtuFramer, ModbusSocketFramer
 
 # ---------------------------------------------------------------------------#
 #  Fixture

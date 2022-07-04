@@ -1,22 +1,24 @@
 """Collection of transaction based abstractions."""
 # pylint: disable=missing-type-doc
-import logging
-import struct
-import socket
-import time
-from threading import RLock
 from functools import partial
+import logging
+import socket
+import struct
+from threading import RLock
+import time
 
-from pymodbus.exceptions import ModbusIOException, NotImplementedException
-from pymodbus.exceptions import InvalidMessageReceivedException
 from pymodbus.constants import Defaults
+from pymodbus.exceptions import (
+    InvalidMessageReceivedException,
+    ModbusIOException,
+    NotImplementedException,
+)
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
+from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-from pymodbus.framer.binary_framer import ModbusBinaryFramer
-from pymodbus.utilities import hexlify_packets, ModbusTransactionState
-
+from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 # --------------------------------------------------------------------------- #
 # Logging

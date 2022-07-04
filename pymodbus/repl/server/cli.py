@@ -5,16 +5,14 @@ All rights reserved.
 """
 import logging
 import shutil
+
 import click
-
-from prompt_toolkit.shortcuts import clear
-from prompt_toolkit.shortcuts.progress_bar import formatters
-from prompt_toolkit.styles import Style
-
 from prompt_toolkit import PromptSession, print_formatted_text
 from prompt_toolkit.completion import NestedCompleter
 from prompt_toolkit.formatted_text import HTML
-
+from prompt_toolkit.shortcuts import clear
+from prompt_toolkit.shortcuts.progress_bar import formatters
+from prompt_toolkit.styles import Style
 
 _logger = logging.getLogger(__name__)
 

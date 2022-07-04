@@ -47,14 +47,13 @@ populated slave contexts that can be run behind a modbus server::
     context = ModbusServerContext(slaves=slave_context, single=True)
     StartTcpServer(context)
 """
-import csv
-import json
 from collections import defaultdict
-from tokenize import generate_tokens
+import csv
 from io import StringIO
+import json
+from tokenize import generate_tokens
 
 from pymodbus.datastore.context import ModbusSlaveContext
-
 
 # --------------------------------------------------------------------------- #
 # raw mapping input parsers

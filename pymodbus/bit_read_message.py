@@ -1,9 +1,8 @@
 """Bit Reading Request/Response messages."""
 # pylint: disable=missing-type-doc
 import struct
-from pymodbus.pdu import ModbusRequest
-from pymodbus.pdu import ModbusResponse
-from pymodbus.pdu import ModbusExceptions as merror
+
+from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 

@@ -12,12 +12,13 @@ implementation from pymodbus.
 import logging
 import struct
 
+from pymodbus.bit_read_message import ReadCoilsRequest
+from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.pdu import ModbusRequest, ModbusResponse, ModbusExceptions
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-from pymodbus.bit_read_message import ReadCoilsRequest
+from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

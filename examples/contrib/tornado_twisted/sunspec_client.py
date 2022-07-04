@@ -1,11 +1,11 @@
 """Sunspec client."""
 import logging
+
 from twisted.internet.defer import Deferred
 
-from pymodbus.constants import Endian
 from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
-
 
 # --------------------------------------------------------------------------- #
 # Logging

@@ -1,6 +1,6 @@
 """Define Datastore."""
-from pymodbus.datastore.database.sql_datastore import SqlSlaveContext
 from pymodbus.datastore.database.redis_datastore import RedisSlaveContext
+from pymodbus.datastore.database.sql_datastore import SqlSlaveContext
 
 # ---------------------------------------------------------------------------#
 #  Exported symbols

@@ -1,10 +1,10 @@
 """UDP implementation."""
 # pylint: disable=missing-type-doc
-import logging
 import asyncio
+import logging
 
-from pymodbus.client.asynchronous.async_io import init_udp_client
 from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.async_io import init_udp_client
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)

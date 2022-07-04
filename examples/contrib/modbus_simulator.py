@@ -5,11 +5,11 @@
 with read/write data as well as user configurable base data
 """
 import logging
-import pickle  # nosec
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import pickle  # nosec
 
-from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
+from pymodbus.server.asynchronous import StartTcpServer
 
 # -------------------------------------------------------------------------- #
 # Logging

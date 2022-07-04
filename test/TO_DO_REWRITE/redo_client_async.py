@@ -1,37 +1,40 @@
 #!/usr/bin/env python3
 """Test client async."""
-import contextlib
-import sys
-import ssl
 import asyncio
+import contextlib
 import platform
+import ssl
+import sys
 import unittest
 from unittest.mock import patch
-from serial import Serial
-import pytest
 
-from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient
-from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient
+import pytest
+from serial import Serial
+
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.async_io import (
+    AsyncioModbusSerialClient,
+    ReconnectingAsyncioModbusTlsClient,
+)
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
-from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.client.asynchronous.tornado import (
     AsyncModbusSerialClient as AsyncTornadoModbusSerialClient,
-)
-from pymodbus.client.asynchronous.tornado import (
     AsyncModbusTCPClient as AsyncTornadoModbusTcpClient,
-)
-from pymodbus.client.asynchronous.tornado import (
     AsyncModbusUDPClient as AsyncTornadoModbusUdoClient,
 )
-from pymodbus.client.asynchronous import schedulers
-from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer, ModbusRtuFramer
-from pymodbus.transaction import ModbusAsciiFramer, ModbusBinaryFramer
 from pymodbus.client.asynchronous.twisted import ModbusSerClientProtocol
-
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.exceptions import ConnectionException
+from pymodbus.factory import ClientDecoder
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+)
 
 # ---------------------------------------------------------------------------#
 # Fixture

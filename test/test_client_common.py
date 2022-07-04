@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 """Test client common."""
 import unittest
+
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
+from pymodbus.bit_write_message import WriteMultipleCoilsRequest, WriteSingleCoilRequest
 from pymodbus.client.common import ModbusClientMixin
-from pymodbus.bit_read_message import (
-    ReadDiscreteInputsRequest,
-    ReadCoilsRequest,
-)
-from pymodbus.bit_write_message import (
-    WriteMultipleCoilsRequest,
-    WriteSingleCoilRequest,
-)
 from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersRequest,
-    ReadInputRegistersRequest,
     ReadHoldingRegistersRequest,
+    ReadInputRegistersRequest,
+    ReadWriteMultipleRegistersRequest,
 )
 from pymodbus.register_write_message import (
     MaskWriteRegisterRequest,

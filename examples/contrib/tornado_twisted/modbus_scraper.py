@@ -5,16 +5,15 @@ that can be pointed at a modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """
 import logging
-import pickle  # nosec
 from optparse import OptionParser  # pylint: disable=deprecated-module
+import pickle  # nosec
 
-from twisted.internet import serialport, reactor
+from twisted.internet import reactor, serialport
 from twisted.internet.protocol import ClientFactory
 
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext
-from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext
+from pymodbus.factory import ClientDecoder
 
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use

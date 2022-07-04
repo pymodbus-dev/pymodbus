@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test version."""
 import unittest
+
 from pymodbus.version import Version
 
 

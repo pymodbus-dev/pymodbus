@@ -11,101 +11,103 @@ kept as a result of a pre-computed lookup dictionary.
 # pylint: disable=missing-type-doc
 import logging
 
-from pymodbus.pdu import IllegalFunctionRequest
-from pymodbus.pdu import ExceptionResponse
-from pymodbus.pdu import ModbusRequest, ModbusResponse
-from pymodbus.pdu import ModbusExceptions as ecode
-from pymodbus.interfaces import IModbusDecoder
-from pymodbus.exceptions import ModbusException, MessageRegisterException
 from pymodbus.bit_read_message import (
-    ReadDiscreteInputsRequest,
     ReadCoilsRequest,
-    ReadDiscreteInputsResponse,
     ReadCoilsResponse,
+    ReadDiscreteInputsRequest,
+    ReadDiscreteInputsResponse,
 )
 from pymodbus.bit_write_message import (
     WriteMultipleCoilsRequest,
-    WriteSingleCoilRequest,
     WriteMultipleCoilsResponse,
+    WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
 from pymodbus.diag_message import (
-    GetClearModbusPlusResponse,
+    ChangeAsciiInputDelimiterRequest,
+    ChangeAsciiInputDelimiterResponse,
+    ClearCountersRequest,
+    ClearCountersResponse,
+    ClearOverrunCountRequest,
     ClearOverrunCountResponse,
+    DiagnosticStatusRequest,
+    DiagnosticStatusResponse,
+    ForceListenOnlyModeRequest,
+    ForceListenOnlyModeResponse,
+    GetClearModbusPlusRequest,
+    GetClearModbusPlusResponse,
+    RestartCommunicationsOptionRequest,
+    RestartCommunicationsOptionResponse,
+    ReturnBusCommunicationErrorCountRequest,
+    ReturnBusCommunicationErrorCountResponse,
+    ReturnBusExceptionErrorCountRequest,
+    ReturnBusExceptionErrorCountResponse,
+    ReturnBusMessageCountRequest,
+    ReturnBusMessageCountResponse,
+    ReturnDiagnosticRegisterRequest,
+    ReturnDiagnosticRegisterResponse,
+    ReturnIopOverrunCountRequest,
     ReturnIopOverrunCountResponse,
+    ReturnQueryDataRequest,
+    ReturnQueryDataResponse,
+    ReturnSlaveBusCharacterOverrunCountRequest,
     ReturnSlaveBusCharacterOverrunCountResponse,
+    ReturnSlaveBusyCountRequest,
     ReturnSlaveBusyCountResponse,
+    ReturnSlaveMessageCountRequest,
+    ReturnSlaveMessageCountResponse,
+    ReturnSlaveNAKCountRequest,
     ReturnSlaveNAKCountResponse,
     ReturnSlaveNoReponseCountResponse,
-    ReturnSlaveMessageCountResponse,
-    ReturnBusExceptionErrorCountResponse,
-    ReturnBusCommunicationErrorCountResponse,
-    ReturnBusMessageCountResponse,
-    ClearCountersResponse,
-    ForceListenOnlyModeResponse,
-    ChangeAsciiInputDelimiterResponse,
-    ReturnDiagnosticRegisterResponse,
-    RestartCommunicationsOptionResponse,
-    ReturnQueryDataResponse,
-    DiagnosticStatusResponse,
-    GetClearModbusPlusRequest,
-    ClearOverrunCountRequest,
-    ReturnIopOverrunCountRequest,
-    ReturnSlaveBusCharacterOverrunCountRequest,
-    ReturnSlaveBusyCountRequest,
-    ReturnSlaveMessageCountRequest,
-    ReturnBusCommunicationErrorCountRequest,
-    ClearCountersRequest,
-    ReturnSlaveNAKCountRequest,
     ReturnSlaveNoResponseCountRequest,
-    ReturnBusExceptionErrorCountRequest,
-    ForceListenOnlyModeRequest,
-    ReturnDiagnosticRegisterRequest,
-    ReturnBusMessageCountRequest,
-    ChangeAsciiInputDelimiterRequest,
-    ReturnQueryDataRequest,
-    DiagnosticStatusRequest,
-    RestartCommunicationsOptionRequest,
 )
+from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.file_message import (
+    ReadFifoQueueRequest,
     ReadFifoQueueResponse,
-    WriteFileRecordResponse,
+    ReadFileRecordRequest,
     ReadFileRecordResponse,
     WriteFileRecordRequest,
-    ReadFifoQueueRequest,
-    ReadFileRecordRequest,
+    WriteFileRecordResponse,
+)
+from pymodbus.interfaces import IModbusDecoder
+from pymodbus.mei_message import (
+    ReadDeviceInformationRequest,
+    ReadDeviceInformationResponse,
 )
 from pymodbus.other_message import (
-    ReportSlaveIdResponse,
-    GetCommEventLogResponse,
+    GetCommEventCounterRequest,
     GetCommEventCounterResponse,
+    GetCommEventLogRequest,
+    GetCommEventLogResponse,
+    ReadExceptionStatusRequest,
     ReadExceptionStatusResponse,
     ReportSlaveIdRequest,
-    GetCommEventLogRequest,
-    GetCommEventCounterRequest,
-    ReadExceptionStatusRequest,
+    ReportSlaveIdResponse,
 )
-from pymodbus.mei_message import (
-    ReadDeviceInformationResponse,
-    ReadDeviceInformationRequest,
+from pymodbus.pdu import (
+    ExceptionResponse,
+    IllegalFunctionRequest,
+    ModbusExceptions as ecode,
+    ModbusRequest,
+    ModbusResponse,
 )
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
-    ReadInputRegistersRequest,
-    ReadWriteMultipleRegistersRequest,
     ReadHoldingRegistersResponse,
+    ReadInputRegistersRequest,
     ReadInputRegistersResponse,
+    ReadWriteMultipleRegistersRequest,
     ReadWriteMultipleRegistersResponse,
 )
 from pymodbus.register_write_message import (
-    WriteMultipleRegistersRequest,
-    WriteSingleRegisterRequest,
     MaskWriteRegisterRequest,
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterResponse,
     MaskWriteRegisterResponse,
+    WriteMultipleRegistersRequest,
+    WriteMultipleRegistersResponse,
+    WriteSingleRegisterRequest,
+    WriteSingleRegisterResponse,
 )
-
 
 # --------------------------------------------------------------------------- #
 # Logging

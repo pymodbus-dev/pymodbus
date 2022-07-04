@@ -32,17 +32,19 @@ Another example::
 """
 # pylint: disable=missing-type-doc,differing-param-doc,missing-param-doc
 import logging
+
 from twisted.internet import defer, protocol
 from twisted.python.failure import Failure
 
-from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.transaction import FifoTransactionManager
-from pymodbus.transaction import DictTransactionManager
-from pymodbus.client.common import ModbusClientMixin
 from pymodbus.client.asynchronous.deprecated import deprecated
-
+from pymodbus.client.common import ModbusClientMixin
+from pymodbus.exceptions import ConnectionException
+from pymodbus.factory import ClientDecoder
+from pymodbus.transaction import (
+    DictTransactionManager,
+    FifoTransactionManager,
+    ModbusSocketFramer,
+)
 
 # --------------------------------------------------------------------------- #
 # Logging

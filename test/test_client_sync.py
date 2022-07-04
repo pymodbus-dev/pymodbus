@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
 """Test client sync."""
+from io import StringIO
+from itertools import count
 import socket
 import ssl
 import sys
-from io import StringIO
-from itertools import count
-from unittest.mock import patch, Mock, MagicMock
 import unittest
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
 import serial
 
-from pymodbus.client.sync import ModbusTcpClient, ModbusUdpClient
-from pymodbus.client.sync import ModbusSerialClient, BaseModbusClient
-from pymodbus.client.sync import ModbusTlsClient
+from pymodbus.client.sync import (
+    BaseModbusClient,
+    ModbusSerialClient,
+    ModbusTcpClient,
+    ModbusTlsClient,
+    ModbusUdpClient,
+)
 from pymodbus.client.tls_helper import sslctx_provider
-from pymodbus.exceptions import ConnectionException, NotImplementedException
-from pymodbus.exceptions import ParameterException
-from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
-from pymodbus.transaction import ModbusBinaryFramer
-from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
+from pymodbus.exceptions import (
+    ConnectionException,
+    NotImplementedException,
+    ParameterException,
+)
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+)
 from pymodbus.utilities import hexlify_packets
 
 

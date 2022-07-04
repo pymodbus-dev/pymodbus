@@ -5,14 +5,16 @@
 The following is an quick performance check of the synchronous
 modbus client.
 """
+from concurrent.futures import ThreadPoolExecutor as eWorker, as_completed
+
 # --------------------------------------------------------------------------- #
 # import the necessary modules
 # --------------------------------------------------------------------------- #
 import logging
 import os
 from threading import Lock, Thread as tWorker
-from concurrent.futures import ThreadPoolExecutor as eWorker, as_completed
 from time import time
+
 from pymodbus.client.sync import ModbusTcpClient
 
 # from pymodbus.client.sync import ModbusSerialClient

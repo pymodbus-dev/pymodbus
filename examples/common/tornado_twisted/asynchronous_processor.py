@@ -9,11 +9,11 @@ free to use it as a skeleton guide in implementing your own.
 # --------------------------------------------------------------------------- #
 import logging
 
-from twisted.internet import serialport, reactor
+from twisted.internet import reactor, serialport
 from twisted.internet.protocol import ClientFactory
 
-from pymodbus.factory import ClientDecoder
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
+from pymodbus.factory import ClientDecoder
 
 # --------------------------------------------------------------------------- #
 # Choose the framer you want to use

@@ -5,14 +5,14 @@
 Taken from: http://pyopengl.sourceforge.net/pydoc/OpenGLContext.pydoc.pydoc2.html
 Author: Mike Fletcher
 """
-import logging
-import pydoc
 import inspect
+import logging
 import os
-import string
+import pydoc
 import shutil
-import sys
+import string
 from string import join, split, strip
+import sys
 
 _log = logging.getLogger(__name__)
 

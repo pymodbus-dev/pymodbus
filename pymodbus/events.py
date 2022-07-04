@@ -5,8 +5,7 @@ can be any one of four types. The type is defined by bit 7
 (the high-order bit) in each byte. It may be further defined by bit 6.
 """
 # pylint: disable=missing-type-doc
-from pymodbus.exceptions import NotImplementedException
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import NotImplementedException, ParameterException
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 

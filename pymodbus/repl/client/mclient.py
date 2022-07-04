@@ -5,36 +5,39 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 """
 # pylint: disable=missing-type-doc
 import functools
-from pymodbus.pdu import ModbusExceptions, ExceptionResponse
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.client.sync import ModbusSerialClient as _ModbusSerialClient
-from pymodbus.client.sync import ModbusTcpClient as _ModbusTcpClient
-from pymodbus.mei_message import ReadDeviceInformationRequest
-from pymodbus.other_message import (
-    ReadExceptionStatusRequest,
-    ReportSlaveIdRequest,
-    GetCommEventCounterRequest,
-    GetCommEventLogRequest,
+
+from pymodbus.client.sync import (
+    ModbusSerialClient as _ModbusSerialClient,
+    ModbusTcpClient as _ModbusTcpClient,
 )
 from pymodbus.diag_message import (
-    ReturnQueryDataRequest,
-    RestartCommunicationsOptionRequest,
-    ReturnDiagnosticRegisterRequest,
     ChangeAsciiInputDelimiterRequest,
-    ForceListenOnlyModeRequest,
     ClearCountersRequest,
-    ReturnBusMessageCountRequest,
+    ClearOverrunCountRequest,
+    ForceListenOnlyModeRequest,
+    GetClearModbusPlusRequest,
+    RestartCommunicationsOptionRequest,
     ReturnBusCommunicationErrorCountRequest,
     ReturnBusExceptionErrorCountRequest,
-    ReturnSlaveMessageCountRequest,
-    ReturnSlaveNoResponseCountRequest,
-    ReturnSlaveNAKCountRequest,
-    ReturnSlaveBusyCountRequest,
-    ReturnSlaveBusCharacterOverrunCountRequest,
+    ReturnBusMessageCountRequest,
+    ReturnDiagnosticRegisterRequest,
     ReturnIopOverrunCountRequest,
-    ClearOverrunCountRequest,
-    GetClearModbusPlusRequest,
+    ReturnQueryDataRequest,
+    ReturnSlaveBusCharacterOverrunCountRequest,
+    ReturnSlaveBusyCountRequest,
+    ReturnSlaveMessageCountRequest,
+    ReturnSlaveNAKCountRequest,
+    ReturnSlaveNoResponseCountRequest,
 )
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.mei_message import ReadDeviceInformationRequest
+from pymodbus.other_message import (
+    GetCommEventCounterRequest,
+    GetCommEventLogRequest,
+    ReadExceptionStatusRequest,
+    ReportSlaveIdRequest,
+)
+from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 
 
 def make_response_dict(resp):

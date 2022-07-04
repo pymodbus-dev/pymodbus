@@ -5,9 +5,10 @@ Using pkg_resources, we attempt to see if pydoctor is installed,
 if so, we use its cli program to compile the documents
 """
 try:
-    import sys
     import os
     import shutil
+    import sys
+
     import pkg_resources
 
     pkg_resources.require("pydoctor")

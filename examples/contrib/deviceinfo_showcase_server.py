@@ -7,20 +7,22 @@ uses the MEI 0x2B 0x0E request / response. This example creates an otherwise
 empty server.
 """
 import logging
+
 from serial import __version__ as pyserial_version
 
-# --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
-from pymodbus.server.sync import StartTcpServer
+from pymodbus import __version__ as pymodbus_version
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
 # from pymodbus.server.sync import StartUdpServer
 # from pymodbus.server.sync import StartSerialServer
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus import __version__ as pymodbus_version
+from pymodbus.server.sync import StartTcpServer
+
+# --------------------------------------------------------------------------- #
+# import the various server implementations
+# --------------------------------------------------------------------------- #
+from pymodbus.version import version
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

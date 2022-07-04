@@ -5,14 +5,12 @@ modbus messages payloads.
 """
 # pylint: disable=missing-type-doc
 import logging
-
 from struct import pack, unpack
-from pymodbus.interfaces import IPayloadBuilder
+
 from pymodbus.constants import Endian
-from pymodbus.utilities import pack_bitstring
-from pymodbus.utilities import unpack_bitstring
-from pymodbus.utilities import make_byte_string
 from pymodbus.exceptions import ParameterException
+from pymodbus.interfaces import IPayloadBuilder
+from pymodbus.utilities import make_byte_string, pack_bitstring, unpack_bitstring
 
 # --------------------------------------------------------------------------- #
 # Logging

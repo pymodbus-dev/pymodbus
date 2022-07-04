@@ -2,9 +2,9 @@
 """Test factory."""
 import unittest
 
-from pymodbus.factory import ServerDecoder, ClientDecoder
 from pymodbus.exceptions import ModbusException
-from pymodbus.pdu import ModbusResponse, ModbusRequest
+from pymodbus.factory import ClientDecoder, ServerDecoder
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 def _raise_exception(_):

@@ -1,34 +1,33 @@
 #!/usr/bin/env python3
 """Test server sync."""
-import ssl
 import socket
-import unittest
 import socketserver
-from unittest.mock import patch, Mock
+import ssl
+import unittest
+from unittest.mock import Mock, patch
+
 import pytest
 import serial
 
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
+from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.sync import ModbusBaseRequestHandler
-from pymodbus.server.sync import ModbusSingleRequestHandler
-from pymodbus.server.sync import ModbusConnectedRequestHandler
-from pymodbus.server.sync import ModbusDisconnectedRequestHandler
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.server.sync import (
+    ModbusBaseRequestHandler,
+    ModbusConnectedRequestHandler,
+    ModbusDisconnectedRequestHandler,
+    ModbusSerialServer,
+    ModbusSingleRequestHandler,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
-    ModbusSerialServer,
-)
-from pymodbus.server.sync import (
+    StartSerialServer,
     StartTcpServer,
     StartTlsServer,
     StartUdpServer,
-    StartSerialServer,
 )
 from pymodbus.server.tls_helper import sslctx_provider
-from pymodbus.exceptions import NotImplementedException
-from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.datastore import ModbusServerContext
 from pymodbus.transaction import ModbusTlsFramer
 
 

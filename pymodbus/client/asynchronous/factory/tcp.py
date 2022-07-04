@@ -1,10 +1,10 @@
 """Factory to create asynchronous tcp clients based on twisted/asyncio."""
 # pylint: disable=missing-type-doc
-import logging
 import asyncio
+import logging
 
-from pymodbus.client.asynchronous.async_io import init_tcp_client
 from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.async_io import init_tcp_client
 from pymodbus.client.asynchronous.thread import EventLoopThread
 from pymodbus.constants import Defaults
 
@@ -30,9 +30,10 @@ def reactor_factory(
     :return: event_loop_thread and twisted_deferred
     """
     from twisted.internet import (  # pylint: disable=import-outside-toplevel
-        reactor,
         protocol,
+        reactor,
     )
+
     from pymodbus.client.asynchronous.twisted import (  # pylint: disable=import-outside-toplevel
         ModbusTcpClientProtocol,
     )

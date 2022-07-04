@@ -2,10 +2,10 @@
 # pylint: disable=missing-type-doc
 import logging
 import struct
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageReceivedException
+
+from pymodbus.exceptions import InvalidMessageReceivedException, ModbusIOException
+from pymodbus.framer import SOCKET_FRAME_HEADER, ModbusFramer
 from pymodbus.utilities import hexlify_packets
-from pymodbus.framer import ModbusFramer, SOCKET_FRAME_HEADER
 
 # --------------------------------------------------------------------------- #
 # Logging

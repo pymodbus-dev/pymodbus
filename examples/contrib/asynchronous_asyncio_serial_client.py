@@ -1,12 +1,12 @@
 """Async serial client."""
-import logging
 import asyncio
+import logging
+
 from serial_asyncio import create_serial_connection
 
 from pymodbus.client.asynchronous.async_io import ModbusClientProtocol
-from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.factory import ClientDecoder
-
+from pymodbus.transaction import ModbusRtuFramer
 
 # ----------------------------------------------------------------------- #
 # configure the client logging

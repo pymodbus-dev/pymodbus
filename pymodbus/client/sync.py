@@ -1,23 +1,32 @@
 """Sync client."""
 # pylint: disable=missing-type-doc
-import logging
-import socket
-import select
-import time
-import sys
 from functools import partial
+import logging
+import select
+import socket
+import sys
+import time
+
 import serial
-from pymodbus.constants import Defaults
-from pymodbus.utilities import hexlify_packets, ModbusTransactionState
-from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import NotImplementedException, ParameterException
-from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import DictTransactionManager
-from pymodbus.transaction import ModbusSocketFramer, ModbusBinaryFramer
-from pymodbus.transaction import ModbusAsciiFramer, ModbusRtuFramer
-from pymodbus.transaction import ModbusTlsFramer
+
 from pymodbus.client.common import ModbusClientMixin
 from pymodbus.client.tls_helper import sslctx_provider
+from pymodbus.constants import Defaults
+from pymodbus.exceptions import (
+    ConnectionException,
+    NotImplementedException,
+    ParameterException,
+)
+from pymodbus.factory import ClientDecoder
+from pymodbus.transaction import (
+    DictTransactionManager,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+)
+from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 # --------------------------------------------------------------------------- #
 # Logging

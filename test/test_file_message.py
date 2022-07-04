@@ -8,14 +8,15 @@ bit based request/response messages:
 * Read Coils
 """
 import unittest
+
 from pymodbus.file_message import (
-    WriteFileRecordResponse,
     FileRecord,
-    WriteFileRecordRequest,
-    ReadFileRecordRequest,
-    ReadFileRecordResponse,
     ReadFifoQueueRequest,
     ReadFifoQueueResponse,
+    ReadFileRecordRequest,
+    ReadFileRecordResponse,
+    WriteFileRecordRequest,
+    WriteFileRecordResponse,
 )
 from pymodbus.pdu import ModbusExceptions
 

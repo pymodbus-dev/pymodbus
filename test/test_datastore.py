@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """Test datastore."""
-import unittest
 import random
+import unittest
 from unittest.mock import MagicMock
+
 import redis
+
 from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
     ModbusServerContext,
     ModbusSlaveContext,
-    ModbusSequentialDataBlock,
     ModbusSparseDataBlock,
 )
+from pymodbus.datastore.database import RedisSlaveContext, SqlSlaveContext
 from pymodbus.datastore.store import BaseModbusDataBlock
-from pymodbus.datastore.database import SqlSlaveContext
-from pymodbus.datastore.database import RedisSlaveContext
-from pymodbus.exceptions import NotImplementedException
-from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import (
+    NoSuchSlaveException,
+    NotImplementedException,
+    ParameterException,
+)
 
 
 class ModbusDataStoreTest(unittest.TestCase):

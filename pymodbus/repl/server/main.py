@@ -3,18 +3,20 @@
 Copyright (c) 2020 by RiptideIO
 All rights reserved.
 """
-import logging
 import asyncio
 import json
+import logging
+
 import click
+
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.repl.server.cli import run_repl
+from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
 from pymodbus.server.reactive.main import (
-    ReactiveServer,
     DEFAULT_FRAMER,
     DEFUALT_HANDLERS,
+    ReactiveServer,
 )
-from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
-from pymodbus.repl.server.cli import run_repl
 
 CANCELLED_ERROR = asyncio.exceptions.CancelledError
 

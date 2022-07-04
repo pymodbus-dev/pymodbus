@@ -11,15 +11,16 @@ import logging
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-
-# from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-# from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from pymodbus.device import ModbusDeviceIdentification
 
 # --------------------------------------------------------------------------- #
 # import the request
 # --------------------------------------------------------------------------- #
 from pymodbus.mei_message import ReadDeviceInformationRequest
-from pymodbus.device import ModbusDeviceIdentification
+
+# from pymodbus.client.sync import ModbusUdpClient as ModbusClient
+# from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

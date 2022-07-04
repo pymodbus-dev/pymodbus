@@ -6,18 +6,19 @@ This is an example of writing a high performance modbus client that allows
 a high level of concurrency by using worker threads/processes to handle
 writing/reading from one or more client handles at once.
 """
+from collections import namedtuple
+from concurrent.futures import Future
+import itertools
+
 # -------------------------------------------------------------------------- #
 # import system libraries
 # -------------------------------------------------------------------------- #
 import logging
 import multiprocessing
-import threading
-from threading import Thread, Event
+from multiprocessing import Event as mEvent, Process as mProcess, Queue as mQueue
 from queue import Queue as qQueue
-import itertools
-from multiprocessing import Queue as mQueue, Event as mEvent, Process as mProcess
-from collections import namedtuple
-from concurrent.futures import Future
+import threading
+from threading import Event, Thread
 
 # -------------------------------------------------------------------------- #
 # import necessary modbus libraries

@@ -2,14 +2,14 @@
 """Test interfaces."""
 import unittest
 
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import (
-    IPayloadBuilder,
-    IModbusSlaveContext,
-    IModbusFramer,
     IModbusDecoder,
+    IModbusFramer,
+    IModbusSlaveContext,
+    IPayloadBuilder,
     Singleton,
 )
-from pymodbus.exceptions import NotImplementedException
 
 
 class _SingleInstance(Singleton):  # pylint: disable=too-few-public-methods

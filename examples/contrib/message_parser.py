@@ -14,17 +14,19 @@ using the supplied framers for a number of protocols:
 # import needed libraries
 # -------------------------------------------------------------------------- #
 
-import logging
-import collections
-import textwrap
-from optparse import OptionParser  # pylint: disable=deprecated-module
 import codecs as c
+import collections
+import logging
+from optparse import OptionParser  # pylint: disable=deprecated-module
+import textwrap
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.transaction import ModbusBinaryFramer
-from pymodbus.transaction import ModbusAsciiFramer
-from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 
 # -------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------- #

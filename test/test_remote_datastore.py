@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Test remote datastore."""
 import unittest
-from pymodbus.exceptions import NotImplementedException
-from pymodbus.datastore.remote import RemoteSlaveContext
+
 from pymodbus.bit_read_message import ReadCoilsResponse
 from pymodbus.bit_write_message import WriteMultipleCoilsResponse
-from pymodbus.register_read_message import ReadInputRegistersResponse
+from pymodbus.datastore.remote import RemoteSlaveContext
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import ExceptionResponse
+from pymodbus.register_read_message import ReadInputRegistersResponse
+
 from .modbus_mocks import mock
 
 

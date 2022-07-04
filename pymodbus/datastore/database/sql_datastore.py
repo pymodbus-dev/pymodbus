@@ -1,11 +1,12 @@
 """Datastore using SQL."""
 # pylint: disable=missing-type-doc
 import logging
+
 import sqlalchemy
-import sqlalchemy.types as sqltypes
-from sqlalchemy.sql import and_
 from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import bindparam
+import sqlalchemy.types as sqltypes
 
 from pymodbus.interfaces import IModbusSlaveContext
 

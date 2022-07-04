@@ -2,6 +2,7 @@
 """Test register write messages."""
 import unittest
 
+from test.conftest import MockLastValuesContext, MockContext
 from pymodbus.payload import BinaryPayloadBuilder, Endian
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.register_write_message import (
@@ -12,8 +13,6 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterRequest,
     WriteSingleRegisterResponse,
 )
-
-from .modbus_mocks import MockContext, MockLastValuesContext
 
 # ---------------------------------------------------------------------------#
 #  Fixture

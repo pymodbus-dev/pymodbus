@@ -12,7 +12,6 @@ import pymodbus.other_message as pdu_other_msg
 import pymodbus.diag_message as pdu_diag
 from pymodbus.utilities import ModbusTransactionState
 from pymodbus.pdu import ModbusResponse, ModbusRequest
-from pymodbus.exceptions import ModbusException
 
 
 _logger = logging.getLogger(__name__)
@@ -50,7 +49,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param request: Request to send
         :raises ModbusException:
         """
-        raise ModbusException(f"Execute({request}) not implemented.")
+        return request
 
     def read_coils(
         self,

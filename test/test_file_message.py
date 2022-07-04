@@ -9,6 +9,7 @@ bit based request/response messages:
 """
 import unittest
 
+from test.conftest import MockContext
 from pymodbus.file_message import (
     FileRecord,
     ReadFifoQueueRequest,
@@ -19,8 +20,6 @@ from pymodbus.file_message import (
     WriteFileRecordResponse,
 )
 from pymodbus.pdu import ModbusExceptions
-
-from .modbus_mocks import MockContext
 
 TEST_MESSAGE = b"\x00\n\x00\x08\x00\x01\x00\x02\x00\x03\x00\x04"
 

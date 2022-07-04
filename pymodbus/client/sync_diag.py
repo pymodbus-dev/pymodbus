@@ -6,7 +6,7 @@ import time
 from pymodbus.client.sync_tcp import ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.framer.socket_framer import ModbusSocketFramer
 
 _logger = logging.getLogger(__name__)
 

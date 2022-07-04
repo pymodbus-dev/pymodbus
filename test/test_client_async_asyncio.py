@@ -92,7 +92,6 @@ class TestAsyncioClient:
         assert client.loop is mock_loop  # nosec
         assert client.protocol_class is mock_protocol_class  # nosec
 
-    @pytest.mark.asyncio
     async def test_initialization_tcp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tcp in loop."""
         _, client = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
@@ -105,7 +104,6 @@ class TestAsyncioClient:
         assert client.port == 5020  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
-    @pytest.mark.asyncio
     async def test_initialization_udp_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization udp in loop."""
         _, client = AsyncModbusUDPClient(  # pylint: disable=unpacking-non-sequence
@@ -117,7 +115,6 @@ class TestAsyncioClient:
         assert client.port == 5020  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
-    @pytest.mark.asyncio
     async def test_initialization_tls_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization tls in loop."""
         _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
@@ -129,7 +126,6 @@ class TestAsyncioClient:
         assert client.port == 5020  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
-    @pytest.mark.asyncio
     def test_initialization_serial_in_loop(self):  # pylint: disable=no-self-use
         """Test initialization serial in loop."""
         _, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
@@ -225,7 +221,6 @@ class TestAsyncioClient:
         assert not client.connected  # nosec
         assert client.protocol is None  # nosec
 
-    @pytest.mark.asyncio
     async def test_factory_start_success(self):  # pylint: disable=no-self-use
         """Test factory start success."""
         mock_protocol_class = mock.MagicMock()
@@ -259,7 +254,6 @@ class TestAsyncioClient:
                     mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop
                 )
 
-    # @pytest.mark.asyncio
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.sleep")
     def test_factory_reconnect(self, mock_sleep):  # pylint: disable=no-self-use
         """Test factory reconnect."""
@@ -275,150 +269,132 @@ class TestAsyncioClient:
         mock_sleep.assert_called_once_with(5)
         assert mock_loop.create_connection.call_count == 1  # nosec
 
-    @pytest.mark.parametrize("protocol", protocols)
-    def test_client_protocol_connection_made(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    def test_client_protocol_connection_made(self):  # pylint: disable=no-self-use
         """Test the client protocol close."""
-        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
-        transport = mock.MagicMock()
-        factory = mock.MagicMock()
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            protocol.factory = factory
-        protocol.connection_made(transport)
-        assert protocol.transport == transport  # nosec
-        assert protocol.connected  # nosec
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            assert protocol.factory.protocol_made_connection.call_count == 1  # nosec
+        for protocol in protocols:
+            protocol = protocol(ModbusSocketFramer(ClientDecoder()))
+            transport = mock.MagicMock()
+            factory = mock.MagicMock()
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                protocol.factory = factory
+            protocol.connection_made(transport)
+            assert protocol.transport == transport  # nosec
+            assert protocol.connected  # nosec
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                assert protocol.factory.protocol_made_connection.call_count == 1  # nosec
 
-    @pytest.mark.parametrize("protocol", protocols)
-    def test_client_protocol_close(self, protocol):  # pylint: disable=no-self-use
+    def test_client_protocol_close(self,):  # pylint: disable=no-self-use
         """Test the client protocol close."""
-        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
-        transport = mock.MagicMock()
-        factory = mock.MagicMock()
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            protocol.factory = factory
-        protocol.connection_made(transport)
-        assert protocol.transport == transport  # nosec
-        assert protocol.connected  # nosec
-        protocol.close()
-        transport.close.assert_called_once_with()
-        assert not protocol.connected  # nosec
+        for protocol in protocols:
+            protocol = protocol(ModbusSocketFramer(ClientDecoder()))
+            transport = mock.MagicMock()
+            factory = mock.MagicMock()
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                protocol.factory = factory
+            protocol.connection_made(transport)
+            assert protocol.transport == transport  # nosec
+            assert protocol.connected  # nosec
+            protocol.close()
+            transport.close.assert_called_once_with()
+            assert not protocol.connected  # nosec
 
     @pytest.mark.skip("To fix")
-    @pytest.mark.parametrize("protocol", protocols)
-    def test_client_protocol_connection_lost(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    def test_client_protocol_connection_lost(self):  # pylint: disable=no-self-use
         """Test the client protocol connection lost"""
-        framer = ModbusSocketFramer(None)
-        protocol = protocol(framer=framer, timeout=0)
-        protocol.execute = mock.MagicMock()
-        # future = asyncio.Future()
-        # future.set_result(ReadCoilsResponse([1]))
-        # protocol._execute = mock.MagicMock(side_effect=future)
-        transport = mock.MagicMock()
-        factory = mock.MagicMock()
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            protocol.factory = factory
-        protocol.connection_made(transport)
-        protocol.transport.write = mock.Mock()
+        for protocol in protocols:
+            framer = ModbusSocketFramer(None)
+            protocol = protocol(framer=framer, timeout=0)
+            protocol.execute = mock.MagicMock()
+            transport = mock.MagicMock()
+            factory = mock.MagicMock()
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                protocol.factory = factory
+            protocol.connection_made(transport)
+            protocol.transport.write = mock.Mock()
 
-        request = ReadCoilsRequest(1, 1)
-        response = protocol.execute(request)
-        # d = await d
-        protocol.connection_lost("REASON")
-        excp = response.exception()
-        assert isinstance(excp, ConnectionException)  # nosec
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            assert protocol.factory.protocol_lost_connection.call_count == 1  # nosec
+            request = ReadCoilsRequest(1, 1)
+            response = protocol.execute(request)
+            protocol.connection_lost("REASON")
+            excp = response.exception()
+            assert isinstance(excp, ConnectionException)  # nosec
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                assert protocol.factory.protocol_lost_connection.call_count == 1  # nosec
 
-    @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_data_received(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    async def test_client_protocol_data_received(self):  # pylint: disable=no-self-use
         """Test the client protocol data received"""
-        protocol = protocol(ModbusSocketFramer(ClientDecoder()))
-        transport = mock.MagicMock()
-        protocol.connection_made(transport)
-        assert protocol.transport == transport  # nosec
-        assert protocol.connected  # nosec
-        data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
+        for tryprotocol in protocols:
+            protocol = tryprotocol(ModbusSocketFramer(ClientDecoder()))
+            transport = mock.MagicMock()
+            protocol.connection_made(transport)
+            assert protocol.transport == transport  # nosec
+            assert protocol.connected  # nosec
+            data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
-        # setup existing request
-        response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        if isinstance(protocol, ModbusUdpClientProtocol):
-            protocol.datagram_received(data, None)
-        else:
-            protocol.data_received(data)
-        result = response.result()
-        assert isinstance(result, ReadCoilsResponse)  # nosec
+            # setup existing request
+            response = protocol._build_response(0x00)  # pylint: disable=protected-access
+            if isinstance(protocol, ModbusUdpClientProtocol):
+                protocol.datagram_received(data, None)
+            else:
+                protocol.data_received(data)
+            result = response.result()
+            assert isinstance(result, ReadCoilsResponse)  # nosec
 
-    # @pytest.mark.skip("To fix")
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_execute(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    async def test_client_protocol_execute(self):  # pylint: disable=no-self-use
         """Test the client protocol execute method"""
-        framer = ModbusSocketFramer(None)
-        protocol = protocol(framer=framer)
-        protocol.create_future = mock.MagicMock()
-        fut = asyncio.Future()
-        fut.set_result(fut)
-        protocol.create_future.return_value = fut
-        transport = mock.MagicMock()
-        protocol.connection_made(transport)
-        protocol.transport.write = mock.Mock()
+        for protocol in protocols:
+            framer = ModbusSocketFramer(None)
+            protocol = protocol(framer=framer)
+            protocol.create_future = mock.MagicMock()
+            fut = asyncio.Future()
+            fut.set_result(fut)
+            protocol.create_future.return_value = fut
+            transport = mock.MagicMock()
+            protocol.connection_made(transport)
+            protocol.transport.write = mock.Mock()
 
-        request = ReadCoilsRequest(1, 1)
-        response = await protocol.execute(request)
-        tid = request.transaction_id
-        f_trans = protocol.transaction.getTransaction(tid)
-        assert response == f_trans  # nosec
+            request = ReadCoilsRequest(1, 1)
+            response = await protocol.execute(request)
+            tid = request.transaction_id
+            f_trans = protocol.transaction.getTransaction(tid)
+            assert response == f_trans  # nosec
 
-    @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_handle_response(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    async def test_client_protocol_handle_response(self):  # pylint: disable=no-self-use
         """Test the client protocol handles responses"""
-        protocol = protocol()
-        transport = mock.MagicMock()
-        protocol.connection_made(transport=transport)
-        reply = ReadCoilsRequest(1, 1)
-        reply.transaction_id = 0x00
-        # if isinstance(protocol.create_future, mock.MagicMock):
-        #     import asyncio
-        #     protocol.create_future.return_value = asyncio.Future()
-        # handle skipped cases
-        protocol._handleResponse(None)  # pylint: disable=protected-access
-        protocol._handleResponse(reply)  # pylint: disable=protected-access
+        for protocol in protocols:
+            protocol = protocol()
+            transport = mock.MagicMock()
+            protocol.connection_made(transport=transport)
+            reply = ReadCoilsRequest(1, 1)
+            reply.transaction_id = 0x00
+            # if isinstance(protocol.create_future, mock.MagicMock):
+            #     import asyncio
+            #     protocol.create_future.return_value = asyncio.Future()
+            # handle skipped cases
+            protocol._handle_response(None)  # pylint: disable=protected-access
+            protocol._handle_response(reply)  # pylint: disable=protected-access
 
-        # handle existing cases
-        response = protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        protocol._handleResponse(reply)  # pylint: disable=protected-access
-        result = response.result()
-        assert result == reply  # nosec
+            # handle existing cases
+            response = protocol._build_response(0x00)  # pylint: disable=protected-access
+            protocol._handle_response(reply)  # pylint: disable=protected-access
+            result = response.result()
+            assert result == reply  # nosec
 
-    @pytest.mark.parametrize("protocol", protocols)
-    async def test_client_protocol_build_response(
-        self, protocol
-    ):  # pylint: disable=no-self-use
+    async def test_client_protocol_build_response(self):  # pylint: disable=no-self-use
         """Test the udp client protocol builds responses"""
-        protocol = protocol()
-        assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
-            list(protocol.transaction)
-        )
-        response = protocol._buildResponse(  # nosec pylint: disable=protected-access
-            0x00
-        )
-        excp = response.exception()
-        assert isinstance(excp, ConnectionException)  # nosec
-        assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
-            list(protocol.transaction)
-        )
+        for protocol in protocols:
+            protocol = protocol()
+            assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
+                list(protocol.transaction)
+            )
+            response = protocol._build_response(  # nosec pylint: disable=protected-access
+                0x00
+            )
+            excp = response.exception()
+            assert isinstance(excp, ConnectionException)  # nosec
+            assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
+                list(protocol.transaction)
+            )
 
-        protocol._connected = True  # pylint: disable=protected-access
-        protocol._buildResponse(0x00)  # pylint: disable=protected-access
-        assert len(list(protocol.transaction)) == 1  # nosec
+            protocol._connected = True  # pylint: disable=protected-access
+            protocol._build_response(0x00)  # pylint: disable=protected-access
+            assert len(list(protocol.transaction)) == 1  # nosec

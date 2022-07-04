@@ -4,17 +4,20 @@
 The following is an example of how to use the asynchronous modbus
 client implementation from pymodbus using Tornado.
 """
-import logging
 import functools
+import logging
+
 from tornado.ioloop import IOLoop
+
 from pymodbus.client.asynchronous import schedulers
+
+# from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as ModbusClient
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-# from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as ModbusClient
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging

@@ -20,7 +20,9 @@
 # pylint: skip-file
 import os
 import sys
+
 from recommonmark.transform import AutoStructify
+
 from pymodbus import __version__
 
 parent_dir = os.path.abspath(os.pardir)

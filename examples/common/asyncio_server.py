@@ -6,21 +6,25 @@ party libraries (unless you need to use the serial protocols which require
 asyncio-pyserial). This is helpful in constrained or old environments where using
 twisted is just not feasible. What follows is an example of its use:
 """
+import asyncio
+
 # --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 import logging
-import asyncio
 
-from pymodbus.version import version
-from pymodbus.server.async_io import StartTcpServer
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+)
 
 # from pymodbus.server.async_io import StartTlsServer
 # from pymodbus.server.async_io import StartUdpServer
 # from pymodbus.server.async_io import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.datastore import ModbusSequentialDataBlock
+from pymodbus.server.async_io import StartTcpServer
+from pymodbus.version import version
 
 # from pymodbus.datastore import ModbusSparseDataBlock
 

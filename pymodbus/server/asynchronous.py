@@ -1,22 +1,25 @@
 """Implementation of a Twisted Modbus Server."""
 # pylint: disable=missing-type-doc
+from binascii import b2a_hex
 import logging
 import threading
-from binascii import b2a_hex
+
 from twisted.internet import protocol
-from twisted.internet.protocol import ServerFactory
 from twisted.internet import reactor  # noqa: F401 pylint: disable=unused-import
+from twisted.internet.protocol import ServerFactory
 
 from pymodbus.constants import Defaults
-from pymodbus.utilities import hexlify_packets
-from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.device import ModbusControlBlock
-from pymodbus.device import ModbusAccessControl
-from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.device import (
+    ModbusAccessControl,
+    ModbusControlBlock,
+    ModbusDeviceIdentification,
+)
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.transaction import ModbusSocketFramer, ModbusAsciiFramer
+from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.transaction import ModbusAsciiFramer, ModbusSocketFramer
+from pymodbus.utilities import hexlify_packets
 
 # --------------------------------------------------------------------------- #
 # Logging

@@ -6,13 +6,12 @@ complicated memory layout using builder-
 
 Works out of the box together with payload_server.py
 """
-import logging
 from collections import OrderedDict
+import logging
 
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

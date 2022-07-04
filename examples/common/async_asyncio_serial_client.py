@@ -6,11 +6,11 @@ client implementation from pymodbus with asyncio.
 
 The example is only valid on Python3.4 and above
 """
-import logging
 import asyncio
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as ModbusClient
-from pymodbus.client.asynchronous import schedulers
+import logging
 
+from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

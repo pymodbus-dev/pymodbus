@@ -1,12 +1,12 @@
 """Sync diag."""
-import socket
 import logging
+import socket
 import time
 
-from pymodbus.constants import Defaults
 from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
+from pymodbus.transaction import ModbusSocketFramer
 
 _logger = logging.getLogger(__name__)
 

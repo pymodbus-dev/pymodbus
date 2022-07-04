@@ -8,18 +8,17 @@ The example is only valid on Python3.4 and above
 """
 import asyncio
 import logging
-import time
 from threading import Thread
-
-# ----------------------------------------------------------------------- #
-# Import the required asynchronous client
-# ----------------------------------------------------------------------- #
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
+import time
 
 # from pymodbus.client.asynchronous.udp import (
 #     AsyncModbusUDPClient as ModbusClient)
 from pymodbus.client.asynchronous import schedulers
 
+# ----------------------------------------------------------------------- #
+# Import the required asynchronous client
+# ----------------------------------------------------------------------- #
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
 # configure the client logging

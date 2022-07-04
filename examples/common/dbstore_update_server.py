@@ -21,15 +21,15 @@ import random
 # --------------------------------------------------------------------------- #
 from twisted.internet.task import LoopingCall
 
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
+from pymodbus.datastore.database import SqlSlaveContext
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.server.asynchronous import StartTcpServer
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusServerContext
-from pymodbus.datastore.database import SqlSlaveContext
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 

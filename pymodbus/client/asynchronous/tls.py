@@ -1,5 +1,6 @@
 """TLS communication."""
 import logging
+
 from pymodbus.client.asynchronous.factory.tls import get_factory
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder

@@ -1,14 +1,15 @@
 """SERIAL communication."""
 import logging
+
 from pymodbus.client.asynchronous.factory.serial import get_factory
+from pymodbus.exceptions import ParameterException
+from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import (
-    ModbusRtuFramer,
     ModbusAsciiFramer,
     ModbusBinaryFramer,
+    ModbusRtuFramer,
     ModbusSocketFramer,
 )
-from pymodbus.factory import ClientDecoder
-from pymodbus.exceptions import ParameterException
 
 _logger = logging.getLogger(__name__)
 

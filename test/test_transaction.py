@@ -1,30 +1,24 @@
 #!/usr/bin/env python3
 """Test transaction."""
-import unittest
-from itertools import count
 from binascii import a2b_hex
-from unittest.mock import patch, MagicMock
+from itertools import count
+import unittest
+from unittest.mock import MagicMock, patch
+
 import pytest
 
-from pymodbus.pdu import (
-    ModbusRequest,
-)
+from pymodbus.exceptions import InvalidMessageReceivedException, ModbusIOException
+from pymodbus.factory import ServerDecoder
+from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
-    FifoTransactionManager,
     DictTransactionManager,
-)
-from pymodbus.transaction import (
-    ModbusTransactionManager,
+    FifoTransactionManager,
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-    ModbusBinaryFramer,
-)
-from pymodbus.factory import ServerDecoder
-from pymodbus.exceptions import (
-    ModbusIOException,
-    InvalidMessageReceivedException,
+    ModbusTransactionManager,
 )
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"

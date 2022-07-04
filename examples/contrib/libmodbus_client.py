@@ -28,30 +28,28 @@ For these to work, you must have `cffi` and `libmodbus-dev` installed:
 # -------------------------------------------------------------------------- #
 from cffi import FFI
 
+from pymodbus.bit_read_message import ReadCoilsResponse, ReadDiscreteInputsResponse
+from pymodbus.bit_write_message import (
+    WriteMultipleCoilsResponse,
+    WriteSingleCoilResponse,
+)
+from pymodbus.client.common import ModbusClientMixin
+from pymodbus.constants import Defaults
+from pymodbus.exceptions import ModbusException
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersResponse,
+    ReadInputRegistersResponse,
+    ReadWriteMultipleRegistersResponse,
+)
+from pymodbus.register_write_message import (
+    WriteMultipleRegistersResponse,
+    WriteSingleRegisterResponse,
+)
+
 # -------------------------------------------------------------------------- #
 # import pymodbus libraries
 # -------------------------------------------------------------------------- #
 
-from pymodbus.constants import Defaults
-from pymodbus.exceptions import ModbusException
-from pymodbus.client.common import ModbusClientMixin
-from pymodbus.bit_read_message import (
-    ReadCoilsResponse,
-    ReadDiscreteInputsResponse,
-)
-from pymodbus.register_read_message import (
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersResponse,
-)
-from pymodbus.register_read_message import ReadWriteMultipleRegistersResponse
-from pymodbus.bit_write_message import (
-    WriteSingleCoilResponse,
-    WriteMultipleCoilsResponse,
-)
-from pymodbus.register_write_message import (
-    WriteSingleRegisterResponse,
-    WriteMultipleRegistersResponse,
-)
 
 # --------------------------------------------------------------------------- #
 # create the C interface

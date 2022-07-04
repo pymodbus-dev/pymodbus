@@ -10,67 +10,70 @@ for the supplied modbus format:
 * rtu    - `./generate-messages.py -f rtu -m rx -b`
 * binary - `./generate-messages.py -f binary -m tx -b`
 """
+import codecs as c
 import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
-import codecs as c
+
+from pymodbus.bit_read_message import (
+    ReadCoilsRequest,
+    ReadCoilsResponse,
+    ReadDiscreteInputsRequest,
+    ReadDiscreteInputsResponse,
+)
+from pymodbus.bit_write_message import (
+    WriteMultipleCoilsRequest,
+    WriteMultipleCoilsResponse,
+    WriteSingleCoilRequest,
+    WriteSingleCoilResponse,
+)
+import pymodbus.diag_message as modbus_diag
+from pymodbus.file_message import (
+    ReadFifoQueueRequest,
+    ReadFifoQueueResponse,
+    ReadFileRecordRequest,
+    ReadFileRecordResponse,
+    WriteFileRecordRequest,
+    WriteFileRecordResponse,
+)
+from pymodbus.mei_message import (
+    ReadDeviceInformationRequest,
+    ReadDeviceInformationResponse,
+)
+from pymodbus.other_message import (
+    GetCommEventCounterRequest,
+    GetCommEventCounterResponse,
+    GetCommEventLogRequest,
+    GetCommEventLogResponse,
+    ReadExceptionStatusRequest,
+    ReadExceptionStatusResponse,
+    ReportSlaveIdRequest,
+    ReportSlaveIdResponse,
+)
+from pymodbus.register_read_message import (
+    ReadHoldingRegistersRequest,
+    ReadHoldingRegistersResponse,
+    ReadInputRegistersRequest,
+    ReadInputRegistersResponse,
+    ReadWriteMultipleRegistersRequest,
+    ReadWriteMultipleRegistersResponse,
+)
+from pymodbus.register_write_message import (
+    MaskWriteRegisterRequest,
+    MaskWriteRegisterResponse,
+    WriteMultipleRegistersRequest,
+    WriteMultipleRegistersResponse,
+    WriteSingleRegisterRequest,
+    WriteSingleRegisterResponse,
+)
 
 # -------------------------------------------------------------------------- #
 # import all the available framers
 # -------------------------------------------------------------------------- #
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.transaction import ModbusBinaryFramer
-from pymodbus.transaction import ModbusAsciiFramer
-from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.bit_read_message import (
-    ReadCoilsResponse,
-    ReadDiscreteInputsResponse,
-    ReadCoilsRequest,
-    ReadDiscreteInputsRequest,
-)
-from pymodbus.bit_write_message import (
-    WriteSingleCoilResponse,
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilRequest,
-    WriteMultipleCoilsRequest,
-)
-import pymodbus.diag_message as modbus_diag
-from pymodbus.file_message import (
-    ReadFifoQueueResponse,
-    WriteFileRecordResponse,
-    ReadFileRecordResponse,
-    ReadFifoQueueRequest,
-    WriteFileRecordRequest,
-    ReadFileRecordRequest,
-)
-from pymodbus.other_message import (
-    GetCommEventLogResponse,
-    GetCommEventCounterResponse,
-    ReadExceptionStatusResponse,
-    ReportSlaveIdRequest,
-    GetCommEventLogRequest,
-    GetCommEventCounterRequest,
-    ReadExceptionStatusRequest,
-    ReportSlaveIdResponse,
-)
-from pymodbus.mei_message import (
-    ReadDeviceInformationResponse,
-    ReadDeviceInformationRequest,
-)
-from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersResponse,
-    ReadInputRegistersResponse,
-    ReadHoldingRegistersResponse,
-    ReadWriteMultipleRegistersRequest,
-    ReadInputRegistersRequest,
-    ReadHoldingRegistersRequest,
-)
-from pymodbus.register_write_message import (
-    MaskWriteRegisterResponse,
-    WriteSingleRegisterResponse,
-    WriteMultipleRegistersResponse,
-    MaskWriteRegisterRequest,
-    WriteSingleRegisterRequest,
-    WriteMultipleRegistersRequest,
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
 )
 
 # -------------------------------------------------------------------------- #

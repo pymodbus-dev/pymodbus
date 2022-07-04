@@ -3,11 +3,13 @@
 Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
+from prompt_toolkit.application.current import get_app
+
 # pylint: disable=missing-type-doc
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.styles import Style
 from prompt_toolkit.filters import Condition
-from prompt_toolkit.application.current import get_app
+from prompt_toolkit.styles import Style
+
 from pymodbus.repl.client.helper import get_commands
 
 

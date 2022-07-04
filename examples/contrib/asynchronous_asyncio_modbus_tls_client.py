@@ -9,8 +9,9 @@ the TLS feature and asyncio.
 # import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
-from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+
 from pymodbus.client.asynchronous.schedulers import ASYNC_IO
+from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 
 # -------------------------------------------------------------------------- #
 # the TLS detail security can be set in SSLContext which is the context here

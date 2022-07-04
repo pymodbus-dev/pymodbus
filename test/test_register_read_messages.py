@@ -3,19 +3,18 @@
 import unittest
 
 from pymodbus.register_read_message import (
-    ReadWriteMultipleRegistersRequest,
-    ReadInputRegistersRequest,
     ReadHoldingRegistersRequest,
-    ReadWriteMultipleRegistersResponse,
-    ReadInputRegistersResponse,
     ReadHoldingRegistersResponse,
+    ReadInputRegistersRequest,
+    ReadInputRegistersResponse,
+    ReadRegistersRequestBase,
+    ReadRegistersResponseBase,
+    ReadWriteMultipleRegistersRequest,
+    ReadWriteMultipleRegistersResponse,
 )
-from pymodbus.register_read_message import ReadRegistersRequestBase
-from pymodbus.register_read_message import ReadRegistersResponseBase
 from pymodbus.pdu import ModbusExceptions
 
-from .modbus_mocks import MockContext, FakeList
-
+from .modbus_mocks import FakeList, MockContext
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
 

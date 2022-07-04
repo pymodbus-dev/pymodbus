@@ -1,7 +1,8 @@
 """Configure pytest."""
 import platform
-import pytest
+
 from pkg_resources import parse_version
+import pytest
 
 
 def pytest_configure():

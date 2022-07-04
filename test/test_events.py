@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Test events."""
 import unittest
+
 from pymodbus.events import (
     CommunicationRestartEvent,
     EnteredListenModeEvent,
-    RemoteSendEvent,
-    RemoteReceiveEvent,
     ModbusEvent,
+    RemoteReceiveEvent,
+    RemoteSendEvent,
 )
-from pymodbus.exceptions import NotImplementedException
-from pymodbus.exceptions import ParameterException
+from pymodbus.exceptions import NotImplementedException, ParameterException
 
 
 class ModbusEventsTest(unittest.TestCase):

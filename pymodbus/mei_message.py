@@ -1,12 +1,10 @@
 """Encapsulated Interface (MEI) Transport Messages."""
 # pylint: disable=missing-type-doc
 import struct
+
 from pymodbus.constants import DeviceInformation, MoreData
-from pymodbus.pdu import ModbusRequest
-from pymodbus.pdu import ModbusResponse
-from pymodbus.device import ModbusControlBlock
-from pymodbus.device import DeviceInformationFactory
-from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
+from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 
 _MCB = ModbusControlBlock()
 

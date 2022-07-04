@@ -2,9 +2,10 @@
 # pylint: disable=missing-type-doc
 import logging
 import struct
+
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.utilities import checkCRC, computeCRC
-from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
 
 # --------------------------------------------------------------------------- #
 # Logging

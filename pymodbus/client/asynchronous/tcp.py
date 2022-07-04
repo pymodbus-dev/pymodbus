@@ -1,5 +1,6 @@
 """TCP communication."""
 import logging
+
 from pymodbus.client.asynchronous.factory.tcp import get_factory
 from pymodbus.constants import Defaults
 

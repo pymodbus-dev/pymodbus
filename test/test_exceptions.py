@@ -3,11 +3,11 @@
 import unittest
 
 from pymodbus.exceptions import (
-    ModbusException,
     ConnectionException,
+    ModbusException,
+    ModbusIOException,
     NotImplementedException,
     ParameterException,
-    ModbusIOException,
 )
 
 

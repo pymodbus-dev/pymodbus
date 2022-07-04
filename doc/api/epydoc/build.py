@@ -4,10 +4,11 @@
 Using pkg_resources, we attempt to see if epydoc is installed,
 if so, we use its cli program to compile the documents
 """
-import sys
 import os
 import shutil
+import sys
 import traceback
+
 import pkg_resources
 
 try:

@@ -7,14 +7,18 @@ written to the datastore.
 """
 import logging
 
+from pymodbus.datastore import (
+    ModbusServerContext,
+    ModbusSlaveContext,
+    ModbusSparseDataBlock,
+)
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.server.asynchronous import StartTcpServer
+
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSparseDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 

@@ -4,8 +4,8 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 
 """
 import logging
-import sys
 import os.path
+import sys
 
 try:
     import click
@@ -21,22 +21,19 @@ except ImportError:
     )
     sys.exit(1)
 
-from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.styles import Style
-from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-
-
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.lexers import PygmentsLexer
+from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
-from pymodbus.version import version
-from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
-from pymodbus.repl.client.helper import Result, CLIENT_ATTRIBUTES
-from pymodbus.repl.client.mclient import ModbusSerialClient
-from pymodbus.repl.client.mclient import ModbusTcpClient
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
+from pymodbus.repl.client.helper import CLIENT_ATTRIBUTES, Result
+from pymodbus.repl.client.mclient import ModbusSerialClient, ModbusTcpClient
+from pymodbus.version import version
 
 click.disable_unicode_literals_warning = True
 

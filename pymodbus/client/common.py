@@ -5,23 +5,17 @@ both the synchronous and asynchronous clients to
 simplify the interface.
 """
 # pylint: disable=missing-type-doc
-from pymodbus.bit_read_message import (
-    ReadCoilsRequest,
-    ReadDiscreteInputsRequest,
-)
-from pymodbus.bit_write_message import (
-    WriteSingleCoilRequest,
-    WriteMultipleCoilsRequest,
-)
+from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
+from pymodbus.bit_write_message import WriteMultipleCoilsRequest, WriteSingleCoilRequest
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadInputRegistersRequest,
     ReadWriteMultipleRegistersRequest,
 )
 from pymodbus.register_write_message import (
-    WriteSingleRegisterRequest,
-    WriteMultipleRegistersRequest,
     MaskWriteRegisterRequest,
+    WriteMultipleRegistersRequest,
+    WriteSingleRegisterRequest,
 )
 from pymodbus.utilities import ModbusTransactionState
 

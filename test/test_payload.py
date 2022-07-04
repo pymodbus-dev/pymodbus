@@ -8,8 +8,9 @@ utilities.
 * PayloadDecoder
 """
 import unittest
-from pymodbus.exceptions import ParameterException
+
 from pymodbus.constants import Endian
+from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 # ---------------------------------------------------------------------------#

@@ -2,10 +2,10 @@
 # pylint: disable=missing-type-doc
 import logging
 
+from pymodbus.constants import Defaults
+from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
-from pymodbus.datastore.store import ModbusSequentialDataBlock
-from pymodbus.constants import Defaults
 
 # ---------------------------------------------------------------------------#
 #  Logging

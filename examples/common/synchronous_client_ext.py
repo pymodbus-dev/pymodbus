@@ -14,31 +14,29 @@ import logging
 # from pymodbus.client.sync import ModbusUdpClient as ModbusClient
 from pymodbus.client.sync import ModbusSerialClient as ModbusClient
 from pymodbus.diag_message import (
-    GetClearModbusPlusRequest,
+    ChangeAsciiInputDelimiterRequest,
+    ClearCountersRequest,
     ClearOverrunCountRequest,
+    ForceListenOnlyModeRequest,
+    GetClearModbusPlusRequest,
+    RestartCommunicationsOptionRequest,
+    ReturnBusCommunicationErrorCountRequest,
+    ReturnBusExceptionErrorCountRequest,
+    ReturnDiagnosticRegisterRequest,
     ReturnIopOverrunCountRequest,
+    ReturnQueryDataRequest,
     ReturnSlaveBusCharacterOverrunCountRequest,
     ReturnSlaveBusyCountRequest,
+    ReturnSlaveMessageCountRequest,
     ReturnSlaveNAKCountRequest,
     ReturnSlaveNoResponseCountRequest,
-    ReturnSlaveMessageCountRequest,
-    ReturnBusExceptionErrorCountRequest,
-    ReturnBusCommunicationErrorCountRequest,
-    ClearCountersRequest,
-    ForceListenOnlyModeRequest,
-    ChangeAsciiInputDelimiterRequest,
-    ReturnDiagnosticRegisterRequest,
-    RestartCommunicationsOptionRequest,
-    ReturnQueryDataRequest,
 )
+from pymodbus.mei_message import ReadDeviceInformationRequest
 from pymodbus.other_message import (
-    GetCommEventLogRequest,
     GetCommEventCounterRequest,
+    GetCommEventLogRequest,
     ReadExceptionStatusRequest,
     ReportSlaveIdRequest,
-)
-from pymodbus.mei_message import (
-    ReadDeviceInformationRequest,
 )
 
 # --------------------------------------------------------------------------- #

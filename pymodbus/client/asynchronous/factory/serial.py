@@ -1,16 +1,15 @@
 """Factory to create asynchronous serial clients based on twisted/asyncio."""
 # pylint: disable=missing-type-doc
-import logging
 import asyncio
+import logging
 
 from pymodbus.client.asynchronous import schedulers
-from pymodbus.client.asynchronous.thread import EventLoopThread
 from pymodbus.client.asynchronous.async_io import (
-    ModbusClientProtocol,
     AsyncioModbusSerialClient,
+    ModbusClientProtocol,
 )
+from pymodbus.client.asynchronous.thread import EventLoopThread
 from pymodbus.factory import ClientDecoder
-
 
 _logger = logging.getLogger(__name__)
 
@@ -24,11 +23,11 @@ def reactor_factory(port, framer, **kwargs):
     :return: event_loop_thread and twisted serial client
     """
     from twisted.internet import reactor  # pylint: disable=import-outside-toplevel
-    from twisted.internet.serialport import (  # pylint: disable=import-outside-toplevel
-        SerialPort,
-    )
     from twisted.internet.protocol import (  # pylint: disable=import-outside-toplevel
         ClientFactory,
+    )
+    from twisted.internet.serialport import (  # pylint: disable=import-outside-toplevel
+        SerialPort,
     )
 
     class SerialClientFactory(ClientFactory):

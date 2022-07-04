@@ -4,20 +4,22 @@
 The following is an example of how to use the asynchronous serial modbus
 client implementation from pymodbus using tornado.
 """
+import functools
+
 # ---------------------------------------------------------------------------#
 # import needed libraries
 # ---------------------------------------------------------------------------#
 import logging
-import functools
 
 from tornado.ioloop import IOLoop
+
 from pymodbus.client.asynchronous import schedulers
+from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol
 # ---------------------------------------------------------------------------#
 
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 
 # ---------------------------------------------------------------------------#
 # configure the client logging

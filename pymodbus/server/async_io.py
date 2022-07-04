@@ -1,29 +1,28 @@
 """Implementation of a Threaded Modbus Server."""
 # pylint: disable=missing-type-doc
-import logging
-import warnings
-from binascii import b2a_hex
-import traceback
-
 import asyncio
+from binascii import b2a_hex
+import logging
+import traceback
+import warnings
+
 import serial
 from serial_asyncio import create_serial_connection
 
 from pymodbus.constants import Defaults
-from pymodbus.utilities import hexlify_packets
-from pymodbus.factory import ServerDecoder
 from pymodbus.datastore import ModbusServerContext
-from pymodbus.device import ModbusControlBlock
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.transaction import (
-    ModbusSocketFramer,
-    ModbusTlsFramer,
-    ModbusAsciiFramer,
-    ModbusRtuFramer,
-)
-from pymodbus.exceptions import NotImplementedException, NoSuchSlaveException
+from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
+from pymodbus.exceptions import NoSuchSlaveException, NotImplementedException
+from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.server.tls_helper import sslctx_provider
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+)
+from pymodbus.utilities import hexlify_packets
 
 # --------------------------------------------------------------------------- #
 # Logging

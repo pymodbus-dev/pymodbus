@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Test server context."""
 import unittest
-from pymodbus.datastore import (
-    ModbusSlaveContext,
-    ModbusServerContext,
-)
+
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.exceptions import NoSuchSlaveException
 
 

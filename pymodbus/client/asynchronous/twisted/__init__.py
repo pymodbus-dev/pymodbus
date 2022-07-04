@@ -36,13 +36,16 @@ import logging
 from twisted.internet import defer, protocol
 from twisted.python.failure import Failure
 
+from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
-from pymodbus.transaction import FifoTransactionManager, DictTransactionManager
-from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
+from pymodbus.transaction import (
+    DictTransactionManager,
+    FifoTransactionManager,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.utilities import hexlify_packets
-
 
 # --------------------------------------------------------------------------- #
 # Logging

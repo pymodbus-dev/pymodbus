@@ -9,6 +9,7 @@ feature.
 # import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
+
 from pymodbus.client.sync import ModbusTlsClient
 
 # -------------------------------------------------------------------------- #

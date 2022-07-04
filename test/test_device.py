@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Test device."""
 import unittest
+
+from pymodbus.constants import DeviceInformation
 from pymodbus.device import (
-    ModbusPlusStatistics,
-    ModbusControlBlock,
     DeviceInformationFactory,
     ModbusAccessControl,
+    ModbusControlBlock,
     ModbusDeviceIdentification,
+    ModbusPlusStatistics,
 )
 from pymodbus.events import ModbusEvent, RemoteReceiveEvent
-from pymodbus.constants import DeviceInformation
 
 # ---------------------------------------------------------------------------#
 #  Fixture

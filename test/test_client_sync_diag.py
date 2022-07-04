@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Test client sync diag."""
-import unittest
 from itertools import count
-from unittest.mock import patch, MagicMock
-from test.test_client_sync import mockSocket
 import socket
+import unittest
+from unittest.mock import MagicMock, patch
+
+from test.test_client_sync import mockSocket
 
 from pymodbus.client.sync_diag import ModbusTcpDiagClient, get_client
 from pymodbus.exceptions import ConnectionException

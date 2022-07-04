@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """Test pdu."""
 import unittest
+
+from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import (
-    ModbusResponse,
-    ModbusRequest,
+    ExceptionResponse,
     IllegalFunctionRequest,
     ModbusExceptions,
-    ExceptionResponse,
-)
-from pymodbus.exceptions import (
-    NotImplementedException,
+    ModbusRequest,
+    ModbusResponse,
 )
 
 

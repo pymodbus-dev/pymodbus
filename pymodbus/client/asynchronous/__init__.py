@@ -22,9 +22,8 @@ Example run::
 
     # For asyncio the actual client is returned and event loop is asyncio loop
 """
-import logging
 import importlib.util
-
+import logging
 
 _logger = logging.getLogger(__name__)
 

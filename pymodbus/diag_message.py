@@ -6,11 +6,10 @@ or linked to the appropriate data
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import ModbusStatus, ModbusPlusOperation
-from pymodbus.pdu import ModbusRequest
-from pymodbus.pdu import ModbusResponse
+from pymodbus.constants import ModbusPlusOperation, ModbusStatus
 from pymodbus.device import ModbusControlBlock
 from pymodbus.exceptions import NotImplementedException
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring
 
 _MCB = ModbusControlBlock()

@@ -28,6 +28,8 @@ class ModbusTlsFramer(ModbusFramer):
           1b               Nb
     """
 
+    method = 'tls'
+
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 

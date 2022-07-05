@@ -43,6 +43,8 @@ class ModbusBinaryFramer(ModbusFramer):
     Protocol defined by jamod.sourceforge.net.
     """
 
+    method = 'binary'
+
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
 

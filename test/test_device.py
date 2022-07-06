@@ -43,6 +43,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         }
         self.ident = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
+        self.control.Identity.update(self.info)
         self.access = ModbusAccessControl()
         self.control.reset()
 
@@ -51,6 +52,20 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         del self.ident
         del self.control
         del self.access
+
+    def test_multiple_identities(self):
+        """Test that ModbusDeviceIdentification can be duplicated."""
+        first_ident = ModbusDeviceIdentification()
+        second_ident = ModbusDeviceIdentification()
+        first_ident.VendorName = "first id"
+        second_ident.VendorName = "second id"
+        self.assertEqual(first_ident.VendorName, "first id")
+        self.assertEqual(second_ident.VendorName, "second id")
+        self.assertTrue(first_ident.VendorName is not second_ident.VendorName)
+        self.assertTrue(first_ident.VendorName is not self.control.Identity.VendorName)
+        self.assertTrue(second_ident.VendorName is not self.control.Identity.VendorName)
+        self.assertTrue(first_ident.VendorName is not self.ident)
+        self.assertTrue(second_ident.VendorName is not self.ident)
 
     def test_update_identity(self):
         """Test device identification reading"""

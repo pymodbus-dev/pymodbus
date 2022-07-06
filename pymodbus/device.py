@@ -184,19 +184,6 @@ class ModbusDeviceIdentification:
     application protocol.
     """
 
-    __data = {
-        0x00: "",  # VendorName
-        0x01: "",  # ProductCode
-        0x02: "",  # MajorMinorRevision
-        0x03: "",  # VendorUrl
-        0x04: "",  # ProductName
-        0x05: "",  # ModelName
-        0x06: "",  # UserApplicationName
-        0x07: "",  # reserved
-        0x08: "",  # reserved
-        # 0x80 -> 0xFF are privatek
-    }
-
     __names = [
         "VendorName",
         "ProductCode",
@@ -215,29 +202,42 @@ class ModbusDeviceIdentification:
         :param info: A dictionary of {int:string} of values
         :param set: A dictionary of {name:string} of values
         """
+        self.data = {
+            0x00: "",  # VendorName
+            0x01: "",  # ProductCode
+            0x02: "",  # MajorMinorRevision
+            0x03: "",  # VendorUrl
+            0x04: "",  # ProductName
+            0x05: "",  # ModelName
+            0x06: "",  # UserApplicationName
+            0x07: "",  # reserved
+            0x08: "",  # reserved
+            # 0x80 -> 0xFF are privatek
+        }
+
         if isinstance(info_name, dict):
             for key in info_name:
                 inx = self.__names.index(key)
-                self.__data[inx] = info_name[key]
+                self.data[inx] = info_name[key]
 
         if isinstance(info, dict):
             for key in info:
                 if (0x06 >= key >= 0x00) or (0xFF >= key >= 0x80):
-                    self.__data[key] = info[key]
+                    self.data[key] = info[key]
 
     def __iter__(self):
         """Iterate over the device information.
 
         :returns: An iterator of the device information
         """
-        return iter(self.__data.items())
+        return iter(self.data.items())
 
     def summary(self):
         """Return a summary of the main items.
 
         :returns: An dictionary of the main items
         """
-        return dict(zip(self.__names, iter(self.__data.values())))
+        return dict(zip(self.__names, iter(self.data.values())))
 
     def update(self, value):
         """Update the values of this identity.
@@ -246,7 +246,7 @@ class ModbusDeviceIdentification:
 
         :param value: The value to copy values from
         """
-        self.__data.update(value)
+        self.data.update(value)
 
     def __setitem__(self, key, value):
         """Access the device information.
@@ -255,14 +255,14 @@ class ModbusDeviceIdentification:
         :param value: The new value for referenced register
         """
         if key not in [0x07, 0x08]:
-            self.__data[key] = value
+            self.data[key] = value
 
     def __getitem__(self, key):
         """Access the device information.
 
         :param key: The register to read
         """
-        return self.__data.setdefault(key, "")
+        return self.data.setdefault(key, "")
 
     def __str__(self):
         """Build a representation of the device.
@@ -274,27 +274,13 @@ class ModbusDeviceIdentification:
     # -------------------------------------------------------------------------#
     #  Properties
     # -------------------------------------------------------------------------#
-    VendorName = dict_property(
-        lambda s: s.__data, 0  # pylint: disable=protected-access
-    )
-    ProductCode = dict_property(
-        lambda s: s.__data, 1  # pylint: disable=protected-access
-    )
-    MajorMinorRevision = dict_property(
-        lambda s: s.__data, 2  # pylint: disable=protected-access
-    )
-    VendorUrl = dict_property(
-        lambda s: s.__data, 3  # pylint: disable=protected-access
-    )
-    ProductName = dict_property(
-        lambda s: s.__data, 4  # pylint: disable=protected-access
-    )
-    ModelName = dict_property(
-        lambda s: s.__data, 5  # pylint: disable=protected-access
-    )
-    UserApplicationName = dict_property(
-        lambda s: s.__data, 6  # pylint: disable=protected-access
-    )
+    VendorName = dict_property(lambda s: s.data, 0)
+    ProductCode = dict_property(lambda s: s.data, 1)
+    MajorMinorRevision = dict_property(lambda s: s.data, 2)
+    VendorUrl = dict_property(lambda s: s.data, 3)
+    ProductName = dict_property(lambda s: s.data, 4)
+    ModelName = dict_property(lambda s: s.data, 5)
+    UserApplicationName = dict_property(lambda s: s.data, 6)
 
 
 class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-methods
@@ -531,9 +517,13 @@ class ModbusControlBlock(Singleton):
     __listen_only = False
     __delimiter = "\r"
     __counters = ModbusCountersHandler()
-    __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()
     __events = []
+
+
+    def __init__(self):
+        """Initialize object."""
+        self.__identity = ModbusDeviceIdentification()
 
     # -------------------------------------------------------------------------#
     #  Magic

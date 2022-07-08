@@ -64,7 +64,7 @@ Server Features
 
   * Can function as a fully implemented modbus server
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous (powered by twisted) and synchronous versions
+  * asynchronous and synchronous versions
   * Full server control context (device information, counters, etc)
   * A number of backend contexts (database, redis, sqlite, a slave device) as datastore
 

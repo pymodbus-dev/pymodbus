@@ -64,7 +64,7 @@ Server Features
 
   * Can function as a fully implemented modbus server
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
-  * asynchronous(powered by twisted) and synchronous versions
+  * asynchronous (powered by twisted) and synchronous versions
   * Full server control context (device information, counters, etc)
   * A number of backend contexts (database, redis, sqlite, a slave device) as datastore
 
@@ -119,7 +119,7 @@ Examples Directory structure
    ├── common.      -> Common examples for clients and server (sync/async), Payload encoders and decoders.
    ├── contrib.     -> Examples contributed by contributors. Serial Forwarder, Database contexts etc.
 
-If you are looking for UI,checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
+If you are looking for UI, checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
 `Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
 
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
@@ -182,12 +182,12 @@ Or to install a specific release::
 
 Otherwise you can pull the trunk source and install from there::
 
-    git clone git://github.com/bashwork/pymodbus.git
+    git clone git://github.com/riptideio/pymodbus.git
     cd pymodbus
     pip install -r requirements.txt
     
     
-To get latest release (for now v2.5.3 with python 2.7 support)::
+To get latest release (for now v2.5.3 with Python 2.7 support)::
 
     git checkout master
 
@@ -203,7 +203,7 @@ Then::
    pip install -r requirements.txt
    pip install -e .
    
-This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is imidiatly available as if installed.
+This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.
 
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
@@ -272,7 +272,7 @@ Contributing
 Just fork the repo and raise your PR against `dev` branch.
 
 Here are some of the items waiting to be done:
-   https://github.com/riptideio/pymodbus/blob/3.0.0/doc/TODO
+   https://github.com/riptideio/pymodbus/blob/dev/doc/TODO
 
 ------------------------------------------------------------
 License Information

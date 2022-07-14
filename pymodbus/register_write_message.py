@@ -313,7 +313,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         if not context.validate(self.function_code, self.address, 1):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, 1)[0]
-        values = (values & self.and_mask) | self.or_mask
+        values = (values & self.and_mask) | (self.or_mask & ~self.and_ask)
         context.setValues(self.function_code, self.address, [values])
         return MaskWriteRegisterResponse(self.address, self.and_mask, self.or_mask)
 

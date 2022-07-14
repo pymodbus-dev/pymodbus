@@ -29,6 +29,7 @@ class MockContext(IModbusSlaveContext):
     def setValues(self, fx, address, values):
         """Set values."""
 
+
 class MockLastValuesContext(IModbusSlaveContext):
     """Mock context."""
 
@@ -49,6 +50,7 @@ class MockLastValuesContext(IModbusSlaveContext):
     def setValues(self, fx, address, values):
         """Set values."""
         self.last_values = values
+
 
 class FakeList:
     """Todo, replace with magic mock."""

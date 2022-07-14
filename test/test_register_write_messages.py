@@ -138,6 +138,12 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def test_mask_write_register_request_execute(self):
         """Test write register request valid execution"""
+        # The test uses the 4 nibbles of the 16-bit values to test
+        # the combinations:
+        #     and_mask=0, or_mask=0
+        #     and_mask=F, or_mask=0
+        #     and_mask=0, or_mask=F
+        #     and_mask=F, or_mask=F
         context = MockLastValuesContext(valid=True, default=0xAA55)
         handle = MaskWriteRegisterRequest(0x0000, 0x0F0F, 0x00FF)
         result = handle.execute(context)

@@ -13,7 +13,7 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterResponse,
 )
 
-from .modbus_mocks import MockContext
+from .modbus_mocks import MockContext, MockLastValuesContext
 
 # ---------------------------------------------------------------------------#
 #  Fixture
@@ -138,10 +138,17 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
     def test_mask_write_register_request_execute(self):
         """Test write register request valid execution"""
-        context = MockContext(valid=True, default=0x0000)
-        handle = MaskWriteRegisterRequest(0x0000, 0x0101, 0x1010)
+        # The test uses the 4 nibbles of the 16-bit values to test
+        # the combinations:
+        #     and_mask=0, or_mask=0
+        #     and_mask=F, or_mask=0
+        #     and_mask=0, or_mask=F
+        #     and_mask=F, or_mask=F
+        context = MockLastValuesContext(valid=True, default=0xAA55)
+        handle = MaskWriteRegisterRequest(0x0000, 0x0F0F, 0x00FF)
         result = handle.execute(context)
         self.assertTrue(isinstance(result, MaskWriteRegisterResponse))
+        self.assertEqual([0x0AF5], context.last_values)
 
     def test_mask_write_register_request_invalid_execute(self):
         """Test write register request execute with invalid data"""

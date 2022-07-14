@@ -30,6 +30,28 @@ class MockContext(IModbusSlaveContext):
         """Set values."""
 
 
+class MockLastValuesContext(IModbusSlaveContext):
+    """Mock context."""
+
+    def __init__(self, valid=False, default=True):
+        """Initialize."""
+        self.valid = valid
+        self.default = default
+        self.last_values = []
+
+    def validate(self, fx, address, count=0):
+        """Validate values."""
+        return self.valid
+
+    def getValues(self, fx, address, count=0):
+        """Get values."""
+        return [self.default] * count
+
+    def setValues(self, fx, address, values):
+        """Set values."""
+        self.last_values = values
+
+
 class FakeList:
     """Todo, replace with magic mock."""
 

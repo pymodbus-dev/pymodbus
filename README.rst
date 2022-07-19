@@ -151,7 +151,6 @@ You can install using pip or easy install by issuing the following
 commands in a terminal window (make sure you have correct
 permissions or a virtualenv currently running)::
 
-    easy_install -U pymodbus
     pip install  -U pymodbus
 
 This will install a base version of pymodbus.
@@ -178,7 +177,6 @@ Available options are:
 Or to install a specific release::
 
     pip install  -U pymodbus==X.Y.Z
-    easy_install -U pymodbus==X.Y.Z
 
 Otherwise you can pull the trunk source and install from there::
 

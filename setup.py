@@ -5,12 +5,7 @@
 # --------------------------------------------------------------------------- #
 # initialization
 # --------------------------------------------------------------------------- #
-try:  # if not installed, install and proceed
-    from setuptools import find_packages, setup
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import find_packages, setup
+from setuptools import find_packages, setup
 try:
     from setup_commands import command_classes
 except ImportError:

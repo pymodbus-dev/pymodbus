@@ -71,7 +71,7 @@ async def run_payload_server():
         info_name={
             "VendorName": "Pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),

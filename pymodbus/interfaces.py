@@ -16,7 +16,7 @@ TEXT_METHOD = "Method not implemented by derived class"
 class Singleton:  # pylint: disable=too-few-public-methods
     """Singleton base class.
 
-    http://mail.python.org/pipermail/python-list/2007-July/450681.html
+    https://mail.python.org/pipermail/python-list/2007-July/450681.html
     """
 
     def __new__(cls, *args, **kwargs):  # pylint: disable=unused-argument

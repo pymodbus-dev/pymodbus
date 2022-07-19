@@ -24,7 +24,7 @@ To install the package from pypi, use pip::
 
 Or to install a specific release::
 
-    pip install  -U pymodbus==X.Y.Z
+    pip install -U pymodbus==X.Y.Z
 
 As with other Python packages, the standard way of installing from source
 is (as root or administrator)::

@@ -18,16 +18,16 @@ The Windows IOCP reactor requires pywin32 build 205 or later.
 Installation
 -------------
 
-To install the package from pypi, use pip::
+To install the package from pypi, use pip:
 
     pip install -U pymodbus
 
-Or to install a specific release::
+Or to install a specific release:
 
     pip install -U pymodbus==X.Y.Z
 
 As with other Python packages, the standard way of installing from source
-is (as root or administrator)::
+is (as root or administrator):
 
     https://github.com/riptideio/pymodbus.git
     git checkout master

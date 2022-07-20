@@ -149,7 +149,7 @@ Installing
 
 You can install using pip or easy install by issuing the following
 commands in a terminal window (make sure you have correct
-permissions or a virtualenv currently running)::
+permissions or a virtualenv currently running):
 
     pip install -U pymodbus
 
@@ -174,7 +174,7 @@ Available options are:
 - **development**, installs development tools needed to enable test/check of pymodbus changes.
 
 
-Or to install a specific release::
+Or to install a specific release:
 
     pip install -U pymodbus==X.Y.Z
 

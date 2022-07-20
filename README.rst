@@ -7,10 +7,10 @@ PyModbus - A Python Modbus Stack
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pymodbus_dev/Lobby 
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
-   :target: http://pymodbus.readthedocs.io/en/latest/?badge=latest
+   :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-.. image:: http://pepy.tech/badge/pymodbus
-   :target: http://pepy.tech/project/pymodbus 
+.. image:: https://pepy.tech/badge/pymodbus
+   :target: https://pepy.tech/project/pymodbus 
    :alt: Downloads
    
 ------------------------------------------------------------
@@ -87,9 +87,9 @@ base operating system will allow (*allow* in this case means how many Virtual IP
 
 For more information please browse the project documentation:
 
-http://riptideio.github.io/pymodbus/ 
+https://riptideio.github.io/pymodbus/ 
 or
-http://readthedocs.org/docs/pymodbus/en/latest/index.html
+https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 ------------------------------------------------------------
 Example Code
@@ -261,6 +261,7 @@ Here are some of the common commands to perform a range of activities
 ------------------------------------------------------------
 Generate documentation
 ------------------------------------------------------------
+
 ::
    cd doc
    make clean

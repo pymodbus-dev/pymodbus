@@ -3,7 +3,7 @@
 """Libmodbus Protocol Wrapper.
 
 What follows is an example wrapper of the libmodbus library
-(http://libmodbus.org/documentation/) for use with pymodbus.
+(https://libmodbus.org/documentation/) for use with pymodbus.
 There are two utilities involved here:
 
 * LibmodbusLevel1Client

@@ -263,7 +263,7 @@ class ReactiveServer:
         cls,
         vendor="Pymodbus",
         product_code="PM",
-        vendor_url="http://github.com/riptideio/pymodbus/",
+        vendor_url="https://github.com/riptideio/pymodbus/",
         product_name="Pymodbus Server",
         model_name="Reactive Server",
         version=pymodbus_version.short(),

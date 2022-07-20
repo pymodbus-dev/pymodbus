@@ -133,7 +133,7 @@ def run_callback_server():
         info_name={
             "VendorName": "pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "http://github.com/riptideio/pymodbus/",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
             "MajorMinorRevision": version.short(),

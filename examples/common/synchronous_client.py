@@ -86,11 +86,9 @@ def run_sync_client():
     # ----------------------------------------------------------------------- #
     log.debug("### Reading Coils")
     rr = client.read_coils(1, 1, unit=UNIT)
-    
+
     log.debug("### printing the content of Reference Number:(index) 1 and  1 bit depth  ")
     log.debug(rr.bits[0])
-
-
 
     # ----------------------------------------------------------------------- #
     # example requests
@@ -106,7 +104,7 @@ def run_sync_client():
     # ----------------------------------------------------------------------- #
     log.debug("### Test 1 Coil (output): Write 'TRUE' to address:0")
     rq = client.write_coil(0, True, unit=UNIT)
-    
+
     log.debug("### Test 1 Coil (output): Reading back address:0")
     rr = client.read_coils(0, 1, unit=UNIT)
 
@@ -134,7 +132,7 @@ def run_sync_client():
 
     log.debug("### Test 3 Coil (output) multiple: Write False to address 1-8  coils")
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
-    
+
     log.debug("### Test 3 Coil (output) multiple: Reading back multiple address:1-8")
     rr = client.read_coils(1, 8, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
@@ -149,12 +147,12 @@ def run_sync_client():
 
     log.debug("### Test 5 register (Output): Write '10 'to address 1 of registers ")
     rq = client.write_register(1, 10, unit=UNIT)
-    
+
     log.debug("### Test 5 register (Output): reading address 1 of registers")
     rr = client.read_holding_registers(1, 1, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
- 
+
     txt = f"### address 1 is: {str(rr.registers[0])}"
     log.debug(txt)
     assert rr.registers[0] == 10  # nosec test the expected value
@@ -179,10 +177,9 @@ def run_sync_client():
         "write_address": 1,
         "write_registers": [256, 128, 100, 50, 25, 10, 5, 1],
     }
-    
     log.debug("### Test 8 Read write registers simultaneously: write")
     rq = client.readwrite_registers(unit=UNIT, **arguments)
-    
+
     txt = f"### Test 8 readwrite result: address 1-8 is: {str(rq.registers)}"
     log.debug(txt)
     rr = client.read_holding_registers(1, 8, unit=UNIT)
@@ -196,8 +193,7 @@ def run_sync_client():
     # ----------------------------------------------------------------------- #
     # close the client
     # ----------------------------------------------------------------------- #
-    
-    log.debug("### End of Program")    
+    log.debug("### End of Program")
     client.close()
 
 

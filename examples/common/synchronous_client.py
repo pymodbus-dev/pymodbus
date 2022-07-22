@@ -74,6 +74,7 @@ def run_sync_client():
     # client = ModbusClient(method="ascii", port="/dev/ptyp0", timeout=1)
     # client = ModbusClient(method="rtu", port="/dev/ptyp0", timeout=1,
     #                       baudrate=9600)
+    log.debug("### Connecting to server")
     client.connect()
 
     # ------------------------------------------------------------------------#
@@ -83,9 +84,11 @@ def run_sync_client():
     # individual request. This can be done by specifying the `unit` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
-    log.debug("Reading Coils")
+    log.debug("### Reading Coils")
     rr = client.read_coils(1, 1, unit=UNIT)
-    log.debug(rr)
+
+    log.debug("### printing the content of Reference Number:(index) 1 and  1 bit depth  ")
+    log.debug(rr.bits[0])
 
     # ----------------------------------------------------------------------- #
     # example requests
@@ -99,15 +102,22 @@ def run_sync_client():
     # Keep both of these cases in mind when testing as the following will
     # _only_ pass with the supplied asynchronous modbus server (script supplied).
     # ----------------------------------------------------------------------- #
-    log.debug("Write to a Coil and read back")
+    log.debug("### Test 1 Coil (output): Write 'TRUE' to address:0")
     rq = client.write_coil(0, True, unit=UNIT)
+
+    log.debug("### Test 1 Coil (output): Reading back address:0")
     rr = client.read_coils(0, 1, unit=UNIT)
+
+    txt = f"### address:0 is: {str(rr.bits[0])}"
+    log.debug(txt)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
     assert rr.bits[0]  # nosec test the expected value
 
-    log.debug("Write to multiple coils and read back- test 1")
+    log.debug("### Test 2 Coil (output) multiple: Write True to 1-8  coils")
     rq = client.write_coils(1, [True] * 8, unit=UNIT)
+
+    log.debug("### Test 2 Coil (output) multiple: Reading back address:1-21")
     rr = client.read_coils(1, 21, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
@@ -120,32 +130,44 @@ def run_sync_client():
     resp.extend([False] * 3)
     assert rr.bits == resp  # nosec test the expected value
 
-    log.debug("Write to multiple coils and read back - test 2")
+    log.debug("### Test 3 Coil (output) multiple: Write False to address 1-8  coils")
     rq = client.write_coils(1, [False] * 8, unit=UNIT)
+
+    log.debug("### Test 3 Coil (output) multiple: Reading back multiple address:1-8")
     rr = client.read_coils(1, 8, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
     assert rr.bits == [False] * 8  # nosec test the expected value
 
-    log.debug("Read discrete inputs")
+    log.debug("### Test 4 discrete inputs: Read address:0-7 ")
     rr = client.read_discrete_inputs(0, 8, unit=UNIT)
     assert not rr.isError()  # nosec test that we are not an error
+    txt = f"### address 0-7 is: {str(rr.bits)}"
+    log.debug(txt)
 
-    log.debug("Write to a holding register and read back")
+    log.debug("### Test 5 register (Output): Write '10 'to address 1 of registers ")
     rq = client.write_register(1, 10, unit=UNIT)
+
+    log.debug("### Test 5 register (Output): reading address 1 of registers")
     rr = client.read_holding_registers(1, 1, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
+
+    txt = f"### address 1 is: {str(rr.registers[0])}"
+    log.debug(txt)
     assert rr.registers[0] == 10  # nosec test the expected value
 
-    log.debug("Write to multiple holding registers and read back")
+    log.debug("### Test 6 registers multiple: Write '10' to 8 registers")
     rq = client.write_registers(1, [10] * 8, unit=UNIT)
+    log.debug("### Test 6 registers multiple: reading address 1-8 registers")
     rr = client.read_holding_registers(1, 8, unit=UNIT)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
+    txt = f"### address 1-8 is: {str(rr.registers)}"
+    log.debug(txt)
     assert rr.registers == [10] * 8  # nosec test the expected value
 
-    log.debug("Read input registers")
+    log.debug("### Test 7 Read input registers")
     rr = client.read_input_registers(1, 8, unit=UNIT)
     assert not rr.isError()  # nosec test that we are not an error
 
@@ -153,19 +175,25 @@ def run_sync_client():
         "read_address": 1,
         "read_count": 8,
         "write_address": 1,
-        "write_registers": [20] * 8,
+        "write_registers": [256, 128, 100, 50, 25, 10, 5, 1],
     }
-    log.debug("Read write registers simultaneously")
+    log.debug("### Test 8 Read write registers simultaneously: write")
     rq = client.readwrite_registers(unit=UNIT, **arguments)
+
+    txt = f"### Test 8 readwrite result: address 1-8 is: {str(rq.registers)}"
+    log.debug(txt)
     rr = client.read_holding_registers(1, 8, unit=UNIT)
+    txt = f"### Test 8 read result: address 1-8 is: {str(rr.registers)}"
+    log.debug(txt)
     assert not rq.isError()  # nosec test that we are not an error
     assert not rr.isError()  # nosec test that we are not an error
-    assert rq.registers == [20] * 8  # nosec test the expected value
-    assert rr.registers == [20] * 8  # nosec test the expected value
+    assert rq.registers == arguments["write_registers"]  # nosec test the expected value
+    assert rr.registers == arguments["write_registers"]  # nosec test the expected value
 
     # ----------------------------------------------------------------------- #
     # close the client
     # ----------------------------------------------------------------------- #
+    log.debug("### End of Program")
     client.close()
 
 

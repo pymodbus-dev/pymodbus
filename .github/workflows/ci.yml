@@ -125,7 +125,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - uses: twisted/python-info-action@v1.0.1
       - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         env:
@@ -225,7 +224,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - uses: twisted/python-info-action@v1.0.1
       - name: Test
         continue-on-error: ${{ matrix.task.continue_on_error == true }}
         run: |
@@ -272,7 +270,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage
         uses: actions/download-artifact@v2

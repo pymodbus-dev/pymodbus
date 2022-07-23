@@ -8,8 +8,8 @@ import logging
 from optparse import OptionParser
 import pickle  # nosec
 
-from twisted.internet import reactor, serialport
-from twisted.internet.protocol import ClientFactory
+from twisted.internet import reactor, serialport  # pylint: disable=import-error
+from twisted.internet.protocol import ClientFactory  # pylint: disable=import-error
 
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext
@@ -140,7 +140,7 @@ class ScraperProtocol(ModbusClientProtocol):
 #
 # It also persists data between client instances (think protocol singleton).
 # --------------------------------------------------------------------------- #
-class ScraperFactory(ClientFactory):
+class ScraperFactory(ClientFactory):  # pylint: disable=too-few-public-methods
     """Scraper factory."""
 
     protocol = ScraperProtocol
@@ -151,10 +151,10 @@ class ScraperFactory(ClientFactory):
         self.endpoint = endpoint
         self.starting, self.ending = query
 
-    def buildProtocol(self, _):
+    def buildProtocol(self, _):  # pylint: disable=invalid-name
         """Create a protocol and start the reading cycle"""
         protocol = self.protocol(self.framer, self.endpoint)
-        protocol.factory = self
+        protocol.factory = self  # pylint: disable=attribute-defined-outside-init
         return protocol
 
 

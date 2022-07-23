@@ -3,8 +3,7 @@
 
 The asyncio server is implemented in pure python without any third
 party libraries (unless you need to use the serial protocols which require
-asyncio-pyserial). This is helpful in constrained or old environments where using
-twisted is just not feasible. What follows is an example of its use:
+asyncio-pyserial). What follows is an example of its use:
 """
 import asyncio
 

@@ -1,7 +1,7 @@
 """Sunspec client."""
 import logging
 
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred  # pylint: disable=import-error
 
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.constants import Endian

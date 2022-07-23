@@ -3,7 +3,6 @@
 import asyncio
 import logging
 
-from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.async_io import init_tls_client
 from pymodbus.constants import Defaults
 
@@ -54,17 +53,9 @@ def async_io_factory(
     return loop, client
 
 
-def get_factory(scheduler):
+def get_factory():
     """Get protocol factory based on the backend scheduler being used.
 
-    :param scheduler: ASYNC_IO
     :return: protocol object
-    :raises Exception: Failure
     """
-    if scheduler == schedulers.ASYNC_IO:
-        return async_io_factory
-
-    txt = f"Allowed Schedulers: {schedulers.ASYNC_IO}"
-    _logger.warning(txt)
-    txt = f'Invalid Scheduler "{scheduler}"'
-    raise Exception(txt)
+    return async_io_factory

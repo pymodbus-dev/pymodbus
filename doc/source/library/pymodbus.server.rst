@@ -12,7 +12,7 @@ Submodules
 pymodbus\.server\.asynchronous module
 -------------------------------------
 
-.. automodule:: pymodbus.server.asynchronous
+.. automodule:: pymodbus.server.async_io
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,5 +24,3 @@ pymodbus\.server\.sync module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

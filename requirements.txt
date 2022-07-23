@@ -36,9 +36,6 @@ pyserial-asyncio==0.6
 redis>=2.10.6
 sqlalchemy>=1.1.15
 
-# install:twisted
-twisted[conch,serial]>=20.3.0
-
 
 # -------------------------------------------------------------------
 # documentation, everything needed to generate documentation.

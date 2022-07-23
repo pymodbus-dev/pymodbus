@@ -188,7 +188,7 @@ class TestAsyncioClient:
         assert client.protocol is mock.sentinel.PROTOCOL  # nosec
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
-    def test_factory_protocol_lost_connection(
+    async def test_factory_protocol_lost_connection(
         self, mock_async
     ):  # pylint: disable=no-self-use
         """Test factory protocol lost connection."""

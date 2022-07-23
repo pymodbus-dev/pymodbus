@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 """Test server async."""
-import platform
-import sys
-from threading import Thread
-import time
 import unittest
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import ModbusIOException, NoSuchSlaveException
@@ -15,23 +9,10 @@ from pymodbus.server.asynchronous import (
     ModbusServerFactory,
     ModbusTcpProtocol,
     ModbusUdpProtocol,
-    StartSerialServer,
-    StartTcpServer,
-    StartUdpServer,
     StopServer,
     _is_main_thread,
 )
 from pymodbus.transaction import ModbusSocketFramer
-
-# --------------------------------------------------------------------------- #
-# Fixture
-# --------------------------------------------------------------------------- #
-PATCH_TWISTER = "twisted.internet.reactor"
-
-no_twisted_serial_on_windows_with_pypy = pytest.mark.skipif(
-    sys.platform == "win32" and platform.python_implementation() == "PyPy",
-    reason="Twisted serial requires pywin32 which is not compatible with PyPy",
-)
 
 
 class AsynchronousServerTest(unittest.TestCase):
@@ -47,18 +28,6 @@ class AsynchronousServerTest(unittest.TestCase):
 
     def tearDown(self):
         """Clean up the test environment"""
-
-    # ----------------------------------------------------------------------- #
-    # Test ModbusTcpProtocol
-    # ----------------------------------------------------------------------- #
-    def test_tcp_server_startup(self):
-        """Test that the modbus tcp asynchronous server starts correctly"""
-        with patch(PATCH_TWISTER) as mock_reactor:
-            console = False
-            call_count = 1
-            StartTcpServer(context=None, console=console)
-            self.assertEqual(mock_reactor.listenTCP.call_count, call_count)
-            self.assertEqual(mock_reactor.run.call_count, 1)
 
     def test_connection_made(self):
         """Test connection made."""
@@ -184,45 +153,6 @@ class AsynchronousServerTest(unittest.TestCase):
         identity = ModbusDeviceIdentification(info={0x00: "VendorName"})
         protocol = ModbusUdpProtocol(store=None, identity=identity)
         self.assertEqual(protocol.control.Identity.VendorName, "VendorName")
-
-    def test_udp_server_startup(self):
-        """Test that the modbus udp asynchronous server starts correctly"""
-        with patch(PATCH_TWISTER) as mock_reactor:
-            StartUdpServer(context=None)
-            self.assertEqual(mock_reactor.listenUDP.call_count, 1)
-            self.assertEqual(mock_reactor.run.call_count, 1)
-
-    @no_twisted_serial_on_windows_with_pypy
-    @patch("twisted.internet.serialport.SerialPort")
-    def test_serial_server_startup(self, mock_sp):  # pylint: disable=unused-argument
-        """Test that the modbus serial asynchronous server starts correctly"""
-        with patch(PATCH_TWISTER) as mock_reactor:
-            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
-            self.assertEqual(mock_reactor.run.call_count, 1)
-
-    @no_twisted_serial_on_windows_with_pypy
-    @patch("twisted.internet.serialport.SerialPort")
-    def test_stop_server_from_main_thread(
-        self, mock_sp
-    ):  # pylint: disable=unused-argument
-        """Stop asynchronous server."""
-        with patch(PATCH_TWISTER) as mock_reactor:
-            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
-            self.assertEqual(mock_reactor.run.call_count, 1)
-            StopServer()
-            self.assertEqual(mock_reactor.stop.call_count, 1)
-
-    @no_twisted_serial_on_windows_with_pypy
-    @patch("twisted.internet.serialport.SerialPort")
-    def test_stop_server_from_thread(self, mock_sp):  # pylint: disable=unused-argument
-        """Stop asynchronous server from child thread."""
-        with patch(PATCH_TWISTER) as mock_reactor:
-            StartSerialServer(context=None, port=pytest.SERIAL_PORT)
-            self.assertEqual(mock_reactor.run.call_count, 1)
-            mythread = Thread(target=StopServer)
-            mythread.start()
-            time.sleep(2)
-            self.assertEqual(mock_reactor.callFromThread.call_count, 1)
 
     def test_datagram_received(self):
         """Test datagram received."""

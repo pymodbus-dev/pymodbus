@@ -120,7 +120,7 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
     EndOfSunSpecMap = 65535
 
     @classmethod
-    def lookup(cls, code):
+    def lookup(cls, code):  # pylint: disable=missing-type-doc
         """Return the device model name for that identifier
 
         :param code: The device code to lookup
@@ -145,7 +145,7 @@ class SunspecOffsets:  # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Common Functions
 # --------------------------------------------------------------------------- #
-def defer_or_apply(func):  # pylint: disable=unused-argument
+def defer_or_apply(func):  # pylint: disable=unused-argument,missing-type-doc
     """Apply an adapter method.
 
     to a result regardless if it is a deferred
@@ -164,7 +164,7 @@ def defer_or_apply(func):  # pylint: disable=unused-argument
     return closure
 
 
-def create_sunspec_sync_client(host):
+def create_sunspec_sync_client(host):  # pylint: disable=missing-type-doc
     """Create a sunspec client.
 
     :param host: The host to connect to
@@ -192,7 +192,7 @@ class SunspecDecoder(BinaryPayloadDecoder):
         my_byteorder = Endian.Big
         BinaryPayloadDecoder.__init__(self, payload, my_byteorder)
 
-    def decode_string(self, size=1):
+    def decode_string(self, size=1):  # pylint: disable=missing-type-doc
         """Decode a string from the buffer
 
         :param size: The size of the string to decode
@@ -246,7 +246,7 @@ class SunspecClient:
             "Next_DID_Length": decoder.decode_16bit_uint(),
         }
 
-    def get_device_block(self, offset, size):
+    def get_device_block(self, offset, size):  # pylint: disable=missing-type-doc
         """Retrieve the next device block
 
         .. note:: We will read 2 more registers so that we have

@@ -11,7 +11,7 @@ import pickle  # nosec
 from twisted.internet import reactor, serialport
 from twisted.internet.protocol import ClientFactory
 
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol  # pylint: disable=no-name-in-module
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
 
@@ -67,7 +67,7 @@ class ScraperProtocol(ModbusClientProtocol):
             DELAY, self.scrape_holding_registers
         )
 
-    def connection_lost(self, reason):  # pylint: disable=no-self-use,unused-argument
+    def connection_lost(self, reason):  # pylint: disable=no-self-use,unused-argument,missing-type-doc
         """Call when the client disconnects from the server.
 
         :param reason: The reason for the disconnection
@@ -97,7 +97,7 @@ class ScraperProtocol(ModbusClientProtocol):
         data = self.read_input_registers(self.address, count=COUNT, unit=SLAVE)
         data.addCallbacks(self.scrape_coils, self.error_handler)
 
-    def scrape_coils(self, response):
+    def scrape_coils(self, response):  # pylint: disable=missing-type-doc
         """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
@@ -108,7 +108,7 @@ class ScraperProtocol(ModbusClientProtocol):
         data = self.read_coils(self.address, count=COUNT, unit=SLAVE)
         data.addCallbacks(self.start_next_cycle, self.error_handler)
 
-    def start_next_cycle(self, response):
+    def start_next_cycle(self, response):  # pylint: disable=missing-type-doc
         """Write values of coils, trigger next cycle
 
         :param response: The response to process
@@ -125,7 +125,7 @@ class ScraperProtocol(ModbusClientProtocol):
                 DELAY, self.scrape_holding_registers
             )
 
-    def error_handler(self, failure):  # pylint: disable=no-self-use
+    def error_handler(self, failure):  # pylint: disable=no-self-use,missing-type-doc
         """Handle any twisted errors
 
         :param failure: The error to handle
@@ -209,7 +209,7 @@ class LoggingContextReader:
             ir=ModbusSequentialDataBlock.create(),
         )
 
-    def write(self, response):
+    def write(self, response):  # pylint: disable=missing-type-doc
         """Handle the next modbus response
 
         :param response: The response to process

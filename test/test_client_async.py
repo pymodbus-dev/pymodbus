@@ -111,7 +111,10 @@ class TestAsynchronousClient:
         """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
         loop = asyncio.get_event_loop()
         loop.is_running.side_effect = lambda: False
-        loop, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
+        (  # pylint: disable=unpacking-non-sequence
+            loop,
+            client,
+        ) = AsyncModbusSerialClient(
             schedulers.ASYNC_IO,
             method=method,
             port=pytest.SERIAL_PORT,

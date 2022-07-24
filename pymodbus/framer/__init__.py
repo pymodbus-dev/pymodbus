@@ -16,7 +16,7 @@ TLS_FRAME_HEADER = BYTE_ORDER + "B"
 class ModbusFramer(IModbusFramer):
     """Base Framer class."""
 
-    name = ''
+    name = ""
 
     def _validate_unit_id(self, units, single):
         """Validate if the received data is valid for the client.

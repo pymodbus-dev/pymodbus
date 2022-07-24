@@ -267,7 +267,9 @@ class ModbusTransactionManager:
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, packet, response_length, full=False, broadcast=False):  # pylint: disable=too-complex
+    def _transact(
+        self, packet, response_length, full=False, broadcast=False
+    ):  # pylint: disable=too-complex
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -381,9 +383,15 @@ class ModbusTransactionManager:
                         )
                         length = struct.unpack(">H", read_min[4:6])[0] - 1
                         expected_response_length = h_size + length
-                    elif expected_response_length is None and isinstance(self.client.framer, ModbusRtuFramer):
+                    elif expected_response_length is None and isinstance(
+                        self.client.framer, ModbusRtuFramer
+                    ):
                         try:
-                            expected_response_length = self.client.framer.get_expected_response_length(read_min)
+                            expected_response_length = (
+                                self.client.framer.get_expected_response_length(
+                                    read_min
+                                )
+                            )
                         except IndexError:
                             # Could not determine response length with available bytes
                             pass
@@ -421,9 +429,7 @@ class ModbusTransactionManager:
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 
-    def addTransaction(  # pylint: disable=invalid-name
-        self, request, tid=None
-    ):
+    def addTransaction(self, request, tid=None):  # pylint: disable=invalid-name
         """Add a transaction to the handler.
 
         This holds the request in case it needs to be resent.

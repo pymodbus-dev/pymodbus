@@ -139,7 +139,8 @@ class SimpleDataStoreTest(unittest.TestCase):
         request = DiagnosticStatusSimpleRequest(b"\x12\x34")
         request.sub_function_code = 0x1234
         self.assertRaises(
-            NotImplementedException, lambda: request.execute()  # pylint: disable=unnecessary-lambda
+            NotImplementedException,
+            lambda: request.execute(),  # pylint: disable=unnecessary-lambda
         )
         self.assertEqual(request.encode(), b"\x12\x34\x12\x34")
         DiagnosticStatusSimpleResponse(None)

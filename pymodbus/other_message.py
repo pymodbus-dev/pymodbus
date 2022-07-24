@@ -40,9 +40,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=unused-argument
-        self, context=None
-    ):
+    def execute(self, context=None):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -99,7 +97,8 @@ class ReadExceptionStatusResponse(ModbusResponse):
         """
         arguments = (self.function_code, self.status)
         return (
-            "ReadExceptionStatusResponse(%d, %s)" % arguments  # pylint: disable=consider-using-f-string
+            "ReadExceptionStatusResponse(%d, %s)"  # pylint: disable=consider-using-f-string
+            % arguments
         )
 
 
@@ -145,9 +144,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=unused-argument
-        self, context=None
-    ):
+    def execute(self, context=None):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -211,7 +208,8 @@ class GetCommEventCounterResponse(ModbusResponse):
         """
         arguments = (self.function_code, self.count, self.status)
         return (
-            "GetCommEventCounterResponse(%d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+            "GetCommEventCounterResponse(%d, %d, %d)"  # pylint: disable=consider-using-f-string
+            % arguments
         )
 
 
@@ -256,9 +254,7 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=unused-argument
-        self, context=None
-    ):
+    def execute(self, context=None):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :returns: The populated response
@@ -347,7 +343,8 @@ class GetCommEventLogResponse(ModbusResponse):
             self.event_count,
         )
         return (
-            "GetCommEventLogResponse(%d, %d, %d, %d)" % arguments  # pylint: disable=consider-using-f-string
+            "GetCommEventLogResponse(%d, %d, %d, %d)"  # pylint: disable=consider-using-f-string
+            % arguments
         )
 
 
@@ -464,7 +461,8 @@ class ReportSlaveIdResponse(ModbusResponse):
         """
         arguments = (self.function_code, self.identifier, self.status)
         return (
-            "ReportSlaveIdResponse(%s, %s, %s)" % arguments  # pylint: disable=consider-using-f-string
+            "ReportSlaveIdResponse(%s, %s, %s)"  # pylint: disable=consider-using-f-string
+            % arguments
         )
 
 

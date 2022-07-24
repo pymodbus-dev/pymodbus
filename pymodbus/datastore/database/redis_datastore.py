@@ -145,7 +145,9 @@ class RedisSlaveContext(IModbusSlaveContext):
         """
         response = self._get_bit_values(key, offset, count)
         return (
-            True if None not in response else False  # pylint: disable=simplifiable-if-expression
+            True  # pylint: disable=simplifiable-if-expression
+            if None not in response
+            else False
         )
 
     def _get_bit(self, key, offset, count):

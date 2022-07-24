@@ -205,7 +205,8 @@ class ExceptionResponse(ModbusResponse):
         message = ModbusExceptions.decode(self.exception_code)
         parameters = (self.function_code, self.original_code, message)
         return (
-            "Exception Response(%d, %d, %s)" % parameters  # pylint: disable=consider-using-f-string
+            "Exception Response(%d, %d, %s)"  # pylint: disable=consider-using-f-string
+            % parameters
         )
 
 

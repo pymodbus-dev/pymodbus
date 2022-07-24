@@ -58,9 +58,7 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         self.assertEqual(self.control.Identity.VendorName, "Bashwork")
         self.assertEqual(self.control.Identity.ProductCode, "PTM")
         self.assertEqual(self.control.Identity.MajorMinorRevision, "1.0")
-        self.assertEqual(
-            self.control.Identity.VendorUrl, "http://internets.com"
-        )
+        self.assertEqual(self.control.Identity.VendorUrl, "http://internets.com")
         self.assertEqual(self.control.Identity.ProductName, "pymodbus")
         self.assertEqual(self.control.Identity.ModelName, "bashwork")
         self.assertEqual(self.control.Identity.UserApplicationName, "unittest")

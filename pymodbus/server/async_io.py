@@ -93,9 +93,11 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 _logger.warning(txt)
             self.transport = transport  # pylint: disable=attribute-defined-outside-init
             self.running = True
-            self.framer = self.server.framer(  # pylint: disable=attribute-defined-outside-init
-                self.server.decoder,
-                client=None,
+            self.framer = (  # pylint: disable=attribute-defined-outside-init
+                self.server.framer(
+                    self.server.decoder,
+                    client=None,
+                )
             )
 
             # schedule the connection handler on the event loop
@@ -299,8 +301,10 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         """Call when a connection is made."""
         super().connection_made(transport)
 
-        self.client_address = transport.get_extra_info(  # pylint: disable=attribute-defined-outside-init
-            "peername"
+        self.client_address = (  # pylint: disable=attribute-defined-outside-init
+            transport.get_extra_info(
+                "peername"
+            )
         )
         self.server.active_connections[self.client_address] = self
         txt = f"TCP client connection established [{self.client_address[:2]}]"

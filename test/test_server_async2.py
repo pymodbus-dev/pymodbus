@@ -211,7 +211,8 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.ignore_missing_slaves = True
         request.execute.side_effect = NoSuchSlaveException()
         self.assertEqual(
-            protocol._execute(request, mock_addr), None  # pylint: disable=protected-access
+            protocol._execute(request, mock_addr),  # pylint: disable=protected-access
+            None,
         )
 
         # test other exceptions

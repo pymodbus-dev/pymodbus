@@ -96,7 +96,8 @@ class ReadDeviceInformationRequest(ModbusRequest):
         """
         params = (self.read_code, self.object_id)
         return (
-            "ReadDeviceInformationRequest(%d,%d)" % params  # pylint: disable=consider-using-f-string
+            "ReadDeviceInformationRequest(%d,%d)"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 

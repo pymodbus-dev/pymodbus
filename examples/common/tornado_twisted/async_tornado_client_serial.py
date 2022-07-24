@@ -82,9 +82,7 @@ def _print(value):
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(
-    client, protocol
-):
+def begin_asynchronous_test(client, protocol):
     """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
@@ -165,7 +163,10 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
 
     # Rtu
-    protocol, future = AsyncModbusSerialClient( # pylint: disable=unpacking-non-sequence
+    (
+        protocol,
+        future,
+    ) = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
         schedulers.IO_LOOP,
         method="rtu",
         port="/tmp/ptyp0",  # nosec

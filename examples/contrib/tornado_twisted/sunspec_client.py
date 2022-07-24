@@ -126,11 +126,7 @@ class SunspecModel:
         :param code: The device code to lookup
         :returns: The device model name, or None if none available
         """
-        values = {
-            (v, k)
-            for k, v in cls.__dict__.iteritems()
-            if not callable(v)
-        }
+        values = {(v, k) for k, v in cls.__dict__.iteritems() if not callable(v)}
         return values.get(code, None)
 
 
@@ -302,9 +298,7 @@ if __name__ == "__main__":
     for key, value in common.iteritems():
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
-        print(
-            "{:<20}: {}".format(key, value)
-        )
+        print("{:<20}: {}".format(key, value))
 
     # print out all the available device blocks
     blocks = client.get_all_device_blocks()

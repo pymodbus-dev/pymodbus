@@ -50,7 +50,8 @@ class FileRecord:  # pylint: disable=eq-without-hash
         """Give a representation of the file record."""
         params = (self.file_number, self.record_number, self.record_length)
         return (
-            "FileRecord(file=%d, record=%d, length=%d)" % params  # pylint: disable=consider-using-f-string
+            "FileRecord(file=%d, record=%d, length=%d)"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 

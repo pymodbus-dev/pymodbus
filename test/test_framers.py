@@ -318,7 +318,8 @@ def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test get raw frame."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     assert (
-        rtu_framer.getRawFrame() == rtu_framer._buffer  # nosec pylint: disable=protected-access
+        rtu_framer.getRawFrame()
+        == rtu_framer._buffer  # nosec pylint: disable=protected-access
     )
 
 

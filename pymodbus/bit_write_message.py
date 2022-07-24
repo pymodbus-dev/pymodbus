@@ -219,7 +219,8 @@ class WriteMultipleCoilsRequest(ModbusRequest):
         """
         params = (self.address, len(self.values))
         return (
-            "WriteNCoilRequest (%d) => %d " % params  # pylint: disable=consider-using-f-string
+            "WriteNCoilRequest (%d) => %d "  # pylint: disable=consider-using-f-string
+            % params
         )
 
     def get_response_pdu_size(self):

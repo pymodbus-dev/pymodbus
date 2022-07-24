@@ -102,19 +102,22 @@ class SynchronousClientTest(
         client = BaseModbusClient(None)
         client.transaction = None
         self.assertRaises(
-            NotImplementedException, lambda: client.connect()  # pylint: disable=unnecessary-lambda
-
+            NotImplementedException,
+            lambda: client.connect(),  # pylint: disable=unnecessary-lambda
         )
         self.assertRaises(NotImplementedException, lambda: client.send(None))
         self.assertRaises(NotImplementedException, lambda: client.recv(None))
         self.assertRaises(
-            NotImplementedException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda,unnecessary-dunder-call
+            NotImplementedException,
+            lambda: client.__enter__(),  # pylint: disable=unnecessary-lambda,unnecessary-dunder-call
         )
         self.assertRaises(
-            NotImplementedException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
+            NotImplementedException,
+            lambda: client.execute(),  # pylint: disable=unnecessary-lambda
         )
         self.assertRaises(
-            NotImplementedException, lambda: client.is_socket_open()  # pylint: disable=unnecessary-lambda
+            NotImplementedException,
+            lambda: client.is_socket_open(),  # pylint: disable=unnecessary-lambda
         )
         self.assertEqual("Null Transport", str(client))
         client.close()
@@ -137,16 +140,20 @@ class SynchronousClientTest(
         # a successful execute
         client.connect = lambda: True
         client.transaction = Mock(**{"execute.return_value": True})
-        self.assertEqual(client, client.__enter__())  # pylint: disable=unnecessary-dunder-call
+        self.assertEqual(
+            client, client.__enter__()  # pylint: disable=unnecessary-dunder-call
+        )
         self.assertTrue(client.execute())
 
         # a unsuccessful connect
         client.connect = lambda: False
         self.assertRaises(
-            ConnectionException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
+            ConnectionException,
+            lambda: client.execute(),  # pylint: disable=unnecessary-lambda
         )
         self.assertRaises(
-            ConnectionException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
+            ConnectionException,
+            lambda: client.execute(),  # pylint: disable=unnecessary-lambda
         )
 
     # -----------------------------------------------------------------------#
@@ -182,10 +189,12 @@ class SynchronousClientTest(
         """Test the Udp client get address family method"""
         client = ModbusUdpClient()
         self.assertEqual(
-            socket.AF_INET, client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
+            socket.AF_INET,
+            client._get_address_family("127.0.0.1"),  # pylint: disable=protected-access
         )
         self.assertEqual(
-            socket.AF_INET6, client._get_address_family("::1")  # pylint: disable=protected-access
+            socket.AF_INET6,
+            client._get_address_family("::1"),  # pylint: disable=protected-access
         )
 
     @inet_pton_skipif
@@ -218,7 +227,8 @@ class SynchronousClientTest(
         """Test the udp client send method"""
         client = ModbusUdpClient()
         self.assertRaises(
-            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._send(None),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -229,7 +239,8 @@ class SynchronousClientTest(
         """Test the udp client receive method"""
         client = ModbusUdpClient()
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -300,7 +311,8 @@ class SynchronousClientTest(
         """Test the tcp client send method"""
         client = ModbusTcpClient()
         self.assertRaises(
-            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._send(None),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -315,7 +327,8 @@ class SynchronousClientTest(
         mock_time.time.side_effect = count()
         client = ModbusTcpClient()
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -345,7 +358,8 @@ class SynchronousClientTest(
         mock_socket.recv.return_value = b""
         client.socket = mock_socket
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])
@@ -444,7 +458,8 @@ class SynchronousClientTest(
         """Test the tls client send method"""
         client = ModbusTlsClient()
         self.assertRaises(
-            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._send(None),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -456,7 +471,8 @@ class SynchronousClientTest(
         """Test the tls client receive method"""
         client = ModbusTlsClient()
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         mock_time.time.side_effect = count()
@@ -597,7 +613,8 @@ class SynchronousClientTest(
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient()
         self.assertRaises(
-            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._send(None),  # pylint: disable=protected-access
         )
         # client.connect()
         client.socket = mock_serial
@@ -614,7 +631,8 @@ class SynchronousClientTest(
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
         client = ModbusSerialClient()
         self.assertRaises(
-            ConnectionException, lambda: client._send(None)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._send(None),  # pylint: disable=protected-access
         )
         # client.connect()
         client.socket = mock_serial
@@ -627,7 +645,8 @@ class SynchronousClientTest(
         """Test the serial client receive method"""
         client = ModbusSerialClient()
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()

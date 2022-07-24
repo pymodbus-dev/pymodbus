@@ -55,12 +55,7 @@ async def run_payload_server():
     # ----------------------------------------------------------------------- #
 
     block = ModbusSequentialDataBlock(1, builder.to_registers())
-    store = ModbusSlaveContext(
-        di=block,
-        co=block,
-        hr=block,
-        ir=block
-    )
+    store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
@@ -82,11 +77,12 @@ async def run_payload_server():
         identity=identity,
         address=("0.0.0.0", 5020),
         allow_reuse_address=True,
-        defer_start=True
+        defer_start=True,
     )
 
     asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
     await server.serve_forever()
+
 
 if __name__ == "__main__":
     asyncio.run(run_payload_server())

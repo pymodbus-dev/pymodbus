@@ -129,7 +129,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadHoldingRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not (1 <= self.count <= 0x7d):
+        if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -185,7 +185,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         :param context: The datastore to request from
         :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadInputRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not (1 <= self.count <= 0x7d):
+        if not (1 <= self.count <= 0x7D):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -292,7 +292,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param context: The datastore to request from
         :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadWriteMultipleRegistersResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not (1 <= self.read_count <= 0x07d):
+        if not (1 <= self.read_count <= 0x07D):
             return self.doException(merror.IllegalValue)
         if not 1 <= self.write_count <= 0x079:
             return self.doException(merror.IllegalValue)
@@ -330,7 +330,8 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             self.write_count,
         )
         return (
-            "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)" % params  # pylint: disable=consider-using-f-string
+            "ReadWriteNRegisterRequest R(%d,%d) W(%d,%d)"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 

@@ -147,7 +147,5 @@ def callback(protocol, future):
 
 
 if __name__ == "__main__":
-    protocol, future = ModbusClient(
-        schedulers.IO_LOOP, port=5020
-    )
+    protocol, future = ModbusClient(schedulers.IO_LOOP, port=5020)
     future.add_done_callback(functools.partial(callback, protocol))

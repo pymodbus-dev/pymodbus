@@ -17,10 +17,7 @@ from pymodbus.repl.client.helper import get_commands
 def has_selected_completion():
     """Check for selected completion."""
     complete_state = get_app().current_buffer.complete_state
-    return (
-        complete_state is not None
-        and complete_state.current_completion is not None
-    )
+    return complete_state is not None and complete_state.current_completion is not None
 
 
 style = Style.from_dict(
@@ -58,9 +55,7 @@ class CmdCompleter(Completer):
         """Return command names."""
         return self._commands.keys()
 
-    def completing_command(
-        self, words, word_before_cursor
-    ):
+    def completing_command(self, words, word_before_cursor):
         """Determine if we are dealing with supported command.
 
         :param words: Input text broken in to word tokens.
@@ -134,7 +129,10 @@ class CmdCompleter(Completer):
                 k: v.help_text if not isinstance(v, str) else v
                 for k, v in self._commands.items()
             }
-            meta = lambda x: (x, c_meta.get(x, ""))  # pylint: disable=unnecessary-lambda-assignment
+            meta = lambda x: (  # pylint: disable=unnecessary-lambda-assignment
+                x,
+                c_meta.get(x, ""),
+            )
         else:
             if not list(
                 filter(lambda cmd: any(x == cmd for x in words), self._command_names)

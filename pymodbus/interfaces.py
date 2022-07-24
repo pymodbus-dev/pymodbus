@@ -46,9 +46,7 @@ class IModbusDecoder:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def lookupPduClass(  # pylint: disable=invalid-name
-        self, function_code
-    ):
+    def lookupPduClass(self, function_code):  # pylint: disable=invalid-name
         """Use `function_code` to determine the class of the PDU.
 
         :param function_code: The function code specified in a frame.
@@ -118,9 +116,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def populateResult(  # pylint: disable=invalid-name
-        self, result
-    ):
+    def populateResult(self, result):  # pylint: disable=invalid-name
         """Populate the modbus result with current frame header.
 
         We basically copy the data back over from the current header
@@ -131,9 +127,7 @@ class IModbusFramer:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def processIncomingPacket(  # pylint: disable=invalid-name
-        self, data, callback
-    ):
+    def processIncomingPacket(self, data, callback):  # pylint: disable=invalid-name
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -189,9 +183,7 @@ class IModbusSlaveContext:
         """Reset all the datastores to their default values."""
         raise NotImplementedException("Context Reset")
 
-    def validate(  # pylint: disable=invalid-name
-        self, fx, address, count=1
-    ):
+    def validate(self, fx, address, count=1):  # pylint: disable=invalid-name
         """Validate the request to make sure it is in range.
 
         :param fx: The function we are working with
@@ -201,9 +193,7 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("validate context values")
 
-    def getValues(  # pylint: disable=invalid-name
-        self, fx, address, count=1
-    ):
+    def getValues(self, fx, address, count=1):  # pylint: disable=invalid-name
         """Get `count` values from datastore.
 
         :param fx: The function we are working with
@@ -213,9 +203,7 @@ class IModbusSlaveContext:
         """
         raise NotImplementedException("get context values")
 
-    def setValues(  # pylint: disable=invalid-name
-        self, fx, address, values
-    ):
+    def setValues(self, fx, address, values):  # pylint: disable=invalid-name
         """Set the datastore with the supplied values.
 
         :param fx: The function we are working with

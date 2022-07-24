@@ -139,7 +139,9 @@ class SimpleFactoryTest(unittest.TestCase):
     def test_response_errors(self):
         """Test a response factory decoder exceptions"""
         self.assertRaises(
-            ModbusException, self.client._helper, self.bad[0][1]  # pylint: disable=protected-access
+            ModbusException,
+            self.client._helper,  # pylint: disable=protected-access
+            self.bad[0][1],
         )
         self.assertEqual(
             self.client.decode(self.bad[1][1]).function_code,

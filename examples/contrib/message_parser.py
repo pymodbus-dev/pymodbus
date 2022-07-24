@@ -98,14 +98,19 @@ class Decoder:
         :param message: The message to print
         """
         print(
-            "%-15s = %s" % ("name", message.__class__.__name__)  # pylint: disable=consider-using-f-string
+            "%-15s = %s"  # pylint: disable=consider-using-f-string
+            % (
+                "name",
+                message.__class__.__name__,
+            )
         )
         for (k_dict, v_dict) in message.__dict__.items():
             if isinstance(v_dict, dict):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 for k_item, v_item in v_dict.items():
                     print(
-                        "  %-12s => %s" % (k_item, v_item)  # pylint: disable=consider-using-f-string
+                        "  %-12s => %s"  # pylint: disable=consider-using-f-string
+                        % (k_item, v_item)
                     )
 
             elif isinstance(v_dict, collections.abc.Iterable):
@@ -113,14 +118,20 @@ class Decoder:
                 value = str([int(x) for x in v_dict])
                 for line in textwrap.wrap(value, 60):
                     print(
-                        "%-15s . %s" % ("", line)  # pylint: disable=consider-using-f-string
+                        "%-15s . %s"  # pylint: disable=consider-using-f-string
+                        % ("", line)
                     )
             else:
                 print(
-                    "%-15s = %s" % (k_dict, hex(v_dict))  # pylint: disable=consider-using-f-string
+                    "%-15s = %s"  # pylint: disable=consider-using-f-string
+                    % (k_dict, hex(v_dict))
                 )
         print(
-            "%-15s = %s" % ("documentation", message.__doc__)  # pylint: disable=consider-using-f-string
+            "%-15s = %s"  # pylint: disable=consider-using-f-string
+            % (
+                "documentation",
+                message.__doc__,
+            )
         )
 
 

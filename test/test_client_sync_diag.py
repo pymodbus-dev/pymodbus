@@ -61,7 +61,8 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         mock_diag_time.time.side_effect = count()
         client = ModbusTcpDiagClient()
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         client.socket = mockSocket()
@@ -98,7 +99,8 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         client.socket = mock_socket
         mock_socket.recv.return_value = b""
         self.assertRaises(
-            ConnectionException, lambda: client._recv(1024)  # pylint: disable=protected-access
+            ConnectionException,
+            lambda: client._recv(1024),  # pylint: disable=protected-access
         )
 
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])

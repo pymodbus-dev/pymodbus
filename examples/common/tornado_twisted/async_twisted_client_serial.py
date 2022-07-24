@@ -37,9 +37,7 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         ModbusClientProtocol.__init__(self, framer)
         log.debug("Beginning the processing loop")
-        reactor.callLater(
-            CLIENT_DELAY, self.fetch_holding_registers
-        )
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def fetch_holding_registers(self):
         """Defer fetching holding registers"""
@@ -65,9 +63,7 @@ class ExampleProtocol(ModbusClientProtocol):
         log.info(response.getBit(0))
         log.info(response.getBit(1))
         log.info(response.getBit(2))
-        reactor.callLater(
-            CLIENT_DELAY, self.fetch_holding_registers
-        )
+        reactor.callLater(CLIENT_DELAY, self.fetch_holding_registers)
 
     def error_handler(self, failure):
         """Handle any twisted errors

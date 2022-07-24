@@ -78,7 +78,8 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
         """Test that the base class isn"t implemented"""
         instance = IPayloadBuilder()
         self.assertRaises(
-            NotImplementedException, lambda: instance.build()  # pylint: disable=unnecessary-lambda
+            NotImplementedException,
+            lambda: instance.build(),  # pylint: disable=unnecessary-lambda
         )
 
 

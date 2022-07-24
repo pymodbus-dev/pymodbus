@@ -120,7 +120,7 @@ class BaseModbusClient(ModbusClientMixin):
         :raises ConnectionException:
         """
         if not self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
     # ----------------------------------------------------------------------- #
@@ -258,7 +258,7 @@ class ModbusTcpClient(BaseModbusClient):
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
         if self.state == ModbusTransactionState.RETRYING:
             if data := self._check_read_buffer():
                 return data
@@ -277,7 +277,7 @@ class ModbusTcpClient(BaseModbusClient):
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
 
         # socket.recv(size) waits until it gets some data from the host but
         # not necessarily the entire response that can be fragmented in
@@ -360,9 +360,7 @@ class ModbusTcpClient(BaseModbusClient):
 
     def is_socket_open(self):
         """Check if socket is open."""
-        return (
-            True if self.socket is not None else False  # pylint: disable=simplifiable-if-expression
-        )
+        return (self.socket is not None)
 
     def __str__(self):
         """Build a string representation of the connection.
@@ -444,7 +442,7 @@ class ModbusTlsClient(ModbusTcpClient):
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
 
         # socket.recv(size) waits until it gets some data from the host but
         # not necessarily the entire response that can be fragmented in
@@ -565,7 +563,7 @@ class ModbusUdpClient(BaseModbusClient):
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
         if request:
             return self.socket.sendto(request, (self.host, self.port))
         return 0
@@ -578,7 +576,7 @@ class ModbusUdpClient(BaseModbusClient):
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
         return self.socket.recvfrom(size)[0]
 
     def is_socket_open(self):
@@ -732,7 +730,7 @@ class ModbusSerialClient(
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(str(self))
         if request:
             try:
                 if waitingbytes := self._in_waiting():
@@ -783,7 +781,9 @@ class ModbusSerialClient(
         :raises ConnectionException:
         """
         if not self.socket:
-            raise ConnectionException(self.__str__())  # pylint: disable=unnecessary-dunder-call
+            raise ConnectionException(
+                self.__str__()  # pylint: disable=unnecessary-dunder-call
+            )
         if size is None:
             size = self._wait_for_data()
         result = self.socket.read(size)

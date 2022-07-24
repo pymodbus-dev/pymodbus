@@ -124,7 +124,8 @@ class WriteSingleRegisterResponse(ModbusResponse):
         """
         params = (self.address, self.value)
         return (
-            "WriteRegisterResponse %d => %d" % params  # pylint: disable=consider-using-f-string
+            "WriteRegisterResponse %d => %d"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 
@@ -215,7 +216,8 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         """
         params = (self.address, self.count)
         return (
-            "WriteMultipleRegisterRequest %d => %d" % params  # pylint: disable=consider-using-f-string
+            "WriteMultipleRegisterRequest %d => %d"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 
@@ -259,7 +261,8 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         """
         params = (self.address, self.count)
         return (
-            "WriteMultipleRegisterResponse (%d,%d)" % params  # pylint: disable=consider-using-f-string
+            "WriteMultipleRegisterResponse (%d,%d)"  # pylint: disable=consider-using-f-string
+            % params
         )
 
 

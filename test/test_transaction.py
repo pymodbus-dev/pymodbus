@@ -63,11 +63,13 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._tm.client.framer = MagicMock()
         self._tm._set_adu_size()  # pylint: disable=protected-access
         self.assertEqual(
-            self._tm._calculate_response_length(0), None  # pylint: disable=protected-access
+            self._tm._calculate_response_length(0),  # pylint: disable=protected-access
+            None,
         )
         self._tm.base_adu_size = 10
         self.assertEqual(
-            self._tm._calculate_response_length(5), 15  # pylint: disable=protected-access
+            self._tm._calculate_response_length(5),  # pylint: disable=protected-access
+            15,
         )
 
     def test_calculate_exception_length(self):
@@ -164,9 +166,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         # retry on invalid response
         trans.retry_on_invalid = True
         trans._recv = MagicMock(  # pylint: disable=protected-access
-            side_effect=iter(
-                [b"", b"abcdef", b"deadbe", b"123456"]
-            )
+            side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
         )
         response = trans.execute(request)
         self.assertIsInstance(response, ModbusIOException)
@@ -497,14 +497,19 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
 
         self._tls.decoder.decode = MagicMock(return_value=None)
         self.assertRaises(
-            ModbusIOException, lambda: self._tls._process(mock_callback)  # pylint: disable=protected-access
+            ModbusIOException,
+            lambda: self._tls._process(  # pylint: disable=protected-access
+                mock_callback
+            ),
         )
 
         result = MockResult(0x01)
         self._tls.decoder.decode = MagicMock(return_value=result)
         self.assertRaises(
             InvalidMessageReceivedException,
-            lambda: self._tls._process(mock_callback, error=True),  # pylint: disable=protected-access
+            lambda: self._tls._process(  # pylint: disable=protected-access
+                mock_callback, error=True
+            ),
         )
 
         self._tls._process(mock_callback)  # pylint: disable=protected-access

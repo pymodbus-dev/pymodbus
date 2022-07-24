@@ -319,9 +319,7 @@ class ReconnectingAsyncioModbusTcpClient:
             if self.host:
                 asyncio.ensure_future(self._reconnect(), loop=self.loop)
         else:
-            _logger.error(
-                TEST_FACTORY
-            )
+            _logger.error(TEST_FACTORY)
 
     async def _reconnect(self):
         """Reconnect."""
@@ -407,9 +405,7 @@ class AsyncioModbusTcpClient:
             # if self.host:
             #     asyncio.asynchronous(self._reconnect(), loop=self.loop)
         else:
-            _logger.error(
-                TEST_FACTORY
-            )
+            _logger.error(TEST_FACTORY)
 
 
 class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
@@ -571,9 +567,7 @@ class ReconnectingAsyncioModbusUdpClient:
             self.connected = True
             self.protocol = protocol
         else:
-            _logger.error(
-                "Factory protocol connect callback called while connected."
-            )
+            _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
@@ -590,9 +584,7 @@ class ReconnectingAsyncioModbusUdpClient:
             if self.host:
                 asyncio.create_task(self._reconnect())
         else:
-            _logger.error(
-                TEST_FACTORY
-            )
+            _logger.error(TEST_FACTORY)
 
     async def _reconnect(self):
         """Reconnect."""
@@ -688,9 +680,7 @@ class AsyncioModbusUdpClient:
             # if self.host:
             #    asyncio.asynchronous(self._reconnect(), loop=self.loop)
         else:
-            _logger.error(
-                TEST_FACTORY
-            )
+            _logger.error(TEST_FACTORY)
 
 
 class AsyncioModbusSerialClient:
@@ -794,9 +784,7 @@ class AsyncioModbusSerialClient:
             # if self.host:
             #     asyncio.asynchronous(self._reconnect(), loop=self.loop)
         else:
-            _logger.error(
-                TEST_FACTORY
-            )
+            _logger.error(TEST_FACTORY)
 
 
 async def init_tcp_client(proto_cls, loop, host, port, **kwargs):

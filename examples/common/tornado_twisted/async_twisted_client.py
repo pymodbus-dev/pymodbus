@@ -170,8 +170,6 @@ def begin_asynchronous_test(client):
 
 
 if __name__ == "__main__":
-    protocol, deferred = AsyncModbusTCPClient(
-        schedulers.REACTOR, port=5020
-    )
+    protocol, deferred = AsyncModbusTCPClient(schedulers.REACTOR, port=5020)
     deferred.addCallback(begin_asynchronous_test)
     deferred.addErrback(err)

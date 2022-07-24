@@ -63,9 +63,7 @@ class ScraperProtocol(ModbusClientProtocol):
         super().connectionMade()
         log.debug("Beginning the processing loop")
         self.address = self.factory.starting
-        reactor.callLater(
-            DELAY, self.scrape_holding_registers
-        )
+        reactor.callLater(DELAY, self.scrape_holding_registers)
 
     def connection_lost(self, reason):
         """Call when the client disconnects from the server.
@@ -121,9 +119,7 @@ class ScraperProtocol(ModbusClientProtocol):
             self.endpoint.finalize()
             self.transport.loseConnection()
         else:
-            reactor.callLater(
-                DELAY, self.scrape_holding_registers
-            )
+            reactor.callLater(DELAY, self.scrape_holding_registers)
 
     def error_handler(self, failure):
         """Handle any twisted errors
@@ -298,9 +294,7 @@ def main():
 
         # how to connect based on TCP vs Serial clients
         if isinstance(framer, ModbusSocketFramer):
-            reactor.connectTCP(
-                options.host, options.port, factory
-            )
+            reactor.connectTCP(options.host, options.port, factory)
         else:
             SerialModbusClient(factory, options.port, reactor)
 

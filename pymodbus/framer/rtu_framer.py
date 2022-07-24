@@ -57,7 +57,7 @@ class ModbusRtuFramer(ModbusFramer):
         (1/Baud)(bits) = delay seconds
     """
 
-    method = 'rtu'
+    method = "rtu"
 
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.
@@ -137,7 +137,7 @@ class ModbusRtuFramer(ModbusFramer):
 
         :returns: True if ready, False otherwise
         """
-        size = self._header.get('len', 0)
+        size = self._header.get("len", 0)
         if not size and len(self._buffer) > self._hsize:
             try:
                 # Frame is ready only if populateHeader() successfully
@@ -159,9 +159,9 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header['uid'] = int(data[0])
+        self._header["uid"] = int(data[0])
         size = self.get_expected_response_length(data)
-        self._header['len'] = size
+        self._header["len"] = size
 
         if len(data) < size:
             # crc yet not available
@@ -343,5 +343,6 @@ class ModbusRtuFramer(ModbusFramer):
         func_code = int(data[1])
         pdu_class = self.decoder.lookupPduClass(func_code)
         return pdu_class.calculateRtuFrameSize(data)
+
 
 # __END__

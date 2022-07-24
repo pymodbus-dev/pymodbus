@@ -87,7 +87,9 @@ def run_sync_client():
     log.debug("### Reading Coils")
     rr = client.read_coils(1, 1, unit=UNIT)
 
-    log.debug("### printing the content of Reference Number:(index) 1 and  1 bit depth  ")
+    log.debug(
+        "### printing the content of Reference Number:(index) 1 and  1 bit depth  "
+    )
     log.debug(rr.bits[0])
 
     # ----------------------------------------------------------------------- #

@@ -62,10 +62,12 @@ class SynchronousServerTest(unittest.TestCase):
         handler = socketserver.BaseRequestHandler(None, None, None)
         handler.__class__ = ModbusBaseRequestHandler
         self.assertRaises(
-            NotImplementedException, lambda: handler.send(None)  # pylint: disable=no-member
+            NotImplementedException,
+            lambda: handler.send(None),  # pylint: disable=no-member
         )
         self.assertRaises(
-            NotImplementedException, lambda: handler.handle()  # pylint: disable=unnecessary-lambda
+            NotImplementedException,
+            lambda: handler.handle(),  # pylint: disable=unnecessary-lambda
         )
 
     def test_base_handler_methods(self):

@@ -57,7 +57,10 @@ class DiagnosticStatusRequest(ModbusRequest):
 
         :param data: The data to decode into the function code
         """
-        self.sub_function_code, self.message = struct.unpack(  # noqa: E501 pylint: disable=attribute-defined-outside-init
+        (
+            self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
+            self.message,
+        ) = struct.unpack(
             ">HH", data
         )
 
@@ -120,7 +123,10 @@ class DiagnosticStatusResponse(ModbusResponse):
             word_len += 1
             data = data + b"0"
         data = struct.unpack(">" + "H" * word_len, data)
-        self.sub_function_code, self.message = (  # pylint: disable=attribute-defined-outside-init
+        (
+            self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
+            self.message,
+        ) = (
             data[0],
             data[1:],
         )

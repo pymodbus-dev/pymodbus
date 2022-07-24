@@ -86,7 +86,9 @@ class BaseModbusDataBlock:
 
     def reset(self):
         """Reset the datastore to the initialized default value."""
-        self.values = [self.default_value] * len(  # pylint: disable=attribute-defined-outside-init
+        self.values = [  # pylint: disable=attribute-defined-outside-init
+            self.default_value
+        ] * len(
             self.values
         )
 
@@ -99,9 +101,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Address Check")
 
-    def getValues(  # pylint: disable=invalid-name
-        self, address, count=1
-    ):
+    def getValues(self, address, count=1):  # pylint: disable=invalid-name
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -110,9 +110,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(  # pylint: disable=invalid-name
-        self, address, values
-    ):
+    def setValues(self, address, values):  # pylint: disable=invalid-name
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -307,9 +305,7 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :raises ParameterException:
         """
         if isinstance(values, dict):
-            new_offsets = list(
-                set(values.keys()) - set(self.values.keys())
-            )
+            new_offsets = list(set(values.keys()) - set(self.values.keys()))
             if new_offsets and not self.mutable:
                 raise ParameterException(f"Offsets {new_offsets} not in range")
             self._process_values(values)

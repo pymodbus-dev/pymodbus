@@ -188,9 +188,7 @@ class TestAsyncioClient:
         assert client.protocol is mock.sentinel.PROTOCOL  # nosec
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
-    async def test_factory_protocol_lost_connection(
-        self, mock_async
-    ):
+    async def test_factory_protocol_lost_connection(self, mock_async):
         """Test factory protocol lost connection."""
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
@@ -231,9 +229,7 @@ class TestAsyncioClient:
         await client.start(mock.sentinel.HOST, mock.sentinel.PORT)
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
-    def test_factory_start_failing_and_retried(
-        self, mock_async
-    ):
+    def test_factory_start_failing_and_retried(self, mock_async):
         """Test factory start failing and retried."""
         mock_protocol_class = mock.MagicMock()
         mock_loop = mock.MagicMock()
@@ -284,9 +280,13 @@ class TestAsyncioClient:
             assert protocol.transport == transport  # nosec
             assert protocol.connected  # nosec
             if isinstance(protocol, ModbusUdpClientProtocol):
-                assert protocol.factory.protocol_made_connection.call_count == 1  # nosec
+                assert (
+                    protocol.factory.protocol_made_connection.call_count == 1
+                )  # nosec
 
-    def test_client_protocol_close(self,):
+    def test_client_protocol_close(
+        self,
+    ):
         """Test the client protocol close."""
         for protocol in protocols:
             protocol = protocol(ModbusSocketFramer(ClientDecoder()))
@@ -321,7 +321,9 @@ class TestAsyncioClient:
             excp = response.exception()
             assert isinstance(excp, ConnectionException)  # nosec
             if isinstance(protocol, ModbusUdpClientProtocol):
-                assert protocol.factory.protocol_lost_connection.call_count == 1  # nosec
+                assert (
+                    protocol.factory.protocol_lost_connection.call_count == 1
+                )  # nosec
 
     async def test_client_protocol_data_received(self):
         """Test the client protocol data received"""
@@ -334,7 +336,9 @@ class TestAsyncioClient:
             data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
             # setup existing request
-            response = protocol._build_response(0x00)  # pylint: disable=protected-access
+            response = protocol._build_response(  # pylint: disable=protected-access
+                0x00
+            )
             if isinstance(protocol, ModbusUdpClientProtocol):
                 protocol.datagram_received(data, None)
             else:
@@ -377,7 +381,9 @@ class TestAsyncioClient:
             protocol._handle_response(reply)  # pylint: disable=protected-access
 
             # handle existing cases
-            response = protocol._build_response(0x00)  # pylint: disable=protected-access
+            response = protocol._build_response(  # pylint: disable=protected-access
+                0x00
+            )
             protocol._handle_response(reply)  # pylint: disable=protected-access
             result = response.result()
             assert result == reply  # nosec

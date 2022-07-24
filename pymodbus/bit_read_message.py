@@ -151,7 +151,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadCoilsResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not (1 <= self.count <= 0x7d0):
+        if not (1 <= self.count <= 0x7D0):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
@@ -214,7 +214,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         :param context: The datastore to request from
         :returns: An initialized :py:class:`~pymodbus.register_read_message.ReadDiscreteInputsResponse`, or an :py:class:`~pymodbus.pdu.ExceptionResponse` if an error occurred
         """
-        if not (1 <= self.count <= 0x7d0):
+        if not (1 <= self.count <= 0x7D0):
             return self.doException(merror.IllegalValue)
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)

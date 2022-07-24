@@ -398,9 +398,7 @@ class AsyncioServerTest(
 
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket"""
-        expected_response = (
-            b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
-        )  # value of 17 as per context
+        expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # unit 1, read register
         BasicClient.done = self.loop.create_future()
         await self.start_server(do_udp=True)

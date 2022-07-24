@@ -153,7 +153,9 @@ class SqlSlaveContext(IModbusSlaveContext):
         """Check."""
         result = self._get(type, offset, count=1)
         return (
-            False if len(result) > 0 else True  # pylint: disable=simplifiable-if-expression
+            False  # pylint: disable=simplifiable-if-expression
+            if len(result) > 0
+            else True
         )
 
     def _set(self, type, offset, values):  # pylint: disable=redefined-builtin

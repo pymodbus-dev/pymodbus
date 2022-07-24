@@ -95,11 +95,7 @@ def run_sync_client():
         log.debug(rr)
 
     print("Device Information : ")
-    for (
-        key
-    ) in (
-        information.keys()  # pylint: disable=consider-iterating-dictionary
-    ):
+    for key in information.keys():  # pylint: disable=consider-iterating-dictionary,consider-using-dict-items
         print(key, information[key])
 
     # ----------------------------------------------------------------------- #

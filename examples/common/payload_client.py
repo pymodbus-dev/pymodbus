@@ -96,17 +96,9 @@ def run_binary_payload_client():
         payload = builder.build()
         address = 0
         # We can write registers
-        client.write_registers(
-            address,
-            registers,
-            unit=1)
+        client.write_registers(address, registers, unit=1)
         # Or we can write an encoded binary string
-        client.write_registers(
-            address,
-            payload,
-            skip_encode=True,
-            unit=1
-        )
+        client.write_registers(address, payload, skip_encode=True, unit=1)
 
         # ----------------------------------------------------------------------- #
         # If you need to decode a collection of registers in a weird layout, the
@@ -115,21 +107,19 @@ def run_binary_payload_client():
         print("Reading Registers:")
         address = 0x0
         count = len(payload)
-        result = client.read_holding_registers(
-            address,
-            count,
-            unit=1
-        )
+        result = client.read_holding_registers(address, count, unit=1)
         print(result.registers)
         print("\n")
         decoder = BinaryPayloadDecoder.fromRegisters(
-            result.registers,
-            byteorder=byte_endian,
-            wordorder=word_endian
+            result.registers, byteorder=byte_endian, wordorder=word_endian
         )
         # Make sure word/byte order is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder
-        assert decoder._byteorder == builder._byteorder  # nosec # pylint: disable=protected-access
-        assert decoder._wordorder == builder._wordorder  # nosec # pylint: disable=protected-access
+        assert (
+            decoder._byteorder == builder._byteorder  # pylint: disable=protected-access
+        )  # nosec
+        assert (
+            decoder._wordorder == builder._wordorder  # pylint: disable=protected-access
+        )  # nosec
 
         decoded = OrderedDict(
             [
@@ -156,9 +146,7 @@ def run_binary_payload_client():
         for name, value in iter(decoded.items()):
             print(
                 "%s\t" % name,  # pylint: disable=consider-using-f-string
-                hex(value)
-                if isinstance(value, int)
-                else value,
+                hex(value) if isinstance(value, int) else value,
             )
         print("\n")
 

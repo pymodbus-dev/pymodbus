@@ -283,15 +283,11 @@ class ModbusDeviceIdentification:
     MajorMinorRevision = dict_property(
         lambda s: s.__data, 2  # pylint: disable=protected-access
     )
-    VendorUrl = dict_property(
-        lambda s: s.__data, 3  # pylint: disable=protected-access
-    )
+    VendorUrl = dict_property(lambda s: s.__data, 3)  # pylint: disable=protected-access
     ProductName = dict_property(
         lambda s: s.__data, 4  # pylint: disable=protected-access
     )
-    ModelName = dict_property(
-        lambda s: s.__data, 5  # pylint: disable=protected-access
-    )
+    ModelName = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
     UserApplicationName = dict_property(
         lambda s: s.__data, 6  # pylint: disable=protected-access
     )
@@ -319,9 +315,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
             r,
             [x for x in range(i, 0x100) if x not in range(0x07, 0x80)]
             if c.__get(r, i)[i]  # pylint: disable=protected-access
-            else [
-                x for x in range(0, 0x100) if x not in range(0x07, 0x80)
-            ],
+            else [x for x in range(0, 0x100) if x not in range(0x07, 0x80)],
         ),
         DeviceInformation.Specific: lambda c, r, i: c.__get(  # pylint: disable=protected-access
             r, i
@@ -341,9 +335,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         return cls.__lookup[read_code](cls, identity, object_id)
 
     @classmethod
-    def __get(  # pylint: disable=unused-private-member
-        cls, identity, object_id
-    ):
+    def __get(cls, identity, object_id):  # pylint: disable=unused-private-member
         """Read a single object_id from the device information.
 
         :param identity: The identity block to pull data from
@@ -353,9 +345,7 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         return {object_id: identity[object_id]}
 
     @classmethod
-    def __gets(  # pylint: disable=unused-private-member
-        cls, identity, object_ids
-    ):
+    def __gets(cls, identity, object_ids):  # pylint: disable=unused-private-member
         """Read multiple object_ids from the device information.
 
         :param identity: The identity block to pull data from
@@ -464,7 +454,9 @@ class ModbusCountersHandler:
         :param values: The value to copy values from
         """
         for k, v_item in iter(values.items()):
-            v_item += self.__getattribute__(k)  # pylint: disable=unnecessary-dunder-call
+            v_item += self.__getattribute__(  # pylint: disable=unnecessary-dunder-call
+                k
+            )
             self.__setattr__(k, v_item)  # pylint: disable=unnecessary-dunder-call
 
     def reset(self):
@@ -501,18 +493,12 @@ class ModbusCountersHandler:
     SlaveNoResponse = dict_property(
         lambda s: s.__data, 4  # pylint: disable=protected-access
     )
-    SlaveNAK = dict_property(
-        lambda s: s.__data, 5  # pylint: disable=protected-access
-    )
-    SlaveBusy = dict_property(
-        lambda s: s.__data, 6  # pylint: disable=protected-access
-    )
+    SlaveNAK = dict_property(lambda s: s.__data, 5)  # pylint: disable=protected-access
+    SlaveBusy = dict_property(lambda s: s.__data, 6)  # pylint: disable=protected-access
     BusCharacterOverrun = dict_property(
         lambda s: s.__data, 7  # pylint: disable=protected-access
     )
-    Event = dict_property(
-        lambda s: s.__data, 8  # pylint: disable=protected-access
-    )
+    Event = dict_property(lambda s: s.__data, 8)  # pylint: disable=protected-access
 
 
 # ---------------------------------------------------------------------------#

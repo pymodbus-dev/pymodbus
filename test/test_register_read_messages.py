@@ -90,7 +90,8 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             [0x0A, 0x0B, 0x0C, 0x0A, 0x0B, 0x0C],
         ]
         values = sorted(
-            self.response_read.items(), key=lambda x: str(x)  # pylint: disable=unnecessary-lambda
+            self.response_read.items(),
+            key=lambda x: str(x),  # pylint: disable=unnecessary-lambda
         )
         for packet, register in zip(values, registers):
             request, response = packet

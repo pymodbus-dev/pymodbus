@@ -11,7 +11,7 @@ from pymodbus.interfaces import Singleton
 logging.basicConfig(
     format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
     datefmt="%H:%M:%S",
-    level=logging.WARNING
+    level=logging.WARNING,
 )
 
 

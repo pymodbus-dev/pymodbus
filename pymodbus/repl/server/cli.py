@@ -114,7 +114,9 @@ def print_help():
 async def interactive_shell(server):  # pylint: disable=too-complex
     """Run CLI interactive shell."""
     col = get_terminal_width()
-    max_len = max([len(t) for t in TITLE.split("\n")])  # pylint: disable=consider-using-generator
+    max_len = max(  # pylint: disable=consider-using-generator
+        [len(t) for t in TITLE.split("\n")]
+    )
     if col > max_len:
         info(TITLE)
     else:

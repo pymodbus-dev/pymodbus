@@ -81,9 +81,7 @@ def classify_class_attrs(cls):
             kind = "class method"
         elif isinstance(obj, property):
             kind = "property"
-        elif inspect.ismethod(
-            obj_via_getattr
-        ) or inspect.ismethoddescriptor(
+        elif inspect.ismethod(obj_via_getattr) or inspect.ismethoddescriptor(
             obj_via_getattr
         ):
             kind = "method"
@@ -198,7 +196,9 @@ class DefaultFormatter(pydoc.HTMLDoc):
         if classes:
             # FIX  classlist = map(lambda (key, value): value, classes)
             contents = [
-                self.formattree(inspect.getclasstree(classlist, 1), my_name)  # noqa: F821
+                self.formattree(
+                    inspect.getclasstree(classlist, 1), my_name  # noqa: F821
+                )
             ]
             for key, value in classes:
                 contents.append(self.document(value, key, my_name, fdict, cdict))

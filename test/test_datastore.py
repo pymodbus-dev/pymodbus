@@ -372,7 +372,8 @@ class SqlDataStoreTest(unittest.TestCase):
             {"index": 1, "type": "h", "value": 12},
         ]
         self.assertListEqual(
-            self.slave._build_set("h", 0, [11, 12]), mock_set  # pylint: disable=protected-access
+            self.slave._build_set("h", 0, [11, 12]),  # pylint: disable=protected-access
+            mock_set,
         )
 
     def test_check_success(self):

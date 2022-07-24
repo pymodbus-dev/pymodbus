@@ -205,7 +205,8 @@ def generate_messages(framer, options):
     for message in messages:
         message = message(**_arguments)
         print(
-            "%-44s = " % message.__class__.__name__  # pylint: disable=consider-using-f-string
+            "%-44s = "  # pylint: disable=consider-using-f-string
+            % message.__class__.__name__
         )
         packet = framer.buildPacket(message)
         if not options.ascii:

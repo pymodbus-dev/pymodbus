@@ -65,7 +65,8 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         """Test register write requests decode."""
         addresses = [1, 1, 1, 1]
         values = sorted(
-            self.write.items(), key=lambda x: str(x)  # pylint: disable=unnecessary-lambda
+            self.write.items(),
+            key=lambda x: str(x),  # pylint: disable=unnecessary-lambda
         )
         for packet, address in zip(values, addresses):
             request, response = packet

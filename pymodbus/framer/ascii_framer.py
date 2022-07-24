@@ -34,7 +34,7 @@ class ModbusAsciiFramer(ModbusFramer):
     the data in this framer is transferred in plain text ascii.
     """
 
-    method = 'ascii'
+    method = "ascii"
 
     def __init__(self, decoder, client=None):
         """Initialize a new instance of the framer.

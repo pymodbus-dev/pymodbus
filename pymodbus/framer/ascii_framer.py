@@ -52,7 +52,7 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
-    def decode_data(self, data):  # pylint: disable=no-self-use
+    def decode_data(self, data):
         """Decode data."""
         if len(data) > 1:
             uid = int(data[1:3], 16)

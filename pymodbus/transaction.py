@@ -118,7 +118,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):
+    def execute(self, request):  # pylint: disable=too-complex
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -249,7 +249,7 @@ class ModbusTransactionManager:
         txt = f"Retry on {reason} response - {retries}"
         _logger.debug(txt)
         _logger.debug(
-            "Changing transaction state from " '"WAITING_FOR_REPLY" to "RETRYING"'
+            'Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"'
         )
         self.client.state = ModbusTransactionState.RETRYING
         if self.backoff:
@@ -267,7 +267,7 @@ class ModbusTransactionManager:
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(self, packet, response_length, full=False, broadcast=False):
+    def _transact(self, packet, response_length, full=False, broadcast=False):  # pylint: disable=too-complex
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -338,7 +338,7 @@ class ModbusTransactionManager:
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):
+    def _recv(self, expected_response_length, full):  # pylint: disable=too-complex
         """Receive."""
         total = None
         if not full:
@@ -421,7 +421,7 @@ class ModbusTransactionManager:
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 
-    def addTransaction(  # pylint: disable=invalid-name,no-self-use
+    def addTransaction(  # pylint: disable=invalid-name
         self, request, tid=None
     ):
         """Add a transaction to the handler.
@@ -435,7 +435,7 @@ class ModbusTransactionManager:
         """
         raise NotImplementedException("addTransaction")
 
-    def getTransaction(self, tid):  # pylint: disable=invalid-name,no-self-use
+    def getTransaction(self, tid):  # pylint: disable=invalid-name
         """Return a transaction matching the referenced tid.
 
         If the transaction does not exist, None is returned
@@ -445,7 +445,7 @@ class ModbusTransactionManager:
         """
         raise NotImplementedException("getTransaction")
 
-    def delTransaction(self, tid):  # pylint: disable=invalid-name,no-self-use
+    def delTransaction(self, tid):  # pylint: disable=invalid-name
         """Remove a transaction matching the referenced tid.
 
         :param tid: The transaction to remove

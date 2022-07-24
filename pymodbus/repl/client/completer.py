@@ -60,7 +60,7 @@ class CmdCompleter(Completer):
 
     def completing_command(
         self, words, word_before_cursor
-    ):  # pylint: disable=no-self-use
+    ):
         """Determine if we are dealing with supported command.
 
         :param words: Input text broken in to word tokens.
@@ -70,7 +70,7 @@ class CmdCompleter(Completer):
         """
         return len(words) == 1 and len(word_before_cursor)
 
-    def completing_arg(self, words, word_before_cursor):  # pylint: disable=no-self-use
+    def completing_arg(self, words, word_before_cursor):
         """Determine if we are currently completing an argument.
 
         :param words: The input text broken into word tokens.
@@ -134,7 +134,7 @@ class CmdCompleter(Completer):
                 k: v.help_text if not isinstance(v, str) else v
                 for k, v in self._commands.items()
             }
-            meta = lambda x: (x, c_meta.get(x, ""))
+            meta = lambda x: (x, c_meta.get(x, ""))  # pylint: disable=unnecessary-lambda-assignment
         else:
             if not list(
                 filter(lambda cmd: any(x == cmd for x in words), self._command_names)

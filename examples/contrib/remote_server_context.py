@@ -108,7 +108,7 @@ class RemoteSingleSlaveContext(IModbusSlaveContext):
         """
         return f"Remote Single Slave Context({self.unit_id})"
 
-    def __extract_result(self, f_code, result):  # pylint: disable=no-self-use
+    def __extract_result(self, f_code, result):
         """Extract the values out of a response.
 
         The future api should make the result consistent so we can just call `result.getValues()`.

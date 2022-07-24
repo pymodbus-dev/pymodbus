@@ -130,7 +130,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             )
             _logger.error(txt)
 
-    async def handle(self):
+    async def handle(self):  # pylint: disable=too-complex
         """Return Asyncio coroutine which represents a single conversation.
 
         between the modbus slave and master
@@ -272,7 +272,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
     # Derived class implementations
     # ----------------------------------------------------------------------- #
 
-    def _send_(self, data):  # pragma: no cover pylint: disable=no-self-use
+    def _send_(self, data):  # pragma: no cover
         """Send a request (string) to the network.
 
         :param data: The unencoded modbus response
@@ -280,7 +280,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         """
         raise NotImplementedException("Method not implemented by derived class")
 
-    async def _recv_(self):  # pragma: no cover pylint: disable=no-self-use
+    async def _recv_(self):  # pragma: no cover
         """Receive data from the network.
 
         :raises NotImplementedException:

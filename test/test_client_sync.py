@@ -42,39 +42,39 @@ class mockSocket:  # pylint: disable=invalid-name
 
     timeout = 2
 
-    def close(self):  # pylint: disable=no-self-use
+    def close(self):
         """Close."""
         return True
 
-    def recv(self, size):  # pylint: disable=no-self-use
+    def recv(self, size):
         """Receive."""
         return b"\x00" * size
 
-    def read(self, size):  # pylint: disable=no-self-use
+    def read(self, size):
         """Read."""
         return b"\x00" * size
 
-    def send(self, msg):  # pylint: disable=no-self-use
+    def send(self, msg):
         """Send."""
         return len(msg)
 
-    def write(self, msg):  # pylint: disable=no-self-use
+    def write(self, msg):
         """Write."""
         return len(msg)
 
-    def recvfrom(self, size):  # pylint: disable=no-self-use
+    def recvfrom(self, size):
         """Receive from."""
         return [b"\x00" * size]
 
-    def sendto(self, msg, *args):  # pylint: disable=no-self-use,unused-argument
+    def sendto(self, msg, *args):  # pylint: disable=unused-argument
         """Send to."""
         return len(msg)
 
-    def setblocking(self, flag):  # pylint: disable=no-self-use,unused-argument
+    def setblocking(self, flag):  # pylint: disable=unused-argument
         """Set blocking."""
         return None
 
-    def in_waiting(self):  # pylint: disable=no-self-use
+    def in_waiting(self):
         """Do in waiting."""
         return None
 
@@ -108,7 +108,7 @@ class SynchronousClientTest(
         self.assertRaises(NotImplementedException, lambda: client.send(None))
         self.assertRaises(NotImplementedException, lambda: client.recv(None))
         self.assertRaises(
-            NotImplementedException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda
+            NotImplementedException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda,unnecessary-dunder-call
         )
         self.assertRaises(
             NotImplementedException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
@@ -137,13 +137,13 @@ class SynchronousClientTest(
         # a successful execute
         client.connect = lambda: True
         client.transaction = Mock(**{"execute.return_value": True})
-        self.assertEqual(client, client.__enter__())
+        self.assertEqual(client, client.__enter__())  # pylint: disable=unnecessary-dunder-call
         self.assertTrue(client.execute())
 
         # a unsuccessful connect
         client.connect = lambda: False
         self.assertRaises(
-            ConnectionException, lambda: client.__enter__()  # pylint: disable=unnecessary-lambda
+            ConnectionException, lambda: client.execute()  # pylint: disable=unnecessary-lambda
         )
         self.assertRaises(
             ConnectionException, lambda: client.execute()  # pylint: disable=unnecessary-lambda

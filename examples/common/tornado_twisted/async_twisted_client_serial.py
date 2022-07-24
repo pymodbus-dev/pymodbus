@@ -37,7 +37,7 @@ class ExampleProtocol(ModbusClientProtocol):
         """
         ModbusClientProtocol.__init__(self, framer)
         log.debug("Beginning the processing loop")
-        reactor.callLater(  # pylint: disable=no-member
+        reactor.callLater(
             CLIENT_DELAY, self.fetch_holding_registers
         )
 
@@ -65,11 +65,11 @@ class ExampleProtocol(ModbusClientProtocol):
         log.info(response.getBit(0))
         log.info(response.getBit(1))
         log.info(response.getBit(2))
-        reactor.callLater(  # pylint: disable=no-member
+        reactor.callLater(
             CLIENT_DELAY, self.fetch_holding_registers
         )
 
-    def error_handler(self, failure):  # pylint: disable=no-self-use
+    def error_handler(self, failure):
         """Handle any twisted errors
 
         :param failure: The error to handle
@@ -80,13 +80,13 @@ class ExampleProtocol(ModbusClientProtocol):
 if __name__ == "__main__":
     import time
 
-    proto, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
+    proto, client = AsyncModbusSerialClient(
         schedulers.REACTOR,
         method="rtu",
         port=SERIAL_PORT,
         timeout=2,
         proto_cls=ExampleProtocol,
-    ) 
+    )
     proto.start()
     time.sleep(10)  # Wait for operation to complete
     # proto.stop()

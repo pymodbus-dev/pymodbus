@@ -77,11 +77,11 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         """
         self._data_received(data)
 
-    def create_future(self):  # pylint: disable=no-self-use
+    def create_future(self):
         """Help function to create asyncio Future object."""
         return asyncio.Future()
 
-    def resolve_future(self, my_future, result):  # pylint: disable=no-self-use
+    def resolve_future(self, my_future, result):
         """Resolve the completed future and sets the result.
 
         :param my_future:
@@ -90,7 +90,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         if not my_future.done():
             my_future.set_result(result)
 
-    def raise_future(self, my_future, exc):  # pylint: disable=no-self-use
+    def raise_future(self, my_future, exc):
         """Set exception of a future if not done.
 
         :param my_future:

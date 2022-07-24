@@ -91,7 +91,7 @@ class ModbusBaseRequestHandler(socketserver.BaseRequestHandler):
         """Call when we receive any data."""
         raise NotImplementedException("Method not implemented by derived class")
 
-    def send(self, message):  # pylint: disable=no-self-use
+    def send(self, message):
         """Send a request (string) to the network.
 
         :param message: The unencoded modbus response
@@ -165,7 +165,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler):
     the client handler for a connected protocol (TCP).
     """
 
-    def handle(self):
+    def handle(self):  # pylint: disable=too-complex
         """Call when we receive any data.
 
         until self.running becomes False.

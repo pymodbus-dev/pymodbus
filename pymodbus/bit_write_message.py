@@ -82,7 +82,7 @@ class WriteSingleCoilRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleCoilResponse(self.address, values[0])
 
-    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """Get response pdu size.
 
         Func_code (1 byte) + Output Address (2 byte) + Output Value  (2 Bytes)
@@ -222,7 +222,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
             "WriteNCoilRequest (%d) => %d " % params  # pylint: disable=consider-using-f-string
         )
 
-    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """Get response pdu size.
 
         Func_code (1 byte) + Output Address (2 byte) + Quantity of Outputs  (2 Bytes)

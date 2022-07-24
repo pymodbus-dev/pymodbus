@@ -23,7 +23,7 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
             NotImplementedException, lambda: context.reset()  # pylint: disable=unnecessary-lambda
         )
 
-    def test_remote_slave_set_values(self):  # pylint: disable=no-self-use
+    def test_remote_slave_set_values(self):
         """Test setting values against a remote slave context"""
         client = mock()
         client.write_coils = lambda a, b: WriteMultipleCoilsResponse()

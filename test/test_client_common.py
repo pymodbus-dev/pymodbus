@@ -24,7 +24,7 @@ from pymodbus.register_write_message import (
 class MockClient(ModbusClientMixin):
     """Mock client."""
 
-    def execute(self, request):  # pylint: disable=no-self-use
+    def execute(self, request):
         """Mock execute."""
         return request
 

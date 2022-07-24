@@ -60,7 +60,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         values = context.getValues(self.function_code, self.address, 1)
         return WriteSingleRegisterResponse(self.address, values[0])
 
-    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """Get response pdu size.
 
         Func_code (1 byte) + Register Address(2 byte) + Register Value (2 bytes)
@@ -109,7 +109,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
         """
         self.address, self.value = struct.unpack(">HH", data)
 
-    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """Get response pdu size.
 
         Func_code (1 byte) + Starting Address (2 byte) + And_mask (2 Bytes) + OrMask (2 Bytes)
@@ -200,7 +200,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         context.setValues(self.function_code, self.address, self.values)
         return WriteMultipleRegistersResponse(self.address, self.count)
 
-    def get_response_pdu_size(self):  # pylint: disable=no-self-use
+    def get_response_pdu_size(self):
         """Get response pdu size.
 
         Func_code (1 byte) + Starting Address (2 byte) + Quantity of Reggisters  (2 Bytes)

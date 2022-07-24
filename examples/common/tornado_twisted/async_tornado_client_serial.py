@@ -39,7 +39,7 @@ UNIT = 0x01
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback):  # pylint: disable=redefined-outer-name
+def dassert(future, callback):
     """Dassert."""
 
     def _assertor(value):
@@ -84,7 +84,7 @@ def _print(value):
 
 def begin_asynchronous_test(
     client, protocol
-):  # pylint: disable=redefined-outer-name
+):
     """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
@@ -144,7 +144,7 @@ def err(*args, **kwargs):
     log.error(txt)
 
 
-def callback(protocol, future):  # pylint: disable=redefined-outer-name
+def callback(protocol, future):
     """Call Callback."""
     log.debug("Client connected")
     if exp := future.exception():

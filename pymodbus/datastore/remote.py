@@ -115,7 +115,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
             ),
         }
 
-    def __extract_result(self, fc_as_hex, result):  # pylint: disable=no-self-use
+    def __extract_result(self, fc_as_hex, result):
         """Extract the values out of a response.
 
         TODO make this consistent (values?)

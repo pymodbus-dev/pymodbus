@@ -392,7 +392,7 @@ class SynchronousServerTest(unittest.TestCase):
             server = ModbusSerialServer(None, port="dummy")
             self.assertEqual(server.socket, None)
 
-    def test_serial_server_serve_forever(self):  # pylint: disable=no-self-use
+    def test_serial_server_serve_forever(self):
         """Test that the synchronous serial server closes correctly"""
         with patch.object(serial, "Serial"):
             with patch(
@@ -404,7 +404,7 @@ class SynchronousServerTest(unittest.TestCase):
                 server.serve_forever()
                 instance.response_manipulator.assert_any_call()
 
-    def test_serial_server_close(self):  # pylint: disable=no-self-use
+    def test_serial_server_close(self):
         """Test that the synchronous serial server closes correctly"""
         with patch.object(serial, "Serial") as mock_serial:
             instance = mock_serial.return_value
@@ -415,24 +415,24 @@ class SynchronousServerTest(unittest.TestCase):
     # ----------------------------------------------------------------------- #
     # Test Synchronous Factories
     # ----------------------------------------------------------------------- #
-    def test_start_tcp_server(self):  # pylint: disable=no-self-use
+    def test_start_tcp_server(self):
         """Test the tcp server starting factory"""
         with patch.object(ModbusTcpServer, "serve_forever"):
             StartTcpServer(bind_and_activate=False)
 
-    def test_start_tls_server(self):  # pylint: disable=no-self-use
+    def test_start_tls_server(self):
         """Test the tls server starting factory"""
         with patch.object(ModbusTlsServer, "serve_forever"):
             with patch.object(ssl.SSLContext, "load_cert_chain"):
                 StartTlsServer(bind_and_activate=False)
 
-    def test_start_udp_server(self):  # pylint: disable=no-self-use
+    def test_start_udp_server(self):
         """Test the udp server starting factory"""
         with patch.object(ModbusUdpServer, "serve_forever"):
             with patch.object(socketserver.UDPServer, "server_bind"):
                 StartUdpServer()
 
-    def test_start_serial_server(self):  # pylint: disable=no-self-use
+    def test_start_serial_server(self):
         """Test the serial server starting factory"""
         with patch.object(ModbusSerialServer, "serve_forever"):
             StartSerialServer(port=pytest.SERIAL_PORT)

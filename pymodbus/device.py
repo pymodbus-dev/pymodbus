@@ -464,8 +464,8 @@ class ModbusCountersHandler:
         :param values: The value to copy values from
         """
         for k, v_item in iter(values.items()):
-            v_item += self.__getattribute__(k)
-            self.__setattr__(k, v_item)
+            v_item += self.__getattribute__(k)  # pylint: disable=unnecessary-dunder-call
+            self.__setattr__(k, v_item)  # pylint: disable=unnecessary-dunder-call
 
     def reset(self):
         """Clear all of the system counters."""

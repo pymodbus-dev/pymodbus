@@ -64,7 +64,7 @@ class ExampleProtocol(ModbusClientProtocol):
         ModbusClientProtocol.__init__(self, framer)
         self.endpoint = endpoint
         log.debug("Beginning the processing loop")
-        reactor.callLater(  # pylint: disable=no-member
+        reactor.callLater(
             CLIENT_DELAY, self.fetch_holding_registers
         )
 
@@ -92,11 +92,11 @@ class ExampleProtocol(ModbusClientProtocol):
         self.endpoint.write(response.getBit(0))
         self.endpoint.write(response.getBit(1))
         self.endpoint.write(response.getBit(2))
-        reactor.callLater(  # pylint: disable=no-member
+        reactor.callLater(
             CLIENT_DELAY, self.fetch_holding_registers
         )
 
-    def error_handler(self, failure):  # pylint: disable=no-self-use
+    def error_handler(self, failure):
         """Handle any twisted errors
 
         :param failure: The error to handle
@@ -142,7 +142,7 @@ class ExampleFactory(ClientFactory):
 #
 # How you start your client is really up to you.
 # --------------------------------------------------------------------------- #
-class SerialModbusClient(serialport.SerialPort):  # pylint: disable=abstract-method
+class SerialModbusClient(serialport.SerialPort):
     """Serial modbus client."""
 
     def __init__(self, factory, *args, **kwargs):
@@ -163,10 +163,10 @@ class SerialModbusClient(serialport.SerialPort):  # pylint: disable=abstract-met
 # - a context recorder
 # - a database or file recorder
 # --------------------------------------------------------------------------- #
-class LoggingLineReader:  # pylint: disable=too-few-public-methods
+class LoggingLineReader:
     """Logging line reader."""
 
-    def write(self, response):  # pylint: disable=no-self-use
+    def write(self, response):
         """Handle the next modbus response
 
         :param response: The response to process
@@ -196,7 +196,7 @@ def main():
     SerialModbusClient(factory, SERIAL_PORT, reactor)
     # factory = reactor.connectTCP("localhost", 502, factory)
     log.debug("Starting the client")
-    reactor.run()  # pylint: disable=no-member
+    reactor.run()
 
 
 if __name__ == "__main__":

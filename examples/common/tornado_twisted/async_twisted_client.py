@@ -37,7 +37,7 @@ def err(*args, **kwargs):
     logging.error(txt)
 
 
-def dassert(deferred, callback):  # pylint: disable=redefined-outer-name
+def dassert(deferred, callback):
     """Dassert."""
 
     def _assertor(value):
@@ -94,8 +94,8 @@ def stop_asynchronous_test(client):
     # ----------------------------------------------------------------------- #
     # close the client at some time later
     # ----------------------------------------------------------------------- #
-    reactor.callLater(1, client.transport.loseConnection)  # pylint: disable=no-member
-    reactor.callLater(2, reactor.stop)  # pylint: disable=no-member
+    reactor.callLater(1, client.transport.loseConnection)
+    reactor.callLater(2, reactor.stop)
 
 
 def begin_asynchronous_test(client):
@@ -141,7 +141,7 @@ def begin_asynchronous_test(client):
     # close the client at some time later
     # ----------------------------------------------------------------------- #
     # reactor.callLater(1, client.transport.loseConnection)
-    reactor.callLater(2, reactor.stop)  # pylint: disable=no-member
+    reactor.callLater(2, reactor.stop)
 
 
 # --------------------------------------------------------------------------- #
@@ -170,7 +170,7 @@ def begin_asynchronous_test(client):
 
 
 if __name__ == "__main__":
-    protocol, deferred = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
+    protocol, deferred = AsyncModbusTCPClient(
         schedulers.REACTOR, port=5020
     )
     deferred.addCallback(begin_asynchronous_test)

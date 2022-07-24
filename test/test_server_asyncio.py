@@ -57,7 +57,7 @@ class BasicClient(asyncio.BaseProtocol):
             _logger.debug("TEST Client sendTo data")
             self.transport.sendto(BasicClient.dataTo)
 
-    def data_received(self, data):  # pylint: disable=no-self-use
+    def data_received(self, data):
         """Get Data received."""
         _logger.debug("TEST Client data received")
         BasicClient.received_data = data
@@ -153,7 +153,7 @@ class AsyncioServerTest(
     def tearDown(self):
         """Clean up the test environment."""
 
-    def handle_task(self, result):  # pylint: disable=no-self-use
+    def handle_task(self, result):
         """Handle task exit."""
         try:
             result = result.result()
@@ -439,11 +439,11 @@ class AsyncioServerTest(
     # Test ModbusServerFactory
     # -----------------------------------------------------------------------#
 
-    def test_async_modbus_server_factory(self):  # pylint: disable=no-self-use
+    def test_async_modbus_server_factory(self):
         """Test the base class for all the clients"""
         ModbusServerFactory(store=None)
 
-    def test_async_stop_server(self):  # pylint: disable=no-self-use
+    def test_async_stop_server(self):
         """Test stop server."""
         StopServer()
 

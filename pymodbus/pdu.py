@@ -59,14 +59,14 @@ class ModbusPDU:
         self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
 
-    def encode(self):  # pylint: disable=no-self-use
+    def encode(self):
         """Encode the message.
 
         :raises: A not implemented exception
         """
         raise NotImplementedException()
 
-    def decode(self, data):  # pylint: disable=no-self-use
+    def decode(self, data):
         """Decode data part of the message.
 
         :param data: is a string object

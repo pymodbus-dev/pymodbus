@@ -53,7 +53,7 @@ class TestAsynchronousClient:
     @patch("asyncio.gather")
     def test_tcp_asyncio_client(
         self, mock_gather, mock_loop
-    ):  # pylint: disable=no-self-use,unused-argument
+    ):  # pylint: disable=unused-argument
         """Test the TCP client."""
         pytest.skip("TBD")
 
@@ -61,7 +61,7 @@ class TestAsynchronousClient:
     # Test TLS Client client
     # -----------------------------------------------------------------------#
 
-    def test_tls_asyncio_client(self):  # pylint: disable=no-self-use
+    def test_tls_asyncio_client(self):
         """Test the TLS AsyncIO client."""
         _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
             schedulers.ASYNC_IO
@@ -81,7 +81,7 @@ class TestAsynchronousClient:
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     def test_udp_asyncio_client(
         self, mock_gather, mock_event_loop
-    ):  # pylint: disable=no-self-use,unused-argument
+    ):  # pylint: disable=unused-argument
         """Test the udp asyncio client"""
         pytest.skip("TBD")
 
@@ -101,7 +101,7 @@ class TestAsynchronousClient:
         ],
     )
     @pytest.mark.asyncio
-    async def test_serial_asyncio_client(  # pylint: disable=no-self-use
+    async def test_serial_asyncio_client(
         self,
         mock_gather,  # pylint: disable=unused-argument
         mock_event_loop,

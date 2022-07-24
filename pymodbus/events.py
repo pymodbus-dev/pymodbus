@@ -12,14 +12,14 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 class ModbusEvent:
     """Define modbus events."""
 
-    def encode(self):  # pylint: disable=no-self-use
+    def encode(self):
         """Encode the status bits to an event message.
 
         :raises NotImplementedException:
         """
         raise NotImplementedException()
 
-    def decode(self, event):  # pylint: disable=no-self-use
+    def decode(self, event):
         """Decode the event message to its status bits.
 
         :param event: The event to decode

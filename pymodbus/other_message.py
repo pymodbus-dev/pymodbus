@@ -40,7 +40,7 @@ class ReadExceptionStatusRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=no-self-use,unused-argument
+    def execute(  # pylint: disable=unused-argument
         self, context=None
     ):
         """Run a read exception status request against the store.
@@ -145,7 +145,7 @@ class GetCommEventCounterRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=no-self-use,unused-argument
+    def execute(  # pylint: disable=unused-argument
         self, context=None
     ):
         """Run a read exception status request against the store.
@@ -256,7 +256,7 @@ class GetCommEventLogRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(  # pylint: disable=no-self-use,unused-argument
+    def execute(  # pylint: disable=unused-argument
         self, context=None
     ):
         """Run a read exception status request against the store.
@@ -377,7 +377,7 @@ class ReportSlaveIdRequest(ModbusRequest):
         :param data: The incoming data
         """
 
-    def execute(self, context=None):  # pylint: disable=no-self-use
+    def execute(self, context=None):
         """Run a report slave id request against the store.
 
         :returns: The populated response

@@ -84,7 +84,7 @@ class Decoder:
             except Exception:  # pylint: disable=broad-except
                 self.check_errors(decoder, message)
 
-    def check_errors(self, decoder, message):  # pylint: disable=no-self-use
+    def check_errors(self, decoder, message):
         """Attempt to find message errors
 
         :param message: The message to find errors in
@@ -92,7 +92,7 @@ class Decoder:
         txt = f"Unable to parse message - {message} with {decoder}"
         log.error(txt)
 
-    def report(self, message):  # pylint: disable=no-self-use
+    def report(self, message):
         """Print the message information
 
         :param message: The message to print

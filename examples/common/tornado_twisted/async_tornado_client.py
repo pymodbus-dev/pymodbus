@@ -31,7 +31,7 @@ _logger.setLevel(logging.DEBUG)
 # ---------------------------------------------------------------------------#
 
 
-def dassert(future, callback):  # pylint: disable=redefined-outer-name
+def dassert(future, callback):
     """Dassert."""
 
     def _assertor(value):
@@ -76,7 +76,7 @@ UNIT = 0x01
 # ---------------------------------------------------------------------------#
 
 
-def begin_asynchronous_test(client, protocol):  # pylint: disable=redefined-outer-name
+def begin_asynchronous_test(client, protocol):
     """Begin async test."""
     rq = client.write_coil(1, True, unit=UNIT)
     rr = client.read_coils(1, 1, unit=UNIT)
@@ -136,7 +136,7 @@ def err(*args, **kwargs):
     _logger.error(txt)
 
 
-def callback(protocol, future):  # pylint: disable=redefined-outer-name
+def callback(protocol, future):
     """Call as callback."""
     _logger.debug("Client connected")
     if exp := future.exception():
@@ -147,7 +147,7 @@ def callback(protocol, future):  # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    protocol, future = ModbusClient( # pylint: disable=unpacking-non-sequence
+    protocol, future = ModbusClient(
         schedulers.IO_LOOP, port=5020
     )
     future.add_done_callback(functools.partial(callback, protocol))

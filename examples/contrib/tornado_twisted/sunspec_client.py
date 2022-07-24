@@ -17,7 +17,7 @@ _logger.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 # Sunspec Common Constants
 # --------------------------------------------------------------------------- #
-class SunspecDefaultValue:  # pylint: disable=too-few-public-methods
+class SunspecDefaultValue:
     """A collection of constants to indicate if a value is not implemented."""
 
     Signed16 = 0x8000
@@ -34,7 +34,7 @@ class SunspecDefaultValue:  # pylint: disable=too-few-public-methods
     String = "\x00"
 
 
-class SunspecStatus:  # pylint: disable=too-few-public-methods
+class SunspecStatus:
     """Indicators of the current status of a sunspec device"""
 
     Normal = 0x00000000
@@ -42,13 +42,13 @@ class SunspecStatus:  # pylint: disable=too-few-public-methods
     Unknown = 0xFFFFFFFF
 
 
-class SunspecIdentifier:  # pylint: disable=too-few-public-methods
+class SunspecIdentifier:
     """Assigned identifiers that are pre-assigned by the sunspec protocol."""
 
     Sunspec = 0x53756E53
 
 
-class SunspecModel:  # pylint: disable=too-few-public-methods
+class SunspecModel:
     """Assigned device indentifiers that are pre-assigned by the sunspec protocol."""
 
     # ---------------------------------------------
@@ -120,7 +120,7 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
     EndOfSunSpecMap = 65535
 
     @classmethod
-    def lookup(cls, code):  # pylint: disable=missing-type-doc
+    def lookup(cls, code):
         """Return the device model name for that identifier
 
         :param code: The device code to lookup
@@ -128,13 +128,13 @@ class SunspecModel:  # pylint: disable=too-few-public-methods
         """
         values = {
             (v, k)
-            for k, v in cls.__dict__.iteritems()  # pylint: disable=no-member
+            for k, v in cls.__dict__.iteritems()
             if not callable(v)
         }
         return values.get(code, None)
 
 
-class SunspecOffsets:  # pylint: disable=too-few-public-methods
+class SunspecOffsets:
     """Well known offsets that are used throughout the sunspec protocol"""
 
     CommonBlock = 40000
@@ -145,7 +145,7 @@ class SunspecOffsets:  # pylint: disable=too-few-public-methods
 # --------------------------------------------------------------------------- #
 # Common Functions
 # --------------------------------------------------------------------------- #
-def defer_or_apply(func):  # pylint: disable=unused-argument,missing-type-doc
+def defer_or_apply(func):
     """Apply an adapter method.
 
     to a result regardless if it is a deferred
@@ -164,7 +164,7 @@ def defer_or_apply(func):  # pylint: disable=unused-argument,missing-type-doc
     return closure
 
 
-def create_sunspec_sync_client(host):  # pylint: disable=missing-type-doc
+def create_sunspec_sync_client(host):
     """Create a sunspec client.
 
     :param host: The host to connect to
@@ -192,7 +192,7 @@ class SunspecDecoder(BinaryPayloadDecoder):
         my_byteorder = Endian.Big
         BinaryPayloadDecoder.__init__(self, payload, my_byteorder)
 
-    def decode_string(self, size=1):  # pylint: disable=missing-type-doc
+    def decode_string(self, size=1):
         """Decode a string from the buffer
 
         :param size: The size of the string to decode
@@ -205,7 +205,7 @@ class SunspecDecoder(BinaryPayloadDecoder):
 class SunspecClient:
     """SunSpec client."""
 
-    def __init__(self, client):  # pylint: disable=redefined-outer-name
+    def __init__(self, client):
         """Initialize a new instance of the client
 
         :param client: The modbus client to use
@@ -246,7 +246,7 @@ class SunspecClient:
             "Next_DID_Length": decoder.decode_16bit_uint(),
         }
 
-    def get_device_block(self, offset, size):  # pylint: disable=missing-type-doc
+    def get_device_block(self, offset, size):
         """Retrieve the next device block
 
         .. note:: We will read 2 more registers so that we have
@@ -303,7 +303,7 @@ if __name__ == "__main__":
         if key == "SunSpec_DID":
             value = SunspecModel.lookup(value)
         print(
-            "{:<20}: {}".format(key, value)  # pylint: disable=consider-using-f-string
+            "{:<20}: {}".format(key, value)
         )
 
     # print out all the available device blocks

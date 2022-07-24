@@ -5,13 +5,13 @@ that can be pointed at a modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """
 import logging
-from optparse import OptionParser  # pylint: disable=deprecated-module
+from optparse import OptionParser
 import pickle  # nosec
 
 from twisted.internet import reactor, serialport
 from twisted.internet.protocol import ClientFactory
 
-from pymodbus.client.asynchronous.twisted import ModbusClientProtocol  # pylint: disable=no-name-in-module
+from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext
 from pymodbus.factory import ClientDecoder
 
@@ -63,16 +63,16 @@ class ScraperProtocol(ModbusClientProtocol):
         super().connectionMade()
         log.debug("Beginning the processing loop")
         self.address = self.factory.starting
-        reactor.callLater(  # pylint: disable=no-member
+        reactor.callLater(
             DELAY, self.scrape_holding_registers
         )
 
-    def connection_lost(self, reason):  # pylint: disable=no-self-use,unused-argument,missing-type-doc
+    def connection_lost(self, reason):
         """Call when the client disconnects from the server.
 
         :param reason: The reason for the disconnection
         """
-        reactor.callLater(DELAY, reactor.stop)  # pylint: disable=no-member
+        reactor.callLater(DELAY, reactor.stop)
 
     def scrape_holding_registers(self):
         """Defer fetching holding registers"""
@@ -97,7 +97,7 @@ class ScraperProtocol(ModbusClientProtocol):
         data = self.read_input_registers(self.address, count=COUNT, unit=SLAVE)
         data.addCallbacks(self.scrape_coils, self.error_handler)
 
-    def scrape_coils(self, response):  # pylint: disable=missing-type-doc
+    def scrape_coils(self, response):
         """Write values of holding registers, defer fetching coils
 
         :param response: The response to process
@@ -108,7 +108,7 @@ class ScraperProtocol(ModbusClientProtocol):
         data = self.read_coils(self.address, count=COUNT, unit=SLAVE)
         data.addCallbacks(self.start_next_cycle, self.error_handler)
 
-    def start_next_cycle(self, response):  # pylint: disable=missing-type-doc
+    def start_next_cycle(self, response):
         """Write values of coils, trigger next cycle
 
         :param response: The response to process
@@ -121,11 +121,11 @@ class ScraperProtocol(ModbusClientProtocol):
             self.endpoint.finalize()
             self.transport.loseConnection()
         else:
-            reactor.callLater(  # pylint: disable=no-member
+            reactor.callLater(
                 DELAY, self.scrape_holding_registers
             )
 
-    def error_handler(self, failure):  # pylint: disable=no-self-use,missing-type-doc
+    def error_handler(self, failure):
         """Handle any twisted errors
 
         :param failure: The error to handle
@@ -172,7 +172,7 @@ class ScraperFactory(ClientFactory):
 #
 # How you start your client is really up to you.
 # --------------------------------------------------------------------------- #
-class SerialModbusClient(serialport.SerialPort):  # pylint: disable=abstract-method
+class SerialModbusClient(serialport.SerialPort):
     """Serial modbus client."""
 
     def __init__(self, factory, *args, **kwargs):
@@ -209,7 +209,7 @@ class LoggingContextReader:
             ir=ModbusSequentialDataBlock.create(),
         )
 
-    def write(self, response):  # pylint: disable=missing-type-doc
+    def write(self, response):
         """Handle the next modbus response
 
         :param response: The response to process
@@ -221,7 +221,7 @@ class LoggingContextReader:
 
     def finalize(self):
         """Finalize."""
-        with open(self.output, "w") as handle:  # pylint: disable=unspecified-encoding
+        with open(self.output, "w") as handle:
             pickle.dump(self.context, handle)
 
 
@@ -284,7 +284,7 @@ def main():
     if options.debug:
         try:
             log.setLevel(logging.DEBUG)
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             print("Logging is not supported on this system")
 
     # split the query into a starting and ending range
@@ -298,16 +298,16 @@ def main():
 
         # how to connect based on TCP vs Serial clients
         if isinstance(framer, ModbusSocketFramer):
-            reactor.connectTCP(  # pylint: disable=no-member
+            reactor.connectTCP(
                 options.host, options.port, factory
             )
         else:
             SerialModbusClient(factory, options.port, reactor)
 
         log.debug("Starting the client")
-        reactor.run()  # pylint: disable=no-member
+        reactor.run()
         log.debug("Finished scraping the client")
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         print(exc)
 
 

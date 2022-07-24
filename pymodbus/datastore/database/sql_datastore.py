@@ -128,7 +128,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def _build_set(
         self, type, offset, values, prefix=""
-    ):  # pylint: disable=no-self-use,redefined-builtin
+    ):  # pylint: disable=redefined-builtin
         """Generate the sql update context.
 
         :param type: The key prefix to use

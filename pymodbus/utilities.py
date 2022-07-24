@@ -61,16 +61,16 @@ def dict_property(store, index):
     :returns: An initialized property set
     """
     if hasattr(store, "__call__"):
-        getter = lambda self: store(self)[index]
-        setter = lambda self, value: store(self).__setitem__(index, value)
+        getter = lambda self: store(self)[index]  # pylint: disable=unnecessary-lambda-assignment
+        setter = lambda self, value: store(self).__setitem__(index, value)  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
     elif isinstance(store, str):
-        getter = lambda self: self.__getattribute__(store)[index]
-        setter = lambda self, value: self.__getattribute__(store).__setitem__(
+        getter = lambda self: self.__getattribute__(store)[index]  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
+        setter = lambda self, value: self.__getattribute__(store).__setitem__(  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
             index, value
         )
     else:
-        getter = lambda self: store[index]
-        setter = lambda self, value: store.__setitem__(index, value)
+        getter = lambda self: store[index]  # pylint: disable=unnecessary-lambda-assignment
+        setter = lambda self, value: store.__setitem__(index, value)  # pylint: disable=unnecessary-dunder-call,unnecessary-lambda-assignment
 
     return property(getter, setter)
 

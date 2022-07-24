@@ -44,7 +44,7 @@ class AsynchronousServerTest(unittest.TestCase):
         protocol.connectionMade()
         self.assertIsInstance(protocol.framer, ModbusSocketFramer)
 
-    def test_connection_lost(self):  # pylint: disable=no-self-use
+    def test_connection_lost(self):
         """Test connection lost."""
         protocol = ModbusTcpProtocol()
         protocol.connectionLost("What ever reason")

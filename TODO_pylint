@@ -36,7 +36,6 @@ invalid-name
 invalid-overridden-method
 line-too-long
 no-member
-no-self-use
 no-value-for-parameter
 non-iterator-returned
 protected-access

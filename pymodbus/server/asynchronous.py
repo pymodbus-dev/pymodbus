@@ -185,7 +185,7 @@ class ModbusUdpProtocol(protocol.DatagramProtocol):
             txt = f"Datagram Received: {hexlify_packets(datagram)}"
             _logger.debug(txt)
         if not self.control.ListenOnly:
-            continuation = lambda request: self._execute(request, addr)
+            continuation = lambda request: self._execute(request, addr)  # pylint: disable=unnecessary-lambda-assignment
             self.framer.processIncomingPacket(datagram, continuation)
 
     def _execute(self, request, addr):

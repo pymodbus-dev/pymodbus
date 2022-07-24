@@ -125,7 +125,7 @@ class ReadFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # pylint: disable=unused-argument,no-self-use
+    def execute(self, context):  # pylint: disable=unused-argument
         """Run a read exception status request against the store.
 
         :param context: The datastore to request from

@@ -276,7 +276,7 @@ class ModbusTypeDecoder:
     # ------------------------------------------------------------
     # Public Interface
     # ------------------------------------------------------------
-    def tokenize(self, value):  # pylint: disable=no-self-use
+    def tokenize(self, value):
         """Return the tokens
 
         :param value: The value to tokenize

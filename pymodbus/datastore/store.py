@@ -90,7 +90,7 @@ class BaseModbusDataBlock:
             self.values
         )
 
-    def validate(self, address, count=1):  # pylint: disable=no-self-use
+    def validate(self, address, count=1):
         """Check to see if the request is in range.
 
         :param address: The starting address
@@ -99,7 +99,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Address Check")
 
-    def getValues(  # pylint: disable=invalid-name,no-self-use
+    def getValues(  # pylint: disable=invalid-name
         self, address, count=1
     ):
         """Return the requested values from the datastore.
@@ -110,7 +110,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(  # pylint: disable=invalid-name,no-self-use
+    def setValues(  # pylint: disable=invalid-name
         self, address, values
     ):
         """Return the requested values from the datastore.

@@ -149,7 +149,7 @@ class DiagnosticStatusSimpleRequest(DiagnosticStatusRequest):
         DiagnosticStatusRequest.__init__(self, **kwargs)
         self.message = data
 
-    def execute(self, *args):  # pylint: disable=no-self-use
+    def execute(self, *args):
         """Raise if not implemented."""
         raise NotImplementedException("Diagnostic Message Has No Execute Method")
 

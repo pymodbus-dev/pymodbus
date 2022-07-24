@@ -9,7 +9,6 @@ The example is only valid on Python3.4 and above
 import asyncio
 import logging
 
-from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as ModbusClient
 
 # --------------------------------------------------------------------------- #
@@ -128,7 +127,6 @@ if __name__ == "__main__":
     # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
     # link=/tmp/ttyp0,raw,echo=0,ospeed=9600
     loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO,
         port="/tmp/ttyp0",  # nosec
         baudrate=9600,
         method="rtu",

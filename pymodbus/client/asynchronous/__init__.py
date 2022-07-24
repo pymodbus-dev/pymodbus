@@ -2,8 +2,6 @@
 
 Example run::
 
-    from pymodbus.client.asynchronous import schedulers
-
     # Import The clients
 
     from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as Client
@@ -11,5 +9,5 @@ Example run::
     from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as Client
 
     # For asynchronous client use
-    event_loop, client = Client(schedulers.ASYNC_IO, port=5020)
+    event_loop, client = Client(port=5020)
 """

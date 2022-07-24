@@ -41,7 +41,7 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
 
 
 def get_factory():
-    """Get protocol factory based on the backend scheduler being used.
+    """Get protocol factory.
 
     :return: new factory
     """

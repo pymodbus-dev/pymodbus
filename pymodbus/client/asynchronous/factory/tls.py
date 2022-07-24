@@ -54,7 +54,7 @@ def async_io_factory(
 
 
 def get_factory():
-    """Get protocol factory based on the backend scheduler being used.
+    """Get protocol factory.
 
     :return: protocol object
     """

@@ -1,4 +1,4 @@
 ==================================================
-Synchronous Client Example
+Synchronous Server Example
 ==================================================
-.. literalinclude:: ../../../examples/common/synchronous_client.py
+.. literalinclude:: ../../../examples/server_sync.py

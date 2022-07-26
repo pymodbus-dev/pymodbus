@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 import pytest
 
-from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.async_io import (
     AsyncioModbusSerialClient,
     ReconnectingAsyncioModbusTlsClient,
@@ -51,9 +50,7 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     def test_tls_asyncio_client(self):
         """Test the TLS AsyncIO client."""
-        _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO
-        )
+        _, client = AsyncModbusTLSClient()  # pylint: disable=unpacking-non-sequence
         assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
@@ -101,7 +98,6 @@ class TestAsynchronousClient:
             loop,
             client,
         ) = AsyncModbusSerialClient(
-            schedulers.ASYNC_IO,
             method=method,
             port=pytest.SERIAL_PORT,
             loop=loop,

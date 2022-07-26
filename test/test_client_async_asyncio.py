@@ -8,7 +8,6 @@ from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 import pytest
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.async_io import (
     BaseModbusAsyncClientProtocol,
     ModbusClientProtocol,
@@ -98,7 +97,6 @@ class TestAsyncioClient:
     async def test_initialization_tcp_in_loop(self):
         """Test initialization tcp in loop."""
         _, client = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO,
             port=5020,
         )
         client = await client
@@ -109,30 +107,26 @@ class TestAsyncioClient:
 
     async def test_initialization_udp_in_loop(self):
         """Test initialization udp in loop."""
-        _, client = AsyncModbusUDPClient(  # pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port=5020
-        )
+        _, client = AsyncModbusUDPClient()  # pylint: disable=unpacking-non-sequence
         client = await client
 
         assert client.connected  # nosec
-        assert client.port == 5020  # nosec
+        assert client.port == 502  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_tls_in_loop(self):
         """Test initialization tls in loop."""
-        _, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port=5020
-        )
+        _, client = AsyncModbusTLSClient()  # pylint: disable=unpacking-non-sequence
         client = await client
 
         assert not client.connected  # nosec
-        assert client.port == 5020  # nosec
+        assert client.port == 802  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     def test_initialization_serial_in_loop(self):
         """Test initialization serial in loop."""
         _, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
-            schedulers.ASYNC_IO, port="/tmp/ptyp0", baudrate=9600, method="rtu"  # nosec
+            port="/tmp/ptyp0", baudrate=9600, method="rtu"  # nosec
         )
         assert client.port == "/tmp/ptyp0"  # nosec
         assert client.baudrate == 9600  # nosec

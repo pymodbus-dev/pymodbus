@@ -13,7 +13,6 @@ import time
 
 # from pymodbus.client.asynchronous.udp import (
 #     AsyncModbusUDPClient as ModbusClient)
-from pymodbus.client.asynchronous import schedulers
 
 # ----------------------------------------------------------------------- #
 # Import the required asynchronous client
@@ -132,7 +131,7 @@ def run_with_not_running_loop():
     assert not loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
     new_loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO, port=5020, loop=loop
+        port=5020, loop=loop
     )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
@@ -163,7 +162,6 @@ async def run_with_already_running_loop():
     assert loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
     loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO,
         port=5020,
         loop=loop,
     )
@@ -182,7 +180,7 @@ def run_with_no_loop():
     """Create a loop."""
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
     loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        schedulers.ASYNC_IO, port=5020
+        port=5020
     )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()

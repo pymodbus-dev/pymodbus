@@ -13,7 +13,6 @@ Subpackages
 
     pymodbus.client.asynchronous.async_io
     pymodbus.client.asynchronous.factory
-    pymodbus.client.asynchronous.schedulers
 
 Submodules
 ----------
@@ -49,5 +48,3 @@ pymodbus\.client\.asynchronous\.udp module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

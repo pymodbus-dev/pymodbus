@@ -2,7 +2,6 @@
 import logging
 
 from pymodbus.client.asynchronous.factory.tls import get_factory
-from pymodbus.client.asynchronous.schedulers import ASYNC_IO
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusTlsFramer
@@ -19,7 +18,6 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
 
     def __new__(  # pylint: disable=too-many-arguments
         cls,
-        scheduler,
         host="127.0.0.1",
         port=Defaults.TLSPort,
         framer=None,
@@ -31,9 +29,8 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         timeout=None,
         **kwargs
     ):
-        """Use scheduler async_io (asyncio)
+        """Do setup of client.
 
-        :param scheduler: R.I.P.
         :param host: Target server"s name, also matched for certificate
         :param port: Port
         :param framer: Modbus Framer to use
@@ -46,8 +43,6 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        if scheduler != ASYNC_IO:
-            _logger.error("Scheduler is no longer used.")
         framer = framer or ModbusTlsFramer(ClientDecoder())
         factory_class = get_factory()
         yieldable = factory_class(

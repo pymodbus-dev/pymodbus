@@ -1,22 +1,38 @@
 #!/usr/bin/env python3
 """Pymodbus Synchronous Server Example.
 
-The synchronous server is implemented in pure python without any third
-party libraries (unless you need to use the serial protocols which require
-pyserial).
+An example of a single threaded synchronous server.
 
-Start it as:
-    python3 server_sync.py
+usage: server_sync.py [-h] [--comm {tcp,udp,serial,tls}]
+                      [--framer {ascii,binary,rtu,socket,tls}]
+                      [--log {critical,error,warning,info,debug}]
+                      [--port PORT] [--store {sequential,sparse,factory,none}]
+                      [--slaves SLAVES]
 
-After start it will accept client connections.
+Command line options for examples
+
+options:
+  -h, --help            show this help message and exit
+  --comm {tcp,udp,serial,tls}
+                        "serial", "tcp", "udp" or "tls"
+  --framer {ascii,binary,rtu,socket,tls}
+                        "ascii", "binary", "rtu", "socket" or "tls"
+  --log {critical,error,warning,info,debug}
+                        "critical", "error", "warning", "info" or "debug"
+  --port PORT           the port to use
+  --store {sequential,sparse,factory,none}
+                        "sequential", "sparse", "factory" or "none"
+  --slaves SLAVES       number of slaves to respond to
+
 The corresponding client can be started as:
-    python3 server_sync.py
+    python3 client_sync.py
 """
+import argparse
+import logging
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples.helper import _logger, get_commandline
 from pymodbus.server.sync import (
     StartSerialServer,
     StartTcpServer,
@@ -39,37 +55,16 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.version import version
 
-FRAMERS = {
-    "ascii": ModbusAsciiFramer,
-    "binary": ModbusBinaryFramer,
-    "rtu": ModbusRtuFramer,
-    "socket": ModbusSocketFramer,
-    "tls": ModbusTlsFramer,
-}
-
 
 def setup_sync_server():
-    """Run client setup.
+    """Run server setup."""
+    args = get_commandline()
 
-    use --comm at command line to select the type of communication
-    use --framer at command line to select the modbus framer
-    use --log at command line to set logging level
-    use --store at command line to set type of datastore
-    The remaining parameters are defined static.
-    """
-    args = get_commandline(True)
-    _logger.info("### Create datastore")
-
-    # ----------------------------------------------------------------------- #
-    # initialize your data store
-    # ----------------------------------------------------------------------- #
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
     # 0x100 will respond with an invalid address exception.
     # This is because many devices exhibit this kind of behavior (but not all)
-    # ----------------------------------------------------------------------- #
-    if not args.store:
-        args.store = "sequential"
+    _logger.info("### Create datastore")
     if args.store == "sequential":
         # Continuing, use a sequential block without gaps.
         datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
@@ -94,7 +89,6 @@ def setup_sync_server():
         # that a request to address(0-7) will map to the address (0-7).
         # The default is False which is based on section 4.4 of the
         # specification, so address(0-7) will map to (1-8)::
-        # ----------------------------------------------------------------------- #
         context = {
             0x01: ModbusSlaveContext(
                 di=datablock,
@@ -142,24 +136,21 @@ def setup_sync_server():
             "MajorMinorRevision": version.short(),
         }
     )
-
-    if not args.comm:
-        args.comm = "tcp"
-    return args.comm, store, identity, args.framer
+    return args.comm, args.port, store, identity, args.framer
 
 
 def run_server():
     """Run server."""
-    server, store, identity, framer = setup_sync_server()
+    server, port, store, identity, framer = setup_sync_server()
 
     _logger.info("### start server")
     if server == "tcp":
-        if not framer:
-            framer = "socket"
         StartTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
-            address=("", 5020),  # listen address
+            # TBD host=
+            # TBD port=
+            address=("", port),  # listen address
             custom_functions=[],  # allow custom handling
             framer=FRAMERS[framer],  # The framer strategy to use
             handler=None,  # handler for each session
@@ -170,12 +161,10 @@ def run_server():
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif server == "udp":
-        if not framer:
-            framer = "socket"
         StartUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
-            address=("", 5020),  # listen address
+            address=("", port),  # listen address
             custom_functions=[],  # allow custom handling
             framer=FRAMERS[framer],  # The framer strategy to use
             handler=None,  # handler for each session
@@ -188,13 +177,11 @@ def run_server():
     elif server == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
         #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        if not framer:
-            framer = "rtu"
         StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             timeout=.005,  # waiting time for request to complete
-            port="/dev/ptyp0",  # serial port
+            port=port,  # serial port
             custom_functions=[],  # allow custom handling
             framer=FRAMERS[framer],  # The framer strategy to use
             handler=None,  # handler for each session
@@ -213,7 +200,7 @@ def run_server():
         StartTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
-            port=5020,  # on which port
+            port=port,  # on which port
             identity=identity,  # server identify
             custom_functions=[],  # allow custom handling
             address=("", 5020),  # listen address
@@ -230,6 +217,84 @@ def run_server():
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
+
+
+# --------------------------------------------------------------------------- #
+# Extra code, to allow commandline parameters instead of changing the code
+# --------------------------------------------------------------------------- #
+FRAMERS = {
+    "ascii": ModbusAsciiFramer,
+    "binary": ModbusBinaryFramer,
+    "rtu": ModbusRtuFramer,
+    "socket": ModbusSocketFramer,
+    "tls": ModbusTlsFramer,
+}
+COMM_DEFAULTS = {  # pylint: disable=consider-using-namedtuple-or-dataclass
+    "tcp": ("socket", 5020),
+    "udp": ("socket", 5020),
+    "serial": ("rtu", "/dev/ptyp0"),
+    "tls": ("tls", 5020)
+}
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s "
+    "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
+logging.basicConfig(format=FORMAT)
+_logger = logging.getLogger()
+
+
+def get_commandline():
+    """Read and validate command line arguments"""
+    parser = argparse.ArgumentParser(description="Command line options for examples")
+    parser.add_argument(
+        "--comm",
+        choices=["tcp", "udp", "serial", "tls"],
+        help='"serial", "tcp", "udp" or "tls"',
+        type=str,
+    )
+    parser.add_argument(
+        "--framer",
+        choices=["ascii", "binary", "rtu", "socket", "tls"],
+        help='"ascii", "binary", "rtu", "socket" or "tls"',
+        type=str,
+    )
+    parser.add_argument(
+        "--log",
+        choices=["critical", "error", "warning", "info", "debug"],
+        help='"critical", "error", "warning", "info" or "debug"',
+        type=str,
+    )
+    parser.add_argument(
+        "--port",
+        help='the port to use',
+        type=int,
+    )
+    parser.add_argument(
+        "--store",
+        choices=["sequential", "sparse", "factory", "none"],
+        help='(server only) "sequential", "sparse", "factory" or "none"',
+        type=str,
+    )
+    parser.add_argument(
+        "--slaves",
+        help='(server only) number of slaves to respond to',
+        type=int,
+    )
+    args = parser.parse_args()
+
+    # set defaults
+    _logger.setLevel(args.log.upper() if args.log else logging.INFO)
+    if not args.comm:
+        args.comm = "tcp"
+    if not args.store:
+        args.store = "sequential"
+    if not args.slaves:
+        args.slaves = 0
+    if not args.framer:
+        args.framer = COMM_DEFAULTS[args.comm][0]
+    if not args.port:
+        args.port = COMM_DEFAULTS[args.comm][1]
+    return args
 
 
 if __name__ == "__main__":

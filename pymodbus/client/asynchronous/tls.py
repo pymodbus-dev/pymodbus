@@ -16,7 +16,7 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
 
-    def __new__(  # pylint: disable=too-many-arguments
+    def __new__(
         cls,
         host="127.0.0.1",
         port=Defaults.TLSPort,

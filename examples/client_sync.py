@@ -134,7 +134,7 @@ COMM_DEFAULTS = {  # pylint: disable=consider-using-namedtuple-or-dataclass
     "tcp": ["socket", 5020],
     "udp": ["socket", 5020],
     "serial": ["rtu", "/dev/ptyp0"],
-    "tls": ["tls", 5020]
+    "tls": ["tls", 5020],
 }
 FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -143,7 +143,9 @@ _logger = logging.getLogger()
 
 def get_commandline():
     """Read and validate command line arguments"""
-    parser = argparse.ArgumentParser(description="Connect/disconnect a synchronous client.")
+    parser = argparse.ArgumentParser(
+        description="Connect/disconnect a synchronous client."
+    )
     parser.add_argument(
         "--comm",
         choices=["tcp", "udp", "serial", "tls"],
@@ -164,7 +166,7 @@ def get_commandline():
     )
     parser.add_argument(
         "--port",
-        help='the port to use',
+        help="the port to use",
         type=int,
     )
     args = parser.parse_args()

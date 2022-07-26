@@ -60,9 +60,7 @@ class DiagnosticStatusRequest(ModbusRequest):
         (
             self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
             self.message,
-        ) = struct.unpack(
-            ">HH", data
-        )
+        ) = struct.unpack(">HH", data)
 
     def get_response_pdu_size(self):
         """Get response pdu size.

@@ -60,12 +60,12 @@ def get_commandline():
     )
     parser.add_argument(
         "--port",
-        help='the port to use',
+        help="the port to use",
         type=int,
     )
     parser.add_argument(
         "--port_client",
-        help='the port to use',
+        help="the port to use",
         type=int,
     )
     args = parser.parse_args()

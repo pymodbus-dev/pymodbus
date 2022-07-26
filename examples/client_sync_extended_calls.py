@@ -105,7 +105,9 @@ def execute_diagnostic_requests(client):
     assert rr and not rr.isError()  # test that calls was OK
 
     _logger.info("Running ForceListenOnlyModeRequest")
-    rr = client.execute(ForceListenOnlyModeRequest(unit=UNIT))  # does not send a response
+    rr = client.execute(
+        ForceListenOnlyModeRequest(unit=UNIT)
+    )  # does not send a response
     assert rr and not rr.isError()  # test that calls was OK
 
     _logger.info("Running ClearCountersRequest")

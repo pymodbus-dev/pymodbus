@@ -179,9 +179,7 @@ async def run_with_already_running_loop():
 def run_with_no_loop():
     """Create a loop."""
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
-    loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        port=5020
-    )
+    loop, client = ModbusClient(port=5020)  # pylint: disable=unpacking-non-sequence
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------DONE RUN_WITH_NO_LOOP-------------")

@@ -398,9 +398,7 @@ class ModbusServerFactory:  # pylint: disable=too-few-public-methods
         self, store, framer=None, identity=None, **kwargs
     ):  # pylint: disable=unused-argument
         warnings.warn(
-            "deprecated API for asyncio. ServerFactory's are a "
-            "twisted construct and don't have an equivalent in "
-            "asyncio",
+            "deprecated API for asyncio.",
             DeprecationWarning,
         )
 

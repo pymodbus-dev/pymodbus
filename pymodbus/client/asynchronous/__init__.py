@@ -1,4 +1,4 @@
-"""Async Modbus Client implementation based on Twisted and asyncio
+"""Async Modbus Client implementation based on asyncio
 
 Example run::
 
@@ -10,25 +10,6 @@ Example run::
     from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as Client
     from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as Client
 
-    # For twisted based asynchronous client use
-    event_loop, future = Client(schedulers.REACTOR, port=5020)
-
-    # For asyncio based asynchronous client use
+    # For asynchronous client use
     event_loop, client = Client(schedulers.ASYNC_IO, port=5020)
-
-    # Here event_loop is a thread which would control the backend and future is
-    # a Future/deferred object which would be used to
-    # add call backs to run asynchronously.
-
-    # For asyncio the actual client is returned and event loop is asyncio loop
 """
-import importlib.util
-import logging
-
-_logger = logging.getLogger(__name__)
-
-if installed := importlib.util.find_spec("twisted"):
-    # Import deprecated async client only if twisted is installed #338
-    from pymodbus.client.asynchronous.deprecated.asynchronous import *  # noqa: F401,F403
-
-    _logger.warning("Importing deprecated clients. Dependency Twisted is Installed")

@@ -10,11 +10,7 @@ a python thread::
     Thread(target=updating_writer, args=(context,)).start()
 """
 import logging
-
-# --------------------------------------------------------------------------- #
-# import the modbus libraries we need
-# --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
+import asyncio
 
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -22,14 +18,8 @@ from pymodbus.datastore import (
     ModbusSlaveContext,
 )
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.server.async_io import StartTcpServer
 from pymodbus.version import version
-
-# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
-
-# --------------------------------------------------------------------------- #
-# import the twisted libraries we need
-# --------------------------------------------------------------------------- #
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -94,7 +84,7 @@ def run_updating_server():
     # run the server you want
     # ----------------------------------------------------------------------- #
     time = 5  # 5 seconds delay
-    loop = LoopingCall(f=updating_writer, a=(context,))
+    loop = asyncio.get_event_loop()
     loop.start(time, now=False)  # initially delay by time
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 

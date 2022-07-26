@@ -3,32 +3,10 @@
 import asyncio
 import logging
 
-from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.async_io import init_udp_client
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
-
-
-def reactor_factory(
-    host="127.0.0.1",
-    port=Defaults.Port,
-    framer=None,
-    source_address=None,
-    timeout=None,
-    **kwargs,
-):
-    """Create twisted udp asynchronous client.
-
-    :param host: Host IP address
-    :param port: Port
-    :param framer: Modbus Framer
-    :param source_address: Bind address
-    :param timeout: Timeout in seconds
-    :param kwargs:
-    :return: event_loop_thread and twisted_deferred
-    """
-    raise NotImplementedError()
 
 
 def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
@@ -59,19 +37,9 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     return loop, client
 
 
-def get_factory(scheduler):
+def get_factory():
     """Get protocol factory based on the backend scheduler being used.
 
-    :param scheduler: REACTOR/ASYNC_IO
     :return: new factory
-    :raises Exception: Failure
     """
-    if scheduler == schedulers.REACTOR:
-        return reactor_factory
-    if scheduler == schedulers.ASYNC_IO:
-        return async_io_factory
-
-    txt = f"Allowed Schedulers: {schedulers.REACTOR}, {schedulers.ASYNC_IO}"
-    _logger.warning(txt)
-    txt = f'Invalid Scheduler "{scheduler}"'
-    raise Exception(txt)
+    return async_io_factory

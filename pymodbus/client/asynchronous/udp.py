@@ -2,6 +2,7 @@
 import logging
 
 from pymodbus.client.asynchronous.factory.udp import get_factory
+from pymodbus.client.asynchronous.schedulers import ASYNC_IO
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
@@ -24,9 +25,9 @@ class AsyncModbusUDPClient:  # pylint: disable=too-few-public-methods
         timeout=None,
         **kwargs
     ):
-        """Use scheduler reactor (Twisted), io_loop (Tornado), async_io (asyncio).
+        """Use scheduler async_io (asyncio).
 
-        :param scheduler: Backend to use
+        :param scheduler: R.I.P.
         :param host: Host IP address
         :param port: Port
         :param framer: Modbus Framer to use
@@ -35,7 +36,9 @@ class AsyncModbusUDPClient:  # pylint: disable=too-few-public-methods
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        factory_class = get_factory(scheduler)
+        if scheduler != ASYNC_IO:
+            _logger.error("Scheduler is no longer used.")
+        factory_class = get_factory()
         yieldable = factory_class(
             host=host,
             port=port,

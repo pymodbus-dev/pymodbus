@@ -2,6 +2,7 @@
 import logging
 
 from pymodbus.client.asynchronous.factory.serial import get_factory
+from pymodbus.client.asynchronous.schedulers import ASYNC_IO
 from pymodbus.exceptions import ParameterException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import (
@@ -42,13 +43,13 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         raise ParameterException("Invalid framer method requested")
 
     def __new__(cls, scheduler, method, port, **kwargs):
-        """Use scheduler reactor (Twisted), io_loop (Tornado), async_io (asyncio).
+        """Use scheduler async_io (asyncio).
 
         The methods to connect are::
           - ascii
           - rtu
           - binary
-        :param scheduler: Backend to use
+        :param scheduler: R.I.P.
         :param method: The method to use for connection
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use
@@ -62,7 +63,9 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         :param kwargs:
         :return:
         """
-        factory_class = get_factory(scheduler)
+        if scheduler != ASYNC_IO:
+            _logger.error("Scheduler is no longer used.")
+        factory_class = get_factory()
         framer = cls._framer(method)
         yieldable = factory_class(framer=framer, port=port, **kwargs)
         return yieldable

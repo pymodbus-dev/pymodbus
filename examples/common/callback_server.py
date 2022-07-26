@@ -16,7 +16,7 @@ from pymodbus.datastore import (
     ModbusSparseDataBlock,
 )
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.server.async_io import StartTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need

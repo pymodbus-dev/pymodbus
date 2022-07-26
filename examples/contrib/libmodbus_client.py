@@ -26,7 +26,7 @@ For these to work, you must have `cffi` and `libmodbus-dev` installed:
 # -------------------------------------------------------------------------- #
 # import system libraries
 # -------------------------------------------------------------------------- #
-from cffi import FFI
+from cffi import FFI  # pylint: disable=import-error
 
 from pymodbus.bit_read_message import ReadCoilsResponse, ReadDiscreteInputsResponse
 from pymodbus.bit_write_message import (

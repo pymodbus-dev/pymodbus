@@ -15,16 +15,12 @@ This can also be done with a python thread::
 """
 import logging
 import random
-
-# --------------------------------------------------------------------------- #
-# import the twisted libraries we need
-# --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
+import asyncio
 
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.server.async_io import StartTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
@@ -100,7 +96,7 @@ def run_dbstore_update_server():
     # run the server you want
     # ----------------------------------------------------------------------- #
     time = 5  # 5 seconds delay
-    loop = LoopingCall(f=updating_writer, a=(context,))
+    loop = asyncio.get_event_loop()
     loop.start(time, now=False)  # initially delay by time
     loop.stop()
     StartTcpServer(context, identity=identity, address=("", 5020))

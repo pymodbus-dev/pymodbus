@@ -17,6 +17,7 @@ Examples
    custom_datablock
    custom_message
    modbus_logging
+   modbus_forwarder
    payload_client
    payload_server
    performance
@@ -37,5 +38,4 @@ Examples
    modbus_tls_client
    modicon_payload
    remote_server_context
-   serial_forwarder
    thread_safe_datastore

@@ -235,10 +235,7 @@ COMM_DEFAULTS = {  # pylint: disable=consider-using-namedtuple-or-dataclass
     "serial": ("rtu", "/dev/ptyp0"),
     "tls": ("tls", 5020)
 }
-FORMAT = (
-    "%(asctime)-15s %(threadName)-15s "
-    "%(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-)
+FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 logging.basicConfig(format=FORMAT)
 _logger = logging.getLogger()
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pymodbus Synchronous Client standard calls rxample.
+"""Pymodbus Synchronous Client standard calls example.
 
 This example uses client_sync.py to handle connection, and have the same options.
 

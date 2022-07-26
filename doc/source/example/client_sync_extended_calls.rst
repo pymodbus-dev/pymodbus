@@ -1,4 +1,4 @@
 ==================================================
-Synchronous Client Ext Example
+Synchronous Client Example
 ==================================================
-.. literalinclude:: ../../../examples/common/synchronous_client_ext.py
+.. literalinclude:: ../../../examples/client_sync_extended_calls.py

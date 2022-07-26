@@ -11,6 +11,8 @@ Examples
    asynchronous_asyncio_modbus_tls_client
    callback_server
    client_sync
+   client_sync_basic_calls
+   client_sync_extended_calls
    changing_framers
    custom_datablock
    custom_message
@@ -19,7 +21,6 @@ Examples
    payload_server
    performance
    server_sync
-   synchronous_client_ext
    updating_server
 
    asynchronous_asyncio_serial_client

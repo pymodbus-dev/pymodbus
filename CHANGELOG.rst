@@ -130,7 +130,7 @@ Version 2.3.0rc1
 
 Version 2.2.0
 -----------------------------------------------------------
-**NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asychronous**
+**NOTE: Supports python 3.7, async client is now moved to pymodbus/client/asynchronous**
 
 
 .. code-block:: python
@@ -260,7 +260,7 @@ Version 1.4.0
 * Support Database slave contexts (SqlStore and RedisStore)
 * Custom handlers could be passed to Modbus TCP servers
 * Asynchronous Server could now be stopped when running on a seperate thread (StopServer)
-* Signal handlers on Asyncronous servers are now handled based on current thread
+* Signal handlers on Asynchronous servers are now handled based on current thread
 * Registers in Database datastore could now be read from remote clients
 * Fix examples in contrib (message_parser.py/message_generator.py/remote_server_context)
 * Add new example for SqlStore and RedisStore (db store slave context)
@@ -275,7 +275,7 @@ Version 1.3.2
 * Fix issue with server and client where in the frame buffer had values from previous unsuccesful transaction
 * Fix response length calculation for ModbusASCII protocol
 * Fix response length calculation ReportSlaveIdResponse, DiagnosticStatusResponse
-* Fix never ending transaction case when response is recieved without header and CRC
+* Fix never ending transaction case when response is received without header and CRC
 * Fix tests
 
 Version 1.3.1

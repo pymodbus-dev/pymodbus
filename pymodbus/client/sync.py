@@ -360,7 +360,7 @@ class ModbusTcpClient(BaseModbusClient):
 
     def is_socket_open(self):
         """Check if socket is open."""
-        return (self.socket is not None)
+        return self.socket is not None
 
     def __str__(self):
         """Build a string representation of the connection.

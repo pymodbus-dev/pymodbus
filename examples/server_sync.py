@@ -103,12 +103,8 @@ def setup_sync_server():
                 ir=datablock,
             ),
             0x03: ModbusSlaveContext(
-                di=datablock,
-                co=datablock,
-                hr=datablock,
-                ir=datablock,
-                zero_mode=True
-            )
+                di=datablock, co=datablock, hr=datablock, ir=datablock, zero_mode=True
+            ),
         }
     else:
         context = ModbusSlaveContext(
@@ -180,7 +176,7 @@ def run_server():
         StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
-            timeout=.005,  # waiting time for request to complete
+            timeout=0.005,  # waiting time for request to complete
             port=port,  # serial port
             custom_functions=[],  # allow custom handling
             framer=FRAMERS[framer],  # The framer strategy to use
@@ -208,7 +204,7 @@ def run_server():
             handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             certfile=None,  # The cert file path for TLS (used if sslctx is None)
-            sslctx=None,    # The SSLContext to use for TLS (default None and auto create)
+            sslctx=None,  # The SSLContext to use for TLS (default None and auto create)
             keyfile=None,  # The key file path for TLS (used if sslctx is None)
             password=None,  # The password for for decrypting the private key file
             reqclicert=False,  # Force the sever request client"s certificate
@@ -233,7 +229,7 @@ COMM_DEFAULTS = {  # pylint: disable=consider-using-namedtuple-or-dataclass
     "tcp": ("socket", 5020),
     "udp": ("socket", 5020),
     "serial": ("rtu", "/dev/ptyp0"),
-    "tls": ("tls", 5020)
+    "tls": ("tls", 5020),
 }
 FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -263,7 +259,7 @@ def get_commandline():
     )
     parser.add_argument(
         "--port",
-        help='the port to use',
+        help="the port to use",
         type=int,
     )
     parser.add_argument(
@@ -274,7 +270,7 @@ def get_commandline():
     )
     parser.add_argument(
         "--slaves",
-        help='(server only) number of slaves to respond to',
+        help="(server only) number of slaves to respond to",
         type=int,
     )
     args = parser.parse_args()

@@ -302,9 +302,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
         super().connection_made(transport)
 
         self.client_address = (  # pylint: disable=attribute-defined-outside-init
-            transport.get_extra_info(
-                "peername"
-            )
+            transport.get_extra_info("peername")
         )
         self.server.active_connections[self.client_address] = self
         txt = f"TCP client connection established [{self.client_address[:2]}]"

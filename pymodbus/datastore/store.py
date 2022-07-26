@@ -88,9 +88,7 @@ class BaseModbusDataBlock:
         """Reset the datastore to the initialized default value."""
         self.values = [  # pylint: disable=attribute-defined-outside-init
             self.default_value
-        ] * len(
-            self.values
-        )
+        ] * len(self.values)
 
     def validate(self, address, count=1):
         """Check to see if the request is in range.

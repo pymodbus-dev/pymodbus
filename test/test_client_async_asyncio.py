@@ -389,7 +389,7 @@ class TestAsyncioClient:
             assert not len(  # nosec pylint: disable=use-implicit-booleaness-not-len
                 list(protocol.transaction)
             )
-            response = protocol._build_response(  # nosec pylint: disable=protected-access
+            response = protocol._build_response(  # pylint: disable=protected-access
                 0x00
             )
             excp = response.exception()

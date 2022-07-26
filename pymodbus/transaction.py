@@ -89,11 +89,11 @@ class ModbusTransactionManager:
     def _calculate_exception_length(self):
         """Return the length of the Modbus Exception Response according to the type of Framer."""
         if isinstance(self.client.framer, (ModbusSocketFramer, ModbusTlsFramer)):
-            return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
+            return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         if isinstance(self.client.framer, ModbusAsciiFramer):
-            return self.base_adu_size + 4  # Fcode(2), ExcecptionCode(2)
+            return self.base_adu_size + 4  # Fcode(2), ExceptionCode(2)
         if isinstance(self.client.framer, (ModbusRtuFramer, ModbusBinaryFramer)):
-            return self.base_adu_size + 2  # Fcode(1), ExcecptionCode(1)
+            return self.base_adu_size + 2  # Fcode(1), ExceptionCode(1)
         return None
 
     def _validate_response(self, request, response, exp_resp_len):

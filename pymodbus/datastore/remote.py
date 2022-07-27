@@ -29,7 +29,10 @@ class RemoteSlaveContext(IModbusSlaveContext):
         """
         self._client = client
         self.unit = unit
+        self.result = None
         self.__build_mapping()
+        if not self.__set_callbacks:
+            _logger.error("Init went wrong.")
 
     def reset(self):
         """Reset all the datastores to their default values."""
@@ -45,34 +48,18 @@ class RemoteSlaveContext(IModbusSlaveContext):
         """
         txt = f"validate[{fc_as_hex}] {address}:{count}"
         _logger.debug(txt)
-        result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
-        return not result.isError()
+        self.result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
+        return not self.result.isError()
 
     def getValues(self, fc_as_hex, address, count=1):
-        """Get `count` values from datastore.
-
-        :param fc_as_hex: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to retrieve
-        :returns: The requested values from a:a+c
-        """
-        # TODO deal with deferreds # pylint: disable=fixme
-        txt = f"get values[{fc_as_hex}] {address}:{count}"
-        _logger.debug(txt)
-        result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
-        return self.__extract_result(self.decode(fc_as_hex), result)
+        """Get values from real call in validate"""
+        return self.__extract_result(self.decode(fc_as_hex), self.result)
 
     def setValues(self, fc_as_hex, address, values):
         """Set the datastore with the supplied values.
 
-        :param fc_as_hex: The function we are working with
-        :param address: The starting address
-        :param values: The new values to be set
+        Already done in validate
         """
-        # TODO deal with deferreds # pylint: disable=fixme
-        txt = f"set values[{fc_as_hex}] {address}:{len(values)}"
-        _logger.debug(txt)
-        self.__set_callbacks[self.decode(fc_as_hex)](address, values)
 
     def __str__(self):
         """Return a string representation of the context.

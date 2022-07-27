@@ -40,12 +40,15 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
         client.read_holding_registers = lambda a, b: ExceptionResponse(0x15)
 
         context = RemoteSlaveContext(client)
+        context.validate(1, 0, 10)
         result = context.getValues(1, 0, 10)
         self.assertEqual(result, [1] * 10)
 
+        context.validate(4, 0, 10)
         result = context.getValues(4, 0, 10)
         self.assertEqual(result, [10] * 10)
 
+        context.validate(3, 0, 10)
         result = context.getValues(3, 0, 10)
         self.assertNotEqual(result, [10] * 10)
 

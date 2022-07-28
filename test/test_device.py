@@ -5,7 +5,6 @@ import unittest
 from pymodbus.constants import DeviceInformation
 from pymodbus.device import (
     DeviceInformationFactory,
-    ModbusAccessControl,
     ModbusControlBlock,
     ModbusDeviceIdentification,
     ModbusPlusStatistics,
@@ -43,14 +42,12 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         }
         self.ident = ModbusDeviceIdentification(self.info)
         self.control = ModbusControlBlock()
-        self.access = ModbusAccessControl()
         self.control.reset()
 
     def tearDown(self):
         """Clean up the test environment"""
         del self.ident
         del self.control
-        del self.access
 
     def test_update_identity(self):
         """Test device identification reading"""
@@ -271,32 +268,6 @@ class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public
         self.assertEqual(None, self.control.getDiagnostic(17))
         self.assertEqual(None, self.control.getDiagnostic(None))
         self.assertEqual(None, self.control.getDiagnostic([1, 2, 3]))
-
-    def test_add_remove__single_clients(self):
-        """Test adding and removing a host"""
-        self.assertFalse(self.access.check("192.168.1.1"))
-        self.access.add("192.168.1.1")
-        self.assertTrue(self.access.check("192.168.1.1"))
-        self.access.add("192.168.1.1")
-        self.access.remove("192.168.1.1")
-        self.assertFalse(self.access.check("192.168.1.1"))
-
-    def test_add_remove_multiple_clients(self):
-        """Test adding and removing a host"""
-        clients = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]
-        self.access.add(clients)
-        for host in clients:
-            self.assertTrue(self.access.check(host))
-        self.access.remove(clients)
-
-    def test_network_access_list_iterator(self):
-        """Test adding and removing a host"""
-        clients = ["127.0.0.1", "192.168.1.1", "192.168.1.2", "192.168.1.3"]
-        self.access.add(clients)
-        for host in self.access:
-            self.assertTrue(host in clients)
-        for host in clients:
-            self.assertTrue(host in self.access)
 
     def test_clearing_control_events(self):
         """Test adding and clearing modbus events"""

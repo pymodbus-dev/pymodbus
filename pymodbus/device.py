@@ -14,69 +14,6 @@ from pymodbus.utilities import dict_property
 
 
 # ---------------------------------------------------------------------------#
-#  Network Access Control
-# ---------------------------------------------------------------------------#
-class ModbusAccessControl(Singleton):
-    """Simple implementation of a Network Management System table.
-
-    Its purpose is to control access to the server (if it is used).
-    We assume that if an entry is in the table, it is allowed accesses to
-    resources.  However, if the host does not appear in the table (all
-    unknown hosts) its connection will simply be closed.
-
-    Since it is a singleton, only one version can possible exist and all
-    instances pull from here.
-    """
-
-    __nmstable = [
-        "127.0.0.1",
-    ]
-
-    def __iter__(self):
-        """Iterate over the network access table.
-
-        :returns: An iterator of the network access table
-        """
-        return self.__nmstable.__iter__()
-
-    def __contains__(self, host):
-        """Check if a host is allowed to access resources.
-
-        :param host: The host to check
-        """
-        return host in self.__nmstable
-
-    def add(self, host):
-        """Add allowed host(s) from the NMS table.
-
-        :param host: The host to add
-        """
-        if not isinstance(host, list):
-            host = [host]
-        for entry in host:
-            if entry not in self.__nmstable:
-                self.__nmstable.append(entry)
-
-    def remove(self, host):
-        """Remove allowed host(s) from the NMS table.
-
-        :param host: The host to remove
-        """
-        if not isinstance(host, list):
-            host = [host]
-        for entry in host:
-            if entry in self.__nmstable:
-                self.__nmstable.remove(entry)
-
-    def check(self, host):
-        """Check if a host is allowed to access resources.
-
-        :param host: The host to check
-        """
-        return host in self.__nmstable
-
-
-# ---------------------------------------------------------------------------#
 #  Modbus Plus Statistics
 # ---------------------------------------------------------------------------#
 class ModbusPlusStatistics:
@@ -657,7 +594,6 @@ class ModbusControlBlock(Singleton):
 #  Exported Identifiers
 # ---------------------------------------------------------------------------#
 __all__ = [
-    "ModbusAccessControl",
     "ModbusPlusStatistics",
     "ModbusDeviceIdentification",
     "DeviceInformationFactory",

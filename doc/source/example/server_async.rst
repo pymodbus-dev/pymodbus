@@ -1,4 +1,4 @@
 ==================================================
-Asyncio Server Example
+Asynchronous server example
 ==================================================
-.. literalinclude:: ../../../examples/common/asyncio_server.py
+.. literalinclude:: ../../../examples/server_async.py

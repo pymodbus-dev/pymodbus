@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Pymodbus Synchronous Server Example.
+"""Pymodbus asynchronous Server Example.
 
-An example of a single threaded synchronous server.
+An example of a multi threaded asynchronous server.
 
-usage: server_sync.py [-h] [--comm {tcp,udp,serial,tls}]
-                      [--framer {ascii,binary,rtu,socket,tls}]
-                      [--log {critical,error,warning,info,debug}]
-                      [--port PORT] [--store {sequential,sparse,factory,none}]
-                      [--slaves SLAVES]
+usage: server_async.py [-h] [--comm {tcp,udp,serial,tls}]
+                       [--framer {ascii,binary,rtu,socket,tls}]
+                       [--log {critical,error,warning,info,debug}]
+                       [--port PORT] [--store {sequential,sparse,factory,none}]
+                       [--slaves SLAVES]
 
 Command line options for examples
 
@@ -28,12 +28,13 @@ The corresponding client can be started as:
     python3 client_sync.py
 """
 import argparse
+import asyncio
 import logging
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.server.sync import (
+from pymodbus.server.async_io import (
     StartSerialServer,
     StartTcpServer,
     StartTlsServer,
@@ -56,7 +57,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.version import version
 
 
-def setup_sync_server():
+def setup_async_server():
     """Run server setup."""
     args = get_commandline()
 
@@ -135,13 +136,13 @@ def setup_sync_server():
     return args.comm, args.port, store, identity, args.framer
 
 
-def run_server():
+async def run_server():
     """Run server."""
-    server, port, store, identity, framer = setup_sync_server()
+    server, port, store, identity, framer = setup_async_server()
 
     _logger.info("### start server")
     if server == "tcp":
-        StartTcpServer(
+        server_obj = await StartTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # TBD host=
@@ -157,7 +158,7 @@ def run_server():
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif server == "udp":
-        StartUdpServer(
+        server_obj = await StartUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             address=("", port),  # listen address
@@ -173,7 +174,7 @@ def run_server():
     elif server == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
         #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        StartSerialServer(
+        server_obj = await StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             timeout=0.005,  # waiting time for request to complete
@@ -191,7 +192,7 @@ def run_server():
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif server == "tls":
-        StartTlsServer(
+        server_obj = await StartTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             port=port,  # on which port
@@ -211,6 +212,8 @@ def run_server():
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
+    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
+    await server_obj.serve_forever()
 
 
 # --------------------------------------------------------------------------- #
@@ -290,4 +293,4 @@ def get_commandline():
 
 
 if __name__ == "__main__":
-    run_server()
+    asyncio.run(run_server())

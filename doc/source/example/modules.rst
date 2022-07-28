@@ -5,14 +5,14 @@ Examples
 .. toctree::
    :maxdepth: 4
 
-   async_asyncio_client
-   async_asyncio_serial_client
-   asyncio_server
    asynchronous_asyncio_modbus_tls_client
    callback_server
    client_sync
    client_sync_basic_calls
    client_sync_extended_calls
+   client_async
+   client_async_basic_calls
+   client_async_extended_calls
    changing_framers
    custom_datablock
    custom_message
@@ -22,9 +22,9 @@ Examples
    payload_server
    performance
    server_sync
+   server_async
    updating_server
 
-   asynchronous_asyncio_serial_client
    bcd_payload
    concurrent_client
    deviceinfo_showcase_client

@@ -148,7 +148,7 @@ def run_server():
             # TBD port=
             address=("", port),  # listen address
             custom_functions=[],  # allow custom handling
-            framer=FRAMERS[framer],  # The framer strategy to use
+            framer=framer,  # The framer strategy to use
             handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             ignore_missing_slaves=True,  # ignore request to a missing slave
@@ -162,7 +162,7 @@ def run_server():
             identity=identity,  # server identify
             address=("", port),  # listen address
             custom_functions=[],  # allow custom handling
-            framer=FRAMERS[framer],  # The framer strategy to use
+            framer=framer,  # The framer strategy to use
             handler=None,  # handler for each session
             # TBD allow_reuse_address=True,  # allow the reuse of an address
             ignore_missing_slaves=True,  # ignore request to a missing slave
@@ -179,7 +179,7 @@ def run_server():
             timeout=0.005,  # waiting time for request to complete
             port=port,  # serial port
             custom_functions=[],  # allow custom handling
-            framer=FRAMERS[framer],  # The framer strategy to use
+            framer=framer,  # The framer strategy to use
             handler=None,  # handler for each session
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
@@ -200,7 +200,7 @@ def run_server():
             identity=identity,  # server identify
             custom_functions=[],  # allow custom handling
             address=("", 5020),  # listen address
-            framer=FRAMERS[framer],  # The framer strategy to use
+            framer=framer,  # The framer strategy to use
             handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             certfile=None,  # The cert file path for TLS (used if sslctx is None)
@@ -218,19 +218,6 @@ def run_server():
 # --------------------------------------------------------------------------- #
 # Extra code, to allow commandline parameters instead of changing the code
 # --------------------------------------------------------------------------- #
-FRAMERS = {
-    "ascii": ModbusAsciiFramer,
-    "binary": ModbusBinaryFramer,
-    "rtu": ModbusRtuFramer,
-    "socket": ModbusSocketFramer,
-    "tls": ModbusTlsFramer,
-}
-COMM_DEFAULTS = {  # pylint: disable=consider-using-namedtuple-or-dataclass
-    "tcp": ("socket", 5020),
-    "udp": ("socket", 5020),
-    "serial": ("rtu", "/dev/ptyp0"),
-    "tls": ("tls", 5020),
-}
 FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
 logging.basicConfig(format=FORMAT)
 _logger = logging.getLogger()
@@ -276,6 +263,19 @@ def get_commandline():
     args = parser.parse_args()
 
     # set defaults
+    comm_defaults = {
+        "tcp": ("socket", 5020),
+        "udp": ("socket", 5020),
+        "serial": ("rtu", "/dev/ptyp0"),
+        "tls": ("tls", 5020),
+    }
+    framers = {
+        "ascii": ModbusAsciiFramer,
+        "binary": ModbusBinaryFramer,
+        "rtu": ModbusRtuFramer,
+        "socket": ModbusSocketFramer,
+        "tls": ModbusTlsFramer,
+    }
     _logger.setLevel(args.log.upper() if args.log else logging.INFO)
     if not args.comm:
         args.comm = "tcp"
@@ -284,9 +284,10 @@ def get_commandline():
     if not args.slaves:
         args.slaves = 0
     if not args.framer:
-        args.framer = COMM_DEFAULTS[args.comm][0]
+        args.framer = comm_defaults[args.comm][0]
     if not args.port:
-        args.port = COMM_DEFAULTS[args.comm][1]
+        args.port = comm_defaults[args.comm][1]
+    args.framer = framers[args.framer]
     return args
 
 

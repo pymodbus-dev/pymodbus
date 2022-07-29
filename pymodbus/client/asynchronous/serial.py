@@ -1,7 +1,7 @@
 """SERIAL communication."""
 import logging
 
-from pymodbus.client.asynchronous.factory.serial import async_io_factory
+from pymodbus.client.asynchronous.factory.serial import get_factory
 from pymodbus.exceptions import ParameterException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import (
@@ -58,6 +58,7 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         :param kwargs:
         :return:
         """
+        factory_class = get_factory()
         framer = cls._framer(method)
-        yieldable = async_io_factory(framer=framer, port=port, **kwargs)
+        yieldable = factory_class(framer=framer, port=port, **kwargs)
         return yieldable

@@ -1,7 +1,7 @@
 """UDP communication."""
 import logging
 
-from pymodbus.client.asynchronous.factory.udp import async_io_factory
+from pymodbus.client.asynchronous.factory.udp import get_factory
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
@@ -33,7 +33,8 @@ class AsyncModbusUDPClient:  # pylint: disable=too-few-public-methods
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        yieldable = async_io_factory(
+        factory_class = get_factory()
+        yieldable = factory_class(
             host=host,
             port=port,
             framer=framer,

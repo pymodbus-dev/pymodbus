@@ -35,3 +35,11 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
     client = client.result()
 
     return loop, client
+
+
+def get_factory():
+    """Get protocol factory.
+
+    :return: new factory
+    """
+    return async_io_factory

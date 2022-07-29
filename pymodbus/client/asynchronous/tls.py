@@ -1,7 +1,7 @@
 """TLS communication."""
 import logging
 
-from pymodbus.client.asynchronous.factory.tls import async_io_factory
+from pymodbus.client.asynchronous.factory.tls import get_factory
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusTlsFramer
@@ -44,7 +44,8 @@ class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
         :return:
         """
         framer = framer or ModbusTlsFramer(ClientDecoder())
-        yieldable = async_io_factory(
+        factory_class = get_factory()
+        yieldable = factory_class(
             host=host,
             port=port,
             sslctx=sslctx,

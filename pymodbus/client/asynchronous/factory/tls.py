@@ -51,11 +51,3 @@ def async_io_factory(
         client = future.result()
 
     return loop, client
-
-
-def get_factory():
-    """Get protocol factory.
-
-    :return: protocol object
-    """
-    return async_io_factory

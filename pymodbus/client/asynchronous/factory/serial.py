@@ -35,11 +35,3 @@ def async_io_factory(port=None, framer=None, **kwargs):
         future.result()
 
     return loop, client
-
-
-def get_factory():
-    """Get protocol factory.
-
-    :return: new factory
-    """
-    return async_io_factory

@@ -1,7 +1,7 @@
 """TCP communication."""
 import logging
 
-from pymodbus.client.asynchronous.factory.tcp import get_factory
+from pymodbus.client.asynchronous.factory.tcp import async_io_factory
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
@@ -33,8 +33,7 @@ class AsyncModbusTCPClient:  # pylint: disable=too-few-public-methods
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        factory_class = get_factory()
-        yieldable = factory_class(
+        yieldable = async_io_factory(
             host=host,
             port=port,
             framer=framer,

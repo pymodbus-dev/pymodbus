@@ -22,7 +22,6 @@ from pymodbus.client.tls_helper import sslctx_provider
 from pymodbus.exceptions import (
     ConnectionException,
     NotImplementedException,
-    ParameterException,
 )
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -524,32 +523,28 @@ class SynchronousClientTest(
     # -----------------------------------------------------------------------#
     # Test Serial Client
     # -----------------------------------------------------------------------#
-
     def test_sync_serial_client_instantiation(self):
         """Test sync serial client."""
         client = ModbusSerialClient()
         self.assertNotEqual(client, None)
         self.assertTrue(
-            isinstance(ModbusSerialClient(method="ascii").framer, ModbusAsciiFramer)
+            isinstance(ModbusSerialClient(framer=ModbusAsciiFramer).framer, ModbusAsciiFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(method="rtu").framer, ModbusRtuFramer)
+            isinstance(ModbusSerialClient(framer=ModbusRtuFramer).framer, ModbusRtuFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(method="binary").framer, ModbusBinaryFramer)
+            isinstance(ModbusSerialClient(framer=ModbusBinaryFramer).framer, ModbusBinaryFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(method="socket").framer, ModbusSocketFramer)
-        )
-        self.assertRaises(
-            ParameterException, lambda: ModbusSerialClient(method="something")
+            isinstance(ModbusSerialClient(framer=ModbusSocketFramer).framer, ModbusSocketFramer)
         )
 
     def test_sync_serial_rtu_client_timeouts(self):
         """Test sync serial rtu."""
-        client = ModbusSerialClient(method="rtu", baudrate=9600)
+        client = ModbusSerialClient(framer=ModbusRtuFramer, baudrate=9600)
         self.assertEqual(client.silent_interval, round((3.5 * 11 / 9600), 6))
-        client = ModbusSerialClient(method="rtu", baudrate=38400)
+        client = ModbusSerialClient(framer=ModbusRtuFramer, baudrate=38400)
         self.assertEqual(client.silent_interval, round((1.75 / 1000), 6))
 
     @patch("serial.Serial")
@@ -573,7 +568,7 @@ class SynchronousClientTest(
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient(method="rtu", strict=True)
+        rtu_client = ModbusSerialClient(framer=ModbusRtuFramer, strict=True)
         self.assertTrue(rtu_client.connect())
         self.assertEqual(
             rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
@@ -584,7 +579,7 @@ class SynchronousClientTest(
         client.socket = False
         client.close()
 
-        self.assertEqual("ModbusSerialClient(ascii baud[19200])", str(client))
+        self.assertTrue("baud[19200])" in str(client))
 
     def test_serial_client_connect(self):
         """Test the serial client connection method"""
@@ -667,7 +662,7 @@ class SynchronousClientTest(
         client = ModbusSerialClient()
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
-            f"method={client.method}, timeout={client.timeout}>"
+            f"framer={client.framer}, timeout={client.timeout}>"
         )
         self.assertEqual(repr(client), rep)
 

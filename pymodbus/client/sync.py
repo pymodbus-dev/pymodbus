@@ -15,13 +15,10 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import (
     ConnectionException,
     NotImplementedException,
-    ParameterException,
 )
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import (
     DictTransactionManager,
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
@@ -614,16 +611,9 @@ class ModbusSerialClient(
     inter_char_timeout = 0
     silent_interval = 0
 
-    def __init__(self, method="ascii", **kwargs):
+    def __init__(self, framer=ModbusRtuFramer, **kwargs):
         """Initialize a serial client instance.
 
-        The methods to connect are::
-
-          - ascii
-          - rtu
-          - binary
-
-        :param method: The method to use for connection
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use
         :param bytesize: The bytesize of the serial messages
@@ -633,10 +623,11 @@ class ModbusSerialClient(
         :param strict:  Use Inter char timeout for baudrates <= 19200 (adhere
         to modbus standards)
         :param handle_local_echo: Handle local echo of the USB-to-RS485 adaptor
+        :param framer: The modbus framer to use (default ModbusRtuFramer)
         """
-        self.method = method
+        self.framer = framer
         self.socket = None
-        BaseModbusClient.__init__(self, self.__implementation(method, self), **kwargs)
+        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
         self.port = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
@@ -647,7 +638,7 @@ class ModbusSerialClient(
         self._strict = kwargs.get("strict", False)
         self.last_frame_end = None
         self.handle_local_echo = kwargs.get("handle_local_echo", False)
-        if self.method == "rtu":
+        if isinstance(self.framer, ModbusRtuFramer):
             if self.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
             else:
@@ -655,26 +646,6 @@ class ModbusSerialClient(
                 self.inter_char_timeout = 1.5 * self._t0
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
-
-    @staticmethod
-    def __implementation(method, client):
-        """Return the requested framer.
-
-        :method: The serial framer to instantiate
-        :returns: The requested serial framer
-        :raises ConnectionException:
-        :raises ParameterException:
-        """
-        method = method.lower()
-        if method == "ascii":
-            return ModbusAsciiFramer(ClientDecoder(), client)
-        if method == "rtu":
-            return ModbusRtuFramer(ClientDecoder(), client)
-        if method == "binary":
-            return ModbusBinaryFramer(ClientDecoder(), client)
-        if method == "socket":
-            return ModbusSocketFramer(ClientDecoder(), client)
-        raise ParameterException("Invalid framer method requested")
 
     def connect(self):
         """Connect to the modbus serial server.
@@ -692,7 +663,7 @@ class ModbusSerialClient(
                 baudrate=self.baudrate,
                 parity=self.parity,
             )
-            if self.method == "rtu":
+            if isinstance(self.framer, ModbusRtuFramer):
                 if self._strict:
                     self.socket.interCharTimeout = self.inter_char_timeout
                 self.last_frame_end = None
@@ -802,13 +773,13 @@ class ModbusSerialClient(
 
         :returns: The string representation
         """
-        return f"ModbusSerialClient({self.method} baud[{self.baudrate}])"
+        return f"ModbusSerialClient({self.framer} baud[{self.baudrate}])"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"method={self.method}, timeout={self.timeout}>"
+            f"framer={self.framer}, timeout={self.timeout}>"
         )
 
 

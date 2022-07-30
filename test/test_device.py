@@ -16,7 +16,7 @@ from pymodbus.events import ModbusEvent, RemoteReceiveEvent
 # ---------------------------------------------------------------------------#
 
 
-class SimpleDataStoreTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
+class SimpleDataStoreTest(unittest.TestCase):
     """Unittest for the pymodbus.device module."""
 
     # -----------------------------------------------------------------------#

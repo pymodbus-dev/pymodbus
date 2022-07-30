@@ -89,12 +89,12 @@ class TestAsynchronousClient:
     @patch("asyncio.get_event_loop")
     @patch("asyncio.gather", side_effect=mock_asyncio_gather)
     @pytest.mark.parametrize(
-        "method, framer",
+        "framer",
         [
-            ("rtu", ModbusRtuFramer),
-            ("socket", ModbusSocketFramer),
-            ("binary", ModbusBinaryFramer),
-            ("ascii", ModbusAsciiFramer),
+            ModbusRtuFramer,
+            ModbusSocketFramer,
+            ModbusBinaryFramer,
+            ModbusAsciiFramer,
         ],
     )
     @pytest.mark.asyncio
@@ -102,7 +102,6 @@ class TestAsynchronousClient:
         self,
         mock_gather,  # pylint: disable=unused-argument
         mock_event_loop,
-        method,
         framer,
     ):  # pylint: disable=unused-argument
         """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
@@ -112,7 +111,7 @@ class TestAsynchronousClient:
             loop,
             client,
         ) = AsyncModbusSerialClient(
-            method=method,
+            framer=framer,
             port=pytest.SERIAL_PORT,
             loop=loop,
             baudrate=19200,

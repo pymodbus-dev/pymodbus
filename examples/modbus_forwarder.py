@@ -21,7 +21,7 @@ from pymodbus.datastore.remote import RemoteSlaveContext
 
 def run_forwarder():
     """Run forwarder setup."""
-    port_server, port_client = get_commandline()
+    port_server, port_client, slaves = get_commandline()
 
     client = ModbusTcpClient(
         host="localhost",
@@ -32,7 +32,12 @@ def run_forwarder():
     # in RemoteSlaveContext
     # For e.g to forward the requests to slave with unit address 1 use
     # store = RemoteSlaveContext(client, unit=1)
-    store = RemoteSlaveContext(client)
+    if slaves:
+        store = {}
+        for i in slaves:
+            store[i.to_bytes(1, "big")] = RemoteSlaveContext(client, unit=i)
+    else:
+        store = RemoteSlaveContext(client)
     context = ModbusServerContext(slaves=store, single=True)
 
     # start forwarding client and server
@@ -68,6 +73,12 @@ def get_commandline():
         help="the port to use",
         type=int,
     )
+    parser.add_argument(
+        "--slaves",
+        help="list of slaves to forward",
+        type=int,
+        nargs="+",
+    )
     args = parser.parse_args()
 
     # set defaults
@@ -77,7 +88,7 @@ def get_commandline():
     if not args.port_client:
         args.port_client = 5010
 
-    return args.port, args.port_client
+    return args.port, args.port_client, args.slaves
 
 
 if __name__ == "__main__":

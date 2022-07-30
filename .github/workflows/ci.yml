@@ -3,9 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - dev
+      - dev*
       - master
-      - dev_jan
     tags:
       - v*
   pull_request:

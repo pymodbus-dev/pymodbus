@@ -10,6 +10,7 @@ import asyncio
 import logging
 
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient as ModbusClient
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
 
 # --------------------------------------------------------------------------- #
 # configure the client logging
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
         port="/tmp/ttyp0",  # nosec
         baudrate=9600,
-        method="rtu",
+        framer=ModbusRtuFramer,
     )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()

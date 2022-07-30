@@ -2,14 +2,7 @@
 import logging
 
 from pymodbus.client.asynchronous.factory.serial import async_io_factory
-from pymodbus.exceptions import ParameterException
 from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-)
 
 _logger = logging.getLogger(__name__)
 
@@ -21,34 +14,10 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
     """
 
-    @classmethod
-    def _framer(cls, method):
-        """Return the requested framer
-
-        :method: The serial framer to instantiate
-        :returns: The requested serial framer
-        :raises Exception: Failure
-        """
-        method = method.lower()
-        if method == "ascii":
-            return ModbusAsciiFramer(ClientDecoder())
-        if method == "rtu":
-            return ModbusRtuFramer(ClientDecoder())
-        if method == "binary":
-            return ModbusBinaryFramer(ClientDecoder())
-        if method == "socket":
-            return ModbusSocketFramer(ClientDecoder())
-
-        raise ParameterException("Invalid framer method requested")
-
-    def __new__(cls, method, port, **kwargs):
+    def __new__(cls, framer, port, **kwargs):
         """Do setup of client.
 
-        The methods to connect are::
-          - ascii
-          - rtu
-          - binary
-        :param method: The method to use for connection
+        :param framer: Modbus Framer
         :param port: The serial port to attach to
         :param stopbits: The number of stop bits to use
         :param bytesize: The bytesize of the serial messages
@@ -58,6 +27,6 @@ class AsyncModbusSerialClient:  # pylint: disable=too-few-public-methods
         :param kwargs:
         :return:
         """
-        framer = cls._framer(method)
+        framer = framer(ClientDecoder())
         yieldable = async_io_factory(framer=framer, port=port, **kwargs)
         return yieldable

@@ -20,7 +20,7 @@ from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.transaction import ModbusSocketFramer, ModbusRtuFramer
 
 protocols = [
     BaseModbusAsyncClientProtocol,
@@ -126,7 +126,7 @@ class TestAsyncioClient:
     def test_initialization_serial_in_loop(self):
         """Test initialization serial in loop."""
         _, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
-            port="/tmp/ptyp0", baudrate=9600, method="rtu"  # nosec
+            port="/tmp/ptyp0", baudrate=9600, framer=ModbusRtuFramer  # nosec
         )
         assert client.port == "/tmp/ptyp0"  # nosec
         assert client.baudrate == 9600  # nosec

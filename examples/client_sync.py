@@ -72,8 +72,7 @@ def setup_sync_client():
     elif args.comm == "serial":
         client = ModbusSerialClient(
             port=args.port,  # serial port
-            method=args.framer,  # how to interpret the messages
-            # TBD    framer=FRAMERS[args.framer],  # how to interpret the messages
+            framer=FRAMERS[args.framer],  # how to interpret the messages
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
             parity="even",  # Which kind of parity to use

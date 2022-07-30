@@ -29,11 +29,17 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
 from pymodbus.repl.client.helper import CLIENT_ATTRIBUTES, Result
 from pymodbus.repl.client.mclient import ModbusSerialClient, ModbusTcpClient
 from pymodbus.version import version
+from pymodbus.exceptions import ParameterException
+from pymodbus.transaction import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 
 click.disable_unicode_literals_warning = True
 
@@ -403,8 +409,19 @@ def serial(  # pylint: disable=too-many-arguments
     write_timeout,
 ):
     """Define serial communication."""
+    method = method.lower()
+    if method == "ascii":
+        framer = ModbusAsciiFramer
+    elif method == "rtu":
+        framer = ModbusRtuFramer
+    elif method == "binary":
+        framer = ModbusBinaryFramer
+    elif method == "socket":
+        framer = ModbusSocketFramer
+    else:
+        raise ParameterException("Invalid framer method requested")
     client = ModbusSerialClient(
-        method=method,
+        framer=framer,
         port=port,
         baudrate=baudrate,
         bytesize=bytesize,

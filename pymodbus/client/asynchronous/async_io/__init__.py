@@ -12,6 +12,11 @@ from pymodbus.client.asynchronous.mixins import AsyncModbusClientMixin
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import FifoTransactionManager
 from pymodbus.utilities import hexlify_packets
+from pymodbus.transaction import (
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+    ModbusTlsFramer,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -202,10 +207,11 @@ class ModbusUdpClientProtocol(BaseModbusAsyncClientProtocol, asyncio.DatagramPro
     #: Factory that created this instance.
     factory = None
 
-    def __init__(self, host=None, port=0, **kwargs):
+    def __init__(self, host=None, port=0, framer=None, **kwargs):
         """Initialize."""
         self.host = host
         self.port = port
+        self.framer = framer if framer else ModbusSocketFramer
         super().__init__(**kwargs)
 
     def datagram_received(self, data, addr):
@@ -225,7 +231,7 @@ class ReconnectingAsyncioModbusTcpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None, **kwargs):
+    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
         """Initialize ReconnectingAsyncioModbusTcpClient.
 
         :param protocol_class: Protocol used to talk to modbus device.
@@ -235,6 +241,7 @@ class ReconnectingAsyncioModbusTcpClient:
         self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
+        self.framer = framer if framer else ModbusSocketFramer
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
         self.host = None
@@ -334,7 +341,7 @@ class ReconnectingAsyncioModbusTcpClient:
 class AsyncioModbusTcpClient:
     """Client to connect to modbus device over TCP/IP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
+    def __init__(self, host=None, port=502, protocol_class=None, loop=None, framer=None, **kwargs):
         """Initialize Asyncio Modbus Tcp Client
 
         :param host: Host IP address
@@ -346,6 +353,7 @@ class AsyncioModbusTcpClient:
         self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
+        self.framer = framer if framer else ModbusSocketFramer
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
 
@@ -417,11 +425,11 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         :param protocol_class: Protocol used to talk to modbus device.
         :param loop: Event loop to use
         """
-        self.framer = framer
+        self.framer = framer if framer else ModbusTlsFramer
         self.server_hostname = None
         self.sslctx = None
         ReconnectingAsyncioModbusTcpClient.__init__(
-            self, protocol_class, loop, **kwargs
+            self, protocol_class, loop, framer=self.framer, **kwargs
         )
 
     async def start(self, host, port=802, sslctx=None, server_hostname=None):
@@ -481,7 +489,7 @@ class ReconnectingAsyncioModbusUdpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None, **kwargs):
+    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
         """Initialize ReconnectingAsyncioModbusUdpClient
 
         :param protocol_class: Protocol used to talk to modbus device.
@@ -491,6 +499,7 @@ class ReconnectingAsyncioModbusUdpClient:
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
         #: Current protocol instance.
         self.protocol = None
+        self.framer = framer if framer else ModbusSocketFramer
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
 
@@ -598,7 +607,7 @@ class ReconnectingAsyncioModbusUdpClient:
 class AsyncioModbusUdpClient:
     """Client to connect to modbus device over UDP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None, **kwargs):
+    def __init__(self, host=None, port=502, protocol_class=None, loop=None, framer=None, **kwargs):
         """Initialize Asyncio Modbus UDP Client.
 
         :param host: Host IP address
@@ -610,6 +619,7 @@ class AsyncioModbusUdpClient:
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
         #: Current protocol instance.
         self.protocol = None
+        self.framer = framer if framer else ModbusSocketFramer
         #: Event loop to use.
         self.loop = loop or asyncio.get_event_loop()
 
@@ -709,7 +719,7 @@ class AsyncioModbusSerialClient:
         :param loop: Asyncio Event loop
         """
         #: Protocol used to talk to modbus device.
-        self.protocol_class = protocol_class or ModbusClientProtocol
+        self.protocol_class = protocol_class or ModbusRtuFramer
         #: Current protocol instance.
         self.protocol = None
         #: Event loop to use.
@@ -719,7 +729,7 @@ class AsyncioModbusSerialClient:
         self.bytesize = bytesize
         self.parity = parity
         self.stopbits = stopbits
-        self.framer = framer
+        self.framer = framer if framer else ModbusSocketFramer
         self._extra_serial_kwargs = serial_kwargs
         self._connected_event = asyncio.Event()
 

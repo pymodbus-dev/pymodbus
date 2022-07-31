@@ -1,13 +1,14 @@
 """UDP communication."""
 import logging
 
+from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusUdpClient as udpClient
 from pymodbus.client.asynchronous.factory.udp import async_io_factory
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusUDPClient:  # pylint: disable=too-few-public-methods
+class AsyncModbusUDPClient(udpClient):
     """Actual Async UDP Client to be used.
 
     To use do::

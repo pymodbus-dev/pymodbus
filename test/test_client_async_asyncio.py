@@ -93,9 +93,7 @@ class TestAsyncioClient:
 
     async def test_initialization_tcp_in_loop(self):
         """Test initialization tcp in loop."""
-        _, client = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
-            port=5020,
-        )
+        client = AsyncModbusTCPClient(port=5020)
         client = await client
 
         assert not client.connected  # nosec
@@ -104,7 +102,7 @@ class TestAsyncioClient:
 
     async def test_initialization_udp_in_loop(self):
         """Test initialization udp in loop."""
-        _, client = AsyncModbusUDPClient()  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusUDPClient()
         client = await client
 
         assert client.connected  # nosec
@@ -113,7 +111,7 @@ class TestAsyncioClient:
 
     async def test_initialization_tls_in_loop(self):
         """Test initialization tls in loop."""
-        _, client = AsyncModbusTLSClient()  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusTLSClient()
         client = await client
 
         assert not client.connected  # nosec
@@ -123,7 +121,7 @@ class TestAsyncioClient:
     @pytest.mark.skip("To fix")
     def test_initialization_serial_in_loop(self):
         """Test initialization serial in loop."""
-        _, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusSerialClient(
             port="/tmp/ptyp0", baudrate=9600, framer=ModbusRtuFramer  # nosec
         )
         assert client.port == "/tmp/ptyp0"  # nosec

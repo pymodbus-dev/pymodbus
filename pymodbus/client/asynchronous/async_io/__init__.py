@@ -18,6 +18,7 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
 )
 
+
 _logger = logging.getLogger(__name__)
 
 DGRAM_TYPE = socket.SOCK_DGRAM
@@ -236,7 +237,7 @@ class ReconnectingAsyncioModbusTcpClient:
 
         :param protocol_class: Protocol used to talk to modbus device.
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusClientProtocol
@@ -347,17 +348,15 @@ class AsyncioModbusTcpClient:
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.framer = framer if framer else ModbusSocketFramer
-
         self.host = host
         self.port = port
-
         self.connected = False
         self._proto_args = kwargs
 
@@ -422,7 +421,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
 
         :param protocol_class: Protocol used to talk to modbus device.
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         self.framer = framer if framer else ModbusTlsFramer
         self.server_hostname = None
@@ -493,7 +492,7 @@ class ReconnectingAsyncioModbusUdpClient:
 
         :param protocol_class: Protocol used to talk to modbus device.
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
@@ -612,7 +611,7 @@ class AsyncioModbusUdpClient:
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
@@ -711,7 +710,7 @@ class AsyncioModbusSerialClient:
         :param protocol_class: Protocol used to talk to modbus device.
         :param framer: Framer to use
         """
-        # If there are no loop running a runtime error will be raised
+        # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusRtuFramer

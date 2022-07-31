@@ -62,7 +62,6 @@ try-except-raise
 unexpected-keyword-arg
 unnecessary-comprehension
 unnecessary-lambda
-unpacking-non-sequence
 unspecified-encoding
 unused-argument
 unused-import

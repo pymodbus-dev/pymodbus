@@ -1,4 +1,4 @@
 ==================================================
-Async Asyncio Client Example
+Asynchronous Client Example
 ==================================================
-.. literalinclude:: ../../../examples/common/async_asyncio_client.py
+.. literalinclude:: ../../../examples/client_async.py

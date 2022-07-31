@@ -13,6 +13,7 @@ import time
 
 # from pymodbus.client.asynchronous.udp import (
 #     AsyncModbusUDPClient as ModbusClient)
+from pymodbus.transaction import ModbusSocketFramer
 
 # ----------------------------------------------------------------------- #
 # Import the required asynchronous client
@@ -131,7 +132,7 @@ def run_with_not_running_loop():
     assert not loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
     new_loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
-        port=5020, loop=loop
+        port=5020, loop=loop, framer=ModbusSocketFramer
     )
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
@@ -164,6 +165,7 @@ async def run_with_already_running_loop():
     loop, client = ModbusClient(  # pylint: disable=unpacking-non-sequence
         port=5020,
         loop=loop,
+        framer=ModbusSocketFramer,
     )
     future = asyncio.run_coroutine_threadsafe(
         start_async_test(client.protocol), loop=loop
@@ -179,7 +181,7 @@ async def run_with_already_running_loop():
 def run_with_no_loop():
     """Create a loop."""
     _logger.debug("---------------------RUN_WITH_NO_LOOP-----------------")
-    loop, client = ModbusClient(port=5020)  # pylint: disable=unpacking-non-sequence
+    loop, client = ModbusClient(port=5020, framer=ModbusSocketFramer)  # pylint: disable=unpacking-non-sequence
     loop.run_until_complete(start_async_test(client.protocol))
     loop.close()
     _logger.debug("--------DONE RUN_WITH_NO_LOOP-------------")

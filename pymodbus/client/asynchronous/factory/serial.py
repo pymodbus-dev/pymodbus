@@ -26,7 +26,7 @@ def async_io_factory(port=None, framer=None, **kwargs):
 
     proto_cls = kwargs.get("proto_cls") or ModbusClientProtocol
 
-    client = AsyncioModbusSerialClient(port, proto_cls, framer, loop, **kwargs)
+    client = AsyncioModbusSerialClient(port, proto_cls, framer, **kwargs)
     coro = client.connect
     if not loop.is_running():
         loop.run_until_complete(coro())

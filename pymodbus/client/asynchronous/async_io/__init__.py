@@ -231,19 +231,18 @@ class ReconnectingAsyncioModbusTcpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
+    def __init__(self, protocol_class=None, framer=None, **kwargs):
         """Initialize ReconnectingAsyncioModbusTcpClient.
 
         :param protocol_class: Protocol used to talk to modbus device.
-        :param loop: Event loop to use
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.framer = framer if framer else ModbusSocketFramer
-        #: Event loop to use.
-        self.loop = loop or asyncio.get_event_loop()
         self.host = None
         self.port = 0
         self.connected = False
@@ -341,21 +340,20 @@ class ReconnectingAsyncioModbusTcpClient:
 class AsyncioModbusTcpClient:
     """Client to connect to modbus device over TCP/IP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None, framer=None, **kwargs):
+    def __init__(self, host=None, port=502, protocol_class=None, framer=None, **kwargs):
         """Initialize Asyncio Modbus Tcp Client
 
         :param host: Host IP address
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
-        :param loop: Asyncio Event loop
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.framer = framer if framer else ModbusSocketFramer
-        #: Event loop to use.
-        self.loop = loop or asyncio.get_event_loop()
 
         self.host = host
         self.port = port
@@ -419,17 +417,18 @@ class AsyncioModbusTcpClient:
 class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
     """Client to connect to modbus device repeatedly over TLS."""
 
-    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
+    def __init__(self, protocol_class=None, framer=None, **kwargs):
         """Initialize ReconnectingAsyncioModbusTcpClient
 
         :param protocol_class: Protocol used to talk to modbus device.
-        :param loop: Event loop to use
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         self.framer = framer if framer else ModbusTlsFramer
         self.server_hostname = None
         self.sslctx = None
         ReconnectingAsyncioModbusTcpClient.__init__(
-            self, protocol_class, loop, framer=self.framer, **kwargs
+            self, protocol_class, framer=self.framer, **kwargs
         )
 
     async def start(self, host, port=802, sslctx=None, server_hostname=None):
@@ -489,19 +488,18 @@ class ReconnectingAsyncioModbusUdpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, loop=None, framer=None, **kwargs):
+    def __init__(self, protocol_class=None, framer=None, **kwargs):
         """Initialize ReconnectingAsyncioModbusUdpClient
 
         :param protocol_class: Protocol used to talk to modbus device.
-        :param loop: Asyncio Event loop
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.framer = framer if framer else ModbusSocketFramer
-        #: Event loop to use.
-        self.loop = loop or asyncio.get_event_loop()
 
         self.host = None
         self.port = 0
@@ -607,25 +605,22 @@ class ReconnectingAsyncioModbusUdpClient:
 class AsyncioModbusUdpClient:
     """Client to connect to modbus device over UDP."""
 
-    def __init__(self, host=None, port=502, protocol_class=None, loop=None, framer=None, **kwargs):
+    def __init__(self, host=None, port=502, protocol_class=None, framer=None, **kwargs):
         """Initialize Asyncio Modbus UDP Client.
 
         :param host: Host IP address
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
-        :param loop: Asyncio Event loop
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusUdpClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.framer = framer if framer else ModbusSocketFramer
-        #: Event loop to use.
-        self.loop = loop or asyncio.get_event_loop()
-
         self.host = host
         self.port = port
-
         self.connected = False
         self._proto_args = kwargs
 
@@ -704,7 +699,6 @@ class AsyncioModbusSerialClient:
         port,
         protocol_class=None,
         framer=None,
-        loop=None,
         baudrate=9600,
         bytesize=8,
         parity="N",
@@ -716,14 +710,13 @@ class AsyncioModbusSerialClient:
         :param port: Port to connect
         :param protocol_class: Protocol used to talk to modbus device.
         :param framer: Framer to use
-        :param loop: Asyncio Event loop
         """
+        # If there are no loop running a runtime error will be raised
+        self.loop = asyncio.get_running_loop()
         #: Protocol used to talk to modbus device.
         self.protocol_class = protocol_class or ModbusRtuFramer
         #: Current protocol instance.
         self.protocol = None
-        #: Event loop to use.
-        self.loop = loop or asyncio.get_event_loop()
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -797,18 +790,17 @@ class AsyncioModbusSerialClient:
             _logger.error(TEST_FACTORY)
 
 
-async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
+async def init_tcp_client(proto_cls, host, port, **kwargs):
     """Initialize tcp client with helper function.
 
     :param proto_cls:
-    :param loop:
     :param host:
     :param port:
     :param kwargs:
     :return:
     """
     client = ReconnectingAsyncioModbusTcpClient(
-        protocol_class=proto_cls, loop=loop, **kwargs
+        protocol_class=proto_cls, **kwargs
     )
     await client.start(host, port)
     return client
@@ -816,7 +808,6 @@ async def init_tcp_client(proto_cls, loop, host, port, **kwargs):
 
 async def init_tls_client(
     proto_cls,
-    loop,
     host,
     port,
     sslctx=None,
@@ -827,7 +818,6 @@ async def init_tls_client(
     """Initialize tcp client with Helper function.
 
     :param proto_cls:
-    :param loop:
     :param host:
     :param port:
     :param sslctx:
@@ -837,24 +827,23 @@ async def init_tls_client(
     :return:
     """
     client = ReconnectingAsyncioModbusTlsClient(
-        protocol_class=proto_cls, loop=loop, framer=framer, **kwargs
+        protocol_class=proto_cls, framer=framer, **kwargs
     )
     await client.start(host, port, sslctx, server_hostname)
     return client
 
 
-async def init_udp_client(proto_cls, loop, host, port, **kwargs):
+async def init_udp_client(proto_cls, host, port, **kwargs):
     """Initialize UDP client with helper function.
 
     :param proto_cls:
-    :param loop:
     :param host:
     :param port:
     :param kwargs:
     :return:
     """
     client = ReconnectingAsyncioModbusUdpClient(
-        protocol_class=proto_cls, loop=loop, **kwargs
+        protocol_class=proto_cls, **kwargs
     )
     await client.start(host, port)
     return client

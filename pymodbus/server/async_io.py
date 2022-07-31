@@ -350,7 +350,7 @@ class ModbusDisconnectedRequestHandler(
 
     def __init__(self, owner):
         super().__init__(owner)
-        _future = asyncio.get_event_loop().create_future()
+        _future = asyncio.get_running_loop().create_future()
         self.server.on_connection_terminated = _future
 
     def connection_lost(self, call_exc):
@@ -453,7 +453,6 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         allow_reuse_port=False,
         defer_start=False,
         backlog=20,
-        loop=None,
         **kwargs,
     ):
         """Initialize the socket server.
@@ -475,8 +474,6 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         :param backlog:  is the maximum number of queued connections
                     passed to listen(). Defaults to 20, increase if many
                     connections are being made and broken to your Modbus slave
-        :param loop: optional asyncio event loop to run in. Will default to
-                        asyncio.get_event_loop() supplied value if None.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
@@ -485,7 +482,7 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
                                         response
         """
         self.active_connections = {}
-        self.loop = loop or asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
         self.allow_reuse_address = allow_reuse_address
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
@@ -566,7 +563,6 @@ class ModbusTlsServer(ModbusTcpServer):
         allow_reuse_port=False,
         defer_start=False,
         backlog=20,
-        loop=None,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -594,8 +590,6 @@ class ModbusTlsServer(ModbusTcpServer):
         :param backlog:  is the maximum number of queued connections
                     passed to listen(). Defaults to 20, increase if many
                     connections are being made and broken to your Modbus slave
-        :param loop: optional asyncio event loop to run in. Will default to
-                        asyncio.get_event_loop() supplied value if None.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
@@ -613,7 +607,6 @@ class ModbusTlsServer(ModbusTcpServer):
             allow_reuse_port=allow_reuse_port,
             defer_start=defer_start,
             backlog=backlog,
-            loop=loop,
             **kwargs,
         )
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password, reqclicert)
@@ -639,7 +632,6 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         allow_reuse_port=False,
         defer_start=False,  # pylint: disable=unused-argument
         backlog=20,  # pylint: disable=unused-argument
-        loop=None,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -660,7 +652,7 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         :param response_manipulator: Callback method for
                             manipulating the response
         """
-        self.loop = loop or asyncio.get_event_loop()
+        self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()

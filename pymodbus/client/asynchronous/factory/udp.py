@@ -23,14 +23,14 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
         loop = asyncio.new_event_loop()
 
     proto_cls = kwargs.pop("proto_cls", None)
-    cor = init_udp_client(proto_cls, loop, host, port, **kwargs)
+    cor = init_udp_client(proto_cls, host, port, **kwargs)
     if not loop.is_running():
-        cor = init_udp_client(proto_cls, loop, host, port)
+        cor = init_udp_client(proto_cls, host, port)
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
-        return loop, init_udp_client(proto_cls, loop, host, port)
+        return loop, init_udp_client(proto_cls, host, port)
 
-    cor = init_udp_client(proto_cls, loop, host, port)
+    cor = init_udp_client(proto_cls, host, port)
     client = asyncio.run_coroutine_threadsafe(cor, loop=loop)
     client = client.result()
 

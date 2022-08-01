@@ -36,16 +36,16 @@ def async_io_factory(
     if not loop.is_running():
         asyncio.set_event_loop(loop)
         cor = init_tls_client(
-            proto_cls, loop, host, port, sslctx, server_hostname, framer, **kwargs
+            proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
         )
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
         return loop, init_tls_client(
-            proto_cls, loop, host, port, sslctx, server_hostname, framer, **kwargs
+            proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
         )
     else:
         cor = init_tls_client(
-            proto_cls, loop, host, port, sslctx, server_hostname, framer, **kwargs
+            proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
         )
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         client = future.result()

@@ -84,7 +84,8 @@ class TestAsynchronousClient:
             ModbusAsciiFramer,
         ],
     )
-    def test_serial_asyncio_client(
+    @pytest.mark.asyncio
+    async def test_serial_asyncio_client(
         self,
         mock_gather,  # pylint: disable=unused-argument
         mock_event_loop,
@@ -104,6 +105,7 @@ class TestAsynchronousClient:
             parity="E",
             stopbits=2,
             bytesize=7,
+            timeout=1,
         )
         assert isinstance(client, AsyncioModbusSerialClient)  # nosec
         assert isinstance(client.framer, framer)  # nosec
@@ -112,6 +114,7 @@ class TestAsynchronousClient:
         assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec
         assert client.bytesize == 7  # nosec
+        asyncio.wait_for(client.connect(), timeout=1)
         client.stop()
         loop.stop()
 

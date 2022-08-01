@@ -442,7 +442,7 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context,
         framer=None,
@@ -621,7 +621,7 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context,
         framer=None,

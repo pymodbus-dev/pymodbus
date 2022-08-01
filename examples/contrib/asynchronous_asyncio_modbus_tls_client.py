@@ -9,6 +9,7 @@ the TLS feature and asyncio.
 # import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
+import asyncio
 
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 
@@ -37,10 +38,11 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # pass SSLContext which is the context here to ModbusTcpClient()
     # ----------------------------------------------------------------------- #
-    loop, new_client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
+    new_client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
         "test.host.com",
         8020,
         sslctx=sslctx,
     )
+    loop = asyncio.get_running_loop()
     loop.run_until_complete(start_async_test(new_client.protocol))
     loop.close()

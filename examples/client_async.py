@@ -48,7 +48,7 @@ def setup_async_client(loop):
     _logger.info("### Create client object")
 
     if args.comm == "tcp":
-        loop, client = AsyncModbusTCPClient(  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusTCPClient(
             host="127.0.0.1",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=ModbusSocketFramer,  # how to interpret the messages
@@ -60,7 +60,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "udp":
-        loop, client = AsyncModbusUDPClient(  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusUDPClient(
             host="localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=args.framer,  # how to interpret the messages
@@ -72,7 +72,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "serial":
-        loop, client = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusSerialClient(
             port=args.port,  # serial port
             framer=args.framer,  # how to interpret the messages
             stopbits=1,  # The number of stop bits to use
@@ -85,7 +85,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "tls":
-        loop, client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
+        client = AsyncModbusTLSClient(
             host="localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             sslctx=None,  # ssl control

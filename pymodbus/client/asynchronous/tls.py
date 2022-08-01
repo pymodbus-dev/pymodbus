@@ -1,6 +1,7 @@
 """TLS communication."""
 import logging
 
+from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTlsClient as TlsClient
 from pymodbus.client.asynchronous.factory.tls import async_io_factory
 from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
@@ -9,7 +10,7 @@ from pymodbus.transaction import ModbusTlsFramer
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTLSClient:  # pylint: disable=too-few-public-methods
+class AsyncModbusTLSClient(TlsClient):
     """Actual Async TLS Client to be used.
 
     To use do::

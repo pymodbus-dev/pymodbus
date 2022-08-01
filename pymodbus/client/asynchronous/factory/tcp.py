@@ -37,4 +37,4 @@ def async_io_factory(host="127.0.0.1", port=Defaults.Port, **kwargs):
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         client = future.result()
 
-    return loop, client
+    return client

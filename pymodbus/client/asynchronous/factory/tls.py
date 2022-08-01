@@ -40,7 +40,7 @@ def async_io_factory(
         )
         client = loop.run_until_complete(asyncio.gather(cor))[0]
     elif loop is asyncio.get_event_loop():
-        return loop, init_tls_client(
+        return init_tls_client(
             proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
         )
     else:
@@ -50,4 +50,4 @@ def async_io_factory(
         future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
         client = future.result()
 
-    return loop, client
+    return client

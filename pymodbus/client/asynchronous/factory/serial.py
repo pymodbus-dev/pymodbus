@@ -34,4 +34,4 @@ def async_io_factory(port=None, framer=None, **kwargs):
         future = asyncio.run_coroutine_threadsafe(coro(), loop=loop)
         future.result()
 
-    return loop, client
+    return client

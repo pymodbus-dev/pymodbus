@@ -203,10 +203,6 @@ class TestAsyncioClient:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
             client.protocol_lost_connection(mock.sentinel.PROTOCOL)
-            if sys.version_info == (3, 7):
-                mock_async.assert_called_once_with(
-                    mock.sentinel.RECONNECT_GENERATOR, loop=mock_loop
-                )
         assert not client.connected  # nosec
         assert client.protocol is None  # nosec
 

@@ -1,14 +1,17 @@
 """UDP communication."""
+import asyncio
 import logging
 
-from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusUdpClient as udpClient
-from pymodbus.client.asynchronous.factory.udp import async_io_factory
+from pymodbus.client.asynchronous.async_io import (
+    init_udp_client,
+    ReconnectingAsyncioModbusUdpClient,
+)
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusUDPClient(udpClient):
+class AsyncModbusUDPClient(ReconnectingAsyncioModbusUdpClient):
     """Actual Async UDP Client to be used.
 
     To use do::
@@ -19,9 +22,6 @@ class AsyncModbusUDPClient(udpClient):
         cls,
         host="127.0.0.1",
         port=Defaults.Port,
-        framer=None,
-        source_address=None,
-        timeout=None,
         **kwargs
     ):
         """Do setup of client.
@@ -34,12 +34,20 @@ class AsyncModbusUDPClient(udpClient):
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        yieldable = async_io_factory(
-            host=host,
-            port=port,
-            framer=framer,
-            source_address=source_address,
-            timeout=timeout,
-            **kwargs
-        )
-        return yieldable
+        try:
+            loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+
+        proto_cls = kwargs.pop("proto_cls", None)
+        cor = init_udp_client(proto_cls, host, port, **kwargs)
+        if not loop.is_running():
+            cor = init_udp_client(proto_cls, host, port)
+            client = loop.run_until_complete(asyncio.gather(cor))[0]
+        elif loop is asyncio.get_event_loop():
+            return init_udp_client(proto_cls, host, port)
+
+        cor = init_udp_client(proto_cls, host, port)
+        client = asyncio.run_coroutine_threadsafe(cor, loop=loop)
+        client = client.result()
+        return client

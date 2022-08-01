@@ -12,7 +12,6 @@ Subpackages
 .. toctree::
 
     pymodbus.client.asynchronous.async_io
-    pymodbus.client.asynchronous.factory
 
 Submodules
 ----------

@@ -296,7 +296,7 @@ class ReconnectingAsyncioModbusTcpClient:
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect(), loop=self.loop)
+            asyncio.ensure_future(self._reconnect())
         else:
             txt = f"Connected to {self.host}:{self.port}."
             _logger.info(txt)
@@ -324,7 +324,7 @@ class ReconnectingAsyncioModbusTcpClient:
             self.connected = False
             self.protocol = None
             if self.host:
-                asyncio.ensure_future(self._reconnect(), loop=self.loop)
+                asyncio.ensure_future(self._reconnect())
         else:
             _logger.error(TEST_FACTORY)
 
@@ -384,7 +384,7 @@ class AsyncioModbusTcpClient:
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            # asyncio.asynchronous(self._reconnect(), loop=self.loop)
+            # asyncio.asynchronous(self._reconnect())
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""
@@ -408,7 +408,7 @@ class AsyncioModbusTcpClient:
             self.connected = False
             self.protocol = None
             # if self.host:
-            #     asyncio.asynchronous(self._reconnect(), loop=self.loop)
+            #     asyncio.asynchronous(self._reconnect())
         else:
             _logger.error(TEST_FACTORY)
 
@@ -464,7 +464,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect(), loop=self.loop)
+            asyncio.ensure_future(self._reconnect())
         else:
             txt = f"Connected to {self.host}:{self.port}."
             _logger.info(txt)
@@ -564,7 +564,7 @@ class ReconnectingAsyncioModbusUdpClient:
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect(), loop=self.loop)
+            asyncio.ensure_future(self._reconnect())
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""
@@ -658,7 +658,7 @@ class AsyncioModbusUdpClient:
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            # asyncio.asynchronous(self._reconnect(), loop=self.loop)
+            # asyncio.asynchronous(self._reconnect())
 
     def protocol_made_connection(self, protocol):
         """Protocol notification of successful connection."""
@@ -682,7 +682,7 @@ class AsyncioModbusUdpClient:
             self.connected = False
             self.protocol = None
             # if self.host:
-            #    asyncio.asynchronous(self._reconnect(), loop=self.loop)
+            #    asyncio.asynchronous(self._reconnect())
         else:
             _logger.error(TEST_FACTORY)
 
@@ -784,7 +784,7 @@ class AsyncioModbusSerialClient:
             self._connected_event.clear()
             self.protocol = None
             # if self.host:
-            #     asyncio.asynchronous(self._reconnect(), loop=self.loop)
+            #     asyncio.asynchronous(self._reconnect())
         else:
             _logger.error(TEST_FACTORY)
 

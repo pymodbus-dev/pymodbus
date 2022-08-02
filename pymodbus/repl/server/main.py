@@ -133,7 +133,6 @@ def run(
         framer,
         modbus_port=modbus_port,
         unit=modbus_unit_id,
-        loop=loop,
         **web_app_config,
         **modbus_config
     )

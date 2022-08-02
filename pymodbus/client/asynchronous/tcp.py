@@ -1,14 +1,17 @@
 """TCP communication."""
+import asyncio
 import logging
 
-from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTcpClient as tcpClient
-from pymodbus.client.asynchronous.factory.tcp import async_io_factory
+from pymodbus.client.asynchronous.async_io import (
+    init_tcp_client,
+    ReconnectingAsyncioModbusTcpClient,
+)
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusTCPClient(tcpClient):
+class AsyncModbusTCPClient(ReconnectingAsyncioModbusTcpClient):
     """Actual Async Serial Client to be used.
 
     To use do::
@@ -19,9 +22,6 @@ class AsyncModbusTCPClient(tcpClient):
         cls,
         host="127.0.0.1",
         port=Defaults.Port,
-        framer=None,
-        source_address=None,
-        timeout=None,
         **kwargs
     ):
         """Scheduler to use async_io (asyncio)
@@ -34,12 +34,23 @@ class AsyncModbusTCPClient(tcpClient):
         :param kwargs: Other extra args specific to Backend being used
         :return:
         """
-        yieldable = async_io_factory(
-            host=host,
-            port=port,
-            framer=framer,
-            source_address=source_address,
-            timeout=timeout,
-            **kwargs
-        )
-        return yieldable
+        try:
+            loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+
+        proto_cls = kwargs.pop("proto_cls", None)
+
+        if not loop.is_running():
+            asyncio.set_event_loop(loop)
+            cor = init_tcp_client(proto_cls, host, port, **kwargs)
+            client = loop.run_until_complete(asyncio.gather(cor))[0]
+
+        elif loop is asyncio.get_event_loop():
+            cor = init_tcp_client(proto_cls, host, port, **kwargs)
+            client = asyncio.create_task(cor)
+        else:
+            cor = init_tcp_client(proto_cls, host, port, **kwargs)
+            future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
+            client = future.result()
+        return client

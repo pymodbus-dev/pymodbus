@@ -97,14 +97,13 @@ class ReactiveServer:
     Useful for testing
     """
 
-    def __init__(self, host, port, modbus_server, loop=None):
+    def __init__(self, host, port, modbus_server):
         """Initialize."""
         self._web_app = web.Application()
         self._runner = web.AppRunner(self._web_app)
         self._host = host
         self._port = int(port)
         self._modbus_server = modbus_server
-        self._loop = loop
         self._add_routes()
         self._counter = 0
         self._modbus_server.response_manipulator = self.manipulate_response
@@ -344,7 +343,6 @@ class ReactiveServer:
         web_port=8080,
         data_block=DEFAULT_DATA_BLOCK,
         identity=None,
-        loop=None,
         **kwargs,
     ):
         """Create ReactiveModbusServer.
@@ -359,7 +357,6 @@ class ReactiveServer:
         :param web_port: Web App port (default: 8080)
         :param data_block: Datablock (refer DEFAULT_DATA_BLOCK)
         :param identity: Modbus identity object
-        :param loop: Asyncio loop to use
         :param kwargs: Other server specific keyword arguments,
         :              refer corresponding servers documentation
         :return: ReactiveServer object
@@ -389,7 +386,7 @@ class ReactiveServer:
                 defer_start=False,
                 **kwargs,
             )
-        return ReactiveServer(host, web_port, server, loop)
+        return ReactiveServer(host, web_port, server)
 
 
 # __END__

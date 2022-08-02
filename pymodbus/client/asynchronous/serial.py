@@ -1,14 +1,17 @@
 """SERIAL communication."""
+import asyncio
 import logging
 
-from pymodbus.client.asynchronous.async_io import AsyncioModbusSerialClient as serialClient
-from pymodbus.client.asynchronous.factory.serial import async_io_factory
 from pymodbus.factory import ClientDecoder
+from pymodbus.client.asynchronous.async_io import (
+    AsyncioModbusSerialClient,
+    ModbusClientProtocol,
+)
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusSerialClient(serialClient):
+class AsyncModbusSerialClient(AsyncioModbusSerialClient):
     """Actual Async Serial Client to be used.
 
     To use do::
@@ -29,5 +32,18 @@ class AsyncModbusSerialClient(serialClient):
         :return:
         """
         framer = framer(ClientDecoder())
-        yieldable = async_io_factory(framer=framer, port=port, **kwargs)
-        return yieldable
+        try:
+            loop = kwargs.pop("loop", None) or asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+
+        proto_cls = kwargs.get("proto_cls") or ModbusClientProtocol
+
+        client = AsyncioModbusSerialClient(port, proto_cls, framer, **kwargs)
+        coro = client.connect
+        if not loop.is_running():
+            loop.run_until_complete(coro())
+        else:  # loop is not asyncio.get_event_loop():
+            future = asyncio.run_coroutine_threadsafe(coro(), loop=loop)
+            future.result()
+        return client

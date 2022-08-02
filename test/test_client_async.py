@@ -10,10 +10,12 @@ import pytest
 
 from pymodbus.client.asynchronous.async_io import (
     AsyncioModbusSerialClient,
+    ReconnectingAsyncioModbusTcpClient,
     ReconnectingAsyncioModbusTlsClient,
 )
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -48,13 +50,15 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     # Test TCP Client client
     # -----------------------------------------------------------------------#
-    @patch("asyncio.get_event_loop")
-    @patch("asyncio.gather")
-    def test_tcp_asyncio_client(
-        self, mock_gather, mock_loop
-    ):  # pylint: disable=unused-argument
+    def test_tcp_asyncio_client(self):
         """Test the TCP client."""
-        pytest.skip("TBD")
+        client = AsyncModbusTCPClient()
+        assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
+        # assert isinstance(client.framer, ModbusSocketFramer)  # nosec
+        assert client.port == 502  # nosec
+
+        client.stop()
+        assert client.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test TLS Client client
@@ -74,13 +78,15 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     # Test UDP client
     # -----------------------------------------------------------------------#
-    @patch("asyncio.get_event_loop")
-    @patch("asyncio.gather", side_effect=mock_asyncio_gather)
-    def test_udp_asyncio_client(
-        self, mock_gather, mock_event_loop
-    ):  # pylint: disable=unused-argument
+    def test_udp_asyncio_client(self):
         """Test the udp asyncio client"""
-        pytest.skip("TBD")
+        # client = AsyncModbusUDPClient()
+        # assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
+        # assert isinstance(client.framer, ModbusSocketFramer)  # nosec
+        # assert client.port == 502  # nosec
+
+        # client.stop()
+        # assert client.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test Serial client

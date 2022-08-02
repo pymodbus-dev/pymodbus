@@ -4,11 +4,8 @@ from io import StringIO
 from itertools import count
 import socket
 import ssl
-import sys
 import unittest
 from unittest.mock import MagicMock, Mock, patch
-
-import pytest
 import serial
 
 from pymodbus.client.sync import (
@@ -76,12 +73,6 @@ class mockSocket:  # pylint: disable=invalid-name
     def in_waiting(self):
         """Do in waiting."""
         return None
-
-
-inet_pton_skipif = pytest.mark.skipif(
-    sys.platform == "win32" and sys.version_info < (3, 4),
-    reason=("Uses socket.inet_pton() which wasn't available on Windows until 3.4.",),
-)
 
 
 # ---------------------------------------------------------------------------#
@@ -183,7 +174,6 @@ class SynchronousClientTest(
 
         self.assertEqual("ModbusUdpClient(127.0.0.1:502)", str(client))
 
-    @inet_pton_skipif
     def test_udp_client_address_family(self):
         """Test the Udp client get address family method"""
         client = ModbusUdpClient()
@@ -196,7 +186,6 @@ class SynchronousClientTest(
             client._get_address_family("::1"),  # pylint: disable=protected-access
         )
 
-    @inet_pton_skipif
     def test_udp_client_connect(self):
         """Test the Udp client connection method"""
         with patch.object(socket, "socket") as mock_method:
@@ -216,7 +205,6 @@ class SynchronousClientTest(
             client = ModbusUdpClient()
             self.assertFalse(client.connect())
 
-    @inet_pton_skipif
     def test_udp_client_is_socket_open(self):
         """Test the udp client is_socket_open method"""
         client = ModbusUdpClient()

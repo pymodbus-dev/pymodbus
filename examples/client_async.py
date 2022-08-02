@@ -42,13 +42,13 @@ from pymodbus.transaction import (
 )
 
 
-def setup_async_client(loop):
+async def setup_async_client(loop):
     """Run client setup."""
     args = get_commandline()
     _logger.info("### Create client object")
 
     if args.comm == "tcp":
-        client = AsyncModbusTCPClient(
+        client = await AsyncModbusTCPClient(
             host="127.0.0.1",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=ModbusSocketFramer,  # how to interpret the messages
@@ -60,7 +60,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "udp":
-        client = AsyncModbusUDPClient(
+        client = await AsyncModbusUDPClient(
             host="localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=args.framer,  # how to interpret the messages
@@ -72,7 +72,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "serial":
-        client = AsyncModbusSerialClient(
+        client = await AsyncModbusSerialClient(
             port=args.port,  # serial port
             framer=args.framer,  # how to interpret the messages
             stopbits=1,  # The number of stop bits to use
@@ -85,7 +85,7 @@ def setup_async_client(loop):
             loop=loop,
         )
     elif args.comm == "tls":
-        client = AsyncModbusTLSClient(
+        client = await AsyncModbusTLSClient(
             host="localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             sslctx=None,  # ssl control
@@ -100,7 +100,7 @@ def setup_async_client(loop):
             strict=True,  # use strict timing, t1.5 for Modbus RTU
             loop=loop,
         )
-    return loop, client
+    return client
 
 
 async def run_async_client(modbus_calls=None):
@@ -125,7 +125,7 @@ async def run_async_client(modbus_calls=None):
     assert loop.is_running()  # nosec
     asyncio.set_event_loop(loop)
 
-    loop, client = setup_async_client(loop)
+    client = await setup_async_client(loop)
 
     # Run supplied modbus calls
     if modbus_calls:

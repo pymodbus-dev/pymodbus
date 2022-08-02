@@ -22,7 +22,6 @@ The corresponding server must be started before e.g. as:
 """
 import argparse
 import asyncio
-from threading import Thread
 import logging
 
 
@@ -42,7 +41,7 @@ from pymodbus.transaction import (
 )
 
 
-async def setup_async_client(loop):
+async def setup_async_client():
     """Run client setup."""
     args = get_commandline()
     _logger.info("### Create client object")
@@ -57,7 +56,6 @@ async def setup_async_client(loop):
             retry_on_empty=False,  # Is an empty response a retry
             source_address=("localhost", 0),  # bind socket to address
             strict=True,  # use strict timing, t1.5 for Modbus RTU
-            loop=loop,
         )
     elif args.comm == "udp":
         client = await AsyncModbusUDPClient(
@@ -69,7 +67,6 @@ async def setup_async_client(loop):
             retry_on_empty=False,  # Is an empty response a retry
             source_address=("localhost", 0),  # bind socket to address
             strict=True,  # use strict timing, t1.5 for Modbus RTU
-            loop=loop,
         )
     elif args.comm == "serial":
         client = await AsyncModbusSerialClient(
@@ -82,7 +79,6 @@ async def setup_async_client(loop):
             handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             timeout=1,  # waiting time for request to complete
             strict=True,  # use strict timing, t1.5 for Modbus RTU
-            loop=loop,
         )
     elif args.comm == "tls":
         client = await AsyncModbusTLSClient(
@@ -98,7 +94,6 @@ async def setup_async_client(loop):
             retry_on_empty=False,  # Is an empty response a retry
             source_address=("localhost", 0),  # bind socket to address
             strict=True,  # use strict timing, t1.5 for Modbus RTU
-            loop=loop,
         )
     return client
 
@@ -106,36 +101,9 @@ async def setup_async_client(loop):
 async def run_async_client(modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client ready")
-
-    def done(future):  # pylint: disable=unused-argument
-        """Done."""
-        _logger.info("Done !!!")
-
-    def start_loop(loop):
-        """Start Loop"""
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
-
-    loop = asyncio.new_event_loop()
-    mythread = Thread(target=start_loop, args=[loop])
-    mythread.daemon = True
-    # Start the loop
-    mythread.start()
-    await asyncio.sleep(1)
-    assert loop.is_running()  # nosec
-    asyncio.set_event_loop(loop)
-
-    client = await setup_async_client(loop)
-
-    # Run supplied modbus calls
+    client = await setup_async_client()
     if modbus_calls:
-        future = asyncio.run_coroutine_threadsafe(
-            modbus_calls(client.protocol), loop=loop
-        )
-    future.add_done_callback(done)
-    while not future.done():
-        await asyncio.sleep(0.1)
-    loop.stop()
+        await modbus_calls(client.protocol)
     _logger.info("### End of Program")
 
 

@@ -9,5 +9,5 @@ Example run::
     from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as Client
 
     # For asynchronous client use
-    event_loop, client = Client(port=5020)
+    client = Client(port=5020)
 """

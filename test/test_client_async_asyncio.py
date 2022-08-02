@@ -204,13 +204,11 @@ class TestAsyncioClient:
     async def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=unused-argument
         """Test factory start failing and retried."""
         mock_protocol_class = mock.MagicMock()
-        mock_loop = mock.MagicMock()
-        mock_loop.create_connection = mock.MagicMock(
+        loop = asyncio.get_running_loop()
+        loop.create_connection = mock.MagicMock(
             side_effect=Exception("Did not work.")
         )
-        client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=mock_loop
-        )
+        client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class)
 
         # check whether reconnect is called upon failed connection attempt:
         with mock.patch(
@@ -226,10 +224,10 @@ class TestAsyncioClient:
         """Test factory reconnect."""
         mock_protocol_class = mock.MagicMock()
         mock_sleep.side_effect = return_as_coroutine()
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         loop.create_connection = mock.MagicMock(return_value=None)
         client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=mock_protocol_class, loop=loop
+            protocol_class=mock_protocol_class
         )
         client.delay_ms = 5000
 

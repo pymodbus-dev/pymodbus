@@ -4,7 +4,6 @@ import asyncio
 import contextlib
 import ssl
 import unittest
-from unittest.mock import patch
 
 import pytest
 
@@ -12,10 +11,12 @@ from pymodbus.client.asynchronous.async_io import (
     AsyncioModbusSerialClient,
     ReconnectingAsyncioModbusTcpClient,
     ReconnectingAsyncioModbusTlsClient,
+    ReconnectingAsyncioModbusUdpClient,
 )
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -50,11 +51,16 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     # Test TCP Client client
     # -----------------------------------------------------------------------#
-    def test_tcp_asyncio_client(self):
+    def test_tcp_no_asyncio_client(self):
         """Test the TCP client."""
         client = AsyncModbusTCPClient()
+        assert asyncio.iscoroutine(client)
+
+    async def test_tcp_asyncio_client(self):
+        """Test the TCP client."""
+        client = await AsyncModbusTCPClient()
         assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
-        # assert isinstance(client.framer, ModbusSocketFramer)  # nosec
+        assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
         client.stop()
@@ -64,9 +70,14 @@ class TestAsynchronousClient:
     # Test TLS Client client
     # -----------------------------------------------------------------------#
 
-    def test_tls_asyncio_client(self):
+    def test_tls_no_asyncio_client(self):
         """Test the TLS AsyncIO client."""
         client = AsyncModbusTLSClient()
+        assert asyncio.iscoroutine(client)
+
+    async def test_tls_asyncio_client(self):
+        """Test the TLS AsyncIO client."""
+        client = await AsyncModbusTLSClient()
         assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
@@ -78,22 +89,30 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     # Test UDP client
     # -----------------------------------------------------------------------#
-    def test_udp_asyncio_client(self):
+    def test_udp_no_asyncio_client(self):
         """Test the udp asyncio client"""
-        # client = AsyncModbusUDPClient()
-        # assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
-        # assert isinstance(client.framer, ModbusSocketFramer)  # nosec
-        # assert client.port == 502  # nosec
+        client = AsyncModbusUDPClient()
+        assert asyncio.iscoroutine(client)
 
-        # client.stop()
-        # assert client.host is None  # nosec
+    async def test_udp_asyncio_client(self):
+        """Test the udp asyncio client"""
+        client = await AsyncModbusUDPClient()
+        assert isinstance(client, ReconnectingAsyncioModbusUdpClient)  # nosec
+        assert isinstance(client.framer, ModbusSocketFramer)  # nosec
+        assert client.port == 502  # nosec
+
+        client.stop()
+        assert client.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test Serial client
     # -----------------------------------------------------------------------#
 
-    @patch("asyncio.get_event_loop")
-    @patch("asyncio.gather", side_effect=mock_asyncio_gather)
+    def test_serial_no_asyncio_client(self):
+        """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
+        client = AsyncModbusSerialClient(port="not here", framer=ModbusRtuFramer)
+        assert asyncio.iscoroutine(client)
+
     @pytest.mark.parametrize(
         "framer",
         [
@@ -103,20 +122,14 @@ class TestAsynchronousClient:
             ModbusAsciiFramer,
         ],
     )
-    @pytest.mark.asyncio
     async def test_serial_asyncio_client(
         self,
-        mock_gather,  # pylint: disable=unused-argument
-        mock_event_loop,
         framer,
-    ):  # pylint: disable=unused-argument
+    ):
         """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
-        loop = asyncio.get_event_loop()
-        loop.is_running.side_effect = lambda: False
-        client = AsyncModbusSerialClient(
+        client = await AsyncModbusSerialClient(
             framer=framer,
             port=pytest.SERIAL_PORT,
-            loop=loop,
             baudrate=19200,
             parity="E",
             stopbits=2,
@@ -132,7 +145,6 @@ class TestAsynchronousClient:
         assert client.bytesize == 7  # nosec
         asyncio.wait_for(client.connect(), timeout=1)
         client.stop()
-        loop.stop()
 
 
 # ---------------------------------------------------------------------------#

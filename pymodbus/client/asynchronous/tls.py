@@ -1,5 +1,4 @@
 """TLS communication."""
-import asyncio
 import logging
 
 from pymodbus.client.asynchronous.async_io import (
@@ -44,26 +43,9 @@ class AsyncModbusTLSClient(ReconnectingAsyncioModbusTlsClient):
         :return:
         """
         framer = framer or ModbusTlsFramer(ClientDecoder())
-        try:
-            loop = kwargs.pop("loop", None) or asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-
         proto_cls = kwargs.pop("proto_cls", None)
-        if not loop.is_running():
-            asyncio.set_event_loop(loop)
-            cor = init_tls_client(
-                proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
-            )
-            client = loop.run_until_complete(asyncio.gather(cor))[0]
-        elif loop is asyncio.get_event_loop():
-            return init_tls_client(
-                proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
-            )
-        else:
-            cor = init_tls_client(
-                proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
-            )
-            future = asyncio.run_coroutine_threadsafe(cor, loop=loop)
-            client = future.result()
+
+        client = init_tls_client(
+            proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
+        )
         return client

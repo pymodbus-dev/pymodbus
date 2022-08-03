@@ -44,6 +44,7 @@ from pymodbus.transaction import (
 def setup_sync_client():
     """Run client setup."""
     args = get_commandline()
+    args.comm = "serial"
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
@@ -73,7 +74,7 @@ def setup_sync_client():
             framer=args.framer,  # how to interpret the messages
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
-            parity="even",  # Which kind of parity to use
+            parity="E",  # Which kind of parity to use
             baudrate=9600,  # The baud rate to use for the serial device
             handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             timeout=1,  # waiting time for request to complete

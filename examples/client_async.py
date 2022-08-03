@@ -47,8 +47,8 @@ async def setup_async_client():
     _logger.info("### Create client object")
 
     if args.comm == "tcp":
-        client = await AsyncModbusTCPClient(
-            host="127.0.0.1",  # define tcp address where to connect to.
+        client = AsyncModbusTCPClient(
+            "127.0.0.1",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=ModbusSocketFramer,  # how to interpret the messages
             timeout=1,  # waiting time for request to complete
@@ -58,8 +58,8 @@ async def setup_async_client():
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "udp":
-        client = await AsyncModbusUDPClient(
-            host="localhost",  # define tcp address where to connect to.
+        client = AsyncModbusUDPClient(
+            "localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             framer=args.framer,  # how to interpret the messages
             timeout=1,  # waiting time for request to complete
@@ -69,8 +69,8 @@ async def setup_async_client():
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "serial":
-        client = await AsyncModbusSerialClient(
-            port=args.port,  # serial port
+        client = AsyncModbusSerialClient(
+            args.port,  # serial port
             framer=args.framer,  # how to interpret the messages
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
@@ -81,7 +81,7 @@ async def setup_async_client():
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
     elif args.comm == "tls":
-        client = await AsyncModbusTLSClient(
+        client = AsyncModbusTLSClient(
             host="localhost",  # define tcp address where to connect to.
             port=args.port,  # on which port
             sslctx=None,  # ssl control
@@ -93,8 +93,10 @@ async def setup_async_client():
             retries=3,  # retries per transaction
             retry_on_empty=False,  # Is an empty response a retry
             source_address=("localhost", 0),  # bind socket to address
+            server_hostname="localhost",  # used for cert verification
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
+    await client.start()
     return client
 
 

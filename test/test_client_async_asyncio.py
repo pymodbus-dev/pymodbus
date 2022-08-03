@@ -84,6 +84,7 @@ class TestAsyncioClient:
         """Test factory initialization state."""
         mock_protocol_class = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
@@ -92,27 +93,22 @@ class TestAsyncioClient:
 
     async def test_initialization_tcp_in_loop(self):
         """Test initialization tcp in loop."""
-        client = AsyncModbusTCPClient(port=5020)
-        client = await client
-
+        client = AsyncModbusTCPClient("127.0.0.1", port=5020)
         assert not client.connected  # nosec
         assert client.port == 5020  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_udp_in_loop(self):
         """Test initialization udp in loop."""
-        client = AsyncModbusUDPClient()
-        client = await client
-
+        client = AsyncModbusUDPClient("127.0.0.1")
+        await client.start()
         assert client.connected  # nosec
         assert client.port == 502  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_tls_in_loop(self):
         """Test initialization tls in loop."""
-        client = AsyncModbusTLSClient()
-        client = await client
-
+        client = AsyncModbusTLSClient("127.0.0.1")
         assert not client.connected  # nosec
         assert client.port == 802  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
@@ -121,6 +117,7 @@ class TestAsyncioClient:
         """Test factory reset wait before reconnect."""
         mock_protocol_class = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         initial_delay = client.delay_ms
@@ -135,6 +132,7 @@ class TestAsyncioClient:
         """Test factory stop."""
         mock_protocol_class = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
@@ -152,6 +150,7 @@ class TestAsyncioClient:
         """Test factory protocol made connection."""
         mock_protocol_class = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
@@ -169,6 +168,7 @@ class TestAsyncioClient:
         """Test factory protocol lost connection."""
         mock_protocol_class = mock.MagicMock()
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
@@ -197,8 +197,12 @@ class TestAsyncioClient:
     async def test_factory_start_success(self):
         """Test factory start success."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class)
-        await client.start(mock.sentinel.HOST, mock.sentinel.PORT)
+        client = ReconnectingAsyncioModbusTcpClient(
+            mock.sentinel.HOST,
+            port=mock.sentinel.PORT,
+            protocol_class=mock_protocol_class
+        )
+        await client.start()
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
     async def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=unused-argument
@@ -208,7 +212,11 @@ class TestAsyncioClient:
         loop.create_connection = mock.MagicMock(
             side_effect=Exception("Did not work.")
         )
-        client = ReconnectingAsyncioModbusTcpClient(protocol_class=mock_protocol_class)
+        client = ReconnectingAsyncioModbusTcpClient(
+            mock.sentinel.HOST,
+            port=mock.sentinel.PORT,
+            protocol_class=mock_protocol_class
+        )
 
         # check whether reconnect is called upon failed connection attempt:
         with mock.patch(
@@ -216,7 +224,7 @@ class TestAsyncioClient:
             ".ReconnectingAsyncioModbusTcpClient._reconnect"
         ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-            run_coroutine(client.start(mock.sentinel.HOST, mock.sentinel.PORT))
+            run_coroutine(client.start())
             mock_reconnect.assert_called_once_with()
 
     @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.sleep")
@@ -225,15 +233,17 @@ class TestAsyncioClient:
         mock_protocol_class = mock.MagicMock()
         mock_sleep.side_effect = return_as_coroutine()
         loop = asyncio.get_running_loop()
-        loop.create_connection = mock.MagicMock(return_value=None)
+        loop.create_connection = mock.MagicMock(return_value=(None, None))
         client = ReconnectingAsyncioModbusTcpClient(
+            "127.0.0.1",
             protocol_class=mock_protocol_class
         )
         client.delay_ms = 5000
+        await client.start()
 
         run_coroutine(client._reconnect())  # pylint: disable=protected-access
         mock_sleep.assert_called_once_with(5)
-        assert loop.create_connection.call_count == 1  # nosec
+        assert loop.create_connection.call_count >= 1  # nosec
 
     def test_client_protocol_connection_made(self):
         """Test the client protocol close."""

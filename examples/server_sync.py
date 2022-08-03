@@ -183,7 +183,7 @@ def run_server():
             handler=None,  # handler for each session
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
-            parity="even",  # Which kind of parity to use
+            parity="E",  # Which kind of parity to use
             baudrate=9600,  # The baud rate to use for the serial device
             handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             ignore_missing_slaves=True,  # ignore request to a missing slave

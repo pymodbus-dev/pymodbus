@@ -2,10 +2,8 @@
 import logging
 
 from pymodbus.client.asynchronous.async_io import (
-    init_tls_client,
     ReconnectingAsyncioModbusTlsClient,
 )
-from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusTlsFramer
 
@@ -19,15 +17,7 @@ class AsyncModbusTLSClient(ReconnectingAsyncioModbusTlsClient):
         from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
     """
 
-    def __new__(
-        cls,
-        host="127.0.0.1",
-        port=Defaults.TLSPort,
-        framer=None,
-        sslctx=None,
-        server_hostname=None,
-        **kwargs
-    ):
+    def __new__(cls, host, **kwargs):
         """Do setup of client.
 
         :param host: Target server"s name, also matched for certificate
@@ -39,13 +29,14 @@ class AsyncModbusTLSClient(ReconnectingAsyncioModbusTlsClient):
         :param password: The password for for decrypting client"s private key file
         :param source_address: source address specific to underlying backend
         :param timeout: Time out in seconds
+        :param protocol_class: Protocol used to talk to modbus device.
+        :param modbus_decoder: Message decoder.
+        :param server_hostname: originating host.
         :param kwargs: Other extra args specific to Backend being used
-        :return:
+        :return: client object
         """
-        framer = framer or ModbusTlsFramer(ClientDecoder())
-        proto_cls = kwargs.pop("proto_cls", None)
-
-        client = init_tls_client(
-            proto_cls, host, port, sslctx, server_hostname, framer, **kwargs
-        )
+        decoder = kwargs.pop("modbus_decoder", ClientDecoder)
+        raw_framer = kwargs.pop("framer", ModbusTlsFramer)
+        framer = raw_framer(decoder())
+        client = ReconnectingAsyncioModbusTlsClient(host, framer=framer, **kwargs)
         return client

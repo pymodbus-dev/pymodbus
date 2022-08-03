@@ -2,10 +2,8 @@
 import logging
 
 from pymodbus.client.asynchronous.async_io import (
-    init_tcp_client,
     ReconnectingAsyncioModbusTcpClient,
 )
-from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
 
@@ -19,13 +17,7 @@ class AsyncModbusTCPClient(ReconnectingAsyncioModbusTcpClient):
         from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
     """
 
-    def __new__(
-        cls,
-        host="127.0.0.1",
-        port=Defaults.Port,
-        framer=None,
-        **kwargs
-    ):
+    def __new__(cls, host, **kwargs):
         """Scheduler to use async_io (asyncio)
 
         :param host: Host IP address
@@ -33,10 +25,14 @@ class AsyncModbusTCPClient(ReconnectingAsyncioModbusTcpClient):
         :param framer: Modbus Framer to use
         :param source_address: source address specific to underlying backend
         :param timeout: Time out in seconds
+        :param protocol_class: Protocol used to talk to modbus device.
+        :param modbus_decoder: Message decoder.
         :param kwargs: Other extra args specific to Backend being used
-        :return:
+        :return: client object
         """
-        framer = framer or ModbusSocketFramer(ClientDecoder())
-        proto_cls = kwargs.pop("proto_cls", None)
+        decoder = kwargs.pop("modbus_decoder", ClientDecoder)
+        raw_framer = kwargs.pop("framer", ModbusSocketFramer)
+        framer = raw_framer(decoder())
 
-        return init_tcp_client(proto_cls, host, port, framer=framer, **kwargs)
+        client = ReconnectingAsyncioModbusTcpClient(host, framer=framer, **kwargs)
+        return client

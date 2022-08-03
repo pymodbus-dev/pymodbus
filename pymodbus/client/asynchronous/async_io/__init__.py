@@ -13,7 +13,6 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import FifoTransactionManager
 from pymodbus.utilities import hexlify_packets
 from pymodbus.transaction import (
-    ModbusRtuFramer,
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
@@ -232,20 +231,17 @@ class ReconnectingAsyncioModbusTcpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, framer=None, **kwargs):
-        """Initialize ReconnectingAsyncioModbusTcpClient.
-
-        :param protocol_class: Protocol used to talk to modbus device.
-        """
+    def __init__(self, host, **kwargs):
+        """Initialize ReconnectingAsyncioModbusTcpClient."""
         # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
+        self.loop = None
         #: Protocol used to talk to modbus device.
-        self.protocol_class = protocol_class or ModbusClientProtocol
+        self.protocol_class = kwargs.get("protocol_class", ModbusClientProtocol)
         #: Current protocol instance.
         self.protocol = None
-        self.framer = framer if framer else ModbusSocketFramer
-        self.host = None
-        self.port = 0
+        self.framer = kwargs.get("framer", ModbusSocketFramer)
+        self.host = host
+        self.port = kwargs.get("port", 502)
         self.connected = False
         #: Reconnect delay in milli seconds.
         self.delay_ms = self.DELAY_MIN_MS
@@ -255,20 +251,14 @@ class ReconnectingAsyncioModbusTcpClient:
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = self.DELAY_MIN_MS
 
-    async def start(self, host, port=502):
-        """Initiate connection to start client
-
-        :param host:
-        :param port:
-        :return:
-        """
+    async def start(self,):
+        """Initiate connection to start client."""
         # force reconnect if required:
         self.stop()
+        self.loop = asyncio.get_running_loop()
 
-        txt = f"Connecting to {host}:{port}."
+        txt = f"Connecting to {self.host}:{self.port}."
         _logger.debug(txt)
-        self.host = host
-        self.port = port
         return await self._connect()
 
     def stop(self):
@@ -416,31 +406,14 @@ class AsyncioModbusTcpClient:
 class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
     """Client to connect to modbus device repeatedly over TLS."""
 
-    def __init__(self, protocol_class=None, framer=None, **kwargs):
-        """Initialize ReconnectingAsyncioModbusTcpClient
-
-        :param protocol_class: Protocol used to talk to modbus device.
-        """
+    def __init__(self, host, **kwargs):
+        """Initialize ReconnectingAsyncioModbusTcpClient."""
         # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
-        self.framer = framer if framer else ModbusTlsFramer
-        self.server_hostname = None
-        self.sslctx = None
-        ReconnectingAsyncioModbusTcpClient.__init__(
-            self, protocol_class, framer=self.framer, **kwargs
-        )
-
-    async def start(self, host, port=802, sslctx=None, server_hostname=None):
-        """Initiate connection to start client
-
-        :param host:
-        :param port:
-        :param sslctx:
-        :param server_hostname:
-        :return:
-        """
-        self.sslctx = sslctx
-        if self.sslctx is None:
+        self.loop = None
+        self.framer = kwargs.get("framer", ModbusTlsFramer)
+        self.server_hostname = kwargs.get("server_hostname", None)
+        self.sslctx = kwargs.get("sslctx", None)
+        if not self.sslctx:
             self.sslctx = ssl.create_default_context()
             # According to MODBUS/TCP Security Protocol Specification, it is
             # TLSv2 at least
@@ -448,8 +421,15 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
             self.sslctx.options |= ssl.OP_NO_TLSv1
             self.sslctx.options |= ssl.OP_NO_SSLv3
             self.sslctx.options |= ssl.OP_NO_SSLv2
-        self.server_hostname = server_hostname
-        return await ReconnectingAsyncioModbusTcpClient.start(self, host, port)
+        self.port = kwargs.pop("port", 802)
+        self.host = host
+        ReconnectingAsyncioModbusTcpClient.__init__(self, host, port=self.port, **kwargs)
+
+    async def start(self):
+        """Initiate connection to start client."""
+        # get current loop, if there are no loop a RuntimeError will be raised
+        self.loop = asyncio.get_running_loop()
+        return await ReconnectingAsyncioModbusTcpClient.start(self)
 
     async def _connect(self):
         _logger.debug(TEXT_CONNECTING)
@@ -459,7 +439,7 @@ class ReconnectingAsyncioModbusTlsClient(ReconnectingAsyncioModbusTcpClient):
                 self.host,
                 self.port,
                 ssl=self.sslctx,
-                server_hostname=self.host,
+                server_hostname=self.server_hostname,
             )
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
@@ -487,21 +467,17 @@ class ReconnectingAsyncioModbusUdpClient:
     #: Maximum delay in milli seconds before reconnect is attempted.
     DELAY_MAX_MS = 1000 * 60 * 5
 
-    def __init__(self, protocol_class=None, framer=None, **kwargs):
-        """Initialize ReconnectingAsyncioModbusUdpClient
-
-        :param protocol_class: Protocol used to talk to modbus device.
-        """
-        # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
+    def __init__(self, host, framer=None, **kwargs):
+        """Initialize ReconnectingAsyncioModbusUdpClient."""
         #: Protocol used to talk to modbus device.
-        self.protocol_class = protocol_class or ModbusUdpClientProtocol
+        self.protocol_class = kwargs.get("protocol_class", ModbusUdpClientProtocol)
+        self.loop = None
         #: Current protocol instance.
         self.protocol = None
-        self.framer = framer if framer else ModbusSocketFramer
+        self.framer = framer
 
-        self.host = None
-        self.port = 0
+        self.host = host
+        self.port = kwargs.get("port", 502)
 
         self.connected = False
         self._proto_args = kwargs
@@ -511,25 +487,22 @@ class ReconnectingAsyncioModbusUdpClient:
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = 100
 
-    async def start(self, host, port=502):
-        """Start reconnecting asynchronous udp client
-
-        :param host: Host IP to connect
-        :param port: Host port to connect
-        :return:
-        """
+    async def start(self):
+        """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
         self.stop()
+        # get current loop, if there are no loop a RuntimeError will be raised
+        self.loop = asyncio.get_running_loop()
 
-        txt = f"Connecting to {host}:{port}."
+        txt = f"Connecting to {self.host}:{self.port}."
         _logger.debug(txt)
 
         # getaddrinfo returns a list of tuples
         # - [(family, type, proto, canonname, sockaddr),]
         # We want sockaddr which is a (ip, port) tuple
         # udp needs ip addresses, not hostnames
-        addrinfo = await self.loop.getaddrinfo(host, port, type=DGRAM_TYPE)
-        self.host, self.port = addrinfo[0][-1]
+        # addrinfo = await self.loop.getaddrinfo(self.host, self.port, type=DGRAM_TYPE)
+        # self.host, self.port = addrinfo[0][-1]
         return await self._connect()
 
     def stop(self):
@@ -704,16 +677,10 @@ class AsyncioModbusSerialClient:
         stopbits=1,
         **serial_kwargs,
     ):
-        """Initialize Asyncio Modbus Serial Client
-
-        :param port: Port to connect
-        :param protocol_class: Protocol used to talk to modbus device.
-        :param framer: Framer to use
-        """
-        # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
+        """Initialize Asyncio Modbus Serial Client."""
+        self.loop = None
         #: Protocol used to talk to modbus device.
-        self.protocol_class = protocol_class or ModbusRtuFramer
+        self.protocol_class = protocol_class or ModbusClientProtocol
         #: Current protocol instance.
         self.protocol = None
         self.port = port
@@ -740,6 +707,12 @@ class AsyncioModbusSerialClient:
     def _connected(self):
         """Connect internal."""
         return self._connected_event.is_set()
+
+    async def start(self):
+        """Connect Async client."""
+        # get current loop, if there are no loop a RuntimeError will be raised
+        self.loop = asyncio.get_running_loop()
+        await self.connect()
 
     async def connect(self):
         """Connect Async client."""
@@ -787,62 +760,3 @@ class AsyncioModbusSerialClient:
             #     asyncio.asynchronous(self._reconnect())
         else:
             _logger.error(TEST_FACTORY)
-
-
-async def init_tcp_client(proto_cls, host, port, **kwargs):
-    """Initialize tcp client with helper function.
-
-    :param proto_cls:
-    :param host:
-    :param port:
-    :param kwargs:
-    :return:
-    """
-    client = ReconnectingAsyncioModbusTcpClient(
-        protocol_class=proto_cls, **kwargs
-    )
-    await client.start(host, port)
-    return client
-
-
-async def init_tls_client(
-    proto_cls,
-    host,
-    port,
-    sslctx=None,
-    server_hostname=None,
-    framer=None,
-    **kwargs,
-):
-    """Initialize tcp client with Helper function.
-
-    :param proto_cls:
-    :param host:
-    :param port:
-    :param sslctx:
-    :param server_hostname:
-    :param framer:
-    :param kwargs:
-    :return:
-    """
-    client = ReconnectingAsyncioModbusTlsClient(
-        protocol_class=proto_cls, framer=framer, **kwargs
-    )
-    await client.start(host, port, sslctx, server_hostname)
-    return client
-
-
-async def init_udp_client(proto_cls, host, port, **kwargs):
-    """Initialize UDP client with helper function.
-
-    :param proto_cls:
-    :param host:
-    :param port:
-    :param kwargs:
-    :return:
-    """
-    client = ReconnectingAsyncioModbusUdpClient(
-        protocol_class=proto_cls, **kwargs
-    )
-    await client.start(host, port)
-    return client

@@ -16,6 +16,7 @@ Examples
    changing_framers
    custom_datablock
    custom_message
+   dbstore_update_server
    modbus_logging
    modbus_forwarder
    payload_client

@@ -9,8 +9,8 @@ import time
 
 import serial
 
-from pymodbus.client.common import ModbusClientMixin
-from pymodbus.client.tls_helper import sslctx_provider
+from pymodbus.client.helper_sync import ModbusClientMixin
+from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import (
     ConnectionException,

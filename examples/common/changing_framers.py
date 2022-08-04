@@ -17,7 +17,7 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the modbus client and the framers
 # --------------------------------------------------------------------------- #
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client import ModbusTcpClient as ModbusClient
 from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
 # from pymodbus.transaction import ModbusRtuFramer as ModbusFramer

@@ -17,7 +17,7 @@ from pymodbus.exceptions import ConnectionException
 class SynchronousDiagnosticClientTest(unittest.TestCase):
     """Unittest for the pymodbus.client.sync_diag module.
 
-    It is a copy of parts of the test for the TCP class in the pymodbus.client.sync
+    It is a copy of parts of the test for the TCP class in the pymodbus.client
     module, as it should operate identically and only log some additional
     lines.
     """
@@ -51,9 +51,9 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
             client = ModbusTcpDiagClient()
             self.assertFalse(client.connect())
 
-    @patch("pymodbus.client.sync.time")
+    @patch("pymodbus.client.sync_tcp.time")
     @patch("pymodbus.client.sync_diag.time")
-    @patch("pymodbus.client.sync.select")
+    @patch("pymodbus.client.sync_tcp.select")
     def test_tcp_diag_client_recv(self, mock_select, mock_diag_time, mock_time):
         """Test the tcp sync diag client receive method"""
         mock_select.select.return_value = [True]

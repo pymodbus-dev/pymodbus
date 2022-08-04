@@ -5,14 +5,14 @@ PyModbus - A Python Modbus Stack
 .. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml
 .. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pymodbus_dev/Lobby 
+   :target: https://gitter.im/pymodbus_dev/Lobby
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://pepy.tech/badge/pymodbus
-   :target: https://pepy.tech/project/pymodbus 
+   :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
-   
+
 ------------------------------------------------------------
 Supported versions
 ------------------------------------------------------------
@@ -87,7 +87,7 @@ base operating system will allow (*allow* in this case means how many Virtual IP
 
 For more information please browse the project documentation:
 
-https://riptideio.github.io/pymodbus/ 
+https://riptideio.github.io/pymodbus/
 or
 https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
@@ -97,8 +97,8 @@ Example Code
 
 For those of you that just want to get started fast, here you go::
 
-    from pymodbus.client.sync import ModbusTcpClient
-    
+    from pymodbus.client import ModbusTcpClient
+
     client = ModbusTcpClient('127.0.0.1')
     client.write_coil(1, True)
     result = client.read_coils(1,1)
@@ -134,7 +134,7 @@ If you think, that something in the code is broken/not running well, please `ope
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
 ------------------------------------------------------------
-Pymodbus REPL comes with many handy features such as payload decoder 
+Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
@@ -158,7 +158,7 @@ This will install a base version of pymodbus.
 To install pymodbus with options run:
 
     pip install -U pymodbus[<option>,...]
-    
+
 Available options are:
 
 - **repl**, installs pymodbus REPL.
@@ -181,8 +181,8 @@ Otherwise you can pull the trunk source and install from there::
     git clone git://github.com/riptideio/pymodbus.git
     cd pymodbus
     pip install -r requirements.txt
-    
-    
+
+
 To get latest release (for now v2.5.3 with Python 2.7 support)::
 
     git checkout master
@@ -193,12 +193,12 @@ To get bleeding edge::
 
 To get a specific version:
 
-    git checkout tags/vX.Y.Z -b vX.Y.Z    
+    git checkout tags/vX.Y.Z -b vX.Y.Z
 
 Then::
    pip install -r requirements.txt
    pip install -e .
-   
+
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.
 
 Either method will install all the required dependencies
@@ -212,7 +212,7 @@ The repository contains a number of important branches and tags.
   * **master** is where are releases are kept.
   * All releases are tagged with **vX.Y.Z** (e.g. v2.5.3)
   * All prereleases are tagged with **vX.Y.ZrcQ** (e.g. v3.0.0.0rc1)
- 
+
 If a maintenance release of an old version is needed (e.g. v2.5.4),
 the release tag is used to create a branch with the same name,
 and maintenance development is merged here.

@@ -3,7 +3,7 @@ import asyncio
 import logging
 import ssl
 
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+from pymodbus.client.async_tcp import AsyncModbusTCPClient
 from pymodbus.transaction import ModbusTlsFramer, FifoTransactionManager
 
 _logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ class AsyncModbusTLSClient(AsyncModbusTCPClient):
     """Actual Async TLS Client to be used.
 
     To use do::
-        from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
+        from pymodbus.client import AsyncModbusTLSClient
     """
 
     def __init__(

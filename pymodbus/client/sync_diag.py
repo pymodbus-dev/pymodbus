@@ -3,7 +3,7 @@ import logging
 import socket
 import time
 
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
@@ -26,7 +26,7 @@ LOG_MSGS = {
 
 
 class ModbusTcpDiagClient(ModbusTcpClient):
-    """Variant of pymodbus.client.sync.ModbusTcpClient.
+    """Variant of pymodbus.client.ModbusTcpClient.
 
     With additional logging to diagnose network issues.
 

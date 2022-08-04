@@ -7,10 +7,12 @@ import unittest
 
 import pytest
 
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
-from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
-from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client import (
+    AsyncModbusUDPClient,
+    AsyncModbusTLSClient,
+    AsyncModbusSerialClient,
+    AsyncModbusTCPClient,
+)
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -40,7 +42,7 @@ def maybe_manage(condition, manager):
 
 
 class TestAsynchronousClient:
-    """Unittest for the pymodbus.client.asynchronous module."""
+    """Unittest for the pymodbus.client async module."""
 
     # -----------------------------------------------------------------------#
     # Test TCP Client client

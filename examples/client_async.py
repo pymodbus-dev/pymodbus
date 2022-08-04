@@ -28,10 +28,12 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
-from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
-from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client import (
+    AsyncModbusUDPClient,
+    AsyncModbusTLSClient,
+    AsyncModbusSerialClient,
+    AsyncModbusTCPClient,
+)
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,

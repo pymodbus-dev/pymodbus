@@ -15,7 +15,7 @@ import os
 from threading import Lock, Thread as tWorker
 from time import time
 
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 
 try:
     from multiprocessing import Process as mWorker, log_to_stderr

@@ -6,15 +6,14 @@ from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.client.asynchronous.async_io import (
+from pymodbus.client.async_helper import (
     BaseModbusAsyncClientProtocol,
     ModbusClientProtocol,
-    ModbusUdpClientProtocol,
-    ReconnectingAsyncioModbusTcpClient,
 )
+
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
-from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient
+from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient, ModbusUdpClientProtocol
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
@@ -83,7 +82,7 @@ class TestAsyncioClient:
     async def test_factory_initialization_state(self):
         """Test factory initialization state."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )
@@ -116,7 +115,7 @@ class TestAsyncioClient:
     async def test_factory_reset_wait_before_reconnect(self):
         """Test factory reset wait before reconnect."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )
@@ -131,7 +130,7 @@ class TestAsyncioClient:
     async def test_factory_stop(self):
         """Test factory stop."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )
@@ -149,7 +148,7 @@ class TestAsyncioClient:
     async def test_factory_protocol_made_connection(self):
         """Test factory protocol made connection."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )
@@ -163,11 +162,11 @@ class TestAsyncioClient:
         assert client.connected  # nosec
         assert client.protocol is mock.sentinel.PROTOCOL  # nosec
 
-    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
+    @mock.patch("pymodbus.client.asynchronous.tcp.asyncio.ensure_future")
     async def test_factory_protocol_lost_connection(self, mock_async):
         """Test factory protocol lost connection."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )
@@ -185,8 +184,8 @@ class TestAsyncioClient:
 
         client.connected = True
         with mock.patch(
-            "pymodbus.client.asynchronous.async_io."
-            "ReconnectingAsyncioModbusTcpClient._reconnect"
+            "pymodbus.client.asynchronous.tcp."
+            "AsyncModbusTCPClient._reconnect"
         ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
@@ -197,14 +196,14 @@ class TestAsyncioClient:
     async def test_factory_start_success(self):
         """Test factory start success."""
         mock_protocol_class = mock.MagicMock()
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             mock.sentinel.HOST,
             port=mock.sentinel.PORT,
             protocol_class=mock_protocol_class
         )
         await client.start()
 
-    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.ensure_future")
+    @mock.patch("pymodbus.client.asynchronous.tcp.asyncio.ensure_future")
     async def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=unused-argument
         """Test factory start failing and retried."""
         mock_protocol_class = mock.MagicMock()
@@ -212,7 +211,7 @@ class TestAsyncioClient:
         loop.create_connection = mock.MagicMock(
             side_effect=Exception("Did not work.")
         )
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             mock.sentinel.HOST,
             port=mock.sentinel.PORT,
             protocol_class=mock_protocol_class
@@ -220,21 +219,21 @@ class TestAsyncioClient:
 
         # check whether reconnect is called upon failed connection attempt:
         with mock.patch(
-            "pymodbus.client.asynchronous.async_io"
-            ".ReconnectingAsyncioModbusTcpClient._reconnect"
+            "pymodbus.client.asynchronous.tcp"
+            ".AsyncModbusTCPClient._reconnect"
         ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
             run_coroutine(client.start())
             mock_reconnect.assert_called_once_with()
 
-    @mock.patch("pymodbus.client.asynchronous.async_io.asyncio.sleep")
+    @mock.patch("pymodbus.client.asynchronous.tcp.asyncio.sleep")
     async def test_factory_reconnect(self, mock_sleep):
         """Test factory reconnect."""
         mock_protocol_class = mock.MagicMock()
         mock_sleep.side_effect = return_as_coroutine()
         loop = asyncio.get_running_loop()
         loop.create_connection = mock.MagicMock(return_value=(None, None))
-        client = ReconnectingAsyncioModbusTcpClient(
+        client = AsyncModbusTCPClient(
             "127.0.0.1",
             protocol_class=mock_protocol_class
         )

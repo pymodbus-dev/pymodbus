@@ -7,12 +7,6 @@ import unittest
 
 import pytest
 
-from pymodbus.client.asynchronous.async_io import (
-    AsyncioModbusSerialClient,
-    ReconnectingAsyncioModbusTcpClient,
-    ReconnectingAsyncioModbusTlsClient,
-    ReconnectingAsyncioModbusUdpClient,
-)
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.tls import AsyncModbusTLSClient
 from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
@@ -54,7 +48,7 @@ class TestAsynchronousClient:
     def test_tcp_no_asyncio_client(self):
         """Test the TCP client."""
         client = AsyncModbusTCPClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
+        assert isinstance(client, AsyncModbusTCPClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -64,7 +58,7 @@ class TestAsynchronousClient:
     async def test_tcp_asyncio_client(self):
         """Test the TCP client."""
         client = AsyncModbusTCPClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusTcpClient)  # nosec
+        assert isinstance(client, AsyncModbusTCPClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -78,7 +72,7 @@ class TestAsynchronousClient:
     def test_tls_no_asyncio_client(self):
         """Test the TLS AsyncIO client."""
         client = AsyncModbusTLSClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
+        assert isinstance(client, AsyncModbusTLSClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.port == 802  # nosec
@@ -89,7 +83,7 @@ class TestAsynchronousClient:
     async def test_tls_asyncio_client(self):
         """Test the TLS AsyncIO client."""
         client = AsyncModbusTLSClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusTlsClient)  # nosec
+        assert isinstance(client, AsyncModbusTLSClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.port == 802  # nosec
@@ -103,7 +97,7 @@ class TestAsynchronousClient:
     def test_udp_no_asyncio_client(self):
         """Test the udp asyncio client"""
         client = AsyncModbusUDPClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusUdpClient)  # nosec
+        assert isinstance(client, AsyncModbusUDPClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -113,7 +107,7 @@ class TestAsynchronousClient:
     async def test_udp_asyncio_client(self):
         """Test the udp asyncio client"""
         client = AsyncModbusUDPClient("127.0.0.1")
-        assert isinstance(client, ReconnectingAsyncioModbusUdpClient)  # nosec
+        assert isinstance(client, AsyncModbusUDPClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -125,9 +119,9 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
 
     def test_serial_no_asyncio_client(self):
-        """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
+        """Test that AsyncModbusSerialClient instantiates AsyncModbusSerialClient for asyncio scheduler."""
         client = AsyncModbusSerialClient(port="not here", framer=ModbusRtuFramer)
-        assert isinstance(client, AsyncioModbusSerialClient)  # nosec
+        assert isinstance(client, AsyncModbusSerialClient)  # nosec
         assert isinstance(client.framer, ModbusRtuFramer)  # nosec
         client.stop()
 
@@ -144,7 +138,7 @@ class TestAsynchronousClient:
         self,
         framer,
     ):
-        """Test that AsyncModbusSerialClient instantiates AsyncioModbusSerialClient for asyncio scheduler."""
+        """Test that AsyncModbusSerialClient instantiates AsyncModbusSerialClient for asyncio scheduler."""
         client = AsyncModbusSerialClient(
             framer=framer,
             port=pytest.SERIAL_PORT,
@@ -154,7 +148,7 @@ class TestAsynchronousClient:
             bytesize=7,
             timeout=1,
         )
-        assert isinstance(client, AsyncioModbusSerialClient)  # nosec
+        assert isinstance(client, AsyncModbusSerialClient)  # nosec
         assert isinstance(client.framer, framer)  # nosec
         assert client.port == pytest.SERIAL_PORT  # nosec
         assert client.baudrate == 19200  # nosec

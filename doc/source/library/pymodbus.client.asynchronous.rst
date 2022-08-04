@@ -6,13 +6,6 @@ pymodbus\.client\.asynchronous package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    pymodbus.client.asynchronous.async_io
-
 Submodules
 ----------
 
@@ -28,14 +21,6 @@ pymodbus\.client\.asynchronous\.tcp module
 ------------------------------------------
 
 .. automodule:: pymodbus.client.asynchronous.tcp
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymodbus\.client\.asynchronous\.thread module
----------------------------------------------
-
-.. automodule:: pymodbus.client.asynchronous.thread
     :members:
     :undoc-members:
     :show-inheritance:

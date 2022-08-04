@@ -5,6 +5,8 @@ both the synchronous and asynchronous clients to
 simplify the interface.
 """
 # pylint: disable=missing-type-doc
+import logging
+
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
 from pymodbus.bit_write_message import WriteMultipleCoilsRequest, WriteSingleCoilRequest
 from pymodbus.register_read_message import (
@@ -18,6 +20,8 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterRequest,
 )
 from pymodbus.utilities import ModbusTransactionState
+
+_logger = logging.getLogger(__name__)
 
 
 class ModbusClientMixin:
@@ -146,9 +150,3 @@ class ModbusClientMixin:
         """
         request = MaskWriteRegisterRequest(*args, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = ["ModbusClientMixin"]

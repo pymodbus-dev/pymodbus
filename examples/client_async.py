@@ -29,10 +29,10 @@ import logging
 # import the various client implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.client import (
-    AsyncModbusUDPClient,
-    AsyncModbusTLSClient,
     AsyncModbusSerialClient,
-    AsyncModbusTCPClient,
+    AsyncModbusTcpClient,
+    AsyncModbusTlsClient,
+    AsyncModbusUdpClient,
 )
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -49,54 +49,75 @@ async def setup_async_client():
     _logger.info("### Create client object")
 
     if args.comm == "tcp":
-        client = AsyncModbusTCPClient(
-            "127.0.0.1",  # define tcp address where to connect to.
+        client = AsyncModbusTcpClient(
+            "127.0.0.1",
             port=args.port,  # on which port
-            framer=ModbusSocketFramer,  # how to interpret the messages
-            timeout=1,  # waiting time for request to complete
-            retries=3,  # retries per transaction
-            retry_on_empty=False,  # Is an empty response a retry
-            source_address=("localhost", 0),  # bind socket to address
-            strict=True,  # use strict timing, t1.5 for Modbus RTU
+            # Common optional paramers:
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            framer=args.framer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # TCP setup parameters
+            #    source_address=("localhost", 0),
         )
     elif args.comm == "udp":
-        client = AsyncModbusUDPClient(
-            "localhost",  # define tcp address where to connect to.
-            port=args.port,  # on which port
-            framer=args.framer,  # how to interpret the messages
-            timeout=1,  # waiting time for request to complete
-            retries=3,  # retries per transaction
-            retry_on_empty=False,  # Is an empty response a retry
-            source_address=("localhost", 0),  # bind socket to address
-            strict=True,  # use strict timing, t1.5 for Modbus RTU
+        client = AsyncModbusUdpClient(
+            "localhost",
+            #    port=502,
+            # Common optional paramers:
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            framer=args.framer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # UDP setup parameters
+            #    source_address=None,
         )
     elif args.comm == "serial":
         client = AsyncModbusSerialClient(
-            args.port,  # serial port
-            framer=args.framer,  # how to interpret the messages
-            stopbits=1,  # The number of stop bits to use
-            bytesize=7,  # The bytesize of the serial messages
-            parity="even",  # Which kind of parity to use
-            baudrate=9600,  # The baud rate to use for the serial device
-            handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
-            timeout=1,  # waiting time for request to complete
-            strict=True,  # use strict timing, t1.5 for Modbus RTU
+            args.port,
+            # Common optional paramers:
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            #    framer=ModbusRtuFramer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # Serial setup parameters
+            #    baudrate=9600,
+            #    bytesize=8,
+            #    parity="N",
+            #    stopbits=1,
+            #    handle_local_echo=False,
         )
     elif args.comm == "tls":
-        client = AsyncModbusTLSClient(
-            host="localhost",  # define tcp address where to connect to.
-            port=args.port,  # on which port
-            sslctx=None,  # ssl control
-            certfile=None,  # certificate file
-            keyfile=None,  # key file
-            password=None,  # pass phrase
-            framer=args.framer,  # how to interpret the messages
-            timeout=1,  # waiting time for request to complete
-            retries=3,  # retries per transaction
-            retry_on_empty=False,  # Is an empty response a retry
-            source_address=("localhost", 0),  # bind socket to address
-            server_hostname="localhost",  # used for cert verification
-            strict=True,  # use strict timing, t1.5 for Modbus RTU
+        client = AsyncModbusTlsClient(
+            "localhost",
+            port=args.port,
+            # Common optional paramers:
+            #    protocol_class=None,
+            #    modbus_decoder=ClientDecoder,
+            framer=args.framer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # TLS setup parameters
+            #    sslctx=None,
+            #    certfile=None,
+            #    keyfile=None,
+            #    password=None,
+            #    server_hostname="localhost",
         )
     await client.start()
     return client

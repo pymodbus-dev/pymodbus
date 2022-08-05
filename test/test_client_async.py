@@ -8,10 +8,10 @@ import unittest
 import pytest
 
 from pymodbus.client import (
-    AsyncModbusUDPClient,
-    AsyncModbusTLSClient,
+    AsyncModbusUdpClient,
+    AsyncModbusTlsClient,
     AsyncModbusSerialClient,
-    AsyncModbusTCPClient,
+    AsyncModbusTcpClient,
 )
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -49,8 +49,8 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     def test_tcp_no_asyncio_client(self):
         """Test the TCP client."""
-        client = AsyncModbusTCPClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusTCPClient)  # nosec
+        client = AsyncModbusTcpClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusTcpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -59,8 +59,8 @@ class TestAsynchronousClient:
 
     async def test_tcp_asyncio_client(self):
         """Test the TCP client."""
-        client = AsyncModbusTCPClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusTCPClient)  # nosec
+        client = AsyncModbusTcpClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusTcpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -73,8 +73,8 @@ class TestAsynchronousClient:
 
     def test_tls_no_asyncio_client(self):
         """Test the TLS AsyncIO client."""
-        client = AsyncModbusTLSClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusTLSClient)  # nosec
+        client = AsyncModbusTlsClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.port == 802  # nosec
@@ -84,8 +84,8 @@ class TestAsynchronousClient:
 
     async def test_tls_asyncio_client(self):
         """Test the TLS AsyncIO client."""
-        client = AsyncModbusTLSClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusTLSClient)  # nosec
+        client = AsyncModbusTlsClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.port == 802  # nosec
@@ -98,8 +98,8 @@ class TestAsynchronousClient:
     # -----------------------------------------------------------------------#
     def test_udp_no_asyncio_client(self):
         """Test the udp asyncio client"""
-        client = AsyncModbusUDPClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusUDPClient)  # nosec
+        client = AsyncModbusUdpClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusUdpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 
@@ -108,8 +108,8 @@ class TestAsynchronousClient:
 
     async def test_udp_asyncio_client(self):
         """Test the udp asyncio client"""
-        client = AsyncModbusUDPClient("127.0.0.1")
-        assert isinstance(client, AsyncModbusUDPClient)  # nosec
+        client = AsyncModbusUdpClient("127.0.0.1")
+        assert isinstance(client, AsyncModbusUdpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.port == 502  # nosec
 

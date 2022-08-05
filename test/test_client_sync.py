@@ -152,13 +152,13 @@ class SynchronousClientTest(
 
     def test_sync_udp_client_instantiation(self):
         """Test sync udp clientt."""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         self.assertNotEqual(client, None)
 
     def tes_basic_sync_udp_client(self):
         """Test the basic methods for the udp sync client"""
         # receive/send
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
         self.assertEqual(1, client._send(b"\x00"))  # pylint: disable=protected-access
@@ -176,7 +176,7 @@ class SynchronousClientTest(
 
     def test_udp_client_address_family(self):
         """Test the Udp client get address family method"""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         self.assertEqual(
             socket.AF_INET,
             client._get_address_family("127.0.0.1"),  # pylint: disable=protected-access
@@ -197,22 +197,22 @@ class SynchronousClientTest(
                     """Set timeout."""
 
             mock_method.return_value = DummySocket()
-            client = ModbusUdpClient()
+            client = ModbusUdpClient("127.0.0.1")
             self.assertTrue(client.connect())
 
         with patch.object(socket, "socket") as mock_method:
             mock_method.side_effect = socket.error()
-            client = ModbusUdpClient()
+            client = ModbusUdpClient("127.0.0.1")
             self.assertFalse(client.connect())
 
     def test_udp_client_is_socket_open(self):
         """Test the udp client is_socket_open method"""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         self.assertTrue(client.is_socket_open())
 
     def test_udp_client_send(self):
         """Test the udp client send method"""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
@@ -224,7 +224,7 @@ class SynchronousClientTest(
 
     def test_udp_client_recv(self):
         """Test the udp client receive method"""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._recv(1024),  # pylint: disable=protected-access
@@ -238,7 +238,7 @@ class SynchronousClientTest(
 
     def test_udp_client_repr(self):
         """Test udp client representation."""
-        client = ModbusUdpClient()
+        client = ModbusUdpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
             f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
@@ -251,7 +251,7 @@ class SynchronousClientTest(
 
     def test_sync_tcp_client_instantiation(self):
         """Test sync tcp client."""
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         self.assertNotEqual(client, None)
 
     @patch("pymodbus.client.sync_tcp.select")
@@ -259,7 +259,7 @@ class SynchronousClientTest(
         """Test the basic methods for the tcp sync client"""
         # receive/send
         mock_select.select.return_value = [True]
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
         self.assertEqual(1, client._send(b"\x00"))  # pylint: disable=protected-access
@@ -280,23 +280,23 @@ class SynchronousClientTest(
         with patch.object(socket, "create_connection") as mock_method:
             _socket = MagicMock()
             mock_method.return_value = _socket
-            client = ModbusTcpClient()
+            client = ModbusTcpClient("127.0.0.1")
             _socket.getsockname.return_value = ("dmmy", 1234)
             self.assertTrue(client.connect())
 
         with patch.object(socket, "create_connection") as mock_method:
             mock_method.side_effect = socket.error()
-            client = ModbusTcpClient()
+            client = ModbusTcpClient("127.0.0.1")
             self.assertFalse(client.connect())
 
     def test_tcp_client_is_socket_open(self):
         """Test the tcp client is_socket_open method"""
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         self.assertFalse(client.is_socket_open())
 
     def test_tcp_client_send(self):
         """Test the tcp client send method"""
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
@@ -312,7 +312,7 @@ class SynchronousClientTest(
         """Test the tcp client receive method"""
         mock_select.select.return_value = [True]
         mock_time.time.side_effect = count()
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._recv(1024),  # pylint: disable=protected-access
@@ -357,7 +357,7 @@ class SynchronousClientTest(
 
     def test_tcp_client_repr(self):
         """Test tcp client."""
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
             f"ipaddr={client.host}, port={client.port}, timeout={client.timeout}>"
@@ -372,7 +372,7 @@ class SynchronousClientTest(
 
             function_code = 79
 
-        client = ModbusTcpClient()
+        client = ModbusTcpClient("127.0.0.1")
         client.framer = Mock()
         client.register(CustomRequest)
         self.assertTrue(client.framer.decoder.register.called_once_with(CustomRequest))
@@ -406,7 +406,7 @@ class SynchronousClientTest(
     def test_sync_tls_client_instantiation(self):
         """Test sync tls client."""
         # default SSLContext
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("127.0.0.1")
         self.assertNotEqual(client, None)
         self.assertIsInstance(client.framer, ModbusTlsFramer)
         self.assertTrue(client.sslctx)
@@ -414,7 +414,7 @@ class SynchronousClientTest(
     def test_basic_sync_tls_client(self):
         """Test the basic methods for the tls sync client"""
         # receive/send
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("localhost")
         client.socket = mockSocket()
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
         self.assertEqual(1, client._send(b"\x00"))  # pylint: disable=protected-access
@@ -433,17 +433,17 @@ class SynchronousClientTest(
     def test_tls_client_connect(self):
         """Test the tls client connection method"""
         with patch.object(ssl.SSLSocket, "connect") as mock_method:
-            client = ModbusTlsClient()
+            client = ModbusTlsClient("127.0.0.1")
             self.assertTrue(client.connect())
 
         with patch.object(socket, "create_connection") as mock_method:
             mock_method.side_effect = socket.error()
-            client = ModbusTlsClient()
+            client = ModbusTlsClient("127.0.0.1")
             self.assertFalse(client.connect())
 
     def test_tls_client_send(self):
         """Test the tls client send method"""
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
@@ -456,7 +456,7 @@ class SynchronousClientTest(
     @patch("pymodbus.client.sync_tls.time")
     def test_tls_client_recv(self, mock_time):
         """Test the tls client receive method"""
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("127.0.0.1")
         self.assertRaises(
             ConnectionException,
             lambda: client._recv(1024),  # pylint: disable=protected-access
@@ -487,7 +487,7 @@ class SynchronousClientTest(
 
     def test_tls_client_repr(self):
         """Test tls client."""
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("127.0.0.1")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
             f"ipaddr={client.host}, port={client.port}, sslctx={client.sslctx}, "
@@ -503,7 +503,7 @@ class SynchronousClientTest(
 
             function_code = 79
 
-        client = ModbusTlsClient()
+        client = ModbusTlsClient("127.0.0.1")
         client.framer = Mock()
         client.register(CustomeRequest)
         self.assertTrue(client.framer.decoder.register.called_once_with(CustomeRequest))
@@ -513,26 +513,26 @@ class SynchronousClientTest(
     # -----------------------------------------------------------------------#
     def test_sync_serial_client_instantiation(self):
         """Test sync serial client."""
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         self.assertNotEqual(client, None)
         self.assertTrue(
-            isinstance(ModbusSerialClient(framer=ModbusAsciiFramer).framer, ModbusAsciiFramer)
+            isinstance(ModbusSerialClient("/dev/null", framer=ModbusAsciiFramer).framer, ModbusAsciiFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(framer=ModbusRtuFramer).framer, ModbusRtuFramer)
+            isinstance(ModbusSerialClient("/dev/null", framer=ModbusRtuFramer).framer, ModbusRtuFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(framer=ModbusBinaryFramer).framer, ModbusBinaryFramer)
+            isinstance(ModbusSerialClient("/dev/null", framer=ModbusBinaryFramer).framer, ModbusBinaryFramer)
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient(framer=ModbusSocketFramer).framer, ModbusSocketFramer)
+            isinstance(ModbusSerialClient("/dev/null", framer=ModbusSocketFramer).framer, ModbusSocketFramer)
         )
 
     def test_sync_serial_rtu_client_timeouts(self):
         """Test sync serial rtu."""
-        client = ModbusSerialClient(framer=ModbusRtuFramer, baudrate=9600)
+        client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, baudrate=9600)
         self.assertEqual(client.silent_interval, round((3.5 * 11 / 9600), 6))
-        client = ModbusSerialClient(framer=ModbusRtuFramer, baudrate=38400)
+        client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, baudrate=38400)
         self.assertEqual(client.silent_interval, round((1.75 / 1000), 6))
 
     @patch("serial.Serial")
@@ -543,7 +543,7 @@ class SynchronousClientTest(
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
 
         mock_serial.read = lambda size: b"\x00" * size
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         client.socket = mock_serial
         client.state = 0
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
@@ -556,7 +556,7 @@ class SynchronousClientTest(
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient(framer=ModbusRtuFramer, strict=True)
+        rtu_client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, strict=True)
         self.assertTrue(rtu_client.connect())
         self.assertEqual(
             rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
@@ -567,24 +567,24 @@ class SynchronousClientTest(
         client.socket = False
         client.close()
 
-        self.assertTrue("baud[19200])" in str(client))
+        self.assertTrue("baud[9600])" in str(client))
 
     def test_serial_client_connect(self):
         """Test the serial client connection method"""
         with patch.object(serial, "Serial") as mock_method:
             mock_method.return_value = MagicMock()
-            client = ModbusSerialClient()
+            client = ModbusSerialClient("/dev/null")
             self.assertTrue(client.connect())
 
         with patch.object(serial, "Serial") as mock_method:
             mock_method.side_effect = serial.SerialException()
-            client = ModbusSerialClient()
+            client = ModbusSerialClient("/dev/null")
             self.assertFalse(client.connect())
 
     @patch("serial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
         """Test the serial client is_socket_open method"""
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         self.assertFalse(client.is_socket_open())
         client.socket = mock_serial
         self.assertTrue(client.is_socket_open())
@@ -594,7 +594,7 @@ class SynchronousClientTest(
         """Test the serial client send method"""
         mock_serial.in_waiting = None
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         self.assertRaises(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
@@ -612,7 +612,7 @@ class SynchronousClientTest(
         mock_serial.in_waiting = 4
         mock_serial.read = lambda x: b"1" * x
         mock_serial.write = lambda x: len(x)  # pylint: disable=unnecessary-lambda
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         self.assertRaises(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
@@ -626,7 +626,7 @@ class SynchronousClientTest(
 
     def test_serial_client_recv(self):
         """Test the serial client receive method"""
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         self.assertRaises(
             ConnectionException,
             lambda: client._recv(1024),  # pylint: disable=protected-access
@@ -647,7 +647,7 @@ class SynchronousClientTest(
 
     def test_serial_client_repr(self):
         """Test serial client."""
-        client = ModbusSerialClient()
+        client = ModbusSerialClient("/dev/null")
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} socket={client.socket}, "
             f"framer={client.framer}, timeout={client.timeout}>"

@@ -1,225 +1,125 @@
-"""Sync client."""
-# pylint: disable=missing-type-doc
+"""Modbus client serial communication.
+
+The serial communication is RS-485 based, and usually used vith a usb rs-485 dongle.
+
+Example::
+
+    from pymodbus.client import ModbusSerialClient
+
+    def run():
+        client = ModbusSerialClient(
+            port="/dev/pty0",  # serial port
+            # Common optional paramers:
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            #    framer=ModbusRtuFramer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,.
+            #    strict=True,
+            # Serial setup parameters
+            #    baudrate=9600,
+            #    bytesize=8,
+            #    parity="N",
+            #    stopbits=1,
+            #    handle_local_echo=False,
+        )
+
+        client.start()
+        ...
+        client.stop()
+"""
 from functools import partial
 import logging
-import sys
 import time
 
 import serial
 
-from pymodbus.client.helper_sync import ModbusClientMixin
-from pymodbus.constants import Defaults
-from pymodbus.exceptions import (
-    ConnectionException,
-    NotImplementedException,
-)
+from pymodbus.client.helper_sync import BaseModbusClient
+from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import (
-    DictTransactionManager,
-    ModbusRtuFramer,
-)
+from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+from pymodbus.client.helper_async import ModbusClientProtocol
 
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
 _logger = logging.getLogger(__name__)
-
-# --------------------------------------------------------------------------- #
-# The Synchronous Clients
-# --------------------------------------------------------------------------- #
-
-
-class BaseModbusClient(ModbusClientMixin):
-    """Interface for a modbus synchronous client.
-
-    Defined here are all the methods for performing the related
-    request methods.
-    Derived classes simply need to implement the transport methods and set the correct
-    framer.
-    """
-
-    def __init__(self, framer, **kwargs):
-        """Initialize a client instance.
-
-        :param framer: The modbus framer implementation to use
-        """
-        self.framer = framer
-        self.transaction = DictTransactionManager(self, **kwargs)
-        self._debug = False
-        self._debugfd = None
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
-        )
-
-    # ----------------------------------------------------------------------- #
-    # Client interface
-    # ----------------------------------------------------------------------- #
-    def connect(self):
-        """Connect to the modbus remote host.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def close(self):
-        """Close the underlying socket connection."""
-
-    def is_socket_open(self):
-        """Check whether the underlying socket/serial is open or not.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException(
-            f"is_socket_open() not implemented by {self.__str__()}"  # pylint: disable=unnecessary-dunder-call
-        )
-
-    def send(self, request):
-        """Send request."""
-        if self.state != ModbusTransactionState.RETRYING:
-            _logger.debug('New Transaction state "SENDING"')
-            self.state = ModbusTransactionState.SENDING
-        return self._send(request)
-
-    def _send(self, request):
-        """Send data on the underlying socket.
-
-        :param request: The encoded request to send
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def recv(self, size):
-        """Receive data."""
-        return self._recv(size)
-
-    def _recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :param size: The number of bytes to read
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    # ----------------------------------------------------------------------- #
-    # Modbus client methods
-    # ----------------------------------------------------------------------- #
-    def execute(self, request=None):
-        """Execute.
-
-        :param request: The request to process
-        :returns: The result of the request execution
-        :raises ConnectionException:
-        """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{str(self)}]")
-        return self.transaction.execute(request)
-
-    # ----------------------------------------------------------------------- #
-    # The magic methods
-    # ----------------------------------------------------------------------- #
-    def __enter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
-        return self
-
-    def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
-
-    def idle_time(self):
-        """Bus Idle Time to initiate next transaction
-
-        :return: time stamp
-        """
-        if self.last_frame_end is None or self.silent_interval is None:
-            return 0
-        return self.last_frame_end + self.silent_interval
-
-    def debug_enabled(self):
-        """Return a boolean indicating if debug is enabled."""
-        return self._debug
-
-    def set_debug(self, debug):
-        """Set the current debug flag."""
-        self._debug = debug
-
-    def trace(self, writeable):
-        """Show trace."""
-        if writeable:
-            self.set_debug(True)
-        self._debugfd = writeable
-
-    def _dump(self, data):
-        """Dump."""
-        fd = self._debugfd if self._debugfd else sys.stdout
-        try:
-            fd.write(hexlify_packets(data))
-        except Exception as exc:  # pylint: disable=broad-except
-            _logger.debug(hexlify_packets(data))
-            _logger.exception(exc)
-
-    def register(self, function):
-        """Register a function and sub function class with the decoder.
-
-        :param function: Custom function class to register
-        """
-        self.framer.decoder.register(function)
-
-    def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
-        return "Null Transport"
-
-
-# --------------------------------------------------------------------------- #
-# Modbus Serial Client Transport Implementation
-# --------------------------------------------------------------------------- #
 
 
 class ModbusSerialClient(
     BaseModbusClient
 ):  # pylint: disable=too-many-instance-attributes
-    """Implementation of a modbus serial client."""
+    r"""Modbus client for serial (RS-485) communication.
+
+    :param port: (positional) Serial port used for communication.
+    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
+    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
+    :param framer: (optional, default ModbusRtuFramer) Framer class.
+    :param timeout: (optional, default 3s) Timeout for a request.
+    :param retries: (optional, default 3) Max number of retries pr request.
+    :param retry_on_empty: (optional, default false) Retry on empty response.
+    :param close_comm_on_error: (optional, default true) Close connection on error.
+    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
+    :param baudrate: (optional, default 9600) Bits pr second.
+    :param bytesize: (optional, default 8) Number of bits pr byte 7-8.
+    :param parity: (optional, default None).
+    :param stopbits: (optional, default 1) Number of stop bits 0-2 to use.
+    :param handle_local_echo: (optional, default false) Handle local echo of the USB-to-RS485 dongle.
+    :param \*\*kwargs: (optional) Extra experimental parameters for transport
+    :return: client object
+    """
 
     state = ModbusTransactionState.IDLE
     inter_char_timeout = 0
     silent_interval = 0
 
-    def __init__(self, framer=ModbusRtuFramer, **kwargs):
-        """Initialize a serial client instance.
+    def __init__(  # pylint: disable=too-many-arguments
+        # Positional parameters
+        self,
+        port,
+        # Common optional paramers:
+        protocol_class=ModbusClientProtocol,
+        modbus_decoder=ClientDecoder,
+        framer=ModbusRtuFramer,
+        timeout=10,
+        retries=3,
+        retry_on_empty=False,
+        close_comm_on_error=False,
+        strict=True,
 
-        :param port: The serial port to attach to
-        :param stopbits: The number of stop bits to use
-        :param bytesize: The bytesize of the serial messages
-        :param parity: Which kind of parity to use
-        :param baudrate: The baud rate to use for the serial device
-        :param timeout: The timeout between serial requests (default 3s)
-        :param strict:  Use Inter char timeout for baudrates <= 19200 (adhere
-        to modbus standards)
-        :param handle_local_echo: Handle local echo of the USB-to-RS485 adaptor
-        :param framer: The modbus framer to use (default ModbusRtuFramer)
-        """
-        self.framer = framer
+        # Serial setup parameters
+        baudrate=9600,
+        bytesize=8,
+        parity="N",
+        stopbits=1,
+        handle_local_echo=False,
+        # Extra parameters for serial_async (experimental)
+        **kwargs,
+    ):
+        """Initialize Modbus Serial Client."""
+        self.port = port
+
+        self.port = port
+        self.protocol_class = protocol_class
+        self.framer = framer(modbus_decoder())
+        self.timeout = timeout
+        self.retries = retries
+        self.retry_on_empty = retry_on_empty
+        self.close_comm_on_error = close_comm_on_error
+        self.strict = strict
+
+        self.baudrate = baudrate
+        self.bytesize = bytesize
+        self.parity = parity
+        self.stopbits = stopbits
+        self.handle_local_echo = handle_local_echo
+
+        self.kwargs = kwargs
+
         self.socket = None
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
-        self.port = kwargs.get("port", 0)
-        self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
-        self.bytesize = kwargs.get("bytesize", Defaults.Bytesize)
-        self.parity = kwargs.get("parity", Defaults.Parity)
-        self.baudrate = kwargs.get("baudrate", Defaults.Baudrate)
-        self.timeout = kwargs.get("timeout", Defaults.Timeout)
-        self._strict = kwargs.get("strict", False)
         self.last_frame_end = None
-        self.handle_local_echo = kwargs.get("handle_local_echo", False)
         if isinstance(self.framer, ModbusRtuFramer):
             if self.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
@@ -246,7 +146,7 @@ class ModbusSerialClient(
                 parity=self.parity,
             )
             if isinstance(self.framer, ModbusRtuFramer):
-                if self._strict:
+                if self.strict:
                     self.socket.interCharTimeout = self.inter_char_timeout
                 self.last_frame_end = None
         except serial.SerialException as msg:
@@ -270,7 +170,7 @@ class ModbusSerialClient(
             waitingbytes = getattr(self.socket, in_waiting)()
         return waitingbytes
 
-    def _send(self, request):
+    def _send(self, request):  # pylint: disable=missing-type-doc
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -326,7 +226,7 @@ class ModbusSerialClient(
             time.sleep(0.01)
         return size
 
-    def _recv(self, size):
+    def _recv(self, size):  # pylint: disable=missing-type-doc
         """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read

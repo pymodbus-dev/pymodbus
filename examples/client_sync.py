@@ -26,7 +26,7 @@ import logging
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.client.sync import (
+from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
     ModbusTlsClient,

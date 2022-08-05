@@ -5,7 +5,7 @@ import logging
 from serial_asyncio import create_serial_connection
 
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.async_helper import ModbusClientProtocol
+from pymodbus.client.helper_async import ModbusClientProtocol
 from pymodbus.transaction import ModbusRtuFramer
 
 _logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class AsyncModbusSerialClient:  # pylint: disable=too-many-instance-attributes
     """Actual Async Serial Client to be used.
 
     To use do::
-        from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
+        from pymodbus.client import AsyncModbusSerialClient
     """
 
     transport = None

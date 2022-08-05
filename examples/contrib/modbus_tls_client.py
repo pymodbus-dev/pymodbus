@@ -10,7 +10,7 @@ feature.
 # -------------------------------------------------------------------------- #
 import ssl
 
-from pymodbus.client.sync import ModbusTlsClient
+from pymodbus.client import ModbusTlsClient
 
 # -------------------------------------------------------------------------- #
 # the TLS detail security can be set in SSLContext which is the context here

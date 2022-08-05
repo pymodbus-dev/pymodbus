@@ -13,7 +13,7 @@ Both server and client are tcp based, but it can be easily modified to any serve
 import argparse
 import logging
 
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext

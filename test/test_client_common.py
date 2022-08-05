@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Test client common."""
+"""Test client helper_sync."""
 import unittest
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
 from pymodbus.bit_write_message import WriteMultipleCoilsRequest, WriteSingleCoilRequest
-from pymodbus.client.common import ModbusClientMixin
+from pymodbus.client.helper_sync import ModbusClientMixin
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadInputRegistersRequest,

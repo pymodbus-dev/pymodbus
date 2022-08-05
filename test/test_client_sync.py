@@ -8,14 +8,14 @@ import unittest
 from unittest.mock import MagicMock, Mock, patch
 import serial
 
-from pymodbus.client.sync import (
-    BaseModbusClient,
+from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.tls_helper import sslctx_provider
+from pymodbus.client.sync_tcp import BaseModbusClient
+from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.exceptions import (
     ConnectionException,
     NotImplementedException,
@@ -81,7 +81,7 @@ class mockSocket:  # pylint: disable=invalid-name
 class SynchronousClientTest(
     unittest.TestCase
 ):  # pylint: disable=too-many-public-methods
-    """Unittest for the pymodbus.client.sync module."""
+    """Unittest for the pymodbus.client module."""
 
     # -----------------------------------------------------------------------#
     # Test Base Client
@@ -254,7 +254,7 @@ class SynchronousClientTest(
         client = ModbusTcpClient()
         self.assertNotEqual(client, None)
 
-    @patch("pymodbus.client.sync.select")
+    @patch("pymodbus.client.sync_tcp.select")
     def test_basic_sync_tcp_client(self, mock_select):
         """Test the basic methods for the tcp sync client"""
         # receive/send
@@ -306,8 +306,8 @@ class SynchronousClientTest(
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
         self.assertEqual(4, client._send("1234"))  # pylint: disable=protected-access
 
-    @patch("pymodbus.client.sync.time")
-    @patch("pymodbus.client.sync.select")
+    @patch("pymodbus.client.sync_tcp.time")
+    @patch("pymodbus.client.sync_tcp.select")
     def test_tcp_client_recv(self, mock_select, mock_time):
         """Test the tcp client receive method"""
         mock_select.select.return_value = [True]
@@ -453,7 +453,7 @@ class SynchronousClientTest(
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
         self.assertEqual(4, client._send("1234"))  # pylint: disable=protected-access
 
-    @patch("pymodbus.client.sync.time")
+    @patch("pymodbus.client.sync_tls.time")
     def test_tls_client_recv(self, mock_time):
         """Test the tls client receive method"""
         client = ModbusTlsClient()

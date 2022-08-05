@@ -4,7 +4,7 @@ import logging
 
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.async_helper import ModbusClientProtocol
+from pymodbus.client.helper_async import ModbusClientProtocol
 
 _logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class AsyncModbusTCPClient:
     """Actual Async Serial Client to be used.
 
     To use do::
-        from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient
+        from pymodbus.client import AsyncModbusTCPClient
     """
 
     #: Minimum delay in milli seconds before reconnect is attempted.

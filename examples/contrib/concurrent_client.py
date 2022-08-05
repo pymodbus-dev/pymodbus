@@ -23,7 +23,7 @@ from threading import Event, Thread
 # -------------------------------------------------------------------------- #
 # import necessary modbus libraries
 # -------------------------------------------------------------------------- #
-from pymodbus.client.common import ModbusClientMixin
+from pymodbus.client.helper_sync import ModbusClientMixin
 
 # -------------------------------------------------------------------------- #
 # configure the client logging
@@ -234,7 +234,7 @@ class ConcurrentClient(ModbusClientMixin):
 
 
 if __name__ == "__main__":
-    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.client import ModbusTcpClient
 
     def client_factory():
         """Client factory."""

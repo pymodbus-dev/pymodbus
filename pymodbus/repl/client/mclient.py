@@ -6,7 +6,7 @@ Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
 # pylint: disable=missing-type-doc
 import functools
 
-from pymodbus.client.sync import (
+from pymodbus.client import (
     ModbusSerialClient as _ModbusSerialClient,
     ModbusTcpClient as _ModbusTcpClient,
 )

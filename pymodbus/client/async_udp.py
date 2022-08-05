@@ -5,7 +5,7 @@ import functools
 
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.async_helper import BaseModbusAsyncClientProtocol
+from pymodbus.client.helper_async import BaseModbusAsyncClientProtocol
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class AsyncModbusUDPClient:
     """Actual Async UDP Client to be used.
 
     To use do::
-        from pymodbus.client.asynchronous.tcp import AsyncModbusUDPClient
+        from pymodbus.client import AsyncModbusUDPClient
     """
 
     #: Reconnect delay in milli seconds.

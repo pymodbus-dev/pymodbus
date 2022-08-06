@@ -11,7 +11,7 @@ the TLS feature and asyncio.
 import ssl
 import asyncio
 
-from pymodbus.client import AsyncModbusTLSClient
+from pymodbus.client import AsyncModbusTlsClient
 
 # -------------------------------------------------------------------------- #
 # the TLS detail security can be set in SSLContext which is the context here
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # pass SSLContext which is the context here to ModbusTcpClient()
     # ----------------------------------------------------------------------- #
-    new_client = AsyncModbusTLSClient(  # pylint: disable=unpacking-non-sequence
+    new_client = AsyncModbusTlsClient(  # pylint: disable=unpacking-non-sequence
         "test.host.com",
         8020,
         sslctx=sslctx,

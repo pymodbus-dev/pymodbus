@@ -1,21 +1,38 @@
-"""Sync client."""
-# pylint: disable=missing-type-doc
+"""Modbus client UDP communication.
+
+Example::
+
+    from pymodbus.client import AsyncModbusUdpClient
+
+    def run():
+        client = AsyncModbusUdpClient(
+            "127.0.0.1",
+            # Common optional paramers:
+            #    port=502,
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            #    framer=ModbusSocketFramer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # UDP setup parameters
+            #    source_address=("localhost", 0),
+        )
+
+        client.start()
+        ...
+        client.stop()
+"""
 import logging
 import socket
-import sys
 
-from pymodbus.client.helper_sync import ModbusClientMixin
-from pymodbus.constants import Defaults
-from pymodbus.exceptions import (
-    ConnectionException,
-    NotImplementedException,
-)
+from pymodbus.client.helper_sync import BaseModbusClient
+from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import (
-    DictTransactionManager,
-    ModbusSocketFramer,
-)
-from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.client.helper_async import ModbusClientProtocol
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -23,192 +40,68 @@ from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 _logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
-# The Synchronous Clients
-# --------------------------------------------------------------------------- #
-
-
-class BaseModbusClient(ModbusClientMixin):
-    """Interface for a modbus synchronous client.
-
-    Defined here are all the methods for performing the related
-    request methods.
-    Derived classes simply need to implement the transport methods and set the correct
-    framer.
-    """
-
-    def __init__(self, framer, **kwargs):
-        """Initialize a client instance.
-
-        :param framer: The modbus framer implementation to use
-        """
-        self.framer = framer
-        self.transaction = DictTransactionManager(self, **kwargs)
-        self._debug = False
-        self._debugfd = None
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
-        )
-
-    # ----------------------------------------------------------------------- #
-    # Client interface
-    # ----------------------------------------------------------------------- #
-    def connect(self):
-        """Connect to the modbus remote host.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def close(self):
-        """Close the underlying socket connection."""
-
-    def is_socket_open(self):
-        """Check whether the underlying socket/serial is open or not.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException(
-            f"is_socket_open() not implemented by {self.__str__()}"  # pylint: disable=unnecessary-dunder-call
-        )
-
-    def send(self, request):
-        """Send request."""
-        if self.state != ModbusTransactionState.RETRYING:
-            _logger.debug('New Transaction state "SENDING"')
-            self.state = ModbusTransactionState.SENDING
-        return self._send(request)
-
-    def _send(self, request):
-        """Send data on the underlying socket.
-
-        :param request: The encoded request to send
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def recv(self, size):
-        """Receive data."""
-        return self._recv(size)
-
-    def _recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :param size: The number of bytes to read
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    # ----------------------------------------------------------------------- #
-    # Modbus client methods
-    # ----------------------------------------------------------------------- #
-    def execute(self, request=None):
-        """Execute.
-
-        :param request: The request to process
-        :returns: The result of the request execution
-        :raises ConnectionException:
-        """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{str(self)}]")
-        return self.transaction.execute(request)
-
-    # ----------------------------------------------------------------------- #
-    # The magic methods
-    # ----------------------------------------------------------------------- #
-    def __enter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
-        return self
-
-    def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
-
-    def idle_time(self):
-        """Bus Idle Time to initiate next transaction
-
-        :return: time stamp
-        """
-        if self.last_frame_end is None or self.silent_interval is None:
-            return 0
-        return self.last_frame_end + self.silent_interval
-
-    def debug_enabled(self):
-        """Return a boolean indicating if debug is enabled."""
-        return self._debug
-
-    def set_debug(self, debug):
-        """Set the current debug flag."""
-        self._debug = debug
-
-    def trace(self, writeable):
-        """Show trace."""
-        if writeable:
-            self.set_debug(True)
-        self._debugfd = writeable
-
-    def _dump(self, data):
-        """Dump."""
-        fd = self._debugfd if self._debugfd else sys.stdout
-        try:
-            fd.write(hexlify_packets(data))
-        except Exception as exc:  # pylint: disable=broad-except
-            _logger.debug(hexlify_packets(data))
-            _logger.exception(exc)
-
-    def register(self, function):
-        """Register a function and sub function class with the decoder.
-
-        :param function: Custom function class to register
-        """
-        self.framer.decoder.register(function)
-
-    def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
-        return "Null Transport"
-
-
-# --------------------------------------------------------------------------- #
 # Modbus UDP Client Transport Implementation
 # --------------------------------------------------------------------------- #
 
 
-class ModbusUdpClient(BaseModbusClient):
-    """Implementation of a modbus udp client."""
+class ModbusUdpClient(BaseModbusClient):  # pylint: disable=too-many-instance-attributes
+    r"""Modbus client for UDP communication.
 
-    def __init__(
-        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+    :param host: (positional) Host IP address
+    :param port: (optional default 502) The serial port used for communication.
+    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
+    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
+    :param framer: (optional, default ModbusSocketFramer) Framer class.
+    :param timeout: (optional, default 3s) Timeout for a request.
+    :param retries: (optional, default 3) Max number of retries pr request.
+    :param retry_on_empty: (optional, default false) Retry on empty response.
+    :param close_comm_on_error: (optional, default true) Close connection on error.
+    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
+    :param source_address: (optional, default none) source address of client,
+    :param \*\*kwargs: (optional) Extra experimental parameters for transport
+    :return: client object
+    """
+
+    def __init__(  # pylint: disable=too-many-arguments
+        # Fixed parameters
+        self,
+        host,
+        port=502,
+        # Common optional paramers:
+        protocol_class=ModbusClientProtocol,
+        modbus_decoder=ClientDecoder,
+        framer=ModbusSocketFramer,
+        timeout=10,
+        retries=3,
+        retry_on_empty=False,
+        close_comm_on_error=False,
+        strict=True,
+
+        # UDP setup parameters
+        source_address=None,
+
+        # Extra parameters for transport (experimental)
+        **kwargs,
     ):
-        """Initialize a client instance.
-
-        :param host: The host to connect to (default 127.0.0.1)
-        :param port: The modbus port to connect to (default 502)
-        :param framer: The modbus framer to use (default ModbusSocketFramer)
-        :param timeout: The timeout to use for this socket (default None)
-        """
+        """Initialize Asyncio Modbus TCP Client."""
         self.host = host
         self.port = port
+        self.protocol_class = protocol_class
+        self.framer = framer(modbus_decoder())
+        self.timeout = timeout
+        self.retries = retries
+        self.retry_on_empty = retry_on_empty
+        self.close_comm_on_error = close_comm_on_error
+        self.strict = strict
+        self.source_address = source_address
+        self.kwargs = kwargs
+
         self.socket = None
-        self.timeout = kwargs.get("timeout", None)
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     @classmethod
     def _get_address_family(cls, address):
-        """Get the correct address family.
-
-        for a given address.
-
-        :param address: The address to get the af for
-        :returns: AF_INET for ipv4 and AF_INET6 for ipv6
-        """
+        """Get the correct address family."""
         try:
             _ = socket.inet_pton(socket.AF_INET6, address)
         except socket.error:  # not a valid ipv6 address
@@ -237,12 +130,7 @@ class ModbusUdpClient(BaseModbusClient):
         self.socket = None
 
     def _send(self, request):
-        """Send data on the underlying socket.
-
-        :param request: The encoded request to send
-        :return: The number of bytes written
-        :raises ConnectionException:
-        """
+        """Send data on the underlying socket."""
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
@@ -250,12 +138,7 @@ class ModbusUdpClient(BaseModbusClient):
         return 0
 
     def _recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :param size: The number of bytes to read
-        :return: The bytes read
-        :raises ConnectionException:
-        """
+        """Read data from the underlying descriptor."""
         if not self.socket:
             raise ConnectionException(str(self))
         return self.socket.recvfrom(size)[0]

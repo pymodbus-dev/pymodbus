@@ -1,4 +1,35 @@
-"""SERIAL communication."""
+"""Modbus client async serial communication.
+
+The serial communication is RS-485 based, and usually used vith a usb rs-485 dongle.
+
+Example::
+
+    from pymodbus.client import AsyncModbusSerialClient
+
+    async def run():
+        client = AsyncModbusSerialClient(
+            "dev/pty0",  # serial port
+            # Common optional paramers:
+            #    protocol_class=ModbusClientProtocol,
+            #    modbus_decoder=ClientDecoder,
+            #    framer=ModbusRtuFramer,
+            #    timeout=10,
+            #    retries=3,
+            #    retry_on_empty=False,
+            #    close_comm_on_error=False,
+            #    strict=True,
+            # Serial setup parameters
+            #    baudrate=9600,
+            #    bytesize=8,
+            #    parity="N",
+            #    stopbits=1,
+            #    handle_local_echo=False,
+        )
+
+        await client.start()
+        ...
+        await client.stop()
+"""
 import asyncio
 import logging
 
@@ -12,55 +43,69 @@ _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusSerialClient:  # pylint: disable=too-many-instance-attributes
-    """Actual Async Serial Client to be used.
+    r"""Modbus client for async serial (RS-485) communication.
 
-    To use do::
-        from pymodbus.client import AsyncModbusSerialClient
+    :param port: (positional) Serial port used for communication.
+    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
+    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
+    :param framer: (optional, default ModbusRtuFramer) Framer class.
+    :param timeout: (optional, default 3s) Timeout for a request.
+    :param retries: (optional, default 3) Max number of retries pr request.
+    :param retry_on_empty: (optional, default false) Retry on empty response.
+    :param close_comm_on_error: (optional, default true) Close connection on error.
+    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
+    :param baudrate: (optional, default 9600) Bits pr second.
+    :param bytesize: (optional, default 8) Number of bits pr byte 7-8.
+    :param parity: (optional, default None).
+    :param stopbits: (optional, default 1) Number of stop bits 0-2 to use.
+    :param handle_local_echo: (optional, default false) Handle local echo of the USB-to-RS485 dongle.
+    :param \*\*kwargs: (optional) Extra experimental parameters for transport
+    :return: client object
     """
 
     transport = None
     framer = None
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
+        # Positional parameters
         self,
         port,
+        # Common optional paramers:
         protocol_class=ModbusClientProtocol,
         modbus_decoder=ClientDecoder,
         framer=ModbusRtuFramer,
         timeout=10,
+        retries=3,
+        retry_on_empty=False,
+        close_comm_on_error=False,
+        strict=True,
+
         # Serial setup parameters
         baudrate=9600,
         bytesize=8,
         parity="N",
         stopbits=1,
+        handle_local_echo=False,
+
         # Extra parameters for serial_async (experimental)
         **kwargs,
     ):
-        """Initialize Asyncio Modbus Serial Client.
-
-        :param port: The serial port to attach to
-        :param protocol_class: Protocol used to talk to modbus device.
-        :param modbus_decoder: Message decoder.
-        :param framer: Modbus framer
-        :param timeout: The timeout between serial requests (default 3s)
-
-        :param baudrate: The baud rate to use for the serial device
-        :param bytesize: The bytesize of the serial messages
-        :param parity: Which kind of parity to use
-        :param stopbits: The number of stop bits to use
-
-        :param **kwargs: extra parameters for serial_async (experimental)
-        :return: client object
-        """
+        """Initialize Asyncio Modbus Serial Client."""
         self.port = port
         self.protocol_class = protocol_class
         self.framer = framer(modbus_decoder())
         self.timeout = timeout
+        self.retries = retries
+        self.retry_on_empty = retry_on_empty
+        self.close_comm_on_error = close_comm_on_error
+        self.strict = strict
 
         self.baudrate = baudrate
         self.bytesize = bytesize
         self.parity = parity
         self.stopbits = stopbits
+        self.handle_local_echo = handle_local_echo
+
         self.kwargs = kwargs
 
         self.loop = None
@@ -111,7 +156,10 @@ class AsyncModbusSerialClient:  # pylint: disable=too-many-instance-attributes
             _logger.warning(txt)
 
     def protocol_made_connection(self, protocol):
-        """Notify successful connection."""
+        """Notify successful connection.
+
+        :meta private:
+        """
         _logger.info("Serial connected.")
         if not self._connected:
             self._connected_event.set()
@@ -120,7 +168,10 @@ class AsyncModbusSerialClient:  # pylint: disable=too-many-instance-attributes
             _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
-        """Notify lost connection."""
+        """Notify lost connection.
+
+        :meta private:
+        """
         if self._connected:
             _logger.info("Serial lost connection.")
             if protocol is not self.protocol:

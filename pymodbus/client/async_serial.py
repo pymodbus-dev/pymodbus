@@ -132,10 +132,7 @@ class AsyncModbusSerialClient:  # pylint: disable=too-many-instance-attributes
         """Connect Async client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
-        await self.connect()
 
-    async def connect(self):
-        """Connect Async client."""
         _logger.debug("Starting serial connection")
         try:
             await create_serial_connection(

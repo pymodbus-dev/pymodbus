@@ -93,7 +93,7 @@ class SynchronousClientTest(
         client.transaction = None
         self.assertRaises(
             NotImplementedException,
-            lambda: client.connect(),  # pylint: disable=unnecessary-lambda
+            lambda: client.start(),  # pylint: disable=unnecessary-lambda
         )
         self.assertRaises(NotImplementedException, lambda: client.send(None))
         self.assertRaises(NotImplementedException, lambda: client.recv(None))
@@ -128,7 +128,7 @@ class SynchronousClientTest(
         self.assertEqual(hexlify_packets(b"\x00\x01\x02"), writable.getvalue())
 
         # a successful execute
-        client.connect = lambda: True
+        client.start = lambda: True
         client.transaction = Mock(**{"execute.return_value": True})
         self.assertEqual(
             client, client.__enter__()  # pylint: disable=unnecessary-dunder-call
@@ -136,7 +136,7 @@ class SynchronousClientTest(
         self.assertTrue(client.execute())
 
         # a unsuccessful connect
-        client.connect = lambda: False
+        client.start = lambda: False
         self.assertRaises(
             ConnectionException,
             lambda: client.execute(),  # pylint: disable=unnecessary-lambda
@@ -165,7 +165,7 @@ class SynchronousClientTest(
         self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
 
         # connect/disconnect
-        self.assertTrue(client.connect())
+        self.assertTrue(client.start())
         client.close()
 
         # already closed socket
@@ -198,12 +198,12 @@ class SynchronousClientTest(
 
             mock_method.return_value = DummySocket()
             client = ModbusUdpClient("127.0.0.1")
-            self.assertTrue(client.connect())
+            self.assertTrue(client.start())
 
         with patch.object(socket, "socket") as mock_method:
             mock_method.side_effect = socket.error()
             client = ModbusUdpClient("127.0.0.1")
-            self.assertFalse(client.connect())
+            self.assertFalse(client.start())
 
     def test_udp_client_is_socket_open(self):
         """Test the udp client is_socket_open method"""
@@ -266,7 +266,7 @@ class SynchronousClientTest(
         self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
 
         # connect/disconnect
-        self.assertTrue(client.connect())
+        self.assertTrue(client.start())
         client.close()
 
         # already closed socket
@@ -282,12 +282,12 @@ class SynchronousClientTest(
             mock_method.return_value = _socket
             client = ModbusTcpClient("127.0.0.1")
             _socket.getsockname.return_value = ("dmmy", 1234)
-            self.assertTrue(client.connect())
+            self.assertTrue(client.start())
 
         with patch.object(socket, "create_connection") as mock_method:
             mock_method.side_effect = socket.error()
             client = ModbusTcpClient("127.0.0.1")
-            self.assertFalse(client.connect())
+            self.assertFalse(client.start())
 
     def test_tcp_client_is_socket_open(self):
         """Test the tcp client is_socket_open method"""
@@ -421,7 +421,7 @@ class SynchronousClientTest(
         self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
 
         # connect/disconnect
-        self.assertTrue(client.connect())
+        self.assertTrue(client.start())
         client.close()
 
         # already closed socket
@@ -434,12 +434,12 @@ class SynchronousClientTest(
         """Test the tls client connection method"""
         with patch.object(ssl.SSLSocket, "connect") as mock_method:
             client = ModbusTlsClient("127.0.0.1")
-            self.assertTrue(client.connect())
+            self.assertTrue(client.start())
 
         with patch.object(socket, "create_connection") as mock_method:
             mock_method.side_effect = socket.error()
             client = ModbusTlsClient("127.0.0.1")
-            self.assertFalse(client.connect())
+            self.assertFalse(client.start())
 
     def test_tls_client_send(self):
         """Test the tls client send method"""
@@ -552,12 +552,12 @@ class SynchronousClientTest(
         self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
 
         # connect/disconnect
-        self.assertTrue(client.connect())
+        self.assertTrue(client.start())
         client.close()
 
         # rtu connect/disconnect
         rtu_client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, strict=True)
-        self.assertTrue(rtu_client.connect())
+        self.assertTrue(rtu_client.start())
         self.assertEqual(
             rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
         )
@@ -574,12 +574,12 @@ class SynchronousClientTest(
         with patch.object(serial, "Serial") as mock_method:
             mock_method.return_value = MagicMock()
             client = ModbusSerialClient("/dev/null")
-            self.assertTrue(client.connect())
+            self.assertTrue(client.start())
 
         with patch.object(serial, "Serial") as mock_method:
             mock_method.side_effect = serial.SerialException()
             client = ModbusSerialClient("/dev/null")
-            self.assertFalse(client.connect())
+            self.assertFalse(client.start())
 
     @patch("serial.Serial")
     def test_serial_client_is_socket_open(self, mock_serial):
@@ -599,7 +599,7 @@ class SynchronousClientTest(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
         )
-        # client.connect()
+        # client.start()
         client.socket = mock_serial
         client.state = 0
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access
@@ -617,7 +617,7 @@ class SynchronousClientTest(
             ConnectionException,
             lambda: client._send(None),  # pylint: disable=protected-access
         )
-        # client.connect()
+        # client.start()
         client.socket = mock_serial
         client.state = 0
         self.assertEqual(0, client._send(None))  # pylint: disable=protected-access

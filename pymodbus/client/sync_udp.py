@@ -108,7 +108,7 @@ class ModbusUdpClient(BaseModbusClient):  # pylint: disable=too-many-instance-at
             return socket.AF_INET
         return socket.AF_INET6
 
-    def connect(self):
+    def start(self):
         """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
@@ -147,7 +147,7 @@ class ModbusUdpClient(BaseModbusClient):  # pylint: disable=too-many-instance-at
         """Check if socket is open."""
         if self.socket:
             return True
-        return self.connect()
+        return self.start()
 
     def __str__(self):
         """Build a string representation of the connection.

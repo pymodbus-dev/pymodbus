@@ -184,7 +184,7 @@ class BaseModbusClient(ModbusClientMixin):
     # ----------------------------------------------------------------------- #
     # Client interface
     # ----------------------------------------------------------------------- #
-    def connect(self):
+    def start(self):
         """Connect to the modbus remote host.
 
         :raises NotImplementedException:
@@ -240,7 +240,7 @@ class BaseModbusClient(ModbusClientMixin):
         :returns: The result of the request execution
         :raises ConnectionException:
         """
-        if not self.connect():
+        if not self.start():
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
@@ -253,7 +253,7 @@ class BaseModbusClient(ModbusClientMixin):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not self.connect():
+        if not self.start():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
         return self
 

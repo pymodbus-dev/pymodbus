@@ -43,7 +43,7 @@ from pymodbus.transaction import (
 )
 
 
-async def setup_async_client():
+def setup_async_client():
     """Run client setup."""
     args = get_commandline()
     _logger.info("### Create client object")
@@ -119,14 +119,14 @@ async def setup_async_client():
             #    password=None,
             #    server_hostname="localhost",
         )
-    await client.start()
     return client
 
 
 async def run_async_client(modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client ready")
-    client = await setup_async_client()
+    client = setup_async_client()
+    await client.start()
     if modbus_calls:
         await modbus_calls(client.protocol)
     _logger.info("### End of Program")

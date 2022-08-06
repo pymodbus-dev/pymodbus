@@ -117,26 +117,16 @@ def setup_sync_client():
             #    password=None,
             #    server_hostname="localhost",
         )
-    return client, args.comm != "udp"
+    return client
 
 
 def run_sync_client(modbus_calls=None):
     """Run sync client."""
-    client, do_connect = setup_sync_client()
-
-    if do_connect:
-        _logger.info("### Connect to server")
-        client.connect()
-
     _logger.info("### Client ready")
-
-    # Run supplied modbus calls
+    client = setup_sync_client()
+    client.start()
     if modbus_calls:
         modbus_calls(client)
-
-    if do_connect:
-        _logger.info("### Close connection to server")
-        client.close()
     _logger.info("### End of Program")
 
 

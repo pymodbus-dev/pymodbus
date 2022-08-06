@@ -157,7 +157,7 @@ class TestAsynchronousClient:
         assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec
         assert client.bytesize == 7  # nosec
-        asyncio.wait_for(client.connect(), timeout=1)
+        asyncio.wait_for(client.start(), timeout=1)
         client.stop()
 
 

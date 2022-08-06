@@ -41,7 +41,7 @@ def run_forwarder():
     context = ModbusServerContext(slaves=store, single=True)
 
     # start forwarding client and server
-    client.connect()
+    client.start()
     StartTcpServer(context, address=("localhost", port_server))
     # loop forever
 

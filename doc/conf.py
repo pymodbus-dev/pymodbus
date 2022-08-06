@@ -68,8 +68,8 @@ master_doc = "index"  # pylint: disable=invalid-name
 
 # General information about the project.
 project = "PyModbus"  # pylint: disable=invalid-name
-copyright = "2017, Sanjay"  # pylint: disable=redefined-builtin,invalid-name
-author = "Sanjay"  # pylint: disable=invalid-name
+copyright = "See license"  # pylint: disable=redefined-builtin,invalid-name
+author = "Open Source volunteers"  # pylint: disable=invalid-name
 
 # The version info for the project you"re documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

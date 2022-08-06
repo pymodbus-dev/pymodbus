@@ -1,8 +1,4 @@
-"""Modbus Clients to be used with REPL.
-
-Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
-
-"""
+"""Modbus Clients to be used with REPL."""
 # pylint: disable=missing-type-doc
 import functools
 

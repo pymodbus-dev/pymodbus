@@ -1,8 +1,4 @@
-"""Pymodbus REPL Entry point.
-
-Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
-
-"""
+"""Pymodbus REPL Entry point."""
 import logging
 import os.path
 import sys

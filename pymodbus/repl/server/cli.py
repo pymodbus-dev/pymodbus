@@ -1,8 +1,4 @@
-"""Repl server cli.
-
-Copyright (c) 2020 by RiptideIO
-All rights reserved.
-"""
+"""Repl server cli."""
 import logging
 import shutil
 

@@ -94,7 +94,7 @@ class ModbusTcpClient(BaseModbusClient):  # pylint: disable=too-many-instance-at
         self.socket = None
         BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
-    def connect(self):
+    def start(self):
         """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise

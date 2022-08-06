@@ -129,7 +129,7 @@ class ModbusSerialClient(
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
 
-    def connect(self):
+    def start(self):
         """Connect to the modbus serial server.
 
         :returns: True if connection succeeded, False otherwise

@@ -108,7 +108,7 @@ class ModbusTlsClient(ModbusTcpClient):  # pylint: disable=too-many-instance-att
 
         ModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
-    def connect(self):
+    def start(self):
         """Connect to the modbus tls server.
 
         :returns: True if connection succeeded, False otherwise

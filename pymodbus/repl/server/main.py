@@ -1,8 +1,4 @@
-"""Repl server main.
-
-Copyright (c) 2020 by RiptideIO
-All rights reserved.
-"""
+"""Repl server main."""
 import asyncio
 import json
 import logging

@@ -1,8 +1,4 @@
-"""Reactive main.
-
-Copyright (c) 2020 by RiptideIO
-All rights reserved.
-"""
+"""Reactive main."""
 import asyncio
 import logging
 

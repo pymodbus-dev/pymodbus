@@ -1,8 +1,4 @@
-"""Command Completion for pymodbus REPL.
-
-Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
-
-"""
+"""Command Completion for pymodbus REPL."""
 from prompt_toolkit.application.current import get_app
 
 # pylint: disable=missing-type-doc

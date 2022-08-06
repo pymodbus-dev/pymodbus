@@ -1,8 +1,4 @@
-"""Helper Module for REPL actions.
-
-Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
-
-"""
+"""Helper Module for REPL actions."""
 from collections import OrderedDict
 import inspect
 

@@ -1,8 +1,4 @@
-"""Default config.
-
-Copyright (c) 2020 by RiptideIO
-All rights reserved.
-"""
+"""Default config."""
 
 DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
     "tcp": {

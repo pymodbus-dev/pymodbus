@@ -3,7 +3,7 @@ import logging
 import socket
 import time
 
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client.sync_tcp import ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import ModbusSocketFramer
@@ -51,8 +51,6 @@ class ModbusTcpDiagClient(ModbusTcpClient):
     timeout period configured for this instance.
     """
 
-    # pylint: disable=no-member
-
     def __init__(
         self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
     ):
@@ -88,21 +86,21 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         if self.socket:
             return True
         try:
-            _logger.info(self.conn_msg, self)
+            _logger.info(LOG_MSGS["conn_msg"], self)
             self.socket = socket.create_connection(
                 (self.host, self.port),
                 timeout=self.timeout,
                 source_address=self.source_address,
             )
         except socket.error as msg:
-            _logger.error(self.connfail_msg, self.host, self.port, msg)
+            _logger.error(LOG_MSGS["connfail_msg"], self.host, self.port, msg)
             self.close()
         return self.socket is not None
 
     def close(self):
         """Close the underlying socket connection."""
         if self.socket:
-            _logger.info(self.discon_msg, self)
+            _logger.info(LOG_MSGS["discon_msg"], self)
             self.socket.close()
         self.socket = None
 
@@ -116,29 +114,29 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             if self.warn_delay_limit is not None and delay >= self.warn_delay_limit:
                 self._log_delayed_response(len(result), size, delay)
             elif not size:
-                _logger.debug(self.timelimit_read_msg, delay, len(result))
+                _logger.debug(LOG_MSGS["timelimit_read_msg"], delay, len(result))
             else:
-                _logger.debug(self.read_msg, delay, len(result), size)
+                _logger.debug(LOG_MSGS["read_msg"], delay, len(result), size)
 
             return result
         except ConnectionException as exc:
             # Only log actual network errors, "if not self.socket" then it"s a internal code issue
             if "Connection unexpectedly closed" in exc.string:
-                _logger.error(self.unexpected_dc_msg, self, exc)
+                _logger.error(LOG_MSGS["unexpected_dc_msg"], self, exc)
             raise ConnectionException from exc
 
     def _log_delayed_response(self, result_len, size, delay):
         """Log delayed response."""
         if not size and result_len > 0:
-            _logger.info(self.timelimit_read_msg, delay, result_len)
+            _logger.info(LOG_MSGS["timelimit_read_msg"], delay, result_len)
         elif (
             (not result_len) or (size and result_len < size)
         ) and delay >= self.timeout:
             size_txt = size if size else "in timelimit read"
             read_type = f"of {size_txt} expected"
-            _logger.warning(self.timeout_msg, delay, result_len, read_type)
+            _logger.warning(LOG_MSGS["timeout_msg"], delay, result_len, read_type)
         else:
-            _logger.warning(self.delay_msg, delay, result_len, size)
+            _logger.warning(LOG_MSGS["delay_msg"], delay, result_len, size)
 
     def __str__(self):
         """Build a string representation of the connection.

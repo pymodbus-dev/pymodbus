@@ -23,7 +23,7 @@ from threading import Event, Thread
 # -------------------------------------------------------------------------- #
 # import necessary modbus libraries
 # -------------------------------------------------------------------------- #
-from pymodbus.client.helper_sync import ModbusClientMixin
+from pymodbus.client.mixin import ModbusClientMixin
 
 # -------------------------------------------------------------------------- #
 # configure the client logging

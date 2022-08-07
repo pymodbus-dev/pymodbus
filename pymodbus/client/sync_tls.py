@@ -9,7 +9,6 @@ Example::
             "localhost",
             #    port=802,
             # Common optional paramers:
-            #    protocol_class=None,
             #    modbus_decoder=ClientDecoder,
             #    framer=ModbusTLsFramer,
             #    timeout=10,
@@ -32,7 +31,6 @@ import logging
 import socket
 import time
 
-from pymodbus.factory import ClientDecoder
 from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.client.sync_tcp import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
@@ -41,19 +39,12 @@ from pymodbus.transaction import ModbusTlsFramer
 _logger = logging.getLogger(__name__)
 
 
-class ModbusTlsClient(ModbusTcpClient):  # pylint: disable=too-many-instance-attributes
+class ModbusTlsClient(ModbusTcpClient):
     r"""Modbus client for TLS communication.
 
     :param host: (positional) Host IP address
     :param port: (optional default 802) The serial port used for communication.
-    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
-    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
     :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param timeout: (optional, default 3s) Timeout for a request.
-    :param retries: (optional, default 3) Max number of retries pr request.
-    :param retry_on_empty: (optional, default false) Retry on empty response.
-    :param close_comm_on_error: (optional, default true) Close connection on error.
-    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
     :param source_address: (optional, default none) Source address of client,
     :param sslctx: (optional, default none) SSLContext to use for TLS (default None and auto create)
     :param certfile: (optional, default none) Cert file path for TLS server request
@@ -64,49 +55,25 @@ class ModbusTlsClient(ModbusTcpClient):  # pylint: disable=too-many-instance-att
     :return: client object
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
-        # Fixed parameters
+    def __init__(
         self,
         host,
         port=802,
-        # Common optional paramers:
-        protocol_class=None,
-        modbus_decoder=ClientDecoder,
         framer=ModbusTlsFramer,
-        timeout=10,
-        retries=3,
-        retry_on_empty=False,
-        close_comm_on_error=False,
-        strict=True,
-
-        # TLS setup parameters
         sslctx=None,
         certfile=None,
         keyfile=None,
         password=None,
         server_hostname=None,
-
-        # Extra parameters for serial_async (experimental)
         **kwargs,
     ):
-        """Initialize Modbus TCP Client."""
-        self.host = host
-        self.port = port
-        self.protocol_class = protocol_class
-        self.framer = framer(modbus_decoder())
-        self.timeout = timeout
-        self.retries = retries
-        self.retry_on_empty = retry_on_empty
-        self.close_comm_on_error = close_comm_on_error
-        self.strict = strict
+        """Initialize Modbus TLS Client."""
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         self.certfile = certfile
         self.keyfile = keyfile
         self.password = password
         self.server_hostname = server_hostname
-        self.kwargs = kwargs
-
-        ModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
+        super().__init__(host, port=port, framer=framer, **kwargs)
 
     def start(self):
         """Connect to the modbus tls server.

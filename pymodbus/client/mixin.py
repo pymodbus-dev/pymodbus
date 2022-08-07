@@ -4,8 +4,54 @@ This is a common client mixin that can be used by
 both the synchronous and asynchronous clients to
 simplify the interface.
 """
+
+# Function codes descriptions
+# 0x01 Read Coils
+# 0x02 Read Discrete Inputs
+# 0x03 Read Holding Registers
+# 0x04 Read Input Registers
+# 0x05 Write Single Coil
+# 0x06 Write Single Register
+# 0x07 Read Exception Status (Serial Line only)
+# 0x08 Diagnostics (Serial Line only)
+#     Sub-function codes supported by the serial line devices
+#         0x00 Return Query Data
+#         0x01 Restart Communications Option
+#         0x02 Return Diagnostic Register
+#         0x03 Change ASCII Input Delimiter
+#         0x04 Force Listen Only Mode
+#         0x05 - 0x09 RESERVED
+#         0x0A Clear Counters and Diagnostic Register
+#         0x0B Return Bus Message Count
+#         0x0C Return Bus Communication Error Count
+#         0x0D Return Bus Exception Error Count
+#         0x0E Return Slave Message Count
+#         0x0F Return Slave No Response Count
+#         0x10 Return Slave NAK Count
+#         0x11 Return Slave Busy Count
+#         0x12 Return Bus Character Overrun Count
+#         0x13 RESERVED
+#         0x14 Clear Overrun Counter and Flag
+#         0x15 RESERVED
+# 0x0B Get Comm Event Counter (Serial Line only)
+# 0x0C Get Comm Event Log (Serial Line only)
+# 0x0F Write Multiple Coils
+# 0x10 Write Multiple registers
+# 0x11 Report Slave ID (Serial Line only)
+# 0x14 Read File Record
+# 0x15 Write File Record
+# 0x16 Mask Write Register
+# 0x17 Read/Write Multiple registers
+# 0x18 Read FIFO Queue
+# 0x2B Encapsulated Interface Transport
+# 0x2B / 0x0D CANopen General Reference Request and Response
+#     PDU
+# 0x2B / 0x0E Read Device Identification
+# MODBUS Exception Responses
+# Annex A (Informative)
+# Annex B (Informative)
+
 # pylint: disable=missing-type-doc
-import sys
 import logging
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
@@ -20,13 +66,7 @@ from pymodbus.register_write_message import (
     WriteMultipleRegistersRequest,
     WriteSingleRegisterRequest,
 )
-from pymodbus.exceptions import (
-    ConnectionException,
-    NotImplementedException,
-)
-from pymodbus.utilities import ModbusTransactionState, hexlify_packets
-from pymodbus.transaction import DictTransactionManager
-from pymodbus.constants import Defaults
+from pymodbus.utilities import ModbusTransactionState
 
 _logger = logging.getLogger(__name__)
 
@@ -157,152 +197,3 @@ class ModbusClientMixin:
         """
         request = MaskWriteRegisterRequest(*args, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
-
-
-class BaseOldModbusClient(ModbusClientMixin):
-    """Interface for a modbus synchronous client.
-
-    Defined here are all the methods for performing the related
-    request methods.
-    Derived classes simply need to implement the transport methods and set the correct
-    framer.
-    """
-
-    def __init__(self, framer, **kwargs):
-        """Initialize a client instance.
-
-        :param framer: The modbus framer implementation to use
-        """
-        self.framer = framer
-        self.transaction = DictTransactionManager(self, **kwargs)
-        self._debug = False
-        self._debugfd = None
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
-        )
-
-    # ----------------------------------------------------------------------- #
-    # Client interface
-    # ----------------------------------------------------------------------- #
-    def start(self):
-        """Connect to the modbus remote host.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def close(self):
-        """Close the underlying socket connection."""
-
-    def is_socket_open(self):
-        """Check whether the underlying socket/serial is open or not.
-
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException(
-            f"is_socket_open() not implemented by {self.__str__()}"  # pylint: disable=unnecessary-dunder-call
-        )
-
-    def send(self, request):
-        """Send request."""
-        if self.state != ModbusTransactionState.RETRYING:
-            _logger.debug('New Transaction state "SENDING"')
-            self.state = ModbusTransactionState.SENDING
-        return self._send(request)
-
-    def _send(self, request):
-        """Send data on the underlying socket.
-
-        :param request: The encoded request to send
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    def recv(self, size):
-        """Receive data."""
-        return self._recv(size)
-
-    def _recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :param size: The number of bytes to read
-        :raises NotImplementedException:
-        """
-        raise NotImplementedException("Method not implemented by derived class")
-
-    # ----------------------------------------------------------------------- #
-    # Modbus client methods
-    # ----------------------------------------------------------------------- #
-    def execute(self, request=None):
-        """Execute.
-
-        :param request: The request to process
-        :returns: The result of the request execution
-        :raises ConnectionException:
-        """
-        if not self.start():
-            raise ConnectionException(f"Failed to connect[{str(self)}]")
-        return self.transaction.execute(request)
-
-    # ----------------------------------------------------------------------- #
-    # The magic methods
-    # ----------------------------------------------------------------------- #
-    def __enter__(self):
-        """Implement the client with enter block.
-
-        :returns: The current instance of the client
-        :raises ConnectionException:
-        """
-        if not self.start():
-            raise ConnectionException(f"Failed to connect[{self.__str__()}]")
-        return self
-
-    def __exit__(self, klass, value, traceback):
-        """Implement the client with exit block."""
-        self.close()
-
-    def idle_time(self):
-        """Bus Idle Time to initiate next transaction
-
-        :return: time stamp
-        """
-        if self.last_frame_end is None or self.silent_interval is None:
-            return 0
-        return self.last_frame_end + self.silent_interval
-
-    def debug_enabled(self):
-        """Return a boolean indicating if debug is enabled."""
-        return self._debug
-
-    def set_debug(self, debug):
-        """Set the current debug flag."""
-        self._debug = debug
-
-    def trace(self, writeable):
-        """Show trace."""
-        if writeable:
-            self.set_debug(True)
-        self._debugfd = writeable
-
-    def _dump(self, data):
-        """Dump."""
-        fd = self._debugfd if self._debugfd else sys.stdout
-        try:
-            fd.write(hexlify_packets(data))
-        except Exception as exc:  # pylint: disable=broad-except
-            _logger.debug(hexlify_packets(data))
-            _logger.exception(exc)
-
-    def register(self, function):
-        """Register a function and sub function class with the decoder.
-
-        :param function: Custom function class to register
-        """
-        self.framer.decoder.register(function)
-
-    def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
-        return "Null Transport"

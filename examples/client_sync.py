@@ -50,7 +50,6 @@ def setup_sync_client():
             "127.0.0.1",
             port=args.port,
             # Common optional paramers:
-            #    protocol_class=None,
             #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
@@ -66,7 +65,6 @@ def setup_sync_client():
             "localhost",
             #    port=502,
             # Common optional paramers:
-            #    protocol_class=ModbusClientProtocol,
             #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
@@ -81,7 +79,6 @@ def setup_sync_client():
         client = ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional paramers:
-            #    protocol_class=ModbusClientProtocol,
             #    modbus_decoder=ClientDecoder,
             #    framer=ModbusRtuFramer,
             #    timeout=10,
@@ -101,7 +98,6 @@ def setup_sync_client():
             "localhost",
             port=args.port,
             # Common optional paramers:
-            #    protocol_class=None,
             #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
@@ -126,6 +122,7 @@ def run_sync_client(modbus_calls=None):
     client.start()
     if modbus_calls:
         modbus_calls(client)
+    client.stop()  # pylint: disable=no-member
     _logger.info("### End of Program")
 
 

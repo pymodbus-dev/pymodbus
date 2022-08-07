@@ -32,77 +32,8 @@ import functools
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.client.helper_async import ModbusClientProtocol
-from pymodbus.client.helper_async import BaseModbusAsyncClientProtocol
 
 _logger = logging.getLogger(__name__)
-
-
-class ModbusUdpClientProtocol(  # pylint: disable=too-many-instance-attributes
-    BaseModbusAsyncClientProtocol,
-    asyncio.DatagramProtocol
-):
-    r"""Modbus UDP client, asyncio based.
-
-    :param host: (positional) Host IP address
-    :param port: (optional default 502) The serial port used for communication.
-    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
-    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
-    :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param timeout: (optional, default 3s) Timeout for a request.
-    :param retries: (optional, default 3) Max number of retries pr request.
-    :param retry_on_empty: (optional, default false) Retry on empty response.
-    :param close_comm_on_error: (optional, default true) Close connection on error.
-    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
-    :param source_address: (optional, default none) source address of client,
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
-    """
-
-    #: Factory that created this instance.
-    factory = None
-
-    def __init__(  # pylint: disable=too-many-arguments
-        # Fixed parameters
-        self,
-        host,
-        port=502,
-        # Common optional paramers:
-        protocol_class=ModbusClientProtocol,
-        modbus_decoder=ClientDecoder,
-        framer=ModbusSocketFramer,
-        timeout=10,
-        retries=3,
-        retry_on_empty=False,
-        close_comm_on_error=False,
-        strict=True,
-
-        # UDP setup parameters
-        source_address=None,
-
-        # Extra parameters for transport (experimental)
-        **kwargs,
-    ):
-        """Initialize Asyncio Modbus TCP Client."""
-        self.host = host
-        self.port = port
-        self.protocol_class = protocol_class
-        self.framer = framer(modbus_decoder())
-        self.timeout = timeout
-        self.retries = retries
-        self.retry_on_empty = retry_on_empty
-        self.close_comm_on_error = close_comm_on_error
-        self.strict = strict
-        self.source_address = source_address
-        self.kwargs = kwargs
-        super().__init__(**kwargs)
-
-    def datagram_received(self, data, addr):
-        """Receive datagram."""
-        self._data_received(data)
-
-    def write_transport(self, packet):
-        """Write transport."""
-        return self.transport.sendto(packet)
 
 
 class AsyncModbusUdpClient:
@@ -121,7 +52,7 @@ class AsyncModbusUdpClient:
         self,
         host,
         port=502,
-        protocol_class=ModbusUdpClientProtocol,
+        protocol_class=ModbusClientProtocol,
         modbus_decoder=ClientDecoder,
         framer=ModbusSocketFramer,
         timeout=10,
@@ -193,7 +124,7 @@ class AsyncModbusUdpClient:
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
-        protocol = self.protocol_class(**self.kwargs)
+        protocol = self.protocol_class(use_udp=True, **self.kwargs)
         protocol.host = host
         protocol.port = port
         protocol.factory = self

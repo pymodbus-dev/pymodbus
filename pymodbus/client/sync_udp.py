@@ -28,7 +28,7 @@ Example::
 import logging
 import socket
 
-from pymodbus.client.helper_sync import BaseModbusClient
+from pymodbus.client.helper_sync import BaseOldModbusClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
@@ -44,7 +44,7 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 
 
-class ModbusUdpClient(BaseModbusClient):  # pylint: disable=too-many-instance-attributes
+class ModbusUdpClient(BaseOldModbusClient):  # pylint: disable=too-many-instance-attributes
     r"""Modbus client for UDP communication.
 
     :param host: (positional) Host IP address
@@ -97,7 +97,7 @@ class ModbusUdpClient(BaseModbusClient):  # pylint: disable=too-many-instance-at
         self.kwargs = kwargs
 
         self.socket = None
-        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
+        BaseOldModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     @classmethod
     def _get_address_family(cls, address):

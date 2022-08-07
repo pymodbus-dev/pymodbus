@@ -6,23 +6,17 @@ from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.client.helper_async import (
-    BaseModbusAsyncClientProtocol,
-    ModbusClientProtocol,
-)
+from pymodbus.client.helper_async import ModbusClientProtocol
 from pymodbus.client import (
     AsyncModbusUdpClient,
     AsyncModbusTlsClient,
     AsyncModbusTcpClient,
 )
-from pymodbus.client.async_udp import ModbusUdpClientProtocol
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusSocketFramer
 
 protocols = [
-    BaseModbusAsyncClientProtocol,
-    #    ModbusUdpClientProtocol,
     ModbusClientProtocol,
 ]
 
@@ -37,7 +31,7 @@ class TestAsyncioClient:
 
     def test_base_modbus_async_client_protocol(self):
         """Test base modbus async client protocol."""
-        protocol = BaseModbusAsyncClientProtocol()
+        protocol = ModbusClientProtocol()
         assert protocol.factory is None  # nosec
         assert protocol.transport is None  # nosec
         assert not protocol._connected  # nosec pylint: disable=protected-access
@@ -250,12 +244,12 @@ class TestAsyncioClient:
             protocol = protocol(ModbusSocketFramer(ClientDecoder()))
             transport = mock.MagicMock()
             factory = mock.MagicMock()
-            if isinstance(protocol, ModbusUdpClientProtocol):
+            if isinstance(protocol, ModbusClientProtocol):
                 protocol.factory = factory
             protocol.connection_made(transport)
             assert protocol.transport == transport  # nosec
             assert protocol.connected  # nosec
-            if isinstance(protocol, ModbusUdpClientProtocol):
+            if isinstance(protocol, ModbusClientProtocol):
                 assert (
                     protocol.factory.protocol_made_connection.call_count == 1
                 )  # nosec
@@ -268,7 +262,7 @@ class TestAsyncioClient:
             protocol = protocol(ModbusSocketFramer(ClientDecoder()))
             transport = mock.MagicMock()
             factory = mock.MagicMock()
-            if isinstance(protocol, ModbusUdpClientProtocol):
+            if isinstance(protocol, ModbusClientProtocol):
                 protocol.factory = factory
             protocol.connection_made(transport)
             assert protocol.transport == transport  # nosec
@@ -285,7 +279,7 @@ class TestAsyncioClient:
             protocol.execute = mock.MagicMock()
             transport = mock.MagicMock()
             factory = mock.MagicMock()
-            if isinstance(protocol, ModbusUdpClientProtocol):
+            if isinstance(protocol, ModbusClientProtocol):
                 protocol.factory = factory
             protocol.connection_made(transport)
             protocol.transport.write = mock.Mock()
@@ -295,7 +289,7 @@ class TestAsyncioClient:
             protocol.connection_lost("REASON")
             excp = response.exception()  # noqa: F841
             # assert isinstance(excp, ConnectionException)  # nosec
-            if isinstance(protocol, ModbusUdpClientProtocol):
+            if isinstance(protocol, ModbusClientProtocol):
                 assert (
                     protocol.factory.protocol_lost_connection.call_count == 1
                 )  # nosec
@@ -314,8 +308,8 @@ class TestAsyncioClient:
             response = protocol._build_response(  # pylint: disable=protected-access
                 0x00
             )
-            if isinstance(protocol, ModbusUdpClientProtocol):
-                protocol.datagram_received(data, None)  # pylint: disable=no-member
+            if isinstance(protocol, ModbusClientProtocol):
+                protocol.datagram_received(data, None)
             else:
                 protocol.data_received(data)
             result = response.result()

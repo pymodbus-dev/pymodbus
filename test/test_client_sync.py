@@ -14,7 +14,7 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.sync_tcp import BaseModbusClient
+from pymodbus.client.sync_tcp import BaseOldModbusClient
 from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.exceptions import (
     ConnectionException,
@@ -89,7 +89,7 @@ class SynchronousClientTest(
 
     def test_base_modbus_client(self):
         """Test the base class for all the clients"""
-        client = BaseModbusClient(None)
+        client = BaseOldModbusClient(None)
         client.transaction = None
         self.assertRaises(
             NotImplementedException,

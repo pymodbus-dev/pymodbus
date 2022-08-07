@@ -36,7 +36,7 @@ import time
 
 import serial
 
-from pymodbus.client.helper_sync import BaseModbusClient
+from pymodbus.client.helper_sync import BaseOldModbusClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.transaction import ModbusRtuFramer
@@ -47,7 +47,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ModbusSerialClient(
-    BaseModbusClient
+    BaseOldModbusClient
 ):  # pylint: disable=too-many-instance-attributes
     r"""Modbus client for serial (RS-485) communication.
 
@@ -117,7 +117,7 @@ class ModbusSerialClient(
         self.kwargs = kwargs
 
         self.socket = None
-        BaseModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
+        BaseOldModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
         self.last_frame_end = None
         if isinstance(self.framer, ModbusRtuFramer):

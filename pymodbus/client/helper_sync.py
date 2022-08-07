@@ -159,7 +159,7 @@ class ModbusClientMixin:
         return self.execute(request)  # pylint: disable=no-member
 
 
-class BaseModbusClient(ModbusClientMixin):
+class BaseOldModbusClient(ModbusClientMixin):
     """Interface for a modbus synchronous client.
 
     Defined here are all the methods for performing the related

@@ -11,31 +11,24 @@ import logging
 from pymodbus.utilities import hexlify_packets
 from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
-from pymodbus.client.sync_tcp import BaseModbusClient
+from pymodbus.client.sync_tcp import BaseOldModbusClient
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
-class BaseAsyncModbusClient(BaseModbusClient):
-    """This represents the base ModbusAsyncClient."""
+class ModbusClientProtocol(
+    BaseOldModbusClient,
+    asyncio.Protocol,
+    asyncio.DatagramProtocol
+):
+    """Asyncio specific implementation of asynchronous modbus client protocol."""
 
-    def __init__(self, framer=None, timeout=2, **kwargs):
-        """Initialize framer module
-
-        :param framer: The framer to use for the protocol. Default:
-        ModbusSocketFramer
-        :type framer: pymodbus.transaction.ModbusSocketFramer
-        """
-        self._connected = False
-        self._timeout = timeout
-
-        super().__init__(framer or ModbusSocketFramer(ClientDecoder()), **kwargs)
-
-
-class AsyncModbusClientMixin(BaseAsyncModbusClient):
-    """Async Modbus client mixing for UDP and TCP clients."""
+    #: Factory that created this instance.
+    factory = None
+    transport = None
+    use_udp = False
 
     def __init__(
         self,
@@ -44,6 +37,7 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
         framer=None,
         source_address=None,
         timeout=None,
+        use_udp=False,
         **kwargs
     ):
         """Initialize a Modbus TCP/UDP asynchronous client
@@ -55,19 +49,14 @@ class AsyncModbusClientMixin(BaseAsyncModbusClient):
         :param timeout: Timeout in seconds
         :param kwargs: Extra arguments
         """
-        super().__init__(framer=framer, **kwargs)
+        self.use_udp = use_udp
+        self._connected = False
+        super().__init__(framer or ModbusSocketFramer(ClientDecoder()), **kwargs)
+
         self.host = host
         self.port = port
         self.source_address = source_address or ("", 0)
         self._timeout = timeout if timeout is not None else Defaults.Timeout
-
-
-class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
-    """Asyncio specific implementation of asynchronous modbus client protocol."""
-
-    #: Factory that created this instance.
-    factory = None
-    transport = None
 
     async def execute(self, request=None):  # pylint: disable=invalid-overridden-method
         """Execute requests asynchronously.
@@ -93,7 +82,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         self._connection_made()
 
         if self.factory:
-            self.factory.protocol_made_connection(self)
+            self.factory.protocol_made_connection(self)  # pylint: disable=no-member,useless-suppression
 
     def connection_lost(self, reason):
         """Call when the connection is lost or closed.
@@ -106,7 +95,7 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         self._connection_lost(reason)
 
         if self.factory:
-            self.factory.protocol_lost_connection(self)
+            self.factory.protocol_lost_connection(self)  # pylint: disable=no-member,useless-suppression
 
     def data_received(self, data):
         """Call when some data is received.
@@ -165,6 +154,8 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
 
     def write_transport(self, packet):
         """Write transport."""
+        if self.use_udp:
+            return self.transport.sendto(packet)
         return self.transport.write(packet)
 
     def _execute(self, request, **kwargs):  # pylint: disable=unused-argument
@@ -218,19 +209,6 @@ class BaseModbusAsyncClientProtocol(AsyncModbusClientMixin):
         self.transport.close()
         self._connected = False
 
-
-class ModbusClientProtocol(BaseModbusAsyncClientProtocol, asyncio.Protocol):
-    """Asyncio specific implementation of asynchronous modbus client protocol."""
-
-    #: Factory that created this instance.
-    factory = None
-    transport = None
-
-    def data_received(self, data):
-        """Call when some data is received.
-
-        data is a non-empty bytes object containing the incoming data.
-
-        :param data:
-        """
+    def datagram_received(self, data, addr):
+        """Receive datagram."""
         self._data_received(data)

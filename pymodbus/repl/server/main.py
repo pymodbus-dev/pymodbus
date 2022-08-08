@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import typer
+from typing import List
 from pathlib import Path
 from enum import Enum
-import typer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
@@ -45,7 +46,7 @@ class ModbusFramerTypes(str, Enum):
     binary = "binary"  # pylint: disable=invalid-name
 
 
-def _completer(incomplete: str, valid_values: list[str]) -> list[str]:
+def _completer(incomplete: str, valid_values: List[str]) -> List[str]:
     """Complete value."""
     completion = []
     for name in valid_values:
@@ -54,13 +55,13 @@ def _completer(incomplete: str, valid_values: list[str]) -> list[str]:
     return completion
 
 
-def framers(incomplete: str) -> list[str]:
+def framers(incomplete: str) -> List[str]:
     """Return an autocompleted list of supported clouds."""
     _framers = ["socket", "rtu", "tls", "ascii", "binary"]
     return _completer(incomplete, _framers)
 
 
-def servers(incomplete: str) -> list[str]:
+def servers(incomplete: str) -> List[str]:
     """Return an autocompleted list of supported clouds."""
     _servers = ["tcp", "serial", "tls", "udp"]
     return _completer(incomplete, _servers)
@@ -128,7 +129,7 @@ def run(
         "--modbus-port",
         "-p",
         help='Modbus port'),
-    modbus_unit_id: list[int] = typer.Option(
+    modbus_unit_id: List[int] = typer.Option(
         None,
         "--unit-id",
         "-u",

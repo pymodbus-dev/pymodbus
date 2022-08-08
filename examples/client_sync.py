@@ -44,7 +44,6 @@ from pymodbus.transaction import (
 def setup_sync_client():
     """Run client setup."""
     args = get_commandline()
-    args.comm = "serial"
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(

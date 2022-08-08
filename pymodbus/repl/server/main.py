@@ -1,12 +1,11 @@
 """Repl server main."""
+from __future__ import annotations
 import asyncio
 import json
 import logging
-import typer
-import click
-from enum import Enum
-from typing import List
 from pathlib import Path
+from enum import Enum
+import typer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
@@ -16,33 +15,38 @@ from pymodbus.server.reactive.main import (
     ReactiveServer,
 )
 
-if sys.version_info > (3, 7):
-    CANCELLED_ERROR = asyncio.exceptions.CancelledError
-else:
-    CANCELLED_ERROR = asyncio.CancelledError  # pylint: disable=invalid-name
+CANCELLED_ERROR = asyncio.exceptions.CancelledError
 
 _logger = logging.getLogger(__name__)
 
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
 
-class ModbusServerConfig:
+# TBD class ModbusServerConfig:
+
 
 class ModbusServerTypes(str, Enum):
+    """Server types."""
+
     # ["tcp", "serial", "tls", "udp"]
-    tcp = "tcp"
-    serial = "serial"
-    tls = "tls"
-    udp = "udp"
+    tcp = "tcp"  # pylint: disable=invalid-name
+    serial = "serial"  # pylint: disable=invalid-name
+    tls = "tls"  # pylint: disable=invalid-name
+    udp = "udp"  # pylint: disable=invalid-name
+
 
 class ModbusFramerTypes(str, Enum):
-    # ["socket", "rtu", "tls", "ascii", "binary"]
-    socket = "socket"
-    rtu = "rtu"
-    tls = "tls"
-    ascii = "ascii"
-    binary = "binary"
+    """Framer types."""
 
-def _completer(incomplete: str, valid_values: List[str]) -> List[str]:
+    # ["socket", "rtu", "tls", "ascii", "binary"]
+    socket = "socket"  # pylint: disable=invalid-name
+    rtu = "rtu"  # pylint: disable=invalid-name
+    tls = "tls"  # pylint: disable=invalid-name
+    ascii = "ascii"  # pylint: disable=invalid-name
+    binary = "binary"  # pylint: disable=invalid-name
+
+
+def _completer(incomplete: str, valid_values: list[str]) -> list[str]:
+    """Complete value."""
     completion = []
     for name in valid_values:
         if name.startswith(incomplete):
@@ -50,24 +54,22 @@ def _completer(incomplete: str, valid_values: List[str]) -> List[str]:
     return completion
 
 
-def framers(incomplete: str) -> List[str]:
-    """
-    Returns an autocompleted list of supported clouds
-    """
+def framers(incomplete: str) -> list[str]:
+    """Return an autocompleted list of supported clouds."""
     _framers = ["socket", "rtu", "tls", "ascii", "binary"]
     return _completer(incomplete, _framers)
 
 
-def servers(incomplete: str) -> List[str]:
-    """
-    Returns an autocompleted list of supported clouds
-    """
+def servers(incomplete: str) -> list[str]:
+    """Return an autocompleted list of supported clouds."""
     _servers = ["tcp", "serial", "tls", "udp"]
     return _completer(incomplete, _servers)
+
 
 app = typer.Typer(no_args_is_help=True,
                   context_settings=CONTEXT_SETTING,
                   help="Reactive modebus server")
+
 
 @app.callback()
 def server(ctx: typer.Context,
@@ -77,7 +79,7 @@ def server(ctx: typer.Context,
                8080, "--web-port", help="Web app port"),
            broadcast_support: bool = typer.Option(
                False, "-b", help="Support broadcast messages"),
-           repl: bool= typer.Option(
+           repl: bool = typer.Option(
                True, help="Enable/Disable repl for server"),
            verbose: bool = typer.Option(
                False, help="Run with debug logs enabled for pymodbus")):
@@ -126,7 +128,7 @@ def run(
         "--modbus-port",
         "-p",
         help='Modbus port'),
-    modbus_unit_id: List[int] = typer.Option(
+    modbus_unit_id: list[int] = typer.Option(
         None,
         "--unit-id",
         "-u",
@@ -139,13 +141,12 @@ def run(
         "--random", "-r",
         help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
              ", and so on. Applicable IR and DI.",)):
-    """
-    Run Reactive Modbus server.
+    """Run Reactive Modbus server.
 
     Exposing REST endpoint for response manipulation.
     """
     repl = ctx.obj.pop("repl")
-    extra_args = ctx.args
+    # TBD extra_args = ctx.args
     web_app_config = ctx.obj
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
@@ -190,4 +191,4 @@ def run(
 
 
 if __name__ == "__main__":
-    app()  # pylint: disable=no-value-for-parameter
+    app()

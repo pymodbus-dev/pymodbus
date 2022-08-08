@@ -287,7 +287,7 @@ class ReactiveServer:
         return identity
 
     @classmethod
-    def create_context(cls, data_block=None, unit=[1], single=False):
+    def create_context(cls, data_block=None, unit=[1], single=False):  # pylint: disable=dangerous-default-value
         """Create Modbus context.
 
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK

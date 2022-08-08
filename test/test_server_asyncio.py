@@ -445,6 +445,7 @@ class AsyncioServerTest(
         """Test stop server."""
         StopServer()
 
+    @pytest.mark.skip
     async def test_async_tcp_server_exception(self):
         """Send garbage data on a TCP socket should drop the connection"""
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"

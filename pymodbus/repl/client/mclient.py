@@ -71,14 +71,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
     @staticmethod
     def _process_exception(resp, **kwargs):
-        """ Internal process exception. """
+        """Set internal process exception."""
         unit = kwargs.get("unit")
-        if unit == 0:
+        if unit == 0:  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
             err = {
                 "message": "Broadcast message, ignoring errors!!!"
             }
         else:
-            if isinstance(resp, ExceptionResponse):
+            if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
                 err = {
                     'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
                     'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",

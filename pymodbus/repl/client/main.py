@@ -1,4 +1,6 @@
 """Pymodbus REPL Entry point."""
+# pylint: disable=anomalous-backslash-in-string
+# flake8: noqa: W605
 import logging
 import sys
 import pathlib
@@ -36,6 +38,8 @@ from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
+
+_logger = logging.getLogger()
 
 click.disable_unicode_literals_warning = True
 

@@ -71,23 +71,29 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
     @staticmethod
     def _process_exception(resp, **kwargs):
-        """Process exception."""
-        if not kwargs.get("unit"):
-            err = {"message": "Broadcast message, ignoring errors!!!"}
-        elif isinstance(resp, ExceptionResponse):
+        """Set internal process exception."""
+        unit = kwargs.get("unit")
+        if unit == 0:  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
             err = {
-                "original_function_code": f"{resp.original_code} ({hex(resp.original_code)})",
-                "error_function_code": f"{resp.function_code} ({hex(resp.function_code)})",
-                "exception code": resp.exception_code,
-                "message": ModbusExceptions.decode(resp.exception_code),
-            }
-        elif isinstance(resp, ModbusIOException):
-            err = {
-                "original_function_code": f"{resp.fcode} ({hex(resp.fcode)})",
-                "error": resp.message,
+                "message": "Broadcast message, ignoring errors!!!"
             }
         else:
-            err = {"error": str(resp)}
+            if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
+                err = {
+                    'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
+                    'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",
+                    'exception code': resp.exception_code,
+                    'message': ModbusExceptions.decode(resp.exception_code)
+                }
+            elif isinstance(resp, ModbusIOException):
+                err = {
+                    'original_function_code': f"{resp.fcode} ({hex(resp.fcode)})",
+                    'error': resp.message
+                }
+            else:
+                err = {
+                    'error': str(resp)
+                }
         return err
 
     def read_coils(self, address, count=1, **kwargs):

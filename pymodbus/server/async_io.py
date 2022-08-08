@@ -482,7 +482,7 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
                                         response
         """
         self.active_connections = {}
-        self.loop = asyncio.get_running_loop()
+        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
         self.allow_reuse_address = allow_reuse_address
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer

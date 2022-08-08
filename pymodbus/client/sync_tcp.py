@@ -43,7 +43,7 @@ class ModbusTcpClient(BaseOldModbusClient):  # pylint: disable=too-many-instance
     r"""Modbus client for TCP communication.
 
     :param host: (positional) Host IP address
-    :param port: (optional default 502) The serial port used for communication.
+    :param port: (optional default 502) The TCP port used for communication.
     :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
     :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
     :param framer: (optional, default ModbusSocketFramer) Framer class.

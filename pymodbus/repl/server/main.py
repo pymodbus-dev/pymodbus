@@ -3,10 +3,11 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import typer
 from typing import List
 from pathlib import Path
 from enum import Enum
+
+import typer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG

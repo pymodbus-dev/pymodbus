@@ -1,4 +1,4 @@
-"""Modbus client UDP communication.
+"""**Modbus client UDP communication.**
 
 Example::
 
@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             # Common optional paramers:
             #    port=502,
-            #    protocol_class=ModbusClientProtocol,
             #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,
             #    timeout=10,
@@ -28,11 +27,9 @@ Example::
 import logging
 import socket
 
-from pymodbus.client.helper_sync import BaseOldModbusClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.factory import ClientDecoder
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.helper_async import ModbusClientProtocol
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -44,60 +41,34 @@ _logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------- #
 
 
-class ModbusUdpClient(BaseOldModbusClient):  # pylint: disable=too-many-instance-attributes
+class ModbusUdpClient(ModbusBaseClient):
     r"""Modbus client for UDP communication.
+
+    Common parameters are documented in :class:`ModbusBaseClient`
 
     :param host: (positional) Host IP address
     :param port: (optional default 502) The serial port used for communication.
-    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
-    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
     :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param timeout: (optional, default 3s) Timeout for a request.
-    :param retries: (optional, default 3) Max number of retries pr request.
-    :param retry_on_empty: (optional, default false) Retry on empty response.
-    :param close_comm_on_error: (optional, default true) Close connection on error.
-    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
     :param source_address: (optional, default none) source address of client,
     :param \*\*kwargs: (optional) Extra experimental parameters for transport
     :return: client object
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
-        # Fixed parameters
+    def __init__(
         self,
         host,
         port=502,
-        # Common optional paramers:
-        protocol_class=ModbusClientProtocol,
-        modbus_decoder=ClientDecoder,
         framer=ModbusSocketFramer,
-        timeout=10,
-        retries=3,
-        retry_on_empty=False,
-        close_comm_on_error=False,
-        strict=True,
-
-        # UDP setup parameters
         source_address=None,
-
-        # Extra parameters for transport (experimental)
         **kwargs,
     ):
-        """Initialize Asyncio Modbus TCP Client."""
+        """Initialize Asyncio Modbus UDP Client."""
         self.host = host
         self.port = port
-        self.protocol_class = protocol_class
-        self.framer = framer(modbus_decoder())
-        self.timeout = timeout
-        self.retries = retries
-        self.retry_on_empty = retry_on_empty
-        self.close_comm_on_error = close_comm_on_error
-        self.strict = strict
         self.source_address = source_address
-        self.kwargs = kwargs
 
+        super().__init__(framer=framer, **kwargs)
         self.socket = None
-        BaseOldModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     @classmethod
     def _get_address_family(cls, address):

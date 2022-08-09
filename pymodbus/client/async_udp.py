@@ -1,4 +1,4 @@
-"""Modbus client async UDP communication.
+"""**Modbus client async UDP communication.**
 
 Example::
 
@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             # Common optional paramers:
             #    port=502,
-            #    protocol_class=ModbusClientProtocol,
             #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,
             #    timeout=10,
@@ -21,26 +20,30 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        await client.start()
+        await client.aStart()
         ...
-        await client.stop()
+        await client.aStop()
 """
 import asyncio
 import logging
 import functools
 
-from pymodbus.factory import ClientDecoder
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.client.helper_async import ModbusClientProtocol
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncModbusUdpClient:
-    """Actual Async UDP Client to be used.
+class AsyncModbusUdpClient(ModbusBaseClient):
+    r"""Modbus client for async UDP communication.
 
-    To use do::
-        from pymodbus.client import d
+    :param host: (positional) Host IP address
+    :param port: (optional default 502) The serial port used for communication.
+    :param framer: (optional, default ModbusSocketFramer) Framer class.
+    :param source_address: (optional, default none) source address of client,
+    :param \*\*kwargs: (optional) Extra experimental parameters for transport
+    :return: client object
     """
 
     #: Reconnect delay in milli seconds.
@@ -52,54 +55,29 @@ class AsyncModbusUdpClient:
         self,
         host,
         port=502,
-        protocol_class=ModbusClientProtocol,
-        modbus_decoder=ClientDecoder,
         framer=ModbusSocketFramer,
-        timeout=10,
-        # TCP setup parameters
         source_address="127.0.0.1",
-        # Extra parameters for serial_async (experimental)
         **kwargs,
-
     ):
-        r"""Modbus client for async TCP communication.
-
-        :param host: (positional) Host IP address
-        :param port: (optional default 502) The serial port used for communication.
-        :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
-        :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
-        :param framer: (optional, default ModbusSocketFramer) Framer class.
-        :param timeout: (optional, default 3s) Timeout for a request.
-        :param retries: (optional, default 3) Max number of retries pr request.
-        :param retry_on_empty: (optional, default false) Retry on empty response.
-        :param close_comm_on_error: (optional, default true) Close connection on error.
-        :param strict: (optional, default true) Strict timing, 1.5 character between requests.
-        :param source_address: (optional, default none) source address of client,
-        :param \*\*kwargs: (optional) Extra experimental parameters for transport
-        :return: client object
-        """
+        """Initialize Asyncio Modbus UDP Client."""
         self.host = host
         self.port = port
-        self.protocol_class = protocol_class
-        self.framer = framer(modbus_decoder())
-        self.timeout = timeout
-
         self.source_address = source_address
 
+        super().__init__(framer=framer, **kwargs)
         self.loop = None
         self.protocol = None
         self.connected = False
-        self.kwargs = kwargs
         self.reset_delay()
 
     def reset_delay(self):
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = 100
 
-    async def start(self):
+    async def aStart(self):
         """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
-        self.stop()
+        await self.aStop()
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
@@ -114,7 +92,7 @@ class AsyncModbusUdpClient:
         # self.host, self.port = addrinfo[0][-1]
         return await self._connect()
 
-    def stop(self):
+    async def aStop(self):  # pylint: disable=invalid-name
         """Stop connection and prevents reconnect."""
         # prevent reconnect:
         self.host = None
@@ -124,7 +102,7 @@ class AsyncModbusUdpClient:
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
-        protocol = self.protocol_class(use_udp=True, **self.kwargs)
+        protocol = ModbusClientProtocol(use_udp=True, **self.kwargs)
         protocol.host = host
         protocol.port = port
         protocol.factory = self

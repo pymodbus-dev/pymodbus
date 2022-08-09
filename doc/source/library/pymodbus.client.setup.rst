@@ -1,7 +1,7 @@
 Client setup.
 =============
 
-Pymodbus offers different transport methods Serial/TCP/TLS/UDP, which are implemented
+Pymodbus offers different transport protocols Serial/TCP/TLS/UDP, which are implemented
 as separate classes. Each class defines exactly on transport type.
 
 Applications can add custom transport types as long as the new class inherits
@@ -13,10 +13,17 @@ All transport types are supplied in 2 versions:
 
 a :mod:`synchronous client <pymodbus.client>` and
 
-a :mod:`client based on asyncio <pymodbus.client.asynchronous>`.
+a :mod:`asynchronous client based on asyncio <pymodbus.client.asynchronous>`.
 
 Care have been made to ensure that large parts of the actual implementation or shared
 between the different classes, to ensure a higher stability.
+
+Common parameters for all clients.
+----------------------------------
+
+.. automodule:: pymodbus.client.base
+    :members:
+    :member-order: bysource
 
 Serial RS-485 transport.
 ------------------------
@@ -36,8 +43,8 @@ TCP transport.
 .. automodule:: pymodbus.client.sync_tcp
     :members:
 
-TLS transport (based on top of TCP).
-------------------------------------
+TLS transport.
+--------------
 
 .. automodule:: pymodbus.client.async_tls
     :members:
@@ -45,8 +52,8 @@ TLS transport (based on top of TCP).
 .. automodule:: pymodbus.client.sync_tls
     :members:
 
-UDP transport (NO multicast).
------------------------------
+UDP transport.
+--------------
 
 .. automodule:: pymodbus.client.async_udp
     :members:

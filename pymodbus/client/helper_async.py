@@ -10,16 +10,13 @@ import logging
 
 from pymodbus.utilities import hexlify_packets
 from pymodbus.exceptions import ConnectionException
-from pymodbus.factory import ClientDecoder
-from pymodbus.client.sync_tcp import BaseOldModbusClient
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.constants import Defaults
+from pymodbus.client.base import ModbusBaseClient
 
 _logger = logging.getLogger(__name__)
 
 
 class ModbusClientProtocol(
-    BaseOldModbusClient,
+    ModbusBaseClient,
     asyncio.Protocol,
     asyncio.DatagramProtocol
 ):
@@ -32,11 +29,7 @@ class ModbusClientProtocol(
 
     def __init__(
         self,
-        host="127.0.0.1",
-        port=Defaults.Port,
-        framer=None,
         source_address=None,
-        timeout=None,
         use_udp=False,
         **kwargs
     ):
@@ -51,12 +44,9 @@ class ModbusClientProtocol(
         """
         self.use_udp = use_udp
         self._connected = False
-        super().__init__(framer or ModbusSocketFramer(ClientDecoder()), **kwargs)
+        super().__init__(**kwargs)
 
-        self.host = host
-        self.port = port
         self.source_address = source_address or ("", 0)
-        self._timeout = timeout if timeout is not None else Defaults.Timeout
 
     async def execute(self, request=None):  # pylint: disable=invalid-overridden-method
         """Execute requests asynchronously.
@@ -68,7 +58,7 @@ class ModbusClientProtocol(
         if self.broadcast_enable and not request.unit_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            resp = await asyncio.wait_for(req, timeout=self._timeout)
+            resp = await asyncio.wait_for(req, timeout=self.timeout)
         return resp
 
     def connection_made(self, transport):
@@ -204,7 +194,7 @@ class ModbusClientProtocol(
             self.transaction.addTransaction(my_future, tid)
         return my_future
 
-    def close(self):
+    async def aClose(self):
         """Close."""
         self.transport.close()
         self._connected = False

@@ -33,7 +33,7 @@ from pymodbus.bit_write_message import (
     WriteMultipleCoilsResponse,
     WriteSingleCoilResponse,
 )
-from pymodbus.client.helper_sync import ModbusClientMixin
+from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ModbusException
 from pymodbus.register_read_message import (

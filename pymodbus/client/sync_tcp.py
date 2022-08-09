@@ -1,4 +1,4 @@
-"""Modbus client TCP communication.
+"""**Modbus client TCP communication.**
 
 Example::
 
@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             #    port=502,  # on which port
             # Common optional paramers:
-            #    protocol_class=None,
             #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,  # how to interpret the messages
             #    timeout=10,  # waiting time for request to complete
@@ -30,69 +29,40 @@ import select
 import socket
 import time
 
-from pymodbus.client.helper_sync import BaseOldModbusClient
 from pymodbus.exceptions import ConnectionException
-from pymodbus.factory import ClientDecoder
-from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.utilities import ModbusTransactionState
+from pymodbus.client.base import ModbusBaseClient
+from pymodbus.transaction import ModbusSocketFramer
 
 _logger = logging.getLogger(__name__)
 
 
-class ModbusTcpClient(BaseOldModbusClient):  # pylint: disable=too-many-instance-attributes
+class ModbusTcpClient(ModbusBaseClient):
     r"""Modbus client for TCP communication.
 
     :param host: (positional) Host IP address
     :param port: (optional default 502) The TCP port used for communication.
-    :param protocol_class: (optional, default ModbusClientProtocol) Protocol communication class.
     :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
     :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param timeout: (optional, default 3s) Timeout for a request.
-    :param retries: (optional, default 3) Max number of retries pr request.
-    :param retry_on_empty: (optional, default false) Retry on empty response.
-    :param close_comm_on_error: (optional, default true) Close connection on error.
-    :param strict: (optional, default true) Strict timing, 1.5 character between requests.
     :param source_address: (optional, default none) source address of client,
     :param \*\*kwargs: (optional) Extra experimental parameters for transport
     :return: client object
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
-        # Fixed parameters
+    def __init__(
         self,
         host,
         port=502,
-        # Common optional paramers:
-        protocol_class=None,
-        modbus_decoder=ClientDecoder,
         framer=ModbusSocketFramer,
-        timeout=10,
-        retries=3,
-        retry_on_empty=False,
-        close_comm_on_error=False,
-        strict=True,
-
-        # TCP setup parameters
         source_address=None,
-
-        # Extra parameters for serial_async (experimental)
         **kwargs,
     ):
         """Initialize Modbus TCP Client."""
         self.host = host
         self.port = port
-        self.protocol_class = protocol_class
-        self.framer = framer(modbus_decoder())
-        self.timeout = timeout
-        self.retries = retries
-        self.retry_on_empty = retry_on_empty
-        self.close_comm_on_error = close_comm_on_error
-        self.strict = strict
         self.source_address = source_address
-        self.kwargs = kwargs
-
+        super().__init__(framer=framer, **kwargs)
         self.socket = None
-        BaseOldModbusClient.__init__(self, framer(ClientDecoder(), self), **kwargs)
 
     def start(self):
         """Connect to the modbus tcp server.

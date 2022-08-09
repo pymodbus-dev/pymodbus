@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Test client sync."""
-from io import StringIO
 from itertools import count
 import socket
 import ssl
@@ -14,7 +13,7 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.sync_tcp import BaseOldModbusClient
+from pymodbus.client import ModbusBaseClient
 from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.exceptions import (
     ConnectionException,
@@ -27,7 +26,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.utilities import hexlify_packets
 
 
 # ---------------------------------------------------------------------------#
@@ -89,29 +87,15 @@ class SynchronousClientTest(
 
     def test_base_modbus_client(self):
         """Test the base class for all the clients"""
-        client = BaseOldModbusClient(None)
+        client = ModbusBaseClient(framer=ModbusSocketFramer)
         client.transaction = None
-        self.assertRaises(
-            NotImplementedException,
-            lambda: client.start(),  # pylint: disable=unnecessary-lambda
-        )
-        self.assertRaises(NotImplementedException, lambda: client.send(None))
-        self.assertRaises(NotImplementedException, lambda: client.recv(None))
-        self.assertRaises(
-            NotImplementedException,
-            lambda: client.__enter__(),  # pylint: disable=unnecessary-lambda,unnecessary-dunder-call
-        )
-        self.assertRaises(
-            NotImplementedException,
-            lambda: client.execute(),  # pylint: disable=unnecessary-lambda
-        )
-        self.assertRaises(
-            NotImplementedException,
-            lambda: client.is_socket_open(),  # pylint: disable=unnecessary-lambda
-        )
+        self.assertRaises(NotImplementedException, client.start)
+        self.assertRaises(NotImplementedException, client.send, None)
+        self.assertRaises(NotImplementedException, client.recv, None)
+        self.assertRaises(NotImplementedException, client.execute)
+        self.assertRaises(NotImplementedException, client.is_socket_open)
+        self.assertRaises(NotImplementedException, client.close)
         self.assertEqual("Null Transport", str(client))
-        client.close()
-        client.__exit__(0, 0, 0)
 
         # Test information methods
         client.last_frame_end = 2
@@ -119,13 +103,6 @@ class SynchronousClientTest(
         self.assertEqual(4, client.idle_time())
         client.last_frame_end = None
         self.assertEqual(0, client.idle_time())
-
-        # Test debug/trace/_dump methods
-        self.assertEqual(False, client.debug_enabled())
-        writable = StringIO()
-        client.trace(writable)
-        client._dump(b"\x00\x01\x02")  # pylint: disable=protected-access
-        self.assertEqual(hexlify_packets(b"\x00\x01\x02"), writable.getvalue())
 
         # a successful execute
         client.start = lambda: True

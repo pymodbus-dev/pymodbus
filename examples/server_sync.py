@@ -285,7 +285,7 @@ def get_commandline():
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
     args.port = args.port or comm_defaults[args.comm][1]
-    if args.comm in ["tcp", "udp", "tls"]:
+    if args.comm in set("tcp", "udp", "tls"):
         args.port = int(args.port)
     args.framer = framers[args.framer]
     return args

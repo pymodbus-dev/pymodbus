@@ -180,7 +180,7 @@ def run_server():
             port=port,  # serial port
             custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
-            handler=None,  # handler for each session
+            # handler=None,  # handler for each session
             stopbits=1,  # The number of stop bits to use
             bytesize=7,  # The bytesize of the serial messages
             parity="E",  # Which kind of parity to use
@@ -245,7 +245,7 @@ def get_commandline():
     parser.add_argument(
         "--port",
         help="the port to use",
-        type=int,
+        type=str,
     )
     parser.add_argument(
         "--store",
@@ -258,6 +258,7 @@ def get_commandline():
         help="(server only) number of slaves to respond to",
         type=int,
     )
+
     args = parser.parse_args()
 
     # set defaults
@@ -283,8 +284,9 @@ def get_commandline():
         args.slaves = 0
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
-    if not args.port:
-        args.port = comm_defaults[args.comm][1]
+    args.port = args.port or comm_defaults[args.comm][1]
+    if args.comm in ["tcp", "udp", "tls"]:
+        args.port = int(args.port)
     args.framer = framers[args.framer]
     return args
 

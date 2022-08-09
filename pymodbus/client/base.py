@@ -78,7 +78,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Initialize a client instance."""
 
         # get optional parameters or set defaults
-        self.framer = framer(modbus_decoder())
+        self.framer = framer(modbus_decoder(), self)
         self.timeout = timeout
         self.retries = retries
         self.retry_on_empty = retry_on_empty

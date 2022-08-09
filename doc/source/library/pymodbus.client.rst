@@ -1,14 +1,13 @@
 pymodbus\.client
 ================
 
-Pymodbus offers
+Pymodbus offers clients with different transport protocols in 2 versions:
 
-a :mod:`synchronous client <pymodbus.client>` and
-
-a :mod:`client based on asyncio <pymodbus.client.asynchronous>`.
+- synchronous,
+- asynchronous (based on asyncio).
 
 Using a client to set/get information from a device (server) is simple as seen in this
-example (more details in the chapters below)::
+example (more details in below)::
 
     # create client object
     client = ModbusSerial("/dev/tty")
@@ -16,17 +15,13 @@ example (more details in the chapters below)::
     # connect to device
     client.start()
 
-    # set/get information
+    # set/set information
     client.read_coils(0x01)
+    client.write_coil(0x01, values)
     ...
 
     # disconnect device
     client.stop()
-
-The documentation is in 2 parts:
-
-- connect/disconnect to device(s) with different transport protocols.
-- set/get information independent of the chosen transport protocol.
 
 .. toctree::
 

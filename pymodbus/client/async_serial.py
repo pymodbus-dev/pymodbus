@@ -70,13 +70,13 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         **kwargs,
     ):
         """Initialize Asyncio Modbus Serial Client."""
-        self.port = port
+        super().__init__(framer=framer, **kwargs)
+        self.params.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
         self.parity = parity
         self.stopbits = stopbits
         self.handle_local_echo = handle_local_echo
-        super().__init__(framer=framer, **kwargs)
         self.loop = None
         self.protocol = None
         self._connected_event = asyncio.Event()
@@ -107,15 +107,15 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             await create_serial_connection(
                 self.loop,
                 self._create_protocol,
-                self.port,
+                self.params.port,
                 baudrate=self.baudrate,
                 bytesize=self.bytesize,
                 stopbits=self.stopbits,
                 parity=self.parity,
-                **self.kwargs,
+                **self.params.kwargs,
             )
             await self._connected_event.wait()
-            txt = f"Connected to {self.port}"
+            txt = f"Connected to {self.params.port}"
             _logger.info(txt)
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"

@@ -58,10 +58,10 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs,
     ):
         """Initialize Modbus TCP Client."""
-        self.host = host
-        self.port = port
-        self.source_address = source_address
         super().__init__(framer=framer, **kwargs)
+        self.params.host = host
+        self.params.port = port
+        self.source_address = source_address
         self.socket = None
 
     def start(self):
@@ -73,14 +73,14 @@ class ModbusTcpClient(ModbusBaseClient):
             return True
         try:
             self.socket = socket.create_connection(
-                (self.host, self.port),
-                timeout=self.timeout,
+                (self.params.host, self.params.port),
+                timeout=self.params.timeout,
                 source_address=self.source_address,
             )
             txt = f"Connection to Modbus server established. Socket {self.socket.getsockname()}"
             _logger.debug(txt)
         except socket.error as msg:
-            txt = f"Connection to ({self.host}, {self.port}) failed: {msg}"
+            txt = f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
             _logger.error(txt)
             self.close()
         return self.socket is not None
@@ -94,20 +94,21 @@ class ModbusTcpClient(ModbusBaseClient):
     def _check_read_buffer(self):
         """Check read buffer."""
         time_ = time.time()
-        end = time_ + self.timeout
+        end = time_ + self.params.timeout
         data = None
         ready = select.select([self.socket], [], [], end - time_)
         if ready[0]:
             data = self.socket.recv(1024)
         return data
 
-    def _send(self, request):  # pylint: disable=missing-type-doc
+    def send(self, request):  # pylint: disable=missing-type-doc
         """Send data on the underlying socket.
 
         :param request: The encoded request to send
         :return: The number of bytes written
         :raises ConnectionException:
         """
+        super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
         if self.state == ModbusTransactionState.RETRYING:
@@ -118,7 +119,7 @@ class ModbusTcpClient(ModbusBaseClient):
             return self.socket.send(request)
         return 0
 
-    def _recv(self, size):  # pylint: disable=missing-type-doc
+    def recv(self, size):  # pylint: disable=missing-type-doc
         """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
@@ -127,6 +128,7 @@ class ModbusTcpClient(ModbusBaseClient):
                  all.
         :raises ConnectionException:
         """
+        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
 
@@ -140,7 +142,7 @@ class ModbusTcpClient(ModbusBaseClient):
         # less than the expected size.
         self.socket.setblocking(0)
 
-        timeout = self.timeout
+        timeout = self.params.timeout
 
         # If size isn"t specified read up to 4096 bytes at a time.
         if size is None:
@@ -218,11 +220,11 @@ class ModbusTcpClient(ModbusBaseClient):
 
         :returns: The string representation
         """
-        return f"ModbusTcpClient({self.host}:{self.port})"
+        return f"ModbusTcpClient({self.params.host}:{self.params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
+            f"ipaddr={self.params.host}, port={self.params.port}, timeout={self.params.timeout}>"
         )

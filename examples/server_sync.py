@@ -149,7 +149,7 @@ def run_server():
             address=("", port),  # listen address
             custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
-            handler=None,  # handler for each session
+            # TBD handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             ignore_missing_slaves=True,  # ignore request to a missing slave
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
@@ -245,7 +245,7 @@ def get_commandline():
     parser.add_argument(
         "--port",
         help="the port to use",
-        type=int,
+        type=str,
     )
     parser.add_argument(
         "--store",
@@ -283,8 +283,9 @@ def get_commandline():
         args.slaves = 0
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
-    if not args.port:
-        args.port = comm_defaults[args.comm][1]
+    args.port = args.port or comm_defaults[args.comm]
+    if args.comm != "serial":
+        args.port = int(args.port)
     args.framer = framers[args.framer]
     return args
 

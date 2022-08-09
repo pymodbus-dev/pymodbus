@@ -68,12 +68,12 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         **kwargs,
     ):
         """Initialize Asyncio Modbus TLS Client."""
+        super().__init__(host, port=port, framer=framer, **kwargs)
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         self.certfile = certfile
         self.keyfile = keyfile
         self.password = password
         self.server_hostname = server_hostname
-        super().__init__(host, port=port, framer=framer, **kwargs)
 
         if not sslctx:
             self.sslctx = ssl.create_default_context()
@@ -89,7 +89,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.keyfile = keyfile
         self.password = password
         self.server_hostname = server_hostname
-        AsyncModbusTcpClient.__init__(self, host, port=self.port, framer=framer, **kwargs)
+        AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
     async def aStart(self):
         """Initiate connection to start client."""
@@ -102,8 +102,8 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         try:
             return await self.loop.create_connection(
                 self._create_protocol,
-                self.host,
-                self.port,
+                self.params.host,
+                self.params.port,
                 ssl=self.sslctx,
                 server_hostname=self.server_hostname,
             )
@@ -112,13 +112,13 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             _logger.warning(txt)
             asyncio.ensure_future(self._reconnect())
         else:
-            txt = f"Connected to {self.host}:{self.port}."
+            txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             self.reset_delay()
 
     def _create_protocol(self):
         """Create initialized protocol instance with Factory function."""
-        protocol = ModbusClientProtocol(framer=self.framer, **self.kwargs)
+        protocol = ModbusClientProtocol(framer=self.framer, **self.params.kwargs)
         protocol.transaction = FifoTransactionManager(self)
         protocol.factory = self
         return protocol

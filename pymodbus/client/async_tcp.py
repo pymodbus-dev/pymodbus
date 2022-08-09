@@ -58,10 +58,10 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         **kwargs,
     ):
         """Initialize Asyncio Modbus TCP Client."""
-        self.host = host
-        self.port = port
-        self.source_address = source_address
         super().__init__(framer=framer, **kwargs)
+        self.params.host = host
+        self.params.port = port
+        self.source_address = source_address
         self.loop = None
         self.protocol = None
         self.connected = False
@@ -77,21 +77,21 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         await self.aStop()
         self.loop = asyncio.get_running_loop()
 
-        txt = f"Connecting to {self.host}:{self.port}."
+        txt = f"Connecting to {self.params.host}:{self.params.port}."
         _logger.debug(txt)
         return await self._connect()
 
     async def aStop(self):  # pylint: disable=invalid-name
         """Stop client."""
         # prevent reconnect:
-        self.host = None
+        self.params.host = None
 
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(**self.kwargs)
+        protocol = ModbusClientProtocol(**self.params.kwargs)
         protocol.factory = self
         return protocol
 
@@ -100,7 +100,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         _logger.debug("Connecting.")
         try:
             transport, protocol = await self.loop.create_connection(
-                self._create_protocol, self.host, self.port
+                self._create_protocol, self.params.host, self.params.port
             )
             return transport, protocol
         except Exception as exc:  # pylint: disable=broad-except
@@ -108,7 +108,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             _logger.warning(txt)
             asyncio.ensure_future(self._reconnect())
         else:
-            txt = f"Connected to {self.host}:{self.port}."
+            txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             self.reset_delay()
 
@@ -133,7 +133,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
             self.connected = False
             self.protocol = None
-            if self.host:
+            if self.params.host:
                 asyncio.ensure_future(self._reconnect())
         else:
             _logger.error("Factory protocol connect callback called while connected.")

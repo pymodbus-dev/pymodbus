@@ -55,10 +55,10 @@ class ModbusClientProtocol(
         :return:
         """
         req = self._execute(request)
-        if self.broadcast_enable and not request.unit_id:
+        if self.params.broadcast_enable and not request.unit_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            resp = await asyncio.wait_for(req, timeout=self.timeout)
+            resp = await asyncio.wait_for(req, timeout=self.params.timeout)
         return resp
 
     def connection_made(self, transport):

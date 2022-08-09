@@ -72,7 +72,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         self.warn_delay_limit = kwargs.get("warn_delay_limit", True)
         super().__init__(host, port, framer, **kwargs)
         if self.warn_delay_limit is True:
-            self.warn_delay_limit = self.timeout / 2
+            self.warn_delay_limit = self.params.timeout / 2
 
         # Set logging messages, defaulting to LOG_MSGS
         for (k_item, v_item) in LOG_MSGS.items():
@@ -88,12 +88,12 @@ class ModbusTcpDiagClient(ModbusTcpClient):
         try:
             _logger.info(LOG_MSGS["conn_msg"], self)
             self.socket = socket.create_connection(
-                (self.host, self.port),
-                timeout=self.timeout,
+                (self.params.host, self.params.port),
+                timeout=self.params.timeout,
                 source_address=self.source_address,
             )
         except socket.error as msg:
-            _logger.error(LOG_MSGS["connfail_msg"], self.host, self.port, msg)
+            _logger.error(LOG_MSGS["connfail_msg"], self.params.host, self.params.port, msg)
             self.close()
         return self.socket is not None
 
@@ -104,11 +104,12 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.socket.close()
         self.socket = None
 
-    def _recv(self, size):
+    def recv(self, size):
+        """Receive data."""
         try:
             start = time.time()
 
-            result = super()._recv(size)
+            result = super().recv(size)
 
             delay = time.time() - start
             if self.warn_delay_limit is not None and delay >= self.warn_delay_limit:
@@ -131,7 +132,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             _logger.info(LOG_MSGS["timelimit_read_msg"], delay, result_len)
         elif (
             (not result_len) or (size and result_len < size)
-        ) and delay >= self.timeout:
+        ) and delay >= self.params.timeout:
             size_txt = size if size else "in timelimit read"
             read_type = f"of {size_txt} expected"
             _logger.warning(LOG_MSGS["timeout_msg"], delay, result_len, read_type)
@@ -143,7 +144,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
         :returns: The string representation
         """
-        return f"ModbusTcpDiagClient({self.host}:{self.port})"
+        return f"ModbusTcpDiagClient({self.params.host}:{self.params.port})"
 
 
 def get_client():

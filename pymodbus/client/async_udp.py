@@ -60,11 +60,11 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         **kwargs,
     ):
         """Initialize Asyncio Modbus UDP Client."""
-        self.host = host
-        self.port = port
+        super().__init__(framer=framer, **kwargs)
+        self.params.host = host
+        self.params.port = port
         self.source_address = source_address
 
-        super().__init__(framer=framer, **kwargs)
         self.loop = None
         self.protocol = None
         self.connected = False
@@ -81,29 +81,29 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
-        txt = f"Connecting to {self.host}:{self.port}."
+        txt = f"Connecting to {self.params.host}:{self.params.port}."
         _logger.debug(txt)
 
         # getaddrinfo returns a list of tuples
         # - [(family, type, proto, canonname, sockaddr),]
         # We want sockaddr which is a (ip, port) tuple
         # udp needs ip addresses, not hostnames
-        # addrinfo = await self.loop.getaddrinfo(self.host, self.port, type=DGRAM_TYPE)
-        # self.host, self.port = addrinfo[0][-1]
+        # addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
+        # self.params.host, self.params.port = addrinfo[0][-1]
         return await self._connect()
 
     async def aStop(self):  # pylint: disable=invalid-name
         """Stop connection and prevents reconnect."""
         # prevent reconnect:
-        self.host = None
+        self.params.host = None
 
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(use_udp=True, **self.kwargs)
-        protocol.host = host
+        protocol = ModbusClientProtocol(use_udp=True, **self.params.kwargs)
+        protocol.params.host = host
         protocol.port = port
         protocol.factory = self
         return protocol
@@ -114,11 +114,11 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         try:
             endpoint = await self.loop.create_datagram_endpoint(
                 functools.partial(
-                    self._create_protocol, host=self.host, port=self.port
+                    self._create_protocol, host=self.params.host, port=self.params.port
                 ),
-                remote_addr=(self.host, self.port),
+                remote_addr=(self.params.host, self.params.port),
             )
-            txt = f"Connected to {self.host}:{self.port}."
+            txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             return endpoint
         except Exception as exc:  # pylint: disable=broad-except
@@ -147,7 +147,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
             self.connected = False
             self.protocol = None
-            if self.host:
+            if self.params.host:
                 asyncio.create_task(self._reconnect())
         else:
             _logger.error("Factory protocol connect callback called while connected.")

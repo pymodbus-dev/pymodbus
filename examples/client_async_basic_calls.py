@@ -22,21 +22,21 @@ async def handle_coils(client):
     _logger.debug(txt)
 
     _logger.info("### Reading Coils to get bit 5")
-    rr = await client.read_coils(1, 5)
+    rr = await client.read_coils(1, 5, unit=UNIT)
     assert not rr.isError()  # test that call was OK
     txt = f"### coils response: {str(rr.bits)}"
     _logger.debug(txt)
 
     _logger.info("### Write true to coil bit 0 and read to verify")
-    rq = await client.write_coil(0, True)
-    rr = await client.read_coils(0, 1)
+    rq = await client.write_coil(0, True, unit=UNIT)
+    rr = await client.read_coils(0, 1, unit=UNIT)
     assert not rq.isError() and not rr.isError()  # test that calls was OK
     assert rr.bits[0]  # test the expected value
     txt = f"### coils response: {str(rr.bits)}"
     _logger.debug(txt)
 
     _logger.info("### Write true to multiple coils 1-8")
-    rq = await client.write_coils(1, [True] * 8, unit=UNIT)
+    rq = await client.write_coils(1, [True] * 21, unit=UNIT)
     rr = await client.read_coils(1, 21, unit=UNIT)
     assert not rq.isError() and not rr.isError()  # test that calls was OK
     resp = [True] * 21

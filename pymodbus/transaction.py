@@ -281,7 +281,7 @@ class ModbusTransactionManager:
         """
         last_exception = None
         try:
-            self.client.connect()
+            self.client.start()
             packet = self.client.framer.buildPacket(packet)
             if _logger.isEnabledFor(logging.DEBUG):
                 txt = f"SEND: {hexlify_packets(packet)}"

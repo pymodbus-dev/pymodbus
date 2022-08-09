@@ -540,9 +540,9 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
     """Modbus serial client."""
 
-    def __init__(self, method, **kwargs):
+    def __init__(self, framer, **kwargs):
         """Initialize."""
-        super().__init__(method, **kwargs)
+        super().__init__(framer=framer, **kwargs)
 
     def get_port(self):
         """Get serial Port.

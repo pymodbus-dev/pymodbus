@@ -10,6 +10,7 @@ from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState
+from pymodbus.client import ModbusBaseClient
 
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"
 
@@ -281,13 +282,13 @@ def test_build_packet(rtu_framer):  # pylint: disable=redefined-outer-name
 def test_send_packet(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test send packet."""
     message = TEST_MESSAGE
-    client = Mock()
+    client = ModbusBaseClient(framer=ModbusRtuFramer)
     client.state = ModbusTransactionState.TRANSACTION_COMPLETE
     client.silent_interval = 1
     client.last_frame_end = 1
-    client.timeout = 0.25
-    client.idle_time.return_value = 1
-    client.send.return_value = len(message)
+    client.params.timeout = 0.25
+    client.idle_time = Mock(return_value=1)
+    client.send = Mock(return_value=len(message))
     rtu_framer.client = client
     assert rtu_framer.sendPacket(message) == len(message)  # nosec
     client.state = ModbusTransactionState.PROCESSING_REPLY

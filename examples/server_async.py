@@ -57,9 +57,10 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.version import version
 
 
-def setup_async_server():
+def setup_server(args):
     """Run server setup."""
-    args = get_commandline()
+    if not args:
+        args = get_commandline()
 
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -133,12 +134,14 @@ def setup_async_server():
             "MajorMinorRevision": version.short(),
         }
     )
+    if args.comm != "serial":
+        args.port = int(args.port)
     return args.comm, args.port, store, identity, args.framer
 
 
-async def run_server():
+async def run_server(args=None):
     """Run server."""
-    server, port, store, identity, framer = setup_async_server()
+    server, port, store, identity, framer = setup_server(args)
 
     _logger.info("### start server")
     if server == "tcp":
@@ -287,8 +290,6 @@ def get_commandline():
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
     args.port = args.port or comm_defaults[args.comm][1]
-    if args.comm != "serial":
-        args.port = int(args.port)
     args.framer = framers[args.framer]
     return args
 

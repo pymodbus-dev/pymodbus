@@ -43,9 +43,12 @@ from pymodbus.transaction import (
 )
 
 
-def setup_async_client():
+def setup_client(args):
     """Run client setup."""
-    args = get_commandline()
+    if not args:
+        args = get_commandline()
+    if args.comm != "serial":
+        args.port = int(args.port)
     _logger.info("### Create client object")
 
     if args.comm == "tcp":
@@ -118,10 +121,10 @@ def setup_async_client():
     return client
 
 
-async def run_async_client(modbus_calls=None):
+async def run_client(modbus_calls=None, args=None):
     """Run sync client."""
     _logger.info("### Client ready")
-    client = setup_async_client()
+    client = setup_client(args)
     await client.aConnect()
     if modbus_calls:
         await modbus_calls(client.protocol)
@@ -186,12 +189,11 @@ def get_commandline():
         args.comm = "tcp"
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
-    if not args.port:
-        args.port = comm_defaults[args.comm][1]
+    args.port = args.port or comm_defaults[args.comm][1]
     args.framer = framers[args.framer]
     return args
 
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    asyncio.run(run_async_client())
+    asyncio.run(run_client())

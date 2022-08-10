@@ -56,9 +56,10 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.version import version
 
 
-def setup_sync_server():
+def setup_server(args):
     """Run server setup."""
-    args = get_commandline()
+    if not args:
+        args = get_commandline()
 
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -132,16 +133,18 @@ def setup_sync_server():
             "MajorMinorRevision": version.short(),
         }
     )
-    return args.comm, args.port, store, identity, args.framer
+    if args.comm != "serial":
+        args.port = int(args.port)
+    return args.comm, args.port, store, identity, args.framer, args.prepare
 
 
-def run_server():
+def run_server(args=None):
     """Run server."""
-    server, port, store, identity, framer = setup_sync_server()
+    server_id, port, store, identity, framer, prepare = setup_server(args)
 
     _logger.info("### start server")
-    if server == "tcp":
-        StartTcpServer(
+    if server_id == "tcp":
+        server = StartTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # TBD host=
@@ -155,9 +158,10 @@ def run_server():
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            prepare=prepare  # Only prepare server do not activate, INTERNAL.
         )
-    elif server == "udp":
-        StartUdpServer(
+    elif server_id == "udp":
+        server = StartUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             address=("", port),  # listen address
@@ -170,10 +174,10 @@ def run_server():
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
-    elif server == "serial":
+    elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
         #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        StartSerialServer(
+        server = StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             timeout=0.005,  # waiting time for request to complete
@@ -190,8 +194,8 @@ def run_server():
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
-    elif server == "tls":
-        StartTlsServer(
+    elif server_id == "tls":
+        server = StartTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             port=port,  # on which port
@@ -211,6 +215,7 @@ def run_server():
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )
+    return server
 
 
 # --------------------------------------------------------------------------- #
@@ -284,11 +289,10 @@ def get_commandline():
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
     args.port = args.port or comm_defaults[args.comm][1]
-    if args.comm != "serial":
-        args.port = int(args.port)
     args.framer = framers[args.framer]
     return args
 
 
 if __name__ == "__main__":
-    run_server()
+    server = run_server()
+    server.shutdown()

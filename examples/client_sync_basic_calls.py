@@ -6,7 +6,7 @@ This example uses client_sync.py to handle connection, and have the same options
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
-from examples.client_sync import _logger, run_sync_client
+from examples.client_sync import _logger, run_client
 
 UNIT = 0x01
 
@@ -116,4 +116,4 @@ def demonstrate_calls(client):
 
 
 if __name__ == "__main__":
-    run_sync_client(demonstrate_calls)
+    run_client(demonstrate_calls)

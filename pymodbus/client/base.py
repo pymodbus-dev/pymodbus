@@ -97,12 +97,12 @@ class ModbusBaseClient(ModbusClientMixin):
         """Initialize a client instance."""
         self.params = self._params()
         self.params.framer = framer
-        self.params.timeout = timeout
-        self.params.retries = retries
-        self.params.retry_on_empty = retry_on_empty
-        self.params.close_comm_on_error = close_comm_on_error
-        self.params.strict = strict
-        self.params.broadcast_enable = broadcast_enable
+        self.params.timeout = int(timeout)
+        self.params.retries = int(retries)
+        self.params.retry_on_empty = bool(retry_on_empty)
+        self.params.close_comm_on_error = bool(close_comm_on_error)
+        self.params.strict = bool(strict)
+        self.params.broadcast_enable = bool(broadcast_enable)
         self.params.kwargs = kwargs
 
         # Common variables.

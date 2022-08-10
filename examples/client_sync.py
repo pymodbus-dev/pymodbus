@@ -41,9 +41,12 @@ from pymodbus.transaction import (
 )
 
 
-def setup_sync_client():
+def setup_client(args):
     """Run client setup."""
-    args = get_commandline()
+    if not args:
+        args = get_commandline()
+    if args.comm != "serial":
+        args.port = int(args.port)
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
@@ -115,10 +118,10 @@ def setup_sync_client():
     return client
 
 
-def run_sync_client(modbus_calls=None):
+def run_client(modbus_calls=None, args=None):
     """Run sync client."""
     _logger.info("### Client ready")
-    client = setup_sync_client()
+    client = setup_client(args)
     client.connect()
     if modbus_calls:
         modbus_calls(client)
@@ -183,12 +186,11 @@ def get_commandline():
         args.comm = "tcp"
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
-    if not args.port:
-        args.port = comm_defaults[args.comm][1]
+    args.port = args.port or comm_defaults[args.comm][1]
     args.framer = framers[args.framer]
     return args
 
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    run_sync_client()
+    run_client()

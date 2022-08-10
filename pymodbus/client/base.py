@@ -95,7 +95,7 @@ class ModbusBaseClient(ModbusClientMixin):
         **kwargs
     ):
         """Initialize a client instance."""
-        self.params = self._params
+        self.params = self._params()
         self.params.framer = framer
         self.params.timeout = timeout
         self.params.retries = retries

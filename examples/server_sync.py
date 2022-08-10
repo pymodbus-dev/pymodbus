@@ -147,12 +147,12 @@ def run_server():
             # TBD host=
             # TBD port=
             address=("", port),  # listen address
-            custom_functions=[],  # allow custom handling
+            # custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
             # TBD handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
-            ignore_missing_slaves=True,  # ignore request to a missing slave
-            broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # ignore_missing_slaves=True,  # ignore request to a missing slave
+            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
         )

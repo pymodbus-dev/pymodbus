@@ -52,20 +52,20 @@ class TestAsynchronousClient:
         client = AsyncModbusTcpClient("127.0.0.1")
         assert isinstance(client, AsyncModbusTcpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
-        assert client.port == 502  # nosec
+        assert client.params.port == 502  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     async def test_tcp_asyncio_client(self):
         """Test the TCP client."""
         client = AsyncModbusTcpClient("127.0.0.1")
         assert isinstance(client, AsyncModbusTcpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
-        assert client.port == 502  # nosec
+        assert client.params.port == 502  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test TLS Client client
@@ -77,10 +77,10 @@ class TestAsynchronousClient:
         assert isinstance(client, AsyncModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
-        assert client.port == 802  # nosec
+        assert client.params.port == 802  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     async def test_tls_asyncio_client(self):
         """Test the TLS AsyncIO client."""
@@ -88,10 +88,10 @@ class TestAsynchronousClient:
         assert isinstance(client, AsyncModbusTlsClient)  # nosec
         assert isinstance(client.framer, ModbusTlsFramer)  # nosec
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
-        assert client.port == 802  # nosec
+        assert client.params.port == 802  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test UDP client
@@ -101,20 +101,20 @@ class TestAsynchronousClient:
         client = AsyncModbusUdpClient("127.0.0.1")
         assert isinstance(client, AsyncModbusUdpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
-        assert client.port == 502  # nosec
+        assert client.params.port == 502  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     async def test_udp_asyncio_client(self):
         """Test the udp asyncio client"""
         client = AsyncModbusUdpClient("127.0.0.1")
         assert isinstance(client, AsyncModbusUdpClient)  # nosec
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
-        assert client.port == 502  # nosec
+        assert client.params.port == 502  # nosec
 
         await client.aStop()
-        assert client.host is None  # nosec
+        assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
     # Test Serial client
@@ -152,7 +152,7 @@ class TestAsynchronousClient:
         )
         assert isinstance(client, AsyncModbusSerialClient)  # nosec
         assert isinstance(client.framer, framer)  # nosec
-        assert client.port == pytest.SERIAL_PORT  # nosec
+        assert client.params.port == pytest.SERIAL_PORT  # nosec
         assert client.baudrate == 19200  # nosec
         assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec

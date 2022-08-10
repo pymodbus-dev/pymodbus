@@ -43,9 +43,7 @@ from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 _logger = logging.getLogger(__name__)
 
 
-class ModbusSerialClient(
-    ModbusBaseClient
-):  # pylint: disable=too-many-instance-attributes
+class ModbusSerialClient(ModbusBaseClient):
     r"""Modbus client for serial (RS-485) communication.
 
     :param port: (positional) Serial port used for communication.
@@ -75,14 +73,13 @@ class ModbusSerialClient(
         **kwargs,
     ):
         """Initialize Modbus Serial Client."""
-        self.host = None
-        self.port = port
+        super().__init__(framer=framer, **kwargs)
+        self.params.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
         self.parity = parity
         self.stopbits = stopbits
         self.handle_local_echo = handle_local_echo
-        super().__init__(framer=framer, **kwargs)
         self.socket = None
 
         self.last_frame_end = None
@@ -104,15 +101,15 @@ class ModbusSerialClient(
             return True
         try:
             self.socket = serial.serial_for_url(
-                self.port,
-                timeout=self.timeout,
+                self.params.port,
+                timeout=self.params.timeout,
                 bytesize=self.bytesize,
                 stopbits=self.stopbits,
                 baudrate=self.baudrate,
                 parity=self.parity,
             )
             if isinstance(self.framer, ModbusRtuFramer):
-                if self.strict:
+                if self.params.strict:
                     self.socket.interCharTimeout = self.inter_char_timeout
                 self.last_frame_end = None
         except serial.SerialException as msg:
@@ -136,7 +133,7 @@ class ModbusSerialClient(
             waitingbytes = getattr(self.socket, in_waiting)()
         return waitingbytes
 
-    def _send(self, request):  # pylint: disable=missing-type-doc
+    def send(self, request):  # pylint: disable=missing-type-doc
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -148,6 +145,7 @@ class ModbusSerialClient(
         :return: The number of bytes written
         :raises ConnectionException:
         """
+        super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
@@ -174,10 +172,10 @@ class ModbusSerialClient(
         """Wait for data."""
         size = 0
         more_data = False
-        if self.timeout is not None and self.timeout:
+        if self.params.timeout is not None and self.params.timeout:
             condition = partial(
                 lambda start, timeout: (time.time() - start) <= timeout,
-                timeout=self.timeout,
+                timeout=self.params.timeout,
             )
         else:
             condition = partial(lambda dummy1, dummy2: True, dummy2=None)
@@ -192,13 +190,14 @@ class ModbusSerialClient(
             time.sleep(0.01)
         return size
 
-    def _recv(self, size):  # pylint: disable=missing-type-doc
+    def recv(self, size):  # pylint: disable=missing-type-doc
         """Read data from the underlying descriptor.
 
         :param size: The number of bytes to read
         :return: The bytes read
         :raises ConnectionException:
         """
+        super().recv(size)
         if not self.socket:
             raise ConnectionException(
                 self.__str__()  # pylint: disable=unnecessary-dunder-call
@@ -227,5 +226,5 @@ class ModbusSerialClient(
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"framer={self.framer}, timeout={self.timeout}>"
+            f"framer={self.framer}, timeout={self.params.timeout}>"
         )

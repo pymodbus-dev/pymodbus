@@ -62,51 +62,53 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         client = ModbusTcpDiagClient()
         self.assertRaises(
             ConnectionException,
-            lambda: client._recv(1024),  # pylint: disable=protected-access
+            lambda: client.recv(1024),
         )
 
         client.socket = mockSocket()
         # Test logging of non-delayed responses
-        self.assertIn(b"\x00", client._recv(None))  # pylint: disable=protected-access
-        self.assertEqual(b"\x00", client._recv(1))  # pylint: disable=protected-access
+        client.socket.mock_store(b"\x00")
+        self.assertIn(b"\x00", client.recv(None))
+        client.socket = mockSocket()
+        client.socket.mock_store(b"\x00")
+        self.assertEqual(b"\x00", client.recv(1))
 
         # Fool diagnostic logger into thinking we"re running late,
         # test logging of delayed responses
         mock_diag_time.time.side_effect = count(step=3)
+        client.socket.mock_store(b"\x00" * 4)
         self.assertEqual(
-            b"\x00" * 4, client._recv(4)  # pylint: disable=protected-access
+            b"\x00" * 4, client.recv(4)
         )
-        self.assertEqual(b"", client._recv(0))  # pylint: disable=protected-access
+        self.assertEqual(b"", client.recv(0))
 
-        mock_socket = MagicMock()
-        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
+        client.socket.mock_store(b"\x00\x01\x02")
         client.timeout = 3
-        client.socket = mock_socket
         self.assertEqual(
-            b"\x00\x01\x02", client._recv(3)  # pylint: disable=protected-access
+            b"\x00\x01\x02", client.recv(3)
         )
-        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
+        client.socket.mock_store(b"\x00\x01\x02")
         self.assertEqual(
-            b"\x00\x01", client._recv(2)  # pylint: disable=protected-access
+            b"\x00\x01", client.recv(2)
         )
         mock_select.select.return_value = [False]
-        self.assertEqual(b"", client._recv(2))  # pylint: disable=protected-access
+        self.assertEqual(b"", client.recv(2))
         client.socket = mockSocket()
+        client.socket.mock_store(b"\x00")
         mock_select.select.return_value = [True]
-        self.assertIn(b"\x00", client._recv(None))  # pylint: disable=protected-access
+        self.assertIn(b"\x00", client.recv(None))
 
         mock_socket = MagicMock()
         client.socket = mock_socket
         mock_socket.recv.return_value = b""
         self.assertRaises(
             ConnectionException,
-            lambda: client._recv(1024),  # pylint: disable=protected-access
+            lambda: client.recv(1024),
         )
-
-        mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])
-        client.socket = mock_socket
+        client.socket = mockSocket()
+        client.socket.mock_store(b"\x00\x01\x02")
         self.assertEqual(
-            b"\x00\x01\x02", client._recv(1024)  # pylint: disable=protected-access
+            b"\x00\x01\x02", client.recv(1024)
         )
 
     def test_tcp_diag_client_repr(self):
@@ -114,8 +116,8 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         client = ModbusTcpDiagClient()
         rep = (
             f"<{client.__class__.__name__} at {hex(id(client))} "
-            f"socket={client.socket}, ipaddr={client.host}, "
-            f"port={client.port}, timeout={client.timeout}>"
+            f"socket={client.socket}, ipaddr={client.params.host}, "
+            f"port={client.params.port}, timeout={client.params.timeout}>"
         )
         self.assertEqual(repr(client), rep)
 

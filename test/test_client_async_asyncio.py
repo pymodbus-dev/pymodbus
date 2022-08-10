@@ -84,7 +84,7 @@ class TestAsyncioClient:
         """Test initialization tcp in loop."""
         client = AsyncModbusTcpClient("127.0.0.1", port=5020)
         assert not client.connected  # nosec
-        assert client.port == 5020  # nosec
+        assert client.params.port == 5020  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_udp_in_loop(self):
@@ -92,14 +92,14 @@ class TestAsyncioClient:
         client = AsyncModbusUdpClient("127.0.0.1")
         await client.aStart()
         # TBD assert client.connected  # nosec
-        assert client.port == 502  # nosec
+        assert client.params.port == 502  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_tls_in_loop(self):
         """Test initialization tls in loop."""
         client = AsyncModbusTlsClient("127.0.0.1")
         assert not client.connected  # nosec
-        assert client.port == 802  # nosec
+        assert client.params.port == 802  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_factory_reset_wait_before_reconnect(self):
@@ -164,8 +164,8 @@ class TestAsyncioClient:
 
         # fake client is connected and *then* looses connection:
         client.connected = True
-        client.host = mock.sentinel.HOST
-        client.port = mock.sentinel.PORT
+        client.params.host = mock.sentinel.HOST
+        client.params.port = mock.sentinel.PORT
         client.protocol = mock.sentinel.PROTOCOL
         client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
         assert not client.connected  # nosec

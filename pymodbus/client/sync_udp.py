@@ -63,11 +63,11 @@ class ModbusUdpClient(ModbusBaseClient):
         **kwargs,
     ):
         """Initialize Asyncio Modbus UDP Client."""
-        self.host = host
-        self.port = port
+        super().__init__(framer=framer, **kwargs)
+        self.params.host = host
+        self.params.port = port
         self.source_address = source_address
 
-        super().__init__(framer=framer, **kwargs)
         self.socket = None
 
     @classmethod
@@ -87,9 +87,9 @@ class ModbusUdpClient(ModbusBaseClient):
         if self.socket:
             return True
         try:
-            family = ModbusUdpClient._get_address_family(self.host)
+            family = ModbusUdpClient._get_address_family(self.params.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
-            self.socket.settimeout(self.timeout)
+            self.socket.settimeout(self.params.timeout)
         except socket.error as exc:
             txt = f"Unable to create udp socket {exc}"
             _logger.error(txt)
@@ -100,16 +100,18 @@ class ModbusUdpClient(ModbusBaseClient):
         """Close the underlying socket connection."""
         self.socket = None
 
-    def _send(self, request):
+    def send(self, request):
         """Send data on the underlying socket."""
+        super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
         if request:
-            return self.socket.sendto(request, (self.host, self.port))
+            return self.socket.sendto(request, (self.params.host, self.params.port))
         return 0
 
-    def _recv(self, size):
+    def recv(self, size):
         """Read data from the underlying descriptor."""
+        super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
         return self.socket.recvfrom(size)[0]
@@ -125,11 +127,11 @@ class ModbusUdpClient(ModbusBaseClient):
 
         :returns: The string representation
         """
-        return f"ModbusUdpClient({self.host}:{self.port})"
+        return f"ModbusUdpClient({self.params.host}:{self.params.port})"
 
     def __repr__(self):
         """Return string representation."""
         return (
             f"<{self.__class__.__name__} at {hex(id(self))} socket={self.socket}, "
-            f"ipaddr={self.host}, port={self.port}, timeout={self.timeout}>"
+            f"ipaddr={self.params.host}, port={self.params.port}, timeout={self.params.timeout}>"
         )

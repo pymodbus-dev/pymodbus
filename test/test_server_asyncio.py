@@ -21,7 +21,6 @@ from pymodbus.server.async_io import (
     StartTcpServer,
     StartTlsServer,
     StartUdpServer,
-    StopServer,
 )
 
 _logger = logging.getLogger()
@@ -440,10 +439,6 @@ class AsyncioServerTest(
     def test_async_modbus_server_factory(self):
         """Test the base class for all the clients"""
         ModbusServerFactory(store=None)
-
-    def test_async_stop_server(self):
-        """Test stop server."""
-        StopServer()
 
     @pytest.mark.skip
     async def test_async_tcp_server_exception(self):

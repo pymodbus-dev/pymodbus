@@ -29,6 +29,19 @@ EXAMPLE_PATH = "../examples"
 PYTHON = "python3"
 
 
+def to_be_solved(test_type, test_framer, test_server, test_comm, test_client):
+    """Solve problems."""
+    if test_type == "extended" and test_framer is not ModbusSocketFramer:
+        return True
+    if not test_server:
+        return True
+    if test_comm in ("tls", "udp", "serial"):  # pylint: disable=use-set-for-membership
+        return True
+    if not test_client and (test_framer is not ModbusSocketFramer or test_comm != "tcp"):
+        return True
+    return False
+
+
 @dataclass
 class Commandline:
     """Simulate commandline parameters."""
@@ -40,7 +53,6 @@ class Commandline:
     store = "sequential"
     slaves = None
     modbus_calls = None
-    prepare = True
 
 
 @pytest.mark.parametrize(
@@ -48,16 +60,16 @@ class Commandline:
     [
         "connect",
         "basic",
-        # "extended",
+        "extended",
     ]
 )
 @pytest.mark.parametrize(
     "test_server, test_client",
     [
         (True, True),
-        # NOT OK (True, False),
-        # NOT OK (False, True),
-        # NOT OK (False, False),
+        (True, False),
+        (False, True),
+        (False, False),
     ]
 )
 @pytest.mark.parametrize(
@@ -66,22 +78,27 @@ class Commandline:
         ("tcp", ModbusSocketFramer),
         ("tcp", ModbusRtuFramer),
         ("tcp", ModbusAsciiFramer),
-        ("no tcp", ModbusBinaryFramer),  # NOT OK
-        ("no tls", ModbusTlsFramer),  # NOT OK
-        ("no udp", ModbusSocketFramer),  # NOT OK
-        ("no udp", ModbusRtuFramer),  # NOT OK
-        ("no udp", ModbusAsciiFramer),  # NOT OK
-        ("no udp", ModbusBinaryFramer),  # NOT OK
-        ("no serial", ModbusRtuFramer),  # NOT OK
-        ("no serial", ModbusAsciiFramer),  # NOT OK
-        ("no serial", ModbusBinaryFramer),  # NOT OK
+        ("tls", ModbusTlsFramer),
+        ("udp", ModbusSocketFramer),
+        ("udp", ModbusRtuFramer),
+        ("udp", ModbusAsciiFramer),
+        ("serial", ModbusRtuFramer),
+        ("serial", ModbusAsciiFramer),
+        ("serial", ModbusBinaryFramer),
     ]
 )
 async def test_client_server(test_type, test_server, test_client, test_comm, test_framer):
     """Test client/server examples."""
 
-    if test_comm[:2] == "no":
+    if to_be_solved(
+        test_type,
+        test_framer,
+        test_server,
+        test_comm,
+        test_client,
+    ):
         return
+
     args = Commandline()
     args.comm = test_comm
     args.framer = test_framer
@@ -89,10 +106,18 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
 
     _logger.setLevel("DEBUG")
 
+    def run_sync_server():
+        """Catch exceptions."""
+        try:
+            server.serve_forever()
+        except:  # pylint: disable=bare-except # noqa: E722
+            server.shutdown()
+            pytest.fail("Server raised an exception")
+
     loop = asyncio.get_event_loop()
     if test_server:
         server = server_sync(args=args)
-        server_id = loop.run_in_executor(None, server.serve_forever)
+        server_id = loop.run_in_executor(None, run_sync_server)
     else:
         server = server_async(args=args)
     await asyncio.sleep(0.1)
@@ -107,9 +132,10 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
     else:
         await client_async(modbus_calls=method_client[test_type][1], args=args)
     server.shutdown()
+    assert server.socket
     server_id.cancel()
     assert server_id.cancelled()
 
 
 if __name__ == "__main__":
-    asyncio.run(test_client_server("connect", True, True, "tcp", ModbusSocketFramer))
+    asyncio.run(test_client_server("basic", True, False, "tcp", ModbusSocketFramer))

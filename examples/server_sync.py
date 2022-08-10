@@ -60,6 +60,9 @@ def setup_server(args):
     """Run server setup."""
     if not args:
         args = get_commandline()
+        defer_start = False  # No function.
+    else:
+        defer_start = True  # Needed when running tests, otherwise no function.
 
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -135,14 +138,14 @@ def setup_server(args):
     )
     if args.comm != "serial":
         args.port = int(args.port)
-    return args.comm, args.port, store, identity, args.framer, args.prepare
+    return args.comm, args.port, store, identity, args.framer, defer_start
 
 
 def run_server(args=None):
     """Run server."""
-    server_id, port, store, identity, framer, prepare = setup_server(args)
-
-    _logger.info("### start server")
+    server_id, port, store, identity, framer, defer_start = setup_server(args)
+    txt = f"### start server, listening on {port} - {server_id}"
+    _logger.info(txt)
     if server_id == "tcp":
         server = StartTcpServer(
             context=store,  # Data storage
@@ -158,21 +161,24 @@ def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            prepare=prepare  # Only prepare server do not activate, INTERNAL.
+            defer_start=defer_start  # Only define server do not activate
         )
     elif server_id == "udp":
         server = StartUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
+            # TBD host=
+            # TBD port=
             address=("", port),  # listen address
-            custom_functions=[],  # allow custom handling
+            # custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
-            handler=None,  # handler for each session
+            # TBD handler=None,  # handler for each session
             # TBD allow_reuse_address=True,  # allow the reuse of an address
-            ignore_missing_slaves=True,  # ignore request to a missing slave
-            broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # ignore_missing_slaves=True,  # ignore request to a missing slave
+            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
     elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
@@ -193,6 +199,7 @@ def run_server(args=None):
             ignore_missing_slaves=True,  # ignore request to a missing slave
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
     elif server_id == "tls":
         server = StartTlsServer(
@@ -214,6 +221,7 @@ def run_server(args=None):
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
     return server
 

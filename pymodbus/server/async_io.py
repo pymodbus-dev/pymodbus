@@ -125,8 +125,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 _logger.debug(txt)
 
             self.running = False
-
-        except Exception as exc:  # pragma: no cover pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             txt = (
                 f"Datastore unable to fulfill request: {exc}; {traceback.format_exc()}"
             )
@@ -858,9 +857,9 @@ async def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-valu
     :param address: An optional (interface, port) to bind to.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param defer_start: if set, a coroutine which can be started and stopped
-            will be returned. Otherwise, the server will be immediately spun
-            up without the ability to shut it off from within the asyncio loop
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
@@ -870,10 +869,9 @@ async def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-valu
     for func in custom_functions:
         server.decoder.register(func)  # pragma: no cover
 
-    if not defer_start:
-        await server.serve_forever()
-
-    return server
+    if defer_start:
+        return server
+    await server.serve_forever()
 
 
 async def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
@@ -906,9 +904,9 @@ async def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-valu
     :param allow_reuse_port: Whether the server will allow the reuse of a port.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param defer_start: if set, a coroutine which can be started and stopped
-            will be returned. Otherwise, the server will be immediately spun
-            up without the ability to shut it off from within the asyncio loop
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
@@ -931,10 +929,9 @@ async def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-valu
     for func in custom_functions:
         server.decoder.register(func)  # pragma: no cover
 
-    if not defer_start:
-        await server.serve_forever()
-
-    return server
+    if defer_start:
+        return server
+    await server.serve_forever()
 
 
 async def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -952,7 +949,9 @@ async def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-valu
     :param address: An optional (interface, port) to bind to.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param defer_start: start with delay
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
@@ -961,16 +960,16 @@ async def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-valu
     for func in custom_functions:
         server.decoder.register(func)  # pragma: no cover
 
-    if not defer_start:
-        await server.serve_forever()  # pragma: no cover
-
-    return server
+    if defer_start:
+        return server
+    await server.serve_forever()
 
 
 async def StartSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
     custom_functions=[],
+    defer_start=False,
     **kwargs,
 ):  # pragma: no cover
     """Start and run a serial modbus server.
@@ -979,23 +978,20 @@ async def StartSerialServer(  # pylint: disable=invalid-name,dangerous-default-v
     :param identity: An optional identify structure
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs: The rest
     """
     framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)
+
+    if defer_start:
+        return server
     await server.start()
     await server.serve_forever()
-
-
-def StopServer():  # pylint: disable=invalid-name
-    """Stop Async Server."""
-    warnings.warn(
-        "deprecated API for asyncio. Call server_close() on "
-        "server object returned by StartXxxServer",
-        DeprecationWarning,
-    )
 
 
 # --------------------------------------------------------------------------- #

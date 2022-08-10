@@ -74,7 +74,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     async def aConnect(self):
         """Initiate connection to start client."""
         # force reconnect if required:
-        await self.aClose()
         self.loop = asyncio.get_running_loop()
 
         txt = f"Connecting to {self.params.host}:{self.params.port}."
@@ -83,15 +82,15 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def aClose(self):
         """Stop client."""
-        # prevent reconnect:
-        self.params.host = None
-
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
+        # prevent reconnect.
+        self.params.host = None
+
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(**self.params.kwargs)
+        protocol = ModbusClientProtocol(framer=self.params.framer, **self.params.kwargs)
         protocol.factory = self
         return protocol
 

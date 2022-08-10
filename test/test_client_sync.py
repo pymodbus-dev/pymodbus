@@ -118,7 +118,7 @@ class SynchronousClientTest(
         self.assertRaises(NotImplementedException, client.connect)
         self.assertRaises(NotImplementedException, client.is_socket_open)
         self.assertRaises(NotImplementedException, client.close)
-        self.assertEqual("ModbusBaseClient None:502", str(client))
+        self.assertEqual("ModbusBaseClient None:None", str(client))
 
         # Test information methods
         client.last_frame_end = 2

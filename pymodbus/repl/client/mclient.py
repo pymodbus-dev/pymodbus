@@ -55,7 +55,7 @@ def handle_brodcast(func):
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
-        if not kwargs.get("unit") and self.broadcast_enable:
+        if not kwargs.get("unit") and self.params.broadcast_enable:
             return {"broadcasted": True}
         if not resp.isError():
             return make_response_dict(resp)

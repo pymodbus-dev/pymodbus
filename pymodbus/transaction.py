@@ -137,7 +137,7 @@ class ModbusTransactionManager:
                     txt = f"Clearing current Frame: - {_buffer}"
                     _logger.debug(txt)
                     self.client.framer.resetFrame()
-                if broadcast := (self.client.broadcast_enable and not request.unit_id):
+                if broadcast := (self.client.params.broadcast_enable and not request.unit_id):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
                 else:
@@ -281,7 +281,7 @@ class ModbusTransactionManager:
         """
         last_exception = None
         try:
-            self.client.start()
+            self.client.connect()
             packet = self.client.framer.buildPacket(packet)
             if _logger.isEnabledFor(logging.DEBUG):
                 txt = f"SEND: {hexlify_packets(packet)}"

@@ -119,10 +119,10 @@ def run_sync_client(modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client ready")
     client = setup_sync_client()
-    client.start()
+    client.connect()
     if modbus_calls:
         modbus_calls(client)
-    client.stop()  # pylint: disable=no-member
+    client.close()
     _logger.info("### End of Program")
 
 

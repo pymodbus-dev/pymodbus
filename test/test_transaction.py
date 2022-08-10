@@ -181,7 +181,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertIsInstance(trans.execute(request), ModbusIOException)
 
         # Broadcast
-        client.broadcast_enable = True
+        client.params.broadcast_enable = True
         request.unit_id = 0
         response = trans.execute(request)
         self.assertEqual(response, b"Broadcast write sent - no response expected")

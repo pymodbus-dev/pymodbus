@@ -54,7 +54,7 @@ class TestAsynchronousClient:
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.params.port == 502  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     async def test_tcp_asyncio_client(self):
@@ -64,7 +64,7 @@ class TestAsynchronousClient:
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.params.port == 502  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
@@ -79,7 +79,7 @@ class TestAsynchronousClient:
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.params.port == 802  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     async def test_tls_asyncio_client(self):
@@ -90,7 +90,7 @@ class TestAsynchronousClient:
         assert isinstance(client.sslctx, ssl.SSLContext)  # nosec
         assert client.params.port == 802  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
@@ -103,7 +103,7 @@ class TestAsynchronousClient:
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.params.port == 502  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     async def test_udp_asyncio_client(self):
@@ -113,7 +113,7 @@ class TestAsynchronousClient:
         assert isinstance(client.framer, ModbusSocketFramer)  # nosec
         assert client.params.port == 502  # nosec
 
-        await client.aStop()
+        await client.aClose()
         assert client.params.host is None  # nosec
 
     # -----------------------------------------------------------------------#
@@ -125,7 +125,7 @@ class TestAsynchronousClient:
         client = AsyncModbusSerialClient(port="not here", framer=ModbusRtuFramer)
         assert isinstance(client, AsyncModbusSerialClient)  # nosec
         assert isinstance(client.framer, ModbusRtuFramer)  # nosec
-        await client.aStop()
+        await client.aClose()
 
     @pytest.mark.parametrize(
         "framer",
@@ -157,8 +157,8 @@ class TestAsynchronousClient:
         assert client.parity == "E"  # nosec
         assert client.stopbits == 2  # nosec
         assert client.bytesize == 7  # nosec
-        asyncio.wait_for(client.aStart(), timeout=1)
-        await client.aStop()
+        asyncio.wait_for(client.aConnect(), timeout=1)
+        await client.aClose()
 
 
 # ---------------------------------------------------------------------------#

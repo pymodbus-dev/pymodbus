@@ -25,9 +25,9 @@ Example::
             #    handle_local_echo=False,
         )
 
-        await client.aStart()
+        await client.aConnect()
         ...
-        await client.aStop()
+        await client.aClose()
 """
 import asyncio
 import logging
@@ -81,7 +81,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self.protocol = None
         self._connected_event = asyncio.Event()
 
-    async def aStop(self):  # pylint: disable=invalid-name
+    async def aClose(self):
         """Stop connection."""
         if self._connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
@@ -97,7 +97,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         """Connect internal."""
         return self._connected_event.is_set()
 
-    async def aStart(self):
+    async def aConnect(self):
         """Connect Async client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()

@@ -20,9 +20,9 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        await client.aStart()
+        await client.aConnect()
         ...
-        await client.aStop()
+        await client.aClose()
 """
 import asyncio
 import logging
@@ -74,10 +74,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = 100
 
-    async def aStart(self):
+    async def aConnect(self):
         """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
-        await self.aStop()
+        await self.aClose()
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
@@ -92,7 +92,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # self.params.host, self.params.port = addrinfo[0][-1]
         return await self._connect()
 
-    async def aStop(self):  # pylint: disable=invalid-name
+    async def aClose(self):
         """Stop connection and prevents reconnect."""
         # prevent reconnect:
         self.params.host = None

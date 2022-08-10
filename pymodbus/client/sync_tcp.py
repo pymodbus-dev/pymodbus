@@ -20,9 +20,9 @@ Example::
             #    source_address=("localhost", 0),  # bind socket to address
         )
 
-        client.start()
+        client.connect()
         ...
-        client.stop()
+        client.close()
 """
 import logging
 import select
@@ -64,7 +64,7 @@ class ModbusTcpClient(ModbusBaseClient):
         self.source_address = source_address
         self.socket = None
 
-    def start(self):
+    def connect(self):
         """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise

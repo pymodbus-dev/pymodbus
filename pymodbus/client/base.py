@@ -19,9 +19,9 @@ Custom client implementation example::
     def run():
 
         client = myOwnClient(...)
-        client.start()
+        client.connect()
         rr = client.read_coils(0x01)
-        client.stop()
+        client.close()
 
 .. tip::
     Parameters common for all clients are documented here, and not repeated with each
@@ -122,14 +122,14 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         self.framer.decoder.register(function)
 
-    def start(self):
+    def connect(self):
         """Connect to the modbus remote host.
 
         :raises NotImplementedException:
         """
         raise NotImplementedException(TXT_NOT_IMPLEMENTED)
 
-    async def aStart(self):  # pylint: disable=invalid-name
+    async def aConnect(self):  # pylint: disable=invalid-name
         """Connect to the modbus remote host.
 
         :raises NotImplementedException:
@@ -159,7 +159,7 @@ class ModbusBaseClient(ModbusClientMixin):
         :returns: The result of the request execution
         :raises ConnectionException:
         """
-        if not self.start():
+        if not self.connect():
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
@@ -214,7 +214,7 @@ class ModbusBaseClient(ModbusClientMixin):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not self.start():
+        if not self.connect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
         return self
 
@@ -224,7 +224,7 @@ class ModbusBaseClient(ModbusClientMixin):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
-        if not await self.aStart():
+        if not await self.aConnect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
         return self
 
@@ -234,7 +234,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
     async def __aexit__(self, klass, value, traceback):
         """Implement the client with exit block."""
-        await self.close()
+        await self.aClose()
 
     def __str__(self):
         """Build a string representation of the connection.

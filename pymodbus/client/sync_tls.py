@@ -23,9 +23,9 @@ Example::
             #    password=None,
             #    server_hostname="localhost",
 
-        client.start()
+        client.connect()
         ...
-        client.stop()
+        client.close()
 """
 import logging
 import socket
@@ -73,7 +73,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self.password = password
         self.server_hostname = server_hostname
 
-    def start(self):
+    def connect(self):
         """Connect to the modbus tls server.
 
         :returns: True if connection succeeded, False otherwise

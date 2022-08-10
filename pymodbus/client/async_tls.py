@@ -23,9 +23,9 @@ Example::
             #    password=None,
             #    server_hostname="localhost",
 
-        await client.aStart()
+        await client.aConnect()
         ...
-        await client.aStop()
+        await client.aClose()
 """
 import asyncio
 import logging
@@ -91,11 +91,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.server_hostname = server_hostname
         AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
-    async def aStart(self):
+    async def aConnect(self):
         """Initiate connection to start client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
-        return await AsyncModbusTcpClient.start(self)
+        return await AsyncModbusTcpClient.aConnect(self)
 
     async def _connect(self):
         _logger.debug("Connecting.")

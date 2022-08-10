@@ -20,9 +20,9 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        await client.aStart()
+        await client.aConnect()
         ...
-        await client.aStop()
+        await client.aClose()
 """
 import asyncio
 import logging
@@ -71,17 +71,17 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = self.DELAY_MIN_MS
 
-    async def aStart(self):
+    async def aConnect(self):
         """Initiate connection to start client."""
         # force reconnect if required:
-        await self.aStop()
+        await self.aClose()
         self.loop = asyncio.get_running_loop()
 
         txt = f"Connecting to {self.params.host}:{self.params.port}."
         _logger.debug(txt)
         return await self._connect()
 
-    async def aStop(self):  # pylint: disable=invalid-name
+    async def aClose(self):
         """Stop client."""
         # prevent reconnect:
         self.params.host = None

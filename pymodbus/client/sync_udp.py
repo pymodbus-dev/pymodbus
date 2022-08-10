@@ -20,9 +20,9 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        client.start()
+        client.connect()
         ...
-        client.stop()
+        client.close()
 """
 import logging
 import socket
@@ -79,7 +79,7 @@ class ModbusUdpClient(ModbusBaseClient):
             return socket.AF_INET
         return socket.AF_INET6
 
-    def start(self):
+    def connect(self):
         """Connect to the modbus tcp server.
 
         :returns: True if connection succeeded, False otherwise
@@ -120,7 +120,7 @@ class ModbusUdpClient(ModbusBaseClient):
         """Check if socket is open."""
         if self.socket:
             return True
-        return self.start()
+        return self.connect()
 
     def __str__(self):
         """Build a string representation of the connection.

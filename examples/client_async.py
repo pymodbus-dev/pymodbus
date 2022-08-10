@@ -122,10 +122,10 @@ async def run_async_client(modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client ready")
     client = setup_async_client()
-    await client.aStart()
+    await client.aConnect()
     if modbus_calls:
         await modbus_calls(client.protocol)
-    await client.aStop()
+    await client.aClose()
     _logger.info("### End of Program")
 
 

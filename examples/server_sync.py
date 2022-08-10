@@ -283,7 +283,7 @@ def get_commandline():
         args.slaves = 0
     if not args.framer:
         args.framer = comm_defaults[args.comm][0]
-    args.port = args.port or comm_defaults[args.comm]
+    args.port = args.port or comm_defaults[args.comm][1]
     if args.comm != "serial":
         args.port = int(args.port)
     args.framer = framers[args.framer]

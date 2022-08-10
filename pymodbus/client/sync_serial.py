@@ -25,9 +25,9 @@ Example::
             #    handle_local_echo=False,
         )
 
-        client.start()
+        client.connect()
         ...
-        client.stop()
+        client.close()
 """
 from functools import partial
 import logging
@@ -92,7 +92,7 @@ class ModbusSerialClient(ModbusBaseClient):
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
 
-    def start(self):
+    def connect(self):
         """Connect to the modbus serial server.
 
         :returns: True if connection succeeded, False otherwise

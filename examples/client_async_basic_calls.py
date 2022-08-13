@@ -8,7 +8,7 @@ The corresponding server must be started before e.g. as:
 """
 import asyncio
 
-from examples.client_async import _logger, run_client
+from examples.client_async import _logger, run_client, setup_client
 
 UNIT = 0x01
 
@@ -118,5 +118,5 @@ async def demonstrate_calls(client):
 
 
 if __name__ == "__main__":
-    # Connect/disconnect no calls.
-    asyncio.run(run_client(demonstrate_calls))
+    testclient = setup_client()
+    asyncio.run(run_client(testclient, modbus_calls=demonstrate_calls))

@@ -18,7 +18,6 @@ _logger = logging.getLogger(__name__)
 class ModbusClientProtocol(
     ModbusBaseClient,
     asyncio.Protocol,
-    asyncio.DatagramProtocol
 ):
     """Asyncio specific implementation of asynchronous modbus client protocol."""
 
@@ -198,7 +197,3 @@ class ModbusClientProtocol(
         """Close."""
         self.transport.close()
         self._connected = False
-
-    def datagram_received(self, data, addr):
-        """Receive datagram."""
-        self._data_received(data)

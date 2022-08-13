@@ -61,6 +61,9 @@ def setup_server(args):
     """Run server setup."""
     if not args:
         args = get_commandline()
+        defer_start = False  # No function.
+    else:
+        defer_start = True  # Needed when running tests, otherwise no function.
 
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -136,16 +139,16 @@ def setup_server(args):
     )
     if args.comm != "serial":
         args.port = int(args.port)
-    return args.comm, args.port, store, identity, args.framer
+    return args.comm, args.port, store, identity, args.framer, defer_start
 
 
 async def run_server(args=None):
     """Run server."""
-    server, port, store, identity, framer = setup_server(args)
+    server_id, port, store, identity, framer, defer_start = setup_server(args)
 
     _logger.info("### start server")
-    if server == "tcp":
-        server_obj = await StartTcpServer(
+    if server_id == "tcp":
+        server = StartTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # TBD host=
@@ -159,9 +162,10 @@ async def run_server(args=None):
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
-    elif server == "udp":
-        server_obj = await StartUdpServer(
+    elif server_id == "udp":
+        server = StartUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             address=("", port),  # listen address
@@ -173,11 +177,12 @@ async def run_server(args=None):
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
-    elif server == "serial":
+    elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
         #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        server_obj = await StartSerialServer(
+        server = StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             timeout=0.005,  # waiting time for request to complete
@@ -193,9 +198,10 @@ async def run_server(args=None):
             ignore_missing_slaves=True,  # ignore request to a missing slave
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
-    elif server == "tls":
-        server_obj = await StartTlsServer(
+    elif server_id == "tls":
+        server = StartTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             port=port,  # on which port
@@ -214,10 +220,9 @@ async def run_server(args=None):
             broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
+            defer_start=defer_start  # Only define server do not activate
         )
-    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
-    await server_obj.serve_forever()
-
+    return server
 
 # --------------------------------------------------------------------------- #
 # Extra code, to allow commandline parameters instead of changing the code

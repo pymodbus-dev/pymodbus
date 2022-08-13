@@ -645,7 +645,7 @@ def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     identity=None,
     address=None,
     custom_functions=[],
-    prepare=False,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a tcp modbus server.
@@ -655,7 +655,9 @@ def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     :param address: An optional (interface, port) to bind to.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param prepare: INTERNAL
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
@@ -663,7 +665,7 @@ def StartTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
 
     for func in custom_functions:
         server.decoder.register(func)
-    if not prepare:
+    if not defer_start:
         server.serve_forever()
     return server
 
@@ -678,7 +680,7 @@ def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     password=None,
     reqclicert=False,
     custom_functions=[],
-    prepare=False,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a tls modbus server.
@@ -693,7 +695,9 @@ def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
     :param reqclicert: Force the sever request client"s certificate
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param prepare: INTERNAL
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusTlsFramer)
@@ -712,7 +716,7 @@ def StartTlsServer(  # pylint: disable=invalid-name,dangerous-default-value
 
     for func in custom_functions:
         server.decoder.register(func)
-    if not prepare:
+    if not defer_start:
         server.serve_forever()
     return server
 
@@ -722,7 +726,7 @@ def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     identity=None,
     address=None,
     custom_functions=[],
-    prepare=False,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a udp modbus server.
@@ -732,14 +736,16 @@ def StartUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
     :param address: An optional (interface, port) to bind to.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
-    :param prepare: INTERNAL
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpServer(context, framer, identity, address, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)
-    if not prepare:
+    if not defer_start:
         server.serve_forever()
     return server
 
@@ -748,7 +754,7 @@ def StartSerialServer(  # pylint: disable=invalid-name, dangerous-default-value
     context=None,
     identity=None,
     custom_functions=[],
-    prepare=False,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a serial modbus server.
@@ -758,14 +764,16 @@ def StartSerialServer(  # pylint: disable=invalid-name, dangerous-default-value
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     :param kwargs:
-    :param prepare: INTERNAL
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
     :raises ConnectionException:
     """
     framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for func in custom_functions:
         server.decoder.register(func)
-    if not prepare:
+    if not defer_start:
         server.serve_forever()
     return server
 

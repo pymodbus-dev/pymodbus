@@ -66,7 +66,7 @@ def setup_client(args):
     elif args.comm == "udp":
         client = ModbusUdpClient(
             "localhost",
-            #    port=502,
+            port=args.port,
             # Common optional paramers:
             #    modbus_decoder=ClientDecoder,
             framer=args.framer,
@@ -122,9 +122,12 @@ def run_client(modbus_calls=None, args=None):
     """Run sync client."""
     _logger.info("### Client ready")
     client = setup_client(args)
-    client.connect()
-    if modbus_calls:
-        modbus_calls(client)
+    try:
+        client.connect()
+        if modbus_calls:
+            modbus_calls(client)
+    except:  # pylint: disable=bare-except # noqa: E722
+        _logger.error("Got exception in client.")
     client.close()
     _logger.info("### End of Program")
 

@@ -2,6 +2,7 @@
 """Test client async."""
 import logging
 import asyncio
+from asyncio import CancelledError
 from dataclasses import dataclass
 import pytest
 
@@ -10,6 +11,7 @@ from pymodbus.transaction import (
     ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
+    ModbusTlsFramer,
 )
 
 from examples.server_sync import run_server as server_sync
@@ -32,16 +34,16 @@ _logger = logging.getLogger()
 
 EXAMPLE_PATH = "../examples"
 PYTHON = "python3"
-TIMEOUT = 180  # NOT OK, ModbusRtuFramer and ModbusAsciiFramer have a hanger.
+TIMEOUT = 5
 
 
 def to_be_solved(test_type, test_comm, test_framer):
     """Solve problems."""
-    if test_framer == ModbusAsciiFramer:
+    if test_comm == "serial":
         return True
-    if test_type == "extended" and test_framer is not ModbusSocketFramer:
+    if test_comm == "tls":
         return True
-    if test_comm in ("udp", "serial"):  # pylint: disable=use-set-for-membership
+    if test_type == "extended" and test_framer is ModbusRtuFramer:
         return True
     return False
 
@@ -81,11 +83,9 @@ class Commandline:
     [
         ("tcp", ModbusSocketFramer),
         ("tcp", ModbusRtuFramer),
-        ("tcp", ModbusAsciiFramer),
-        # Need a certificate: ("tls", ModbusTlsFramer),
+        ("tls", ModbusTlsFramer),
         ("udp", ModbusSocketFramer),
         ("udp", ModbusRtuFramer),
-        ("udp", ModbusAsciiFramer),
         ("serial", ModbusRtuFramer),
         ("serial", ModbusAsciiFramer),
         ("serial", ModbusBinaryFramer),
@@ -114,18 +114,31 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
 
     _logger.setLevel("DEBUG")
 
+    def handle_task(result):
+        """Handle task exit."""
+        try:
+            result = result.result()
+        except CancelledError:
+            pass
+        except Exception as exc:  # pylint: disable=broad-except
+            pytest.fail(f"Exception in task serve_forever: {exc} ")
+
     loop = asyncio.get_event_loop()
     server = None
-    server_id = None
+    task_sync = None
+    task = None
     client = None
     not_ok_exc = None
     try:
         if test_server:
             server = server_sync(args=args)
-            server_id = loop.run_in_executor(None, server.serve_forever)
+            task_sync = loop.run_in_executor(None, server.serve_forever)
         else:
             server = await server_async(args=args)
-            server_id = asyncio.ensure_future(server.serve_forever())
+            task = asyncio.create_task(server.serve_forever())
+            task.add_done_callback(handle_task)
+            assert not task.cancelled()
+            await asyncio.wait_for(server.serving, timeout=0.1)
         await asyncio.sleep(0.1)
 
         if test_client:
@@ -137,13 +150,28 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
     except Exception as exc:  # pylint: disable=broad-except # noqa: E722
         not_ok_exc = f"Server/Client raised exception <<{exc}>>"
 
-    if test_server and server:
-        server.shutdown()
-    if server_id:
-        while not server_id.done():
-            server_id.cancel()
+    if server:
+        if test_server:
+            server.shutdown()
+        else:
+            await server.shutdown()
+    if task is not None:
+        await asyncio.sleep(0.1)
+        if not task.cancelled():
+            task.cancel()
+            try:
+                await task
+            except CancelledError:
+                pass
+            except Exception as exc:  # pylint: disable=broad-except
+                pytest.fail(f"Exception in task serve_forever: {exc} ")
+            task = None
+    if task_sync:
+        server.is_running = False
+        while not task_sync.done():
+            task_sync.cancel()
             await asyncio.sleep(0.1)
-        assert server_id.cancelled()
+        assert task_sync.cancelled()
     if client:
         if test_client:
             client.close()
@@ -154,4 +182,4 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
 
 
 if __name__ == "__main__":
-    asyncio.run(test_client_server("basic", True, False, "udp", ModbusSocketFramer))
+    asyncio.run(test_client_server("connect", False, False, "udp", ModbusSocketFramer))

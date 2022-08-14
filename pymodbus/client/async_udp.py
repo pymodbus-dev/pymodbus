@@ -27,12 +27,165 @@ Example::
 import asyncio
 import logging
 import functools
+import socket
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.helper_async import ModbusClientProtocol
+# from pymodbus.client.helper_async import ModbusClientProtocol
+from pymodbus.exceptions import ConnectionException
+from pymodbus.utilities import hexlify_packets
 
 _logger = logging.getLogger(__name__)
+
+DGRAM_TYPE = socket.SOCK_DGRAM
+
+
+class ModbusUdpClientProtocol(ModbusBaseClient, asyncio.DatagramProtocol):
+    """Asyncio specific implementation of asynchronous modbus udp client protocol."""
+
+    #: Factory that created this instance.
+    factory = None
+    transport = None
+
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port=502,
+        framer=None,
+        source_address=None,
+        timeout=10,
+        **kwargs,
+    ):
+        """Initialize a Modbus TCP/UDP asynchronous client
+
+        :param host: Host IP address
+        :param port: Port
+        :param framer: Framer to use
+        :param source_address: Specific to underlying client being used
+        :param timeout: Timeout in seconds
+        :param kwargs: Extra arguments
+        """
+        self.host = host
+        self.port = port
+        self.source_address = source_address or ("", 0)
+        self._timeout = timeout
+        self._connected = False
+        super().__init__(framer=framer or ModbusSocketFramer, **kwargs)
+
+    def datagram_received(self, data, addr):
+        """Receive datagram."""
+        self._data_received(data)
+
+    def write_transport(self, packet):
+        """Write transport."""
+        return self.transport.sendto(packet)
+
+    async def execute(self, request=None):  # pylint: disable=invalid-overridden-method
+        """Execute requests asynchronously."""
+        req = self._execute(request)
+        if self.params.broadcast_enable and not request.unit_id:
+            resp = b"Broadcast write sent - no response expected"
+        else:
+            resp = await asyncio.wait_for(req, timeout=self._timeout)
+        return resp
+
+    def connection_made(self, transport):
+        """Call when a connection is made.
+
+        The transport argument is the transport representing the connection.
+        """
+        self.transport = transport
+        self._connection_made()
+
+        if self.factory:
+            self.factory.protocol_made_connection(self)  # pylint: disable=no-member
+
+    def connection_lost(self, reason):
+        """Call when the connection is lost or closed."""
+        self.transport = None
+        self._connection_lost(reason)
+
+        if self.factory:
+            self.factory.protocol_lost_connection(self)  # pylint: disable=no-member
+
+    def data_received(self, data):
+        """Call when some data is received."""
+        self._data_received(data)
+
+    def create_future(self):
+        """Create asyncio Future object."""
+        return asyncio.Future()
+
+    def resolve_future(self, my_future, result):
+        """Resolve future."""
+        if not my_future.done():
+            my_future.set_result(result)
+
+    def raise_future(self, my_future, exc):
+        """Set exception of a future if not done."""
+        if not my_future.done():
+            my_future.set_exception(exc)
+
+    def _connection_made(self):
+        """Call upon a successful client connection."""
+        _logger.debug("Client connected to modbus server")
+        self._connected = True
+
+    def _connection_lost(self, reason):
+        """Call upon a client disconnect."""
+        txt = f"Client disconnected from modbus server: {reason}"
+        _logger.debug(txt)
+        self._connected = False
+        for tid in list(self.transaction):
+            self.raise_future(
+                self.transaction.getTransaction(tid),
+                ConnectionException("Connection lost during request"),
+            )
+
+    @property
+    def connected(self):
+        """Return connection status."""
+        return self._connected
+
+    def _execute(self, request, **kwargs):  # NOSONAR pylint: disable=unused-argument
+        """Start the producer to send the next request to consumer.write(Frame(request))."""
+        request.transaction_id = self.transaction.getNextTID()
+        packet = self.framer.buildPacket(request)
+        txt = f"send: {hexlify_packets(packet)}"
+        _logger.debug(txt)
+        self.write_transport(packet)
+        return self._build_response(request.transaction_id)
+
+    def _data_received(self, data):
+        """Get response, check for valid message, decode result."""
+        txt = f"recv: {hexlify_packets(data)}"
+        _logger.debug(txt)
+        unit = self.framer.decode_data(data).get("unit", 0)
+        self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
+
+    def _handle_response(self, reply, **kwargs):  # pylint: disable=unused-argument
+        """Handle the processed response and link to correct deferred."""
+        if reply is not None:
+            tid = reply.transaction_id
+            if handler := self.transaction.getTransaction(tid):
+                self.resolve_future(handler, reply)
+            else:
+                txt = f"Unrequested message: {str(reply)}"
+                _logger.debug(txt)
+
+    def _build_response(self, tid):
+        """Return a deferred response for the current request."""
+        my_future = self.create_future()
+        if not self._connected:
+            self.raise_future(my_future, ConnectionException("Client is not connected"))
+        else:
+            self.transaction.addTransaction(my_future, tid)
+        return my_future
+
+    def close(self):
+        """Close."""
+        self.transport.close()
+        self._connected = False
 
 
 class AsyncModbusUdpClient(ModbusBaseClient):
@@ -65,7 +218,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self.params.port = port
         self.source_address = source_address
 
-        self.loop = None
+        self.loop = asyncio.get_event_loop()
         self.protocol = None
         self.connected = False
         self.reset_delay()
@@ -88,8 +241,8 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # - [(family, type, proto, canonname, sockaddr),]
         # We want sockaddr which is a (ip, port) tuple
         # udp needs ip addresses, not hostnames
-        # addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
-        # self.params.host, self.params.port = addrinfo[0][-1]
+        addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
+        self.params.host, self.params.port = addrinfo[-1][-1]
         return await self._connect()
 
     async def aClose(self):
@@ -102,13 +255,13 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(
+        protocol = ModbusUdpClientProtocol(
             use_udp=True,
             framer=self.params.framer,
             **self.params.kwargs
         )
         protocol.params.host = host
-        protocol.port = port
+        protocol.params.port = port
         protocol.factory = self
         return protocol
 

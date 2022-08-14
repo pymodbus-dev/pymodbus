@@ -527,7 +527,11 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
                 "Can't call serve_forever on an already running server object"
             )
 
-    def server_close(self):
+    async def shutdown(self):
+        """Shutdown server."""
+        await self.server_close()
+
+    async def server_close(self):
         """Close server."""
         for k_item, v_item in self.active_connections.items():
             txt = f"aborting active session {k_item}"
@@ -696,8 +700,14 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
                 "Can't call serve_forever on an already running server object"
             )
 
-    def server_close(self):
+    async def shutdown(self):
+        """Shutdown server."""
+        await self.server_close()
+
+    async def server_close(self):
         """Close server."""
+        if self.endpoint:
+            self.endpoint.running = False
         self.stop_serving.set_result(True)
         if self.endpoint is not None and self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()

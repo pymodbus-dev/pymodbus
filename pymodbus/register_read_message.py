@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import struct
 
+from pymodbus.constants import Defaults
 from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 
 
@@ -10,13 +11,14 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, **kwargs):
+    def __init__(self, address, count, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start the read from
         :param count: The number of registers to read
+        :param unit: Modbus slave unit ID
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, unit, **kwargs)
         self.address = address
         self.count = count
 
@@ -57,12 +59,13 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, **kwargs):
+    def __init__(self, values, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param values: The values to write to
+        :param unit: Modbus slave unit ID
         """
-        ModbusResponse.__init__(self, **kwargs)
+        ModbusResponse.__init__(self, unit, **kwargs)
 
         #: A list of register values
         self.registers = values or []
@@ -115,13 +118,14 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 3
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
+        :param unit: Modbus slave unit ID
         """
-        ReadRegistersRequestBase.__init__(self, address, count, **kwargs)
+        ReadRegistersRequestBase.__init__(self, address, count, unit, **kwargs)
 
     def execute(self, context):
         """Run a read holding request against a datastore.
@@ -171,13 +175,14 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 4
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
+        :param unit: Modbus slave unit ID
         """
-        ReadRegistersRequestBase.__init__(self, address, count, **kwargs)
+        ReadRegistersRequestBase.__init__(self, address, count, unit, **kwargs)
 
     def execute(self, context):
         """Run a read input request against a datastore.

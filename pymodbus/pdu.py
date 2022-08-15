@@ -30,7 +30,7 @@ class ModbusPDU:
        This is a constant set at 0 to indicate Modbus.  It is
        put here for ease of expansion.
 
-    .. attribute:: unit_id
+    .. attribute:: unit
 
        This is used to route the request to the correct child. In
        the TCP modbus, it is used for routing (or not used at all. However,
@@ -51,11 +51,15 @@ class ModbusPDU:
        of encoding it again.
     """
 
-    def __init__(self, **kwargs):
-        """Initialize the base data for a modbus request."""
+    def __init__(self, unit=Defaults.UnitId, **kwargs):
+        """Initialize the base data for a modbus request.
+
+        :param unit: Modbus slave unit ID
+
+        """
         self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
         self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
-        self.unit_id = kwargs.get("unit", Defaults.UnitId)
+        self.unit_id = unit
         self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
 
@@ -94,9 +98,12 @@ class ModbusPDU:
 class ModbusRequest(ModbusPDU):
     """Base class for a modbus request PDU."""
 
-    def __init__(self, **kwargs):
-        """Proxy to the lower level initializer."""
-        ModbusPDU.__init__(self, **kwargs)
+    def __init__(self, unit=Defaults.UnitId, **kwargs):
+        """Proxy to the lower level initializer.
+
+        :param unit: Modbus slave unit ID
+        """
+        ModbusPDU.__init__(self, unit, **kwargs)
 
     def doException(self, exception):  # pylint: disable=invalid-name
         """Build an error response based on the function.
@@ -127,9 +134,13 @@ class ModbusResponse(ModbusPDU):
 
     should_respond = True
 
-    def __init__(self, **kwargs):
-        """Proxy the lower level initializer."""
-        ModbusPDU.__init__(self, **kwargs)
+    def __init__(self, unit=Defaults.UnitId, **kwargs):
+        """Proxy the lower level initializer.
+
+        :param unit: Modbus slave unit ID
+
+        """
+        ModbusPDU.__init__(self, unit, **kwargs)
 
     def isError(self):  # pylint: disable=invalid-name
         """Check if the error is a success or failure."""

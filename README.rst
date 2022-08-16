@@ -56,7 +56,7 @@ Client Features
   * asynchronous(powered by asyncio) and synchronous versions
   * Payload builder/decoder utilities
   * Pymodbus REPL for quick tests
-  * Customable framer to allow for custom implementations
+  * Customizable framer to allow for custom implementations
 
 ~~~~~~~~~~~~~~~~~~~~
 Server Features
@@ -125,7 +125,7 @@ If you are looking for UI, checkout `Modbus Simulator <https://github.com/riptid
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
-If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup informations.
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
 
 .. important::
    **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
@@ -154,7 +154,7 @@ Pymodbus REPL Server
 
 Pymodbus also comes with a REPL server to quickly run an asynchronous server with additional capabilities out of the box like simulating errors, delay, mangled messages etc.
 
-For more infor on REPL Server refer `Pymodbus REPL Server <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
 
 .. image:: https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg
    :target: https://youtu.be/OutaVz0JkWg
@@ -260,7 +260,7 @@ Here are some of the common commands to perform a range of activities
 
 ::
    pip install -r requirements.txt   install all requirements
-   pip install -e .                  source directory is "release", usefull for testing
+   pip install -e .                  source directory is "release", useful for testing
 
    tox -e py38 (or py39, py310, pypy38) Run pytest on source code
 

@@ -1,8 +1,8 @@
 # -------------------------------------------------------------------
 # Python packages used by pymodbus.
 # -------------------------------------------------------------------
-# This file install all requirements used by pymodbus, and are
-# intented for developers who have cloned the repository.
+# This file installs all requirements used by pymodbus, and are
+# intended for developers who have cloned the repository.
 #
 # pymodbus is only being tested on python version 3.8, 3.9 and 3.10
 # depending on the usage profile it might work on other versions.

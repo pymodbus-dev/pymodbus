@@ -133,7 +133,7 @@ class AsyncioServerTest(
     async def asyncTearDown(self):
         """Clean up the test environment"""
         if self.server is not None:
-            self.server.server_close()
+            await self.server.server_close()
             self.server = None
         if self.task is not None:
             await asyncio.sleep(0.1)
@@ -352,7 +352,7 @@ class AsyncioServerTest(
         self.assertTrue(asyncio.isfuture(self.server.on_connection_terminated))
         self.assertFalse(self.server.on_connection_terminated.done())
 
-        self.server.server_close()
+        await self.server.server_close()
         self.assertTrue(self.server.protocol.is_closing())
         self.server = None
 
@@ -391,7 +391,7 @@ class AsyncioServerTest(
         await asyncio.sleep(0.1)
         received.assert_called_once()
         self.assertEqual(received.call_args[0][0], BasicClient.dataTo)
-        self.server.server_close()
+        await self.server.server_close()
         self.assertTrue(self.server.protocol.is_closing())
         self.server = None
 

@@ -387,7 +387,9 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
     def server_close(self):
         """Call for stopping the running server."""
         _logger.debug("Modbus server stopped")
-        self.socket.close()
+        if self.socket:
+            self.socket.close()
+            self.socket = None
         for thread in self.threads:
             thread.running = False
 

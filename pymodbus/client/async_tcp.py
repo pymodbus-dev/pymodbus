@@ -39,6 +39,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     :param host: (positional) Host IP address
     :param port: (optional default 502) The TCP port used for communication.
+    :param framer: (optional, default ModbusSocketFramer) Framer class.
     :param source_address: (optional, default none) source address of client,
     :param \*\*kwargs: (optional) Extra experimental parameters for transport
     :return: client object

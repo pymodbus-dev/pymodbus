@@ -24,7 +24,7 @@ The corresponding server must be started before e.g. as:
 """
 import asyncio
 
-from examples.client_async import _logger, run_client
+from examples.client_async import _logger, run_client, setup_client
 
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
@@ -57,7 +57,7 @@ UNIT = 0x01
 
 async def execute_information_requests(client):
     """Execute extended information requests."""
-    _logger.info("Running ReadDeviceInformationRequest")
+    _logger.info("### Running ReadDeviceInformationRequest")
     rr = await client.execute(ReadDeviceInformationRequest(unit=UNIT))
     assert rr and not rr.isError()  # test that calls was OK
 
@@ -88,7 +88,7 @@ async def execute_information_requests(client):
 
 async def execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
-    _logger.info("Running ReturnQueryDataRequest")
+    _logger.info("### Running ReturnQueryDataRequest")
     rr = await client.execute(ReturnQueryDataRequest(unit=UNIT))
     assert rr and not rr.isError()  # test that calls was OK
     assert not rr.message[0]  # test the resulting message
@@ -166,5 +166,5 @@ async def demonstrate_calls(client):
 
 
 if __name__ == "__main__":
-    # Connect/disconnect no calls.
-    asyncio.run(run_client(demonstrate_calls))
+    testclient = setup_client()
+    asyncio.run(run_client(testclient, modbus_calls=demonstrate_calls))

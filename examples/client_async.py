@@ -43,7 +43,7 @@ from pymodbus.transaction import (
 )
 
 
-def setup_client(args):
+def setup_client(args=None):
     """Run client setup."""
     if not args:
         args = get_commandline()
@@ -68,8 +68,8 @@ def setup_client(args):
         )
     elif args.comm == "udp":
         client = AsyncModbusUdpClient(
-            "localhost",
-            #    port=502,
+            "127.0.0.1",
+            port=args.port,
             # Common optional paramers:
             #    modbus_decoder=ClientDecoder,
             framer=args.framer,
@@ -121,11 +121,11 @@ def setup_client(args):
     return client
 
 
-async def run_client(modbus_calls=None, args=None):
+async def run_client(client, modbus_calls=None):
     """Run sync client."""
-    _logger.info("### Client ready")
-    client = setup_client(args)
+    _logger.info("### Client starting")
     await client.aConnect()
+    assert client.protocol
     if modbus_calls:
         await modbus_calls(client.protocol)
     await client.aClose()
@@ -196,4 +196,5 @@ def get_commandline():
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    asyncio.run(run_client())
+    testclient = setup_client()
+    asyncio.run(run_client(testclient))

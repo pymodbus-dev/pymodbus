@@ -22,7 +22,7 @@ if isinstance(response, ClearCountersResponse):
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
-from examples.client_sync import _logger, run_client
+from examples.client_sync import _logger, run_client, setup_client
 
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
@@ -55,7 +55,7 @@ UNIT = 0x01
 
 def execute_information_requests(client):
     """Execute extended information requests."""
-    _logger.info("Running ReadDeviceInformationRequest")
+    _logger.info("### Running ReadDeviceInformationRequest")
     rr = client.execute(ReadDeviceInformationRequest(unit=UNIT))
     assert rr and not rr.isError()  # test that calls was OK
 
@@ -86,7 +86,7 @@ def execute_information_requests(client):
 
 def execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
-    _logger.info("Running ReturnQueryDataRequest")
+    _logger.info("### Running ReturnQueryDataRequest")
     rr = client.execute(ReturnQueryDataRequest(unit=UNIT))
     assert rr and not rr.isError()  # test that calls was OK
     assert not rr.message[0]  # test the resulting message
@@ -164,4 +164,5 @@ def demonstrate_calls(client):
 
 
 if __name__ == "__main__":
-    run_client(demonstrate_calls)
+    testclient = setup_client()
+    run_client(testclient, modbus_calls=demonstrate_calls)

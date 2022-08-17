@@ -41,7 +41,7 @@ from pymodbus.transaction import (
 )
 
 
-def setup_client(args):
+def setup_client(args=None):
     """Run client setup."""
     if not args:
         args = get_commandline()
@@ -118,16 +118,12 @@ def setup_client(args):
     return client
 
 
-def run_client(modbus_calls=None, args=None):
+def run_client(client, modbus_calls=None):
     """Run sync client."""
-    _logger.info("### Client ready")
-    client = setup_client(args)
-    try:
-        client.connect()
-        if modbus_calls:
-            modbus_calls(client)
-    except:  # pylint: disable=bare-except # noqa: E722
-        _logger.error("Got exception in client.")
+    _logger.info("### Client starting")
+    client.connect()
+    if modbus_calls:
+        modbus_calls(client)
     client.close()
     _logger.info("### End of Program")
 
@@ -196,4 +192,5 @@ def get_commandline():
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    run_client()
+    testclient = setup_client()
+    run_client(testclient)

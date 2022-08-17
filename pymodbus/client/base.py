@@ -129,7 +129,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         raise NotImplementedException(TXT_NOT_IMPLEMENTED)
 
-    async def aConnect(self):  # pylint: disable=invalid-name
+    async def aConnect(self):
         """Connect to the modbus remote host.
 
         :raises NotImplementedException:
@@ -163,7 +163,7 @@ class ModbusBaseClient(ModbusClientMixin):
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
-    async def aExecute(self, request=None):  # pylint: disable=invalid-name,missing-type-doc
+    async def aExecute(self, request=None):  # pylint: disable=missing-type-doc
         """Execute.
 
         :param request: The request to process
@@ -179,7 +179,7 @@ class ModbusBaseClient(ModbusClientMixin):
             self.state = ModbusTransactionState.SENDING
         return request
 
-    async def aSend(self, request):  # pylint: disable=invalid-name
+    async def aSend(self, request):
         """Send request."""
         return self.send(request)
 
@@ -187,7 +187,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Receive data."""
         return size
 
-    async def aRecv(self, size):  # pylint: disable=invalid-name
+    async def aRecv(self, size):
         """Receive data."""
         return self.recv(size)
 
@@ -198,7 +198,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         raise NotImplementedException(TXT_NOT_IMPLEMENTED)
 
-    async def aClose(self):  # pylint: disable=invalid-name
+    async def aClose(self):
         """Close the underlying socket connection.
 
         :raises NotImplementedException:

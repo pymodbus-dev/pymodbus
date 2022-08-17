@@ -230,7 +230,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     async def aConnect(self):
         """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
+        host = self.params.host
         await self.aClose()
+        self.params.host = host
+
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
@@ -241,8 +244,8 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # - [(family, type, proto, canonname, sockaddr),]
         # We want sockaddr which is a (ip, port) tuple
         # udp needs ip addresses, not hostnames
-        addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
-        self.params.host, self.params.port = addrinfo[-1][-1]
+        # TBD: addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
+        # TBD: self.params.host, self.params.port = addrinfo[-1][-1]
         return await self._connect()
 
     async def aClose(self):

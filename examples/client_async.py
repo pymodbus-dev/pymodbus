@@ -68,7 +68,7 @@ def setup_client(args=None):
         )
     elif args.comm == "udp":
         client = AsyncModbusUdpClient(
-            "localhost",
+            "127.0.0.1",
             port=args.port,
             # Common optional paramers:
             #    modbus_decoder=ClientDecoder,

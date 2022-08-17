@@ -182,4 +182,4 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
 
 
 if __name__ == "__main__":
-    asyncio.run(test_client_server("connect", False, False, "udp", ModbusSocketFramer))
+    asyncio.run(test_client_server("basic", True, False, "udp", ModbusSocketFramer))

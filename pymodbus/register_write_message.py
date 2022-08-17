@@ -22,7 +22,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
         :param address: The address to start writing add
         :param value: The values to write
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         self.value = value
 
@@ -91,7 +91,7 @@ class WriteSingleRegisterResponse(ModbusResponse):
         :param address: The address to start writing add
         :param value: The values to write
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         self.value = value
 
@@ -151,7 +151,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
         :param address: The address to start writing to
         :param values: The values to write
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         if values is None:
             values = []
@@ -236,7 +236,7 @@ class WriteMultipleRegistersResponse(ModbusResponse):
         :param address: The address to start writing to
         :param count: The number of registers to write to
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         self.count = count
 
@@ -284,7 +284,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask
@@ -337,7 +337,7 @@ class MaskWriteRegisterResponse(ModbusResponse):
         :param and_mask: The and bitmask applied to the register address
         :param or_mask: The or bitmask applied to the register address
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.address = address
         self.and_mask = and_mask
         self.or_mask = or_mask

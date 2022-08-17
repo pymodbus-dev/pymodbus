@@ -103,7 +103,7 @@ class ModbusRequest(ModbusPDU):
 
         :param unit: Modbus slave unit ID
         """
-        ModbusPDU.__init__(self, unit, **kwargs)
+        super().__init__(unit, **kwargs)
 
     def doException(self, exception):  # pylint: disable=invalid-name
         """Build an error response based on the function.
@@ -140,7 +140,8 @@ class ModbusResponse(ModbusPDU):
         :param unit: Modbus slave unit ID
 
         """
-        ModbusPDU.__init__(self, unit, **kwargs)
+        super().__init__(unit, **kwargs)
+
 
     def isError(self):  # pylint: disable=invalid-name
         """Check if the error is a success or failure."""
@@ -189,7 +190,7 @@ class ExceptionResponse(ModbusResponse):
         :param function_code: The function to build an exception response for
         :param exception_code: The specific modbus exception to return
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.original_code = function_code
         self.function_code = function_code | self.ExceptionOffset
         self.exception_code = exception_code
@@ -237,7 +238,7 @@ class IllegalFunctionRequest(ModbusRequest):
 
         :param function_code: The function we are erroring on
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.function_code = function_code
 
     def decode(self, data):

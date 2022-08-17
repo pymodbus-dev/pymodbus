@@ -34,7 +34,7 @@ _logger = logging.getLogger()
 
 EXAMPLE_PATH = "../examples"
 PYTHON = "python3"
-TIMEOUT = 5
+TIMEOUT = 30
 
 
 def to_be_solved(test_type, test_comm, test_framer):

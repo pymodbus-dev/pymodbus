@@ -4,6 +4,7 @@ import logging
 import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass
+import platform
 import pytest
 
 from pymodbus.transaction import (
@@ -91,6 +92,7 @@ class Commandline:
         ("serial", ModbusBinaryFramer),
     ]
 )
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason="Some strange things happens.")
 async def test_client_server(test_type, test_server, test_client, test_comm, test_framer):  # pylint: disable=too-complex
     """Test client/server examples."""
 

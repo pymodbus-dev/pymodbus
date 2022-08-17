@@ -142,7 +142,6 @@ class ModbusResponse(ModbusPDU):
         """
         super().__init__(unit, **kwargs)
 
-
     def isError(self):  # pylint: disable=invalid-name
         """Check if the error is a success or failure."""
         return self.function_code > 0x80  # pylint: disable=no-member

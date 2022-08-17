@@ -146,9 +146,9 @@ def cli(client):  # noqa: C901 pylint: disable=too-complex
                 if not string:
                     if "," in val:
                         val = val.split(",")
-                        val = [int(v) for v in val]
+                        val = [int(v, 0) for v in val]
                     else:
-                        val = int(val)
+                        val = int(val, 0)
                 kwargs[arg_name] = val
             else:
                 arg_name, val = arg, args[i + 1]
@@ -156,9 +156,9 @@ def cli(client):  # noqa: C901 pylint: disable=too-complex
                     if not string:
                         if "," in val:
                             val = val.split(",")
-                            val = [int(v) for v in val]
+                            val = [int(v, 0) for v in val]
                         else:
-                            val = int(val)
+                            val = int(val, 0)
                     kwargs[arg_name] = val
                     skip_index = i + 1
                 except TypeError:

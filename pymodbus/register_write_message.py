@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import struct
 
+from pymodbus.constants import Defaults
 from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 
 
@@ -16,13 +17,14 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
+        :param unit: Modbus slave unit ID
         """
-        super().__init__(**kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.value = value
 
@@ -85,13 +87,14 @@ class WriteSingleRegisterResponse(ModbusResponse):
     function_code = 6
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
+        :param unit: Modbus slave unit ID
         """
-        super().__init__(**kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.value = value
 
@@ -145,13 +148,14 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, **kwargs):
+    def __init__(self, address=None, values=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
+        :param unit: Modbus slave unit ID
         """
-        super().__init__(**kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         if values is None:
             values = []
@@ -230,13 +234,14 @@ class WriteMultipleRegistersResponse(ModbusResponse):
     function_code = 16
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param count: The number of registers to write to
+        :param unit: Modbus slave unit ID
         """
-        super().__init__(**kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.count = count
 

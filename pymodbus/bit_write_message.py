@@ -5,7 +5,7 @@ TODO write mask request/response
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import ModbusStatus
+from pymodbus.constants import Defaults, ModbusStatus
 from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
@@ -37,13 +37,14 @@ class WriteSingleCoilRequest(ModbusRequest):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The variable address to write
         :param value: The value to write at address
+        :param unit: Modbus slave unit ID
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.value = bool(value)
 
@@ -107,13 +108,14 @@ class WriteSingleCoilResponse(ModbusResponse):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The variable address written to
         :param value: The value written at address
+        :param unit: Modbus slave unit ID
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.value = value
 
@@ -160,13 +162,14 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     function_code = 15
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, **kwargs):
+    def __init__(self, address=None, values=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The starting request address
         :param values: The values to write
+        :param unit: Modbus slave unit ID
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         if not values:
             values = []
@@ -241,13 +244,14 @@ class WriteMultipleCoilsResponse(ModbusResponse):
     function_code = 15
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The starting variable address written to
         :param count: The number of values written
+        :param unit: Modbus slave unit ID
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.count = count
 

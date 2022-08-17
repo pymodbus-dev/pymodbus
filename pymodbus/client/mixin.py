@@ -104,59 +104,64 @@ class ModbusClientMixin:
         request = ReadCoilsRequest(address, count, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def read_discrete_inputs(self, address, count=1, **kwargs):
+    def read_discrete_inputs(self, address, count=1, unit=Defaults.UnitId, **kwargs):
         """Read discrete inputs.
 
         :param address: The starting address to read from
         :param count: The number of discretes to read
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = ReadDiscreteInputsRequest(address, count, **kwargs)
+        request = ReadDiscreteInputsRequest(address, count, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def write_coil(self, address, value, **kwargs):
+    def write_coil(self, address, value, unit=Defaults.UnitId, **kwargs):
         """Write_coil.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = WriteSingleCoilRequest(address, value, **kwargs)
+        request = WriteSingleCoilRequest(address, value, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def write_coils(self, address, values, **kwargs):
+    def write_coils(self, address, values, unit=Defaults.UnitId, **kwargs):
         """Write coils.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = WriteMultipleCoilsRequest(address, values, **kwargs)
+        request = WriteMultipleCoilsRequest(address, values, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def write_register(self, address, value, **kwargs):
+    def write_register(self, address, value, unit=Defaults.UnitId, **kwargs):
         """Write register.
 
         :param address: The starting address to write to
         :param value: The value to write to the specified address
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = WriteSingleRegisterRequest(address, value, **kwargs)
+        request = WriteSingleRegisterRequest(address, value, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def write_registers(self, address, values, **kwargs):
+    def write_registers(self, address, values, unit=Defaults.UnitId, **kwargs):
         """Write registers.
 
         :param address: The starting address to write to
         :param values: The values to write to the specified address
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = WriteMultipleRegistersRequest(address, values, **kwargs)
+        request = WriteMultipleRegistersRequest(address, values, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
     def read_holding_registers(self, address, count=1, unit=Defaults.UnitId, **kwargs):

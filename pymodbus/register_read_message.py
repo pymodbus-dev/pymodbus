@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import struct
 
+from pymodbus.constants import Defaults
 from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
 
 
@@ -10,13 +11,14 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, **kwargs):
+    def __init__(self, address, count, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start the read from
         :param count: The number of registers to read
+        :param unit: Modbus slave unit ID
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
         self.address = address
         self.count = count
 
@@ -57,12 +59,13 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, **kwargs):
+    def __init__(self, values, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance.
 
         :param values: The values to write to
+        :param unit: Modbus slave unit ID
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(unit, **kwargs)
 
         #: A list of register values
         self.registers = values or []
@@ -115,13 +118,14 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 3
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
+        :param unit: Modbus slave unit ID
         """
-        ReadRegistersRequestBase.__init__(self, address, count, **kwargs)
+        super().__init__(address, count, unit, **kwargs)
 
     def execute(self, context):
         """Run a read holding request against a datastore.
@@ -156,7 +160,7 @@ class ReadHoldingRegistersResponse(ReadRegistersResponseBase):
 
         :param values: The resulting register values
         """
-        ReadRegistersResponseBase.__init__(self, values, **kwargs)
+        super().__init__(values, **kwargs)
 
 
 class ReadInputRegistersRequest(ReadRegistersRequestBase):
@@ -171,13 +175,14 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 4
 
-    def __init__(self, address=None, count=None, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
         :param count: The number of registers to read from address
+        :param unit: Modbus slave unit ID
         """
-        ReadRegistersRequestBase.__init__(self, address, count, **kwargs)
+        super().__init__(address, count, unit, **kwargs)
 
     def execute(self, context):
         """Run a read input request against a datastore.
@@ -212,7 +217,7 @@ class ReadInputRegistersResponse(ReadRegistersResponseBase):
 
         :param values: The resulting register values
         """
-        ReadRegistersResponseBase.__init__(self, values, **kwargs)
+        super().__init__(values, **kwargs)
 
 
 class ReadWriteMultipleRegistersRequest(ModbusRequest):
@@ -242,7 +247,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
         :param write_address: The address to start writing to
         :param write_registers: The registers to write to the specified address
         """
-        ModbusRequest.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.read_address = kwargs.get("read_address", 0x00)
         self.read_count = kwargs.get("read_count", 0)
         self.write_address = kwargs.get("write_address", 0x00)
@@ -353,7 +358,7 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
 
         :param values: The register values to write
         """
-        ModbusResponse.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.registers = values or []
 
     def encode(self):

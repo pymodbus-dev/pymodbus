@@ -56,6 +56,7 @@ import logging
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadDiscreteInputsRequest
 from pymodbus.bit_write_message import WriteMultipleCoilsRequest, WriteSingleCoilRequest
+from pymodbus.constants import Defaults
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadInputRegistersRequest,
@@ -91,15 +92,16 @@ class ModbusClientMixin:
     last_frame_end = 0
     silent_interval = 0
 
-    def read_coils(self, address, count=1, **kwargs):
+    def read_coils(self, address, count=1, unit=Defaults.UnitId, **kwargs):
         """Read coils.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = ReadCoilsRequest(address, count, **kwargs)
+        request = ReadCoilsRequest(address, count, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
     def read_discrete_inputs(self, address, count=1, **kwargs):
@@ -157,26 +159,28 @@ class ModbusClientMixin:
         request = WriteMultipleRegistersRequest(address, values, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def read_holding_registers(self, address, count=1, **kwargs):
+    def read_holding_registers(self, address, count=1, unit=Defaults.UnitId, **kwargs):
         """Read holding registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = ReadHoldingRegistersRequest(address, count, **kwargs)
+        request = ReadHoldingRegistersRequest(address, count, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
-    def read_input_registers(self, address, count=1, **kwargs):
+    def read_input_registers(self, address, count=1, unit=Defaults.UnitId, **kwargs):
         """Read input registers.
 
         :param address: The starting address to read from
         :param count: The number of registers to read
+        :param unit: Modbus slave unit ID
         :param kwargs:
         :returns: A deferred response handle
         """
-        request = ReadInputRegistersRequest(address, count, **kwargs)
+        request = ReadInputRegistersRequest(address, count, unit, **kwargs)
         return self.execute(request)  # pylint: disable=no-member
 
     def readwrite_registers(self, *args, **kwargs):

@@ -53,7 +53,6 @@ def setup_client(args=None):
             "127.0.0.1",
             port=args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,
@@ -68,7 +67,6 @@ def setup_client(args=None):
             "localhost",
             port=args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,
@@ -82,7 +80,6 @@ def setup_client(args=None):
         client = ModbusSerialClient(
             port=args.port,  # serial port
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusRtuFramer,
             #    timeout=10,
             #    retries=3,
@@ -101,7 +98,6 @@ def setup_client(args=None):
             "localhost",
             port=args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,

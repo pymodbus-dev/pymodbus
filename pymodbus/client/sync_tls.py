@@ -9,7 +9,6 @@ Example::
             "localhost",
             #    port=802,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusTLsFramer,
             #    timeout=10,
             #    retries=3,

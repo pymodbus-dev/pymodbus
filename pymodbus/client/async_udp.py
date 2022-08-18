@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             # Common optional paramers:
             #    port=502,
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,
             #    timeout=10,
             #    retries=3,
@@ -20,9 +19,9 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        await client.aConnect()
+        await client.connect()
         ...
-        await client.aClose()
+        await client.close()
 """
 import asyncio
 import logging
@@ -77,11 +76,11 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = 100
 
-    async def aConnect(self):
+    async def connect(self):  # pylint: disable=invalid-overridden-method
         """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
         host = self.params.host
-        await self.aClose()
+        await self.close()
         self.params.host = host
 
         # get current loop, if there are no loop a RuntimeError will be raised
@@ -98,7 +97,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # TBD: self.params.host, self.params.port = addrinfo[-1][-1]
         return await self._connect()
 
-    async def aClose(self):
+    async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop connection and prevents reconnect."""
         # prevent reconnect:
         self.params.host = None

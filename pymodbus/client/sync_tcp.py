@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             #    port=502,  # on which port
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,  # how to interpret the messages
             #    timeout=10,  # waiting time for request to complete
             #    retries=3,  # retries per transaction
@@ -42,7 +41,6 @@ class ModbusTcpClient(ModbusBaseClient):
 
     :param host: (positional) Host IP address
     :param port: (optional default 502) The TCP port used for communication.
-    :param modbus_decoder: (optional, default ClientDecoder) Message decoder class.
     :param framer: (optional, default ModbusSocketFramer) Framer class.
     :param source_address: (optional, default none) source address of client,
     :param \*\*kwargs: (optional) Extra experimental parameters for transport

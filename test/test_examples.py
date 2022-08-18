@@ -178,7 +178,7 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
         if test_client:
             client.close()
         else:
-            await client.aClose()
+            await client.close()
     if not_ok_exc:
         pytest.fail(not_ok_exc)
 

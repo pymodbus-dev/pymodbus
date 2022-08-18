@@ -10,7 +10,6 @@ Example::
         client = ModbusSerialClient(
             port="/dev/pty0",  # serial port
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusRtuFramer,
             #    timeout=10,
             #    retries=3,

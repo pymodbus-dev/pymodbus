@@ -90,7 +90,7 @@ class TestAsyncioClient:
     async def test_initialization_udp_in_loop(self):
         """Test initialization udp in loop."""
         client = AsyncModbusUdpClient("127.0.0.1")
-        await client.aConnect()
+        await client.connect()
         # TBD assert client.connected  # nosec
         assert client.params.port == 502  # nosec
         assert client.delay_ms < client.DELAY_MAX_MS  # nosec
@@ -125,14 +125,14 @@ class TestAsyncioClient:
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
-        await client.aClose()
+        await client.close()
         assert not client.connected  # nosec
 
         # fake connected client:
         client.protocol = mock.MagicMock()
         client.connected = True
 
-        await client.aClose()
+        await client.close()
         client.protocol.transport.close.assert_called_once_with()
 
     async def test_factory_protocol_made_connection(self):
@@ -189,7 +189,7 @@ class TestAsyncioClient:
             port=mock.sentinel.PORT,
             protocol_class=mock_protocol_class
         )
-        await client.aConnect()
+        await client.connect()
 
     @mock.patch("pymodbus.client.async_tcp.asyncio.ensure_future")
     async def test_factory_start_failing_and_retried(self, mock_async):  # pylint: disable=unused-argument
@@ -211,7 +211,7 @@ class TestAsyncioClient:
             ".AsyncModbusTcpClient._reconnect"
         ) as mock_reconnect:
             mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-            run_coroutine(client.aConnect())
+            run_coroutine(client.connect())
             mock_reconnect.assert_called_once_with()
 
     @mock.patch("pymodbus.client.async_tcp.asyncio.sleep")
@@ -226,7 +226,7 @@ class TestAsyncioClient:
             protocol_class=mock_protocol_class
         )
         client.delay_ms = 5000
-        await client.aConnect()
+        await client.connect()
 
         run_coroutine(client._reconnect())  # pylint: disable=protected-access
         mock_sleep.assert_called_once_with(5)
@@ -259,7 +259,7 @@ class TestAsyncioClient:
         protocol.connection_made(transport)
         assert protocol.transport == transport  # nosec
         assert protocol.connected  # nosec
-        await protocol.aClose()
+        await protocol.close()
         transport.close.assert_called_once_with()
         assert not protocol.connected  # nosec
 

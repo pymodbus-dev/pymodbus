@@ -10,7 +10,6 @@ Example::
         client = AsyncModbusSerialClient(
             "dev/pty0",  # serial port
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusRtuFramer,
             #    timeout=10,
             #    retries=3,
@@ -25,9 +24,9 @@ Example::
             #    handle_local_echo=False,
         )
 
-        await client.aConnect()
+        await client.connect()
         ...
-        await client.aClose()
+        await client.close()
 """
 import asyncio
 import logging
@@ -81,7 +80,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self.protocol = None
         self._connected_event = asyncio.Event()
 
-    async def aClose(self):
+    async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop connection."""
         if self._connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
@@ -97,7 +96,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         """Connect internal."""
         return self._connected_event.is_set()
 
-    async def aConnect(self):
+    async def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect Async client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()

@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             # Common optional paramers:
             #    port=502,
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,
             #    timeout=10,
             #    retries=3,
@@ -20,9 +19,9 @@ Example::
             #    source_address=("localhost", 0),
         )
 
-        await client.aConnect()
+        await client.connect()
         ...
-        await client.aClose()
+        await client.close()
 """
 import asyncio
 import logging
@@ -72,7 +71,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Reset wait before next reconnect to minimal period."""
         self.delay_ms = self.DELAY_MIN_MS
 
-    async def aConnect(self):
+    async def connect(self):  # pylint: disable=invalid-overridden-method
         """Initiate connection to start client."""
         # force reconnect if required:
         self.loop = asyncio.get_running_loop()
@@ -81,7 +80,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         _logger.debug(txt)
         return await self._connect()
 
-    async def aClose(self):
+    async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()

@@ -9,7 +9,6 @@ Example::
             "127.0.0.1",
             # Common optional paramers:
             #    port=502,
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusSocketFramer,
             #    timeout=10,
             #    retries=3,

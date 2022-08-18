@@ -123,12 +123,14 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     Port = 502
     TLSPort = 802
     Backoff = 0.3
+    CloseCommOnError = False
     Retries = 3
     RetryOnEmpty = False
     RetryOnInvalid = False
     Timeout = 3
     Reconnects = 0
     TransactionId = 0
+    Strict = True
     ProtocolId = 0
     UnitId = 0x00
     Baudrate = 19200
@@ -138,7 +140,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     ZeroMode = False
     IgnoreMissingSlaves = False
     ReadSize = 1024
-    broadcast_enable = False
+    BroadcastEnable = False
 
 
 class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods

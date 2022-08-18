@@ -9,7 +9,6 @@ Example::
             "localhost",
             #    port=802,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusTLsFramer,
             #    timeout=10,
             #    retries=3,
@@ -23,9 +22,9 @@ Example::
             #    password=None,
             #    server_hostname="localhost",
 
-        await client.aConnect()
+        await client.connect()
         ...
-        await client.aClose()
+        await client.close()
 """
 import asyncio
 import logging
@@ -91,11 +90,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.server_hostname = server_hostname
         AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
-    async def aConnect(self):
+    async def connect(self):
         """Initiate connection to start client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
-        return await AsyncModbusTcpClient.aConnect(self)
+        return await AsyncModbusTcpClient.connect(self)
 
     async def _connect(self):
         _logger.debug("Connecting.")

@@ -182,7 +182,7 @@ class ModbusUdpClientProtocol(ModbusBaseClient, asyncio.DatagramProtocol):
             self.transaction.addTransaction(my_future, tid)
         return my_future
 
-    async def aClose(self):
+    def close(self):
         """Close."""
         self.transport.close()
         self._connected = False

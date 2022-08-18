@@ -18,7 +18,6 @@ _logger = logging.getLogger(__name__)
 class ModbusClientProtocol(
     ModbusBaseClient,
     asyncio.Protocol,
-    asyncio.DatagramProtocol,
 ):
     """Asyncio specific implementation of asynchronous modbus client protocol."""
 

@@ -24,28 +24,24 @@ class ModbusClientProtocol(
     #: Factory that created this instance.
     factory = None
     transport = None
-    use_udp = False
 
     def __init__(
         self,
+        host="127.0.0.1",
+        port=502,
         source_address=None,
         use_udp=False,
         **kwargs
     ):
-        """Initialize a Modbus TCP/UDP asynchronous client
-
-        :param host: Host IP address
-        :param port: Port
-        :param framer: Framer to use
-        :param source_address: Specific to underlying client being used
-        :param timeout: Timeout in seconds
-        :param kwargs: Extra arguments
-        """
-        self.use_udp = use_udp
-        self._connected = False
+        """Initialize a Modbus TCP/UDP asynchronous client"""
         super().__init__(**kwargs)
+        self.use_udp = use_udp
+        self.params.host = host
+        self.params.port = port
+        self.params.source_address = source_address or ("", 0)
 
-        self.source_address = source_address or ("", 0)
+        self._connected = False
+
 
     async def execute(self, request=None):  # pylint: disable=invalid-overridden-method
         """Execute requests asynchronously.

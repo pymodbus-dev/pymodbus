@@ -36,7 +36,7 @@ def updating_writer(extra):
     """Run every so often,
 
     and updates live values of the context. It should be noted
-    that there is a race condition for the update.
+    that there is a lrace condition for the update.
 
     :param arguments: The input arguments to the call
     """
@@ -52,7 +52,7 @@ def updating_writer(extra):
     context[slave_id].setValues(register, address, values)
 
 
-def run_updating_server():
+async def run_updating_server():
     """Run updating server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
@@ -83,11 +83,15 @@ def run_updating_server():
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
-    time = 5  # 5 seconds delay
-    loop = asyncio.get_event_loop()
-    loop.start(time, now=False)  # initially delay by time
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
+    log.debug("Start server")
+    await StartTcpServer(
+        context,
+        identity=identity,
+        address=("localhost", 5020),
+        defer_start=False
+    )
+    log.debug("Done")
 
 
 if __name__ == "__main__":
-    run_updating_server()
+    asyncio.run(run_updating_server())

@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 class ModbusClientProtocol(
     ModbusBaseClient,
     asyncio.Protocol,
+    asyncio.DatagramProtocol,
 ):
     """Asyncio specific implementation of asynchronous modbus client protocol."""
 
@@ -42,6 +43,9 @@ class ModbusClientProtocol(
 
         self._connected = False
 
+    def datagram_received(self, data, addr):
+        """Receive datagram."""
+        self._data_received(data)
 
     async def execute(self, request=None):  # pylint: disable=invalid-overridden-method
         """Execute requests asynchronously.

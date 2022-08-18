@@ -29,7 +29,7 @@ import logging
 
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.client.helper_async import ModbusClientProtocol
+from pymodbus.client.base import ModbusClientProtocol
 
 _logger = logging.getLogger(__name__)
 

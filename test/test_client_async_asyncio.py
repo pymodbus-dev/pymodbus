@@ -6,7 +6,7 @@ from unittest import mock
 from test.asyncio_test_helper import return_as_coroutine, run_coroutine
 
 from pymodbus.bit_read_message import ReadCoilsRequest, ReadCoilsResponse
-from pymodbus.client.helper_async import ModbusClientProtocol
+from pymodbus.client.base import ModbusClientProtocol
 from pymodbus.client import (
     AsyncModbusUdpClient,
     AsyncModbusTlsClient,

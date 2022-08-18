@@ -34,7 +34,7 @@ import ssl
 from pymodbus.client.async_tcp import AsyncModbusTcpClient
 from pymodbus.transaction import ModbusTlsFramer, FifoTransactionManager
 from pymodbus.client.helper_tls import sslctx_provider
-from pymodbus.client.helper_async import ModbusClientProtocol
+from pymodbus.client.base import ModbusClientProtocol
 
 _logger = logging.getLogger(__name__)
 

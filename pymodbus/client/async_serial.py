@@ -34,7 +34,7 @@ import logging
 
 from serial_asyncio import create_serial_connection
 
-from pymodbus.client.helper_async import ModbusClientProtocol
+from pymodbus.client.base import ModbusClientProtocol
 from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.client.base import ModbusBaseClient
 

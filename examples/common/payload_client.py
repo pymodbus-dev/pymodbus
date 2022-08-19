@@ -107,7 +107,7 @@ def run_binary_payload_client():
         print("Reading Registers:")
         address = 0x0
         count = len(payload)
-        result = client.read_holding_registers(address, count, unit=1)
+        result = client.read_holding_registers(address, count, slave=1)
         print(result.registers)
         print("\n")
         decoder = BinaryPayloadDecoder.fromRegisters(

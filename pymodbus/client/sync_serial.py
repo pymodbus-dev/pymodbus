@@ -77,10 +77,7 @@ class ModbusSerialClient(ModbusBaseClient):
             self.silent_interval = round(self.silent_interval, 6)
 
     def connect(self):
-        """Connect to the modbus serial server.
-
-        :meta private:
-        """
+        """Connect to the modbus serial server."""
         if self.socket:
             return True
         try:
@@ -102,10 +99,7 @@ class ModbusSerialClient(ModbusBaseClient):
         return self.socket is not None
 
     def close(self):
-        """Close the underlying socket connection.
-
-        :meta private:
-        """
+        """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -125,10 +119,7 @@ class ModbusSerialClient(ModbusBaseClient):
 
         If receive buffer still holds some data then flush it.
 
-        Sleep if last send finished less than 3.5 character
-        times ago.
-
-        :meta private:
+        Sleep if last send finished less than 3.5 character times ago.
         """
         super().send(request)
         if not self.socket:
@@ -176,10 +167,7 @@ class ModbusSerialClient(ModbusBaseClient):
         return size
 
     def recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :meta private:
-        """
+        """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
             raise ConnectionException(
@@ -191,10 +179,7 @@ class ModbusSerialClient(ModbusBaseClient):
         return result
 
     def is_socket_open(self):
-        """Check if socket is open.
-
-        :meta private:
-        """
+        """Check if socket is open."""
         if self.socket:
             if hasattr(self.socket, "is_open"):
                 return self.socket.is_open

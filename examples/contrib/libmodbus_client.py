@@ -184,7 +184,7 @@ class LibmodbusLevel1Client:
         :param client: The underlying client instance to operate with.
         """
         self.client = my_client
-        self.slave = Defaults.UnitId
+        self.slave = Defaults.Slave
 
     def set_slave(self, slave):
         """Set the current slave to operate against.

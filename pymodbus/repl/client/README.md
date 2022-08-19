@@ -209,7 +209,7 @@ result.raw                                   Return raw result dict.
 Every command has auto suggetion on the arguments supported , supply arg and value are to be supplied in `arg=val` format.
 ```
 
-> client.read_holding_registers count=4 address=9 unit=1
+> client.read_holding_registers count=4 address=9 slave=1
 {
     "registers": [
         60497,
@@ -312,4 +312,3 @@ __________          _____             .___  __________              .__
 
 [![asciicast](https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png)](https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o)
 [![asciicast](https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI.png)](https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI)
-

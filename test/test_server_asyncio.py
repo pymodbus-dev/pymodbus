@@ -261,7 +261,7 @@ class AsyncioServerTest(
         # On Windows we seem to need to give this an extra chance to finish,
         # otherwise there ends up being an active connection at the assert.
         await asyncio.sleep(0.5)
-        self.server.server_close()
+        await self.server.server_close()
 
     async def test_async_tcp_server_no_slave(self):
         """Test unknown slave unit exception"""

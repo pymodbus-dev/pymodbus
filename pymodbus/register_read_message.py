@@ -11,7 +11,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, address, count, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start the read from
@@ -59,7 +59,7 @@ class ReadRegistersResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, values, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param values: The values to write to
@@ -118,7 +118,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 3
 
-    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from
@@ -175,7 +175,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
     function_code = 4
 
-    def __init__(self, address=None, count=None, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance of the request.
 
         :param address: The starting address to read from

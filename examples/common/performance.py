@@ -65,7 +65,7 @@ def single_client_test(n_host, n_cycles):
         count = 0
         client = ModbusTcpClient(n_host, port=5020)
         while count < n_cycles:
-            client.read_holding_registers(10, 123, unit=1)
+            client.read_holding_registers(10, 123, slave=1)
             count += 1
     except Exception:  # pylint: disable=broad-except
         logger.exception("failed to run test successfully")

@@ -37,13 +37,13 @@ class WriteSingleCoilRequest(ModbusRequest):
     function_code = 5
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, **kwargs):
+    def __init__(self, address=None, value=None, unit=None, **kwargs):
         """Initialize a new instance.
 
         :param address: The variable address to write
         :param value: The value to write at address
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, unit=unit, **kwargs)
         self.address = address
         self.value = bool(value)
 
@@ -160,13 +160,13 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     function_code = 15
     _rtu_byte_count_pos = 6
 
-    def __init__(self, address=None, values=None, **kwargs):
+    def __init__(self, address=None, values=None, unit=None, **kwargs):
         """Initialize a new instance.
 
         :param address: The starting request address
         :param values: The values to write
         """
-        ModbusRequest.__init__(self, **kwargs)
+        ModbusRequest.__init__(self, unit=unit, **kwargs)
         self.address = address
         if not values:
             values = []

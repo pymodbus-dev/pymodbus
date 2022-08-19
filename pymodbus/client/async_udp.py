@@ -1,37 +1,15 @@
-"""**Modbus client async UDP communication.**
-
-Example::
-
-    from pymodbus.client import AsyncModbusUdpClient
-
-    async def run():
-        client = AsyncModbusUdpClient(
-            "127.0.0.1",
-            # Common optional paramers:
-            #    port=502,
-            #    modbus_decoder=ClientDecoder,
-            #    framer=ModbusSocketFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # UDP setup parameters
-            #    source_address=("localhost", 0),
-        )
-
-        await client.aConnect()
-        ...
-        await client.aClose()
-"""
+"""Modbus client async UDP communication."""
 import asyncio
 import logging
 import functools
 import socket
+import typing
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.framer import ModbusFramer
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
@@ -39,29 +17,34 @@ DGRAM_TYPE = socket.SOCK_DGRAM
 
 
 class AsyncModbusUdpClient(ModbusBaseClient):
-    r"""Modbus client for async UDP communication.
+    """**AsyncModbusUdpClient**.
 
-    :param host: (positional) Host IP address
-    :param port: (optional default 502) The serial port used for communication.
-    :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param source_address: (optional, default none) source address of client,
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param host: Host IP address or host name
+    :param port: (optional) Port used for communication.
+    :param framer: (optional) Framer class.
+    :param source_address: (optional) source address of client,
+    :param kwargs: (optional) Experimental parameters
+
+    Example::
+
+        from pymodbus.client import AsyncModbusUdpClient
+
+        async def run():
+            client = AsyncModbusUdpClient("localhost")
+
+            await client.connect()
+            ...
+            await client.close()
     """
-
-    #: Reconnect delay in milli seconds.
-    delay_ms = 0
-    #: Maximum delay in milli seconds before reconnect is attempted.
-    DELAY_MAX_MS = 1000 * 60 * 5
 
     def __init__(
         self,
-        host,
-        port=502,
-        framer=ModbusSocketFramer,
-        source_address="127.0.0.1",
-        **kwargs,
-    ):
+        host: str,
+        port: int = Defaults.UdpPort,
+        framer: ModbusFramer = ModbusSocketFramer,
+        source_address: typing.Tuple[str, int] = None,
+        **kwargs: any,
+    ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
@@ -71,17 +54,17 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self.loop = asyncio.get_event_loop()
         self.protocol = None
         self.connected = False
+        self.delay_ms = self.params.reconnect_delay
         self.reset_delay()
 
-    def reset_delay(self):
-        """Reset wait before next reconnect to minimal period."""
-        self.delay_ms = 100
+    async def connect(self):  # pylint: disable=invalid-overridden-method
+        """Start reconnecting asynchronous udp client.
 
-    async def aConnect(self):
-        """Start reconnecting asynchronous udp client."""
+        :meta private:
+        """
         # force reconnect if required:
         host = self.params.host
-        await self.aClose()
+        await self.close()
         self.params.host = host
 
         # get current loop, if there are no loop a RuntimeError will be raised
@@ -98,8 +81,11 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         # TBD: self.params.host, self.params.port = addrinfo[-1][-1]
         return await self._connect()
 
-    async def aClose(self):
-        """Stop connection and prevents reconnect."""
+    async def close(self):  # pylint: disable=invalid-overridden-method
+        """Stop connection and prevents reconnect.
+
+        :meta private:
+        """
         # prevent reconnect:
         self.params.host = None
 
@@ -137,7 +123,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             asyncio.ensure_future(self._reconnect())
 
     def protocol_made_connection(self, protocol):
-        """Notify successful connection."""
+        """Notify successful connection.
+
+        :meta private:
+        """
         _logger.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
@@ -146,7 +135,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
-        """Notify lost connection."""
+        """Notify lost connection.
+
+        :meta private:
+        """
         if self.connected:
             _logger.info("Protocol lost connection.")
             if protocol is not self.protocol:
@@ -167,5 +159,5 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
+        self.delay_ms = 2 * self.delay_ms
         return await self._connect()

@@ -54,7 +54,7 @@ class IModbusDecoder:
         """
         raise NotImplementedException(TEXT_METHOD)
 
-    def register(self, function=None):
+    def register(self, function):
         """Register a function and sub function class with the decoder.
 
         :param function: Custom function class to register

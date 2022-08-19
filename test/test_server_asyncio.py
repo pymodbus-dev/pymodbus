@@ -17,7 +17,6 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.server.async_io import (
-    ModbusServerFactory,
     StartTcpServer,
     StartTlsServer,
     StartUdpServer,
@@ -436,9 +435,9 @@ class AsyncioServerTest(
     # Test ModbusServerFactory
     # -----------------------------------------------------------------------#
 
-    def test_async_modbus_server_factory(self):
-        """Test the base class for all the clients"""
-        ModbusServerFactory(store=None)
+    # TBD def test_async_modbus_server_factory(self):
+    # TBD     """Test the base class for all the clients"""
+    # TBD     ModbusServerFactory(store=None)
 
     @pytest.mark.skip
     async def test_async_tcp_server_exception(self):

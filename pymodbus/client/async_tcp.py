@@ -1,63 +1,46 @@
-"""**Modbus client async TCP communication.**
-
-Example::
-
-    from pymodbus.client import AsyncModbusTcpClient
-
-    async def run():
-        client = AsyncModbusTcpClient(
-            "127.0.0.1",
-            # Common optional paramers:
-            #    port=502,
-            #    modbus_decoder=ClientDecoder,
-            #    framer=ModbusSocketFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # TCP setup parameters
-            #    source_address=("localhost", 0),
-        )
-
-        await client.aConnect()
-        ...
-        await client.aClose()
-"""
+"""Modbus client async TCP communication."""
 import asyncio
 import logging
+import typing
 
+from pymodbus.framer import ModbusFramer
 from pymodbus.transaction import ModbusSocketFramer
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusTcpClient(ModbusBaseClient):
-    r"""Modbus client for async TCP communication.
+    """**AsyncModbusTcpClient**.
 
-    :param host: (positional) Host IP address
-    :param port: (optional default 502) The TCP port used for communication.
-    :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param source_address: (optional, default none) source address of client,
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param host: Host IP address or host name
+    :param port: (optional) Port used for communication.
+    :param framer: (optional) Framer class.
+    :param source_address: (optional) source address of client,
+    :param kwargs: (optional) Experimental parameters
+
+    Example::
+
+        from pymodbus.client import AsyncModbusTcpClient
+
+        async def run():
+            client = AsyncModbusTcpClient("localhost")
+
+            await client.connect()
+            ...
+            await client.close()
     """
-
-    #: Minimum delay in milli seconds before reconnect is attempted.
-    DELAY_MIN_MS = 100
-    #: Maximum delay in milli seconds before reconnect is attempted.
-    DELAY_MAX_MS = 1000 * 60 * 5
 
     def __init__(
         self,
-        host,
-        port=502,
-        framer=ModbusSocketFramer,
-        source_address=None,
-        **kwargs,
-    ):
+        host: str,
+        port: int = Defaults.TcpPort,
+        framer: ModbusFramer = ModbusSocketFramer,
+        source_address: typing.Tuple[str, int] = None,
+        **kwargs: any,
+    ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
@@ -66,14 +49,13 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         self.loop = None
         self.protocol = None
         self.connected = False
-        self.delay_ms = self.DELAY_MIN_MS
+        self.delay_ms = self.params.reconnect_delay
 
-    def reset_delay(self):
-        """Reset wait before next reconnect to minimal period."""
-        self.delay_ms = self.DELAY_MIN_MS
+    async def connect(self):  # pylint: disable=invalid-overridden-method
+        """Initiate connection to start client.
 
-    async def aConnect(self):
-        """Initiate connection to start client."""
+        :meta private:
+        """
         # force reconnect if required:
         self.loop = asyncio.get_running_loop()
 
@@ -81,8 +63,11 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         _logger.debug(txt)
         return await self._connect()
 
-    async def aClose(self):
-        """Stop client."""
+    async def close(self):  # pylint: disable=invalid-overridden-method
+        """Stop client.
+
+        :meta private:
+        """
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
@@ -113,7 +98,10 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self.reset_delay()
 
     def protocol_made_connection(self, protocol):
-        """Notify successful connection."""
+        """Notify successful connection.
+
+        :meta private:
+        """
         _logger.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
@@ -122,7 +110,10 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
-        """Notify lost connection."""
+        """Notify lost connection.
+
+        :meta private:
+        """
         if self.connected:
             _logger.info("Protocol lost connection.")
             if protocol is not self.protocol:
@@ -143,6 +134,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
+        self.delay_ms = 2 * self.delay_ms
 
         return await self._connect()

@@ -1,32 +1,4 @@
-"""**Modbus client async TLS communication.**
-
-Example::
-
-    from pymodbus.client import AsyncModbusTlsClient
-
-    async def run():
-        client = AsyncModbusTlsClient(
-            "localhost",
-            #    port=802,
-            # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
-            #    framer=ModbusTLsFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # TLS setup parameters
-            #    sslctx=None,
-            #    certfile=None,
-            #    keyfile=None,
-            #    password=None,
-            #    server_hostname="localhost",
-
-        await client.aConnect()
-        ...
-        await client.aClose()
-"""
+"""Modbus client async TLS communication."""
 import asyncio
 import logging
 import ssl
@@ -35,37 +7,49 @@ from pymodbus.client.async_tcp import AsyncModbusTcpClient
 from pymodbus.transaction import ModbusTlsFramer, FifoTransactionManager
 from pymodbus.client.helper_tls import sslctx_provider
 from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.framer import ModbusFramer
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusTlsClient(AsyncModbusTcpClient):
-    r"""Modbus client for async TLS communication.
+    """**AsyncModbusTlsClient**.
 
-    :param host: (positional) Host IP address
-    :param port: (optional default 502) The serial port used for communication.
-    :param framer: (optional, default ModbusTLsFramer) Framer class.
-    :param source_address: (optional, default none) Source address of client,
-    :param sslctx: (optional, default none) SSLContext to use for TLS (default None and auto create)
-    :param certfile: (optional, default none) Cert file path for TLS server request
-    :param keyfile: (optional, default none) Key file path for TLS server request
-    :param password: (optional, default none) Password for for decrypting client"s private key file
-    :param server_hostname: (optional, default none) Bind certificate to host,
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param host: Host IP address or host name
+    :param port: (optional) Port used for communication.
+    :param framer: (optional) Framer class.
+    :param source_address: (optional) Source address of client,
+    :param sslctx: (optional) SSLContext to use for TLS
+    :param certfile: (optional) Cert file path for TLS server request
+    :param keyfile: (optional) Key file path for TLS server request
+    :param password: (optional) Password for for decrypting private key file
+    :param server_hostname: (optional) Bind certificate to host,
+    :param kwargs: (optional) Experimental parameters.
+
+    Example::
+
+        from pymodbus.client import AsyncModbusTlsClient
+
+        async def run():
+            client = AsyncModbusTlsClient("localhost")
+
+            await client.connect()
+            ...
+            await client.close()
     """
 
     def __init__(
         self,
-        host,
-        port=802,
-        framer=ModbusTlsFramer,
-        sslctx=None,
-        certfile=None,
-        keyfile=None,
-        password=None,
-        server_hostname=None,
-        **kwargs,
+        host: str,
+        port: int = Defaults.TlsPort,
+        framer: ModbusFramer = ModbusTlsFramer,
+        sslctx: str = None,
+        certfile: str = None,
+        keyfile: str = None,
+        password: str = None,
+        server_hostname: str = None,
+        **kwargs: any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
         super().__init__(host, port=port, framer=framer, **kwargs)
@@ -91,13 +75,17 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.server_hostname = server_hostname
         AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
-    async def aConnect(self):
-        """Initiate connection to start client."""
+    async def connect(self):
+        """Initiate connection to start client.
+
+        :meta private:
+        """
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
-        return await AsyncModbusTcpClient.aConnect(self)
+        return await AsyncModbusTcpClient.connect(self)
 
     async def _connect(self):
+        """Connect to server."""
         _logger.debug("Connecting.")
         try:
             return await self.loop.create_connection(

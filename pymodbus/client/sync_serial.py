@@ -1,34 +1,4 @@
-"""**Modbus client serial communication.**
-
-The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
-
-Example::
-
-    from pymodbus.client import ModbusSerialClient
-
-    def run():
-        client = ModbusSerialClient(
-            port="/dev/pty0",  # serial port
-            # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
-            #    framer=ModbusRtuFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,.
-            #    strict=True,
-            # Serial setup parameters
-            #    baudrate=9600,
-            #    bytesize=8,
-            #    parity="N",
-            #    stopbits=1,
-            #    handle_local_echo=False,
-        )
-
-        client.connect()
-        ...
-        client.close()
-"""
+"""Modbus client serial communication."""
 from functools import partial
 import logging
 import time
@@ -37,24 +7,38 @@ import serial
 
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
+from pymodbus.framer import ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
 class ModbusSerialClient(ModbusBaseClient):
-    r"""Modbus client for serial (RS-485) communication.
+    """**ModbusSerialClient**.
 
-    :param port: (positional) Serial port used for communication.
-    :param framer: (optional, default ModbusRtuFramer) Framer class.
-    :param baudrate: (optional, default 9600) Bits pr second.
-    :param bytesize: (optional, default 8) Number of bits pr byte 7-8.
-    :param parity: (optional, default None).
-    :param stopbits: (optional, default 1) Number of stop bits 0-2 to use.
-    :param handle_local_echo: (optional, default false) Handle local echo of the USB-to-RS485 dongle.
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param port: Serial port used for communication.
+    :param framer: (optional) Framer class.
+    :param baudrate: (optional) Bits pr second.
+    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
+    :param stopbits: (optional) Number of stop bits 0-2¡.
+    :param handle_local_echo: (optional) Discard local echo from dongle.
+    :param kwargs: (optional) Experimental parameters
+
+    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+
+    Example::
+
+        from pymodbus.client import ModbusSerialClient
+
+        def run():
+            client = ModbusSerialClient("dev/serial0")
+
+            client.connect()
+            ...
+            client.close()
     """
 
     state = ModbusTransactionState.IDLE
@@ -63,15 +47,15 @@ class ModbusSerialClient(ModbusBaseClient):
 
     def __init__(
         self,
-        port,
-        framer=ModbusRtuFramer,
-        baudrate=9600,
-        bytesize=8,
-        parity="N",
-        stopbits=1,
-        handle_local_echo=False,
-        **kwargs,
-    ):
+        port: str,
+        framer: ModbusFramer = ModbusRtuFramer,
+        baudrate: int = Defaults.Baudrate,
+        bytesize: int = Defaults.Bytesize,
+        parity: chr = Defaults.Parity,
+        stopbits: int = Defaults.Stopbits,
+        handle_local_echo: bool = Defaults.HandleLocalEcho,
+        **kwargs: any,
+    ) -> None:
         """Initialize Modbus Serial Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
@@ -95,7 +79,7 @@ class ModbusSerialClient(ModbusBaseClient):
     def connect(self):
         """Connect to the modbus serial server.
 
-        :returns: True if connection succeeded, False otherwise
+        :meta private:
         """
         if self.socket:
             return True
@@ -118,7 +102,10 @@ class ModbusSerialClient(ModbusBaseClient):
         return self.socket is not None
 
     def close(self):
-        """Close the underlying socket connection."""
+        """Close the underlying socket connection.
+
+        :meta private:
+        """
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -133,7 +120,7 @@ class ModbusSerialClient(ModbusBaseClient):
             waitingbytes = getattr(self.socket, in_waiting)()
         return waitingbytes
 
-    def send(self, request):  # pylint: disable=missing-type-doc
+    def send(self, request):
         """Send data on the underlying socket.
 
         If receive buffer still holds some data then flush it.
@@ -141,9 +128,7 @@ class ModbusSerialClient(ModbusBaseClient):
         Sleep if last send finished less than 3.5 character
         times ago.
 
-        :param request: The encoded request to send
-        :return: The number of bytes written
-        :raises ConnectionException:
+        :meta private:
         """
         super().send(request)
         if not self.socket:
@@ -190,12 +175,10 @@ class ModbusSerialClient(ModbusBaseClient):
             time.sleep(0.01)
         return size
 
-    def recv(self, size):  # pylint: disable=missing-type-doc
+    def recv(self, size):
         """Read data from the underlying descriptor.
 
-        :param size: The number of bytes to read
-        :return: The bytes read
-        :raises ConnectionException:
+        :meta private:
         """
         super().recv(size)
         if not self.socket:
@@ -208,7 +191,10 @@ class ModbusSerialClient(ModbusBaseClient):
         return result
 
     def is_socket_open(self):
-        """Check if socket is open."""
+        """Check if socket is open.
+
+        :meta private:
+        """
         if self.socket:
             if hasattr(self.socket, "is_open"):
                 return self.socket.is_open
@@ -216,10 +202,7 @@ class ModbusSerialClient(ModbusBaseClient):
         return False
 
     def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
+        """Build a string representation of the connection."""
         return f"ModbusSerialClient({self.framer} baud[{self.baudrate}])"
 
     def __repr__(self):

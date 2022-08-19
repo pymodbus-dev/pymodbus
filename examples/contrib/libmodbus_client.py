@@ -143,7 +143,7 @@ class LibmodbusLevel1Client:
     """
 
     @classmethod
-    def create_tcp_client(cls, my_host="127.0.0.1", my_port=Defaults.Port):
+    def create_tcp_client(cls, my_host="127.0.0.1", my_port=Defaults.TcpPort):
         """Create a TCP modbus client for the supplied parameters.
 
         :param host: The host to connect to

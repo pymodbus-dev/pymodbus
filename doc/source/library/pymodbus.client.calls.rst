@@ -5,5 +5,8 @@ Pymodbus makes a all standard modbus requests/responses available as simple call
 
 All calls are available as synchronous and asynchronous (asyncio based).
 
-.. automodule:: pymodbus.client.mixin
+Using Modbus<transport>Client.register() custom messagees can be added to pymodbus,
+and handled automatically.
+
+.. autoclass:: pymodbus.client.mixin.ModbusClientMixin
     :members:

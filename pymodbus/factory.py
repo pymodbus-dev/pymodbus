@@ -364,16 +364,8 @@ class ClientDecoder(IModbusDecoder):
 
         return response
 
-    def register(
-        self, function=None, sub_function=None, force=False
-    ):  # pylint: disable=unused-argument
-        """Register a function and sub function class with the decoder.
-
-        :param function: Custom function class to register
-        :param sub_function: Custom sub function class to register
-        :param force: Force update the existing class
-        :raises MessageRegisterException:
-        """
+    def register(self, function):
+        """Register a function and sub function class with the decoder."""
         if function and not issubclass(function, ModbusResponse):
             raise MessageRegisterException(
                 f'"{function.__class__.__name__}" is Not a valid Modbus Message'

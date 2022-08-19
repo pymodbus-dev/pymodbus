@@ -56,7 +56,6 @@ def setup_client(args=None):
             "127.0.0.1",
             port=args.port,  # on which port
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,
@@ -71,7 +70,6 @@ def setup_client(args=None):
             "127.0.0.1",
             port=args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,
@@ -85,7 +83,6 @@ def setup_client(args=None):
         client = AsyncModbusSerialClient(
             args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             #    framer=ModbusRtuFramer,
             #    timeout=10,
             #    retries=3,
@@ -104,7 +101,6 @@ def setup_client(args=None):
             "localhost",
             port=args.port,
             # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
             framer=args.framer,
             #    timeout=10,
             #    retries=3,
@@ -124,11 +120,11 @@ def setup_client(args=None):
 async def run_client(client, modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client starting")
-    await client.aConnect()
+    await client.connect()
     assert client.protocol
     if modbus_calls:
         await modbus_calls(client.protocol)
-    await client.aClose()
+    await client.close()
     _logger.info("### End of Program")
 
 

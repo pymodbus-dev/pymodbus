@@ -1,13 +1,14 @@
 Client setup.
 =============
 
-Pymodbus offers different transport protocols Serial/TCP/TLS/UDP, which are implemented
-as separate classes. Each class defines exactly on transport type.
+Pymodbus offers different transport protocols Serial/TCP/TLS/UDP,
+which are implemented as separate classes.
+Each class defines exactly on transport type.
 
 Applications can add custom transport types as long as the new class inherits
-from class BaseOldModbusClient.
+from class ModbusBaseClient.
 
-Applications can also custom decoders and customer framers.
+Applications can also use customer framers.
 
 All transport types are supplied in 2 versions:
 
@@ -15,48 +16,48 @@ a :mod:`synchronous client <pymodbus.client>` and
 
 a :mod:`asynchronous client based on asyncio <pymodbus.client.asynchronous>`.
 
-Care have been made to ensure that large parts of the actual implementation or shared
-between the different classes, to ensure a higher stability.
+Large parts of the actual implementation are shared between the different classes,
+to ensure a higher stability and more efficient maintenance.
 
-Common parameters for all clients.
-----------------------------------
+Common parameters/methods for all clients.
+------------------------------------------
 
-.. automodule:: pymodbus.client.base
+.. autoclass:: pymodbus.client.base.ModbusBaseClient
     :members:
     :member-order: bysource
 
 Serial RS-485 transport.
 ------------------------
 
-.. automodule:: pymodbus.client.async_serial
+.. autoclass:: pymodbus.client.async_serial.AsyncModbusSerialClient
     :members:
 
-.. automodule:: pymodbus.client.sync_serial
+.. autoclass:: pymodbus.client.sync_serial.ModbusSerialClient
     :members:
 
 TCP transport.
 --------------
 
-.. automodule:: pymodbus.client.async_tcp
+.. autoclass:: pymodbus.client.async_tcp.AsyncModbusTcpClient
     :members:
 
-.. automodule:: pymodbus.client.sync_tcp
+.. autoclass:: pymodbus.client.sync_tcp.ModbusTcpClient
     :members:
 
 TLS transport.
 --------------
 
-.. automodule:: pymodbus.client.async_tls
+.. autoclass:: pymodbus.client.async_tls.AsyncModbusTlsClient
     :members:
 
-.. automodule:: pymodbus.client.sync_tls
+.. autoclass:: pymodbus.client.sync_tls.ModbusTlsClient
     :members:
 
 UDP transport.
 --------------
 
-.. automodule:: pymodbus.client.async_udp
+.. autoclass:: pymodbus.client.async_udp.AsyncModbusUdpClient
     :members:
 
-.. automodule:: pymodbus.client.sync_udp
+.. autoclass:: pymodbus.client.sync_udp.ModbusUdpClient
     :members:

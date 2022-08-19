@@ -52,7 +52,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
     """
 
     def __init__(
-        self, host="127.0.0.1", port=Defaults.Port, framer=ModbusSocketFramer, **kwargs
+        self, host="127.0.0.1", port=Defaults.TcpPort, framer=ModbusSocketFramer, **kwargs
     ):
         """Initialize a client instance.
 

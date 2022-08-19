@@ -574,12 +574,11 @@ class SynchronousClientTest(
             rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
         )
         rtu_client.close()
+        self.assertTrue("baud[19200])" in str(client))
 
         # already closed socket
         client.socket = False
         client.close()
-
-        self.assertTrue("baud[9600])" in str(client))
 
     def test_serial_client_connect(self):
         """Test the serial client connection method"""

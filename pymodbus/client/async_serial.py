@@ -1,58 +1,42 @@
-"""**Modbus client async serial communication.**
-
-The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
-
-Example::
-
-    from pymodbus.client import AsyncModbusSerialClient
-
-    async def run():
-        client = AsyncModbusSerialClient(
-            "dev/pty0",  # serial port
-            # Common optional paramers:
-            #    modbus_decoder=ClientDecoder,
-            #    framer=ModbusRtuFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # Serial setup parameters
-            #    baudrate=9600,
-            #    bytesize=8,
-            #    parity="N",
-            #    stopbits=1,
-            #    handle_local_echo=False,
-        )
-
-        await client.aConnect()
-        ...
-        await client.aClose()
-"""
+"""Modbus client async serial communication."""
 import asyncio
 import logging
 
 from serial_asyncio import create_serial_connection
 
 from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.framer import ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.client.base import ModbusBaseClient
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
 class AsyncModbusSerialClient(ModbusBaseClient):
-    r"""Modbus client for async serial (RS-485) communication.
+    """**AsyncModbusSerialClient**.
 
-    :param port: (positional) Serial port used for communication.
-    :param framer: (optional, default ModbusRtuFramer) Framer class.
-    :param baudrate: (optional, default 9600) Bits pr second.
-    :param bytesize: (optional, default 8) Number of bits pr byte 7-8.
-    :param parity: (optional, default None).
-    :param stopbits: (optional, default 1) Number of stop bits 0-2 to use.
-    :param handle_local_echo: (optional, default false) Handle local echo of the USB-to-RS485 dongle.
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param port: Serial port used for communication.
+    :param framer: (optional) Framer class.
+    :param baudrate: (optional) Bits pr second.
+    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param parity: (optional) 'E'ven, 'O'dd or 'N'one
+    :param stopbits: (optional) Number of stop bits 0-2¡.
+    :param handle_local_echo: (optional) Discard local echo from dongle.
+    :param kwargs: (optional) Experimental parameters
+
+    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+
+    Example::
+
+        from pymodbus.client import AsyncModbusSerialClient
+
+        async def run():
+            client = AsyncModbusSerialClient("dev/serial0")
+
+            await client.connect()
+            ...
+            await client.close()
     """
 
     transport = None
@@ -60,15 +44,15 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     def __init__(
         self,
-        port,
-        framer=ModbusRtuFramer,
-        baudrate=9600,
-        bytesize=8,
-        parity="N",
-        stopbits=1,
-        handle_local_echo=False,
-        **kwargs,
-    ):
+        port: str,
+        framer: ModbusFramer = ModbusRtuFramer,
+        baudrate: int = Defaults.Baudrate,
+        bytesize: int = Defaults.Bytesize,
+        parity: chr = Defaults.Parity,
+        stopbits: int = Defaults.Stopbits,
+        handle_local_echo: bool = Defaults.HandleLocalEcho,
+        **kwargs: any,
+    ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
@@ -81,8 +65,11 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self.protocol = None
         self._connected_event = asyncio.Event()
 
-    async def aClose(self):
-        """Stop connection."""
+    async def close(self):  # pylint: disable=invalid-overridden-method
+        """Stop connection.
+
+        :meta private:
+        """
         if self._connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
@@ -97,8 +84,11 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         """Connect internal."""
         return self._connected_event.is_set()
 
-    async def aConnect(self):
-        """Connect Async client."""
+    async def connect(self):  # pylint: disable=invalid-overridden-method
+        """Connect Async client.
+
+        :meta private:
+        """
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 

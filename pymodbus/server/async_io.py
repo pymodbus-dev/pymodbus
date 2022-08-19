@@ -487,14 +487,14 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.Port)
+        self.address = address or ("", Defaults.TcpPort)
         self.handler = handler or ModbusConnectedRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
         self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
+            "broadcast_enable", Defaults.BroadcastEnable
         )
         self.response_manipulator = kwargs.get("response_manipulator", None)
         if isinstance(identity, ModbusDeviceIdentification):
@@ -660,13 +660,13 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
-        self.address = address or ("", Defaults.Port)
+        self.address = address or ("", Defaults.TcpPort)
         self.handler = handler or ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
         self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
+            "broadcast_enable", Defaults.BroadcastEnable
         )
         self.response_manipulator = kwargs.get("response_manipulator", None)
 
@@ -761,7 +761,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
         self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.broadcast_enable
+            "broadcast_enable", Defaults.BroadcastEnable
         )
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)

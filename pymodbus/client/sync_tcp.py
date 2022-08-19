@@ -3,6 +3,7 @@ import logging
 import select
 import socket
 import time
+import typing
 
 from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState
@@ -40,7 +41,7 @@ class ModbusTcpClient(ModbusBaseClient):
         host: str,
         port: int = Defaults.TcpPort,
         framer: ModbusFramer = ModbusSocketFramer,
-        source_address: tuple[str, int] = None,
+        source_address: typing.Tuple[str, int] = None,
         **kwargs: any,
     ) -> None:
         """Initialize Modbus TCP Client."""

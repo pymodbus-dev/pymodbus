@@ -38,9 +38,6 @@ class ModbusBaseClient(ModbusClientMixin):
         **reconnect_delay** doubles automatically with each unsuccessful connect.
         Set `reconnect_delay=0` to avoid automatic reconnection.
 
-    :mod:`ModbusBaseClient` defines common parameters for all clients and all methods
-    available to applications.
-
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`,
     unless you want to make a custom client.
 

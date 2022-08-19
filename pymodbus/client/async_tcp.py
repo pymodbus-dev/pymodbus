@@ -1,6 +1,7 @@
 """Modbus client async TCP communication."""
 import asyncio
 import logging
+import typing
 
 from pymodbus.framer import ModbusFramer
 from pymodbus.transaction import ModbusSocketFramer
@@ -37,7 +38,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         host: str,
         port: int = Defaults.TcpPort,
         framer: ModbusFramer = ModbusSocketFramer,
-        source_address: tuple[str, int] = None,
+        source_address: typing.Tuple[str, int] = None,
         **kwargs: any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""

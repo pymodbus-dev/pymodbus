@@ -29,35 +29,35 @@ Common parameters/methods for all clients.
 Serial RS-485 transport.
 ------------------------
 
-.. automodule:: pymodbus.client.async_serial
+.. autoclass:: pymodbus.client.async_serial.AsyncModbusSerialClient
     :members:
 
-.. automodule:: pymodbus.client.sync_serial
+.. autoclass:: pymodbus.client.sync_serial.ModbusSerialClient
     :members:
 
 TCP transport.
 --------------
 
-.. automodule:: pymodbus.client.async_tcp
+.. autoclass:: pymodbus.client.async_tcp.AsyncModbusTcpClient
     :members:
 
-.. automodule:: pymodbus.client.sync_tcp
+.. autoclass:: pymodbus.client.sync_tcp.ModbusTcpClient
     :members:
 
 TLS transport.
 --------------
 
-.. automodule:: pymodbus.client.async_tls
+.. autoclass:: pymodbus.client.async_tls.AsyncModbusTlsClient
     :members:
 
-.. automodule:: pymodbus.client.sync_tls
+.. autoclass:: pymodbus.client.sync_tls.ModbusTlsClient
     :members:
 
 UDP transport.
 --------------
 
-.. automodule:: pymodbus.client.async_udp
+.. autoclass:: pymodbus.client.async_udp.AsyncModbusUdpClient
     :members:
 
-.. automodule:: pymodbus.client.sync_udp
+.. autoclass:: pymodbus.client.sync_udp.ModbusUdpClient
     :members:

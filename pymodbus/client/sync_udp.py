@@ -5,19 +5,7 @@ Example::
     from pymodbus.client import AsyncModbusUdpClient
 
     def run():
-        client = AsyncModbusUdpClient(
-            "127.0.0.1",
-            # Common optional paramers:
-            #    port=502,
-            #    framer=ModbusSocketFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # UDP setup parameters
-            #    source_address=("localhost", 0),
-        )
+        client = AsyncModbusUdpClient("127.0.0.1")
 
         client.connect()
         ...

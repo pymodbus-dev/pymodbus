@@ -120,10 +120,12 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
 
     """
 
-    Port = 502
-    TLSPort = 802
+    TcpPort = 502
+    TlsPort = 802
+    UdpPort = 502
     Backoff = 0.3
     CloseCommOnError = False
+    HandleLocalEcho = False
     Retries = 3
     RetryOnEmpty = False
     RetryOnInvalid = False
@@ -141,6 +143,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     IgnoreMissingSlaves = False
     ReadSize = 1024
     BroadcastEnable = False
+    ReconnectDelay = 1000 * 60 * 5
 
 
 class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods

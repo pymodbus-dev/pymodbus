@@ -31,7 +31,12 @@ class ModbusBaseClient(ModbusClientMixin):
     :param close_comm_on_error: (optional) Close connection on error.
     :param strict: (optional) Strict timing, 1.5 character between requests.
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
+    :param reconnect_delay: (optional) Delay in milliseconds before reconnecting.
     :param kwargs: (optional) Experimental parameters.
+
+    .. tip::
+        **reconnect_delay** doubles automatically with each unsuccessful connect.
+        Set `reconnect_delay=0` to avoid automatic reconnection.
 
     :mod:`ModbusBaseClient` defines common parameters for all clients and all methods
     available to applications.
@@ -55,18 +60,13 @@ class ModbusBaseClient(ModbusClientMixin):
             client.close()
 
     .. tip::
-        Parameters common for all clients are documented here, and not repeated with
-        each client, this is in order to lower the maintenance burden and the risk
+        Common parameters and all external methods for all clients are documented here,
+        and not repeated with each client, this is in order to lower the maintenance burden and the risk
         of the documentation being inaccurate.
-    .. tip::
-        All methods available to the application (apart from the actual message
-        methods) are defined here, and not repeated with each client, this is in
-        order to lower the maintenance burden and the risk of the documentation being
-        inaccurate.
     """
 
     @dataclass
-    class _params:
+    class _params:  # pylint: disable=too-many-instance-attributes
         """Parameter class."""
 
         host: str = None
@@ -79,6 +79,7 @@ class ModbusBaseClient(ModbusClientMixin):
         strict: bool = None
         broadcast_enable: bool = None
         kwargs: dict = None
+        reconnect_delay: int = None
 
     def __init__(
         self,
@@ -89,8 +90,9 @@ class ModbusBaseClient(ModbusClientMixin):
         close_comm_on_error: bool = Defaults.CloseCommOnError,
         strict: bool = Defaults.Strict,
         broadcast_enable: bool = Defaults.BroadcastEnable,
+        reconnect_delay: int = Defaults.ReconnectDelay,
         **kwargs: any
-    ) -> ModbusBaseClient:
+    ) -> None:
         """Initialize a client instance."""
         self.params = self._params()
         self.params.framer = framer
@@ -100,11 +102,13 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
+        self.params.reconnect_delay = reconnect_delay
         self.params.kwargs = kwargs
 
         # Common variables.
         self.framer = self.params.framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(self, **kwargs)
+        self.delay_ms = self.params.reconnect_delay
 
         # Initialize  mixin
         super().__init__()
@@ -146,6 +150,10 @@ class ModbusBaseClient(ModbusClientMixin):
             return 0
         return self.last_frame_end + self.silent_interval
 
+    def reset_delay(self) -> None:
+        """Reset wait time before next reconnect to minimal period (**sync only**)."""
+        self.delay_ms = self.params.reconnect_delay
+
     def execute(self, request: ModbusRequest = None) -> ModbusResponse:
         """Execute request and get response (**sync/async**).
 
@@ -157,7 +165,7 @@ class ModbusBaseClient(ModbusClientMixin):
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
-    def close(self):
+    def close(self) -> None:
         """Close the underlying socket connection (**sync/async**)."""
         raise NotImplementedException
 

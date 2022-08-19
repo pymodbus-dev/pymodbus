@@ -1,28 +1,4 @@
-"""**Modbus client TCP communication.**
-
-Example::
-
-    from pymodbus.client import ModbusTcpClient
-
-    def run():
-        client = ModbusTcpClient(
-            "127.0.0.1",
-            #    port=502,  # on which port
-            # Common optional paramers:
-            #    framer=ModbusSocketFramer,  # how to interpret the messages
-            #    timeout=10,  # waiting time for request to complete
-            #    retries=3,  # retries per transaction
-            #    retry_on_empty=False,  # Is an empty response a retry
-            #    close_comm_on_error=False,  # close connection when error.
-            #    strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # TCP setup parameters
-            #    source_address=("localhost", 0),  # bind socket to address
-        )
-
-        client.connect()
-        ...
-        client.close()
-"""
+"""Modbus client TCP communication."""
 import logging
 import select
 import socket
@@ -32,29 +8,41 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.framer import ModbusFramer
+from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
 
 
 class ModbusTcpClient(ModbusBaseClient):
-    r"""Modbus client for TCP communication.
+    """**ModbusTcpClient**.
 
-    :param host: (positional) Host IP address
-    :param port: (optional default 502) The TCP port used for communication.
-    :param framer: (optional, default ModbusSocketFramer) Framer class.
-    :param source_address: (optional, default none) source address of client,
-    :param \*\*kwargs: (optional) Extra experimental parameters for transport
-    :return: client object
+    :param host: Host IP address or host name
+    :param port: (optional) Port used for communication.
+    :param framer: (optional) Framer class.
+    :param source_address: (optional) source address of client,
+    :param kwargs: (optional) Experimental parameters
+
+    Example::
+
+        from pymodbus.client import ModbusTcpClient
+
+        async def run():
+            client = ModbusTcpClient("localhost")
+
+            client.connect()
+            ...
+            client.close()
     """
 
     def __init__(
         self,
-        host,
-        port=502,
-        framer=ModbusSocketFramer,
-        source_address=None,
-        **kwargs,
-    ):
+        host: str,
+        port: int = Defaults.TcpPort,
+        framer: ModbusFramer = ModbusSocketFramer,
+        source_address: tuple[str, int] = None,
+        **kwargs: any,
+    ) -> None:
         """Initialize Modbus TCP Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
@@ -65,7 +53,7 @@ class ModbusTcpClient(ModbusBaseClient):
     def connect(self):
         """Connect to the modbus tcp server.
 
-        :returns: True if connection succeeded, False otherwise
+        :meta private:
         """
         if self.socket:
             return True
@@ -84,7 +72,10 @@ class ModbusTcpClient(ModbusBaseClient):
         return self.socket is not None
 
     def close(self):
-        """Close the underlying socket connection."""
+        """Close the underlying socket connection.
+
+        :meta private:
+        """
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -99,12 +90,10 @@ class ModbusTcpClient(ModbusBaseClient):
             data = self.socket.recv(1024)
         return data
 
-    def send(self, request):  # pylint: disable=missing-type-doc
+    def send(self, request):
         """Send data on the underlying socket.
 
-        :param request: The encoded request to send
-        :return: The number of bytes written
-        :raises ConnectionException:
+        :meta private:
         """
         super().send(request)
         if not self.socket:
@@ -117,14 +106,10 @@ class ModbusTcpClient(ModbusBaseClient):
             return self.socket.send(request)
         return 0
 
-    def recv(self, size):  # pylint: disable=missing-type-doc
+    def recv(self, size):
         """Read data from the underlying descriptor.
 
-        :param size: The number of bytes to read
-        :return: The bytes read if the peer sent a response, or a zero-length
-                 response if no data packets were received from the client at
-                 all.
-        :raises ConnectionException:
+        :meta private:
         """
         super().recv(size)
         if not self.socket:
@@ -210,7 +195,10 @@ class ModbusTcpClient(ModbusBaseClient):
         raise ConnectionException(msg)
 
     def is_socket_open(self):
-        """Check if socket is open."""
+        """Check if socket is open.
+
+        :meta private:
+        """
         return self.socket is not None
 
     def __str__(self):

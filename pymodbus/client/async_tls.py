@@ -5,22 +5,7 @@ Example::
     from pymodbus.client import AsyncModbusTlsClient
 
     async def run():
-        client = AsyncModbusTlsClient(
-            "localhost",
-            #    port=802,
-            # Common optional paramers:
-            #    framer=ModbusTLsFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # TLS setup parameters
-            #    sslctx=None,
-            #    certfile=None,
-            #    keyfile=None,
-            #    password=None,
-            #    server_hostname="localhost",
+        client = AsyncModbusTlsClient("localhost")
 
         await client.connect()
         ...

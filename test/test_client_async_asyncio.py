@@ -78,14 +78,12 @@ class TestAsyncioClient:
             protocol_class=mock_protocol_class
         )
         assert not client.connected  # nosec
-        assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_tcp_in_loop(self):
         """Test initialization tcp in loop."""
         client = AsyncModbusTcpClient("127.0.0.1", port=5020)
         assert not client.connected  # nosec
         assert client.params.port == 5020  # nosec
-        assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_udp_in_loop(self):
         """Test initialization udp in loop."""
@@ -93,14 +91,12 @@ class TestAsyncioClient:
         await client.connect()
         # TBD assert client.connected  # nosec
         assert client.params.port == 502  # nosec
-        assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_initialization_tls_in_loop(self):
         """Test initialization tls in loop."""
         client = AsyncModbusTlsClient("127.0.0.1")
         assert not client.connected  # nosec
         assert client.params.port == 802  # nosec
-        assert client.delay_ms < client.DELAY_MAX_MS  # nosec
 
     async def test_factory_reset_wait_before_reconnect(self):
         """Test factory reset wait before reconnect."""

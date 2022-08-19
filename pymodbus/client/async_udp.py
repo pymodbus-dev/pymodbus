@@ -5,19 +5,7 @@ Example::
     from pymodbus.client import AsyncModbusUdpClient
 
     async def run():
-        client = AsyncModbusUdpClient(
-            "127.0.0.1",
-            # Common optional paramers:
-            #    port=502,
-            #    framer=ModbusSocketFramer,
-            #    timeout=10,
-            #    retries=3,
-            #    retry_on_empty=False,
-            #    close_comm_on_error=False,
-            #    strict=True,
-            # UDP setup parameters
-            #    source_address=("localhost", 0),
-        )
+        client = AsyncModbusUdpClient("127.0.0.1")
 
         await client.connect()
         ...
@@ -48,11 +36,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     :return: client object
     """
 
-    #: Reconnect delay in milli seconds.
-    delay_ms = 0
-    #: Maximum delay in milli seconds before reconnect is attempted.
-    DELAY_MAX_MS = 1000 * 60 * 5
-
     def __init__(
         self,
         host,
@@ -70,6 +53,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self.loop = asyncio.get_event_loop()
         self.protocol = None
         self.connected = False
+        self.delay_ms = self.params.reconnect_delay
         self.reset_delay()
 
     def reset_delay(self):
@@ -166,5 +150,5 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = min(2 * self.delay_ms, self.DELAY_MAX_MS)
+        self.delay_ms = 2 * self.delay_ms
         return await self._connect()

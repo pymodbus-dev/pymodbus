@@ -58,10 +58,7 @@ class ModbusTlsClient(ModbusTcpClient):
         self.server_hostname = server_hostname
 
     def connect(self):
-        """Connect to the modbus tls server.
-
-        :meta private:
-        """
+        """Connect to the modbus tls server."""
         if self.socket:
             return True
         try:
@@ -80,10 +77,7 @@ class ModbusTlsClient(ModbusTcpClient):
         return self.socket is not None
 
     def __str__(self):
-        """Build a string representation of the connection.
-
-        :returns: The string representation
-        """
+        """Build a string representation of the connection."""
         return f"ModbusTlsClient({self.params.host}:{self.params.port})"
 
     def __repr__(self):

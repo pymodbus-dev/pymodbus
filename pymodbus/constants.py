@@ -66,9 +66,9 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
        The modbus protocol id.  Currently this is set to 0 in all
        but proprietary implementations.
 
-    .. attribute:: UnitId
+    .. attribute:: Slave
 
-       The modbus slave addrss.  Currently this is set to 0x00 which
+       The modbus slave address.  Currently this is set to 0x00 which
        means this request should be broadcast to all the slave devices
        (really means that all the devices should respond).
 
@@ -134,7 +134,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     TransactionId = 0
     Strict = True
     ProtocolId = 0
-    UnitId = 0x00
+    Slave = 0x00
     Baudrate = 19200
     Parity = "N"
     Bytesize = 8
@@ -144,6 +144,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     ReadSize = 1024
     BroadcastEnable = False
     ReconnectDelay = 1000 * 60 * 5
+    Count = 1
 
 
 class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods

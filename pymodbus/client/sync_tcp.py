@@ -52,10 +52,7 @@ class ModbusTcpClient(ModbusBaseClient):
         self.socket = None
 
     def connect(self):
-        """Connect to the modbus tcp server.
-
-        :meta private:
-        """
+        """Connect to the modbus tcp server."""
         if self.socket:
             return True
         try:
@@ -73,10 +70,7 @@ class ModbusTcpClient(ModbusBaseClient):
         return self.socket is not None
 
     def close(self):
-        """Close the underlying socket connection.
-
-        :meta private:
-        """
+        """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
         self.socket = None
@@ -92,10 +86,7 @@ class ModbusTcpClient(ModbusBaseClient):
         return data
 
     def send(self, request):
-        """Send data on the underlying socket.
-
-        :meta private:
-        """
+        """Send data on the underlying socket."""
         super().send(request)
         if not self.socket:
             raise ConnectionException(str(self))
@@ -108,10 +99,7 @@ class ModbusTcpClient(ModbusBaseClient):
         return 0
 
     def recv(self, size):
-        """Read data from the underlying descriptor.
-
-        :meta private:
-        """
+        """Read data from the underlying descriptor."""
         super().recv(size)
         if not self.socket:
             raise ConnectionException(str(self))
@@ -196,10 +184,7 @@ class ModbusTcpClient(ModbusBaseClient):
         raise ConnectionException(msg)
 
     def is_socket_open(self):
-        """Check if socket is open.
-
-        :meta private:
-        """
+        """Check if socket is open."""
         return self.socket is not None
 
     def __str__(self):

@@ -58,10 +58,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self.reset_delay()
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
-        """Start reconnecting asynchronous udp client.
-
-        :meta private:
-        """
+        """Start reconnecting asynchronous udp client."""
         # force reconnect if required:
         host = self.params.host
         await self.close()
@@ -82,10 +79,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         return await self._connect()
 
     async def close(self):  # pylint: disable=invalid-overridden-method
-        """Stop connection and prevents reconnect.
-
-        :meta private:
-        """
+        """Stop connection and prevents reconnect."""
         # prevent reconnect:
         self.params.host = None
 
@@ -123,10 +117,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             asyncio.ensure_future(self._reconnect())
 
     def protocol_made_connection(self, protocol):
-        """Notify successful connection.
-
-        :meta private:
-        """
+        """Notify successful connection."""
         _logger.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
@@ -135,10 +126,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
-        """Notify lost connection.
-
-        :meta private:
-        """
+        """Notify lost connection."""
         if self.connected:
             _logger.info("Protocol lost connection.")
             if protocol is not self.protocol:

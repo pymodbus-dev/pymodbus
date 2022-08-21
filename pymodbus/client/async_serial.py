@@ -66,10 +66,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self._connected_event = asyncio.Event()
 
     async def close(self):  # pylint: disable=invalid-overridden-method
-        """Stop connection.
-
-        :meta private:
-        """
+        """Stop connection."""
         if self._connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
@@ -85,10 +82,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         return self._connected_event.is_set()
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
-        """Connect Async client.
-
-        :meta private:
-        """
+        """Connect Async client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
@@ -112,10 +106,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             _logger.warning(txt)
 
     def protocol_made_connection(self, protocol):
-        """Notify successful connection.
-
-        :meta private:
-        """
+        """Notify successful connection."""
         _logger.info("Serial connected.")
         if not self._connected:
             self._connected_event.set()
@@ -124,10 +115,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             _logger.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
-        """Notify lost connection.
-
-        :meta private:
-        """
+        """Notify lost connection."""
         if self._connected:
             _logger.info("Serial lost connection.")
             if protocol is not self.protocol:

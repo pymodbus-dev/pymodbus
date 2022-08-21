@@ -98,6 +98,6 @@ class ModbusAllMessagesTests(unittest.TestCase):
         self.assertEqual(request.protocol_id, 0x12)
 
         request = ReadCoilsRequest(1, 5)
-        self.assertEqual(request.unit_id, Defaults.UnitId)
+        self.assertEqual(request.unit_id, Defaults.Slave)
         self.assertEqual(request.transaction_id, Defaults.TransactionId)
         self.assertEqual(request.protocol_id, Defaults.ProtocolId)

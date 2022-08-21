@@ -10,6 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
+    :maxdepth: 4
 
     pymodbus.client
     pymodbus.constants
@@ -166,5 +167,3 @@ pymodbus\.version module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

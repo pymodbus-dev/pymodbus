@@ -51,7 +51,7 @@ class ModbusPDU:
        of encoding it again.
     """
 
-    def __init__(self, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, unit=Defaults.Slave, **kwargs):
         """Initialize the base data for a modbus request.
 
         :param unit: Modbus slave unit ID
@@ -98,7 +98,7 @@ class ModbusPDU:
 class ModbusRequest(ModbusPDU):
     """Base class for a modbus request PDU."""
 
-    def __init__(self, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, unit=Defaults.Slave, **kwargs):
         """Proxy to the lower level initializer.
 
         :param unit: Modbus slave unit ID
@@ -134,7 +134,7 @@ class ModbusResponse(ModbusPDU):
 
     should_respond = True
 
-    def __init__(self, unit=Defaults.UnitId, **kwargs):
+    def __init__(self, unit=Defaults.Slave, **kwargs):
         """Proxy the lower level initializer.
 
         :param unit: Modbus slave unit ID

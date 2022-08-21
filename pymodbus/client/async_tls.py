@@ -76,10 +76,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
 
     async def connect(self):
-        """Initiate connection to start client.
-
-        :meta private:
-        """
+        """Initiate connection to start client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         return await AsyncModbusTcpClient.connect(self)

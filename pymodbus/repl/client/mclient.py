@@ -544,7 +544,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        request = GetClearModbusPlusRequest(  # pylint: disable=too-many-function-args
+        request = GetClearModbusPlusRequest(
             data, **kwargs
         )
         return self._execute_diagnostic_request(request)

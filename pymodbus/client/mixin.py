@@ -9,14 +9,16 @@ import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 import pymodbus.other_message as pdu_other_msg
+import pymodbus.diag_message as pdu_diag
 from pymodbus.utilities import ModbusTransactionState
 from pymodbus.pdu import ModbusResponse, ModbusRequest
 from pymodbus.exceptions import ModbusException
 
+
 _logger = logging.getLogger(__name__)
 
 
-class ModbusClientMixin:
+class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     """**ModbusClientMixin**.
 
     Simple modbus message call::
@@ -163,7 +165,7 @@ class ModbusClientMixin:
         slave: int = Defaults.Slave,
         **kwargs: any
     ) -> pdu_other_msg.ReadExceptionStatusResponse:
-        """Read Exception Status (Serial Line only) (function code 0x07).
+        """Read Exception Status (function code 0x07).
 
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.
@@ -172,29 +174,249 @@ class ModbusClientMixin:
         request = pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs)
         return self.execute(request)
 
-    # TBD missing functions
+    def diag_query_data(
+        self,
+        msg: bytearray,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnQueryDataResponse:
+        """Diagnose query data (function code 0x08 - 0x00).
 
-    # Function codes descriptions
-    # 0x08 Diagnostics (Serial Line only)
-    #     Sub-function codes supported by the serial line devices
-    #         0x00 Return Query Data
-    #         0x01 Restart Communications Option
-    #         0x02 Return Diagnostic Register
-    #         0x03 Change ASCII Input Delimiter
-    #         0x04 Force Listen Only Mode
-    #         0x05 - 0x09 RESERVED
-    #         0x0A Clear Counters and Diagnostic Register
-    #         0x0B Return Bus Message Count
-    #         0x0C Return Bus Communication Error Count
-    #         0x0D Return Bus Exception Error Count
-    #         0x0E Return Slave Message Count
-    #         0x0F Return Slave No Response Count
-    #         0x10 Return Slave NAK Count
-    #         0x11 Return Slave Busy Count
-    #         0x12 Return Bus Character Overrun Count
-    #         0x13 RESERVED
-    #         0x14 Clear Overrun Counter and Flag
-    #         0x15 RESERVED
+        :param msg: Message to be returned
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs)
+        return self.execute(request)
+
+    def diag_restart_communication(
+        self,
+        toggle: bool,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.RestartCommunicationsOptionResponse:
+        """Diagnose restart communication (function code 0x08 - 0x01).
+
+        :param toggle: True if toogled.
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.RestartCommunicationsOptionRequest(toggle, slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_diagnostic_register(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnDiagnosticRegisterResponse:
+        """Diagnose read diagnostic register (function code 0x08 - 0x02).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_change_ascii_input_delimeter(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ChangeAsciiInputDelimiterResponse:
+        """Diagnose change ASCII input delimiter (function code 0x08 - 0x03).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_force_listen_only(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ForceListenOnlyModeResponse:
+        """Diagnose force listen only (function code 0x08 - 0x04).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_clear_counters(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ClearCountersResponse:
+        """Diagnose clear counters (function code 0x08 - 0x0A).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ClearCountersRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_bus_message_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnBusMessageCountResponse:
+        """Diagnose read bus message count (function code 0x08 - 0x0B).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_bus_comm_error_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnBusCommunicationErrorCountResponse:
+        """Diagnose read Bus Communication Error Count (function code 0x08 - 0x0C).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnBusCommunicationErrorCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_bus_exception_error_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnBusExceptionErrorCountResponse:
+        """Diagnose read Bus Exception Error Count (function code 0x08 - 0x0D).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnBusExceptionErrorCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_slave_message_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnSlaveMessageCountResponse:
+        """Diagnose read Slave Message Count (function code 0x08 - 0x0E).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_slave_no_response_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnSlaveNoReponseCountResponse:
+        """Diagnose read Slave No Response Count (function code 0x08 - 0x0F).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_slave_nak_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnSlaveNAKCountResponse:
+        """Diagnose read Slave NAK Count (function code 0x08 - 0x10).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_slave_busy_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnSlaveBusyCountResponse:
+        """Diagnose read Slave Busy Count (function code 0x08 - 0x11).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_bus_char_overrun_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnSlaveBusCharacterOverrunCountResponse:
+        """Diagnose read Bus Character Overrun Count (function code 0x08 - 0x12).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_read_iop_overrun_count(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ReturnIopOverrunCountResponse:
+        """Diagnose read Iop overrun count (function code 0x08 - 0x13).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_clear_overrun_counter(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.ClearOverrunCountResponse:
+        """Diagnose Clear Overrun Counter and Flag (function code 0x08 - 0x14).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.ClearOverrunCountRequest(slave, **kwargs)
+        return self.execute(request)
+
+    def diag_getclear_modbus_response(
+        self,
+        slave: int = Defaults.Slave,
+        **kwargs: any
+    ) -> pdu_diag.GetClearModbusPlusResponse:
+        """Diagnose Get/Clear modbus plus request (function code 0x08 - 0x15).
+
+        :param slave: (optional) Modbus slave unit ID
+        :param kwargs: (optional) Experimental parameters.
+        :raises ModbusException:
+        """
+        request = pdu_diag.GetClearModbusPlusRequest(slave, **kwargs)
+        return self.execute(request)
+
+    # TBD missing functions
     # 0x0B Get Comm Event Counter (Serial Line only)
     # 0x0C Get Comm Event Log (Serial Line only)
 
@@ -246,8 +468,6 @@ class ModbusClientMixin:
     #     PDU
     # 0x2B / 0x0E Read Device Identification
     # MODBUS Exception Responses
-    # Annex A (Informative)
-    # Annex B (Informative)
 
     def readwrite_registers(self, *args, **kwargs) -> pdu_reg_read.ReadWriteMultipleRegistersResponse:
         """Read/Write registers

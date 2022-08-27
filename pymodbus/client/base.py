@@ -90,7 +90,7 @@ class ModbusBaseClient(ModbusClientMixin):
         strict: bool = Defaults.Strict,
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
-        **kwargs: any
+        **kwargs: any,
     ) -> None:
         """Initialize a client instance."""
         self.params = self._params()
@@ -249,12 +249,7 @@ class ModbusClientProtocol(
     transport = None
 
     def __init__(
-        self,
-        host="127.0.0.1",
-        port=502,
-        source_address=None,
-        use_udp=False,
-        **kwargs
+        self, host="127.0.0.1", port=502, source_address=None, use_udp=False, **kwargs
     ):
         """Initialize a Modbus TCP/UDP asynchronous client"""
         super().__init__(**kwargs)
@@ -287,7 +282,9 @@ class ModbusClientProtocol(
         self._connection_made()
 
         if self.factory:
-            self.factory.protocol_made_connection(self)  # pylint: disable=no-member,useless-suppression
+            self.factory.protocol_made_connection(  # pylint: disable=no-member,useless-suppression
+                self
+            )
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Close connection."""
@@ -304,7 +301,9 @@ class ModbusClientProtocol(
         self._connection_lost(reason)
 
         if self.factory:
-            self.factory.protocol_lost_connection(self)  # pylint: disable=no-member,useless-suppression
+            self.factory.protocol_lost_connection(  # pylint: disable=no-member,useless-suppression
+                self
+            )
 
     def data_received(self, data):
         """Call when some data is received.

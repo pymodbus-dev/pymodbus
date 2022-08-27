@@ -358,9 +358,7 @@ class ModbusTcpServer(socketserver.ThreadingTCPServer):
         self.ignore_missing_slaves = kwargs.pop(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.pop(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.pop("broadcast_enable", Defaults.BroadcastEnable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -503,9 +501,7 @@ class ModbusUdpServer(socketserver.ThreadingUDPServer):
         self.ignore_missing_slaves = kwargs.pop(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.pop(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.pop("broadcast_enable", Defaults.BroadcastEnable)
 
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -582,9 +578,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
         self.socket = None
         if self._connect():
             self.is_running = True

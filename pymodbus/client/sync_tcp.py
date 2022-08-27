@@ -70,7 +70,9 @@ class ModbusTcpClient(ModbusBaseClient):
             txt = f"Connection to Modbus server established. Socket {self.socket.getsockname()}"
             _logger.debug(txt)
         except socket.error as msg:
-            txt = f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            txt = (
+                f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            )
             _logger.error(txt)
             self.close()
         return self.socket is not None
@@ -158,7 +160,9 @@ class ModbusTcpClient(ModbusBaseClient):
 
         return b"".join(data)
 
-    def _handle_abrupt_socket_close(self, size, data, duration):  # pylint: disable=missing-type-doc
+    def _handle_abrupt_socket_close(
+        self, size, data, duration
+    ):  # pylint: disable=missing-type-doc
         """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end

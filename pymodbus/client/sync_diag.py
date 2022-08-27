@@ -53,7 +53,11 @@ class ModbusTcpDiagClient(ModbusTcpClient):
     """
 
     def __init__(
-        self, host="127.0.0.1", port=Defaults.TcpPort, framer=ModbusSocketFramer, **kwargs
+        self,
+        host="127.0.0.1",
+        port=Defaults.TcpPort,
+        framer=ModbusSocketFramer,
+        **kwargs,
     ):
         """Initialize a client instance.
 
@@ -94,7 +98,9 @@ class ModbusTcpDiagClient(ModbusTcpClient):
                 source_address=self.source_address,
             )
         except socket.error as msg:
-            _logger.error(LOG_MSGS["connfail_msg"], self.params.host, self.params.port, msg)
+            _logger.error(
+                LOG_MSGS["connfail_msg"], self.params.host, self.params.port, msg
+            )
             self.close()
         return self.socket is not None
 

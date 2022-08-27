@@ -6,7 +6,7 @@ DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
         "allow_reuse_address": True,
         "allow_reuse_port": True,
         "backlog": 20,
-        "ignore_missing_slaves": False
+        "ignore_missing_slaves": False,
     },
     "serial": {
         "handler": "ModbusSingleRequestHandler",
@@ -16,7 +16,7 @@ DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
         "baudrate": 9600,
         "timeout": 3,
         "auto_reconnect": False,
-        "reconnect_delay": 2
+        "reconnect_delay": 2,
     },
     "tls": {
         "handler": "ModbusConnectedRequestHandler",
@@ -25,10 +25,10 @@ DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
         "allow_reuse_address": True,
         "allow_reuse_port": True,
         "backlog": 20,
-        "ignore_missing_slaves": False
+        "ignore_missing_slaves": False,
     },
     "udp": {
         "handler": "ModbusDisonnectedRequestHandler",
-        "ignore_missing_slaves": False
-    }
+        "ignore_missing_slaves": False,
+    },
 }

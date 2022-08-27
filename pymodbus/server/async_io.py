@@ -494,9 +494,7 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
         self.response_manipulator = kwargs.get("response_manipulator", None)
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
@@ -666,9 +664,7 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
         self.response_manipulator = kwargs.get("response_manipulator", None)
 
         if isinstance(identity, ModbusDeviceIdentification):
@@ -761,9 +757,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
-        self.broadcast_enable = kwargs.get(
-            "broadcast_enable", Defaults.BroadcastEnable
-        )
+        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None

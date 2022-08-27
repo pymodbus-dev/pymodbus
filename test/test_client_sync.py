@@ -87,9 +87,7 @@ class SynchronousClientTest(
         client.socket = mockSocket()
         client.socket.mock_store(b"\x00" * 4)
         self.assertEqual(b"", client.recv(0))
-        self.assertEqual(
-            b"\x00" * 4, client.recv(4)
-        )
+        self.assertEqual(b"\x00" * 4, client.recv(4))
 
     def test_udp_client_repr(self):
         """Test udp client representation."""
@@ -161,21 +159,15 @@ class SynchronousClientTest(
         client.socket = mockSocket()
         self.assertEqual(b"", client.recv(0))
         client.socket.mock_store(b"\x00" * 4)
-        self.assertEqual(
-            b"\x00" * 4, client.recv(4)
-        )
+        self.assertEqual(b"\x00" * 4, client.recv(4))
 
         mock_socket = MagicMock()
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
         client.socket = mock_socket
         client.params.timeout = 3
-        self.assertEqual(
-            b"\x00\x01\x02", client.recv(3)
-        )
+        self.assertEqual(b"\x00\x01\x02", client.recv(3))
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02"])
-        self.assertEqual(
-            b"\x00\x01", client.recv(2)
-        )
+        self.assertEqual(b"\x00\x01", client.recv(2))
         mock_select.select.return_value = [False]
         self.assertEqual(b"", client.recv(2))
         client.socket = mockSocket()
@@ -193,9 +185,7 @@ class SynchronousClientTest(
 
         mock_socket.recv.side_effect = iter([b"\x00", b"\x01", b"\x02", b""])
         client.socket = mock_socket
-        self.assertEqual(
-            b"\x00\x01\x02", client.recv(1024)
-        )
+        self.assertEqual(b"\x00\x01\x02", client.recv(1024))
 
     def test_tcp_client_repr(self):
         """Test tcp client."""
@@ -307,9 +297,7 @@ class SynchronousClientTest(
         client.socket = mockSocket()
         client.socket.mock_store(b"\x00" * 4)
         self.assertEqual(b"", client.recv(0))
-        self.assertEqual(
-            b"\x00" * 4, client.recv(4)
-        )
+        self.assertEqual(b"\x00" * 4, client.recv(4))
 
         client.params.timeout = 2
         client.socket.mock_store(b"\x00")
@@ -357,16 +345,28 @@ class SynchronousClientTest(
         client = ModbusSerialClient("/dev/null")
         self.assertNotEqual(client, None)
         self.assertTrue(
-            isinstance(ModbusSerialClient("/dev/null", framer=ModbusAsciiFramer).framer, ModbusAsciiFramer)
+            isinstance(
+                ModbusSerialClient("/dev/null", framer=ModbusAsciiFramer).framer,
+                ModbusAsciiFramer,
+            )
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient("/dev/null", framer=ModbusRtuFramer).framer, ModbusRtuFramer)
+            isinstance(
+                ModbusSerialClient("/dev/null", framer=ModbusRtuFramer).framer,
+                ModbusRtuFramer,
+            )
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient("/dev/null", framer=ModbusBinaryFramer).framer, ModbusBinaryFramer)
+            isinstance(
+                ModbusSerialClient("/dev/null", framer=ModbusBinaryFramer).framer,
+                ModbusBinaryFramer,
+            )
         )
         self.assertTrue(
-            isinstance(ModbusSerialClient("/dev/null", framer=ModbusSocketFramer).framer, ModbusSocketFramer)
+            isinstance(
+                ModbusSerialClient("/dev/null", framer=ModbusSocketFramer).framer,
+                ModbusSocketFramer,
+            )
         )
 
     def test_sync_serial_rtu_client_timeouts(self):
@@ -397,7 +397,9 @@ class SynchronousClientTest(
         client.close()
 
         # rtu connect/disconnect
-        rtu_client = ModbusSerialClient("/dev/null", framer=ModbusRtuFramer, strict=True)
+        rtu_client = ModbusSerialClient(
+            "/dev/null", framer=ModbusRtuFramer, strict=True
+        )
         self.assertTrue(rtu_client.connect())
         self.assertEqual(
             rtu_client.socket.interCharTimeout, rtu_client.inter_char_timeout
@@ -475,9 +477,7 @@ class SynchronousClientTest(
         client.socket = mockSocket()
         self.assertEqual(b"", client.recv(0))
         client.socket.mock_store(b"\x00" * 4)
-        self.assertEqual(
-            b"\x00" * 4, client.recv(4)
-        )
+        self.assertEqual(b"\x00" * 4, client.recv(4))
         client.socket = MagicMock()
         client.socket.read.return_value = b""
         self.assertEqual(b"", client.recv(None))

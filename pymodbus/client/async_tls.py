@@ -14,7 +14,9 @@ from pymodbus.transaction import FifoTransactionManager
 _logger = logging.getLogger(__name__)
 
 
-def sslctx_provider(sslctx=None, certfile=None, keyfile=None, password=None):  # pylint: disable=missing-type-doc
+def sslctx_provider(
+    sslctx=None, certfile=None, keyfile=None, password=None
+):  # pylint: disable=missing-type-doc
     """Provide the SSLContext for ModbusTlsClient.
 
     If the user defined SSLContext is not passed in, sslctx_provider will

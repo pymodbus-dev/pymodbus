@@ -71,23 +71,26 @@ def servers(incomplete: str) -> List[str]:
     return _completer(incomplete, _servers)
 
 
-app = typer.Typer(no_args_is_help=True,
-                  context_settings=CONTEXT_SETTING,
-                  help="Reactive modebus server")
+app = typer.Typer(
+    no_args_is_help=True,
+    context_settings=CONTEXT_SETTING,
+    help="Reactive modebus server",
+)
 
 
 @app.callback()
-def server(ctx: typer.Context,
-           host: str = typer.Option(
-               "localhost", "--host", help="Host address"),
-           web_port: int = typer.Option(
-               8080, "--web-port", help="Web app port"),
-           broadcast_support: bool = typer.Option(
-               False, "-b", help="Support broadcast messages"),
-           repl: bool = typer.Option(
-               True, help="Enable/Disable repl for server"),
-           verbose: bool = typer.Option(
-               False, help="Run with debug logs enabled for pymodbus")):
+def server(
+    ctx: typer.Context,
+    host: str = typer.Option("localhost", "--host", help="Host address"),
+    web_port: int = typer.Option(8080, "--web-port", help="Web app port"),
+    broadcast_support: bool = typer.Option(
+        False, "-b", help="Support broadcast messages"
+    ),
+    repl: bool = typer.Option(True, help="Enable/Disable repl for server"),
+    verbose: bool = typer.Option(
+        False, help="Run with debug logs enabled for pymodbus"
+    ),
+):
     """Run server code."""
     FORMAT = (  # pylint: disable=invalid-name
         "%(asctime)-15s %(threadName)-15s"
@@ -120,32 +123,31 @@ def run(
         "-s",
         case_sensitive=False,
         autocompletion=servers,
-        help="Modbus Server"),
+        help="Modbus Server",
+    ),
     modbus_framer: str = typer.Option(
         ModbusFramerTypes.socket,
         "--framer",
         "-f",
         case_sensitive=False,
         autocompletion=framers,
-        help="Modbus framer to use"),
-    modbus_port: str = typer.Option(
-        "5020",
-        "--modbus-port",
-        "-p",
-        help='Modbus port'),
+        help="Modbus framer to use",
+    ),
+    modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
     modbus_unit_id: List[int] = typer.Option(
-        None,
-        "--unit-id",
-        "-u",
-        help="Supported Modbus unit id's") ,
+        None, "--unit-id", "-u", help="Supported Modbus unit id's"
+    ),
     modbus_config: Path = typer.Option(
-        None,
-        help="Path to additional modbus server config"),
+        None, help="Path to additional modbus server config"
+    ),
     randomize: int = typer.Option(
         0,
-        "--random", "-r",
+        "--random",
+        "-r",
         help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
-             ", and so on. Applicable IR and DI.",)):
+        ", and so on. Applicable IR and DI.",
+    ),
+):
     """Run Reactive Modbus server.
 
     Exposing REST endpoint for response manipulation.
@@ -180,7 +182,7 @@ def run(
         loop=loop,
         single=False,
         **web_app_config,
-        **modbus_config
+        **modbus_config,
     )
     try:
         if repl:

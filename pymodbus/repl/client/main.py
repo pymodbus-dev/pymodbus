@@ -109,8 +109,15 @@ class NumericChoice(click.Choice):
                 if ctx.token_normalize_func(choice) == value:
                     return choice
 
-        self.fail('invalid choice: %s. (choose from %s)' %   # pylint: disable=consider-using-f-string
-                  (value, ', '.join(self.choices)), param, ctx)
+        self.fail(
+            "invalid choice: %s. (choose from %s)"  # pylint: disable=consider-using-f-string
+            % (
+                value,
+                ", ".join(self.choices),
+            ),
+            param,
+            ctx,
+        )
         return None
 
 
@@ -173,14 +180,17 @@ def cli(client):  # noqa: C901 pylint: disable=too-complex
                     break
         return kwargs, execute
 
-    session = PromptSession(lexer=PygmentsLexer(PythonLexer),
-                            completer=CmdCompleter(client), style=style,
-                            complete_while_typing=True,
-                            bottom_toolbar=bottom_toolbar,
-                            key_bindings=use_keys,
-                            history=FileHistory(history_file),
-                            auto_suggest=AutoSuggestFromHistory())
-    click.secho(TITLE, fg='green')
+    session = PromptSession(
+        lexer=PygmentsLexer(PythonLexer),
+        completer=CmdCompleter(client),
+        style=style,
+        complete_while_typing=True,
+        bottom_toolbar=bottom_toolbar,
+        key_bindings=use_keys,
+        history=FileHistory(history_file),
+        auto_suggest=AutoSuggestFromHistory(),
+    )
+    click.secho(TITLE, fg="green")
     result = None
     while True:  # pylint: disable=too-many-nested-blocks
         try:

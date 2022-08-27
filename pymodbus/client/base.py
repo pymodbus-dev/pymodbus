@@ -80,6 +80,20 @@ class ModbusBaseClient(ModbusClientMixin):
         kwargs: dict = None
         reconnect_delay: int = None
 
+        baudrate: int = None
+        bytesize: int = None
+        parity: str = None
+        stopbits: int = None
+        handle_local_echo: bool = None
+
+        source_address: str = None
+
+        sslctx: str = None
+        certfile: str = None
+        keyfile: str = None
+        password: str = None
+        server_hostname: str = None
+
     def __init__(
         self,
         framer: str = None,

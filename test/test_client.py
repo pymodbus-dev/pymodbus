@@ -152,8 +152,8 @@ def test_client_mixin(arglist, method, arg, response):
                 "defaults": {
                     "host": "192.168.1.2",
                     "port": Defaults.TcpPort,
-                    "framer": ModbusAsciiFramer,
-                    "source_address": ("195.6.7.8", 1025),
+                    "framer": ModbusSocketFramer,
+                    "source_address": None,
                 },
             },
             "tls": {
@@ -171,7 +171,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "host": "192.168.1.2",
                     "port": Defaults.TlsPort,
                     "framer": ModbusTlsFramer,
-                    "source_address": ("195.6.7.8", 1025),
+                    "source_address": None,
                     "sslctx": None,
                     "certfile": None,
                     "keyfile": None,
@@ -189,7 +189,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "host": "192.168.1.2",
                     "port": Defaults.UdpPort,
                     "framer": ModbusSocketFramer,
-                    "source_address": ("195.6.7.8", 1025),
+                    "source_address": None,
                 },
             },
         },
@@ -223,14 +223,14 @@ def test_client_instanciate(
     else:
         client = clientclass(
             cur_args["pos_arg"],
-            **arg_list["fix"],
+            **arg_list["fix"]["opt_args"],
             **cur_args["opt_args"],
         )
         to_test = dict(arg_list["fix"]["opt_args"], **cur_args["opt_args"])
         to_test["host"] = cur_args["defaults"]["host"]
 
-    # for arg, arg_test in to_test.items():
-    #     assert getattr(client.params, arg) == arg_test
+    for arg, arg_test in to_test.items():
+        assert getattr(client.params, arg) == arg_test
 
     # Test information methods
     client.last_frame_end = 2
@@ -333,7 +333,7 @@ async def test_client_lost_connection():
 
     client.connected = True
     with mock.patch(
-        "pymodbus.client.async_tcp.AsyncModbusTcpClient._reconnect"
+        "pymodbus.client.tcp.AsyncModbusTcpClient._reconnect"
     ) as mock_reconnect:
         mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
@@ -531,7 +531,7 @@ def test_client_tls_connect():
         assert not client.connect()
 
 
-@mock.patch("pymodbus.client.async_tcp.asyncio.sleep")
+@mock.patch("pymodbus.client.tcp.asyncio.sleep")
 async def test_client_reconnect(mock_sleep):
     """Test factory reconnect."""
     mock_protocol_class = mock.MagicMock()

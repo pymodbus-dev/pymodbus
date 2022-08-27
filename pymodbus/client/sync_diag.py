@@ -3,7 +3,7 @@ import logging
 import socket
 import time
 
-from pymodbus.client.sync_tcp import ModbusTcpClient
+from pymodbus.client.tcp import ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -95,7 +95,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.socket = socket.create_connection(
                 (self.params.host, self.params.port),
                 timeout=self.params.timeout,
-                source_address=self.source_address,
+                source_address=self.params.source_address,
             )
         except socket.error as msg:
             _logger.error(

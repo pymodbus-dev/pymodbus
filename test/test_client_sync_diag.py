@@ -79,20 +79,14 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         # test logging of delayed responses
         mock_diag_time.time.side_effect = count(step=3)
         client.socket.mock_store(b"\x00" * 4)
-        self.assertEqual(
-            b"\x00" * 4, client.recv(4)
-        )
+        self.assertEqual(b"\x00" * 4, client.recv(4))
         self.assertEqual(b"", client.recv(0))
 
         client.socket.mock_store(b"\x00\x01\x02")
         client.timeout = 3
-        self.assertEqual(
-            b"\x00\x01\x02", client.recv(3)
-        )
+        self.assertEqual(b"\x00\x01\x02", client.recv(3))
         client.socket.mock_store(b"\x00\x01\x02")
-        self.assertEqual(
-            b"\x00\x01", client.recv(2)
-        )
+        self.assertEqual(b"\x00\x01", client.recv(2))
         mock_select.select.return_value = [False]
         self.assertEqual(b"", client.recv(2))
         client.socket = mockSocket()
@@ -109,9 +103,7 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
         )
         client.socket = mockSocket()
         client.socket.mock_store(b"\x00\x01\x02")
-        self.assertEqual(
-            b"\x00\x01\x02", client.recv(1024)
-        )
+        self.assertEqual(b"\x00\x01\x02", client.recv(1024))
 
     def test_tcp_diag_client_repr(self):
         """Test tcp diag client."""

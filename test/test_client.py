@@ -25,19 +25,22 @@ import pymodbus.register_write_message as pdu_req_write
 
 
 @pytest.mark.parametrize(
-    "arglist", [
+    "arglist",
+    [
         [
             {},
-            {'address': 0x01},
-            {'address': 0x01, 'value': False},
-            {'msg': "long message"},
-            {'toggle': False},
-            {'address': 0x01, 'values': [False, True]},
-            {'address': 0x01, 'values': [22, 44]},
+            {"address": 0x01},
+            {"address": 0x01, "value": False},
+            {"msg": "long message"},
+            {"toggle": False},
+            {"address": 0x01, "values": [False, True]},
+            {"address": 0x01, "values": [22, 44]},
         ]
-    ])
+    ],
+)
 @pytest.mark.parametrize(
-    "method, arg, response", [
+    "method, arg, response",
+    [
         ("read_coils", 1, pdu_bit_read.ReadCoilsRequest),
         ("read_discrete_inputs", 1, pdu_bit_read.ReadDiscreteInputsRequest),
         ("read_holding_registers", 1, pdu_reg_read.ReadHoldingRegistersRequest),
@@ -48,17 +51,37 @@ import pymodbus.register_write_message as pdu_req_write
         ("diag_query_data", 3, pdu_diag.ReturnQueryDataRequest),
         ("diag_restart_communication", 4, pdu_diag.RestartCommunicationsOptionRequest),
         ("diag_read_diagnostic_register", 0, pdu_diag.ReturnDiagnosticRegisterRequest),
-        ("diag_change_ascii_input_delimeter", 0, pdu_diag.ChangeAsciiInputDelimiterRequest),
+        (
+            "diag_change_ascii_input_delimeter",
+            0,
+            pdu_diag.ChangeAsciiInputDelimiterRequest,
+        ),
         ("diag_force_listen_only", 0, pdu_diag.ForceListenOnlyModeRequest),
         ("diag_clear_counters", 0, pdu_diag.ClearCountersRequest),
         ("diag_read_bus_message_count", 0, pdu_diag.ReturnBusMessageCountRequest),
-        ("diag_read_bus_comm_error_count", 0, pdu_diag.ReturnBusCommunicationErrorCountRequest),
-        ("diag_read_bus_exception_error_count", 0, pdu_diag.ReturnBusExceptionErrorCountRequest),
+        (
+            "diag_read_bus_comm_error_count",
+            0,
+            pdu_diag.ReturnBusCommunicationErrorCountRequest,
+        ),
+        (
+            "diag_read_bus_exception_error_count",
+            0,
+            pdu_diag.ReturnBusExceptionErrorCountRequest,
+        ),
         ("diag_read_slave_message_count", 0, pdu_diag.ReturnSlaveMessageCountRequest),
-        ("diag_read_slave_no_response_count", 0, pdu_diag.ReturnSlaveNoResponseCountRequest),
+        (
+            "diag_read_slave_no_response_count",
+            0,
+            pdu_diag.ReturnSlaveNoResponseCountRequest,
+        ),
         ("diag_read_slave_nak_count", 0, pdu_diag.ReturnSlaveNAKCountRequest),
         ("diag_read_slave_busy_count", 0, pdu_diag.ReturnSlaveBusyCountRequest),
-        ("diag_read_bus_char_overrun_count", 0, pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest),
+        (
+            "diag_read_bus_char_overrun_count",
+            0,
+            pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest,
+        ),
         ("diag_read_iop_overrun_count", 0, pdu_diag.ReturnIopOverrunCountRequest),
         ("diag_clear_overrun_counter", 0, pdu_diag.ClearOverrunCountRequest),
         ("diag_getclear_modbus_response", 0, pdu_diag.GetClearModbusPlusRequest),
@@ -66,7 +89,8 @@ import pymodbus.register_write_message as pdu_req_write
         ("write_registers", 6, pdu_req_write.WriteMultipleRegistersRequest),
         ("readwrite_registers", 1, pdu_reg_read.ReadWriteMultipleRegistersRequest),
         ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),
-    ])
+    ],
+)
 def test_client_mixin(arglist, method, arg, response):
     """Test mixin responses."""
     rr = getattr(ModbusClientMixin(), method)(**arglist[arg])
@@ -74,104 +98,106 @@ def test_client_mixin(arglist, method, arg, response):
 
 
 @pytest.mark.parametrize(
-    "arg_list", [
+    "arg_list",
+    [
         {
-            "fix" : {
+            "fix": {
                 "opt_args": {
-                    "timeout" : Defaults.Timeout + 2,
-                    "retries" : Defaults.Retries + 2,
-                    "retry_on_empty" : not Defaults.RetryOnEmpty,
-                    "close_comm_on_error" : not Defaults.CloseCommOnError,
-                    "strict" : not Defaults.Strict,
+                    "timeout": Defaults.Timeout + 2,
+                    "retries": Defaults.Retries + 2,
+                    "retry_on_empty": not Defaults.RetryOnEmpty,
+                    "close_comm_on_error": not Defaults.CloseCommOnError,
+                    "strict": not Defaults.Strict,
                     "broadcast_enable": not Defaults.BroadcastEnable,
-                    "reconnect_delay": 117
+                    "reconnect_delay": 117,
                 },
                 "defaults": {
-                    "timeout" : Defaults.Timeout,
-                    "retries" : Defaults.Retries,
-                    "retry_on_empty" : Defaults.RetryOnEmpty,
-                    "close_comm_on_error" : Defaults.CloseCommOnError,
-                    "strict" : Defaults.Strict,
+                    "timeout": Defaults.Timeout,
+                    "retries": Defaults.Retries,
+                    "retry_on_empty": Defaults.RetryOnEmpty,
+                    "close_comm_on_error": Defaults.CloseCommOnError,
+                    "strict": Defaults.Strict,
                     "broadcast_enable": Defaults.BroadcastEnable,
-                    "reconnect_delay": Defaults.ReconnectDelay
+                    "reconnect_delay": Defaults.ReconnectDelay,
                 },
             },
             "serial": {
                 "pos_arg": "/dev/tty",
                 "opt_args": {
-                    "framer" : ModbusAsciiFramer,
-                    "baudrate" : Defaults.Baudrate + 500,
-                    "bytesize" : Defaults.Bytesize - 1,
-                    "parity" : "E",
-                    "stopbits" : Defaults.Stopbits + 1,
-                    "handle_local_echo" : not Defaults.HandleLocalEcho,
+                    "framer": ModbusAsciiFramer,
+                    "baudrate": Defaults.Baudrate + 500,
+                    "bytesize": Defaults.Bytesize - 1,
+                    "parity": "E",
+                    "stopbits": Defaults.Stopbits + 1,
+                    "handle_local_echo": not Defaults.HandleLocalEcho,
                 },
                 "defaults": {
-                    "host" : None,
-                    "port" : "/dev/tty",
-                    "framer" : ModbusRtuFramer,
-                    "baudrate" : Defaults.Baudrate,
-                    "bytesize" : Defaults.Bytesize,
-                    "parity" : Defaults.Parity,
-                    "stopbits" : Defaults.Stopbits,
-                    "handle_local_echo" : Defaults.HandleLocalEcho,
+                    "host": None,
+                    "port": "/dev/tty",
+                    "framer": ModbusRtuFramer,
+                    "baudrate": Defaults.Baudrate,
+                    "bytesize": Defaults.Bytesize,
+                    "parity": Defaults.Parity,
+                    "stopbits": Defaults.Stopbits,
+                    "handle_local_echo": Defaults.HandleLocalEcho,
                 },
             },
             "tcp": {
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
-                    "port" : 112,
-                    "framer" : ModbusAsciiFramer,
-                    "source_address" : ("195.6.7.8", 1025),
+                    "port": 112,
+                    "framer": ModbusAsciiFramer,
+                    "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
                     "host": "192.168.1.2",
-                    "port" : Defaults.TcpPort,
-                    "framer" : ModbusAsciiFramer,
-                    "source_address" : ("195.6.7.8", 1025),
+                    "port": Defaults.TcpPort,
+                    "framer": ModbusAsciiFramer,
+                    "source_address": ("195.6.7.8", 1025),
                 },
             },
             "tls": {
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
-                    "port" : 211,
-                    "framer" : ModbusAsciiFramer,
-                    "source_address" : ("195.6.7.8", 1025),
-                    "sslctx" : None,
-                    "certfile" : None,
-                    "keyfile" : None,
-                    "password" : None,
+                    "port": 211,
+                    "framer": ModbusAsciiFramer,
+                    "source_address": ("195.6.7.8", 1025),
+                    "sslctx": None,
+                    "certfile": None,
+                    "keyfile": None,
+                    "password": None,
                 },
                 "defaults": {
-                    "host" : "192.168.1.2",
-                    "port" : Defaults.TlsPort,
-                    "framer" : ModbusTlsFramer,
-                    "source_address" : ("195.6.7.8", 1025),
-                    "sslctx" : None,
-                    "certfile" : None,
-                    "keyfile" : None,
-                    "password" : None,
+                    "host": "192.168.1.2",
+                    "port": Defaults.TlsPort,
+                    "framer": ModbusTlsFramer,
+                    "source_address": ("195.6.7.8", 1025),
+                    "sslctx": None,
+                    "certfile": None,
+                    "keyfile": None,
+                    "password": None,
                 },
             },
             "udp": {
                 "pos_arg": "192.168.1.2",
                 "opt_args": {
-                    "port" : 121,
-                    "framer" : ModbusAsciiFramer,
-                    "source_address" : ("195.6.7.8", 1025),
+                    "port": 121,
+                    "framer": ModbusAsciiFramer,
+                    "source_address": ("195.6.7.8", 1025),
                 },
                 "defaults": {
-                    "host" : "192.168.1.2",
-                    "port" : Defaults.UdpPort,
-                    "framer" : ModbusSocketFramer,
-                    "source_address" : ("195.6.7.8", 1025),
+                    "host": "192.168.1.2",
+                    "port": Defaults.UdpPort,
+                    "framer": ModbusSocketFramer,
+                    "source_address": ("195.6.7.8", 1025),
                 },
             },
         },
-    ]
+    ],
 )
 @pytest.mark.parametrize(
-    "type_args, clientclass", [
+    "type_args, clientclass",
+    [
         ("serial", lib_client.AsyncModbusSerialClient),
         ("serial", lib_client.ModbusSerialClient),
         ("tcp", lib_client.AsyncModbusTcpClient),
@@ -180,7 +206,7 @@ def test_client_mixin(arglist, method, arg, response):
         ("tls", lib_client.ModbusTlsClient),
         ("udp", lib_client.AsyncModbusUdpClient),
         ("udp", lib_client.ModbusUdpClient),
-    ]
+    ],
 )
 @pytest.mark.parametrize("test_default", [True, False])
 def test_client_instanciate(
@@ -221,8 +247,12 @@ def test_client_instanciate(
     client.reset_delay()
     assert client.delay_ms == initial_delay
 
-    assert socket.AF_INET == client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
-    assert socket.AF_INET6 == client._get_address_family("::1")  # pylint: disable=protected-access
+    assert socket.AF_INET == client._get_address_family(  # pylint: disable=protected-access
+        "127.0.0.1"
+    )
+    assert socket.AF_INET6 == client._get_address_family(  # pylint: disable=protected-access
+        "::1"
+    )
 
     # a successful execute
     client.connect = lambda: True
@@ -250,16 +280,20 @@ def test_client_modbusbaseclient():
     with pytest.raises(NotImplementedException):
         client.close()
 
-    with mock.patch("pymodbus.client.base.ModbusBaseClient.connect") as p_connect, \
-         mock.patch("pymodbus.client.base.ModbusBaseClient.close") as p_close:
+    with mock.patch(
+        "pymodbus.client.base.ModbusBaseClient.connect"
+    ) as p_connect, mock.patch(
+        "pymodbus.client.base.ModbusBaseClient.close"
+    ) as p_close:
 
         p_connect.return_value = True
         p_close.return_value = True
         with ModbusBaseClient(framer=ModbusAsciiFramer) as b_client:
             str(b_client)
         p_connect.return_value = False
-        with pytest.raises(ConnectionException), \
-             ModbusBaseClient(framer=ModbusAsciiFramer) as b_client:
+        with pytest.raises(ConnectionException), ModbusBaseClient(
+            framer=ModbusAsciiFramer
+        ) as b_client:
             str(b_client)
 
 
@@ -267,8 +301,7 @@ async def test_client_made_connection():
     """Test factory protocol made connection."""
     mock_protocol_class = mock.MagicMock()
     client = lib_client.AsyncModbusTcpClient(
-        "127.0.0.1",
-        protocol_class=mock_protocol_class
+        "127.0.0.1", protocol_class=mock_protocol_class
     )
     assert not client.connected
     assert client.protocol is None
@@ -285,8 +318,7 @@ async def test_client_lost_connection():
     """Test factory protocol lost connection."""
     mock_protocol_class = mock.MagicMock()
     client = lib_client.AsyncModbusTcpClient(
-        "127.0.0.1",
-        protocol_class=mock_protocol_class
+        "127.0.0.1", protocol_class=mock_protocol_class
     )
     assert not client.connected
     assert client.protocol is None
@@ -301,8 +333,7 @@ async def test_client_lost_connection():
 
     client.connected = True
     with mock.patch(
-        "pymodbus.client.async_tcp."
-        "AsyncModbusTcpClient._reconnect"
+        "pymodbus.client.async_tcp.AsyncModbusTcpClient._reconnect"
     ) as mock_reconnect:
         mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
@@ -313,8 +344,11 @@ async def test_client_lost_connection():
 
 async def test_client_base_async():
     """Test modbus base client class."""
-    with mock.patch("pymodbus.client.base.ModbusBaseClient.connect") as p_connect, \
-         mock.patch("pymodbus.client.base.ModbusBaseClient.close") as p_close:
+    with mock.patch(
+        "pymodbus.client.base.ModbusBaseClient.connect"
+    ) as p_connect, mock.patch(
+        "pymodbus.client.base.ModbusBaseClient.close"
+    ) as p_close:
 
         loop = asyncio.get_event_loop()
         p_connect.return_value = loop.create_future()
@@ -381,26 +415,20 @@ async def test_client_protocol_receiver():
 
     # setup existing request
     assert not list(protocol.transaction)
-    response = protocol._build_response(  # pylint: disable=protected-access
-        0x00
-    )
+    response = protocol._build_response(0x00)  # pylint: disable=protected-access
     protocol.data_received(data)
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
     protocol._connected = False  # pylint: disable=protected-access
     with pytest.raises(ConnectionException):
-        await protocol._build_response(  # pylint: disable=protected-access
-            0x00
-        )
+        await protocol._build_response(0x00)  # pylint: disable=protected-access
 
 
 async def test_client_protocol_response():
     """Test the udp client protocol builds responses"""
     protocol = ModbusClientProtocol(framer=ModbusSocketFramer)
-    response = protocol._build_response(  # pylint: disable=protected-access
-        0x00
-    )
+    response = protocol._build_response(0x00)  # pylint: disable=protected-access
     excp = response.exception()
     assert isinstance(excp, ConnectionException)
     assert not list(protocol.transaction)
@@ -419,9 +447,7 @@ async def test_client_protocol_handler():
     reply.transaction_id = 0x00
     protocol._handle_response(None)  # pylint: disable=protected-access
     protocol._handle_response(reply)  # pylint: disable=protected-access
-    response = protocol._build_response(  # pylint: disable=protected-access
-        0x00
-    )
+    response = protocol._build_response(0x00)  # pylint: disable=protected-access
     protocol._handle_response(reply)  # pylint: disable=protected-access
     result = response.result()
     assert result == reply
@@ -452,10 +478,10 @@ async def test_client_protocol_execute():
 def test_client_udp():
     """Test client udp."""
     protocol = ModbusClientProtocol("127.0.0.1", framer=ModbusSocketFramer)
-    protocol.datagram_received(bytes('00010000', 'utf-8'), 1)
+    protocol.datagram_received(bytes("00010000", "utf-8"), 1)
     protocol.transport = mock.MagicMock()
     protocol.use_udp = True
-    protocol.write_transport(bytes('00010000', 'utf-8'))
+    protocol.write_transport(bytes("00010000", "utf-8"))
 
 
 def test_client_udp_connect():
@@ -513,8 +539,7 @@ async def test_client_reconnect(mock_sleep):
     loop = asyncio.get_running_loop()
     loop.create_connection = mock.MagicMock(return_value=(None, None))
     client = lib_client.AsyncModbusTcpClient(
-        "127.0.0.1",
-        protocol_class=mock_protocol_class
+        "127.0.0.1", protocol_class=mock_protocol_class
     )
     client.delay_ms = 5000
     await client.connect()

@@ -75,26 +75,22 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         """Set internal process exception."""
         unit = kwargs.get("unit")
         if unit == 0:  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
-            err = {
-                "message": "Broadcast message, ignoring errors!!!"
-            }
+            err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
             if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
                 err = {
-                    'original_function_code': f"{resp.original_code} ({hex(resp.original_code)})",
-                    'error_function_code': f"{resp.function_code} ({hex(resp.function_code)})",
-                    'exception code': resp.exception_code,
-                    'message': ModbusExceptions.decode(resp.exception_code)
+                    "original_function_code": f"{resp.original_code} ({hex(resp.original_code)})",
+                    "error_function_code": f"{resp.function_code} ({hex(resp.function_code)})",
+                    "exception code": resp.exception_code,
+                    "message": ModbusExceptions.decode(resp.exception_code),
                 }
             elif isinstance(resp, ModbusIOException):
                 err = {
-                    'original_function_code': f"{resp.fcode} ({hex(resp.fcode)})",
-                    'error': resp.message
+                    "original_function_code": f"{resp.fcode} ({hex(resp.fcode)})",
+                    "error": resp.message,
                 }
             else:
-                err = {
-                    'error': str(resp)
-                }
+                err = {"error": str(resp)}
         return err
 
     def read_coils(self, address, count=1, slave=Defaults.Slave, **kwargs):
@@ -106,7 +102,9 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :returns: List of register values
         """
-        resp = super().read_coils(address, count, slave, **kwargs)  # pylint: disable=no-member
+        resp = super().read_coils(  # pylint: disable=no-member
+            address, count, slave, **kwargs
+        )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
         return ExtendedRequestSupport._process_exception(resp)
@@ -137,7 +135,9 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        resp = super().write_coil(address, value, slave, **kwargs)  # pylint: disable=no-member
+        resp = super().write_coil(  # pylint: disable=no-member
+            address, value, slave, **kwargs
+        )
         return resp
 
     @handle_brodcast
@@ -218,7 +218,13 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp)
 
     def readwrite_registers(
-        self, read_address, read_count, write_address, write_registers, unit=Defaults.Slave, **kwargs
+        self,
+        read_address,
+        read_count,
+        write_address,
+        write_registers,
+        unit=Defaults.Slave,
+        **kwargs,
     ):
         """Read `read_count` number of holding registers.
 
@@ -246,7 +252,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp)
 
     def mask_write_register(
-        self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, unit=Defaults.Slave, **kwargs
+        self,
+        address=0x0000,
+        and_mask=0xFFFF,
+        or_mask=0x0000,
+        unit=Defaults.Slave,
+        **kwargs,
     ):
         """Mask content of holding register at `address` with `and_mask` and `or_mask`.
 
@@ -544,9 +555,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param kwargs:
         :return:
         """
-        request = GetClearModbusPlusRequest(
-            data, **kwargs
-        )
+        request = GetClearModbusPlusRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
 

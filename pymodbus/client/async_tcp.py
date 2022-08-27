@@ -105,8 +105,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         _logger.info("Protocol lost connection.")
         if protocol is not self.protocol:
             _logger.error(
-                "Factory protocol callback called "
-                "from unexpected protocol instance."
+                "Factory protocol callback called from unexpected protocol instance."
             )
 
         self.connected = False

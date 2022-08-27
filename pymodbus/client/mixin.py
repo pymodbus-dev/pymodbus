@@ -83,7 +83,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_bit_read.ReadDiscreteInputsRequest(address, count, slave, **kwargs)
+        request = pdu_bit_read.ReadDiscreteInputsRequest(
+            address, count, slave, **kwargs
+        )
         return self.execute(request)
 
     def read_holding_registers(
@@ -101,7 +103,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_reg_read.ReadHoldingRegistersRequest(address, count, slave, **kwargs)
+        request = pdu_reg_read.ReadHoldingRegistersRequest(
+            address, count, slave, **kwargs
+        )
         return self.execute(request)
 
     def read_input_registers(
@@ -119,15 +123,13 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_reg_read.ReadInputRegistersRequest(address, count, slave, **kwargs)
+        request = pdu_reg_read.ReadInputRegistersRequest(
+            address, count, slave, **kwargs
+        )
         return self.execute(request)
 
     def write_coil(
-        self,
-        address: int,
-        value: bool,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, address: int, value: bool, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_bit_write.WriteSingleCoilResponse:
         """Write single coil (function code 0x05).
 
@@ -155,13 +157,13 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_req_write.WriteSingleRegisterRequest(address, value, slave, **kwargs)
+        request = pdu_req_write.WriteSingleRegisterRequest(
+            address, value, slave, **kwargs
+        )
         return self.execute(request)
 
     def read_exception_status(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_other_msg.ReadExceptionStatusResponse:
         """Read Exception Status (function code 0x07).
 
@@ -173,10 +175,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_query_data(
-        self,
-        msg: bytearray,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, msg: bytearray, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnQueryDataResponse:
         """Diagnose query data (function code 0x08 - 0x00).
 
@@ -189,10 +188,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_restart_communication(
-        self,
-        toggle: bool,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, toggle: bool, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.RestartCommunicationsOptionResponse:
         """Diagnose restart communication (function code 0x08 - 0x01).
 
@@ -205,9 +201,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_diagnostic_register(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnDiagnosticRegisterResponse:
         """Diagnose read diagnostic register (function code 0x08 - 0x02).
 
@@ -219,9 +213,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_change_ascii_input_delimeter(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ChangeAsciiInputDelimiterResponse:
         """Diagnose change ASCII input delimiter (function code 0x08 - 0x03).
 
@@ -233,9 +225,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_force_listen_only(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ForceListenOnlyModeResponse:
         """Diagnose force listen only (function code 0x08 - 0x04).
 
@@ -247,9 +237,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_clear_counters(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ClearCountersResponse:
         """Diagnose clear counters (function code 0x08 - 0x0A).
 
@@ -261,9 +249,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_bus_message_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnBusMessageCountResponse:
         """Diagnose read bus message count (function code 0x08 - 0x0B).
 
@@ -275,9 +261,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_bus_comm_error_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnBusCommunicationErrorCountResponse:
         """Diagnose read Bus Communication Error Count (function code 0x08 - 0x0C).
 
@@ -289,9 +273,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_bus_exception_error_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnBusExceptionErrorCountResponse:
         """Diagnose read Bus Exception Error Count (function code 0x08 - 0x0D).
 
@@ -303,9 +285,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_slave_message_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnSlaveMessageCountResponse:
         """Diagnose read Slave Message Count (function code 0x08 - 0x0E).
 
@@ -317,9 +297,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_slave_no_response_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnSlaveNoReponseCountResponse:
         """Diagnose read Slave No Response Count (function code 0x08 - 0x0F).
 
@@ -331,9 +309,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_slave_nak_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnSlaveNAKCountResponse:
         """Diagnose read Slave NAK Count (function code 0x08 - 0x10).
 
@@ -345,9 +321,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_slave_busy_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnSlaveBusyCountResponse:
         """Diagnose read Slave Busy Count (function code 0x08 - 0x11).
 
@@ -359,9 +333,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_bus_char_overrun_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnSlaveBusCharacterOverrunCountResponse:
         """Diagnose read Bus Character Overrun Count (function code 0x08 - 0x12).
 
@@ -373,9 +345,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_read_iop_overrun_count(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ReturnIopOverrunCountResponse:
         """Diagnose read Iop overrun count (function code 0x08 - 0x13).
 
@@ -387,9 +357,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_clear_overrun_counter(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.ClearOverrunCountResponse:
         """Diagnose Clear Overrun Counter and Flag (function code 0x08 - 0x14).
 
@@ -401,9 +369,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(request)
 
     def diag_getclear_modbus_response(
-        self,
-        slave: int = Defaults.Slave,
-        **kwargs: any
+        self, slave: int = Defaults.Slave, **kwargs: any
     ) -> pdu_diag.GetClearModbusPlusResponse:
         """Diagnose Get/Clear modbus plus request (function code 0x08 - 0x15).
 
@@ -433,7 +399,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_bit_write.WriteMultipleCoilsRequest(address, values, slave, **kwargs)
+        request = pdu_bit_write.WriteMultipleCoilsRequest(
+            address, values, slave, **kwargs
+        )
         return self.execute(request)
 
     def write_registers(
@@ -451,7 +419,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        request = pdu_req_write.WriteMultipleRegistersRequest(address, values, slave, **kwargs)
+        request = pdu_req_write.WriteMultipleRegistersRequest(
+            address, values, slave, **kwargs
+        )
         return self.execute(request)
 
     # Function codes descriptions
@@ -467,7 +437,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     # 0x2B / 0x0E Read Device Identification
     # MODBUS Exception Responses
 
-    def readwrite_registers(self, *args, **kwargs) -> pdu_reg_read.ReadWriteMultipleRegistersResponse:
+    def readwrite_registers(
+        self, *args, **kwargs
+    ) -> pdu_reg_read.ReadWriteMultipleRegistersResponse:
         """Read/Write registers
 
         :param args:
@@ -477,7 +449,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         request = pdu_reg_read.ReadWriteMultipleRegistersRequest(*args, **kwargs)
         return self.execute(request)
 
-    def mask_write_register(self, *args, **kwargs) -> pdu_req_write.MaskWriteRegisterResponse:
+    def mask_write_register(
+        self, *args, **kwargs
+    ) -> pdu_req_write.MaskWriteRegisterResponse:
         """Mask write register.
 
         :args:

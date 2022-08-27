@@ -138,7 +138,9 @@ class ModbusTransactionManager:
                     txt = f"Clearing current Frame: - {_buffer}"
                     _logger.debug(txt)
                     self.client.framer.resetFrame()
-                if broadcast := (self.client.params.broadcast_enable and not request.unit_id):
+                if broadcast := (
+                    self.client.params.broadcast_enable and not request.unit_id
+                ):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
                 else:

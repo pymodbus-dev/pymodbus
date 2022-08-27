@@ -77,7 +77,9 @@ class ModbusTlsClient(ModbusTcpClient):
             self.socket.settimeout(self.params.timeout)
             self.socket.connect((self.params.host, self.params.port))
         except socket.error as msg:
-            txt = f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            txt = (
+                f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            )
             _logger.error(txt)
             self.close()
         return self.socket is not None

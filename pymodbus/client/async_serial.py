@@ -119,9 +119,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         if self.connected:
             _logger.info("Serial lost connection.")
             if protocol is not self.protocol:
-                _logger.error(
-                    "Serial: protocol is not self.protocol."
-                )
+                _logger.error("Serial: protocol is not self.protocol.")
 
             self._connected_event.clear()
             self.protocol = None

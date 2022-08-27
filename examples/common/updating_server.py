@@ -86,10 +86,7 @@ async def run_updating_server():
     # ----------------------------------------------------------------------- #
     log.debug("Start server")
     await StartTcpServer(
-        context,
-        identity=identity,
-        address=("localhost", 5020),
-        defer_start=False
+        context, identity=identity, address=("localhost", 5020), defer_start=False
     )
     log.debug("Done")
 

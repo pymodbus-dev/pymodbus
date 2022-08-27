@@ -292,7 +292,9 @@ class ReactiveServer:
         return identity
 
     @classmethod
-    def create_context(cls, data_block=None, unit=[1], single=False):  # pylint: disable=dangerous-default-value
+    def create_context(
+        cls, data_block=None, unit=[1], single=False
+    ):  # pylint: disable=dangerous-default-value
         """Create Modbus context.
 
         :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
@@ -320,7 +322,9 @@ class ReactiveServer:
                         )
                         address_map.insert(0, 0)
                     block[modbus_entity] = {
-                        add: val for add in sorted(address_map) for val in default_values
+                        add: val
+                        for add in sorted(address_map)
+                        for val in default_values
                     }
                 else:
                     block[modbus_entity] = db(start_address, default_values)

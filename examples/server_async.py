@@ -163,7 +163,7 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start  # Only define server do not activate
+            defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "udp":
         server = await StartUdpServer(
@@ -178,7 +178,7 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start  # Only define server do not activate
+            defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
@@ -199,7 +199,7 @@ async def run_server(args=None):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start  # Only define server do not activate
+            defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "tls":
         server = await StartTlsServer(
@@ -221,9 +221,10 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start  # Only define server do not activate
+            defer_start=defer_start,  # Only define server do not activate
         )
     return server
+
 
 # --------------------------------------------------------------------------- #
 # Extra code, to allow commandline parameters instead of changing the code

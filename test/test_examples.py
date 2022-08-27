@@ -77,7 +77,7 @@ class Commandline:
         "connect",
         "basic",
         "extended",
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "test_server, test_client",
@@ -86,7 +86,7 @@ class Commandline:
         (True, False),
         (False, True),
         (False, False),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "test_comm, test_framer",
@@ -99,10 +99,14 @@ class Commandline:
         ("serial", ModbusRtuFramer),
         ("serial", ModbusAsciiFramer),
         ("serial", ModbusBinaryFramer),
-    ]
+    ],
 )
-@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason="Some strange things happens.")
-async def test_client_server(test_type, test_server, test_client, test_comm, test_framer):  # pylint: disable=too-complex
+@pytest.mark.skipif(
+    platform.python_implementation() == "PyPy", reason="Some strange things happens."
+)
+async def test_client_server(
+    test_type, test_server, test_client, test_comm, test_framer
+):  # pylint: disable=too-complex
     """Test client/server examples."""
 
     if to_be_solved(
@@ -154,10 +158,17 @@ async def test_client_server(test_type, test_server, test_client, test_comm, tes
 
         if test_client:
             client = client_setup_sync(args=args)
-            await asyncio.wait_for(loop.run_in_executor(None, client_sync, client, method_client[test_type][0]), TIMEOUT)
+            await asyncio.wait_for(
+                loop.run_in_executor(
+                    None, client_sync, client, method_client[test_type][0]
+                ),
+                TIMEOUT,
+            )
         else:
             client = client_setup_async(args=args)
-            await asyncio.wait_for(client_async(client, modbus_calls=method_client[test_type][1]), TIMEOUT)
+            await asyncio.wait_for(
+                client_async(client, modbus_calls=method_client[test_type][1]), TIMEOUT
+            )
     except Exception as exc:  # pylint: disable=broad-except # noqa: E722
         not_ok_exc = f"Server/Client raised exception <<{exc}>>"
 

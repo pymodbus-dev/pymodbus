@@ -49,6 +49,7 @@ import logging
 
 from pymodbus.exceptions import NotImplementedException, ParameterException
 
+
 # ---------------------------------------------------------------------------#
 #  Logging
 # ---------------------------------------------------------------------------#

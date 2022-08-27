@@ -12,6 +12,7 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring
 
+
 _MCB = ModbusControlBlock()
 
 

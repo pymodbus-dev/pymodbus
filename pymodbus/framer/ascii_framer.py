@@ -8,6 +8,7 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.utilities import checkLRC, computeLRC
 
+
 ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
 # --------------------------------------------------------------------------- #

@@ -12,6 +12,7 @@ from pygments.lexers.data import JsonLexer
 
 from pymodbus.payload import BinaryPayloadDecoder, Endian
 
+
 predicate = inspect.isfunction
 argspec = inspect.signature
 

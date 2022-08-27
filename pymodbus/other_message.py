@@ -5,9 +5,10 @@ Currently not all implemented
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.constants import ModbusStatus, Defaults
+from pymodbus.constants import Defaults, ModbusStatus
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
 from pymodbus.pdu import ModbusRequest, ModbusResponse
+
 
 _MCB = ModbusControlBlock()
 

@@ -4,10 +4,11 @@ import logging
 
 from serial_asyncio import create_serial_connection
 
-from pymodbus.framer import ModbusFramer
-from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
+from pymodbus.framer import ModbusFramer
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
+
 
 _logger = logging.getLogger(__name__)
 

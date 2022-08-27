@@ -1,22 +1,19 @@
 """Base for all clients."""
 from __future__ import annotations
-from dataclasses import dataclass
-import socket
-import asyncio
-import logging
 
-from pymodbus.utilities import hexlify_packets
-from pymodbus.factory import ClientDecoder
-from pymodbus.utilities import ModbusTransactionState
-from pymodbus.transaction import DictTransactionManager
+import asyncio
+from dataclasses import dataclass
+import logging
+import socket
+
 from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.exceptions import (
-    NotImplementedException,
-    ConnectionException,
-)
-from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
-from pymodbus.pdu import ModbusResponse, ModbusRequest
+from pymodbus.exceptions import ConnectionException, NotImplementedException
+from pymodbus.factory import ClientDecoder
+from pymodbus.framer import ModbusFramer
+from pymodbus.pdu import ModbusRequest, ModbusResponse
+from pymodbus.transaction import DictTransactionManager
+from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 
 _logger = logging.getLogger(__name__)

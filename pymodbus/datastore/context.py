@@ -7,6 +7,7 @@ from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
 
+
 # ---------------------------------------------------------------------------#
 #  Logging
 # ---------------------------------------------------------------------------#

@@ -7,6 +7,7 @@ import logging
 
 from pymodbus.interfaces import Singleton
 
+
 # set logging format and default level for library.
 logging.basicConfig(
     format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",

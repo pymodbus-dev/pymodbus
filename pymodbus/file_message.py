@@ -5,7 +5,11 @@ Currently none of these messages are implemented
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
+from pymodbus.pdu import (
+    ModbusExceptions as merror,
+    ModbusRequest,
+    ModbusResponse,
+)
 
 
 # ---------------------------------------------------------------------------#

@@ -6,11 +6,12 @@ import time
 import serial
 
 from pymodbus.client.base import ModbusBaseClient
+from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
-from pymodbus.constants import Defaults
+
 
 _logger = logging.getLogger(__name__)
 

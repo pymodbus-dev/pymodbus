@@ -212,6 +212,7 @@ class AsyncioServerTest(
         """Test that the modbus tcp asyncio server starts correctly"""
         await self.start_server(do_forever=False)
 
+    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
     async def test_async_start_server(self):
         """Test that the modbus tcp asyncio server starts correctly"""
         await self.start_server()
@@ -361,6 +362,7 @@ class AsyncioServerTest(
         with self.assertRaises(RuntimeError):
             await self.server.serve_forever()
 
+    @pytest.mark.skifif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
     async def test_async_udp_server_receive_data(self):
         """Test that the sending data on datagram socket gets data pushed to framer"""
         await self.start_server(do_udp=True)

@@ -4,9 +4,8 @@ import logging
 import typing
 
 from pymodbus.framer import ModbusFramer
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.base import ModbusBaseClient
-from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
@@ -102,20 +101,17 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
-        if self.connected:
-            _logger.info("Protocol lost connection.")
-            if protocol is not self.protocol:
-                _logger.error(
-                    "Factory protocol callback called "
-                    "from unexpected protocol instance."
-                )
+        _logger.info("Protocol lost connection.")
+        if protocol is not self.protocol:
+            _logger.error(
+                "Factory protocol callback called "
+                "from unexpected protocol instance."
+            )
 
-            self.connected = False
-            self.protocol = None
-            if self.params.host:
-                asyncio.ensure_future(self._reconnect())
-        else:
-            _logger.error("Factory protocol connect callback called while connected.")
+        self.connected = False
+        self.protocol = None
+        if self.params.host:
+            asyncio.ensure_future(self._reconnect())
 
     async def _reconnect(self):
         """Reconnect."""

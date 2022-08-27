@@ -8,7 +8,7 @@ import serial
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
-from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 from pymodbus.constants import Defaults
 
@@ -75,6 +75,11 @@ class ModbusSerialClient(ModbusBaseClient):
                 self.inter_char_timeout = 1.5 * self._t0
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
+
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.connect()
 
     def connect(self):
         """Connect to the modbus serial server."""

@@ -8,7 +8,7 @@ import typing
 from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
 
@@ -50,6 +50,11 @@ class ModbusTcpClient(ModbusBaseClient):
         self.params.port = port
         self.source_address = source_address
         self.socket = None
+
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.connect()
 
     def connect(self):
         """Connect to the modbus tcp server."""

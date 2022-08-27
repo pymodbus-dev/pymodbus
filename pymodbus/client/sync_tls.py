@@ -2,9 +2,9 @@
 import logging
 import socket
 
-from pymodbus.client.helper_tls import sslctx_provider
+from pymodbus.client.async_tls import sslctx_provider
 from pymodbus.client.sync_tcp import ModbusTcpClient
-from pymodbus.transaction import ModbusTlsFramer
+from pymodbus.framer.tls_framer import ModbusTlsFramer
 from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
 
@@ -56,6 +56,11 @@ class ModbusTlsClient(ModbusTcpClient):
         self.keyfile = keyfile
         self.password = password
         self.server_hostname = server_hostname
+
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.connect()
 
     def connect(self):
         """Connect to the modbus tls server."""

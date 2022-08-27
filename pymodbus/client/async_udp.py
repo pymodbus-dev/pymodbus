@@ -5,9 +5,8 @@ import functools
 import socket
 import typing
 
-from pymodbus.client.base import ModbusBaseClient
-from pymodbus.transaction import ModbusSocketFramer
-from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
 

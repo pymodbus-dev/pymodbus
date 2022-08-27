@@ -1,6 +1,7 @@
 """Base for all clients."""
 from __future__ import annotations
 from dataclasses import dataclass
+import socket
 import asyncio
 import logging
 
@@ -186,6 +187,15 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         return size
 
+    @classmethod
+    def _get_address_family(cls, address):
+        """Get the correct address family."""
+        try:
+            _ = socket.inet_pton(socket.AF_INET6, address)
+        except socket.error:  # not a valid ipv6 address
+            return socket.AF_INET
+        return socket.AF_INET6
+
     # ----------------------------------------------------------------------- #
     # The magic methods
     # ----------------------------------------------------------------------- #
@@ -195,6 +205,7 @@ class ModbusBaseClient(ModbusClientMixin):
         :returns: The current instance of the client
         :raises ConnectionException:
         """
+
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{self.__str__()}]")
         return self
@@ -279,7 +290,8 @@ class ModbusClientProtocol(
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Close connection."""
-        self.transport.close()
+        if self.transport:
+            self.transport.close()
         self._connected = False
 
     def connection_lost(self, reason):

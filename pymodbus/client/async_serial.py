@@ -4,10 +4,9 @@ import logging
 
 from serial_asyncio import create_serial_connection
 
-from pymodbus.client.base import ModbusClientProtocol
 from pymodbus.framer import ModbusFramer
-from pymodbus.transaction import ModbusRtuFramer
-from pymodbus.client.base import ModbusBaseClient
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
 
 _logger = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop connection."""
-        if self._connected and self.protocol and self.protocol.transport:
+        if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
 
     def _create_protocol(self):
@@ -77,7 +76,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         return protocol
 
     @property
-    def _connected(self):
+    def connected(self):
         """Connect internal."""
         return self._connected_event.is_set()
 
@@ -108,7 +107,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""
         _logger.info("Serial connected.")
-        if not self._connected:
+        if not self.connected:
             self._connected_event.set()
             self.protocol = protocol
         else:
@@ -116,7 +115,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
-        if self._connected:
+        if self.connected:
             _logger.info("Serial lost connection.")
             if protocol is not self.protocol:
                 _logger.error(

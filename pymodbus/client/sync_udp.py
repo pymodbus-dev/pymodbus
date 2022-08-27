@@ -5,7 +5,7 @@ import typing
 
 from pymodbus.exceptions import ConnectionException
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.transaction import ModbusSocketFramer
+from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
 
@@ -56,14 +56,10 @@ class ModbusUdpClient(ModbusBaseClient):
 
         self.socket = None
 
-    @classmethod
-    def _get_address_family(cls, address):
-        """Get the correct address family."""
-        try:
-            _ = socket.inet_pton(socket.AF_INET6, address)
-        except socket.error:  # not a valid ipv6 address
-            return socket.AF_INET
-        return socket.AF_INET6
+    @property
+    def connected(self):
+        """Connect internal."""
+        return self.connect()
 
     def connect(self):
         """Connect to the modbus tcp server.

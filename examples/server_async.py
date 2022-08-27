@@ -31,6 +31,14 @@ import argparse
 import asyncio
 import logging
 
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+    ModbusSparseDataBlock,
+)
+from pymodbus.device import ModbusDeviceIdentification
+
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
@@ -47,13 +55,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.datastore import (
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-    ModbusSlaveContext,
-    ModbusSparseDataBlock,
-)
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.version import version
 
 

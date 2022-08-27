@@ -28,7 +28,10 @@ For these to work, you must have `cffi` and `libmodbus-dev` installed:
 # -------------------------------------------------------------------------- #
 from cffi import FFI  # pylint: disable=import-error
 
-from pymodbus.bit_read_message import ReadCoilsResponse, ReadDiscreteInputsResponse
+from pymodbus.bit_read_message import (
+    ReadCoilsResponse,
+    ReadDiscreteInputsResponse,
+)
 from pymodbus.bit_write_message import (
     WriteMultipleCoilsResponse,
     WriteSingleCoilResponse,
@@ -45,6 +48,7 @@ from pymodbus.register_write_message import (
     WriteMultipleRegistersResponse,
     WriteSingleRegisterResponse,
 )
+
 
 # -------------------------------------------------------------------------- #
 # import pymodbus libraries

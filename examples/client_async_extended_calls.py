@@ -52,6 +52,7 @@ from pymodbus.other_message import (
     ReportSlaveIdRequest,
 )
 
+
 UNIT = 0x01
 
 

@@ -22,6 +22,7 @@ from pymodbus.factory import ClientDecoder
 # from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer
 from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 
+
 # from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
 # --------------------------------------------------------------------------- #

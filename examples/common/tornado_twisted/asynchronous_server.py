@@ -24,6 +24,7 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.version import version
 
+
 # from pymodbus.transaction import (
 #    ModbusRtuFramer,
 #    ModbusAsciiFramer,

@@ -5,13 +5,15 @@ This is a simple example of writing a asynchronous modbus TCP over TLS client
 that uses Python builtin module ssl - TLS/SSL wrapper for socket objects for
 the TLS feature and asyncio.
 """
+import asyncio
+
 # -------------------------------------------------------------------------- #
 # import necessary libraries
 # -------------------------------------------------------------------------- #
 import ssl
-import asyncio
 
 from pymodbus.client import AsyncModbusTlsClient
+
 
 # -------------------------------------------------------------------------- #
 # the TLS detail security can be set in SSLContext which is the context here

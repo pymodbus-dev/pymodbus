@@ -25,6 +25,7 @@ import logging
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
 
+
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #

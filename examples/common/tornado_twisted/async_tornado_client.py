@@ -12,7 +12,10 @@ from tornado.ioloop import IOLoop
 from pymodbus.client.asynchronous import schedulers
 
 # from pymodbus.client.asynchronous.udp import AsyncModbusUDPClient as ModbusClient
-from pymodbus.client.asynchronous.tcp import AsyncModbusTCPClient as ModbusClient
+from pymodbus.client.asynchronous.tcp import (
+    AsyncModbusTCPClient as ModbusClient,
+)
+
 
 # ---------------------------------------------------------------------------#
 # choose the requested modbus protocol

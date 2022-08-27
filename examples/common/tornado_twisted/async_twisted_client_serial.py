@@ -12,6 +12,7 @@ from pymodbus.client.asynchronous import schedulers
 from pymodbus.client.asynchronous.serial import AsyncModbusSerialClient
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 
+
 log = logging.getLogger("pymodbus")
 log.setLevel(logging.DEBUG)
 

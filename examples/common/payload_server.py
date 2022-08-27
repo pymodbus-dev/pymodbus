@@ -21,6 +21,7 @@ from pymodbus.server.async_io import StartTcpServer
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
 
+
 # set logging level for library.
 logging.getLogger().setLevel(logging.DEBUG)
 

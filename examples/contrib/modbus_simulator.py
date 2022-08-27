@@ -11,6 +11,7 @@ import pickle  # nosec
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.server.async_io import StartTcpServer
 
+
 # -------------------------------------------------------------------------- #
 # Logging
 # -------------------------------------------------------------------------- #

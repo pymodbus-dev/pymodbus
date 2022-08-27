@@ -57,6 +57,10 @@ Steps:
 """
 import logging
 
+from .custom_message import (  # pylint: disable=relative-beyond-top-level
+    CustomModbusRequest,
+)
+
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -65,10 +69,6 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.version import version
-
-from .custom_message import (  # pylint: disable=relative-beyond-top-level
-    CustomModbusRequest,
-)
 
 
 # --------------------------------------------------------------------------- #

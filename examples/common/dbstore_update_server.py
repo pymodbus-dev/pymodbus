@@ -13,9 +13,9 @@ This can also be done with a python thread::
     thread = Thread(target=updating_writer, args=(context,))
     thread.start()
 """
+import asyncio
 import logging
 import random
-import asyncio
 
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
@@ -26,6 +26,7 @@ from pymodbus.server.async_io import StartTcpServer
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
+
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 

@@ -17,6 +17,7 @@ from time import time
 
 from pymodbus.client import ModbusTcpClient
 
+
 try:
     from multiprocessing import Process as mWorker, log_to_stderr
 except ImportError:

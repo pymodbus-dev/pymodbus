@@ -55,6 +55,7 @@ from tokenize import generate_tokens
 
 from pymodbus.datastore.context import ModbusSlaveContext
 
+
 # --------------------------------------------------------------------------- #
 # raw mapping input parsers
 # --------------------------------------------------------------------------- #

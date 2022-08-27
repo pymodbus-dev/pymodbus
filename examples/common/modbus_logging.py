@@ -3,6 +3,7 @@
 import logging
 import logging.handlers as Handlers
 
+
 if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # This will simply send everything logged to console

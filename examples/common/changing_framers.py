@@ -20,6 +20,7 @@ import logging
 from pymodbus.client import ModbusTcpClient as ModbusClient
 from pymodbus.transaction import ModbusSocketFramer as ModbusFramer
 
+
 # from pymodbus.transaction import ModbusRtuFramer as ModbusFramer
 # from pymodbus.transaction import ModbusBinaryFramer as ModbusFramer
 # from pymodbus.transaction import ModbusAsciiFramer as ModbusFramer

@@ -9,7 +9,9 @@ from optparse import OptionParser
 import pickle  # nosec
 
 from twisted.internet import reactor, serialport  # pylint: disable=import-error
-from twisted.internet.protocol import ClientFactory  # pylint: disable=import-error
+from twisted.internet.protocol import (
+    ClientFactory,  # pylint: disable=import-error
+)
 
 from pymodbus.client.asynchronous.twisted import ModbusClientProtocol
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext
@@ -22,6 +24,7 @@ from pymodbus.factory import ClientDecoder
 # from pymodbus.transaction import ModbusAsciiFramer
 # from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.transaction import ModbusSocketFramer
+
 
 # -------------------------------------------------------------------------- #
 # Configure the client logging

@@ -15,7 +15,11 @@ import itertools
 # -------------------------------------------------------------------------- #
 import logging
 import multiprocessing
-from multiprocessing import Event as mEvent, Process as mProcess, Queue as mQueue
+from multiprocessing import (
+    Event as mEvent,
+    Process as mProcess,
+    Queue as mQueue,
+)
 from queue import Queue as qQueue
 import threading
 from threading import Event, Thread
@@ -24,6 +28,7 @@ from threading import Event, Thread
 # import necessary modbus libraries
 # -------------------------------------------------------------------------- #
 from pymodbus.client.mixin import ModbusClientMixin
+
 
 # -------------------------------------------------------------------------- #
 # configure the client logging

@@ -18,6 +18,7 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 from pymodbus.mei_message import ReadDeviceInformationRequest
 
+
 # from pymodbus.client import ModbusUdpClient as ModbusClient
 # from pymodbus.client import ModbusSerialClient as ModbusClient
 

@@ -10,6 +10,7 @@ import asyncio
 
 from examples.client_async import _logger, run_client, setup_client
 
+
 SLAVE = 0x01
 
 

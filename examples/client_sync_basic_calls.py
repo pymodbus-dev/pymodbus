@@ -8,6 +8,7 @@ The corresponding server must be started before e.g. as:
 """
 from examples.client_sync import _logger, run_client, setup_client
 
+
 SLAVE = 0x01
 
 

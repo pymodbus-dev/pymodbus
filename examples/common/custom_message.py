@@ -20,6 +20,7 @@ from pymodbus.client import ModbusTcpClient as ModbusClient
 # --------------------------------------------------------------------------- #
 from pymodbus.pdu import ModbusExceptions, ModbusRequest, ModbusResponse
 
+
 # --------------------------------------------------------------------------- #
 # configure the client logging
 # --------------------------------------------------------------------------- #

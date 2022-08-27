@@ -9,8 +9,8 @@ a python thread::
     from threading import Thread
     Thread(target=updating_writer, args=(context,)).start()
 """
-import logging
 import asyncio
+import logging
 
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -20,6 +20,7 @@ from pymodbus.datastore import (
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async_io import StartTcpServer
 from pymodbus.version import version
+
 
 # --------------------------------------------------------------------------- #
 # configure the service logging

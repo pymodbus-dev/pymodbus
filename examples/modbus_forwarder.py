@@ -14,9 +14,9 @@ import argparse
 import logging
 
 from pymodbus.client import ModbusTcpClient
-from pymodbus.server.sync import StartTcpServer
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
+from pymodbus.server.sync import StartTcpServer
 
 
 def run_forwarder():

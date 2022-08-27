@@ -11,6 +11,7 @@ from pymodbus.device import (
 )
 from pymodbus.events import ModbusEvent, RemoteReceiveEvent
 
+
 # ---------------------------------------------------------------------------#
 #  Fixture
 # ---------------------------------------------------------------------------#

@@ -12,6 +12,7 @@ from pymodbus.utilities import (
     unpack_bitstring,
 )
 
+
 _test_master = {4: "d"}
 
 

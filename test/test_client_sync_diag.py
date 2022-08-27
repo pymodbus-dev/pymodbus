@@ -2,9 +2,9 @@
 """Test client sync diag."""
 from itertools import count
 import socket
+
 import unittest
 from unittest.mock import MagicMock, patch
-
 from test.test_client_sync import mockSocket
 
 from pymodbus.client.sync_diag import ModbusTcpDiagClient, get_client
@@ -14,6 +14,8 @@ from pymodbus.exceptions import ConnectionException
 # ---------------------------------------------------------------------------#
 # Fixture
 # ---------------------------------------------------------------------------#
+
+
 class SynchronousDiagnosticClientTest(unittest.TestCase):
     """Unittest for the pymodbus.client.sync_diag module.
 

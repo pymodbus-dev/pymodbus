@@ -1,26 +1,27 @@
 """Test client sync."""
-import socket
 import asyncio
+import socket
 import ssl
+
+from test.conftest import return_as_coroutine, run_coroutine
 from unittest import mock
-from test.conftest import run_coroutine, return_as_coroutine
 import pytest
 
+import pymodbus.bit_read_message as pdu_bit_read
+import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.client as lib_client
+from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.mixin import ModbusClientMixin
+from pymodbus.constants import Defaults
+import pymodbus.diag_message as pdu_diag
+from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-from pymodbus.constants import Defaults
-from pymodbus.client.mixin import ModbusClientMixin
-from pymodbus.client.base import ModbusClientProtocol, ModbusBaseClient
-import pymodbus.bit_read_message as pdu_bit_read
-import pymodbus.bit_write_message as pdu_bit_write
+import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
-import pymodbus.other_message as pdu_other_msg
-import pymodbus.diag_message as pdu_diag
-from pymodbus.exceptions import NotImplementedException, ConnectionException
 
 
 @pytest.mark.parametrize(

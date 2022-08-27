@@ -2,10 +2,18 @@
 pymodbus\.client
 ================
 
-Pymodbus offers clients with different transport protocols in 2 versions:
+Pymodbus offers clients with transport protocols for
 
-- synchronous,
-- asynchronous (based on asyncio).
+- *Serial* (RS-485) typically using a dongle
+- *TCP*
+- *TLS*
+- *UDP*
+- possibility to add a custom transport protocol
+
+communication in 2 versions:
+
+- :mod:`synchronous client`,
+- :mod:`asynchronous client` using asyncio.
 
 Using pymodbus client to set/get information from a device (server)
 is done in a few simple steps, like the following synchronous example::
@@ -23,7 +31,7 @@ is done in a few simple steps, like the following synchronous example::
     # disconnect device
     client.close()
 
-or asynchronous example::
+and a asynchronous example::
 
     # create client object
     async_client = AsyncModbusSerial("/dev/tty")
@@ -38,18 +46,11 @@ or asynchronous example::
     # disconnect device
     await async_client.close()
 
-Pymodbus offers Serial/TCP/TLS/UDP as transport protocols, with the option to add
-custom protocols. Each transport protocol is implemented as
-a :mod:`synchronous client` and a :mod:`asynchronous client`
-
-Large parts of the actual implementation are shared between the different classes,
-to ensure a higher stability and more efficient maintenance.
+Large parts of the implementation are shared between the different classes,
+to ensure high stability and efficient maintenance.
 
 Client setup.
 -------------
-
-Common parameters/methods.
-~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: pymodbus.client.base.ModbusBaseClient
     :members:
@@ -89,9 +90,7 @@ UDP transport.
 Client device calls.
 --------------------
 
-Pymodbus makes a all standard modbus requests/responses available as simple calls.
-
-All calls are available as synchronous and asynchronous (asyncio based).
+Pymodbus makes all standard modbus requests/responses available as simple calls.
 
 Using Modbus<transport>Client.register() custom messagees can be added to pymodbus,
 and handled automatically.

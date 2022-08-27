@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Test register read messages."""
+from test.conftest import FakeList, MockContext
 import unittest
 
-from test.conftest import FakeList, MockContext
+from pymodbus.pdu import ModbusExceptions
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,
@@ -13,7 +14,7 @@ from pymodbus.register_read_message import (
     ReadWriteMultipleRegistersRequest,
     ReadWriteMultipleRegistersResponse,
 )
-from pymodbus.pdu import ModbusExceptions
+
 
 TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
 

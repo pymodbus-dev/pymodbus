@@ -2,9 +2,11 @@
 """Test client sync."""
 from itertools import count
 import ssl
+
+from test.conftest import mockSocket
 import unittest
 from unittest.mock import MagicMock, Mock, patch
-from test.conftest import mockSocket
+
 import serial
 
 from pymodbus.client import (
@@ -27,6 +29,8 @@ from pymodbus.transaction import (
 # ---------------------------------------------------------------------------#
 # Fixture
 # ---------------------------------------------------------------------------#
+
+
 class SynchronousClientTest(
     unittest.TestCase
 ):  # pylint: disable=too-many-public-methods

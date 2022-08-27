@@ -13,6 +13,7 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
+
 # ---------------------------------------------------------------------------#
 #  Fixture
 # ---------------------------------------------------------------------------#

@@ -4,13 +4,14 @@ from unittest.mock import Mock, patch
 import pytest
 
 from pymodbus.bit_read_message import ReadCoilsRequest
+from pymodbus.client import ModbusBaseClient
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState
-from pymodbus.client import ModbusBaseClient
+
 
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"
 

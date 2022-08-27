@@ -1,6 +1,6 @@
 """Configure pytest."""
-import platform
 import functools
+import platform
 
 from pkg_resources import parse_version
 import pytest

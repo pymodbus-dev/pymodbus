@@ -1,11 +1,35 @@
 #!/usr/bin/env python3
 """Test client async."""
-import logging
 import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass
+import logging
 import platform
+
 import pytest
+
+from examples.client_async import (
+    run_client as client_async,
+    setup_client as client_setup_async,
+)
+from examples.client_async_basic_calls import (
+    demonstrate_calls as demo_async_basic,
+)
+from examples.client_async_extended_calls import (
+    demonstrate_calls as demo_async_extended,
+)
+from examples.client_sync import (
+    run_client as client_sync,
+    setup_client as client_setup_sync,
+)
+from examples.client_sync_basic_calls import (
+    demonstrate_calls as demo_sync_basic,
+)
+from examples.client_sync_extended_calls import (
+    demonstrate_calls as demo_sync_extended,
+)
+from examples.server_async import run_server as server_async
+from examples.server_sync import run_server as server_sync
 
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -14,21 +38,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-
-from examples.server_sync import run_server as server_sync
-from examples.server_async import run_server as server_async
-from examples.client_sync import (
-    run_client as client_sync,
-    setup_client as client_setup_sync,
-)
-from examples.client_async import (
-    run_client as client_async,
-    setup_client as client_setup_async,
-)
-from examples.client_sync_basic_calls import demonstrate_calls as demo_sync_basic
-from examples.client_sync_extended_calls import demonstrate_calls as demo_sync_extended
-from examples.client_async_basic_calls import demonstrate_calls as demo_async_basic
-from examples.client_async_extended_calls import demonstrate_calls as demo_async_extended
 
 
 _logger = logging.getLogger()

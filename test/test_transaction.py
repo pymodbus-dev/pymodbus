@@ -7,7 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pymodbus.exceptions import InvalidMessageReceivedException, ModbusIOException
+from pymodbus.exceptions import (
+    InvalidMessageReceivedException,
+    ModbusIOException,
+)
 from pymodbus.factory import ServerDecoder
 from pymodbus.pdu import ModbusRequest
 from pymodbus.transaction import (
@@ -20,6 +23,7 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
     ModbusTransactionManager,
 )
+
 
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 

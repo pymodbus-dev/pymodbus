@@ -58,7 +58,10 @@ class ModbusUdpClient(ModbusBaseClient):
 
     @property
     def connected(self):
-        """Connect internal."""
+        """Connect internal.
+
+        :meta private:
+        """
         return self.connect()
 
     def connect(self):

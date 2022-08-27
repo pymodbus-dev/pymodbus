@@ -25,6 +25,8 @@ _logger = logging.getLogger(__name__)
 class ModbusBaseClient(ModbusClientMixin):
     """**ModbusBaseClient**
 
+    **Parameters common to all clients**:
+
     :param framer: (optional) Modbus Framer class.
     :param timeout: (optional) Timeout for a request.
     :param retries: (optional) Max number of retries pr request.
@@ -34,6 +36,10 @@ class ModbusBaseClient(ModbusClientMixin):
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
     :param reconnect_delay: (optional) Delay in milliseconds before reconnecting.
     :param kwargs: (optional) Experimental parameters.
+
+    .. tip::
+        Common parameters and all external methods for all clients are documented here,
+        and not repeated with each client.
 
     .. tip::
         **reconnect_delay** doubles automatically with each unsuccessful connect.
@@ -57,10 +63,8 @@ class ModbusBaseClient(ModbusClientMixin):
             rr = client.read_coils(0x01)
             client.close()
 
-    .. tip::
-        Common parameters and all external methods for all clients are documented here,
-        and not repeated with each client, this is in order to lower the maintenance burden and the risk
-        of the documentation being inaccurate.
+
+    **Application methods, common to all clients**:
     """
 
     @dataclass
@@ -115,31 +119,31 @@ class ModbusBaseClient(ModbusClientMixin):
     # Client external interface
     # ----------------------------------------------------------------------- #
     def register(self, custom_response_class: ModbusResponse) -> None:
-        """Register a custom response class with the decoder (**sync only**).
+        """Register a custom response class with the decoder (call **sync**).
 
         :param custom_response_class: (optional) Modbus response class.
         :raises MessageRegisterException: Check exception text.
 
-        Applications use register() to add non-standard responses and have them
-        interpreted automatically.
+        Use register() to add non-standard responses (like e.g. a login prompt) and
+        have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
 
     def connect(self) -> None:
-        """Connect to the modbus remote host (**sync/async**).
+        """Connect to the modbus remote host (call **sync/async**).
 
-        :raises ModbusException:
+        :raises ModbusException: Different exceptions, check exception text.
 
         **Remark** Retries are handled automatically after first successful connect.
         """
         raise NotImplementedException
 
     def is_socket_open(self) -> bool:
-        """Return whether socket/serial is open or not (**sync only**)."""
+        """Return whether socket/serial is open or not (call **sync**)."""
         raise NotImplementedException
 
     def idle_time(self) -> int:
-        """Time before initiatiating next transaction (**sync only**).
+        """Time before initiatiating next transaction (call **sync**).
 
         Applications can call message functions without checking idle_time(),
         this is done automatically.
@@ -149,22 +153,22 @@ class ModbusBaseClient(ModbusClientMixin):
         return self.last_frame_end + self.silent_interval
 
     def reset_delay(self) -> None:
-        """Reset wait time before next reconnect to minimal period (**sync only**)."""
+        """Reset wait time before next reconnect to minimal period (call **sync**)."""
         self.delay_ms = self.params.reconnect_delay
 
     def execute(self, request: ModbusRequest = None) -> ModbusResponse:
-        """Execute request and get response (**sync/async**).
+        """Execute request and get response (call **sync/async**).
 
         :param request: The request to process
         :returns: The result of the request execution
-        :raises ConnectionException:
+        :raises ConnectionException: Check exception text.
         """
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 
     def close(self) -> None:
-        """Close the underlying socket connection (**sync/async**)."""
+        """Close the underlying socket connection (call **sync/async**)."""
         raise NotImplementedException
 
     # ----------------------------------------------------------------------- #

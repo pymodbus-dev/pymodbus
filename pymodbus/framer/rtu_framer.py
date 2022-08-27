@@ -4,7 +4,10 @@ import logging
 import struct
 import time
 
-from pymodbus.exceptions import InvalidMessageReceivedException, ModbusIOException
+from pymodbus.exceptions import (
+    InvalidMessageReceivedException,
+    ModbusIOException,
+)
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.utilities import (
     ModbusTransactionState,
@@ -12,6 +15,7 @@ from pymodbus.utilities import (
     computeCRC,
     hexlify_packets,
 )
+
 
 # --------------------------------------------------------------------------- #
 # Logging

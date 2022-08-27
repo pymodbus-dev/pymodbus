@@ -24,6 +24,7 @@ from pymodbus.transaction import (
 )
 from pymodbus.utilities import hexlify_packets
 
+
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #

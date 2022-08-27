@@ -6,6 +6,7 @@ the pymodbus library.
 # pylint: disable=missing-type-doc
 from pymodbus.exceptions import NotImplementedException
 
+
 TEXT_METHOD = "Method not implemented by derived class"
 
 # --------------------------------------------------------------------------- #

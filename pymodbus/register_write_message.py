@@ -2,7 +2,11 @@
 # pylint: disable=missing-type-doc
 import struct
 
-from pymodbus.pdu import ModbusExceptions as merror, ModbusRequest, ModbusResponse
+from pymodbus.pdu import (
+    ModbusExceptions as merror,
+    ModbusRequest,
+    ModbusResponse,
+)
 
 
 class WriteSingleRegisterRequest(ModbusRequest):

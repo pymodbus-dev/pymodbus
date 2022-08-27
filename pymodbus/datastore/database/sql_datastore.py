@@ -10,6 +10,7 @@ import sqlalchemy.types as sqltypes
 
 from pymodbus.interfaces import IModbusSlaveContext
 
+
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #

@@ -4,9 +4,10 @@ import socket
 
 from pymodbus.client.async_tls import sslctx_provider
 from pymodbus.client.sync_tcp import ModbusTcpClient
-from pymodbus.framer.tls_framer import ModbusTlsFramer
-from pymodbus.framer import ModbusFramer
 from pymodbus.constants import Defaults
+from pymodbus.framer import ModbusFramer
+from pymodbus.framer.tls_framer import ModbusTlsFramer
+
 
 _logger = logging.getLogger(__name__)
 

@@ -4,11 +4,12 @@ import logging
 import ssl
 
 from pymodbus.client.async_tcp import AsyncModbusTcpClient
-from pymodbus.transaction import FifoTransactionManager
 from pymodbus.client.base import ModbusClientProtocol
+from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-from pymodbus.constants import Defaults
+from pymodbus.transaction import FifoTransactionManager
+
 
 _logger = logging.getLogger(__name__)
 

@@ -8,6 +8,7 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 
+
 _logger = logging.getLogger(__name__)
 
 LOG_MSGS = {

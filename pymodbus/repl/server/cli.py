@@ -10,6 +10,7 @@ from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.shortcuts.progress_bar import formatters
 from prompt_toolkit.styles import Style
 
+
 _logger = logging.getLogger(__name__)
 
 TITLE = r"""

@@ -2,11 +2,11 @@
 # pylint: disable=missing-type-doc
 import functools
 
-from pymodbus.constants import Defaults
 from pymodbus.client import (
     ModbusSerialClient as _ModbusSerialClient,
     ModbusTcpClient as _ModbusTcpClient,
 )
+from pymodbus.constants import Defaults
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
     ClearCountersRequest,

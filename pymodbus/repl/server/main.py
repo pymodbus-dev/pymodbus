@@ -1,13 +1,15 @@
 """Repl server main."""
 from __future__ import annotations
+
 import asyncio
+from enum import Enum
 import json
 import logging
-from typing import List
 from pathlib import Path
-from enum import Enum
+from typing import List
 
 import typer
+
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
@@ -16,6 +18,7 @@ from pymodbus.server.reactive.main import (
     DEFUALT_HANDLERS,
     ReactiveServer,
 )
+
 
 CANCELLED_ERROR = asyncio.exceptions.CancelledError
 

@@ -2,8 +2,9 @@
 # pylint: disable=anomalous-backslash-in-string
 # flake8: noqa: W605
 import logging
-import sys
 import pathlib
+import sys
+
 
 try:
     import click
@@ -27,17 +28,18 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
+from pymodbus.exceptions import ParameterException
 from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
 from pymodbus.repl.client.helper import CLIENT_ATTRIBUTES, Result
 from pymodbus.repl.client.mclient import ModbusSerialClient, ModbusTcpClient
-from pymodbus.version import version
-from pymodbus.exceptions import ParameterException
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
+from pymodbus.version import version
+
 
 _logger = logging.getLogger()
 

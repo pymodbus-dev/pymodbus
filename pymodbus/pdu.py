@@ -8,6 +8,7 @@ from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import rtuFrameSize
 
+
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #

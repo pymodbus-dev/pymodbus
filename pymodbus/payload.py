@@ -10,7 +10,12 @@ from struct import pack, unpack
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.interfaces import IPayloadBuilder
-from pymodbus.utilities import make_byte_string, pack_bitstring, unpack_bitstring
+from pymodbus.utilities import (
+    make_byte_string,
+    pack_bitstring,
+    unpack_bitstring,
+)
+
 
 # --------------------------------------------------------------------------- #
 # Logging

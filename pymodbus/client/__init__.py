@@ -1,4 +1,4 @@
-"""Initialize client.
+"""Client.
 
 import external classes, to make them easier to use:
 """

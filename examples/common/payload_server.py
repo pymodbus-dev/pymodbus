@@ -14,7 +14,7 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.payload import BinaryPayloadBuilder
-from pymodbus.server.async_io import StartTcpServer
+from pymodbus.server import StartAsyncTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the various server implementations
@@ -73,7 +73,7 @@ async def run_payload_server():
             "MajorMinorRevision": version.short(),
         }
     )
-    server = await StartTcpServer(
+    server = await StartAsyncTcpServer(
         context,
         identity=identity,
         address=("0.0.0.0", 5020),

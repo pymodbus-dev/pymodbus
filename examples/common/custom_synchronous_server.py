@@ -67,7 +67,7 @@ from pymodbus.datastore import (
     ModbusSlaveContext,
 )
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server import StartTcpServer
 from pymodbus.version import version
 
 

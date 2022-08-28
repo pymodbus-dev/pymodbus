@@ -16,10 +16,10 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.server.async_io import (
-    StartTcpServer,
-    StartTlsServer,
-    StartUdpServer,
+from pymodbus.server import (
+    StartAsyncTcpServer,
+    StartAsyncTlsServer,
+    StartAsyncUdpServer,
 )
 
 
@@ -173,11 +173,11 @@ class AsyncioServerTest(
         if do_ident:
             args["identity"] = self.identity
         if do_tls:
-            self.server = await StartTlsServer(**args)
+            self.server = await StartAsyncTlsServer(**args)
         elif do_udp:
-            self.server = await StartUdpServer(**args)
+            self.server = await StartAsyncUdpServer(**args)
         else:
-            self.server = await StartTcpServer(**args)
+            self.server = await StartAsyncTcpServer(**args)
         self.assertIsNotNone(self.server)
         if do_forever:
             self.task = asyncio.create_task(self.server.serve_forever())
@@ -306,7 +306,7 @@ class AsyncioServerTest(
             self.assertIsNotNone(self.server.sslctx)
 
     async def test_async_tls_server_serve_forever(self):
-        """Test StartTcpServer serve_forever() method"""
+        """Test StartAsyncTcpServer serve_forever() method"""
         with patch(
             "asyncio.base_events.Server.serve_forever", new_callable=AsyncMock
         ) as serve:
@@ -339,7 +339,7 @@ class AsyncioServerTest(
         self.assertFalse(self.server.protocol is None)
 
     async def test_async_udp_server_serve_forever_start(self):
-        """Test StartUdpServer serve_forever() method"""
+        """Test StartAsyncUdpServer serve_forever() method"""
         with patch(
             "asyncio.base_events.Server.serve_forever", new_callable=AsyncMock
         ) as serve:
@@ -348,7 +348,7 @@ class AsyncioServerTest(
             serve.assert_awaited()
 
     async def test_async_udp_server_serve_forever_close(self):
-        """Test StartUdpServer serve_forever() method"""
+        """Test StarAsyncUdpServer serve_forever() method"""
         await self.start_server(do_udp=True)
         self.assertTrue(asyncio.isfuture(self.server.on_connection_terminated))
         self.assertFalse(self.server.on_connection_terminated.done())

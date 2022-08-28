@@ -18,7 +18,7 @@ from pymodbus.datastore import (
     ModbusSlaveContext,
 )
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async_io import StartTcpServer
+from pymodbus.server import StartAsyncTcpServer
 from pymodbus.version import version
 
 
@@ -85,7 +85,7 @@ async def run_updating_server():
     # run the server you want
     # ----------------------------------------------------------------------- #
     log.debug("Start server")
-    await StartTcpServer(
+    await StartAsyncTcpServer(
         context, identity=identity, address=("localhost", 5020), defer_start=False
     )
     log.debug("Done")

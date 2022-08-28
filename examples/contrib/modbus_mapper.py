@@ -38,7 +38,7 @@ populated slave contexts that can be run behind a modbus server::
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import modbus_context_decoder
-    from pymodbus.client.ssync import StartTcpServer
+    from pymodbus.server import StartTcpServer
     from pymodbus.datastore.context import ModbusServerContext
 
     template = ["address", "value", "function", "name", "description"]

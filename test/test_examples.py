@@ -29,7 +29,6 @@ from examples.client_sync_extended_calls import (
     demonstrate_calls as demo_sync_extended,
 )
 from examples.server_async import run_server as server_async
-from examples.server_sync import run_server as server_sync
 
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -80,14 +79,7 @@ class Commandline:
     ],
 )
 @pytest.mark.parametrize(
-    "test_server, test_client",
-    [
-        (True, True),
-        (True, False),
-        (False, True),
-        (False, False),
-    ],
-)
+    "test_client", [True, False])
 @pytest.mark.parametrize(
     "test_comm, test_framer",
     [
@@ -104,8 +96,8 @@ class Commandline:
 @pytest.mark.skipif(
     platform.python_implementation() == "PyPy", reason="Some strange things happens."
 )
-async def test_client_server(
-    test_type, test_server, test_client, test_comm, test_framer
+async def test_async_client_server(
+    test_type, test_client, test_comm, test_framer
 ):  # pylint: disable=too-complex
     """Test client/server examples."""
 
@@ -145,15 +137,11 @@ async def test_client_server(
     client = None
     not_ok_exc = None
     try:
-        if test_server:
-            server = server_sync(args=args)
-            task_sync = loop.run_in_executor(None, server.serve_forever)
-        else:
-            server = await server_async(args=args)
-            task = asyncio.create_task(server.serve_forever())
-            task.add_done_callback(handle_task)
-            assert not task.cancelled()
-            await asyncio.wait_for(server.serving, timeout=0.1)
+        server = await server_async(args=args)
+        task = asyncio.create_task(server.serve_forever())
+        task.add_done_callback(handle_task)
+        assert not task.cancelled()
+        await asyncio.wait_for(server.serving, timeout=0.1)
         await asyncio.sleep(0.1)
 
         if test_client:
@@ -173,10 +161,7 @@ async def test_client_server(
         not_ok_exc = f"Server/Client raised exception <<{exc}>>"
 
     if server:
-        if test_server:
-            server.shutdown()
-        else:
-            await server.shutdown()
+        await server.shutdown()
     if task is not None:
         await asyncio.sleep(0.1)
         if not task.cancelled():
@@ -204,4 +189,4 @@ async def test_client_server(
 
 
 if __name__ == "__main__":
-    asyncio.run(test_client_server("basic", True, True, "tcp", ModbusSocketFramer))
+    asyncio.run(test_async_client_server("basic", True, "tcp", ModbusSocketFramer))

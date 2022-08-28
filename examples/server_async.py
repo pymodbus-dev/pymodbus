@@ -42,11 +42,11 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.server.async_io import (
-    StartSerialServer,
-    StartTcpServer,
-    StartTlsServer,
-    StartUdpServer,
+from pymodbus.server import (
+    StartAsyncSerialServer,
+    StartAsyncTcpServer,
+    StartAsyncTlsServer,
+    StartAsyncUdpServer,
 )
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -151,7 +151,7 @@ async def run_server(args=None):
 
     _logger.info("### start server")
     if server_id == "tcp":
-        server = await StartTcpServer(
+        server = await StartAsyncTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # TBD host=
@@ -168,7 +168,7 @@ async def run_server(args=None):
             defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "udp":
-        server = await StartUdpServer(
+        server = await StartAsyncUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             address=("127.0.0.1", port),  # listen address
@@ -185,7 +185,7 @@ async def run_server(args=None):
     elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
         #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
-        server = await StartSerialServer(
+        server = await StartAsyncSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # timeout=0.005,  # waiting time for request to complete
@@ -204,7 +204,7 @@ async def run_server(args=None):
             defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "tls":
-        server = await StartTlsServer(
+        server = await StartAsyncTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port

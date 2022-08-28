@@ -41,7 +41,7 @@ from pymodbus.device import ModbusDeviceIdentification
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from pymodbus.server.sync import (
+from pymodbus.server import (
     StartSerialServer,
     StartTcpServer,
     StartTlsServer,

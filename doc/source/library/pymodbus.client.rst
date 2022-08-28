@@ -59,31 +59,31 @@ Client setup.
 Serial RS-485 transport.
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: pymodbus.client.async_serial.AsyncModbusSerialClient
+.. autoclass:: pymodbus.client.serial.AsyncModbusSerialClient
 
-.. autoclass:: pymodbus.client.sync_serial.ModbusSerialClient
+.. autoclass:: pymodbus.client.serial.ModbusSerialClient
 
 TCP transport.
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pymodbus.client.async_tcp.AsyncModbusTcpClient
+.. autoclass:: pymodbus.client.tcp.AsyncModbusTcpClient
 
-.. autoclass:: pymodbus.client.sync_tcp.ModbusTcpClient
+.. autoclass:: pymodbus.client.tcp.ModbusTcpClient
 
 TLS transport.
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pymodbus.client.async_tls.AsyncModbusTlsClient
+.. autoclass:: pymodbus.client.tls.AsyncModbusTlsClient
 
-.. autoclass:: pymodbus.client.sync_tls.ModbusTlsClient
+.. autoclass:: pymodbus.client.tls.ModbusTlsClient
 
 UDP transport.
 ~~~~~~~~~~~~~~
 
-.. autoclass:: pymodbus.client.async_udp.AsyncModbusUdpClient
+.. autoclass:: pymodbus.client.udp.AsyncModbusUdpClient
     :members:
 
-.. autoclass:: pymodbus.client.sync_udp.ModbusUdpClient
+.. autoclass:: pymodbus.client.udp.ModbusUdpClient
     :members:
 
 

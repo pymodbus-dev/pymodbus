@@ -15,7 +15,7 @@ from pymodbus.client import (
     ModbusTlsClient,
     ModbusUdpClient,
 )
-from pymodbus.client.async_tls import sslctx_provider
+from pymodbus.client.tls import sslctx_provider
 from pymodbus.exceptions import ConnectionException
 from pymodbus.transaction import (
     ModbusAsciiFramer,
@@ -40,7 +40,7 @@ class SynchronousClientTest(
     # Test UDP Client
     # -----------------------------------------------------------------------#
 
-    def test_basic_sync_udp_client(self):
+    def test_basic_syn_udp_client(self):
         """Test the basic methods for the udp sync client"""
         # receive/send
         client = ModbusUdpClient("127.0.0.1")
@@ -102,13 +102,13 @@ class SynchronousClientTest(
     # Test TCP Client
     # -----------------------------------------------------------------------#
 
-    def test_sync_tcp_client_instantiation(self):
+    def test_syn_tcp_client_instantiation(self):
         """Test sync tcp client."""
         client = ModbusTcpClient("127.0.0.1")
         self.assertNotEqual(client, None)
 
-    @patch("pymodbus.client.sync_tcp.select")
-    def test_basic_sync_tcp_client(self, mock_select):
+    @patch("pymodbus.client.tcp.select")
+    def test_basic_syn_tcp_client(self, mock_select):
         """Test the basic methods for the tcp sync client"""
         # receive/send
         mock_select.select.return_value = [True]
@@ -145,8 +145,8 @@ class SynchronousClientTest(
         self.assertEqual(0, client.send(None))
         self.assertEqual(4, client.send("1234"))
 
-    @patch("pymodbus.client.sync_tcp.time")
-    @patch("pymodbus.client.sync_tcp.select")
+    @patch("pymodbus.client.tcp.time")
+    @patch("pymodbus.client.tcp.select")
     def test_tcp_client_recv(self, mock_select, mock_time):
         """Test the tcp client receive method"""
         mock_select.select.return_value = [True]
@@ -235,7 +235,7 @@ class SynchronousClientTest(
             sslctx_new = sslctx_provider(sslctx=sslctx_old)
             self.assertEqual(sslctx_new, sslctx_old)
 
-    def test_sync_tls_client_instantiation(self):
+    def test_syn_tls_client_instantiation(self):
         """Test sync tls client."""
         # default SSLContext
         client = ModbusTlsClient("127.0.0.1")
@@ -243,8 +243,8 @@ class SynchronousClientTest(
         self.assertIsInstance(client.framer, ModbusTlsFramer)
         self.assertTrue(client.sslctx)
 
-    @patch("pymodbus.client.sync_tcp.select")
-    def test_basic_sync_tls_client(self, mock_select):
+    @patch("pymodbus.client.tcp.select")
+    def test_basic_syn_tls_client(self, mock_select):
         """Test the basic methods for the tls sync client"""
         # receive/send
         mock_select.select.return_value = [True]
@@ -281,8 +281,8 @@ class SynchronousClientTest(
         self.assertEqual(0, client.send(None))
         self.assertEqual(4, client.send("1234"))
 
-    @patch("pymodbus.client.sync_tcp.time")
-    @patch("pymodbus.client.sync_tcp.select")
+    @patch("pymodbus.client.tcp.time")
+    @patch("pymodbus.client.tcp.select")
     def test_tls_client_recv(self, mock_select, mock_time):
         """Test the tls client receive method"""
         mock_select.select.return_value = [True]

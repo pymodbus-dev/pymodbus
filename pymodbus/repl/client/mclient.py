@@ -587,14 +587,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current Stop bits
         """
-        return self.stopbits
+        return self.params.stopbits
 
     def set_stopbits(self, value):
         """Set stop bit.
 
         :param value: Possible values (1, 1.5, 2)
         """
-        self.stopbits = float(value)
+        self.params.stopbits = float(value)
         if self.is_socket_open():
             self.close()
 
@@ -603,7 +603,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current bytesize
         """
-        return self.bytesize
+        return self.params.bytesize
 
     def set_bytesize(self, value):
         """Set Byte size.
@@ -611,7 +611,7 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :param value: Possible values (5, 6, 7, 8)
 
         """
-        self.bytesize = int(value)
+        self.params.bytesize = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -620,14 +620,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current parity setting
         """
-        return self.parity
+        return self.params.parity
 
     def set_parity(self, value):
         """Set parity Setter.
 
         :param value: Possible values ("N", "E", "O", "M", "S")
         """
-        self.parity = value
+        self.params.parity = value
         if self.is_socket_open():
             self.close()
 
@@ -636,14 +636,14 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
 
         :return: Current baudrate
         """
-        return self.baudrate
+        return self.params.baudrate
 
     def set_baudrate(self, value):
         """Set baudrate setter.
 
         :param value: <supported baudrate>
         """
-        self.baudrate = int(value)
+        self.params.baudrate = int(value)
         if self.is_socket_open():
             self.close()
 
@@ -669,11 +669,11 @@ class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
         :return: Current Serial settings as dict.
         """
         return {
-            "baudrate": self.baudrate,
+            "baudrate": self.params.baudrate,
             "port": self.params.port,
-            "parity": self.parity,
-            "stopbits": self.stopbits,
-            "bytesize": self.bytesize,
+            "parity": self.params.parity,
+            "stopbits": self.params.stopbits,
+            "bytesize": self.params.bytesize,
             "read timeout": self.params.timeout,
             "t1.5": self.inter_char_timeout,
             "t3.5": self.silent_interval,

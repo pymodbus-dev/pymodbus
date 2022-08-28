@@ -28,12 +28,12 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
     # Test TCP Diagnostic Client
     # -----------------------------------------------------------------------#
 
-    def test_sync_tcp_diag_client_instantiation(self):
+    def test_syn_tcp_diag_client_instantiation(self):
         """Test sync tcp diag client."""
         client = get_client()
         self.assertNotEqual(client, None)
 
-    def test_basic_sync_tcp_diag_client(self):
+    def test_basic_syn_tcp_diag_client(self):
         """Test the basic methods for the tcp sync diag client"""
         # connect/disconnect
         client = ModbusTcpDiagClient()
@@ -53,9 +53,9 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
             client = ModbusTcpDiagClient()
             self.assertFalse(client.connect())
 
-    @patch("pymodbus.client.sync_tcp.time")
+    @patch("pymodbus.client.tcp.time")
     @patch("pymodbus.client.sync_diag.time")
-    @patch("pymodbus.client.sync_tcp.select")
+    @patch("pymodbus.client.tcp.select")
     def test_tcp_diag_client_recv(self, mock_select, mock_diag_time, mock_time):
         """Test the tcp sync diag client receive method"""
         mock_select.select.return_value = [True]

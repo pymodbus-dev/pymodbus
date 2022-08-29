@@ -4,7 +4,6 @@ import asyncio
 from binascii import b2a_hex
 import logging
 import traceback
-import warnings
 import ssl
 
 import serial
@@ -29,6 +28,11 @@ from pymodbus.utilities import hexlify_packets
 # Logging
 # --------------------------------------------------------------------------- #
 _logger = logging.getLogger(__name__)
+
+# --------------------------------------------------------------------------- #
+# Allow access to server object, to e.g. make a shutdown
+# --------------------------------------------------------------------------- #
+ServerObject = None  # pylint: disable=invalid-name
 
 
 def sslctx_provider(
@@ -220,6 +224,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
                 self._log_exception()
+                self.running = False
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
@@ -415,22 +420,6 @@ class ModbusDisconnectedRequestHandler(
         self.transport.sendto(data, addr=addr)
 
 
-class ModbusServerFactory:  # pylint: disable=too-few-public-methods
-    """Build class for a modbus server.
-
-    This also holds the server datastore so that it is persisted between connections
-    """
-
-    def __init__(
-        self, store, framer=None, identity=None, **kwargs
-    ):  # pylint: disable=unused-argument
-        """Initialize."""
-        warnings.warn(
-            "deprecated API for asyncio.",
-            DeprecationWarning,
-        )
-
-
 class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     """Implement the modbus server protocol.
 
@@ -572,6 +561,8 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
         self.active_connections = {}
         if self.server is not None:
             self.server.close()
+            await self.server.wait_closed()
+            self.server = None
 
 
 class ModbusTlsServer(ModbusTcpServer):
@@ -738,11 +729,14 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
         """Close server."""
         if self.endpoint:
             self.endpoint.running = False
-        self.stop_serving.set_result(True)
+        if not self.stop_serving.done():
+            self.stop_serving.set_result(True)
         if self.endpoint is not None and self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()
         if self.protocol is not None:
             self.protocol.close()
+            # TBD await self.protocol.wait_closed()
+            self.protocol = None
 
 
 class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
@@ -857,6 +851,13 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 
         self._check_reconnect()
 
+    async def shutdown(self):
+        """Terminate server."""
+        if self.transport is not None:
+            self.transport.close()
+            self.transport = None
+            self.protocol = None
+
     def _check_reconnect(self):
         """Check reconnect."""
         txt = f"checking autoreconnect {self.auto_reconnect} {self.reconnecting_task}"
@@ -885,7 +886,7 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default
     identity=None,
     address=None,
     custom_functions=[],
-    defer_start=True,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a tcp modbus server.
@@ -901,15 +902,17 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
+    global ServerObject  # pylint: disable=global-statement
+
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server = ModbusTcpServer(context, framer, identity, address, **kwargs)
+    ServerObject = ModbusTcpServer(context, framer, identity, address, **kwargs)
 
     for func in custom_functions:
-        server.decoder.register(func)  # pragma: no cover
+        ServerObject.decoder.register(func)  # pragma: no cover
 
     if defer_start:
-        return server
-    await server.serve_forever()
+        return ServerObject
+    await ServerObject.serve_forever()
 
 
 async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
@@ -924,7 +927,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     allow_reuse_address=False,
     allow_reuse_port=False,
     custom_functions=[],
-    defer_start=True,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a tls modbus server.
@@ -948,8 +951,10 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
+    global ServerObject  # pylint: disable=global-statement
+
     framer = kwargs.pop("framer", ModbusTlsFramer)
-    server = ModbusTlsServer(
+    ServerObject = ModbusTlsServer(
         context,
         framer,
         identity,
@@ -965,11 +970,11 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     )
 
     for func in custom_functions:
-        server.decoder.register(func)  # pragma: no cover
+        ServerObject.decoder.register(func)  # pragma: no cover
 
     if defer_start:
-        return server
-    await server.serve_forever()
+        return ServerObject
+    await ServerObject.serve_forever()
 
 
 async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -977,7 +982,7 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default
     identity=None,
     address=None,
     custom_functions=[],
-    defer_start=True,
+    defer_start=False,
     **kwargs,
 ):
     """Start and run a udp modbus server.
@@ -992,15 +997,17 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default
             up without the ability to shut it off
     :param kwargs:
     """
+    global ServerObject  # pylint: disable=global-statement
+
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server = ModbusUdpServer(context, framer, identity, address, **kwargs)
+    ServerObject = ModbusUdpServer(context, framer, identity, address, **kwargs)
 
     for func in custom_functions:
-        server.decoder.register(func)  # pragma: no cover
+        ServerObject.decoder.register(func)  # pragma: no cover
 
     if defer_start:
-        return server
-    await server.serve_forever()
+        return ServerObject
+    await ServerObject.serve_forever()
 
 
 async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -1021,15 +1028,17 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
             up without the ability to shut it off
     :param kwargs: The rest
     """
+    global ServerObject  # pylint: disable=global-statement
+
     framer = kwargs.pop("framer", ModbusAsciiFramer)
-    server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
+    ServerObject = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     for func in custom_functions:
-        server.decoder.register(func)
+        ServerObject.decoder.register(func)
 
     if defer_start:
-        return server
-    await server.start()
-    await server.serve_forever()
+        return ServerObject
+    await ServerObject.start()
+    await ServerObject.serve_forever()
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name
@@ -1050,3 +1059,17 @@ def StartTlsServer(**kwargs):  # pylint: disable=invalid-name
 def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
     """Start and run a serial modbus server."""
     return asyncio.run(StartAsyncUdpServer(**kwargs))
+
+
+async def ServerAsyncStop():  # pylint: disable=invalid-name
+    """Terminate server."""
+    global ServerObject  # pylint: disable=global-statement,invalid-name
+
+    if ServerObject:
+        await ServerObject.shutdown()
+        ServerObject = None
+
+
+def ServerStop():  # pylint: disable=invalid-name
+    """Terminate server."""
+    asyncio.run(ServerAsyncStop())

@@ -6,13 +6,15 @@ This example uses client_sync.py to handle connection, and have the same options
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
-from examples.client_sync import _logger, run_client, setup_client
+import logging
+
+from examples.client_sync import run_sync_client, setup_sync_client
 
 
 SLAVE = 0x01
 
 
-def handle_coils(client):
+def _handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil")
     rr = client.read_coils(1, 1, slave=SLAVE)
@@ -56,7 +58,7 @@ def handle_coils(client):
     _logger.debug(txt)
 
 
-def handle_discrete_input(client):
+def _handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
     rr = client.read_discrete_inputs(0, 8, slave=SLAVE)
@@ -65,7 +67,7 @@ def handle_discrete_input(client):
     _logger.debug(txt)
 
 
-def handle_holding_registers(client):
+def _handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
     rq = client.write_register(1, 10, slave=SLAVE)
@@ -99,7 +101,7 @@ def handle_holding_registers(client):
     _logger.debug(txt)
 
 
-def handle_input_registers(client):
+def _handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
     rr = client.read_input_registers(1, 8, slave=SLAVE)
@@ -108,14 +110,22 @@ def handle_input_registers(client):
     _logger.debug(txt)
 
 
-def demonstrate_calls(client):
+def run_sync_basic_calls(client):
     """Demonstrate basic read/write calls."""
-    handle_coils(client)
-    handle_discrete_input(client)
-    handle_holding_registers(client)
-    handle_input_registers(client)
+    _handle_coils(client)
+    _handle_discrete_input(client)
+    _handle_holding_registers(client)
+    _handle_input_registers(client)
+
+
+# --------------------------------------------------------------------------- #
+# Extra code, to allow commandline parameters instead of changing the code
+# --------------------------------------------------------------------------- #
+FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+logging.basicConfig(format=FORMAT)
+_logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    testclient = setup_client()
-    run_client(testclient, modbus_calls=demonstrate_calls)
+    testclient = setup_sync_client()
+    run_sync_client(testclient, modbus_calls=run_sync_basic_calls)

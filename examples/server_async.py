@@ -58,13 +58,10 @@ from pymodbus.transaction import (
 from pymodbus.version import version
 
 
-def setup_server(args):
+def setup_async_server(args):
     """Run server setup."""
     if not args:
         args = get_commandline()
-        defer_start = False  # No function.
-    else:
-        defer_start = True  # Needed when running tests, otherwise no function.
 
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -140,23 +137,25 @@ def setup_server(args):
             "MajorMinorRevision": version.short(),
         }
     )
-    if args.comm != "serial":
+    if args.comm != "serial" and args.port:
         args.port = int(args.port)
-    return args.comm, args.port, store, identity, args.framer, defer_start
+    return args.comm, args.port, store, identity, args.framer
 
 
-async def run_server(args=None):
+async def run_async_server(args=None):
     """Run server."""
-    server_id, port, store, identity, framer, defer_start = setup_server(args)
+    server_id, port, store, identity, framer = setup_async_server(args)
 
-    _logger.info("### start server")
+    txt = f"### start ASYNC server on port {port}"
+    _logger.info(txt)
     if server_id == "tcp":
+        address = ("", port) if port else None
         server = await StartAsyncTcpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
             # TBD host=
             # TBD port=
-            address=("127.0.0.1", port),  # listen address
+            address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
             # handler=None,  # handler for each session
@@ -165,13 +164,14 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start,  # Only define server do not activate
+            # defer_start=False,  # Only define server do not activate
         )
     elif server_id == "udp":
+        address = ("127.0.0.1", port) if port else None
         server = await StartAsyncUdpServer(
             context=store,  # Data storage
             identity=identity,  # server identify
-            address=("127.0.0.1", port),  # listen address
+            address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=framer,  # The framer strategy to use
             # handler=None,  # handler for each session
@@ -180,7 +180,7 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start,  # Only define server do not activate
+            # defer_start=False,  # Only define server do not activate
         )
     elif server_id == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -201,16 +201,17 @@ async def run_server(args=None):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start,  # Only define server do not activate
+            # defer_start=False,  # Only define server do not activate
         )
     elif server_id == "tls":
+        address = ("", port) if port else None
         server = await StartAsyncTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port
             identity=identity,  # server identify
             # custom_functions=[],  # allow custom handling
-            address=("", 5020),  # listen address
+            address=address,  # listen address
             framer=framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
@@ -223,7 +224,7 @@ async def run_server(args=None):
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # TBD timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=defer_start,  # Only define server do not activate
+            defer_start=False,  # Only define server do not activate
         )
     return server
 
@@ -304,4 +305,4 @@ def get_commandline():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_server())
+    asyncio.run(run_async_server())

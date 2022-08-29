@@ -65,6 +65,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_bit_read.ReadCoilsRequest(address, count, slave, **kwargs)
         return self.execute(request)
 
@@ -83,6 +86,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_bit_read.ReadDiscreteInputsRequest(
             address, count, slave, **kwargs
         )
@@ -103,6 +109,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_reg_read.ReadHoldingRegistersRequest(
             address, count, slave, **kwargs
         )
@@ -123,6 +132,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_reg_read.ReadInputRegistersRequest(
             address, count, slave, **kwargs
         )
@@ -139,6 +151,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_bit_write.WriteSingleCoilRequest(address, value, slave, **kwargs)
         return self.execute(request)
 
@@ -157,6 +172,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_req_write.WriteSingleRegisterRequest(
             address, value, slave, **kwargs
         )
@@ -171,6 +189,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -184,6 +205,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs)
         return self.execute(request)
 
@@ -197,6 +221,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.RestartCommunicationsOptionRequest(toggle, slave, **kwargs)
         return self.execute(request)
 
@@ -209,6 +236,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -221,6 +251,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -233,6 +266,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -245,6 +281,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ClearCountersRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -257,6 +296,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -269,6 +311,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnBusCommunicationErrorCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -281,6 +326,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnBusExceptionErrorCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -293,6 +341,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -305,6 +356,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -317,6 +371,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -329,6 +386,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -341,6 +401,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -353,6 +416,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -365,6 +431,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.ClearOverrunCountRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -377,6 +446,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_diag.GetClearModbusPlusRequest(slave, **kwargs)
         return self.execute(request)
 
@@ -399,6 +471,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_bit_write.WriteMultipleCoilsRequest(
             address, values, slave, **kwargs
         )
@@ -419,6 +494,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
+        if "unit" in kwargs:
+            _logger.error("Please do not use unit=, convert to slave=.")
+            slave = kwargs.pop("unit", slave)
         request = pdu_req_write.WriteMultipleRegistersRequest(
             address, values, slave, **kwargs
         )

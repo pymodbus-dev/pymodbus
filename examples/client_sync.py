@@ -158,7 +158,7 @@ def get_commandline():
     parser.add_argument(
         "--port",
         help="the port to use",
-        type=int,
+        type=str,
     )
     args = parser.parse_args()
 

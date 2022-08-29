@@ -112,6 +112,7 @@ def setup_server(args):
                 di=datablock, co=datablock, hr=datablock, ir=datablock, zero_mode=True
             ),
         }
+        single = False
     else:
         context = ModbusSlaveContext(
             di=datablock,
@@ -119,9 +120,10 @@ def setup_server(args):
             hr=datablock,
             ir=datablock,
         )
+        single = True
 
     # Build data storage
-    store = ModbusServerContext(slaves=context, single=True)
+    store = ModbusServerContext(slaves=context, single=single)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
@@ -181,8 +183,8 @@ async def run_server(args=None):
             defer_start=defer_start,  # Only define server do not activate
         )
     elif server_id == "serial":
-        # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600 PTY,
-        #             link=/tmp/ttyp0,raw,echo=0,ospeed=9600
+        # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
+        #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
         server = await StartSerialServer(
             context=store,  # Data storage
             identity=identity,  # server identify

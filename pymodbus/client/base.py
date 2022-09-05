@@ -380,8 +380,7 @@ class ModbusClientProtocol(
         """Get response, check for valid message, decode result."""
         txt = f"recv: {hexlify_packets(data)}"
         _logger.debug(txt)
-        unit = self.framer.decode_data(data).get("unit", 0)
-        self.framer.processIncomingPacket(data, self._handle_response, unit=unit)
+        self.framer.processIncomingPacket(data, self._handle_response, unit=0)
 
     def _handle_response(self, reply, **kwargs):  # pylint: disable=unused-argument
         """Handle the processed response and link to correct deferred."""

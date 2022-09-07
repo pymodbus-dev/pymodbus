@@ -28,6 +28,7 @@ The corresponding client can be started as:
     python3 client_sync.py
 """
 import argparse
+import os
 import asyncio
 import logging
 
@@ -145,6 +146,13 @@ def setup_async_server(args):
 async def run_async_server(args=None):
     """Run server."""
     server_id, port, store, identity, framer = setup_async_server(args)
+    cwd = os.getcwd().split("/")[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "test":
+        path = "../examples"
+    else:
+        path = "examples"
 
     txt = f"### start ASYNC server on port {port}"
     _logger.info(txt)
@@ -215,10 +223,10 @@ async def run_async_server(args=None):
             framer=framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
-            # certfile=None,  # The cert file path for TLS (used if sslctx is None)
-            # sslctx=None,  # The SSLContext to use for TLS (default None and auto create)
-            # keyfile=None,  # The key file path for TLS (used if sslctx is None)
-            # password=None,  # The password for for decrypting the private key file
+            certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
+            # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto create)
+            keyfile=f"{path}/certificates/pymodbus.key",  # The key file path for TLS (used if sslctx is None)
+            # password="none",  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
@@ -305,4 +313,4 @@ def get_commandline():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_async_server())
+    asyncio.run(run_async_server("."), debug=True)

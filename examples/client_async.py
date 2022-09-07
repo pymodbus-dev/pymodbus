@@ -21,6 +21,7 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import argparse
+import os
 import asyncio
 import logging
 
@@ -49,6 +50,13 @@ def setup_async_client(args=None):
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
     _logger.info("### Create client object")
+    cwd = os.getcwd().split("/")[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "test":
+        path = "../examples"
+    else:
+        path = "examples"
 
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -97,7 +105,7 @@ def setup_async_client(args=None):
         )
     elif args.comm == "tls":
         client = AsyncModbusTlsClient(
-            "localhost",
+            "127.0.0.1",
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
@@ -107,11 +115,11 @@ def setup_async_client(args=None):
             #    close_comm_on_error=False,
             #    strict=True,
             # TLS setup parameters
-            #    sslctx=None,
-            #    certfile=None,
-            #    keyfile=None,
-            #    password=None,
-            #    server_hostname="localhost",
+            #    sslctx=sslctx,
+            certfile=f"{path}/certificates/pymodbus.crt",
+            keyfile=f"{path}/certificates/pymodbus.key",
+            #    password="none",
+            server_hostname="localhost",
         )
     return client
 
@@ -191,5 +199,5 @@ def get_commandline():
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    testclient = setup_async_client()
-    asyncio.run(run_async_client(testclient))
+    testclient = setup_async_client(".")
+    asyncio.run(run_async_client(testclient), debug=True)

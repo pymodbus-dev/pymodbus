@@ -31,10 +31,10 @@ _logger.setLevel("DEBUG")
 
 TEST_COMMS_FRAMER = [
     ("tcp", ModbusSocketFramer, 5020),
-    ("tcp", ModbusRtuFramer, 5020),
-    ("tls", ModbusTlsFramer, 5020),
-    ("udp", ModbusSocketFramer, 5020),
-    ("udp", ModbusRtuFramer, 5021),
+    ("tcp", ModbusRtuFramer, 5021),
+    ("tls", ModbusTlsFramer, 5030),
+    ("udp", ModbusSocketFramer, 5040),
+    ("udp", ModbusRtuFramer, 5041),
     ("serial", ModbusRtuFramer, "dummy"),
     ("serial", ModbusAsciiFramer, "dummy"),
     ("serial", ModbusBinaryFramer, "dummy"),
@@ -56,9 +56,8 @@ class Commandline:
 def _helper_libs():
     """Patch ssl and pyserial-async libs."""
     with patch('pymodbus.server.async_io.create_serial_connection') as mock_serial:
-        with patch('ssl.SSLContext.load_cert_chain'):
-            mock_serial.return_value = (MagicMock(), MagicMock())
-            yield True
+        mock_serial.return_value = (MagicMock(), MagicMock())
+        yield True
 
 
 @pytest_asyncio.fixture(name="mock_run_server")
@@ -136,7 +135,6 @@ def test_exp_sync_simple(  # pylint: disable=unused-argument
         run_async_ext_calls,
     ],
 )
-@pytest.mark.skipif(pytest.IS_WINDOWS, reason="event loop closed too early.")
 async def test_exp_async_framer(  # pylint: disable=unused-argument
     test_comm,
     test_framer,
@@ -145,9 +143,9 @@ async def test_exp_async_framer(  # pylint: disable=unused-argument
     test_type
 ):
     """Test client-server async with different framers and calls."""
-    if test_type == run_async_ext_calls:  # pylint: disable=comparison-with-callable
+    if test_type == run_async_ext_calls and test_framer == ModbusRtuFramer:  # pylint: disable=comparison-with-callable
         return
-    if test_comm == "tls":
+    if test_comm == "tls" and test_type:
         # mocking cert operations prevent connect.
         return
     if test_comm == "serial":

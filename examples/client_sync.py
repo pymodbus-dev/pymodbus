@@ -21,6 +21,7 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import argparse
+import os
 import logging
 
 # --------------------------------------------------------------------------- #
@@ -47,6 +48,13 @@ def setup_sync_client(args=None):
         args = get_commandline()
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
+    cwd = os.getcwd().split("/")[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "test":
+        path = "../examples"
+    else:
+        path = "examples"
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
@@ -106,10 +114,10 @@ def setup_sync_client(args=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
-            #    certfile=None,
-            #    keyfile=None,
+            certfile=f"{path}/certificates/pymodbus.crt",
+            keyfile=f"{path}/certificates/pymodbus.key",
             #    password=None,
-            #    server_hostname="localhost",
+            server_hostname="localhost",
         )
     return client
 

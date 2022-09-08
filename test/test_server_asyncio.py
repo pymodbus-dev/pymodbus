@@ -265,6 +265,7 @@ class AsyncioServerTest(
         await asyncio.sleep(0.5)
         await self.server.server_close()
 
+    @pytest.mark.skip
     async def test_async_tcp_server_no_slave(self):
         """Test unknown slave unit exception"""
         self.context = ModbusServerContext(

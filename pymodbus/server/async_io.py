@@ -53,7 +53,13 @@ def sslctx_provider(
     if sslctx is None:
         # According to MODBUS/TCP Security Protocol Specification, it is
         # TLSv2 at least
-        sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        sslctx.verify_mode = ssl.CERT_NONE
+        sslctx.check_hostname = False
+        sslctx.options |= ssl.OP_NO_TLSv1_1
+        sslctx.options |= ssl.OP_NO_TLSv1
+        sslctx.options |= ssl.OP_NO_SSLv3
+        sslctx.options |= ssl.OP_NO_SSLv2
         sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     if reqclicert:
@@ -542,7 +548,10 @@ class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
                 **self.factory_parms,
             )
             self.serving.set_result(True)
-            await self.server.serve_forever()
+            try:
+                await self.server.serve_forever()
+            except asyncio.exceptions.CancelledError:
+                pass
         else:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
@@ -710,10 +719,13 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
     async def serve_forever(self):
         """Start endless loop."""
         if self.protocol is None:
-            self.protocol, self.endpoint = await self.loop.create_datagram_endpoint(
-                lambda: self.handler(self),
-                **self.factory_parms,
-            )
+            try:
+                self.protocol, self.endpoint = await self.loop.create_datagram_endpoint(
+                    lambda: self.handler(self),
+                    **self.factory_parms,
+                )
+            except asyncio.exceptions.CancelledError:
+                pass
             self.serving.set_result(True)
             await self.stop_serving
         else:

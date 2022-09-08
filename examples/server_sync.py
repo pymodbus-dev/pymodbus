@@ -28,6 +28,7 @@ The corresponding client can be started as:
     python3 client_sync.py
 """
 import argparse
+import os
 import logging
 
 from pymodbus.datastore import (
@@ -144,6 +145,13 @@ def setup_sync_server(args):
 def run_sync_server(args=None):
     """Run server."""
     server_id, port, store, identity, framer = setup_sync_server(args)
+    cwd = os.getcwd().split("/")[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "test":
+        path = "../examples"
+    else:
+        path = "examples"
     txt = f"### start server, listening on {port} - {server_id}"
     _logger.info(txt)
     if server_id == "tcp":
@@ -214,10 +222,10 @@ def run_sync_server(args=None):
             address=None,  # listen address
             framer=framer,  # The framer strategy to use
             # handler=None,  # handler for each session
-            # allow_reuse_address=True,  # allow the reuse of an address
-            # certfile=None,  # The cert file path for TLS (used if sslctx is None)
+            allow_reuse_address=True,  # allow the reuse of an address
+            certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
             # sslctx=None,  # The SSLContext to use for TLS (default None and auto create)
-            # keyfile=None,  # The key file path for TLS (used if sslctx is None)
+            keyfile=f"{path}/certificates/pymodbus.key",  # The key file path for TLS (used if sslctx is None)
             # password=None,  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
@@ -305,5 +313,5 @@ def get_commandline():
 
 
 if __name__ == "__main__":
-    server = run_sync_server()
+    server = run_sync_server(".")
     server.shutdown()

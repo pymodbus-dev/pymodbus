@@ -5,11 +5,9 @@ import socket
 import ssl
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
-from pymodbus.client.base import ModbusClientProtocol
 from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-from pymodbus.transaction import FifoTransactionManager
 
 _logger = logging.getLogger(__name__)
 
@@ -28,18 +26,20 @@ def sslctx_provider(
     :param keyfile: The optional client"s key file path for TLS server request
     :param password: The password for for decrypting client"s private key file
     """
-    if sslctx is None:
-        # According to MODBUS/TCP Security Protocol Specification, it is
-        # TLSv2 at least
-        sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        sslctx.verify_mode = ssl.CERT_REQUIRED
-        sslctx.check_hostname = True
+    if sslctx:
+        return sslctx
 
-        if certfile and keyfile:
-            sslctx.load_cert_chain(
-                certfile=certfile, keyfile=keyfile, password=password
-            )
-
+    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    sslctx.check_hostname = False
+    sslctx.verify_mode = ssl.CERT_NONE
+    sslctx.options |= ssl.OP_NO_TLSv1_1
+    sslctx.options |= ssl.OP_NO_TLSv1
+    sslctx.options |= ssl.OP_NO_SSLv3
+    sslctx.options |= ssl.OP_NO_SSLv2
+    if certfile and keyfile:
+        sslctx.load_cert_chain(
+            certfile=certfile, keyfile=keyfile, password=password
+        )
     return sslctx
 
 
@@ -89,28 +89,11 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.params.keyfile = keyfile
         self.params.password = password
         self.params.server_hostname = server_hostname
-
-        if not sslctx:
-            self.params.sslctx = ssl.create_default_context()
-            # According to MODBUS/TCP Security Protocol Specification, it is
-            # TLSv2 at least
-            self.sslctx.options |= ssl.OP_NO_TLSv1_1
-            self.sslctx.options |= ssl.OP_NO_TLSv1
-            self.sslctx.options |= ssl.OP_NO_SSLv3
-            self.sslctx.options |= ssl.OP_NO_SSLv2
-        else:
-            self.sslctx = sslctx
         AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
-
-    async def connect(self):
-        """Initiate connection to start client."""
-        # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
-        return await AsyncModbusTcpClient.connect(self)
 
     async def _connect(self):
         """Connect to server."""
-        _logger.debug("Connecting.")
+        _logger.debug("Connecting tls.")
         try:
             return await self.loop.create_connection(
                 self._create_protocol,
@@ -127,13 +110,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             self.reset_delay()
-
-    def _create_protocol(self):
-        """Create initialized protocol instance with Factory function."""
-        protocol = ModbusClientProtocol(framer=self.params.framer, **self.params.kwargs)
-        protocol.transaction = FifoTransactionManager(self)
-        protocol.factory = self
-        return protocol
 
 
 class ModbusTlsClient(ModbusTcpClient):

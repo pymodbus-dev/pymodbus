@@ -526,7 +526,10 @@ class DictTransactionManager(ModbusTransactionManager):
         """
         txt = f"Getting transaction {tid}"
         _logger.debug(txt)
-
+        if not tid:
+            if self.transactions:
+                return self.transactions.popitem()[1]
+            return None
         return self.transactions.pop(tid, None)
 
     def delTransaction(self, tid):

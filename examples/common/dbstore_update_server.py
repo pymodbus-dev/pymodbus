@@ -20,7 +20,7 @@ import random
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.async_io import StartTcpServer
+from pymodbus.server import StartAsyncTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
@@ -68,7 +68,7 @@ def updating_writer(parm1):
     log.debug(txt)
 
 
-def run_dbstore_update_server():
+async def run_dbstore_update_server():
     """Run dbstore update server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
@@ -100,8 +100,8 @@ def run_dbstore_update_server():
     loop = asyncio.get_event_loop()
     loop.start(time, now=False)  # initially delay by time
     loop.stop()
-    StartTcpServer(context, identity=identity, address=("", 5020))
+    await StartAsyncTcpServer(context, identity=identity, address=("", 5020))
 
 
 if __name__ == "__main__":
-    run_dbstore_update_server()
+    asyncio.run(run_dbstore_update_server())

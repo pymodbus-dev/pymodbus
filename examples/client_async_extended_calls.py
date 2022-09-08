@@ -23,8 +23,9 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import asyncio
+import logging
 
-from examples.client_async import _logger, run_client, setup_client
+from examples.client_async import run_async_client, setup_async_client
 
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
@@ -56,7 +57,7 @@ from pymodbus.other_message import (
 UNIT = 0x01
 
 
-async def execute_information_requests(client):
+async def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running ReadDeviceInformationRequest")
     rr = await client.execute(ReadDeviceInformationRequest(unit=UNIT))
@@ -87,7 +88,7 @@ async def execute_information_requests(client):
     assert not rr.events  # test the number of events
 
 
-async def execute_diagnostic_requests(client):
+async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running ReturnQueryDataRequest")
     rr = await client.execute(ReturnQueryDataRequest(unit=UNIT))
@@ -160,12 +161,19 @@ async def execute_diagnostic_requests(client):
     assert rr and not rr.isError()  # test that calls was OK
 
 
-async def demonstrate_calls(client):
+async def run_async_ext_calls(client):
     """Demonstrate basic read/write calls."""
-    await execute_information_requests(client)
-    await execute_diagnostic_requests(client)
+    await _execute_information_requests(client)
+    await _execute_diagnostic_requests(client)
+
+# --------------------------------------------------------------------------- #
+# Extra code, to allow commandline parameters instead of changing the code
+# --------------------------------------------------------------------------- #
+FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+logging.basicConfig(format=FORMAT)
+_logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    testclient = setup_client()
-    asyncio.run(run_client(testclient, modbus_calls=demonstrate_calls))
+    testclient = setup_async_client()
+    asyncio.run(run_async_client(testclient, modbus_calls=run_async_ext_calls))

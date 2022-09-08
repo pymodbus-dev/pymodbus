@@ -13,11 +13,11 @@ from serial import __version__ as pyserial_version
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 
-# from pymodbus.server.sync import StartUdpServer
-# from pymodbus.server.sync import StartSerialServer
+# from pymodbus.server import StartUdpServer
+# from pymodbus.server import StartSerialServer
 # from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server import StartTcpServer
 
 # --------------------------------------------------------------------------- #
 # import the various server implementations

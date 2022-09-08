@@ -1,5 +1,5 @@
 # pylint: disable=missing-type-doc
-r"""This is used to generate decoder blocks.
+"""This is used to generate decoder blocks.
 
 so that non-programmers can define the
 register values and then decode a modbus device all
@@ -16,36 +16,84 @@ Here is an example of generating and using a mapping decoder
 simplified in the final api; it is just an example of the
 requested functionality)::
 
-    from modbus_mapper import csv_mapping_parser
-    from modbus_mapper import mapping_decoder
-    from pymodbus.client import ModbusTcpClient
-    from pymodbus.payload import BinaryModbusDecoder
+    CSV:
+    address,type,size,name,function
+    1,int16,2,Comm. count PLC,hr
+    2,int16,2,Comm. count PLC,hr
 
-    template = ["address", "size", "function", "name", "description"]
-    raw_mapping = csv_mapping_parser("input.csv", template)
+    from modbus_mapper_updated import csv_mapping_parser
+    from modbus_mapper_updated import mapping_decoder
+    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.payload import BinaryPayloadDecoder
+    from pymodbus.constants import Endian
+
+    from pprint import pprint
+    import logging
+
+    FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+    logging.basicConfig(format=FORMAT)
+    _logger = logging.getLogger()
+    _logger.setLevel(logging.DEBUG)
+    
+    template = ["address", "type", "size", "name", "function"]
+
+    raw_mapping = csv_mapping_parser("simple_mapping_client.csv", template)
     mapping = mapping_decoder(raw_mapping)
+    
+    client = ModbusTcpClient(host="localhost", port=5020)
+    response = client.read_holding_registers(address=index, count=size)
+    decoder = BinaryPayloadDecoder.fromRegisters(
+        response.registers, byteorder=Endian.Big, wordorder=Endian.Big
+    )
 
-    index, size = 1, 100
-    client = ModbusTcpClient("localhost")
-    response = client.read_holding_registers(index, size)
-    decoder = BinaryModbusDecoder.fromRegisters(response.registers)
-    while index < size:
-        print( "[{}]\t{}".format(i, mapping[i]["type"](decoder)))
-        index += mapping[i]["size"]
+    for block in mapping.items():
+        for mapping in block:
+            if type(mapping) == dict:
+                print( "[{}]\t{}".format(mapping["address"], mapping["type"]()(decoder)))
+
+
 
 Also, using the same input mapping parsers, we can generate
 populated slave contexts that can be run behind a modbus server::
 
-    from modbus_mapper import csv_mapping_parser
-    from modbus_mapper import modbus_context_decoder
-    from pymodbus.client.ssync import StartTcpServer
+    CSV:
+    address,value,function,name,description
+    1,100,hr,Comm. count PLC,Comm. count PLC
+    2,200,hr,Comm. count PLC,Comm. count PLC
+
+    from modbus_mapper_updated import csv_mapping_parser
+    from modbus_mapper_updated import modbus_context_decoder
+
+    from pymodbus.server.sync import StartTcpServer
     from pymodbus.datastore.context import ModbusServerContext
+    from pymodbus.device import ModbusDeviceIdentification
+    from pymodbus.version import version
+
+    from pprint import pprint
+    import logging
+
+    FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+    logging.basicConfig(format=FORMAT)
+    _logger = logging.getLogger()
+    _logger.setLevel(logging.DEBUG)
 
     template = ["address", "value", "function", "name", "description"]
-    raw_mapping = csv_mapping_parser("input.csv", template)
+    raw_mapping = csv_mapping_parser("simple_mapping_server.csv", template)
+
     slave_context = modbus_context_decoder(raw_mapping)
     context = ModbusServerContext(slaves=slave_context, single=True)
-    StartTcpServer(context)
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
+    StartTcpServer(context=context, identity=identity, address=("localhost", 5020))
+
 """
 from collections import defaultdict
 import csv
@@ -55,6 +103,10 @@ from tokenize import generate_tokens
 
 from pymodbus.datastore.context import ModbusSlaveContext
 
+from pymodbus.datastore import (
+    ModbusSlaveContext,
+    ModbusSparseDataBlock,
+)
 
 # --------------------------------------------------------------------------- #
 # raw mapping input parsers
@@ -85,11 +137,11 @@ def csv_mapping_parser(path, template):
     mapping_blocks = defaultdict(dict)
     with open(path, "r") as handle:  # pylint: disable=unspecified-encoding
         reader = csv.reader(handle)
-        reader.next()  # skip the csv header
+        next(reader)  # skip the csv header
         for row in reader:
             mapping = dict(zip(template, row))
-            mapping.pop("function")
-            aid = int(mapping["address"])
+            # mapping.pop("function")
+            aid = mapping["address"]
             mapping_blocks[aid] = mapping
     return mapping_blocks
 
@@ -154,14 +206,15 @@ def modbus_context_decoder(mapping_blocks):
     :param mapping_blocks: The mapping blocks
     :returns: The initialized modbus slave context
     """
-    blocks = defaultdict(dict)
-    for block in mapping_blocks.itervalues():
-        for mapping in block.itervalues():
-            value = int(mapping["value"])
-            address = int(mapping["address"])
-            function = mapping["function"]
-            blocks[function][address] = value
-    return ModbusSlaveContext(**blocks)
+    sparse = ModbusSparseDataBlock()
+    sparse.create()
+    for block in mapping_blocks.items():
+        for mapping in block:
+            if type(mapping) == dict:
+                value = mapping["value"]
+                address = mapping["address"]
+                sparse.setValues(address=int(address), values=int(value))
+    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse)
 
 
 # --------------------------------------------------------------------------- #
@@ -215,8 +268,8 @@ class ModbusTypeDecoder:
     @staticmethod
     def parse_string(tokens):
         """Parse value."""
-        _ = tokens.next()
-        size = int(tokens.next())
+        _ = next(tokens)
+        size = int(next(tokens))
         return lambda d: d.decode_string(size=size)
 
     @staticmethod
@@ -296,9 +349,9 @@ class ModbusTypeDecoder:
         :returns: The decoder method to use
         """
         tokens = self.tokenize(value)
-        token = tokens.next().lower()  # pylint: disable=no-member
+        token = next(tokens).lower()  # pylint: disable=no-member
         parser = self.parsers.get(token, self.default)
-        return parser(tokens)
+        return parser
 
 
 def mapping_decoder(mapping_blocks, decoder=None):
@@ -308,8 +361,12 @@ def mapping_decoder(mapping_blocks, decoder=None):
     :param decoder: The type decoder to use
     """
     decoder = decoder or ModbusTypeDecoder()
-    for block in mapping_blocks.itervalues():
-        for mapping in block.itervalues():
-            mapping["address"] = int(mapping["address"])
-            mapping["size"] = int(mapping["size"])
-            mapping["type"] = decoder.parse(mapping["type"])
+    map = defaultdict(dict)
+    for block in mapping_blocks.items():
+        for mapping in block:
+            if type(mapping) == dict:
+                mapping["address"] = mapping["address"]
+                mapping["size"] = mapping["size"]
+                mapping["type"] = decoder.parse(mapping["type"])
+    map[mapping["address"]] = mapping
+    return map

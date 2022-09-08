@@ -16,7 +16,7 @@ import logging
 from pymodbus.client import ModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server import StartTcpServer
 
 
 def run_forwarder():
@@ -42,7 +42,7 @@ def run_forwarder():
 
     # start forwarding client and server
     client.connect()
-    StartTcpServer(context, address=("localhost", port_server))
+    StartTcpServer(context=context, address=("localhost", port_server))
     # loop forever
 
 

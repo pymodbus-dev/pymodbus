@@ -22,7 +22,9 @@ if isinstance(response, ClearCountersResponse):
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
-from examples.client_sync import _logger, run_client, setup_client
+import logging
+
+from examples.client_sync import run_sync_client, setup_sync_client
 
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
@@ -54,7 +56,7 @@ from pymodbus.other_message import (
 UNIT = 0x01
 
 
-def execute_information_requests(client):
+def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running ReadDeviceInformationRequest")
     rr = client.execute(ReadDeviceInformationRequest(unit=UNIT))
@@ -85,7 +87,7 @@ def execute_information_requests(client):
     assert not rr.events  # test the number of events
 
 
-def execute_diagnostic_requests(client):
+def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running ReturnQueryDataRequest")
     rr = client.execute(ReturnQueryDataRequest(unit=UNIT))
@@ -158,12 +160,20 @@ def execute_diagnostic_requests(client):
     assert rr and not rr.isError()  # test that calls was OK
 
 
-def demonstrate_calls(client):
+def run_sync_ext_calls(client):
     """Demonstrate basic read/write calls."""
-    execute_information_requests(client)
-    execute_diagnostic_requests(client)
+    _execute_information_requests(client)
+    _execute_diagnostic_requests(client)
+
+
+# --------------------------------------------------------------------------- #
+# Extra code, to allow commandline parameters instead of changing the code
+# --------------------------------------------------------------------------- #
+FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+logging.basicConfig(format=FORMAT)
+_logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    testclient = setup_client()
-    run_client(testclient, modbus_calls=demonstrate_calls)
+    testclient = setup_sync_client()
+    run_sync_client(testclient, modbus_calls=run_sync_ext_calls)

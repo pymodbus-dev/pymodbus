@@ -130,7 +130,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
     def _create_protocol(self):
         """Create initialized protocol instance with Factory function."""
-        protocol = ModbusClientProtocol(framer=self.framer, **self.params.kwargs)
+        protocol = ModbusClientProtocol(framer=self.params.framer, **self.params.kwargs)
         protocol.transaction = FifoTransactionManager(self)
         protocol.factory = self
         return protocol

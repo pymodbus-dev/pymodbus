@@ -7,14 +7,15 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import asyncio
+import logging
 
-from examples.client_async import _logger, run_client, setup_client
+from examples.client_async import run_async_client, setup_async_client
 
 
 SLAVE = 0x01
 
 
-async def handle_coils(client):
+async def _handle_coils(client):
     """Read/Write coils."""
     _logger.info("### Reading Coil")
     rr = await client.read_coils(1, 1, slave=SLAVE)
@@ -58,7 +59,7 @@ async def handle_coils(client):
     _logger.debug(txt)
 
 
-async def handle_discrete_input(client):
+async def _handle_discrete_input(client):
     """Read discrete inputs."""
     _logger.info("### Reading discrete input, Read address:0-7")
     rr = await client.read_discrete_inputs(0, 8, slave=SLAVE)
@@ -67,7 +68,7 @@ async def handle_discrete_input(client):
     _logger.debug(txt)
 
 
-async def handle_holding_registers(client):
+async def _handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
     rq = await client.write_register(1, 10, slave=SLAVE)
@@ -101,7 +102,7 @@ async def handle_holding_registers(client):
     _logger.debug(txt)
 
 
-async def handle_input_registers(client):
+async def _handle_input_registers(client):
     """Read input registers."""
     _logger.info("### read input registers")
     rr = await client.read_input_registers(1, 8, slave=SLAVE)
@@ -110,14 +111,21 @@ async def handle_input_registers(client):
     _logger.debug(txt)
 
 
-async def demonstrate_calls(client):
+async def run_async_basic_calls(client):
     """Demonstrate basic read/write calls."""
-    await handle_coils(client)
-    await handle_discrete_input(client)
-    await handle_holding_registers(client)
-    await handle_input_registers(client)
+    await _handle_coils(client)
+    await _handle_discrete_input(client)
+    await _handle_holding_registers(client)
+    await _handle_input_registers(client)
+
+# --------------------------------------------------------------------------- #
+# Extra code, to allow commandline parameters instead of changing the code
+# --------------------------------------------------------------------------- #
+FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+logging.basicConfig(format=FORMAT)
+_logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    testclient = setup_client()
-    asyncio.run(run_client(testclient, modbus_calls=demonstrate_calls))
+    testclient = setup_async_client()
+    asyncio.run(run_async_client(testclient, modbus_calls=run_async_basic_calls))

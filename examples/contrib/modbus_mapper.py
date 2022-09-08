@@ -56,7 +56,6 @@ requested functionality)::
 Also, using the same input mapping parsers, we can generate
 populated slave contexts that can be run behind a modbus server::
 
-
     CSV:
     address,value,function,name,description
     1,100,hr,Comm. count PLC,Comm. count PLC
@@ -369,5 +368,5 @@ def mapping_decoder(mapping_blocks, decoder=None):
                 mapping["address"] = mapping["address"]
                 mapping["size"] = mapping["size"]
                 mapping["type"] = decoder.parse(mapping["type"])
-    map[mapping["address"]] = mapping
+        map[mapping["address"]] = mapping
     return map

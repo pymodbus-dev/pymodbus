@@ -135,6 +135,7 @@ def test_exp_sync_simple(  # pylint: disable=unused-argument
         run_async_ext_calls,
     ],
 )
+@pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a loop closed problem.")
 async def test_exp_async_framer(  # pylint: disable=unused-argument
     test_comm,
     test_framer,
@@ -144,9 +145,6 @@ async def test_exp_async_framer(  # pylint: disable=unused-argument
 ):
     """Test client-server async with different framers and calls."""
     if test_type == run_async_ext_calls and test_framer == ModbusRtuFramer:  # pylint: disable=comparison-with-callable
-        return
-    if test_comm == "tls" and test_type:
-        # mocking cert operations prevent connect.
         return
     if test_comm == "serial":
         # mocking serial needs to pass data between send/receive

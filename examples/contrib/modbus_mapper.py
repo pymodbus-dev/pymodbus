@@ -18,17 +18,17 @@ requested functionality)::
 
     CSV:
     address,type,size,name,function
-    1,int16,2,Comm. count PLC,hr
-    2,int16,2,Comm. count PLC,hr
-    3,int16,2,Comm. count PLC,hr
-    4,int16,2,Comm. count PLC,hr
-    5,int16,2,Comm. count PLC,hr
-    6,int16,2,Comm. count PLC,hr
-    7,int16,2,Comm. count PLC,hr
-    8,int16,2,Comm. count PLC,hr
-    9,int16,2,Comm. count PLC,hr
-    10,int16,2,Comm. count PLC,hr
-    12,int16,2,Comm. count PLC,hr
+    1,int16,1,Comm. count PLC,hr
+    2,int16,1,Comm. count PLC,hr
+    3,int16,1,Comm. count PLC,hr
+    4,int16,1,Comm. count PLC,hr
+    5,int16,1,Comm. count PLC,hr
+    6,int16,1,Comm. count PLC,hr
+    7,int16,1,Comm. count PLC,hr
+    8,int16,1,Comm. count PLC,hr
+    9,int16,1,Comm. count PLC,hr
+    10,int32,2,Comm. count PLC,hr
+    12,int32,2,Comm. count PLC,hr
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import mapping_decoder
@@ -51,15 +51,19 @@ requested functionality)::
     mapping = mapping_decoder(raw_mapping)
 
     client = ModbusTcpClient(host="localhost", port=5020)
-    response = client.read_holding_registers(address=index, count=size)
-    decoder = BinaryPayloadDecoder.fromRegisters(
-        response.registers, byteorder=Endian.Big, wordorder=Endian.Big
-    )
-
     for block in mapping.items():
-        for mapping in block:
-            if type(mapping) == dict:
-                print( "[{}]\t{}".format(mapping["address"], mapping["type"]()(decoder)))
+        for mac in block:
+            if type(mac) == dict:
+            
+                response = client.read_holding_registers(
+                    address=int(mac["address"]), count=mac["size"]
+                )
+                
+                decoder = BinaryPayloadDecoder.fromRegisters(
+                    response.registers, byteorder=Endian.Big, wordorder=Endian.Little
+                )
+                print("[{}]\t{}".format(mac["address"], mac["type"]()(decoder)))
+            
 
 
 
@@ -79,7 +83,9 @@ populated slave contexts that can be run behind a modbus server::
     8,80,hr,Comm. count PLC,Comm. count PLC
     9,90,hr,Comm. count PLC,Comm. count PLC
     10,100,hr,Comm. count PLC,Comm. count PLC
+    11,0,hr,Comm. count PLC,Comm. count PLC
     12,120,hr,Comm. count PLC,Comm. count PLC
+    13,0,hr,Comm. count PLC,Comm. count PLC
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import modbus_context_decoder

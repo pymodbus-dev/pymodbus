@@ -41,16 +41,14 @@ requested functionality)::
     mapping = mapping_decoder(raw_mapping)
     
     client = ModbusTcpClient(host="localhost", port=5020)
-    response = client.read_holding_registers(address=index, count=size)
-    decoder = BinaryPayloadDecoder.fromRegisters(
-        response.registers, byteorder=Endian.Big, wordorder=Endian.Big
-    )
-
     for block in mapping.items():
-        for mapping in block:
-            if type(mapping) == dict:
-                print( "[{}]\t{}".format(mapping["address"], mapping["type"]()(decoder)))
-
+    for mac in block:
+        if type(mac) == dict:
+            response = client.read_holding_registers(address=int(mac["address"]))
+            decoder = BinaryPayloadDecoder.fromRegisters(
+                response.registers, byteorder=Endian.Big, wordorder=Endian.Big
+            )
+            print("[{}]\t{}".format(mac["address"], mac["type"]()(decoder)))
 
 
 Also, using the same input mapping parsers, we can generate

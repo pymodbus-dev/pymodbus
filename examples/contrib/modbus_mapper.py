@@ -44,12 +44,12 @@ requested functionality)::
     logging.basicConfig(format=FORMAT)
     _logger = logging.getLogger()
     _logger.setLevel(logging.DEBUG)
-    
+
     template = ["address", "type", "size", "name", "function"]
-    
+
     raw_mapping = csv_mapping_parser("simple_mapping_client.csv", template)
     mapping = mapping_decoder(raw_mapping)
-    
+
     client = ModbusTcpClient(host="localhost", port=5020)
     response = client.read_holding_registers(address=index, count=size)
     decoder = BinaryPayloadDecoder.fromRegisters(
@@ -121,8 +121,6 @@ import csv
 from io import StringIO
 import json
 from tokenize import generate_tokens
-
-from pymodbus.datastore.context import ModbusSlaveContext
 
 from pymodbus.datastore import (
     ModbusSlaveContext,
@@ -234,13 +232,8 @@ def modbus_context_decoder(mapping_blocks):
             if type(mapping) == dict:
                 value = mapping["value"]
                 address = mapping["address"]
-                print(address)
-                print(value)
-
                 sparse.setValues(address=int(address), values=int(value))
-                print(sparse.getValues(address=int(address)))
-                print("\r\n")
-    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse, zero_mode = True)
+    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse, zero_mode=True)
 
 
 # --------------------------------------------------------------------------- #

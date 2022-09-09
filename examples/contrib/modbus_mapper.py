@@ -240,7 +240,7 @@ def modbus_context_decoder(mapping_blocks):
                 sparse.setValues(address=int(address), values=int(value))
                 print(sparse.getValues(address=int(address)))
                 print("\r\n")
-    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse)
+    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse, zero_mode = True)
 
 
 # --------------------------------------------------------------------------- #

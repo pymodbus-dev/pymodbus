@@ -21,8 +21,8 @@ requested functionality)::
     1,int16,2,Comm. count PLC,hr
     2,int16,2,Comm. count PLC,hr
 
-    from modbus_mapper_updated import csv_mapping_parser
-    from modbus_mapper_updated import mapping_decoder
+    from modbus_mapper import csv_mapping_parser
+    from modbus_mapper import mapping_decoder
     from pymodbus.client.sync import ModbusTcpClient
     from pymodbus.payload import BinaryPayloadDecoder
     from pymodbus.constants import Endian
@@ -61,8 +61,8 @@ populated slave contexts that can be run behind a modbus server::
     1,100,hr,Comm. count PLC,Comm. count PLC
     2,200,hr,Comm. count PLC,Comm. count PLC
 
-    from modbus_mapper_updated import csv_mapping_parser
-    from modbus_mapper_updated import modbus_context_decoder
+    from modbus_mapper import csv_mapping_parser
+    from modbus_mapper import modbus_context_decoder
 
     from pymodbus.server.sync import StartTcpServer
     from pymodbus.datastore.context import ModbusServerContext

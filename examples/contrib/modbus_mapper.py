@@ -20,12 +20,22 @@ requested functionality)::
     address,type,size,name,function
     1,int16,2,Comm. count PLC,hr
     2,int16,2,Comm. count PLC,hr
+    3,int16,2,Comm. count PLC,hr
+    4,int16,2,Comm. count PLC,hr
+    5,int16,2,Comm. count PLC,hr
+    6,int16,2,Comm. count PLC,hr
+    7,int16,2,Comm. count PLC,hr
+    8,int16,2,Comm. count PLC,hr
+    9,int16,2,Comm. count PLC,hr
+    10,int16,2,Comm. count PLC,hr
+    12,int16,2,Comm. count PLC,hr
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import mapping_decoder
-    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.client import ModbusTcpClient
     from pymodbus.payload import BinaryPayloadDecoder
     from pymodbus.constants import Endian
+
 
     from pprint import pprint
     import logging
@@ -41,14 +51,16 @@ requested functionality)::
     mapping = mapping_decoder(raw_mapping)
     
     client = ModbusTcpClient(host="localhost", port=5020)
+    response = client.read_holding_registers(address=index, count=size)
+    decoder = BinaryPayloadDecoder.fromRegisters(
+        response.registers, byteorder=Endian.Big, wordorder=Endian.Big
+    )
+
     for block in mapping.items():
-    for mac in block:
-        if type(mac) == dict:
-            response = client.read_holding_registers(address=int(mac["address"]))
-            decoder = BinaryPayloadDecoder.fromRegisters(
-                response.registers, byteorder=Endian.Big, wordorder=Endian.Big
-            )
-            print("[{}]\t{}".format(mac["address"], mac["type"]()(decoder)))
+        for mapping in block:
+            if type(mapping) == dict:
+                print( "[{}]\t{}".format(mapping["address"], mapping["type"]()(decoder)))
+
 
 
 Also, using the same input mapping parsers, we can generate
@@ -56,16 +68,27 @@ populated slave contexts that can be run behind a modbus server::
 
     CSV:
     address,value,function,name,description
-    1,100,hr,Comm. count PLC,Comm. count PLC
-    2,200,hr,Comm. count PLC,Comm. count PLC
+    0,0,hr,Comm. count PLC,Comm. count PLC
+    1,10,hr,Comm. count PLC,Comm. count PLC
+    2,20,hr,Comm. count PLC,Comm. count PLC
+    3,30,hr,Comm. count PLC,Comm. count PLC
+    4,40,hr,Comm. count PLC,Comm. count PLC
+    5,50,hr,Comm. count PLC,Comm. count PLC
+    6,60,hr,Comm. count PLC,Comm. count PLC
+    7,70,hr,Comm. count PLC,Comm. count PLC
+    8,80,hr,Comm. count PLC,Comm. count PLC
+    9,90,hr,Comm. count PLC,Comm. count PLC
+    10,100,hr,Comm. count PLC,Comm. count PLC
+    12,120,hr,Comm. count PLC,Comm. count PLC
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import modbus_context_decoder
 
-    from pymodbus.server.sync import StartTcpServer
+    from pymodbus.server import StartTcpServer
     from pymodbus.datastore.context import ModbusServerContext
     from pymodbus.device import ModbusDeviceIdentification
     from pymodbus.version import version
+
 
     from pprint import pprint
     import logging
@@ -211,7 +234,12 @@ def modbus_context_decoder(mapping_blocks):
             if type(mapping) == dict:
                 value = mapping["value"]
                 address = mapping["address"]
+                print(address)
+                print(value)
+                
                 sparse.setValues(address=int(address), values=int(value))
+                print(sparse.getValues(address=int(address)))
+                print("\r\n")
     return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse)
 
 
@@ -366,5 +394,5 @@ def mapping_decoder(mapping_blocks, decoder=None):
                 mapping["address"] = mapping["address"]
                 mapping["size"] = mapping["size"]
                 mapping["type"] = decoder.parse(mapping["type"])
-        map[mapping["address"]] = mapping
+                map[mapping["address"]] = mapping
     return map

@@ -1,5 +1,5 @@
 # pylint: disable=missing-type-doc
-"""This is used to generate decoder blocks.
+r"""This is used to generate decoder blocks.
 
 so that non-programmers can define the
 register values and then decode a modbus device all
@@ -46,7 +46,7 @@ requested functionality)::
     _logger.setLevel(logging.DEBUG)
     
     template = ["address", "type", "size", "name", "function"]
-
+    
     raw_mapping = csv_mapping_parser("simple_mapping_client.csv", template)
     mapping = mapping_decoder(raw_mapping)
     
@@ -236,7 +236,7 @@ def modbus_context_decoder(mapping_blocks):
                 address = mapping["address"]
                 print(address)
                 print(value)
-                
+
                 sparse.setValues(address=int(address), values=int(value))
                 print(sparse.getValues(address=int(address)))
                 print("\r\n")

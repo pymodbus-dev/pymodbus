@@ -33,7 +33,7 @@ requested functionality)::
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import mapping_decoder
-    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.client import ModbusTcpClient
     from pymodbus.payload import BinaryPayloadDecoder
     from pymodbus.constants import Endian
 

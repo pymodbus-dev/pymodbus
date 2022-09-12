@@ -18,6 +18,7 @@ requested functionality)::
 
     CSV:
     address,type,size,name,function
+    0,int16,1,Comm. count PLC,hr
     1,int16,1,Comm. count PLC,hr
     2,int16,1,Comm. count PLC,hr
     3,int16,1,Comm. count PLC,hr
@@ -32,40 +33,41 @@ requested functionality)::
 
     from modbus_mapper import csv_mapping_parser
     from modbus_mapper import mapping_decoder
-    from pymodbus.client import ModbusTcpClient
+    from pymodbus.client.sync import ModbusTcpClient
     from pymodbus.payload import BinaryPayloadDecoder
     from pymodbus.constants import Endian
-
 
     from pprint import pprint
     import logging
 
-    FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-    logging.basicConfig(format=FORMAT)
-    _logger = logging.getLogger()
-    _logger.setLevel(logging.DEBUG)
+    # FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+    # logging.basicConfig(format=FORMAT)
+    # _logger = logging.getLogger()
+    # _logger.setLevel(logging.DEBUG)
 
     template = ["address", "type", "size", "name", "function"]
-
     raw_mapping = csv_mapping_parser("simple_mapping_client.csv", template)
+    # raw_mapping = csv_mapping_parser("Naust_Comm_to_scr_client.csv", template)
     mapping = mapping_decoder(raw_mapping)
 
     client = ModbusTcpClient(host="localhost", port=5020)
+
+    response = client.read_holding_registers(address=int(0), count=14)
+    decoder = BinaryPayloadDecoder.fromRegisters(
+        response.registers, byteorder=Endian.Big, wordorder=Endian.Little
+    )
+
     for block in mapping.items():
         for mac in block:
             if type(mac) == dict:
-            
-                response = client.read_holding_registers(
-                    address=int(mac["address"]), count=mac["size"]
-                )
-                
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    response.registers, byteorder=Endian.Big, wordorder=Endian.Little
-                )
+                # response = client.read_holding_registers(
+                #     address=int(mac["address"]), count=mac["size"]
+                # )
+                # decoder = BinaryPayloadDecoder.fromRegisters(
+                #     response.registers, byteorder=Endian.Big, wordorder=Endian.Little
+                # )
                 print("[{}]\t{}".format(mac["address"], mac["type"]()(decoder)))
-            
-
-
+                # decoder._payload # remove mac["size"] bytes from beginning
 
 Also, using the same input mapping parsers, we can generate
 populated slave contexts that can be run behind a modbus server::
@@ -239,7 +241,9 @@ def modbus_context_decoder(mapping_blocks):
                 value = mapping["value"]
                 address = mapping["address"]
                 sparse.setValues(address=int(address), values=int(value))
-    return ModbusSlaveContext(di=sparse, co=sparse, hr=sparse, ir=sparse, zero_mode=True)
+    return ModbusSlaveContext(
+        di=sparse, co=sparse, hr=sparse, ir=sparse, zero_mode=True
+    )
 
 
 # --------------------------------------------------------------------------- #

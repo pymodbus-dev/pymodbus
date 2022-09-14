@@ -23,25 +23,25 @@ from pymodbus.server import (
 class SynchronousServerTest(unittest.TestCase):
     """Unittest for the pymodbus.server.sync module."""
 
-    def test_start_tcp_server(self):
+    def xtest_start_tcp_server(self):
         """Test the tcp server starting factory"""
         with patch.object(ModbusTcpServer, "serve_forever"):
             StartTcpServer(bind_and_activate=False)
 
-    def test_start_tls_server(self):
+    def xtest_start_tls_server(self):
         """Test the tls server starting factory"""
         with patch.object(ModbusTlsServer, "serve_forever"):
             with patch.object(ssl.SSLContext, "load_cert_chain"):
                 StartTlsServer(bind_and_activate=False)
 
-    def test_start_udp_server(self):
+    def xtest_start_udp_server(self):
         """Test the udp server starting factory"""
         with patch.object(ModbusUdpServer, "serve_forever"):
             with patch.object(socketserver.UDPServer, "server_bind"):
                 StartUdpServer()
 
     @pytest.mark.skip
-    def test_start_serial_server(self):
+    def xtest_start_serial_server(self):
         """Test the serial server starting factory"""
         with patch.object(ModbusSerialServer, "serve_forever"):
             StartSerialServer(port=pytest.SERIAL_PORT)

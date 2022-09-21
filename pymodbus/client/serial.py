@@ -59,6 +59,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         **kwargs: any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
+        self.protocol = None
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate
@@ -67,7 +68,6 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
         self.loop = None
-        self.protocol = None
         self._connected_event = asyncio.Event()
 
     async def close(self):  # pylint: disable=invalid-overridden-method

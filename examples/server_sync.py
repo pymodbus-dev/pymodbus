@@ -313,5 +313,5 @@ def get_commandline():
 
 
 if __name__ == "__main__":
-    server = run_sync_server(".")
+    server = run_sync_server()
     server.shutdown()

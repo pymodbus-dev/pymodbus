@@ -122,6 +122,7 @@ class ModbusBaseClient(ModbusClientMixin):
         self.framer = self.params.framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(self, **kwargs)
         self.delay_ms = self.params.reconnect_delay
+        self.use_protocol = hasattr(self, "protocol")
 
         # Initialize  mixin
         super().__init__()
@@ -174,6 +175,10 @@ class ModbusBaseClient(ModbusClientMixin):
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
+        if self.use_protocol:
+            if not self.protocol:
+                raise ConnectionException(f"Not connected[{str(self)}]")
+            return self.protocol.execute(request)
         if not self.connect():
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)

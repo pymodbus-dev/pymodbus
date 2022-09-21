@@ -46,13 +46,13 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         **kwargs: any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
+        self.protocol = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
 
         self.loop = asyncio.get_event_loop()
-        self.protocol = None
         self.connected = False
         self.delay_ms = self.params.reconnect_delay
         self.reset_delay()

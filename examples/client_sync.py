@@ -48,13 +48,6 @@ def setup_sync_client(args=None):
         args = get_commandline()
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
-    cwd = os.getcwd().split("/")[-1]
-    if cwd == "examples":
-        path = "."
-    elif cwd == "test":
-        path = "../examples"
-    else:
-        path = "examples"
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
@@ -102,6 +95,13 @@ def setup_sync_client(args=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
+        cwd = os.getcwd().split("/")[-1]
+        if cwd == "examples":
+            path = "."
+        elif cwd == "test":
+            path = "../examples"
+        else:
+            path = "examples"
         client = ModbusTlsClient(
             "localhost",
             port=args.port,

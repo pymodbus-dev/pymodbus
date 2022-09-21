@@ -146,14 +146,6 @@ def setup_async_server(args):
 async def run_async_server(args=None):
     """Run server."""
     server_id, port, store, identity, framer = setup_async_server(args)
-    cwd = os.getcwd().split("/")[-1]
-    if cwd == "examples":
-        path = "."
-    elif cwd == "test":
-        path = "../examples"
-    else:
-        path = "examples"
-
     txt = f"### start ASYNC server on port {port}"
     _logger.info(txt)
     if server_id == "tcp":
@@ -213,6 +205,13 @@ async def run_async_server(args=None):
         )
     elif server_id == "tls":
         address = ("", port) if port else None
+        cwd = os.getcwd().split("/")[-1]
+        if cwd == "examples":
+            path = "."
+        elif cwd == "test":
+            path = "../examples"
+        else:
+            path = "examples"
         server = await StartAsyncTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.

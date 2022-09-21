@@ -145,13 +145,6 @@ def setup_sync_server(args):
 def run_sync_server(args=None):
     """Run server."""
     server_id, port, store, identity, framer = setup_sync_server(args)
-    cwd = os.getcwd().split("/")[-1]
-    if cwd == "examples":
-        path = "."
-    elif cwd == "test":
-        path = "../examples"
-    else:
-        path = "examples"
     txt = f"### start server, listening on {port} - {server_id}"
     _logger.info(txt)
     if server_id == "tcp":
@@ -213,6 +206,13 @@ def run_sync_server(args=None):
         )
     elif server_id == "tls":
         address = ("", port) if port else None
+        cwd = os.getcwd().split("/")[-1]
+        if cwd == "examples":
+            path = "."
+        elif cwd == "test":
+            path = "../examples"
+        else:
+            path = "examples"
         server = StartTlsServer(
             context=store,  # Data storage
             host="localhost",  # define tcp address where to connect to.

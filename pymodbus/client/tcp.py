@@ -46,12 +46,12 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         **kwargs: any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
+        self.protocol = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
         self.loop = None
-        self.protocol = None
         self.connected = False
         self.delay_ms = self.params.reconnect_delay
 

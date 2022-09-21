@@ -50,14 +50,6 @@ def setup_async_client(args=None):
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
     _logger.info("### Create client object")
-    cwd = os.getcwd().split("/")[-1]
-    if cwd == "examples":
-        path = "."
-    elif cwd == "test":
-        path = "../examples"
-    else:
-        path = "examples"
-
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
             "127.0.0.1",
@@ -104,6 +96,13 @@ def setup_async_client(args=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
+        cwd = os.getcwd().split("/")[-1]
+        if cwd == "examples":
+            path = "."
+        elif cwd == "test":
+            path = "../examples"
+        else:
+            path = "examples"
         client = AsyncModbusTlsClient(
             "127.0.0.1",
             port=args.port,
@@ -130,7 +129,7 @@ async def run_async_client(client, modbus_calls=None):
     await client.connect()
     assert client.protocol
     if modbus_calls:
-        await modbus_calls(client.protocol)
+        await modbus_calls(client)
     await client.close()
     _logger.info("### End of Program")
 
@@ -199,5 +198,5 @@ def get_commandline():
 
 if __name__ == "__main__":
     # Connect/disconnect no calls.
-    testclient = setup_async_client(".")
+    testclient = setup_async_client()
     asyncio.run(run_async_client(testclient), debug=True)

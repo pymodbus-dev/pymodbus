@@ -134,7 +134,6 @@ def test_exp_sync_simple(
         run_async_ext_calls,
     ],
 )
-@pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a loop closed problem.")
 async def test_exp_async_framer(  # pylint: disable=unused-argument
     test_comm,
     test_framer,

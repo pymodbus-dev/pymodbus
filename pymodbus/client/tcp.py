@@ -83,7 +83,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         _logger.debug("Connecting.")
         try:
             transport, protocol = await self.loop.create_connection(
-                self._create_protocol, self.params.host, self.params.port
+                self._create_protocol, host=self.params.host, port=self.params.port
             )
             return transport, protocol
         except Exception as exc:  # pylint: disable=broad-except

@@ -285,10 +285,10 @@ def get_commandline():
 
     # set defaults
     comm_defaults = {
-        "tcp": ("socket", 5020),
-        "udp": ("socket", 5020),
-        "serial": ("rtu", "/dev/ptyp0"),
-        "tls": ("tls", 5020),
+        "tcp": ["socket", 5020],
+        "udp": ["socket", 5020],
+        "serial": ["rtu", "/dev/ptyp0"],
+        "tls": ["tls", 5020],
     }
     framers = {
         "ascii": ModbusAsciiFramer,

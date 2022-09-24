@@ -6,7 +6,6 @@ from threading import Thread
 from time import sleep
 import logging
 
-from unittest.mock import patch, MagicMock
 import pytest
 import pytest_asyncio
 
@@ -30,11 +29,11 @@ _logger = logging.getLogger()
 _logger.setLevel("DEBUG")
 
 TEST_COMMS_FRAMER = [
-    ("tcp", ModbusSocketFramer, 5020),
-    ("tcp", ModbusRtuFramer, 5021),
-    ("tls", ModbusTlsFramer, 5030),
-    ("udp", ModbusSocketFramer, 5040),
-    ("udp", ModbusRtuFramer, 5041),
+    ("tcp", ModbusSocketFramer, 5021),
+    ("tcp", ModbusRtuFramer, 5022),
+    ("tls", ModbusTlsFramer, 5023),
+    ("udp", ModbusSocketFramer, 5024),
+    ("udp", ModbusRtuFramer, 5025),
     ("serial", ModbusRtuFramer, "dummy"),
     ("serial", ModbusAsciiFramer, "dummy"),
     ("serial", ModbusBinaryFramer, "dummy"),
@@ -52,34 +51,25 @@ class Commandline:
     slaves = None
 
 
-@pytest_asyncio.fixture(name="mock_libs")
-def _helper_libs():
-    """Patch ssl and pyserial-async libs."""
-    with patch('pymodbus.server.async_io.create_serial_connection') as mock_serial:
-        mock_serial.return_value = (MagicMock(), MagicMock())
-        yield True
-
-
 @pytest_asyncio.fixture(name="mock_run_server")
-async def _helper_server(  # pylint: disable=unused-argument
-    mock_libs,
+async def _helper_server(
     test_comm,
     test_framer,
+    test_port_offset,
     test_port,
 ):
     """Run server."""
+    if test_comm in ("serial"):
+        yield
+        return
     args = Commandline
     args.comm = test_comm
     args.framer = test_framer
-    args.port = test_port
+    args.port = test_port + test_port_offset
     asyncio.create_task(run_async_server(args))
     await asyncio.sleep(0.1)
-    yield True
+    yield
     await ServerAsyncStop()
-    tasks = asyncio.all_tasks()
-    owntask = asyncio.current_task()
-    for i in [i for i in tasks if not (i.done() or i.cancelled() or i == owntask)]:
-        i.cancel()
 
 
 async def run_client(
@@ -98,34 +88,43 @@ async def run_client(
     await asyncio.sleep(0.1)
 
 
+@pytest.mark.parametrize("test_port_offset", [10])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
 async def test_exp_async_simple(  # pylint: disable=unused-argument
     test_comm,
     test_framer,
+    test_port_offset,
     test_port,
     mock_run_server,
 ):
     """Run async client and server."""
 
 
+@pytest.mark.parametrize("test_port_offset", [20])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-def test_exp_sync_simple(  # pylint: disable=unused-argument
-    mock_libs,
+def test_exp_sync_simple(
     test_comm,
     test_framer,
+    test_port_offset,
     test_port,
 ):
     """Run sync client and server."""
+    if test_comm == "serial":
+        # missing mock of port
+        return
     args = Commandline
     args.comm = test_comm
-    args.port = test_port
+    args.port = test_port + test_port_offset
+    args.framer = test_framer
     thread = Thread(target=run_sync_server, args=(args,))
     thread.daemon = True
     thread.start()
-    sleep(0.1)
+    sleep(1)
     ServerStop()
+    _logger.error("jan igen")
 
 
+@pytest.mark.parametrize("test_port_offset", [30])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
 @pytest.mark.parametrize(
     "test_type",
@@ -139,6 +138,7 @@ def test_exp_sync_simple(  # pylint: disable=unused-argument
 async def test_exp_async_framer(  # pylint: disable=unused-argument
     test_comm,
     test_framer,
+    test_port_offset,
     test_port,
     mock_run_server,
     test_type
@@ -147,11 +147,10 @@ async def test_exp_async_framer(  # pylint: disable=unused-argument
     if test_type == run_async_ext_calls and test_framer == ModbusRtuFramer:  # pylint: disable=comparison-with-callable
         return
     if test_comm == "serial":
-        # mocking serial needs to pass data between send/receive
         return
 
     args = Commandline
     args.framer = test_framer
     args.comm = test_comm
-    args.port = test_port
+    args.port = test_port + test_port_offset
     await run_client(test_comm, test_type, args=args)

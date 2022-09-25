@@ -1,37 +1,30 @@
-#!/usr/bin/env python
-"""
-Pymodbus Server With Updating Thread
---------------------------------------------------------------------------
+#!/usr/bin/env python3
+# pylint: disable=missing-any-param-doc,differing-param-doc
+"""Pymodbus Server With Updating Thread.
 
 This is an example of having a background thread updating the
 context while the server is operating. This can also be done with
 a python thread::
 
     from threading import Thread
-
-    thread = Thread(target=updating_writer, args=(context,))
-    thread.start()
+    Thread(target=updating_writer, args=(context,)).start()
 """
-# --------------------------------------------------------------------------- #
-# import the modbus libraries we need
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+import asyncio
+import logging
 
-# --------------------------------------------------------------------------- #
-# import the twisted libraries we need
-# --------------------------------------------------------------------------- #
-from twisted.internet.task import LoopingCall
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+)
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.server import StartAsyncTcpServer
+from pymodbus.version import version
+
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
-logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -40,55 +33,63 @@ log.setLevel(logging.DEBUG)
 # --------------------------------------------------------------------------- #
 
 
-def updating_writer(a):
-    """ A worker process that runs every so often and
-    updates live values of the context. It should be noted
-    that there is a race condition for the update.
+def updating_writer(extra):
+    """Run every so often,
+
+    and updates live values of the context. It should be noted
+    that there is a lrace condition for the update.
 
     :param arguments: The input arguments to the call
     """
     log.debug("updating the context")
-    context = a[0]
+    context = extra[0]
     register = 3
     slave_id = 0x00
     address = 0x10
     values = context[slave_id].getValues(register, address, count=5)
     values = [v + 1 for v in values]
-    log.debug("new values: " + str(values))
+    txt = f"new values: {str(values)}"
+    log.debug(txt)
     context[slave_id].setValues(register, address, values)
 
 
-def run_updating_server():
-    # ----------------------------------------------------------------------- # 
+async def run_updating_server():
+    """Run updating server."""
+    # ----------------------------------------------------------------------- #
     # initialize your data store
-    # ----------------------------------------------------------------------- # 
-    
+    # ----------------------------------------------------------------------- #
+
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100))
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'pymodbus Server'
-    identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = version.short()
-    
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "ProductName": "pymodbus Server",
+            "ModelName": "pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
+
+    # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
-    time = 5  # 5 seconds delay
-    loop = LoopingCall(f=updating_writer, a=(context,))
-    loop.start(time, now=False) # initially delay by time
-    StartTcpServer(context, identity=identity, address=("localhost", 5020))
+    # ----------------------------------------------------------------------- #
+    log.debug("Start server")
+    await StartAsyncTcpServer(
+        context, identity=identity, address=("localhost", 5020), defer_start=False
+    )
+    log.debug("Done")
 
 
 if __name__ == "__main__":
-    run_updating_server()
+    asyncio.run(run_updating_server())

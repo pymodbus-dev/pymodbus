@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-Depends on [prompt_toolkit](https://python-prompt-toolkit.readthedocs.io/en/stable/index.html) and [click](http://click.pocoo.org/6/quickstart/)
+Depends on [prompt_toolkit](https://python-prompt-toolkit.readthedocs.io/en/stable/index.html) and [click](https://click.palletsprojects.com/)
 
 Install dependencies
 ```

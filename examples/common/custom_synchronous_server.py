@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-"""
-Pymodbus Synchronous Server Example with Custom functions
---------------------------------------------------------------------------
+#!/usr/bin/env python3
+"""Pymodbus Synchronous Server Example with Custom functions.
 
 Implements a custom function code not in standard modbus function code list
 and its response which otherwise would throw  `IllegalFunction (0x1)` error.
@@ -49,7 +47,7 @@ Steps:
 3. Register with ModbusSlaveContext,
     if your request has to access some values from the data-store.
     ```store = ModbusSlaveContext(...)
-       store.register(CustomModbusRequest.function_code, 'dummy_context_name')
+       store.register(CustomModbusRequest.function_code, "dummy_context_name")
     ```
 4. Pass CustomModbusRequest class as argument to Start<protocol>Server
     ```
@@ -57,60 +55,78 @@ Steps:
     ```
 
 """
-# --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
-from pymodbus.server.sync import StartTcpServer
+import logging
+
+from .custom_message import (  # pylint: disable=relative-beyond-top-level
+    CustomModbusRequest,
+)
+
+from pymodbus.datastore import (
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+    ModbusSlaveContext,
+)
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-from custom_message import CustomModbusRequest
+from pymodbus.server import StartTcpServer
+from pymodbus.version import version
+
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
-import logging
 
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
+    """Run server."""
     store = ModbusSlaveContext(
         di=ModbusSequentialDataBlock(0, [17] * 100),
         co=ModbusSequentialDataBlock(0, [17] * 100),
         hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
 
-    store.register(CustomModbusRequest.function_code, 'cm',
-                   ModbusSequentialDataBlock(0, [17] * 100))
+    store.register(
+        CustomModbusRequest.function_code,
+        "cm",
+        ModbusSequentialDataBlock(0, [17] * 100),
+    )
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don't set this or any fields, they are defaulted to empty strings.
+    # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'Pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'Pymodbus Server'
-    identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     # Tcp:
-    StartTcpServer(context, identity=identity, address=("localhost", 5020),
-                   custom_functions=[CustomModbusRequest])
+    StartTcpServer(
+        context,
+        identity=identity,
+        address=("localhost", 5020),
+        custom_functions=[CustomModbusRequest],
+    )
 
 
 if __name__ == "__main__":
     run_server()
-

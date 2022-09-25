@@ -1,17 +1,25 @@
+"""RTU framer."""
+# pylint: disable=missing-type-doc
+import logging
 import struct
 import time
 
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.exceptions import InvalidMessageReceivedException
-from pymodbus.utilities import checkCRC, computeCRC
-from pymodbus.utilities import hexlify_packets, ModbusTransactionState
-from pymodbus.compat import byte2int
-from pymodbus.framer import ModbusFramer, FRAME_HEADER, BYTE_ORDER
+from pymodbus.exceptions import (
+    InvalidMessageReceivedException,
+    ModbusIOException,
+)
+from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.utilities import (
+    ModbusTransactionState,
+    checkCRC,
+    computeCRC,
+    hexlify_packets,
+)
+
 
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
-import logging
 _logger = logging.getLogger(__name__)
 
 RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
@@ -21,8 +29,7 @@ RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 # Modbus RTU Message
 # --------------------------------------------------------------------------- #
 class ModbusRtuFramer(ModbusFramer):
-    """
-    Modbus RTU Frame controller::
+    """Modbus RTU Frame controller.
 
         [ Start Wait ] [Address ][ Function Code] [ Data ][ CRC ][  End Wait  ]
           3.5 chars     1b         1b               Nb      2b      3.5 chars
@@ -54,15 +61,17 @@ class ModbusRtuFramer(ModbusFramer):
         (1/Baud)(bits) = delay seconds
     """
 
+    method = "rtu"
+
     def __init__(self, decoder, client=None):
-        """ Initializes a new instance of the framer
+        """Initialize a new instance of the framer.
 
         :param decoder: The decoder factory implementation to use
         """
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
         self._hsize = 0x01
-        self._end = b'\x0d\x0a'
+        self._end = b"\x0d\x0a"
         self._min_frame_size = 4
         self.decoder = decoder
         self.client = client
@@ -71,15 +80,16 @@ class ModbusRtuFramer(ModbusFramer):
     # Private Helper Functions
     # ----------------------------------------------------------------------- #
     def decode_data(self, data):
+        """Decode data."""
         if len(data) > self._hsize:
-            uid = byte2int(data[0])
-            fcode = byte2int(data[1])
-            return dict(unit=uid, fcode=fcode)
-        return dict()
+            uid = int(data[0])
+            fcode = int(data[1])
+            return {"unit": uid, "fcode": fcode}
+        return {}
 
     def checkFrame(self):
-        """
-        Check if the next frame is available.
+        """Check if the next frame is available.
+
         Return True if we were successful.
 
         1. Populate header
@@ -87,63 +97,64 @@ class ModbusRtuFramer(ModbusFramer):
         """
         try:
             self.populateHeader()
-            frame_size = self._header['len']
-            data = self._buffer[:frame_size - 2]
-            crc = self._header['crc']
-            crc_val = (byte2int(crc[0]) << 8) + byte2int(crc[1])
+            frame_size = self._header["len"]
+            data = self._buffer[: frame_size - 2]
+            crc = self._header["crc"]
+            crc_val = (int(crc[0]) << 8) + int(crc[1])
             return checkCRC(data, crc_val)
         except (IndexError, KeyError, struct.error):
             return False
 
     def advanceFrame(self):
-        """
-        Skip over the current framed message
+        """Skip over the current framed message.
+
         This allows us to skip over the current message after we have processed
         it or determined that it contains an error. It also has to reset the
         current frame header handle
         """
-
-        self._buffer = self._buffer[self._header['len']:]
+        self._buffer = self._buffer[self._header["len"] :]
         _logger.debug("Frame advanced, resetting header!!")
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
-    def resetFrame(self):
-        """
-        Reset the entire message frame.
+    def resetFrame(self):  # pylint: disable=invalid-name
+        """Reset the entire message frame.
+
         This allows us to skip over errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn't have the resolution to
+        end of the message (python just doesn"t have the resolution to
         check for millisecond delays).
         """
-        _logger.debug("Resetting frame - Current Frame in "
-                      "buffer - {}".format(hexlify_packets(self._buffer)))
-        self._buffer = b''
-        self._header = {'uid': 0x00, 'len': 0, 'crc': b'\x00\x00'}
+        txt = (
+            f"Resetting frame - Current Frame in "
+            f"buffer - {hexlify_packets(self._buffer)}"
+        )
+        _logger.debug(txt)
+        self._buffer = b""
+        self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def isFrameReady(self):
-        """
-        Check if we should continue decode logic
+        """Check if we should continue decode logic.
+
         This is meant to be used in a while loop in the decoding phase to let
         the decoder know that there is still data in the buffer.
 
         :returns: True if ready, False otherwise
         """
-        if len(self._buffer) <= self._hsize:
-            return False
+        size = self._header.get("len", 0)
+        if not size and len(self._buffer) > self._hsize:
+            try:
+                # Frame is ready only if populateHeader() successfully
+                # populates crc field which finishes RTU frame otherwise,
+                # if buffer is not yet long enough, populateHeader() raises IndexError
+                size = self.populateHeader()
+            except IndexError:
+                return False
 
-        try:
-            # Frame is ready only if populateHeader() successfully populates crc field which finishes RTU frame
-            # Otherwise, if buffer is not yet long enough, populateHeader() raises IndexError
-            self.populateHeader()
-        except IndexError:
-            return False
+        return len(self._buffer) >= size if size > 0 else False
 
-        return True
-
-    def populateHeader(self, data=None):
-        """
-        Try to set the headers `uid`, `len` and `crc`.
+    def populateHeader(self, data=None):  # pylint: disable=invalid-name
+        """Try to set the headers `uid`, `len` and `crc`.
 
         This method examines `self._buffer` and writes meta
         information into `self._header`.
@@ -152,58 +163,55 @@ class ModbusRtuFramer(ModbusFramer):
         `self._buffer` is not yet long enough.
         """
         data = data if data is not None else self._buffer
-        self._header['uid'] = byte2int(data[0])
-        func_code = byte2int(data[1])
-        pdu_class = self.decoder.lookupPduClass(func_code)
-        size = pdu_class.calculateRtuFrameSize(data)
-        self._header['len'] = size
+        self._header["uid"] = int(data[0])
+        size = self.get_expected_response_length(data)
+        self._header["len"] = size
 
         if len(data) < size:
             # crc yet not available
             raise IndexError
-        self._header['crc'] = data[size - 2:size]
+        self._header["crc"] = data[size - 2 : size]
+        return size
 
     def addToFrame(self, message):
-        """
-        This should be used before the decoding while loop to add the received
-        data to the buffer handle.
+        """Add the received data to the buffer handle.
 
         :param message: The most recent packet
         """
         self._buffer += message
 
     def getFrame(self):
-        """
-        Get the next frame from the buffer
+        """Get the next frame from the buffer.
 
-        :returns: The frame data or ''
+        :returns: The frame data or ""
         """
         start = self._hsize
-        end = self._header['len'] - 2
+        end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
-            _logger.debug("Getting Frame - {}".format(hexlify_packets(buffer)))
+            txt = f"Getting Frame - {hexlify_packets(buffer)}"
+            _logger.debug(txt)
             return buffer
-        return b''
+        return b""
 
     def populateResult(self, result):
-        """
-        Populates the modbus result header
+        """Populate the modbus result header.
 
         The serial packets do not have any header information
         that is copied.
 
         :param result: The response packet
         """
-        result.unit_id = self._header['uid']
-        result.transaction_id = self._header['uid']
+        result.unit_id = self._header["uid"]
+        result.transaction_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
-        """
-        The new packet processing pattern
+    def processIncomingPacket(
+        self, data, callback, unit, **kwargs
+    ):  # pylint: disable=arguments-differ
+        """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
         packet stream, and performs framing on it. That is, checks
@@ -218,8 +226,7 @@ class ModbusRtuFramer(ModbusFramer):
         :param callback: The function to send results to
         :param unit: Process if unit id matches, ignore otherwise (could be a
                list of unit ids (server) or single unit id(client/server)
-        :param single: True or False (If True, ignore unit address validation)
-
+        :param kwargs:
         """
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
@@ -230,52 +237,56 @@ class ModbusRtuFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    _logger.debug("Not a valid unit id - {}, "
-                                  "ignoring!!".format(self._header['uid']))
+                    header_txt = self._header["uid"]
+                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
+                    _logger.debug(txt)
                     self.resetFrame()
             else:
                 _logger.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
         else:
-            _logger.debug("Frame - [{}] not ready".format(data))
+            txt = f"Frame - [{data}] not ready"
+            _logger.debug(txt)
 
     def buildPacket(self, message):
-        """
-        Creates a ready to send modbus packet
+        """Create a ready to send modbus packet.
 
         :param message: The populated request/response to send
         """
         data = message.encode()
-        packet = struct.pack(RTU_FRAME_HEADER,
-                             message.unit_id,
-                             message.function_code) + data
+        packet = (
+            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+        )
         packet += struct.pack(">H", computeCRC(packet))
-        message.transaction_id = message.unit_id  # Ensure that transaction is actually the unit id for serial comms
+        # Ensure that transaction is actually the unit id for serial comms
+        message.transaction_id = message.unit_id
         return packet
 
     def sendPacket(self, message):
-        """
-        Sends packets on the bus with 3.5char delay between frames
+        """Send packets on the bus with 3.5char delay between frames.
+
         :param message: Message to be sent over the bus
         :return:
         """
         start = time.time()
-        timeout = start + self.client.timeout
+        timeout = start + self.client.params.timeout
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
-                ts = round(time.time(), 6)
-                _logger.debug("Changing state to IDLE - Last Frame End - {}, "
-                              "Current Time stamp - {}".format(
-                    self.client.last_frame_end, ts)
+                timestamp = round(time.time(), 6)
+                txt = (
+                    f"Changing state to IDLE - Last Frame End - {self.client.last_frame_end}, "
+                    f"Current Time stamp - {timestamp}"
                 )
+                _logger.debug(txt)
 
                 if self.client.last_frame_end:
                     idle_time = self.client.idle_time()
-                    if round(ts - idle_time, 6) <= self.client.silent_interval:
-                        _logger.debug("Waiting for 3.5 char before next "
-                                      "send - {} ms".format(
-                            self.client.silent_interval * 1000)
+                    if round(timestamp - idle_time, 6) <= self.client.silent_interval:
+                        txt = (
+                            f"Waiting for 3.5 char before next "
+                            f"send - {self.client.silent_interval * 1000} ms"
                         )
+                        _logger.debug(txt)
                         time.sleep(self.client.silent_interval)
                 else:
                     # Recovering from last error ??
@@ -284,23 +295,24 @@ class ModbusRtuFramer(ModbusFramer):
             elif self.client.state == ModbusTransactionState.RETRYING:
                 # Simple lets settle down!!!
                 # To check for higher baudrates
-                time.sleep(self.client.timeout)
+                time.sleep(self.client.params.timeout)
                 break
+            elif time.time() > timeout:
+                _logger.debug(
+                    "Spent more time than the read time out, "
+                    "resetting the transaction to IDLE"
+                )
+                self.client.state = ModbusTransactionState.IDLE
             else:
-                if time.time() > timeout:
-                    _logger.debug("Spent more time than the read time out, "
-                                  "resetting the transaction to IDLE")
-                    self.client.state = ModbusTransactionState.IDLE
-                else:
-                    _logger.debug("Sleeping")
-                    time.sleep(self.client.silent_interval)
+                _logger.debug("Sleeping")
+                time.sleep(self.client.silent_interval)
         size = self.client.send(message)
         self.client.last_frame_end = round(time.time(), 6)
         return size
 
     def recvPacket(self, size):
-        """
-        Receives packet from the bus with specified len
+        """Receive packet from the bus with specified len.
+
         :param size: Number of bytes to read
         :return:
         """
@@ -309,26 +321,32 @@ class ModbusRtuFramer(ModbusFramer):
         return result
 
     def _process(self, callback, error=False):
-        """
-        Process incoming packets irrespective error condition
-        """
+        """Process incoming packets irrespective error condition."""
         data = self.getRawFrame() if error else self.getFrame()
-        result = self.decoder.decode(data)
-        if result is None:
+        if (result := self.decoder.decode(data)) is None:
             raise ModbusIOException("Unable to decode request")
-        elif error and result.function_code < 0x80:
+        if error and result.function_code < 0x80:
             raise InvalidMessageReceivedException(result)
-        else:
-            self.populateResult(result)
-            self.advanceFrame()
-            callback(result)  # defer or push to a thread?
+        self.populateResult(result)
+        self.advanceFrame()
+        callback(result)  # defer or push to a thread?
 
-    def getRawFrame(self):
-        """
-        Returns the complete buffer
-        """
-        _logger.debug("Getting Raw Frame - "
-                      "{}".format(hexlify_packets(self._buffer)))
+    def getRawFrame(self):  # pylint: disable=invalid-name
+        """Return the complete buffer."""
+        txt = f"Getting Raw Frame - {hexlify_packets(self._buffer)}"
+        _logger.debug(txt)
         return self._buffer
+
+    def get_expected_response_length(self, data):
+        """Get the expected response length.
+
+        :param data: Message data read so far
+        :raises IndexError: If not enough data to read byte count
+        :return: Total frame size
+        """
+        func_code = int(data[1])
+        pdu_class = self.decoder.lookupPduClass(func_code)
+        return pdu_class.calculateRtuFrameSize(data)
+
 
 # __END__

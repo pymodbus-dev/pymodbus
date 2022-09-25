@@ -1,597 +1,558 @@
-"""
-Modbus Clients to be used with REPL.
-
-Copyright (c) 2018 Riptide IO, Inc. All Rights Reserved.
-
-"""
-from __future__ import absolute_import, unicode_literals
+"""Modbus Clients to be used with REPL."""
+# pylint: disable=missing-type-doc
 import functools
-from pymodbus.pdu import ModbusExceptions, ExceptionResponse
-from pymodbus.exceptions import ModbusIOException
-from pymodbus.client.sync import ModbusSerialClient as _ModbusSerialClient
-from pymodbus.client.sync import ModbusTcpClient as _ModbusTcpClient
-from pymodbus.mei_message import ReadDeviceInformationRequest
-from pymodbus.other_message import (ReadExceptionStatusRequest,
-                                    ReportSlaveIdRequest,
-                                    GetCommEventCounterRequest,
-                                    GetCommEventLogRequest)
+
+from pymodbus.client import (
+    ModbusSerialClient as _ModbusSerialClient,
+    ModbusTcpClient as _ModbusTcpClient,
+)
+from pymodbus.constants import Defaults
 from pymodbus.diag_message import (
-                                   ReturnQueryDataRequest,
-                                   RestartCommunicationsOptionRequest,
-                                   ReturnDiagnosticRegisterRequest,
-                                   ChangeAsciiInputDelimiterRequest,
-                                   ForceListenOnlyModeRequest,
-                                   ClearCountersRequest,
-                                   ReturnBusMessageCountRequest,
-                                   ReturnBusCommunicationErrorCountRequest,
-                                   ReturnBusExceptionErrorCountRequest,
-                                   ReturnSlaveMessageCountRequest,
-                                   ReturnSlaveNoResponseCountRequest,
-                                   ReturnSlaveNAKCountRequest,
-                                   ReturnSlaveBusyCountRequest,
-                                   ReturnSlaveBusCharacterOverrunCountRequest,
-                                   ReturnIopOverrunCountRequest,
-                                   ClearOverrunCountRequest,
-                                   GetClearModbusPlusRequest)
+    ChangeAsciiInputDelimiterRequest,
+    ClearCountersRequest,
+    ClearOverrunCountRequest,
+    ForceListenOnlyModeRequest,
+    GetClearModbusPlusRequest,
+    RestartCommunicationsOptionRequest,
+    ReturnBusCommunicationErrorCountRequest,
+    ReturnBusExceptionErrorCountRequest,
+    ReturnBusMessageCountRequest,
+    ReturnDiagnosticRegisterRequest,
+    ReturnIopOverrunCountRequest,
+    ReturnQueryDataRequest,
+    ReturnSlaveBusCharacterOverrunCountRequest,
+    ReturnSlaveBusyCountRequest,
+    ReturnSlaveMessageCountRequest,
+    ReturnSlaveNAKCountRequest,
+    ReturnSlaveNoResponseCountRequest,
+)
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.mei_message import ReadDeviceInformationRequest
+from pymodbus.other_message import (
+    GetCommEventCounterRequest,
+    GetCommEventLogRequest,
+    ReadExceptionStatusRequest,
+    ReportSlaveIdRequest,
+)
+from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 
 
 def make_response_dict(resp):
-    rd = {
-        'function_code': resp.function_code,
-        'address': resp.address
-    }
+    """Make response dict."""
+    resp_dict = {"function_code": resp.function_code, "address": resp.address}
     if hasattr(resp, "value"):
-        rd['value'] = resp.value
-    elif hasattr(resp, 'values'):
-        rd['values'] = resp.values
-    elif hasattr(resp, 'count'):
-        rd['count'] = resp.count
-
-    return rd
+        resp_dict["value"] = resp.value
+    elif hasattr(resp, "values"):
+        resp_dict["values"] = resp.values
+    elif hasattr(resp, "count"):
+        resp_dict["count"] = resp.count
+    return resp_dict
 
 
 def handle_brodcast(func):
+    """Handle broadcast."""
+
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
-        if kwargs.get("unit") == 0 and self.broadcast_enable:
-            return {
-                'broadcasted': True
-            }
+        if not kwargs.get("unit") and self.params.broadcast_enable:
+            return {"broadcasted": True}
         if not resp.isError():
             return make_response_dict(resp)
-        else:
-            return ExtendedRequestSupport._process_exception(resp, **kwargs)
+        return ExtendedRequestSupport._process_exception(  # pylint: disable=protected-access
+            resp, **kwargs
+        )
+
     return _wrapper
 
 
-class ExtendedRequestSupport(object):
+class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
+    """Extended request support."""
 
     @staticmethod
     def _process_exception(resp, **kwargs):
+        """Set internal process exception."""
         unit = kwargs.get("unit")
-        if unit == 0:
-            err = {
-                "message": "Broadcast message, ignoring errors!!!"
-            }
+        if unit == 0:  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
+            err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
-            if isinstance(resp, ExceptionResponse):
+            if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
                 err = {
-                    'original_function_code': "{} ({})".format(
-                        resp.original_code, hex(resp.original_code)),
-                    'error_function_code': "{} ({})".format(
-                        resp.function_code, hex(resp.function_code)),
-                    'exception code': resp.exception_code,
-                    'message': ModbusExceptions.decode(resp.exception_code)
+                    "original_function_code": f"{resp.original_code} ({hex(resp.original_code)})",
+                    "error_function_code": f"{resp.function_code} ({hex(resp.function_code)})",
+                    "exception code": resp.exception_code,
+                    "message": ModbusExceptions.decode(resp.exception_code),
                 }
             elif isinstance(resp, ModbusIOException):
                 err = {
-                    'original_function_code': "{} ({})".format(
-                        resp.fcode, hex(resp.fcode)),
-                    'error': resp.message
+                    "original_function_code": f"{resp.fcode} ({hex(resp.fcode)})",
+                    "error": resp.message,
                 }
             else:
-                err = {
-                    'error': str(resp)
-                }
+                err = {"error": str(resp)}
         return err
 
-    def read_coils(self, address, count=1, **kwargs):
-        """
-        Reads `count` coils from a given slave starting at `address`.
+    def read_coils(self, address, count=1, slave=Defaults.Slave, **kwargs):
+        """Read `count` coils from a given slave starting at `address`.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :returns: List of register values
         """
-        resp = super(ExtendedRequestSupport, self).read_coils(address,
-                                                              count, **kwargs)
+        resp = super().read_coils(  # pylint: disable=no-member
+            address, count, slave, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'bits': resp.bits
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "bits": resp.bits}
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def read_discrete_inputs(self, address, count=1, **kwargs):
-        """
-        Reads `count` number of discrete inputs starting at offset `address`.
+    def read_discrete_inputs(self, address, count=1, slave=Defaults.Slave, **kwargs):
+        """Read `count` number of discrete inputs starting at offset `address`.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return: List of bits
         """
-        resp = super(ExtendedRequestSupport,
-                     self).read_discrete_inputs(address, count, **kwargs)
+        resp = super().read_discrete_inputs(  # pylint: disable=no-member
+            address, count, slave, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'bits': resp.bits
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "bits": resp.bits}
+        return ExtendedRequestSupport._process_exception(resp)
 
     @handle_brodcast
-    def write_coil(self, address, value, **kwargs):
-        """
-        Write `value` to coil at `address`.
+    def write_coil(self, address, value, slave=Defaults.Slave, **kwargs):
+        """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
         :param value: bit value to write
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).write_coil(
-            address, value, **kwargs)
+        resp = super().write_coil(  # pylint: disable=no-member
+            address, value, slave, **kwargs
+        )
         return resp
 
     @handle_brodcast
-    def write_coils(self, address, values, **kwargs):
-        """
-        Write `value` to coil at `address`.
+    def write_coils(self, address, values, slave=Defaults.Slave, **kwargs):
+        """Write `value` to coil at `address`.
 
         :param address: coil offset to write to
         :param values: list of bit values to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).write_coils(
-            address, values, **kwargs)
+        resp = super().write_coils(  # pylint: disable=no-member
+            address, values, slave, **kwargs
+        )
         return resp
 
     @handle_brodcast
-    def write_register(self, address, value, **kwargs):
-        """
-        Write `value` to register at `address`.
+    def write_register(self, address, value, slave=Defaults.Slave, **kwargs):
+        """Write `value` to register at `address`.
 
         :param address: register offset to write to
         :param value: register value to write
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).write_register(
-            address, value, **kwargs)
+        resp = super().write_register(  # pylint: disable=no-member
+            address, value, slave, **kwargs
+        )
         return resp
 
     @handle_brodcast
-    def write_registers(self, address, values, **kwargs):
-        """
-        Write list of `values` to registers starting at `address`.
+    def write_registers(self, address, values, slave=Defaults.Slave, **kwargs):
+        """Write list of `values` to registers starting at `address`.
 
         :param address: register offset to write to
         :param values: list of register value to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).write_registers(
-            address, values, **kwargs)
+        resp = super().write_registers(  # pylint: disable=no-member
+            address, values, slave, **kwargs
+        )
         return resp
 
-    def read_holding_registers(self, address, count=1, **kwargs):
-        """
-        Read `count` number of holding registers starting at `address`.
+    def read_holding_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+        """Read `count` number of holding registers starting at `address`.
 
         :param address: starting register offset to read from
         :param count: Number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).read_holding_registers(
-            address, count, **kwargs)
+        resp = super().read_holding_registers(  # pylint: disable=no-member
+            address, count, slave, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "registers": resp.registers}
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def read_input_registers(self, address, count=1, **kwargs):
-        """
-        Read `count` number of input registers starting at `address`.
+    def read_input_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
+        """Read `count` number of input registers starting at `address`.
 
         :param address: starting register offset to read from to
         :param count: Number of registers to read
-        :param unit: The slave unit this request is targeting
+        :param slave: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).read_input_registers(
-            address, count, **kwargs)
+        resp = super().read_input_registers(  # pylint: disable=no-member
+            address, count, slave, **kwargs
+        )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "registers": resp.registers}
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def readwrite_registers(self, read_address, read_count, write_address,
-                            write_registers, **kwargs):
-        """
-        Read `read_count` number of holding registers starting at \
-        `read_address`  and write `write_registers` \
-        starting at `write_address`.
+    def readwrite_registers(
+        self,
+        read_address,
+        read_count,
+        write_address,
+        write_registers,
+        unit=Defaults.Slave,
+        **kwargs,
+    ):
+        """Read `read_count` number of holding registers.
+
+        Starting at `read_address`
+        and write `write_registers` starting at `write_address`.
 
         :param read_address: register offset to read from
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
         :param write_registers: List of register values to write (comma separated)
-        :param unit: The slave unit this request is targeting
+        :param unit: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).readwrite_registers(
+        resp = super().readwrite_registers(  # pylint: disable=no-member
             read_address=read_address,
             read_count=read_count,
             write_address=write_address,
             write_registers=write_registers,
-            **kwargs
+            unit=unit,
+            **kwargs,
         )
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'registers': resp.registers
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "registers": resp.registers}
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def mask_write_register(self, address=0x0000,
-                            and_mask=0xffff, or_mask=0x0000, **kwargs):
-        """
-        Mask content of holding register at `address`  \
-        with `and_mask` and `or_mask`.
+    def mask_write_register(
+        self,
+        address=0x0000,
+        and_mask=0xFFFF,
+        or_mask=0x0000,
+        unit=Defaults.Slave,
+        **kwargs,
+    ):
+        """Mask content of holding register at `address` with `and_mask` and `or_mask`.
 
         :param address: Reference address of register
         :param and_mask: And Mask
         :param or_mask: OR Mask
-        :param unit: The slave unit this request is targeting
+        :param unit: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        resp = super(ExtendedRequestSupport, self).read_input_registers(
-            address=address, and_mask=and_mask, or_mask=or_mask, **kwargs)
+        resp = super().mask_write_register(  # pylint: disable=no-member
+            address=address, and_mask=and_mask, or_mask=or_mask, unit=unit, **kwargs
+        )
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'address': resp.address,
-                'and mask': resp.and_mask,
-                'or mask': resp.or_mask
+                "function_code": resp.function_code,
+                "address": resp.address,
+                "and mask": resp.and_mask,
+                "or mask": resp.or_mask,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def read_device_information(self, read_code=None,
-                                        object_id=0x00, **kwargs):
-        """
-        Read the identification and additional information of remote slave.
+    def read_device_information(self, read_code=None, object_id=0x00, **kwargs):
+        """Read the identification and additional information of remote slave.
 
         :param read_code:  Read Device ID code (0x01/0x02/0x03/0x04)
         :param object_id: Identification of the first object to obtain.
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReadDeviceInformationRequest(read_code, object_id, **kwargs)
-        resp = self.execute(request)
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'information': resp.information,
-                'object count': resp.number_of_objects,
-                'conformity': resp.conformity,
-                'next object id': resp.next_object_id,
-                'more follows': resp.more_follows,
-                'space left': resp.space_left
+                "function_code": resp.function_code,
+                "information": resp.information,
+                "object count": resp.number_of_objects,
+                "conformity": resp.conformity,
+                "next object id": resp.next_object_id,
+                "more follows": resp.more_follows,
+                "space left": resp.space_left,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
-    def report_slave_id(self, **kwargs):
-        """
-        Report information about remote slave ID.
+    def report_slave_id(self, unit=Defaults.Slave, **kwargs):
+        """Report information about remote slave ID.
 
-        :param unit: The slave unit this request is targeting
+        :param unit: Modbus slave unit ID
+        :param kwargs:
         :return:
         """
-        request = ReportSlaveIdRequest(**kwargs)
-        resp = self.execute(request)
+        request = ReportSlaveIdRequest(unit, **kwargs)
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'identifier': resp.identifier.decode('cp1252'),
-                'status': resp.status,
-                'byte count': resp.byte_count
+                "function_code": resp.function_code,
+                "identifier": resp.identifier.decode("cp1252"),
+                "status": resp.status,
+                "byte count": resp.byte_count,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
     def read_exception_status(self, **kwargs):
-        """
-         Read the contents of eight Exception Status outputs in a remote \
-         device.
+        """Read tcontents of eight Exception Status output.
 
-        :param unit: The slave unit this request is targeting
-        
+        In a remote device.
+
+        :param kwargs:
         :return:
-
         """
         request = ReadExceptionStatusRequest(**kwargs)
-        resp = self.execute(request)
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
-            return {
-                'function_code': resp.function_code,
-                'status': resp.status
-            }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+            return {"function_code": resp.function_code, "status": resp.status}
+        return ExtendedRequestSupport._process_exception(resp)
 
     def get_com_event_counter(self, **kwargs):
-        """
-        Read  status word and an event count from the remote device's \
-        communication event counter.
+        """Read status word and an event count.
 
-        :param unit: The slave unit this request is targeting
+        From the remote device"s communication event counter.
 
+        :param kwargs:
         :return:
-
         """
         request = GetCommEventCounterRequest(**kwargs)
-        resp = self.execute(request)
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'status': resp.status,
-                'count': resp.count
+                "function_code": resp.function_code,
+                "status": resp.status,
+                "count": resp.count,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
     def get_com_event_log(self, **kwargs):
-        """
-        Read  status word, event count, message count, and a field of event
+        """Read status word.
+
+        Event count, message count, and a field of event
         bytes from the remote device.
 
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = GetCommEventLogRequest(**kwargs)
-        resp = self.execute(request)
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {
-                'function_code': resp.function_code,
-                'status': resp.status,
-                'message count': resp.message_count,
-                'event count': resp.event_count,
-                'events': resp.events,
+                "function_code": resp.function_code,
+                "status": resp.status,
+                "message count": resp.message_count,
+                "event count": resp.event_count,
+                "events": resp.events,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
     def _execute_diagnostic_request(self, request):
-        resp = self.execute(request)
+        """Execute diagnostic request."""
+        resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {
-                'function code': resp.function_code,
-                'sub function code': resp.sub_function_code,
-                'message': resp.message
+                "function code": resp.function_code,
+                "sub function code": resp.sub_function_code,
+                "message": resp.message,
             }
-        else:
-            return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp)
 
     def return_query_data(self, message=0, **kwargs):
-        """
-        Diagnostic sub command , Loop back data sent in response.
+        """Loop back data sent in response.
 
         :param message: Message to be looped back
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnQueryDataRequest(message, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def restart_comm_option(self, toggle=False, **kwargs):
-        """
-        Diagnostic sub command, initialize and restart remote devices serial \
-        interface and clear all of its communications event counters .
+        """Initialize and restart remote devices.
+
+        Serial interface and clear all of its communications event counters.
 
         :param toggle: Toggle Status [ON(0xff00)/OFF(0x0000]
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = RestartCommunicationsOptionRequest(toggle, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_diagnostic_register(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Read 16-bit diagnostic register.
+        """Read 16-bit diagnostic register.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnDiagnosticRegisterRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def change_ascii_input_delimiter(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Change message delimiter for future requests.
+        """Change message delimiter for future requests.
 
         :param data: New delimiter character
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ChangeAsciiInputDelimiterRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def force_listen_only_mode(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Forces the addressed remote device to \
-        its Listen Only Mode.
+        """Force addressed remote device to its Listen Only Mode.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ForceListenOnlyModeRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def clear_counters(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Clear all counters and diag registers.
+        """Clear all counters and diag registers.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ClearCountersRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_bus_message_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of message detected on bus \
-         by remote slave.
+        """Return count of message detected on bus by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusMessageCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_bus_com_error_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of CRC errors \
-        received by remote slave.
+        """Return count of CRC errors received by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusCommunicationErrorCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_bus_exception_error_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of Modbus exceptions \
-        returned by remote slave.
+        """Return count of Modbus exceptions returned by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnBusExceptionErrorCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_slave_message_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of messages addressed to \
-        remote slave.
+        """Return count of messages addressed to remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveMessageCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_slave_no_response_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of No responses  by remote slave.
+        """Return count of No responses by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveNoResponseCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_slave_no_ack_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of NO ACK exceptions sent \
-         by remote slave.
+        """Return count of NO ACK exceptions sent by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveNAKCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_slave_busy_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of server busy exceptions sent \
-         by remote slave.
+        """Return count of server busy exceptions sent by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveBusyCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_slave_bus_char_overrun_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of messages not handled \
-         by remote slave due to character overrun condition.
+        """Return count of messages not handled.
+
+        By remote slave due to character overrun condition.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnSlaveBusCharacterOverrunCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def return_iop_overrun_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Return count of iop overrun errors \
-        by remote slave.
+        """Return count of iop overrun errors by remote slave.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ReturnIopOverrunCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def clear_overrun_count(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Clear over run counter.
+        """Clear over run counter.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = ClearOverrunCountRequest(data, **kwargs)
         return self._execute_diagnostic_request(request)
 
     def get_clear_modbus_plus(self, data=0, **kwargs):
-        """
-        Diagnostic sub command, Get or clear stats of remote \
-         modbus plus device.
+        """Get/clear stats of remote modbus plus device.
 
         :param data: Data field (0x0000)
-        :param unit: The slave unit this request is targeting
+        :param kwargs:
         :return:
         """
         request = GetClearModbusPlusRequest(data, **kwargs)
@@ -599,136 +560,129 @@ class ExtendedRequestSupport(object):
 
 
 class ModbusSerialClient(ExtendedRequestSupport, _ModbusSerialClient):
-    def __init__(self, method, **kwargs):
-        super(ModbusSerialClient, self).__init__(method, **kwargs)
+    """Modbus serial client."""
+
+    def __init__(self, framer, **kwargs):
+        """Initialize."""
+        super().__init__(framer=framer, **kwargs)
 
     def get_port(self):
-        """
-        Serial Port.
+        """Get serial Port.
 
         :return: Current Serial port
         """
-        return self.port
+        return self.params.port
 
     def set_port(self, value):
-        """
-        Serial Port setter.
+        """Set serial Port setter.
 
         :param value: New port
         """
-        self.port = value
+        self.params.port = value
         if self.is_socket_open():
             self.close()
 
     def get_stopbits(self):
-        """
-        Number of stop bits.
+        """Get number of stop bits.
 
         :return: Current Stop bits
         """
-        return self.stopbits
+        return self.params.stopbits
 
     def set_stopbits(self, value):
-        """
-        Stop bit setter.
+        """Set stop bit.
 
         :param value: Possible values (1, 1.5, 2)
         """
-        self.stopbits = float(value)
+        self.params.stopbits = float(value)
         if self.is_socket_open():
             self.close()
 
     def get_bytesize(self):
-        """
-        Number of data bits.
+        """Get number of data bits.
 
         :return: Current bytesize
         """
-        return self.bytesize
+        return self.params.bytesize
 
     def set_bytesize(self, value):
-        """
-        Byte size setter.
+        """Set Byte size.
 
         :param value: Possible values (5, 6, 7, 8)
 
         """
-        self.bytesize = int(value)
+        self.params.bytesize = int(value)
         if self.is_socket_open():
             self.close()
 
     def get_parity(self):
-        """
-        Enable Parity Checking.
+        """Enable Parity Checking.
 
         :return: Current parity setting
         """
-        return self.parity
+        return self.params.parity
 
     def set_parity(self, value):
-        """
-        Parity Setter.
+        """Set parity Setter.
 
-        :param value: Possible values ('N', 'E', 'O', 'M', 'S')
+        :param value: Possible values ("N", "E", "O", "M", "S")
         """
-        self.parity = value
+        self.params.parity = value
         if self.is_socket_open():
             self.close()
 
     def get_baudrate(self):
-        """
-        Serial Port baudrate.
+        """Get serial Port baudrate.
 
         :return: Current baudrate
         """
-        return self.baudrate
+        return self.params.baudrate
 
     def set_baudrate(self, value):
-        """
-        Baudrate setter.
+        """Set baudrate setter.
 
         :param value: <supported baudrate>
         """
-        self.baudrate = int(value)
+        self.params.baudrate = int(value)
         if self.is_socket_open():
             self.close()
 
     def get_timeout(self):
-        """
-        Serial Port Read timeout.
+        """Get serial Port Read timeout.
 
         :return: Current read imeout.
         """
-        return self.timeout
+        return self.params.timeout
 
     def set_timeout(self, value):
-        """
-        Read timeout setter.
+        """Read timeout setter.
 
         :param value: Read Timeout in seconds
         """
-        self.timeout = float(value)
+        self.params.timeout = float(value)
         if self.is_socket_open():
             self.close()
 
     def get_serial_settings(self):
-        """
-        Gets Current Serial port settings.
+        """Get Current Serial port settings.
 
         :return: Current Serial settings as dict.
         """
         return {
-            'baudrate': self.baudrate,
-            'port': self.port,
-            'parity': self.parity,
-            'stopbits': self.stopbits,
-            'bytesize': self.bytesize,
-            'read timeout': self.timeout,
-            't1.5': self.inter_char_timeout,
-            't3.5': self.silent_interval
+            "baudrate": self.params.baudrate,
+            "port": self.params.port,
+            "parity": self.params.parity,
+            "stopbits": self.params.stopbits,
+            "bytesize": self.params.bytesize,
+            "read timeout": self.params.timeout,
+            "t1.5": self.inter_char_timeout,
+            "t3.5": self.silent_interval,
         }
 
 
 class ModbusTcpClient(ExtendedRequestSupport, _ModbusTcpClient):
+    """TCP client."""
+
     def __init__(self, **kwargs):
-        super(ModbusTcpClient, self).__init__(**kwargs)
+        """Initialize."""
+        super().__init__(**kwargs)

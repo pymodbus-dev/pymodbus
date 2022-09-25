@@ -2,6 +2,7 @@
 *.swp
 build/
 dist/
+venv/
 pymodbus.egg-info/
 .coverage
 .vscode
@@ -39,3 +40,5 @@ test/__pycache__/
 **/.pymodhis
 /build/
 /dist/
+**/.DS_Store
+/venv

@@ -12,7 +12,7 @@ pymodbus
 You can use pymodbus as a testing server by simply modifying
 one of the run scripts supplied here. There is an
 asynchronous version and a synchronous version (that really
-differ in how mnay dependencies you are willing to have).
+differ in how many dependencies you are willing to have).
 Regardless of which one you choose, they can be started
 quite easily::
 
@@ -26,43 +26,6 @@ Currently, each version has implementations of the following:
 - modbus udp binary
 - modbus ascii serial
 - modbus ascii rtu
-
-------------------------------------------------------------
-Modbus Driver
-------------------------------------------------------------
-
-Included are reference implementations of a modbus client
-and server using the modbus driver library (as well as
-the relevant source code). Both programs have a wealth of
-options and can be used to test either side of your
-application::
-
-    tools/reference/diagslave -h # (server)
-    tools/reference/modpoll -h # (client)
-
-------------------------------------------------------------
-jamod
-------------------------------------------------------------
-
-Jamod is a complete modbus implementation for the java jvm.
-Included are a few simple reference servers using the
-library, however, a great deal more can be produced using
-it. I have not tested it, however, it may even be possible
-to use this library in conjunction with jython to interop
-between your python code and this library:
-
-* http://jamod.sourceforge.net/
-
-------------------------------------------------------------
-nmodbus
-------------------------------------------------------------
-
-Although there is not any code included in this package,
-nmodbus is a complete implementation of the modbus protocol
-for the .net clr. The site has a number of examples that can
-be tuned for your testing needs:
-
-* http://code.google.com/p/nmodbus/
 
 ============================================================
 Serial Loopback Testing

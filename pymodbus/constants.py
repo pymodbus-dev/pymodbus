@@ -1,15 +1,23 @@
-'''
-Constants For Modbus Server/Client
-----------------------------------
+"""Constants For Modbus Server/Client.
 
 This is the single location for storing default
 values for the servers and clients.
-'''
+"""
+import logging
+
 from pymodbus.interfaces import Singleton
 
 
-class Defaults(Singleton):
-    ''' A collection of modbus default values
+# set logging format and default level for library.
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
+    datefmt="%H:%M:%S",
+    level=logging.WARNING,
+)
+
+
+class Defaults(Singleton):  # pylint: disable=too-few-public-methods
+    """A collection of modbus default values.
 
     .. attribute:: Port
 
@@ -59,11 +67,11 @@ class Defaults(Singleton):
        The modbus protocol id.  Currently this is set to 0 in all
        but proprietary implementations.
 
-    .. attribute:: UnitId
+    .. attribute:: Slave
 
-       The modbus slave addrss.  Currently this is set to 0x00 which
+       The modbus slave address.  Currently this is set to 0x00 which
        means this request should be broadcast to all the slave devices
-       (really means that all the devices should respons).
+       (really means that all the devices should respond).
 
     .. attribute:: Baudrate
 
@@ -100,7 +108,7 @@ class Defaults(Singleton):
 
        In case a request is made to a missing slave, this defines if an error
        should be returned or simply ignored. This is useful for the case of a
-       serial server emulater where a request to a non-existant slave on a bus
+       serial server emulater where a request to a non-existent slave on a bus
        will never respond. The client in this case will simply timeout.
 
     .. attribute:: broadcast_enable
@@ -111,31 +119,37 @@ class Defaults(Singleton):
       response. Default value False does not conform to Modbus spec but maintains
       legacy behavior for existing pymodbus users.
 
-    '''
-    Port                = 502
-    TLSPort             = 802
-    Backoff             = 0.3
-    Retries             = 3
-    RetryOnEmpty        = False
-    RetryOnInvalid      = False
-    Timeout             = 3
-    Reconnects          = 0
-    TransactionId       = 0
-    ProtocolId          = 0
-    UnitId              = 0x00
-    Baudrate            = 19200
-    Parity              = 'N'
-    Bytesize            = 8
-    Stopbits            = 1
-    ZeroMode            = False
-    IgnoreMissingSlaves = False
-    ReadSize            = 1024
-    broadcast_enable    = False
+    """
 
-class ModbusStatus(Singleton):
-    '''
-    These represent various status codes in the modbus
-    protocol.
+    TcpPort = 502
+    TlsPort = 802
+    UdpPort = 502
+    Backoff = 0.3
+    CloseCommOnError = False
+    HandleLocalEcho = False
+    Retries = 3
+    RetryOnEmpty = False
+    RetryOnInvalid = False
+    Timeout = 3
+    Reconnects = 0
+    TransactionId = 0
+    Strict = True
+    ProtocolId = 0
+    Slave = 0x00
+    Baudrate = 19200
+    Parity = "N"
+    Bytesize = 8
+    Stopbits = 1
+    ZeroMode = False
+    IgnoreMissingSlaves = False
+    ReadSize = 1024
+    BroadcastEnable = False
+    ReconnectDelay = 1000 * 60 * 5
+    Count = 1
+
+
+class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods
+    """These represent various status codes in the modbus protocol.
 
     .. attribute:: Waiting
 
@@ -162,17 +176,18 @@ class ModbusStatus(Singleton):
     .. attribute:: SlaveOff
 
        This indicates that the given modbus slave is not running
-    '''
-    Waiting  = 0xffff
-    Ready    = 0x0000
-    On       = 0xff00
-    Off      = 0x0000
-    SlaveOn  = 0xff
+    """
+
+    Waiting = 0xFFFF
+    Ready = 0x0000
+    On = 0xFF00  # pylint: disable=invalid-name
+    Off = 0x0000
+    SlaveOn = 0xFF
     SlaveOff = 0x00
 
 
-class Endian(Singleton):
-    ''' An enumeration representing the various byte endianess.
+class Endian(Singleton):  # pylint: disable=too-few-public-methods
+    """An enumeration representing the various byte endianness.
 
     .. attribute:: Auto
 
@@ -189,14 +204,15 @@ class Endian(Singleton):
 
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.
-    '''
-    Auto   = '@'
-    Big    = '>'
-    Little = '<'
+    """
+
+    Auto = "@"
+    Big = ">"
+    Little = "<"
 
 
-class ModbusPlusOperation(Singleton):
-    ''' Represents the type of modbus plus request
+class ModbusPlusOperation(Singleton):  # pylint: disable=too-few-public-methods
+    """Represents the type of modbus plus request.
 
     .. attribute:: GetStatistics
 
@@ -207,13 +223,14 @@ class ModbusPlusOperation(Singleton):
 
        Operation requesting that the current modbus plus statistics
        be cleared and not returned in the response.
-    '''
-    GetStatistics   = 0x0003
+    """
+
+    GetStatistics = 0x0003
     ClearStatistics = 0x0004
 
 
-class DeviceInformation(Singleton):
-    ''' Represents what type of device information to read
+class DeviceInformation(Singleton):  # pylint: disable=too-few-public-methods
+    """Represents what type of device information to read.
 
     .. attribute:: Basic
 
@@ -237,32 +254,38 @@ class DeviceInformation(Singleton):
     .. attribute:: Specific
 
        Request to return a single data object.
-    '''
-    Basic    = 0x01
-    Regular  = 0x02
+    """
+
+    Basic = 0x01
+    Regular = 0x02
     Extended = 0x03
     Specific = 0x04
 
 
-class MoreData(Singleton):
-    ''' Represents the more follows condition
+class MoreData(Singleton):  # pylint: disable=too-few-public-methods
+    """Represents the more follows condition.
 
     .. attribute:: Nothing
 
-       This indiates that no more objects are going to be returned.
+       This indicates that no more objects are going to be returned.
 
     .. attribute:: KeepReading
 
        This indicates that there are more objects to be returned.
-    '''
-    Nothing     = 0x00
+    """
+
+    Nothing = 0x00
     KeepReading = 0xFF
 
-#---------------------------------------------------------------------------#
-# Exported Identifiers
-#---------------------------------------------------------------------------#
+
+# ---------------------------------------------------------------------------#
+#  Exported Identifiers
+# ---------------------------------------------------------------------------#
 __all__ = [
-    "Defaults", "ModbusStatus", "Endian",
+    "Defaults",
+    "ModbusStatus",
+    "Endian",
     "ModbusPlusOperation",
-    "DeviceInformation", "MoreData",
+    "DeviceInformation",
+    "MoreData",
 ]

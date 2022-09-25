@@ -1,0 +1,6 @@
+1) add .pre-commit and commit-hook
+
+2) new checks
+- prettier
+- mypy
+

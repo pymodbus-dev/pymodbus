@@ -1,62 +1,65 @@
-#!/usr/bin/env python
-"""
-Pymodbus Synchronous Server Example to showcase Device Information
---------------------------------------------------------------------------
+#!/usr/bin/env python3
+"""Pymodbus Synchronous Server Example to showcase Device Information.
 
 This server demonstrates the use of Device Information to provide information
 to clients about the device. This is part of the MODBUS specification, and
 uses the MEI 0x2B 0x0E request / response. This example creates an otherwise
 empty server.
 """
-# --------------------------------------------------------------------------- # 
+import logging
+
+from serial import __version__ as pyserial_version
+
+from pymodbus import __version__ as pymodbus_version
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
+
+# from pymodbus.server import StartUdpServer
+# from pymodbus.server import StartSerialServer
+# from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.server import StartTcpServer
+
+# --------------------------------------------------------------------------- #
 # import the various server implementations
 # --------------------------------------------------------------------------- #
 from pymodbus.version import version
-from pymodbus.server.sync import StartTcpServer
-from pymodbus.server.sync import StartUdpServer
-from pymodbus.server.sync import StartSerialServer
 
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-
-from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 
 # --------------------------------------------------------------------------- #
-# import versions of libraries which we will use later on for the example
-# --------------------------------------------------------------------------- #
-from pymodbus import __version__ as pymodbus_version
-from serial import __version__ as pyserial_version
-
-# --------------------------------------------------------------------------- # 
 # configure the service logging
-# --------------------------------------------------------------------------- # 
-import logging
-FORMAT = ('%(asctime)-15s %(threadName)-15s'
-          ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
+# --------------------------------------------------------------------------- #
+FORMAT = (
+    "%(asctime)-15s %(threadName)-15s"
+    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
+)
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
 def run_server():
+    """Run server."""
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
     store = ModbusSlaveContext()
     context = ModbusServerContext(slaves=store, single=True)
-    
-    # ----------------------------------------------------------------------- # 
+
+    # ----------------------------------------------------------------------- #
     # initialize the server information
-    # ----------------------------------------------------------------------- # 
-    # If you don't set this or any fields, they are defaulted to empty strings.
-    # ----------------------------------------------------------------------- # 
-    identity = ModbusDeviceIdentification()
-    identity.VendorName = 'Pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'Pymodbus Server'
-    identity.ModelName = 'Pymodbus Server'
-    identity.MajorMinorRevision = version.short()
+    # ----------------------------------------------------------------------- #
+    # If you don"t set this or any fields, they are defaulted to empty strings.
+    # ----------------------------------------------------------------------- #
+    identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": version.short(),
+        }
+    )
 
     # ----------------------------------------------------------------------- #
     # Add an example which is long enough to force the ReadDeviceInformation
@@ -64,11 +67,13 @@ def run_server():
     # information.
     # ----------------------------------------------------------------------- #
 
-    identity[0x80] = "Lorem ipsum dolor sit amet, consectetur adipiscing " \
-                     "elit. Vivamus rhoncus massa turpis, sit amet " \
-                     "ultrices orci semper ut. Aliquam tristique sapien in " \
-                     "lacus pharetra, in convallis nunc consectetur. Nunc " \
-                     "velit elit, vehicula tempus tempus sed. "
+    identity[0x80] = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing "
+        "elit. Vivamus rhoncus massa turpis, sit amet "
+        "ultrices orci semper ut. Aliquam tristique sapien in "
+        "lacus pharetra, in convallis nunc consectetur. Nunc "
+        "velit elit, vehicula tempus tempus sed. "
+    )
 
     # ----------------------------------------------------------------------- #
     # Add an example with repeated object IDs. The MODBUS specification is
@@ -85,12 +90,11 @@ def run_server():
     # response", if you use repeated OIDs, apply that rule to the entire
     # grouping of objects with the repeated OID.
     # ----------------------------------------------------------------------- #
-    identity[0x81] = ['pymodbus {0}'.format(pymodbus_version),
-                      'pyserial {0}'.format(pyserial_version)]
+    identity[0x81] = [f"pymodbus {pymodbus_version}", f"pyserial {pyserial_version}"]
 
     # ----------------------------------------------------------------------- #
     # run the server you want
-    # ----------------------------------------------------------------------- # 
+    # ----------------------------------------------------------------------- #
     # Tcp:
     StartTcpServer(context, identity=identity, address=("localhost", 5020))
 
@@ -100,20 +104,20 @@ def run_server():
 
     # Udp:
     # StartUdpServer(context, identity=identity, address=("0.0.0.0", 5020))
-    
+
     # Ascii:
     # StartSerialServer(context, identity=identity,
-    #                    port='/dev/ttyp0', timeout=1)
-    
+    #                    port="/dev/ttyp0", timeout=1)
+
     # RTU:
     # StartSerialServer(context, framer=ModbusRtuFramer, identity=identity,
-    #                   port='/dev/ttyp0', timeout=.005, baudrate=9600)
+    #                   port="/dev/ttyp0", timeout=.005, baudrate=9600)
 
     # Binary
     # StartSerialServer(context,
     #                   identity=identity,
     #                   framer=ModbusBinaryFramer,
-    #                   port='/dev/ttyp0',
+    #                   port="/dev/ttyp0",
     #                   timeout=1)
 
 

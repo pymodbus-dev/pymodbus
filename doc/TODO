@@ -2,52 +2,32 @@
 General
 ---------------------------------------------------------------------------
 
-- reorganize code into folder namespaces
-- put protocol code in protocol namespace
 - make framer read header->read header.length
-  - maybe just for sync 
-- finish clients (and interface)
 - add all modbus control into server
-- add a frontend plugin system
-  - web frontend (bottle)
-- twisted trial / twisted logging (for functional async tests)
-- twisted serial server
-- add daemonize code / init.d / config (or just use twisted)
 - add correct transaction handling (retry, fail, etc)
-- finish remaining functions
+- Test/update examples
+- update code to satisfy mypy
+- get coverage > 98%
+- clean raise to be at frame level
+- solve "TO FIX" in code
 
 ---------------------------------------------------------------------------
 Protocols
 ---------------------------------------------------------------------------
 
 - Serial RTU -> just use sleep wait
-- Test serial against devices (and virtual tty)
+- Write unittest for serial with virtual tty
+- Example with custom framer based on standard framer
 
 ---------------------------------------------------------------------------
 Utilities
 ---------------------------------------------------------------------------
 
-- (tcp/serial) forwarder
-- (udp/serial) forwarder
+- (tcp/udp/serial) forwarder
 
 ---------------------------------------------------------------------------
 Client
 ---------------------------------------------------------------------------
 
 - Rework transaction flow and response data
-
----------------------------------------------------------------------------
-Tools
----------------------------------------------------------------------------
-
-- add functional tests
-- add tk and wx gui frontdends (with editable data tables)
-- rpm and deb packages (documentation)
-
---------------------------------------------------------------------------- 
-Scratch
---------------------------------------------------------------------------- 
-from twisted.python import log
-observer = log.PythonLoggingObserver()
-observer.start()
 

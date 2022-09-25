@@ -1,28 +1,28 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+"""Test fixes."""
+import logging
 import unittest
 
-class ModbusFixesTest(unittest.TestCase):
-    '''
-    This is the unittest for the pymodbus._version code
-    '''
 
-    def testTrueFalseDefined(self):
-        ''' Test that True and False are defined on all versions'''
+class ModbusFixesTest(unittest.TestCase):
+    """Unittest for the pymodbus._version code."""
+
+    def test_true_false_defined(self):
+        """Test that True and False are defined on all versions"""
         try:
-            True,False
+            True, False
         except NameError:
-            import pymodbus
             self.assertEqual(True, 1)
             self.assertEqual(False, 1)
 
-    def testNullLoggerAttached(self):
-        ''' Test that the null logger is attached'''
-        import logging
-        logger = logging.getLogger('pymodbus')
+    def test_null_logger_attached(self):
+        """Test that the null logger is attached"""
+        logger = logging.getLogger("pymodbus")
         self.assertEqual(len(logger.handlers), 1)
 
-#---------------------------------------------------------------------------#
-# Main
-#---------------------------------------------------------------------------#
+
+# ---------------------------------------------------------------------------#
+#  Main
+# ---------------------------------------------------------------------------#
 if __name__ == "__main__":
     unittest.main()

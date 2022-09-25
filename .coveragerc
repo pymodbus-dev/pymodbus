@@ -1,6 +1,8 @@
 [run]
+include =
+    pymodbus/
+    test/
 omit =
-    pymodbus/repl/*
-    pymodbus/internal/*
-    pymodbus/server/asyncio.py
-    pymodbus/server/reactive/*
+    test/TO_DO_REWRITE
+    examples/common/tornado_twister
+    examples/contrib/tornado_twister

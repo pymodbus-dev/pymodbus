@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - dev
+      - dev*
       - master
     tags:
       - v*
@@ -20,8 +20,9 @@ jobs:
     name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.python.docker] }}
-    # present runtime seems to be about 1 minute 30 seconds
-    timeout-minutes: 10
+    # present runtime seems to be about 2-4 minutes
+    # with pypy being the exception (7 minutes)
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -34,12 +35,9 @@ jobs:
             runs-on: ubuntu-latest
             matrix: linux
             container:
-              2.7: docker://python:2.7-buster
-              3.6: docker://python:3.6-buster
-              3.7: docker://python:3.7-buster
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
-              pypy2: docker://pypy:2-jessie
+              3.10: docker://python:3.10-buster
               pypy3: docker://pypy:3-stretch
           - name: macOS
             runs-on: macos-latest
@@ -51,31 +49,6 @@ jobs:
               x86: win32
               x64: win64
         python:
-          - name: CPython 2.7
-            tox: py27
-            action: 2.7
-            docker: 2.7
-            matrix: 2.7
-            implementation: cpython
-          - name: PyPy 2.7
-            tox: pypy27
-            action: pypy-2.7
-            docker: pypy2.7
-            matrix: 2.7
-            implementation: pypy
-            openssl_msvc_version: 2019
-          - name: CPython 3.6
-            tox: py36
-            action: 3.6
-            docker: 3.6
-            matrix: 3.6
-            implementation: cpython
-          - name: CPython 3.7
-            tox: py37
-            action: 3.7
-            docker: 3.7
-            matrix: 3.7
-            implementation: cpython
           - name: CPython 3.8
             tox: py38
             action: 3.8
@@ -88,18 +61,17 @@ jobs:
             docker: 3.9
             matrix: 3.9
             implementation: cpython
-          - name: PyPy 3.6
-            tox: pypy36
-            action: pypy-3.6
-            docker: pypy3.6
-            matrix: 3.6
-            implementation: pypy
-            openssl_msvc_version: 2019
-          - name: PyPy 3.7
-            tox: pypy37
-            action: pypy-3.7
-            docker: pypy3.7
-            matrix: 3.7
+          - name: 'CPython 3.10'
+            tox: 'py310'
+            action: '3.10'
+            docker: '3.10'
+            matrix: '3.10'
+            implementation: cpython
+          - name: PyPy 3.8
+            tox: pypy38
+            action: pypy-3.8
+            docker: pypy3.8
+            matrix: 3.8
             implementation: pypy
             openssl_msvc_version: 2019
         arch:
@@ -124,6 +96,11 @@ jobs:
               implementation: pypy
             arch:
               matrix: x64
+          - os:
+              matrix: windows
+            python:
+              implementation: pypy
+              matrix: 3.8
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
@@ -147,7 +124,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - uses: twisted/python-info-action@v1.0.1
       - name: Add PyPy Externals
         if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
         env:
@@ -202,11 +178,24 @@ jobs:
       fail-fast: false
       matrix:
         task:
+          - name: pylint
+            tox: pylint
+            # continue_on_error: true
+          - name: codespell
+            tox: codespell
+            # continue_on_error: true
+          - name: bandit
+            tox: bandit
+            # continue_on_error: true
           - name: flake8
             tox: flake8
-            continue_on_error: true
+            # continue_on_error: true
+          - name: black
+            tox: black
+            # continue_on_error: true
           - name: Docs
             tox: docs
+            # continue_on_error: true
         os:
           - name: Linux
             runs-on: ubuntu-latest
@@ -234,7 +223,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - uses: twisted/python-info-action@v1.0.1
       - name: Test
         continue-on-error: ${{ matrix.task.continue_on_error == true }}
         run: |
@@ -281,8 +269,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-          pip install --upgrade six
-      - uses: twisted/python-info-action@v1.0.1
       - name: Download Coverage
         if: matrix.task.download_coverage
         uses: actions/download-artifact@v2

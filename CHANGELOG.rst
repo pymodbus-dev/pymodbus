@@ -1,3 +1,53 @@
+version 3.0.0dev5
+----------------------------------------------------------
+* Remove server sync code and combine with async code. (#1092)
+* Solve test of tls by adding certificates and remove bugs (#1080)
+* Simplify server implementation. (#1071)
+* Do not filter using unit id in the received response (#1076)
+* Hex values for repl arguments (#1075)
+* All parameters in class parameter. (#1070)
+* Add len parameter to decode_bits. (#1062)
+* New combined test for all types of clients. (#1061)
+* Dev mixin client (#1056)
+* Add/update client documentation, including docstrings etc. (#1055)
+* Add unit to arguments (#1041)
+* Add timeout to all pytest. (#1037)
+* Simplify client parent classes. (#1018)
+* Clean copyright statements, to ensure we follow FOSS rules. (#1014)
+* Rectify sync/async client parameters. (#1013)
+* Clean client directory structure for async. (#1010)
+* Remove async_io, simplify AsyncModbus<x>Client. (#1009)
+* remove init_<something>_client(). (#1008)
+* Remove async factory. (#1001)
+* Remove loop parameter from client/server (#999)
+* add example async client. (#997)
+* Change async ModbusSerialClient to framer= from method=. (#994)
+* Add forwarder example with multiple slaves. (#992)
+* Remove async get_factory. (#990)
+* Remove unused ModbusAccessControl. (#989)
+* Solve problem with remote datastore. (#988)
+* Remove unused schedulers. (#976)
+* Remove twisted (#972)
+* Remove/Update tornado/twister tests. (#971)
+* remove easy_install and ez_setup (#964)
+* Fix mask write register (#961)
+* Activate pytest-asyncio. (#949)
+* Changed default framer for serial to be ModbusRtuFramer. (#948)
+* Remove tornado. (#935)
+* Pylint, check method parameter documentation. (#909)
+* Add get_response_pdu_size to mask read/write. (#922)
+* Minimum python version is 3.8. (#921)
+* Ensure make doc fails on warnings and/or errors. (#920)
+* Remove central makefile. (#916)
+* Re-organize examples (#914)
+* Documentation cleanup and clarification (#689)
+* Update doc for repl. (#910)
+* Include package and tests in coverage measurement (#912)
+* Use response byte length if available (#880)
+* better fix for rtu incomplete frames (#511)
+* Remove twisted/tornado from doc. (#904)
+* Update classifiers for pypi. (#907)
+
 version 3.0.0dev4
 ----------------------------------------------------------
 * Documentation updates
@@ -10,7 +60,6 @@ version 3.0.0dev3
 * Remove Python2 checks and Python2 code snippets
 * Misc co-routines related fixes
 * Fix CI for python3 and remove PyPI from CI
-
 
 version 3.0.0dev2
 ----------------------------------------------------------
@@ -220,7 +269,7 @@ Version 1.5.1
     if not res.isError():
 
         # proceed
- 
+
     else:
         # handle error or raise
 

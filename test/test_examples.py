@@ -27,16 +27,15 @@ from pymodbus.transaction import (
 
 _logger = logging.getLogger()
 _logger.setLevel("DEBUG")
-
 TEST_COMMS_FRAMER = [
     ("tcp", ModbusSocketFramer, 5021),
     ("tcp", ModbusRtuFramer, 5022),
     ("tls", ModbusTlsFramer, 5023),
     ("udp", ModbusSocketFramer, 5024),
     ("udp", ModbusRtuFramer, 5025),
-    ("serial", ModbusRtuFramer, "dummy"),
-    ("serial", ModbusAsciiFramer, "dummy"),
-    ("serial", ModbusBinaryFramer, "dummy"),
+    ("serial", ModbusRtuFramer, "socket://127.0.0.1:5026"),
+    ("serial", ModbusAsciiFramer, "socket://127.0.0.1:5027"),
+    ("serial", ModbusBinaryFramer, "socket://127.0.0.1:5028"),
 ]
 
 
@@ -59,13 +58,12 @@ async def _helper_server(
     test_port,
 ):
     """Run server."""
-    if test_comm in ("serial"):
-        yield
-        return
     args = Commandline
     args.comm = test_comm
     args.framer = test_framer
-    args.port = test_port + test_port_offset
+    args.port = test_port
+    if isinstance(test_port, int):
+        args.port += test_port_offset
     asyncio.create_task(run_async_server(args))
     await asyncio.sleep(0.1)
     yield
@@ -121,7 +119,6 @@ def test_exp_sync_simple(
     thread.start()
     sleep(1)
     ServerStop()
-    _logger.error("jan igen")
 
 
 @pytest.mark.parametrize("test_port_offset", [30])
@@ -151,5 +148,7 @@ async def test_exp_async_framer(  # pylint: disable=unused-argument
     args = Commandline
     args.framer = test_framer
     args.comm = test_comm
-    args.port = test_port + test_port_offset
+    args.port = test_port
+    if isinstance(test_port, int):
+        args.port += test_port_offset
     await run_client(test_comm, test_type, args=args)

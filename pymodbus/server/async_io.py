@@ -817,6 +817,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 
         self.protocol = None
         self.transport = None
+        self.server = None
         self.control = ModbusControlBlock()
         identity = kwargs.get("identity")
         if isinstance(identity, ModbusDeviceIdentification):
@@ -825,10 +826,6 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     async def start(self):
         """Start connecting."""
         await self._connect()
-
-    def _protocol_factory(self):
-        """Return protocol factory."""
-        return self.handler(self)
 
     async def _delayed_connect(self):
         """Delay connect."""
@@ -839,10 +836,12 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         """Connect."""
         if self.reconnecting_task is not None:
             self.reconnecting_task = None
+        if self.device.startswith("socket:"):
+            return
         try:
             self.transport, self.protocol = await create_serial_connection(
                 asyncio.get_event_loop(),
-                self._protocol_factory,
+                self.handler(self),
                 self.device,
                 baudrate=self.baudrate,
                 bytesize=self.bytesize,
@@ -887,11 +886,23 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 
     async def serve_forever(self):
         """Start endless loop."""
+        if self.device.startswith("socket:"):
+            # Socket server means listen so start a socket server
+            parts = self.device[7:].split(':')
+            host_port = ('', int(parts[1]))
+            self.server = await asyncio.get_event_loop().create_server(
+                lambda: self.handler(self),
+                *host_port,
+                reuse_address=True,
+                reuse_port=True,
+                start_serving=True,
+                backlog=20,
+            )
+            await self.server.serve_forever()
+            return
+
         while True:
             await asyncio.sleep(360)
-
-        self.protocol = None
-        self.transport = None
 
 
 # --------------------------------------------------------------------------- #

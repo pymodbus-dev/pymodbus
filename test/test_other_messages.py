@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test other messages."""
 import unittest
 from unittest import mock
@@ -153,10 +152,3 @@ class ModbusOtherMessageTest(unittest.TestCase):
 
             response.status = False
             self.assertEqual(response.encode(), b"\x03\x12\x00\x00")
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

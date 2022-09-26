@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test pdu."""
 import unittest
 
@@ -89,10 +88,3 @@ class SimplePduTest(unittest.TestCase):
             0x05 + 5,
         )
         del ModbusResponse._rtu_byte_count_pos
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

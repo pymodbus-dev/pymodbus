@@ -1,6 +1,6 @@
 """Configuration for Pymodbus REPL Reactive Module."""
 
-DEFUALT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
+DEFAULT_CONFIG = {  # pylint: disable=consider-using-namedtuple-or-dataclass
     "tcp": {
         "handler": "ModbusConnectedRequestHandler",
         "allow_reuse_address": True,

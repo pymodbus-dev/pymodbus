@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test datastore."""
 import random
 import unittest
@@ -460,10 +459,3 @@ class SqlDataStoreTest(unittest.TestCase):
                 self.mock_type, self.mock_offset, self.mock_values
             )
         )
-
-
-# --------------------------------------------------------------------------- #
-# Main
-# --------------------------------------------------------------------------- #
-if __name__ == "__main__":
-    unittest.main()

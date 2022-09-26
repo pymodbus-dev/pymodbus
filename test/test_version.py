@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 """Test version."""
 import unittest
 
-from pymodbus.version import Version
+from pymodbus.version import Version, version
 
 
 class ModbusVersionTest(unittest.TestCase):
@@ -20,9 +19,6 @@ class ModbusVersionTest(unittest.TestCase):
         self.assertEqual(version.short(), "1.2.3.sometag")
         self.assertEqual(str(version), "[test, version 1.2.3.sometag]")
 
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()
+    def test_current_version(self):
+        """Test current version"""
+        self.assertEqual(version.package, "pymodbus")

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test client async."""
 import asyncio
 from dataclasses import dataclass

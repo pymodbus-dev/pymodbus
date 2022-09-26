@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test interfaces."""
 import unittest
 
@@ -81,10 +80,3 @@ class ModbusInterfaceTestsTest(unittest.TestCase):
             NotImplementedException,
             lambda: instance.build(),  # pylint: disable=unnecessary-lambda
         )
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

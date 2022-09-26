@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test remote datastore."""
 import unittest
 from unittest import mock
@@ -67,10 +66,3 @@ class RemoteModbusDataStoreTest(unittest.TestCase):
 
         result = context.validate(3, 0, 10)
         self.assertFalse(result)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

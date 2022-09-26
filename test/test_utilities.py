@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test utilities."""
 import struct
 import unittest
@@ -91,10 +90,3 @@ class SimpleUtilityTest(unittest.TestCase):
         """Test the cyclic redundancy check code"""
         self.assertTrue(checkCRC(self.data, 0xE2DB))
         self.assertTrue(checkCRC(self.string, 0x889E))
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

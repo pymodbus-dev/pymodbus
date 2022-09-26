@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test register write messages."""
 from test.conftest import MockContext, MockLastValuesContext
 import unittest
@@ -184,10 +183,3 @@ class WriteRegisterMessagesTest(unittest.TestCase):
         self.assertEqual(handle.address, 0x0004)
         self.assertEqual(handle.and_mask, 0x00F2)
         self.assertEqual(handle.or_mask, 0x0025)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test diag messages."""
 import unittest
 
@@ -199,10 +198,3 @@ class SimpleDataStoreTest(unittest.TestCase):
         response = request.execute()
         resp = [ModbusPlusOperation.GetStatistics]
         self.assertEqual(response.message, resp + [0x00] * 55)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

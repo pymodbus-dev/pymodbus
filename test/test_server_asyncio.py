@@ -213,7 +213,6 @@ class AsyncioServerTest(
         """Test that the modbus tcp asyncio server starts correctly"""
         await self.start_server(do_forever=False)
 
-    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
     async def test_async_start_server(self):
         """Test that the modbus tcp asyncio server starts correctly"""
         await self.start_server()
@@ -265,7 +264,6 @@ class AsyncioServerTest(
         await asyncio.sleep(0.5)
         await self.server.server_close()
 
-    @pytest.mark.skip
     async def test_async_tcp_server_no_slave(self):
         """Test unknown slave unit exception"""
         self.context = ModbusServerContext(
@@ -278,7 +276,6 @@ class AsyncioServerTest(
         self.server.server_close()
         self.server = None
 
-    @pytest.mark.skip
     async def test_async_tcp_server_modbus_error(self):
         """Test sending garbage data on a TCP socket should drop the connection"""
         BasicClient.data = TEST_DATA
@@ -435,7 +432,6 @@ class AsyncioServerTest(
                 self.server.protocol._sock._closed  # pylint: disable=protected-access
             )
 
-    @pytest.mark.skip
     async def test_async_tcp_server_exception(self):
         """Send garbage data on a TCP socket should drop the connection"""
         BasicClient.data = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"

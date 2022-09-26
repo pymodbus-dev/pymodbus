@@ -40,7 +40,6 @@ class SynchronousServerTest(unittest.TestCase):
             with patch.object(socketserver.UDPServer, "server_bind"):
                 StartUdpServer()
 
-    @pytest.mark.skip
     def xtest_start_serial_server(self):
         """Test the serial server starting factory"""
         with patch.object(ModbusSerialServer, "serve_forever"):

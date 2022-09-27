@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test client sync diag."""
 from itertools import count
 import socket
@@ -114,10 +113,3 @@ class SynchronousDiagnosticClientTest(unittest.TestCase):
             f"port={client.params.port}, timeout={client.params.timeout}>"
         )
         self.assertEqual(repr(client), rep)
-
-
-# ---------------------------------------------------------------------------#
-# Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

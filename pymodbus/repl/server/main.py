@@ -12,7 +12,7 @@ import typer
 
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.repl.server.cli import run_repl
-from pymodbus.server.reactive.default_config import DEFUALT_CONFIG
+from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 from pymodbus.server.reactive.main import (
     DEFAULT_FRAMER,
     DEFUALT_HANDLERS,
@@ -161,7 +161,7 @@ def run(
         with open(modbus_config) as my_file:  # pylint: disable=unspecified-encoding
             modbus_config = json.load(my_file)
     else:
-        modbus_config = DEFUALT_CONFIG
+        modbus_config = DEFAULT_CONFIG
 
     modbus_config = modbus_config.get(modbus_server, {})
 

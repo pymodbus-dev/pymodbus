@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
 """Test transaction."""
 from binascii import a2b_hex
 from itertools import count
 import unittest
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
@@ -394,7 +391,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
     # ----------------------------------------------------------------------- #
     # TLS tests
     # ----------------------------------------------------------------------- #
-    def framer_tls_framer_transaction_ready(self):
+    def test_framer_tls_framer_transaction_ready(self):
         """Test a tls frame transaction"""
         msg = b"\x01\x12\x34\x00\x08"
         self.assertFalse(self._tls.isFrameReady())
@@ -407,7 +404,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertFalse(self._tls.checkFrame())
         self.assertEqual(b"", self._tls.getFrame())
 
-    def framer_tls_framer_transaction_full(self):
+    def test_framer_tls_framer_transaction_full(self):
         """Test a full tls frame transaction"""
         msg = b"\x01\x12\x34\x00\x08"
         self._tls.addToFrame(msg)
@@ -416,7 +413,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(msg[0:], result)
         self._tls.advanceFrame()
 
-    def framer_tls_framer_transaction_half(self):
+    def test_framer_tls_framer_transaction_half(self):
         """Test a half completed tls frame transaction"""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
@@ -430,7 +427,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(msg2[0:], result)
         self._tls.advanceFrame()
 
-    def framer_tls_framer_transaction_short(self):
+    def test_framer_tls_framer_transaction_short(self):
         """Test that we can get back on track after an invalid message"""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
@@ -446,7 +443,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(msg2[0:], result)
         self._tls.advanceFrame()
 
-    def framer_tls_framer_decode(self):
+    def test_framer_tls_framer_decode(self):
         """Testmessage decoding"""
         msg1 = b""
         msg2 = b"\x01\x12\x34\x00\x08"
@@ -456,7 +453,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual({"fcode": 1}, result)
         self._tls.advanceFrame()
 
-    def framer_tls_incoming_packet(self):
+    def test_framer_tls_incoming_packet(self):
         """Framer tls incoming packet."""
         msg = b"\x01\x12\x34\x00\x08"
 
@@ -486,7 +483,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(msg, self._tls.getRawFrame())
         self._tls.advanceFrame()
 
-    def framer_tls_process(self):
+    def test_framer_tls_process(self):
         """Framer tls process."""
 
         class MockResult:  # pylint: disable=too-few-public-methods
@@ -519,7 +516,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._tls._process(mock_callback)  # pylint: disable=protected-access
         self.assertEqual(b"", self._tls.getRawFrame())
 
-    def framer_tls_framer_populate(self):
+    def test_framer_tls_framer_populate(self):
         """Test a tls frame packet build"""
         ModbusRequest()
         msg = b"\x01\x12\x34\x00\x08"
@@ -532,7 +529,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(None, result)
         self._tls.advanceFrame()
 
-    def framer_tls_framer_packet(self):
+    def test_framer_tls_framer_packet(self):
         """Test a tls frame packet build"""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
@@ -811,12 +808,3 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         # Test failure:
         self._binary.checkFrame = MagicMock(return_value=False)
         self._binary.processIncomingPacket(mock_data, mock_callback, unit)
-
-
-# ----------------------------------------------------------------------- #
-# Main
-# ----------------------------------------------------------------------- #
-
-
-if __name__ == "__main__":
-    pytest.main()

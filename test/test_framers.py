@@ -28,10 +28,10 @@ def ascii_framer():
     return ModbusAsciiFramer(ClientDecoder())
 
 
-@pytest.fixture
-def binary_framer():
-    """Binary framer."""
-    return ModbusBinaryFramer(ClientDecoder())
+# @pytest.fixture
+# def binary_framer():
+#     """Binary framer."""
+#     return ModbusBinaryFramer(ClientDecoder())
 
 
 @pytest.mark.parametrize(
@@ -308,12 +308,9 @@ def test_recv_packet(rtu_framer):  # pylint: disable=redefined-outer-name
 def test_process(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test process."""
 
-    def callback(res):
-        return res
-
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     with pytest.raises(ModbusIOException):
-        rtu_framer._process(callback)  # pylint: disable=protected-access
+        rtu_framer._process(None)  # pylint: disable=protected-access
 
 
 def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name

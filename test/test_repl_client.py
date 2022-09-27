@@ -1,7 +1,12 @@
 """Test client sync."""
-import pytest
-
 from pymodbus.repl.client.main import _process_args as process_args
+from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
+
+
+def test_repl_default_config():
+    """Test default config can be loaded."""
+    config = DEFAULT_CONFIG
+    assert config is not None
 
 
 def test_repl_client_process_args():
@@ -31,19 +36,13 @@ def test_repl_client_process_args():
         resp = process_args(["address=0xhj", "value=0x10"], False)
     except ValueError:
         pass
-    except Exception as exc:  # pylint: disable=broad-except
-        pytest.fail(f"Exception in _process_args: {exc}")
 
     try:
         resp = process_args(["address=11ah", "value=0x10"], False)
     except ValueError:
         pass
-    except Exception as exc:  # pylint: disable=broad-except
-        pytest.fail(f"Exception in _process_args: {exc}")
 
     try:
         resp = process_args(["address=0b12", "value=0x10"], False)
     except ValueError:
         pass
-    except Exception as exc:  # pylint: disable=broad-except
-        pytest.fail(f"Exception in _process_args: {exc}")

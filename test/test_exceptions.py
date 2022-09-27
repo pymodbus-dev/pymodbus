@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test exceptions."""
 import unittest
 
@@ -36,10 +35,3 @@ class SimpleExceptionsTest(unittest.TestCase):
                 self.assertTrue("Modbus Error:" in str(exc))
                 return
             self.fail("Excepted a ModbusExceptions")
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

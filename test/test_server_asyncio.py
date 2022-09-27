@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test server asyncio."""
 import asyncio
 from asyncio import CancelledError
@@ -143,8 +142,6 @@ class AsyncioServerTest(
                     await self.task
                 except CancelledError:
                     pass
-                except Exception as exc:  # pylint: disable=broad-except
-                    pytest.fail(f"Exception in task serve_forever: {exc} ")
                 self.task = None
         self.context = ModbusServerContext(slaves=self.store, single=True)
         BasicClient.clear()
@@ -158,8 +155,6 @@ class AsyncioServerTest(
             result = result.result()
         except CancelledError:
             pass
-        except Exception as exc:  # pylint: disable=broad-except
-            pytest.fail(f"Exception in task serve_forever: {exc} ")
 
     async def start_server(
         self, do_forever=True, do_defer=True, do_tls=False, do_udp=False, do_ident=False

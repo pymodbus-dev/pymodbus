@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 """Test factory."""
 import unittest
 
-from pymodbus.exceptions import ModbusException
+from pymodbus.exceptions import ModbusException, MessageRegisterException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -129,12 +128,7 @@ class SimpleFactoryTest(unittest.TestCase):
     def test_response_working(self):
         """Test a working response factory decoders"""
         for func, msg in self.response:
-            try:
-                self.client.decode(msg)
-            except ModbusException:
-                self.fail(  # pylint: disable=too-many-function-args
-                    "Failed to Decode Response Message", func
-                )
+            self.client.decode(msg)
 
     def test_response_errors(self):
         """Test a response factory decoder exceptions"""
@@ -152,12 +146,7 @@ class SimpleFactoryTest(unittest.TestCase):
     def test_requests_working(self):
         """Test a working request factory decoders"""
         for func, msg in self.request:
-            try:
-                self.server.decode(msg)
-            except ModbusException:
-                self.fail(  # pylint: disable=too-many-function-args
-                    "Failed to Decode Request Message", func
-                )
+            self.server.decode(msg)
 
     def test_client_factory_fails(self):
         """Tests that a client factory will fail to decode a bad message"""
@@ -179,11 +168,22 @@ class SimpleFactoryTest(unittest.TestCase):
 
             function_code = 0xFF
 
+        class NoCustomRequest():  # pylint: disable=too-few-public-methods
+            """Custom request."""
+
+            function_code = 0xFF
+
         self.server.register(CustomRequest)
         self.assertTrue(self.client.lookupPduClass(CustomRequest.function_code))
         CustomRequest.sub_function_code = 0xFF
         self.server.register(CustomRequest)
         self.assertTrue(self.server.lookupPduClass(CustomRequest.function_code))
+        try:
+            func_raised = False
+            self.server.register(NoCustomRequest)
+        except MessageRegisterException:
+            func_raised = True
+        self.assertTrue(func_raised)
 
     def test_client_register_custom_response(self):
         """Test client register custom response."""
@@ -193,11 +193,22 @@ class SimpleFactoryTest(unittest.TestCase):
 
             function_code = 0xFF
 
+        class NoCustomResponse():  # pylint: disable=too-few-public-methods
+            """Custom request."""
+
+            function_code = 0xFF
+
         self.client.register(CustomResponse)
         self.assertTrue(self.client.lookupPduClass(CustomResponse.function_code))
         CustomResponse.sub_function_code = 0xFF
         self.client.register(CustomResponse)
         self.assertTrue(self.client.lookupPduClass(CustomResponse.function_code))
+        try:
+            func_raised = False
+            self.client.register(NoCustomResponse)
+        except MessageRegisterException:
+            func_raised = True
+        self.assertTrue(func_raised)
 
     # ---------------------------------------------------------------------------#
     #  I don"t actually know what is supposed to be returned here, I assume that
@@ -214,10 +225,3 @@ class SimpleFactoryTest(unittest.TestCase):
                 func,
                 "Failed to create correct response message",
             )
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

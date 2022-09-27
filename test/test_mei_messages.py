@@ -159,10 +159,3 @@ class ModbusMeiMessageTest(unittest.TestCase):
         message = b"\x00\x2B\x0E\x02\x00\x4D\x47"
         result = ReadDeviceInformationRequest.calculateRtuFrameSize(message)
         self.assertEqual(result, 7)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

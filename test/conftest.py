@@ -2,7 +2,6 @@
 import functools
 import platform
 
-from pkg_resources import parse_version
 import pytest
 
 from pymodbus.interfaces import IModbusSlaveContext
@@ -12,15 +11,6 @@ def pytest_configure():
     """Configure pytest."""
     pytest.IS_DARWIN = platform.system().lower() == "darwin"
     pytest.IS_WINDOWS = platform.system().lower() == "windows"
-
-    if pytest.IS_DARWIN:
-        # check for SIERRA
-        if parse_version("10.12") < parse_version(platform.mac_ver()[0]):
-            pytest.SERIAL_PORT = "/dev/ptyp0"
-        else:
-            pytest.SERIAL_PORT = "/dev/ttyp0"
-    else:
-        pytest.SERIAL_PORT = "/dev/ptmx"
 
 
 # -----------------------------------------------------------------------#
@@ -81,9 +71,8 @@ class FakeList:
         """Get length."""
         return self.size
 
-    def __iter__(self):  # pylint: disable=non-iterator-returned
+    def __iter__(self):
         """Iterate."""
-        return []
 
 
 class mockSocket:  # pylint: disable=invalid-name
@@ -110,10 +99,6 @@ class mockSocket:  # pylint: disable=invalid-name
         self.data = None
         return retval
 
-    def fileno(self):
-        """File number."""
-        return 0
-
     def close(self):
         """Close."""
         return True
@@ -131,11 +116,6 @@ class mockSocket:  # pylint: disable=invalid-name
         self.mock_store(msg)
         return len(msg)
 
-    def write(self, msg):
-        """Write."""
-        self.mock_store(msg)
-        return len(msg)
-
     def recvfrom(self, size):
         """Receive from."""
         return [self.mock_retrieve(size)]
@@ -149,10 +129,6 @@ class mockSocket:  # pylint: disable=invalid-name
         """Set blocking."""
         return None
 
-    def in_waiting(self):
-        """Do in waiting."""
-        return None
-
 
 def run_coroutine(coro):
     """Run a coroutine as top-level task by iterating through all yielded steps."""
@@ -164,8 +140,6 @@ def run_coroutine(coro):
     except StopIteration as exc:
         # coro reached end pass on its return value:
         return exc.value
-    except:  # noqa: E722 pylint: disable=try-except-raise
-        raise
 
 
 def _yielded_return(return_value, *args):  # pylint: disable=unused-argument
@@ -174,7 +148,6 @@ def _yielded_return(return_value, *args):  # pylint: disable=unused-argument
     async def _():
         """Actual generator producing value."""
         # yield
-        return return_value
 
     # return new generator each time this function is called:
     return _()

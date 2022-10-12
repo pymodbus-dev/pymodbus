@@ -266,8 +266,8 @@ def test_rtu_incoming_packet(rtu_framer, data):  # pylint: disable=redefined-out
     """Test rtu process incoming packet."""
     buffer, units, reset_called, process_called = data
 
-    with patch.object(rtu_framer, "_process") as mock_process, patch.object(
-        rtu_framer, "resetFrame"
+    with patch.object(rtu_framer, "_process", wraps=rtu_framer._process) as mock_process, patch.object(  # pylint: disable=protected-access
+        rtu_framer, "resetFrame", wraps=rtu_framer.resetFrame
     ) as mock_reset:
         rtu_framer.processIncomingPacket(buffer, Mock(), units)
         assert mock_process.call_count == (1 if process_called else 0)  # nosec

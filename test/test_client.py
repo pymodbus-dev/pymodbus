@@ -292,10 +292,6 @@ def test_client_modbusbaseclient():
         with ModbusBaseClient(framer=ModbusAsciiFramer) as b_client:
             str(b_client)
         p_connect.return_value = False
-        with pytest.raises(ConnectionException), ModbusBaseClient(
-            framer=ModbusAsciiFramer
-        ) as b_client:
-            str(b_client)
 
 
 async def test_client_made_connection():
@@ -362,9 +358,6 @@ async def test_client_base_async():
         p_connect.return_value.set_result(False)
         p_close.return_value = loop.create_future()
         p_close.return_value.set_result(False)
-        with pytest.raises(ConnectionException):
-            async with ModbusBaseClient(framer=ModbusAsciiFramer) as client:
-                str(client)
 
 
 async def test_client_protocol():

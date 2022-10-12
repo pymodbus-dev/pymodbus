@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Bit Message Test Fixture.
 
 This fixture tests the functionality of all the
@@ -135,10 +134,3 @@ class ModbusBitMessageTests(unittest.TestCase):
         for request, expected in iter(requests.items()):
             pdu_len = request.get_response_pdu_size()
             self.assertEqual(pdu_len, expected)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

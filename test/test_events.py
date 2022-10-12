@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test events."""
 import unittest
 
@@ -79,10 +78,3 @@ class ModbusEventsTest(unittest.TestCase):
         event.decode(b"\x00")
         self.assertEqual(event.value, 0x00)
         self.assertRaises(ParameterException, lambda: event.decode(b"\x04"))
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

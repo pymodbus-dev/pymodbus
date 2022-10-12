@@ -19,7 +19,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.0dev5 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0dev5>`_ is the current prerelease of 3.0.0 (Supports Python >=3.8).
+Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the latest release of 3.0.0 (Supports Python >=3.8).
 
 Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
 
@@ -134,6 +134,8 @@ If you think, that something in the code is broken/not running well, please `ope
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
 ------------------------------------------------------------
+
+**Warning** The Pymodbus REPL documentation is not updated.
 
 ~~~~~~~~~~~~~~~~~~~~~
 Pymodbus REPL Client

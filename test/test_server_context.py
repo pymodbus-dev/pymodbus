@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test server context."""
 import unittest
 
@@ -100,10 +99,3 @@ class ModbusServerMultipleContextTest(unittest.TestCase):
         for slave_id, slave in iter(slaves.items()):
             actual = self.context[slave_id]
             self.assertEqual(slave, actual)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

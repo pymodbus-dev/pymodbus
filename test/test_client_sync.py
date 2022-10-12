@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test client sync."""
 from itertools import count
 import ssl
@@ -494,10 +493,3 @@ class SynchronousClientTest(
             f"framer={client.framer}, timeout={client.params.timeout}>"
         )
         self.assertEqual(repr(client), rep)
-
-
-# ---------------------------------------------------------------------------#
-# Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

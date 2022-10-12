@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test all messages."""
 import unittest
 

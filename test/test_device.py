@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test device."""
 import unittest
 
@@ -356,10 +355,3 @@ class SimpleDataStoreTest(unittest.TestCase):
         ]
         self.assertEqual(sorted(summary), sorted(stats_summary))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

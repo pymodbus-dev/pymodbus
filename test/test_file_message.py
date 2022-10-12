@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Bit Message Test Fixture.
 
 This fixture tests the functionality of all the
@@ -272,10 +271,3 @@ class ModbusBitMessageTests(unittest.TestCase):
         handle = WriteFileRecordResponse()
         size = handle.calculateRtuFrameSize(request)
         self.assertEqual(size, 0x0D + 5)
-
-
-# ---------------------------------------------------------------------------#
-#  Main
-# ---------------------------------------------------------------------------#
-if __name__ == "__main__":
-    unittest.main()

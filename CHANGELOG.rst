@@ -1,3 +1,12 @@
+version 3.0.0
+----------------------------------------------------------
+* Solve multiple incomming frames. (#1107)
+* Up coverage, tests are 100%. (#1098)
+* Prepare for rc1. (#1097)
+* Prepare 3.0.0dev5 (#1095)
+* Adapt serial tests. (#1094)
+* Allow windows. (#1093)
+
 version 3.0.0dev5
 ----------------------------------------------------------
 * Remove server sync code and combine with async code. (#1092)

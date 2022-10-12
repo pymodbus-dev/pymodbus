@@ -26,6 +26,9 @@ Remark: "Supports" means that we only test with those versions, lower versions (
 .. important::
    **Note 3.0.0 is a major release with a number of incompatible changes.**
 
+   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
+
+
 ------------------------------------------------------------
 Summary
 ------------------------------------------------------------

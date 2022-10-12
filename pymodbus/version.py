@@ -37,7 +37,7 @@ class Version:
         return f"[{self.package}, version {self.short()}]"
 
 
-version = Version("pymodbus", 3, 0, 0, "rc1")
+version = Version("pymodbus", 3, 0, 1, "dev0")
 version.__name__ = (  # fix epydoc error # pylint: disable=attribute-defined-outside-init
     "pymodbus"
 )

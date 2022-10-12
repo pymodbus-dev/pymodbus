@@ -19,7 +19,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the latest release of 3.0.0 (Supports Python >=3.8).
+Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the current release (Supports Python >=3.8).
 
 Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
 
@@ -248,7 +248,6 @@ we accept devices via mail or by IP address.
 That said, the current work mainly involves polishing the library and
 solving issues:
 
-  * Get version 3.0.0 released
   * Fixing bugs/feature requests
   * Architecture documentation
   * Functional testing against any reference we can find

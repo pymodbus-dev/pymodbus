@@ -841,7 +841,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         try:
             self.transport, self.protocol = await create_serial_connection(
                 asyncio.get_event_loop(),
-                self.handler(self),
+                lambda: self.handler(self),
                 self.device,
                 baudrate=self.baudrate,
                 bytesize=self.bytesize,

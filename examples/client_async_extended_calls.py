@@ -25,6 +25,7 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
+from examples.helper import get_commandline
 from examples.client_async import run_async_client, setup_async_client
 
 from pymodbus.diag_message import (
@@ -53,6 +54,7 @@ from pymodbus.other_message import (
     ReportSlaveIdRequest,
 )
 
+_logger = logging.getLogger()
 
 UNIT = 0x01
 
@@ -175,5 +177,9 @@ _logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    testclient = setup_async_client()
+    cmd_args = get_commandline(
+        server=False,
+        description="Run extended calls in asynchronous client.",
+    )
+    testclient = setup_async_client(cmd_args)
     asyncio.run(run_async_client(testclient, modbus_calls=run_async_ext_calls))

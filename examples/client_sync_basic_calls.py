@@ -8,8 +8,11 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
+from examples.helper import get_commandline
 from examples.client_sync import run_sync_client, setup_sync_client
 
+
+_logger = logging.getLogger()
 
 SLAVE = 0x01
 
@@ -118,14 +121,10 @@ def run_sync_basic_calls(client):
     _handle_input_registers(client)
 
 
-# --------------------------------------------------------------------------- #
-# Extra code, to allow commandline parameters instead of changing the code
-# --------------------------------------------------------------------------- #
-FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-logging.basicConfig(format=FORMAT)
-_logger = logging.getLogger()
-
-
 if __name__ == "__main__":
-    testclient = setup_sync_client()
+    cmd_args = get_commandline(
+        server=False,
+        description="Run basic calls in synchronous client.",
+    )
+    testclient = setup_sync_client(cmd_args)
     run_sync_client(testclient, modbus_calls=run_sync_basic_calls)

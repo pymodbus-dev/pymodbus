@@ -27,11 +27,11 @@ options:
 The corresponding client can be started as:
     python3 client_sync.py
 """
-import argparse
 import os
 import asyncio
 import logging
 
+from examples.helper import get_commandline
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -49,21 +49,14 @@ from pymodbus.server import (
     StartAsyncTlsServer,
     StartAsyncUdpServer,
 )
-from pymodbus.transaction import (
-    ModbusAsciiFramer,
-    ModbusBinaryFramer,
-    ModbusRtuFramer,
-    ModbusSocketFramer,
-    ModbusTlsFramer,
-)
 from pymodbus.version import version
 
 
-def setup_async_server(args):
-    """Run server setup."""
-    if not args:
-        args = get_commandline()
+_logger = logging.getLogger()
 
+
+def setup_server(args):
+    """Run server setup."""
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
     # 0x100 will respond with an invalid address exception.
@@ -121,14 +114,14 @@ def setup_async_server(args):
         single = True
 
     # Build data storage
-    store = ModbusServerContext(slaves=context, single=single)
+    args.context = ModbusServerContext(slaves=context, single=single)
 
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
     # If you don"t set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(
+    args.identity = ModbusDeviceIdentification(
         info_name={
             "VendorName": "Pymodbus",
             "ProductCode": "PM",
@@ -138,26 +131,23 @@ def setup_async_server(args):
             "MajorMinorRevision": version.short(),
         }
     )
-    if args.comm != "serial" and args.port:
-        args.port = int(args.port)
-    return args.comm, args.port, store, identity, args.framer
+    return args
 
 
-async def run_async_server(args=None):
+async def run_async_server(args):
     """Run server."""
-    server_id, port, store, identity, framer = setup_async_server(args)
-    txt = f"### start ASYNC server on port {port}"
+    txt = f"### start ASYNC server, listening on {args.port} - {args.comm}"
     _logger.info(txt)
-    if server_id == "tcp":
-        address = ("", port) if port else None
+    if args.comm == "tcp":
+        address = ("", args.port) if args.port else None
         server = await StartAsyncTcpServer(
-            context=store,  # Data storage
-            identity=identity,  # server identify
+            context=args.context,  # Data storage
+            identity=args.identity,  # server identify
             # TBD host=
             # TBD port=
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=framer,  # The framer strategy to use
+            framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
@@ -166,14 +156,14 @@ async def run_async_server(args=None):
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
-    elif server_id == "udp":
-        address = ("127.0.0.1", port) if port else None
+    elif args.comm == "udp":
+        address = ("127.0.0.1", args.port) if args.port else None
         server = await StartAsyncUdpServer(
-            context=store,  # Data storage
-            identity=identity,  # server identify
+            context=args.context,  # Data storage
+            identity=args.identity,  # server identify
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
-            framer=framer,  # The framer strategy to use
+            framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             # TBD allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
@@ -182,16 +172,16 @@ async def run_async_server(args=None):
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
-    elif server_id == "serial":
+    elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
         #             PTY,link=/tmp/ttyp0,raw,echo=0,ospeed=9600
         server = await StartAsyncSerialServer(
-            context=store,  # Data storage
-            identity=identity,  # server identify
+            context=args.context,  # Data storage
+            identity=args.identity,  # server identify
             # timeout=0.005,  # waiting time for request to complete
-            port=port,  # serial port
+            port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
-            framer=framer,  # The framer strategy to use
+            framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             # stopbits=1,  # The number of stop bits to use
             # bytesize=8,  # The bytesize of the serial messages
@@ -203,8 +193,8 @@ async def run_async_server(args=None):
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
-    elif server_id == "tls":
-        address = ("", port) if port else None
+    elif args.comm == "tls":
+        address = ("", args.port) if args.port else None
         cwd = os.getcwd().split("/")[-1]
         if cwd == "examples":
             path = "."
@@ -213,13 +203,13 @@ async def run_async_server(args=None):
         else:
             path = "examples"
         server = await StartAsyncTlsServer(
-            context=store,  # Data storage
+            context=args.context,  # Data storage
             host="localhost",  # define tcp address where to connect to.
             # port=port,  # on which port
-            identity=identity,  # server identify
+            identity=args.identity,  # server identify
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
-            framer=framer,  # The framer strategy to use
+            framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
@@ -236,80 +226,10 @@ async def run_async_server(args=None):
     return server
 
 
-# --------------------------------------------------------------------------- #
-# Extra code, to allow commandline parameters instead of changing the code
-# --------------------------------------------------------------------------- #
-FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-logging.basicConfig(format=FORMAT)
-_logger = logging.getLogger()
-
-
-def get_commandline():
-    """Read and validate command line arguments"""
-    parser = argparse.ArgumentParser(description="Command line options for examples")
-    parser.add_argument(
-        "--comm",
-        choices=["tcp", "udp", "serial", "tls"],
-        help='"serial", "tcp", "udp" or "tls"',
-        type=str,
-    )
-    parser.add_argument(
-        "--framer",
-        choices=["ascii", "binary", "rtu", "socket", "tls"],
-        help='"ascii", "binary", "rtu", "socket" or "tls"',
-        type=str,
-    )
-    parser.add_argument(
-        "--log",
-        choices=["critical", "error", "warning", "info", "debug"],
-        help='"critical", "error", "warning", "info" or "debug"',
-        type=str,
-    )
-    parser.add_argument(
-        "--port",
-        help="the port to use",
-        type=str,
-    )
-    parser.add_argument(
-        "--store",
-        choices=["sequential", "sparse", "factory", "none"],
-        help='(server only) "sequential", "sparse", "factory" or "none"',
-        type=str,
-    )
-    parser.add_argument(
-        "--slaves",
-        help="(server only) number of slaves to respond to",
-        type=int,
-    )
-    args = parser.parse_args()
-
-    # set defaults
-    comm_defaults = {
-        "tcp": ["socket", 5020],
-        "udp": ["socket", 5020],
-        "serial": ["rtu", "/dev/ptyp0"],
-        "tls": ["tls", 5020],
-    }
-    framers = {
-        "ascii": ModbusAsciiFramer,
-        "binary": ModbusBinaryFramer,
-        "rtu": ModbusRtuFramer,
-        "socket": ModbusSocketFramer,
-        "tls": ModbusTlsFramer,
-    }
-    _logger.setLevel(args.log.upper() if args.log else logging.INFO)
-    if not args.comm:
-        args.comm = "tcp"
-    if not args.store:
-        args.store = "sequential"
-    if not args.slaves:
-        args.slaves = 0
-    if not args.framer:
-        args.framer = comm_defaults[args.comm][0]
-    args.port = args.port or comm_defaults[args.comm][1]
-    args.framer = framers[args.framer]
-    return args
-
-
 if __name__ == "__main__":
-    asyncio.run(run_async_server(), debug=True)
+    cmd_args = get_commandline(
+        server=True,
+        description="Run asynchronous server.",
+    )
+    run_args = setup_server(cmd_args)
+    asyncio.run(run_async_server(run_args), debug=True)

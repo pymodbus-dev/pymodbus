@@ -203,6 +203,15 @@ Otherwise you can pull the trunk source and install from there::
     cd pymodbus
     pip install -r requirements.txt
 
+Before cloning the repo, you need to install python3 (preferable 3.10)
+and make a virtual environment::
+
+   python3 -m venv /path/to/new/virtual/environment
+
+To activeate the virtual environment please do::
+
+   source .venv/bin/activate
+
 
 To get latest release (for now v2.5.3 with Python 2.7 support)::
 
@@ -216,8 +225,10 @@ To get a specific version:
 
     git checkout tags/vX.Y.Z -b vX.Y.Z
 
-Then::
+Then:
+
    pip install -r requirements.txt
+
    pip install -e .
 
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.
@@ -262,23 +273,26 @@ Development Instructions
 The current code base is compatible python >= 3.8.
 Here are some of the common commands to perform a range of activities
 
-::
    pip install -r requirements.txt   install all requirements
+
    pip install -e .                  source directory is "release", useful for testing
 
    tox -e py38 (or py39, py310, pypy38) Run pytest on source code
 
    tox -e pylint                     Run pylint on source code
+
    tox -e codespell                  Run codespell on source code
+
    tox -e bandit                     Run bandit on source code
+
    tox -e flake8                     Run flake8 on source code
+
    tox -e black                      Run black on source code
 
 ------------------------------------------------------------
 Generate documentation
 ------------------------------------------------------------
 
-::
    cd doc
    make clean
    make html

@@ -11,7 +11,7 @@ import pytest_asyncio
 from examples.client_async import run_async_client, setup_async_client
 from examples.client_async_basic_calls import run_async_basic_calls
 from examples.client_async_extended_calls import run_async_ext_calls
-from examples.server_async import run_async_server
+from examples.server_async import setup_server, run_async_server
 from examples.server_sync import run_sync_server
 
 from pymodbus.server import ServerStop, ServerAsyncStop
@@ -63,7 +63,8 @@ async def _helper_server(
     args.port = test_port
     if isinstance(test_port, int):
         args.port += test_port_offset
-    asyncio.create_task(run_async_server(args))
+    run_args = setup_server(args)
+    asyncio.create_task(run_async_server(run_args))
     await asyncio.sleep(0.1)
     yield
     await ServerAsyncStop()
@@ -113,7 +114,8 @@ def test_exp_sync_simple(
     args.comm = test_comm
     args.port = test_port + test_port_offset
     args.framer = test_framer
-    thread = Thread(target=run_sync_server, args=(args,))
+    run_args = setup_server(args)
+    thread = Thread(target=run_sync_server, args=(run_args,))
     thread.daemon = True
     thread.start()
     sleep(1)

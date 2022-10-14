@@ -7,9 +7,6 @@ import traceback
 import ssl
 from time import sleep
 
-import serial
-from serial_asyncio import create_serial_connection
-
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -23,6 +20,12 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
 )
 from pymodbus.utilities import hexlify_packets
+
+try:
+    import serial
+    from serial_asyncio import create_serial_connection
+except ImportError:
+    pass
 
 
 # --------------------------------------------------------------------------- #

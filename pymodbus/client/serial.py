@@ -4,15 +4,18 @@ import asyncio
 import time
 import logging
 
-from serial_asyncio import create_serial_connection
-import serial
-
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+
+try:
+    import serial
+    from serial_asyncio import create_serial_connection
+except ImportError:
+    pass
 
 
 _logger = logging.getLogger(__name__)

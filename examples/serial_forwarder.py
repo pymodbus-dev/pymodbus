@@ -28,6 +28,7 @@ def raise_graceful_exit(*args):
 
 class SerialForwarderTCPServer():
     """SerialRTU2TCP Forwarder Server"""
+
     def __init__(self):
         """Initialize the server"""
         self.server = None
@@ -70,7 +71,7 @@ def get_commandline():
     # set defaults
     _logger.setLevel(args.log.upper() if args.log.lower() in logchoices else logging.INFO)
     if not args.slaves:
-        args.slaves = {1,2,3}
+        args.slaves = {1, 2, 3}
     return args.port, args.baudrate, args.server_port, args.server_ip, args.slaves
 
 

@@ -2,13 +2,11 @@
 
 usage :
 python3 serial_forwarder.py --log DEBUG --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port 5020 --slaves 1 2 3
-
-sudo python3 serial_forwarder.py --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port=502 --slaves 1 2 3
 """
-# pylint: disable=unused-argument
 import argparse
 import logging
 import signal
+import asyncio
 
 from pymodbus.server.async_io import ModbusTcpServer
 from pymodbus.client import ModbusSerialClient
@@ -20,7 +18,7 @@ logging.basicConfig(format=FORMAT)
 _logger = logging.getLogger()
 
 
-def raise_graceful_exit(*args):
+def raise_graceful_exit(*args):  # pylint: disable=unused-argument
     """Enters shutdown mode"""
     _logger.info("receiving shutdown signal now")
     raise SystemExit
@@ -61,7 +59,7 @@ def get_commandline():
     """Read and validate command line arguments"""
     logchoices = ["critical", "error", "warning", "info", "debug"]
 
-    parser = argparse.ArgumentParser(description="Command line options for examples")
+    parser = argparse.ArgumentParser(description="Command line options")
     parser.add_argument("--log", help=",".join(logchoices), default="info", type=str)
     parser.add_argument("--port", help="RTU serial port", default='/dev/ttyUSB0', type=str)
     parser.add_argument("--baudrate", help="RTU baudrate", default=9600, type=int)
@@ -80,7 +78,6 @@ def get_commandline():
 
 if __name__ == "__main__":
     server = SerialForwarderTCPServer()
-    import asyncio
     try:
         signal.signal(signal.SIGINT, raise_graceful_exit)
         asyncio.run(server.run())

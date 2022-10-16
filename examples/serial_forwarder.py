@@ -5,7 +5,8 @@ python3 serial_forwarder.py --log DEBUG --port "/dev/ttyUSB0" --baudrate 9600 --
 
 sudo python3 serial_forwarder.py --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port=502 --slaves 1 2 3
 """
-
+#pylint: disable=unused-argument
+#pylint: disable=too-many-arguments
 import argparse
 import logging
 import signal
@@ -37,14 +38,14 @@ class SerialForwarderTCPServer():
         """Run the server"""
         port, baudrate, server_port, server_ip, slaves = get_commandline()
         client = ModbusSerialClient(method='rtu', port=port, baudrate=baudrate)
-        _logger.info("RTU bus on %s - baudrate %s", port, baudrate)
+        _logger.info("RTU bus on {} - baudrate {}".format(port, baudrate))
         store = {}
         for i in slaves:
             store[i] = RemoteSlaveContext(client, unit=i)
         context = ModbusServerContext(slaves=store, single=False)
         self.server = ModbusTcpServer(context, address=(server_ip, server_port), allow_reuse_address=True)
-        _logger.info("serving on %s port %s", server_ip, server_port)
-        _logger.info("listening to slaves : %s", context.slaves())
+        _logger.info("serving on {} port {}".format(server_ip, server_port))
+        _logger.info("listening to slaves {}".format(context.slaves()))
         await self.server.serve_forever()
 
     async def stop(self):

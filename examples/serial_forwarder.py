@@ -6,7 +6,8 @@ python3 serial_forwarder.py --log DEBUG --port "/dev/ttyUSB0" --baudrate 9600 --
 sudo python3 serial_forwarder.py --port "/dev/ttyUSB0" --baudrate 9600 --server_ip "192.168.1.27" --server_port=502 --slaves 1 2 3
 """
 # pylint: disable=unused-argument
-# pylint: disable=too-many-arguments
+# pylint: disable=logging-fstring-interpolation
+# pylint: enable=logging-format-interpolation
 import argparse
 import logging
 import signal

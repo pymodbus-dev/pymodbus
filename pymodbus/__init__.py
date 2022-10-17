@@ -20,6 +20,9 @@ __logging.getLogger(__name__).addHandler(__null())
 
 
 def pymodbus_apply_logging_config():
+    """Apply basic logging configuration used by default by Pymodbus maintainers.
+    Please call this function to format logging appropriately when opening issues.
+    """
     __logging.basicConfig(
         format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
         datefmt="%H:%M:%S",

@@ -19,6 +19,7 @@ Examples
    dbstore_update_server
    modbus_logging
    modbus_forwarder
+   modbus_serial_forwarder
    payload_client
    payload_server
    performance

@@ -1,4 +1,4 @@
 ==================================================
-Forwarder Example
+Serial Forwarder Example
 ==================================================
-.. literalinclude:: ../../../examples/modbus_forwarder.py
+.. literalinclude:: ../../../examples/serial_forwarder.py

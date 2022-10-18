@@ -3,7 +3,7 @@
 This is the single location for storing default
 values for the servers and clients.
 """
-import logging
+
 
 from pymodbus.interfaces import Singleton
 

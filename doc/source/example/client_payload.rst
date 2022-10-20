@@ -1,4 +1,4 @@
 ==================================================
-Modbus Payload Server Example
+Modbus Payload Example
 ==================================================
-.. literalinclude:: ../../../examples/common/payload_server.py
+.. literalinclude:: ../../../examples/client_payload.py

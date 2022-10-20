@@ -13,6 +13,7 @@ Examples
    client_async
    client_async_basic_calls
    client_async_extended_calls
+   client_payload
    changing_framers
    custom_datablock
    custom_message
@@ -20,11 +21,10 @@ Examples
    modbus_logging
    modbus_forwarder
    modbus_serial_forwarder
-   payload_client
-   payload_server
    performance
    server_sync
    server_async
+   server_payload
    updating_server
 
    bcd_payload

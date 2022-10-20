@@ -9,8 +9,11 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
+from examples.helper import get_commandline
 from examples.client_async import run_async_client, setup_async_client
 
+
+_logger = logging.getLogger()
 
 SLAVE = 0x01
 
@@ -118,14 +121,11 @@ async def run_async_basic_calls(client):
     await _handle_holding_registers(client)
     await _handle_input_registers(client)
 
-# --------------------------------------------------------------------------- #
-# Extra code, to allow commandline parameters instead of changing the code
-# --------------------------------------------------------------------------- #
-FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-logging.basicConfig(format=FORMAT)
-_logger = logging.getLogger()
-
 
 if __name__ == "__main__":
-    testclient = setup_async_client()
+    cmd_args = get_commandline(
+        server=False,
+        description="Run basic calls in asynchronous client.",
+    )
+    testclient = setup_async_client(cmd_args)
     asyncio.run(run_async_client(testclient, modbus_calls=run_async_basic_calls))

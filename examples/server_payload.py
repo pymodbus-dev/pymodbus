@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Pymodbus Server Payload Example.
 
 This example shows how to initialize a server with a
@@ -23,7 +24,8 @@ from pymodbus.version import version
 
 
 # set logging level for library.
-logging.getLogger().setLevel(logging.DEBUG)
+_logger = logging.getLogger()
+_logger.setLevel(logging.DEBUG)
 
 
 async def run_payload_server():
@@ -73,16 +75,12 @@ async def run_payload_server():
             "MajorMinorRevision": version.short(),
         }
     )
-    server = await StartAsyncTcpServer(
+    await StartAsyncTcpServer(
         context,
         identity=identity,
         address=("0.0.0.0", 5020),
         allow_reuse_address=True,
-        defer_start=True,
     )
-
-    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
-    await server.serve_forever()
 
 
 if __name__ == "__main__":

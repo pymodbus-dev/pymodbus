@@ -75,3 +75,10 @@ aside from unit tests::
     python setup.py pep8       # run a pop8 standards test
     python setup.py lint       # run a lint test
 
+
+Logging
+-------
+
+Use the following top-level function to enable logging in default Pymodbus format
+
+    pymodbus.pymodbus_apply_logging_config()

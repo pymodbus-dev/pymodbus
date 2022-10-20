@@ -2,10 +2,8 @@
 # pylint: disable=missing-type-doc
 import functools
 
-from pymodbus.client import (
-    ModbusSerialClient as _ModbusSerialClient,
-    ModbusTcpClient as _ModbusTcpClient,
-)
+from pymodbus.client import ModbusSerialClient as _ModbusSerialClient
+from pymodbus.client import ModbusTcpClient as _ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.diag_message import (
     ChangeAsciiInputDelimiterRequest,
@@ -74,7 +72,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     def _process_exception(resp, **kwargs):
         """Set internal process exception."""
         unit = kwargs.get("unit")
-        if unit == 0:  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
+        if (
+            unit  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
+            == 0
+        ):
             err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
             if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used

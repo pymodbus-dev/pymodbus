@@ -4,11 +4,8 @@ import struct
 
 from pymodbus.constants import DeviceInformation, MoreData
 from pymodbus.device import DeviceInformationFactory, ModbusControlBlock
-from pymodbus.pdu import (
-    ModbusExceptions as merror,
-    ModbusRequest,
-    ModbusResponse,
-)
+from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 _MCB = ModbusControlBlock()

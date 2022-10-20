@@ -5,10 +5,10 @@ import external classes, to make them easier to use:
 from pymodbus.server.async_io import (
     ServerAsyncStop,
     ServerStop,
+    StartAsyncSerialServer,
     StartAsyncTcpServer,
     StartAsyncTlsServer,
     StartAsyncUdpServer,
-    StartAsyncSerialServer,
     StartSerialServer,
     StartTcpServer,
     StartTlsServer,

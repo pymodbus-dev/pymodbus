@@ -1,9 +1,9 @@
 """Test client async."""
 import asyncio
+import logging
 from dataclasses import dataclass
 from threading import Thread
 from time import sleep
-import logging
 
 import pytest
 import pytest_asyncio
@@ -11,10 +11,9 @@ import pytest_asyncio
 from examples.client_async import run_async_client, setup_async_client
 from examples.client_async_basic_calls import run_async_basic_calls
 from examples.client_async_extended_calls import run_async_ext_calls
-from examples.server_async import setup_server, run_async_server
+from examples.server_async import run_async_server, setup_server
 from examples.server_sync import run_sync_server
-
-from pymodbus.server import ServerStop, ServerAsyncStop
+from pymodbus.server import ServerAsyncStop, ServerStop
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -70,11 +69,7 @@ async def _helper_server(
     await ServerAsyncStop()
 
 
-async def run_client(
-    test_comm,
-    test_type,
-    args=Commandline
-):
+async def run_client(test_comm, test_type, args=Commandline):
     """Help run async client."""
 
     args.comm = test_comm
@@ -133,15 +128,12 @@ def test_exp_sync_simple(
     ],
 )
 async def test_exp_async_framer(  # pylint: disable=unused-argument
-    test_comm,
-    test_framer,
-    test_port_offset,
-    test_port,
-    mock_run_server,
-    test_type
+    test_comm, test_framer, test_port_offset, test_port, mock_run_server, test_type
 ):
     """Test client-server async with different framers and calls."""
-    if test_type == run_async_ext_calls and test_framer == ModbusRtuFramer:  # pylint: disable=comparison-with-callable
+    rc1 = test_type == run_async_ext_calls  # pylint: disable=comparison-with-callable
+    rc2 = test_framer == ModbusRtuFramer
+    if rc1 and rc2:
         return
     if test_comm == "serial":
         return

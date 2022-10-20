@@ -9,8 +9,8 @@ The corresponding server must be started before e.g. as:
 import asyncio
 import logging
 
-from examples.helper import get_commandline
 from examples.client_async import run_async_client, setup_async_client
+from examples.helper import get_commandline
 
 
 _logger = logging.getLogger()

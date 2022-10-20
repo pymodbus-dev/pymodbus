@@ -14,6 +14,7 @@ import codecs as c
 import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
+import pymodbus.diag_message as modbus_diag
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,
     ReadCoilsResponse,
@@ -26,7 +27,6 @@ from pymodbus.bit_write_message import (
     WriteSingleCoilRequest,
     WriteSingleCoilResponse,
 )
-import pymodbus.diag_message as modbus_diag
 from pymodbus.file_message import (
     ReadFifoQueueRequest,
     ReadFifoQueueResponse,

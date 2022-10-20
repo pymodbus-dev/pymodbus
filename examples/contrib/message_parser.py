@@ -17,8 +17,8 @@ using the supplied framers for a number of protocols:
 import codecs as c
 import collections
 import logging
-from optparse import OptionParser  # pylint: disable=deprecated-module
 import textwrap
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import (

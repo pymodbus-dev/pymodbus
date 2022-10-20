@@ -3,11 +3,8 @@
 import struct
 
 from pymodbus.constants import Defaults
-from pymodbus.pdu import (
-    ModbusExceptions as merror,
-    ModbusRequest,
-    ModbusResponse,
-)
+from pymodbus.pdu import ModbusExceptions as merror
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class ReadRegistersRequestBase(ModbusRequest):

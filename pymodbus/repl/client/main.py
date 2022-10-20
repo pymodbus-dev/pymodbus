@@ -29,7 +29,10 @@ from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
 from pymodbus.exceptions import ParameterException
-from pymodbus.repl.client.completer import CmdCompleter, has_selected_completion
+from pymodbus.repl.client.completer import (
+    CmdCompleter,
+    has_selected_completion,
+)
 from pymodbus.repl.client.helper import CLIENT_ATTRIBUTES, Result
 from pymodbus.repl.client.mclient import ModbusSerialClient, ModbusTcpClient
 from pymodbus.transaction import (
@@ -121,7 +124,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def _process_args(args: list, string: bool=True):
+def _process_args(args: list, string: bool = True):
     """Internal function to parse arguments provided on command line.
 
     :param args: Array of argument values

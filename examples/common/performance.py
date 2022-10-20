@@ -5,21 +5,23 @@
 The following is an quick performance check of the synchronous
 modbus client.
 """
-from concurrent.futures import ThreadPoolExecutor as eWorker, as_completed
-
 # --------------------------------------------------------------------------- #
 # import the necessary modules
 # --------------------------------------------------------------------------- #
 import logging
 import os
-from threading import Lock, Thread as tWorker
+from concurrent.futures import ThreadPoolExecutor as eWorker
+from concurrent.futures import as_completed
+from threading import Lock
+from threading import Thread as tWorker
 from time import time
 
 from pymodbus.client import ModbusTcpClient
 
 
 try:
-    from multiprocessing import Process as mWorker, log_to_stderr
+    from multiprocessing import Process as mWorker
+    from multiprocessing import log_to_stderr
 except ImportError:
     log_to_stderr = logging.getLogger
 

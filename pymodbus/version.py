@@ -47,6 +47,4 @@ version.__name__ = (  # fix epydoc error # pylint: disable=attribute-defined-out
 # Exported symbols
 # --------------------------------------------------------------------------- #
 
-__all__ = [
-    "version"
-]
+__all__ = ["version"]

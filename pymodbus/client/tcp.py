@@ -8,10 +8,11 @@ import typing
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
-from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState
+
 
 _logger = logging.getLogger(__name__)
 

@@ -5,10 +5,13 @@ that can be pointed at a modbus device to pull down all its values and store
 them as a collection of sequential data blocks.
 """
 import logging
-from optparse import OptionParser
 import pickle  # nosec
+from optparse import OptionParser
 
-from twisted.internet import reactor, serialport  # pylint: disable=import-error
+from twisted.internet import (  # pylint: disable=import-error
+    reactor,
+    serialport,
+)
 from twisted.internet.protocol import (
     ClientFactory,  # pylint: disable=import-error
 )

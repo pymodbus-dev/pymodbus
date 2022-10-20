@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 import logging
 import socket
+from dataclasses import dataclass
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -155,7 +155,7 @@ class ModbusBaseClient(ModbusClientMixin):
         raise NotImplementedException
 
     def idle_time(self) -> int:
-        """Time before initiatiating next transaction (call **sync**).
+        """Time before initiating next transaction (call **sync**).
 
         Applications can call message functions without checking idle_time(),
         this is done automatically.

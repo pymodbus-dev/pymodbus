@@ -8,8 +8,8 @@ The corresponding server must be started before e.g. as:
 """
 import logging
 
-from examples.helper import get_commandline
 from examples.client_sync import run_sync_client, setup_sync_client
+from examples.helper import get_commandline
 
 
 _logger = logging.getLogger()

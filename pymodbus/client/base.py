@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 import logging
 import socket
+from dataclasses import dataclass
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults

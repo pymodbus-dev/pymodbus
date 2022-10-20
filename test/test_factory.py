@@ -1,7 +1,7 @@
 """Test factory."""
 import unittest
 
-from pymodbus.exceptions import ModbusException, MessageRegisterException
+from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
@@ -168,7 +168,7 @@ class SimpleFactoryTest(unittest.TestCase):
 
             function_code = 0xFF
 
-        class NoCustomRequest():  # pylint: disable=too-few-public-methods
+        class NoCustomRequest:  # pylint: disable=too-few-public-methods
             """Custom request."""
 
             function_code = 0xFF
@@ -193,7 +193,7 @@ class SimpleFactoryTest(unittest.TestCase):
 
             function_code = 0xFF
 
-        class NoCustomResponse():  # pylint: disable=too-few-public-methods
+        class NoCustomResponse:  # pylint: disable=too-few-public-methods
             """Custom request."""
 
             function_code = 0xFF

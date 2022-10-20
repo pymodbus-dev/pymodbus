@@ -6,8 +6,8 @@ bit based request/response messages:
 * Read/Write Discretes
 * Read Coils
 """
-from test.conftest import MockContext
 import unittest
+from test.conftest import MockContext
 
 from pymodbus.file_message import (
     FileRecord,

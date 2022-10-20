@@ -1,11 +1,11 @@
 """Collection of transaction based abstractions."""
 # pylint: disable=missing-type-doc
-from functools import partial
 import logging
 import socket
 import struct
-from threading import RLock
 import time
+from functools import partial
+from threading import RLock
 
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import (

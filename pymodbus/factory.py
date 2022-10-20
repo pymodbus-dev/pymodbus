@@ -85,13 +85,9 @@ from pymodbus.other_message import (
     ReportSlaveIdRequest,
     ReportSlaveIdResponse,
 )
-from pymodbus.pdu import (
-    ExceptionResponse,
-    IllegalFunctionRequest,
-    ModbusExceptions as ecode,
-    ModbusRequest,
-    ModbusResponse,
-)
+from pymodbus.pdu import ExceptionResponse, IllegalFunctionRequest
+from pymodbus.pdu import ModbusExceptions as ecode
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.register_read_message import (
     ReadHoldingRegistersRequest,
     ReadHoldingRegistersResponse,

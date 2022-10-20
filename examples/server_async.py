@@ -27,9 +27,9 @@ options:
 The corresponding client can be started as:
     python3 client_sync.py
 """
-import os
 import asyncio
 import logging
+import os
 
 from examples.helper import get_commandline
 from pymodbus.datastore import (

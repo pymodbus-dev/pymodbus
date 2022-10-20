@@ -190,8 +190,11 @@ jobs:
           - name: flake8
             tox: flake8
             # continue_on_error: true
+          - name: isort
+            tox: isort_CI
+            # continue_on_error: true
           - name: black
-            tox: black
+            tox: black_CI
             # continue_on_error: true
           - name: Docs
             tox: docs

@@ -99,6 +99,8 @@ class ModbusPDU:
 class ModbusRequest(ModbusPDU):
     """Base class for a modbus request PDU."""
 
+    function_code = -1
+
     def __init__(self, unit=Defaults.Slave, **kwargs):
         """Proxy to the lower level initializer.
 
@@ -112,9 +114,7 @@ class ModbusRequest(ModbusPDU):
         :param exception: The exception to return
         :raises: An exception response
         """
-        exc = ExceptionResponse(
-            self.function_code, exception  # pylint: disable=no-member
-        )
+        exc = ExceptionResponse(self.function_code, exception)
         _logger.error(exc)
         return exc
 

@@ -4,9 +4,10 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+import struct
+
 # pylint: disable=missing-type-doc
 from collections import OrderedDict
-import struct
 
 from pymodbus.constants import DeviceInformation
 from pymodbus.interfaces import Singleton

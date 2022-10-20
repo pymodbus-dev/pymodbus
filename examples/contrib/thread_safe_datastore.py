@@ -1,7 +1,7 @@
 # pylint: disable=missing-type-doc
 """Thread safe datastore."""
-from contextlib import contextmanager
 import threading
+from contextlib import contextmanager
 
 from pymodbus.datastore.store import BaseModbusDataBlock
 

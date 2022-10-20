@@ -31,8 +31,8 @@ The corresponding client can be started as:
 is just a thin cover on top of the async server and is in some aspects
 a lot slower.
 """
-import os
 import logging
+import os
 
 from examples.helper import get_commandline
 from examples.server_async import setup_server

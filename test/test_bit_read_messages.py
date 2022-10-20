@@ -7,9 +7,8 @@ bit based request/response messages:
 * Read Coils
 """
 import struct
-
-from test.conftest import MockContext
 import unittest
+from test.conftest import MockContext
 
 from pymodbus.bit_read_message import (
     ReadBitsRequestBase,

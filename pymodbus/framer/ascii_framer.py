@@ -1,8 +1,8 @@
 """Ascii_framer."""
 # pylint: disable=missing-type-doc
-from binascii import a2b_hex, b2a_hex
 import logging
 import struct
+from binascii import a2b_hex, b2a_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer

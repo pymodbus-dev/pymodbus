@@ -12,9 +12,6 @@ name: Publish Docker image
 on:
   release:
     types: [published]
-env:
-  DOCKER_HUB_NAMESPACE: serroba
-  DOCKER_HUB_REPOSITORY: pymodbus
 
 jobs:
   push_to_registry:
@@ -42,7 +39,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_REPOSITORY }}
+          images: ${{ github.repository }}
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v3

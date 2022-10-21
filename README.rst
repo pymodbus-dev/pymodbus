@@ -39,7 +39,7 @@ Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
 Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.
 
-Pymodbus also provides a lot os ready to use examples as well as a server/client simulator which can be controlled via REST Api and can be easily integrated into test suites.
+Pymodbus also provides a lot of ready to use examples as well as a server/client simulator which can be controlled via a REST API and can be easily integrated into test suites.
 
 Requires Python >= 3.8
 
@@ -213,7 +213,7 @@ To activeate the virtual environment please do::
    source .venv/bin/activate
 
 
-To get latest release (for now v2.5.3 with Python 2.7 support)::
+To get latest release (for now v3.0.0 with Python 3.8 support)::
 
     git checkout master
 

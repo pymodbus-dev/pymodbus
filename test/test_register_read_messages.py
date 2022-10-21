@@ -1,6 +1,6 @@
 """Test register read messages."""
-from test.conftest import FakeList, MockContext
 import unittest
+from test.conftest import FakeList, MockContext
 
 from pymodbus.pdu import ModbusExceptions
 from pymodbus.register_read_message import (

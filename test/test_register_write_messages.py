@@ -1,6 +1,6 @@
 """Test register write messages."""
-from test.conftest import MockContext, MockLastValuesContext
 import unittest
+from test.conftest import MockContext, MockLastValuesContext
 
 from pymodbus.payload import BinaryPayloadBuilder, Endian
 from pymodbus.pdu import ModbusExceptions

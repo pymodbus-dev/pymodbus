@@ -213,7 +213,7 @@ def computeLRC(data):  # pylint: disable=invalid-name
 
     This is only used on the serial ASCII
     modbus protocol. A full description of this implementation
-    can be found in appendex B of the serial line modbus description.
+    can be found in appendix B of the serial line modbus description.
 
     :param data: The data to apply a lrc to
     :returns: The calculated LRC

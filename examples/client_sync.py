@@ -20,8 +20,8 @@ options:
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
-import os
 import logging
+import os
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations

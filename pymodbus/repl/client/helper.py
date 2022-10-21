@@ -1,13 +1,13 @@
 """Helper Module for REPL actions."""
-from collections import OrderedDict
 import inspect
 
 # pylint: disable=missing-type-doc
 import json
+from collections import OrderedDict
 
+import pygments
 from prompt_toolkit import print_formatted_text
 from prompt_toolkit.formatted_text import HTML, PygmentsTokens
-import pygments
 from pygments.lexers.data import JsonLexer
 
 from pymodbus.payload import BinaryPayloadDecoder, Endian

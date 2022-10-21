@@ -9,6 +9,7 @@ from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -37,9 +38,7 @@ def sslctx_provider(
     sslctx.options |= ssl.OP_NO_SSLv3
     sslctx.options |= ssl.OP_NO_SSLv2
     if certfile and keyfile:
-        sslctx.load_cert_chain(
-            certfile=certfile, keyfile=keyfile, password=password
-        )
+        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
     return sslctx
 
 

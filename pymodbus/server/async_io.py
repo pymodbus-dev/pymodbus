@@ -1,10 +1,10 @@
 """Implementation of a Threaded Modbus Server."""
 # pylint: disable=missing-type-doc
 import asyncio
-from binascii import b2a_hex
 import logging
-import traceback
 import ssl
+import traceback
+from binascii import b2a_hex
 from time import sleep
 
 from pymodbus.constants import Defaults
@@ -20,6 +20,7 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
 )
 from pymodbus.utilities import hexlify_packets
+
 
 try:
     import serial
@@ -37,7 +38,7 @@ _logger = logging.getLogger(__name__)
 # Allow access to server object, to e.g. make a shutdown
 # --------------------------------------------------------------------------- #
 _server_stopped = None  # pylint: disable=invalid-name
-_server_stop = None   # pylint: disable=invalid-name
+_server_stop = None  # pylint: disable=invalid-name
 
 
 def sslctx_provider(
@@ -71,6 +72,7 @@ def sslctx_provider(
         sslctx.verify_mode = ssl.CERT_REQUIRED
 
     return sslctx
+
 
 # --------------------------------------------------------------------------- #
 # Protocol Handlers
@@ -891,8 +893,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         """Start endless loop."""
         if self.device.startswith("socket:"):
             # Socket server means listen so start a socket server
-            parts = self.device[7:].split(':')
-            host_port = ('', int(parts[1]))
+            parts = self.device[7:].split(":")
+            host_port = ("", int(parts[1]))
             self.server = await asyncio.get_event_loop().create_server(
                 lambda: self.handler(self),
                 *host_port,
@@ -911,6 +913,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # --------------------------------------------------------------------------- #
 # Creation Factories
 # --------------------------------------------------------------------------- #
+
 
 async def _helper_run_server(server, custom_functions):
     """Help starting/stopping server."""
@@ -961,13 +964,7 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default
     :return: an initialized but inactive server object coroutine
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server = ModbusTcpServer(
-        context,
-        framer,
-        identity,
-        address,
-        **kwargs
-    )
+    server = ModbusTcpServer(context, framer, identity, address, **kwargs)
 
     if defer_start:
         return server
@@ -1051,13 +1048,7 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default
     :param kwargs:
     """
     framer = kwargs.pop("framer", ModbusSocketFramer)
-    server = ModbusUdpServer(
-        context,
-        framer,
-        identity,
-        address,
-        **kwargs
-    )
+    server = ModbusUdpServer(context, framer, identity, address, **kwargs)
     if defer_start:
         return server
     await _helper_run_server(server, custom_functions)
@@ -1082,12 +1073,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     :param kwargs: The rest
     """
     framer = kwargs.pop("framer", ModbusAsciiFramer)
-    server = ModbusSerialServer(
-        context,
-        framer,
-        identity=identity,
-        **kwargs
-    )
+    server = ModbusSerialServer(context, framer, identity=identity, **kwargs)
     if defer_start:
         return server
     await server.start()

@@ -1,4 +1,4 @@
 ==================================================
 Libmodbus Client Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/libmodbus_client.py
+.. literalinclude:: ../../../examples/v2.5.3/libmodbus_client.py

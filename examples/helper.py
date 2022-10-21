@@ -7,6 +7,7 @@ get_command_line
 import argparse
 import logging
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -80,6 +81,7 @@ def get_commandline(server=False, description=None, extras=None):
         "socket": ModbusSocketFramer,
         "tls": ModbusTlsFramer,
     }
+    pymodbus_apply_logging_config()
     _logger.setLevel(args.log.upper())
     args.framer = framers[args.framer or comm_defaults[args.comm][0]]
     args.port = args.port or comm_defaults[args.comm][1]

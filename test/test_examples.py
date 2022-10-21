@@ -9,8 +9,8 @@ import pytest
 import pytest_asyncio
 
 from examples.client_async import run_async_client, setup_async_client
-from examples.client_async_basic_calls import run_async_basic_calls
-from examples.client_async_extended_calls import run_async_ext_calls
+from examples.client_calls import run_async_calls, run_sync_calls
+from examples.client_sync import run_sync_client, setup_sync_client
 from examples.server_async import run_async_server, setup_server
 from examples.server_sync import run_sync_server
 from pymodbus.server import ServerAsyncStop, ServerStop
@@ -83,7 +83,7 @@ async def run_client(test_comm, test_type, args=Commandline):
 
 @pytest.mark.parametrize("test_port_offset", [10])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-async def test_exp_async_simple(  # pylint: disable=unused-argument
+async def test_exp_async_server_client(
     test_comm,
     test_framer,
     test_port_offset,
@@ -91,57 +91,50 @@ async def test_exp_async_simple(  # pylint: disable=unused-argument
     mock_run_server,
 ):
     """Run async client and server."""
-
-
-@pytest.mark.parametrize("test_port_offset", [20])
-@pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-def test_exp_sync_simple(
-    test_comm,
-    test_framer,
-    test_port_offset,
-    test_port,
-):
-    """Run sync client and server."""
-    if test_comm == "serial":
-        # missing mock of port
-        return
-    args = Commandline
-    args.comm = test_comm
-    args.port = test_port + test_port_offset
-    args.framer = test_framer
-    run_args = setup_server(args)
-    thread = Thread(target=run_sync_server, args=(run_args,))
-    thread.daemon = True
-    thread.start()
-    sleep(1)
-    ServerStop()
-
-
-@pytest.mark.parametrize("test_port_offset", [30])
-@pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-@pytest.mark.parametrize(
-    "test_type",
-    [
-        None,
-        run_async_basic_calls,
-        run_async_ext_calls,
-    ],
-)
-async def test_exp_async_framer(  # pylint: disable=unused-argument
-    test_comm, test_framer, test_port_offset, test_port, mock_run_server, test_type
-):
-    """Test client-server async with different framers and calls."""
-    rc1 = test_type == run_async_ext_calls  # pylint: disable=comparison-with-callable
-    rc2 = test_framer == ModbusRtuFramer
-    if rc1 and rc2:
-        return
-    if test_comm == "serial":
-        return
-
+    assert not mock_run_server
     args = Commandline
     args.framer = test_framer
     args.comm = test_comm
     args.port = test_port
     if isinstance(test_port, int):
         args.port += test_port_offset
-    await run_client(test_comm, test_type, args=args)
+    if not pytest.IS_WINDOWS and test_comm == "serial":
+        await run_client(test_comm, None, args=args)
+
+
+def test_exp_sync_server_client():
+    """Run sync client and server."""
+    args = Commandline
+    args.comm = "tcp"
+    args.port = 5021 + 20
+    args.framer = ModbusSocketFramer
+    run_args = setup_server(args)
+    thread = Thread(target=run_sync_server, args=(run_args,))
+    thread.daemon = True
+    thread.start()
+    sleep(1)
+    test_client = setup_sync_client(args=args)
+    run_sync_client(test_client, modbus_calls=run_sync_calls)
+    ServerStop()
+
+
+@pytest.mark.parametrize("test_port_offset", [30])
+@pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
+async def test_exp_client_calls(  # pylint: disable=unused-argument
+    test_comm,
+    test_framer,
+    test_port_offset,
+    test_port,
+    mock_run_server,
+):
+    """Test client-server async with different framers and calls."""
+    if test_comm == "serial" and test_framer in (ModbusAsciiFramer, ModbusBinaryFramer):
+        return
+    args = Commandline
+    args.framer = test_framer
+    args.comm = test_comm
+    args.port = test_port
+    if isinstance(test_port, int):
+        args.port += test_port_offset
+    if not pytest.IS_WINDOWS and test_comm == "serial":
+        await run_client(test_comm, run_async_calls, args=args)

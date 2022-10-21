@@ -118,21 +118,14 @@ Examples Directory structure
 
 ::
 
-   examples
-   ├── common.      -> Common examples for clients and server (sync/async), Payload encoders and decoders.
-   ├── contrib.     -> Examples contributed by contributors. Serial Forwarder, Database contexts etc.
-
-If you are looking for UI, checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
-`Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
+   examples      -> Essential examples guaranteed to work (tested with our CI)
+   ├── v2.5.3    -> Examples not updated to version 3.0.0.
+   ├── contrib   -> Examples contributed by contributors.
 
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
 If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
-
-.. important::
-   **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
-
 
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)

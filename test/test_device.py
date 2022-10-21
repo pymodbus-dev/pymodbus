@@ -350,8 +350,6 @@ class SimpleDataStoreTest(unittest.TestCase):
             [0],
             [0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        stats_summary = [  # noqa: C416 pylint: disable=unnecessary-comprehension
-            x for x in statistics.summary()
-        ]
+        stats_summary = list(statistics.summary())
         self.assertEqual(sorted(summary), sorted(stats_summary))
         self.assertEqual(0x00, sum(sum(value[1]) for value in statistics))

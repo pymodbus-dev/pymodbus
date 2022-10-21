@@ -1,6 +1,6 @@
 """Pymodbus REPL Entry point."""
 # pylint: disable=anomalous-backslash-in-string
-# flake8: noqa: W605
+# flake8: noqa
 import logging
 import pathlib
 import sys
@@ -169,7 +169,7 @@ def _process_args(args: list, string: bool = True):
     return kwargs, execute
 
 
-def cli(client):  # noqa: C901 pylint: disable=too-complex
+def cli(client):  # pylint: disable=too-complex
     """Run client definition."""
     use_keys = KeyBindings()
     history_file = pathlib.Path.home().joinpath(".pymodhis")

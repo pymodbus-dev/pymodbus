@@ -1,6 +1,3 @@
-Resolve:
-noqa
-
 pylint general:
 see .pylintrc [MESSAGES CONTROL]
 

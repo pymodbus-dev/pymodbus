@@ -99,9 +99,9 @@ inspect.classify_class_attrs = classify_class_attrs
 class DefaultFormatter(pydoc.HTMLDoc):
     """Default formatter."""
 
-    def docmodule(  # noqa: C901
+    def docmodule(
         self, object, name=None, mod=None, packageContext=None, *ignored
-    ):  # noqa: C901
+    ):
         """Produce HTML documentation for a module object."""
         my_name = object.__name__  # ignore the passed-in name
         parts = split(my_name, ".")
@@ -197,7 +197,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
             # FIX  classlist = map(lambda (key, value): value, classes)
             contents = [
                 self.formattree(
-                    inspect.getclasstree(classlist, 1), my_name  # noqa: F821
+                    inspect.getclasstree(classlist, 1), my_name
                 )
             ]
             for key, value in classes:
@@ -271,7 +271,7 @@ class DefaultFormatter(pydoc.HTMLDoc):
                         items.append(
                             self.modpkglink((modname, name, ispackage, isshadowed))
                         )
-                except:  # noqa: E722
+                except:
                     items.append(
                         self.modpkglink((modname, name, ispackage, isshadowed))
                     )

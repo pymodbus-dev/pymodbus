@@ -469,7 +469,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
+class ModbusTcpServer:
     """A modbus threaded tcp socket server.
 
     We inherit and overload the socket server so that we
@@ -659,7 +659,7 @@ class ModbusTlsServer(ModbusTcpServer):
         self.factory_parms["ssl"] = self.sslctx
 
 
-class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
+class ModbusUdpServer:
     """A modbus threaded udp socket server.
 
     We inherit and overload the socket server so that we
@@ -762,7 +762,7 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
             self.protocol = None
 
 
-class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
+class ModbusSerialServer:
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we

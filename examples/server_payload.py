@@ -78,7 +78,7 @@ async def run_payload_server():
     await StartAsyncTcpServer(
         context,
         identity=identity,
-        address=("0.0.0.0", 5020),
+        address=("127.0.0.1", 5020),
         allow_reuse_address=True,
     )
 

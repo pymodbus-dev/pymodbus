@@ -61,10 +61,11 @@ def get_commandline(server=False, description=None, extras=None):
             help="set number of slaves, default is 0 (any)",
             default=0,
             type=int,
+            nargs="+",
         )
     if extras:
         for extra in extras:
-            parser.add_argument(extra)
+            parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args()
 
     # set defaults

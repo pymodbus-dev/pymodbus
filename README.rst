@@ -245,14 +245,12 @@ Docker Compose
 ------------------------------------------------------------
 
 If you would like to use this image as part of a `docker compose` project, you can provide a custom command. For example,
-you can spin the server by creating a docker compose file containing the following:
+you can spin the server by creating a docker compose file containing the following::
 
-```yml
-pymodbus-server:
-    container_name: pymodbus-server
-    image: riptideio/pymodbus:X.Y.Z
-    command: ["./examples/server_sync.py"]
-```
+   pymodbus-server:
+      container_name: pymodbus-server
+      image: riptideio/pymodbus:X.Y.Z
+      command: ["./examples/server_sync.py"]
 
 After running `docker compose up`, you should have running the `server_sync.py` example, ready to accept connections from a client. You can,
 of course, add a custom script instead, to run your own logic instead.

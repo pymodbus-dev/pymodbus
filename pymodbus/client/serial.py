@@ -105,6 +105,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
                 bytesize=self.params.bytesize,
                 stopbits=self.params.stopbits,
                 parity=self.params.parity,
+                timeout=self.params.timeout,
                 **self.params.kwargs,
             )
             await self._connected_event.wait()

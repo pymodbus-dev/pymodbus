@@ -73,7 +73,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         """Build the function code mapper."""
         kwargs = {}
         if self.unit:
-            kwargs["unit"] = self.unit
+            kwargs["slave"] = self.unit
         self.__get_callbacks = {
             "d": lambda a, c: self._client.read_discrete_inputs(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs

@@ -19,6 +19,11 @@ Install `pymodbus` with the required dependencies
 
 `pip install pymodbus[repl]`
 
+## Docker
+Pull Docker image with everything installed
+
+`docker pull riptideio/pymodbus`
+
 ## Usage
 
 Invoke REPL server with `pymodbus.server run` command.
@@ -44,6 +49,12 @@ Invoke REPL server with `pymodbus.server run` command.
 ╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ run              Run Reactive Modbus server.                                                                               │
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+If using the docker image, you can run all the same commands, prepending the `docker run` command. For example:
+
+```shell
+docker run -it riptideio/pymodbus pymodbus.server --help
 ```
 
 ```shell

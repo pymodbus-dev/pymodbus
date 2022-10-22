@@ -197,6 +197,10 @@ Or to install a specific release:
 
     pip install -U pymodbus==X.Y.Z
 
+You can also use Docker to run a local image with the package installed on the image:
+
+    docker pull riptideio/pymodbus
+
 Otherwise you can pull the trunk source and install from there::
 
     git clone git://github.com/riptideio/pymodbus.git

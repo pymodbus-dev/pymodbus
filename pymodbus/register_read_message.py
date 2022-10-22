@@ -49,7 +49,7 @@ class ReadRegistersRequestBase(ModbusRequest):
 
         :returns: A string representation of the instance
         """
-        return f"ReadRegisterRequest ({self.address},{self.count})"
+        return f"{self.__class__.__name__} ({self.address},{self.count})"
 
 
 class ReadRegistersResponseBase(ModbusResponse):

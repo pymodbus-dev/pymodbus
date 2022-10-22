@@ -100,11 +100,13 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
     def _log_exception(self):
         """Show log exception."""
+        if not self.running:
+            return
         if isinstance(self, ModbusConnectedRequestHandler):
             txt = f"Handler for stream [{self.client_address[:2]}] has been canceled"
-            _logger.error(txt)
+            _logger.debug(txt)
         elif isinstance(self, ModbusSingleRequestHandler):
-            _logger.error("Handler for serial port has been cancelled")
+            _logger.debug("Handler for serial port has been cancelled")
         else:
             if hasattr(self, "protocol"):
                 sock_name = (
@@ -113,7 +115,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             else:
                 sock_name = "No socket"
             txt = f"Handler for UDP socket [{sock_name[1]}] has been canceled"
-            _logger.error(txt)
+            _logger.debug(txt)
 
     def connection_made(self, transport):
         """Call for socket establish

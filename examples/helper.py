@@ -7,6 +7,7 @@ get_command_line
 import argparse
 import logging
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -60,10 +61,11 @@ def get_commandline(server=False, description=None, extras=None):
             help="set number of slaves, default is 0 (any)",
             default=0,
             type=int,
+            nargs="+",
         )
     if extras:
         for extra in extras:
-            parser.add_argument(extra)
+            parser.add_argument(extra[0], **extra[1])
     args = parser.parse_args()
 
     # set defaults
@@ -80,6 +82,7 @@ def get_commandline(server=False, description=None, extras=None):
         "socket": ModbusSocketFramer,
         "tls": ModbusTlsFramer,
     }
+    pymodbus_apply_logging_config()
     _logger.setLevel(args.log.upper())
     args.framer = framers[args.framer or comm_defaults[args.comm][0]]
     args.port = args.port or comm_defaults[args.comm][1]

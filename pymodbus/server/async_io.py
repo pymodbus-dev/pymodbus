@@ -1116,4 +1116,4 @@ def ServerStop():  # pylint: disable=invalid-name
     global _server_stopped, _server_stop  # pylint: disable=invalid-name,global-variable-not-assigned
 
     _server_stop.set()
-    sleep(10)
+    sleep(3)

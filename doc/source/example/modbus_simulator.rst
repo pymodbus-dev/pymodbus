@@ -1,4 +1,4 @@
 ==================================================
 Modbus Simulator Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/modbus_simulator.py
+.. literalinclude:: ../../../examples/v2.5.3/modbus_simulator.py

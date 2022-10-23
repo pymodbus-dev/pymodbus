@@ -1,4 +1,4 @@
 ==============================
 Dbstore update Server Example
 ==============================
-.. literalinclude:: ../../../examples/common/dbstore_update_server.py
+.. literalinclude:: ../../../examples/v2.5.3/dbstore_update_server.py

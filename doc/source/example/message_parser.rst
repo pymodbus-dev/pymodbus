@@ -1,4 +1,4 @@
 ==================================================
 Message Parser Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/message_parser.py
+.. literalinclude:: ../../../examples/v2.5.3/message_parser.py

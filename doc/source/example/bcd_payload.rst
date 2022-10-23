@@ -1,4 +1,4 @@
 ==================================================
 Bcd Payload Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/bcd_payload.py
+.. literalinclude:: ../../../examples/v2.5.3/bcd_payload.py

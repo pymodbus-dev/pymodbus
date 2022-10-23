@@ -1,4 +1,4 @@
 ==================================================
 Concurrent Client Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/concurrent_client.py
+.. literalinclude:: ../../../examples/v2.5.3/concurrent_client.py

@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import asyncio
 import logging
+import platform
 import ssl
 import traceback
 from binascii import b2a_hex
@@ -956,6 +957,15 @@ class _serverList:
             await self.task
         except asyncio.CancelledError:
             pass
+        if platform.system().lower() == "windows":
+            owntask = asyncio.current_task()
+            for task in asyncio.all_tasks():
+                if task != owntask:
+                    task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
         self.i_am_stopped.set()
 
     def request_stop(self):

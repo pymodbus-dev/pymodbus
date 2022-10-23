@@ -34,12 +34,6 @@ except ImportError:
 # --------------------------------------------------------------------------- #
 _logger = logging.getLogger(__name__)
 
-# --------------------------------------------------------------------------- #
-# Allow access to server object, to e.g. make a shutdown
-# --------------------------------------------------------------------------- #
-_server_stopped = None  # pylint: disable=invalid-name
-_server_stop = None  # pylint: disable=invalid-name
-
 
 def sslctx_provider(
     sslctx=None, certfile=None, keyfile=None, password=None, reqclicert=False
@@ -932,6 +926,9 @@ class _serverList:
         self.server = server
         if register:
             self._servers.append(self)
+        self.please_stop = asyncio.Event()
+        self.i_am_stopped = asyncio.Event()
+        self.task = None
 
     @classmethod
     def get_server(cls, inx):
@@ -947,36 +944,28 @@ class _serverList:
 
     async def run(self):
         """Help starting/stopping server."""
-        global _server_stopped, _server_stop  # pylint: disable=global-statement,invalid-name
-
-        _server_stopped = asyncio.Event()
-        _server_stop = asyncio.Event()
         try:
-            server_task = asyncio.create_task(self.server.serve_forever())
+            self.task = asyncio.create_task(self.server.serve_forever())
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Server caught exception: {exc}"
             _logger.error(txt)
-        await _server_stop.wait()
+        await self.please_stop.wait()
         await self.server.shutdown()
-        server_task.cancel()
-        owntask = asyncio.current_task()
-        for task in asyncio.all_tasks():
-            if task != owntask:
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-        _server_stopped.set()
+        self.task.cancel()
+        try:
+            await self.task
+        except asyncio.CancelledError:
+            pass
+        self.i_am_stopped.set()
 
     def request_stop(self):
         """Request server stop."""
-        _server_stop.set()
+        self.please_stop.set()
 
     async def async_await_stop(self):
         """Wait for server stop."""
         try:
-            await _server_stopped.wait()
+            await self.i_am_stopped.wait()
         except asyncio.exceptions.CancelledError:
             pass
         self._remove()
@@ -984,8 +973,8 @@ class _serverList:
     def await_stop(self):
         """Wait for server stop."""
         for i in range(30):  # Loop for 3 seconds
-            sleep(0.1)
-            if _server_stopped.is_set():
+            sleep(0.1)  # in steps of 100 milliseconds.
+            if self.i_am_stopped.is_set():
                 break
         self._remove()
 

@@ -100,8 +100,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
     def _log_exception(self):
         """Show log exception."""
-        if not self.running:
-            return
         if isinstance(self, ModbusConnectedRequestHandler):
             txt = f"Handler for stream [{self.client_address[:2]}] has been canceled"
             _logger.debug(txt)
@@ -238,8 +236,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
-                self._log_exception()
-                self.running = False
+                if self.running:
+                    self._log_exception()
+                    self.running = False
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors

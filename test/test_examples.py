@@ -67,6 +67,9 @@ async def _helper_server(
     test_port,
 ):
     """Run server."""
+    if pytest.IS_WINDOWS:
+        yield
+        return
     args = Commandline
     args.comm = test_comm
     args.framer = test_framer
@@ -102,6 +105,8 @@ async def test_exp_async_server_client(
     mock_run_server,
 ):
     """Run async client and server."""
+    if pytest.IS_WINDOWS:
+        return
     assert not mock_run_server
     args = Commandline
     args.framer = test_framer
@@ -109,12 +114,13 @@ async def test_exp_async_server_client(
     args.port = test_port
     if isinstance(test_port, int):
         args.port += test_port_offset
-    if not pytest.IS_WINDOWS and test_comm == "serial":
-        await run_client(test_comm, None, args=args)
+    await run_client(test_comm, None, args=args)
 
 
 def test_exp_sync_server_client():
     """Run sync client and server."""
+    if pytest.IS_WINDOWS:
+        return
     args = Commandline
     args.comm = "tcp"
     args.port = 5021 + 20
@@ -139,6 +145,8 @@ async def test_exp_client_calls(  # pylint: disable=unused-argument
     mock_run_server,
 ):
     """Test client-server async with different framers and calls."""
+    if pytest.IS_WINDOWS:
+        return
     if test_comm == "serial" and test_framer in (ModbusAsciiFramer, ModbusBinaryFramer):
         return
     args = Commandline
@@ -163,6 +171,8 @@ async def test_exp_forwarder(  # pylint: disable=unused-argument
     mock_run_server,
 ):
     """Test modbus forwarder."""
+    if pytest.IS_WINDOWS:
+        return
 
     pymodbus_apply_logging_config()
     cmd_args = Commandline
@@ -189,6 +199,8 @@ async def test_exp_forwarder(  # pylint: disable=unused-argument
 
 async def test_exp_payload():
     """Test server/client with payload."""
+    if pytest.IS_WINDOWS:
+        return
 
     # asyncio.create_task(run_payload_server())
     await asyncio.sleep(0.1)

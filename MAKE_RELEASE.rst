@@ -13,6 +13,8 @@ Prepare/make release on dev.
    * Update README.rst "Supported versions"
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
+        git log --oneline v3.0.0..HEAD > commit.log
+        git log v3.0.0..HEAD | grep Author > contributors.log
    * Commit, push and merge.
 * Checkout master locally
    * git merge dev
@@ -30,6 +32,13 @@ Prepare/make release on dev.
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/
+* on local repo
+   * update github pages
+     git checkout gh-pages
+     git checkout origin/master -- README.rst
+   * Convert README.rst to index.md
+     https://cloudconvert.com/rst-to-md
+   * commit and push index.md
 * Make an announcement in discussions.
 
 

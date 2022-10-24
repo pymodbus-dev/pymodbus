@@ -7,7 +7,7 @@ import os
 import random
 import sys
 import time
-
+from enum import Enum
 
 try:
     from aiohttp import web
@@ -368,6 +368,9 @@ class ReactiveServer:
         :              refer corresponding servers documentation
         :return: ReactiveServer object
         """
+        if isinstance(server, Enum):
+            server = server.value
+
         if server.lower() not in SERVER_MAPPER:
             txt = f"Invalid server {server}"
             logger.error(txt)

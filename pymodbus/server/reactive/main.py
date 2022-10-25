@@ -164,9 +164,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         _block_type = self.decode(fc_as_hex)
         if self._randomize > 0 and _block_type in {"d", "i"}:
             with self._lock:
-                if (
-                    self._read_counter.get(_block_type) % self._randomize == 0
-                ):  # pylint: disable = compare-to-zero
+                if not (self._read_counter.get(_block_type) % self._randomize):
                     # Update values
                     if _block_type == "d":
                         min_val = self._min_binary_value

@@ -69,7 +69,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Parameter class."""
 
         host: str = None
-        port: str | int = None
+        port: str | float = None
         framer: ModbusFramer = None
         timeout: int = None
         retries: int = None
@@ -97,7 +97,7 @@ class ModbusBaseClient(ModbusClientMixin):
     def __init__(
         self,
         framer: str = None,
-        timeout: str | int = Defaults.Timeout,
+        timeout: str | float = Defaults.Timeout,
         retries: str | int = Defaults.Retries,
         retry_on_empty: bool = Defaults.RetryOnEmpty,
         close_comm_on_error: bool = Defaults.CloseCommOnError,
@@ -109,7 +109,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Initialize a client instance."""
         self.params = self._params()
         self.params.framer = framer
-        self.params.timeout = int(timeout)
+        self.params.timeout = float(timeout)
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
         self.params.close_comm_on_error = bool(close_comm_on_error)

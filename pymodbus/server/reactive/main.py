@@ -244,6 +244,7 @@ class ReactiveServer:
                 )
 
             logger.info("Modbus server started")
+
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Error starting modbus server")
             logger.error(exc)
@@ -328,22 +329,19 @@ class ReactiveServer:
             skip_encoding = True
         return response, skip_encoding
 
-    def run(self):
+    async def run_async(self, repl_mode=False):
         """Run Web app."""
 
-        def _info(message):
-            msg = HINT.format(message, self._host, self._port)
-            print(msg)
-            # print(message)
-
-        web.run_app(self._web_app, host=self._host, port=self._port, print=_info)
-
-    async def run_async(self):
-        """Run Web app."""
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)
             await site.start()
+            if not repl_mode:
+                message = (
+                    f"======== Running on http://{self._host}:{self._port} ========"
+                )
+                msg = HINT.format(message, self._host, self._port)
+                print(msg)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error(exc)
 

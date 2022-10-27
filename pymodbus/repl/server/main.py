@@ -186,13 +186,10 @@ def run(
         **modbus_config,
     )
     try:
+        loop.run_until_complete(app.run_async(repl))
         if repl:
-            loop.run_until_complete(app.run_async())
-
             loop.run_until_complete(run_repl(app))
-            loop.run_forever()
-        else:
-            app.run()
+        loop.run_forever()
 
     except CANCELLED_ERROR:
         print("Done!!!!!")

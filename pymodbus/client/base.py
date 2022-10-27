@@ -25,7 +25,7 @@ class ModbusBaseClient(ModbusClientMixin):
     **Parameters common to all clients**:
 
     :param framer: (optional) Modbus Framer class.
-    :param timeout: (optional) Timeout for a request.
+    :param timeout: (optional) Timeout for a request, in seconds.
     :param retries: (optional) Max number of retries pr request.
     :param retry_on_empty: (optional) Retry on empty response.
     :param close_comm_on_error: (optional) Close connection on error.
@@ -69,9 +69,9 @@ class ModbusBaseClient(ModbusClientMixin):
         """Parameter class."""
 
         host: str = None
-        port: str | float = None
+        port: str | int = None
         framer: ModbusFramer = None
-        timeout: int = None
+        timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
         close_comm_on_error: bool = None

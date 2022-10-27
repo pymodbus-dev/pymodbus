@@ -211,7 +211,7 @@ curl -X POST http://localhost:8080 -d '{"response_type": "delayed", "delay_by": 
 
 ```
 
-**Rever to normal responses**
+**Revert to normal responses**
 
 ```
 curl -X POST http://localhost:8080 -d '{"response_type": "normal"}'

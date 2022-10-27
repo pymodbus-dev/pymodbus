@@ -9,6 +9,6 @@ EXPOSE 5020
 
 COPY . .
 
-RUN pip install -r requirements.txt && pip install -e .
+RUN pip3 install -r requirements.txt && pip3 install -e .
 
 CMD [ "pymodbus.server", "--host", "127.0.0.1", "--web-port", "8080", "--no-repl", "run", "--modbus-port", "5020", "--modbus-server", "tcp" ]

@@ -152,7 +152,7 @@ async def run_async_server(args):
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
-            # TBD timeout=1,  # waiting time for request to complete
+            # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
@@ -168,7 +168,7 @@ async def run_async_server(args):
             # TBD allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
-            # TBD timeout=1,  # waiting time for request to complete
+            # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
@@ -178,7 +178,7 @@ async def run_async_server(args):
         server = await StartAsyncSerialServer(
             context=args.context,  # Data storage
             identity=args.identity,  # server identify
-            # timeout=0.005,  # waiting time for request to complete
+            # timeout=1,  # waiting time for request to complete
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
@@ -219,7 +219,7 @@ async def run_async_server(args):
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
-            # TBD timeout=1,  # waiting time for request to complete
+            # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             defer_start=False,  # Only define server do not activate
         )

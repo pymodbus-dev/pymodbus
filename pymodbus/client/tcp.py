@@ -89,7 +89,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
                 ),
                 timeout=self.params.timeout,
             )
-            return transport, protocol
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
@@ -98,6 +97,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             self.reset_delay()
+            return transport, protocol
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""

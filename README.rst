@@ -193,6 +193,14 @@ Or to install a specific release:
 You can also use Docker to run a local image with the package installed on the image:
 
     docker pull riptideio/pymodbus
+   
+To run this, you will need to expose ports 8080 and 5020, you can the container running:
+
+    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus
+
+You can also override the default command running the server with any of the examples:
+
+    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus examples/server_sync.py
 
 Otherwise you can pull the trunk source and install from there::
 

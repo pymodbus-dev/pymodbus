@@ -75,7 +75,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(framer=self.params.framer, **self.params.kwargs)
+        protocol = ModbusClientProtocol(
+            framer=self.params.framer, xframer=self.framer, **self.params.kwargs
+        )
         protocol.factory = self
         return protocol
 

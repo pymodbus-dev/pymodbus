@@ -67,13 +67,12 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
-        
+
         # prevent reconnect.
         self.params.host = None
-        
+
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
-
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""

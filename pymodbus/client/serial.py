@@ -81,7 +81,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     def _create_protocol(self):
         """Create protocol."""
-        protocol = ModbusClientProtocol(framer=self.params.framer)
+        protocol = ModbusClientProtocol(framer=self.params.framer, xframer=self.framer)
         protocol.factory = self
         return protocol
 

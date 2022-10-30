@@ -96,7 +96,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
         protocol = ModbusClientProtocol(
-            use_udp=True, framer=self.params.framer, **self.params.kwargs
+            use_udp=True,
+            framer=self.params.framer,
+            xframer=self.framer,
+            **self.params.kwargs,
         )
         protocol.params.host = host
         protocol.params.port = port

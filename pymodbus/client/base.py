@@ -119,7 +119,10 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.kwargs = kwargs
 
         # Common variables.
-        self.framer = self.params.framer(ClientDecoder(), self)
+        if xframer := kwargs.get("xframer", None):
+            self.framer = xframer
+        else:
+            self.framer = self.params.framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(self, **kwargs)
         self.delay_ms = self.params.reconnect_delay
         self.use_protocol = hasattr(self, "protocol")

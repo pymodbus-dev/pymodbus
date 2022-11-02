@@ -163,8 +163,8 @@ def run(
     else:
         modbus_config = DEFAULT_CONFIG
 
+    data_block_settings = modbus_config.pop("data_block_settings", {})
     modbus_config = modbus_config.get(modbus_server, {})
-
     if modbus_server != "serial":
         modbus_port = int(modbus_port)
         handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
@@ -181,17 +181,15 @@ def run(
         unit=modbus_unit_id,
         loop=loop,
         single=False,
+        data_block_settings=data_block_settings,
         **web_app_config,
         **modbus_config,
     )
     try:
+        loop.run_until_complete(app.run_async(repl))
         if repl:
-            loop.run_until_complete(app.run_async())
-
             loop.run_until_complete(run_repl(app))
-            loop.run_forever()
-        else:
-            app.run()
+        loop.run_forever()
 
     except CANCELLED_ERROR:
         print("Done!!!!!")

@@ -1,4 +1,6 @@
 """Reactive main."""
+from __future__ import annotations
+
 import asyncio
 import logging
 
@@ -6,7 +8,9 @@ import logging
 import os
 import random
 import sys
+import threading
 import time
+from enum import Enum
 
 
 try:
@@ -20,6 +24,7 @@ except ImportError:
 
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.datastore.store import (
+    BaseModbusDataBlock,
     ModbusSequentialDataBlock,
     ModbusSparseDataBlock,
 )
@@ -73,7 +78,12 @@ DEFUALT_HANDLERS = {
     "ModbusConnectedRequestHandler": ModbusConnectedRequestHandler,
     "ModbusDisconnectedRequestHandler": ModbusDisconnectedRequestHandler,
 }
-DEFAULT_MODBUS_MAP = {"start_offset": 0, "count": 100, "value": 0, "sparse": False}
+DEFAULT_MODBUS_MAP = {
+    "block_start": 0,
+    "block_size": 100,
+    "default": 0,
+    "sparse": False,
+}
 DEFAULT_DATA_BLOCK = {
     "co": DEFAULT_MODBUS_MAP,
     "di": DEFAULT_MODBUS_MAP,
@@ -90,6 +100,85 @@ Example Usage:
 curl -X POST http://{}:{} -d "{{"response_type": "error", "error_code": 4}}"
 ===========================================================================
 """
+
+
+class ReactiveModbusSlaveContext(ModbusSlaveContext):
+    """Reactive Modbus slave context"""
+
+    def __init__(
+        self,
+        discrete_inputs: BaseModbusDataBlock = None,
+        coils: BaseModbusDataBlock = None,
+        input_registers: BaseModbusDataBlock = None,
+        holding_registers: BaseModbusDataBlock = None,
+        zero_mode: bool = False,
+        randomize: int = 0,
+        **kwargs,
+    ):
+        """Reactive Modbus slave context supporting simulating data.
+
+        :param discrete_inputs: Discrete input data block
+        :param coils: Coils data block
+        :param input_registers: Input registers data block
+        :param holding_registers: Holding registers data block
+        :param zero_mode: Enable zero mode for data blocks
+        :param randomize: Randomize reads every <n> reads for DI and IR,
+                          default is disabled (0)
+        :param min_binary_value: Minimum value for coils and discrete inputs
+        :param max_binary_value: Max value for discrete inputs
+        :param min_register_value: Minimum value for input registers
+        :param max_register_value: Max value for input registers
+
+        """
+        super().__init__(
+            di=discrete_inputs,
+            co=coils,
+            ir=input_registers,
+            hr=holding_registers,
+            zero_mode=zero_mode,
+        )
+        min_binary_value = kwargs.get("min_binary_value", 0)
+        max_binary_value = kwargs.get("max_binary_value", 1)
+        min_register_value = kwargs.get("min_register_value", 0)
+        max_register_value = kwargs.get("max_register_value", 65535)
+        self._randomize = randomize
+        self._lock = threading.Lock()
+        self._read_counter = {"d": 0, "i": 0}
+        self._min_binary_value = min_binary_value
+        self._max_binary_value = max_binary_value
+        self._min_register_value = min_register_value
+        self._max_register_value = max_register_value
+
+    def getValues(self, fc_as_hex, address, count=1):
+        """Get `count` values from datastore.
+
+        :param fc_as_hex: The function we are working with
+        :param address: The starting address
+        :param count: The number of values to retrieve
+        :returns: The requested values from a:a+c
+        """
+        if not self.zero_mode:
+            address = address + 1
+        txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
+        logger.debug(txt)
+        _block_type = self.decode(fc_as_hex)
+        if self._randomize > 0 and _block_type in {"d", "i"}:
+            with self._lock:
+                if not (self._read_counter.get(_block_type) % self._randomize):
+                    # Update values
+                    if _block_type == "d":
+                        min_val = self._min_binary_value
+                        max_val = self._max_binary_value
+                    else:
+                        min_val = self._min_register_value
+                        max_val = self._max_register_value
+                    values = [random.randint(min_val, max_val) for _ in range(count)]
+                    # logger.debug("Updating '%s' with values '%s' starting at "
+                    #              "'%s'", _block_type, values, address)
+                    self.store[_block_type].setValues(address, values)
+                self._read_counter[_block_type] += 1
+        values = self.store[_block_type].getValues(address, count)
+        return values
 
 
 class ReactiveServer:
@@ -155,6 +244,7 @@ class ReactiveServer:
                 )
 
             logger.info("Modbus server started")
+
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Error starting modbus server")
             logger.error(exc)
@@ -239,22 +329,19 @@ class ReactiveServer:
             skip_encoding = True
         return response, skip_encoding
 
-    def run(self):
+    async def run_async(self, repl_mode=False):
         """Run Web app."""
 
-        def _info(message):
-            msg = HINT.format(message, self._host, self._port)
-            print(msg)
-            # print(message)
-
-        web.run_app(self._web_app, host=self._host, port=self._port, print=_info)
-
-    async def run_async(self):
-        """Run Web app."""
         try:
             await self._runner.setup()
             site = web.TCPSite(self._runner, self._host, self._port)
             await site.start()
+            if not repl_mode:
+                message = (
+                    f"======== Running on http://{self._host}:{self._port} ========"
+                )
+                msg = HINT.format(message, self._host, self._port)
+                print(msg)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error(exc)
 
@@ -293,25 +380,30 @@ class ReactiveServer:
 
     @classmethod
     def create_context(
-        cls, data_block=None, unit=[1], single=False
+        cls,
+        data_block_settings: dict = {},
+        unit: list[int] = [1],
+        single: bool = False,
+        randomize: int = 0,
     ):  # pylint: disable=dangerous-default-value
         """Create Modbus context.
 
-        :param data_block: Datablock (dict) Refer DEFAULT_DATA_BLOCK
+        :param data_block_settings: Datablock (dict) Refer DEFAULT_DATA_BLOCK
         :param unit: Unit id for the slave
         :param single: To run as a single slave
+        :param randomize: Randomize every <n> reads for DI and IR.
         :return: ModbusServerContext object
         """
-        data_block = data_block or DEFAULT_DATA_BLOCK
+        data_block = data_block_settings.pop("data_block", DEFAULT_DATA_BLOCK)
         if not isinstance(unit, list):
             unit = [unit]
         slaves = {}
         for i in unit:
             block = {}
             for modbus_entity, block_desc in data_block.items():
-                start_address = block_desc.get("start_address", 0)
-                default_count = block_desc.get("count", 0)
-                default_value = block_desc.get("value", 0)
+                start_address = block_desc.get("block_start", 0)
+                default_count = block_desc.get("block_size", 0)
+                default_value = block_desc.get("default", 0)
                 default_values = [default_value] * default_count
                 sparse = block_desc.get("sparse", False)
                 db = ModbusSequentialDataBlock if not sparse else ModbusSparseDataBlock
@@ -329,7 +421,9 @@ class ReactiveServer:
                 else:
                     block[modbus_entity] = db(start_address, default_values)
 
-            slave_context = ModbusSlaveContext(**block, zero_mode=True)
+            slave_context = ReactiveModbusSlaveContext(
+                **block, randomize=randomize, zero_mode=True, **data_block_settings
+            )
             if not single:
                 slaves[i] = slave_context
             else:
@@ -348,7 +442,7 @@ class ReactiveServer:
         host="localhost",
         modbus_port=5020,
         web_port=8080,
-        data_block=DEFAULT_DATA_BLOCK,
+        data_block_settings={"data_block": DEFAULT_DATA_BLOCK},
         identity=None,
         **kwargs,
     ):
@@ -362,22 +456,29 @@ class ReactiveServer:
         :param host: Host address to use for both web app and modbus server (default localhost)
         :param modbus_port: Modbus port for TCP and UDP server(default: 5020)
         :param web_port: Web App port (default: 8080)
-        :param data_block: Datablock (refer DEFAULT_DATA_BLOCK)
+        :param data_block_settings: Datablock settings (refer DEFAULT_DATA_BLOCK)
         :param identity: Modbus identity object
         :param kwargs: Other server specific keyword arguments,
         :              refer corresponding servers documentation
         :return: ReactiveServer object
         """
+        if isinstance(server, Enum):
+            server = server.value
+
         if server.lower() not in SERVER_MAPPER:
             txt = f"Invalid server {server}"
             logger.error(txt)
             sys.exit(1)
         server = SERVER_MAPPER.get(server)
+        randomize = kwargs.pop("randomize", 0)
         if not framer:
             framer = DEFAULT_FRAMER.get(server)
         if not context:
             context = cls.create_context(
-                data_block=data_block, unit=unit, single=single
+                data_block_settings=data_block_settings,
+                unit=unit,
+                single=single,
+                randomize=randomize,
             )
         if not identity:
             identity = cls.create_identity()

@@ -120,3 +120,104 @@ Usage: manipulator response_type=|normal|error|delayed|empty|stray
 ```
 
 [![Pymodbus Server REPL](https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg)](https://youtu.be/OutaVz0JkWg)
+
+
+### Pymodbus Server Non REPL Mode
+To run the Reactive server in the non-repl mode use `--no-repl` flag while starting the server. The server responses can still be manipulated with REST API calls.
+
+```
+pymodbus.server --no-repl --verbose run  --modbus-server tcp --framer socket --unit-id 1 --unit-id 4 --random 2 --modbus-port 5020
+2022-10-27 13:32:56,062 MainThread      INFO     main           :246      Modbus server started
+
+Reactive Modbus Server started.
+======== Running on http://localhost:8080 ========
+
+===========================================================================
+Example Usage:
+curl -X POST http://localhost:8080 -d "{"response_type": "error", "error_code": 4}"
+===========================================================================
+```
+
+#### REST API
+
+The server response can be manipulated by doing a `POST` request on the web-server running `http://<host>:<port>`. The values for `host` and `port`
+can be modified with `--host` and `--web-port` params while starting the server. The default values are `localhost` and `8080`
+
+```
+pymodbus.server --host <host-ip> --web-port <new-port> run .....
+
+```
+
+The payload for the `POST` requests is 
+
+```
+{
+    "response_type": "normal",  # normal, error, delayed, empty, stray
+    "delay_by": <int>,
+    "data_len": <int>,
+    "error_code": <int>,
+    "clear_after": <int>,  # request count
+}
+```
+
+* `response_type` : Response expected from the server.
+  * `normal` : Normal response, no errors
+  * `error`: Return error responses , requires additional `error_code` field for the modbus error code to be returned.
+    * `error_code`: Error code to return, possible values are
+    * ```
+      0x01  # IllegalFunction
+      0x02  # IllegalAddress
+      0x03  # IllegalValue
+      0x04  # SlaveFailure
+      0x05  # Acknowledge
+      0x06  # SlaveBusy
+      0x08  # MemoryParityError
+      0x0A  # GatewayPathUnavailable
+      0x0B  # GatewayNoResponse
+
+      ```
+  * `delayed`: Responses are delayed by the time specified with `delay_by` field.
+    * `delay_by`: Delay the response by <n> seconds (`float`).
+  * `empty`: Returns an empty response or no response
+  * `stray`: Returns stray/junk response with length specified with `data_len` field.
+    * `data_len`: Length of the stray_data (`int`)
+  * `clear_after`: Clears the error responses after <n> requests (`int`)
+
+**EXAMPLES**
+
+**Return exception response 0x02 Illegal Address and clear after 5 requests**
+
+```
+curl -X POST http://localhost:8080 -d '{"response_type": "error", "error_code": 2, "clear_after": 5}'
+```
+
+**Return Empty response**
+
+```
+curl -X POST http://localhost:8080 -d '{"response_type": "empty"}'
+```
+
+**Return Stray response of length 25bytes**
+
+```
+curl -X POST http://localhost:8080 -d '{"response_type": "stray", "data_len": 25}'
+
+```
+
+**Delay responses by 3 seconds**
+
+```
+curl -X POST http://localhost:8080 -d '{"response_type": "delayed", "delay_by": 3}'
+
+```
+
+**Revert to normal responses**
+
+```
+curl -X POST http://localhost:8080 -d '{"response_type": "normal"}'
+
+```
+
+## TODO
+
+* Add REST Api endpoint to view current manipulator config.

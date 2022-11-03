@@ -99,6 +99,13 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             use_udp=True,
             framer=self.params.framer,
             xframer=self.framer,
+            timeout=self.params.timeout,
+            retries=self.params.retries,
+            retry_on_empty=self.params.retry_on_empty,
+            close_comm_on_error=self.params.close_comm_on_error,
+            strict=self.params.strict,
+            broadcast_enable=self.params.broadcast_enable,
+            reconnect_delay=self.params.reconnect_delay,
             **self.params.kwargs,
         )
         protocol.params.host = host

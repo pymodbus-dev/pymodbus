@@ -179,7 +179,7 @@ Available options are:
 
 - **serial**, installs serial drivers.
 
-- **datastore**, installs databases (SQLAlchemy and Redit) for datastore.
+- **datastore**, installs databases (SQLAlchemy and Redis) for datastore.
 
 - **documentation**, installs tools to generate documentation.
 

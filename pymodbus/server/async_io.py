@@ -932,16 +932,15 @@ class _serverList:
         self.task = None
 
     @classmethod
-    def get_server(cls, index: int):
+    def get_server(cls):
         """Get server at index."""
-        return cls._servers[index]
+        return cls._servers[-1]
 
     def _remove(self):
         """Remove server from active list."""
-        for i in range(len(self._servers)):  # pylint: disable=consider-using-enumerate
-            if self._servers[i] == self:
-                del self._servers[i]
-                break
+        server = self._servers[-1]
+        self._servers.pop()
+        del server
 
     async def run(self):
         """Help starting/stopping server."""
@@ -952,7 +951,9 @@ class _serverList:
             _logger.error(txt)
         await self.job_stop.wait()
         await self.server.shutdown()
+        await asyncio.sleep(0.1)
         self.task.cancel()
+        await asyncio.sleep(0.1)
         try:
             await asyncio.wait_for(self.task, 10)
         except asyncio.CancelledError:
@@ -1152,15 +1153,15 @@ def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
     return asyncio.run(StartAsyncUdpServer(**kwargs))
 
 
-async def ServerAsyncStop(index: int = -1):  # pylint: disable=invalid-name
+async def ServerAsyncStop():  # pylint: disable=invalid-name
     """Terminate server."""
-    my_job = _serverList.get_server(index)
+    my_job = _serverList.get_server()
     my_job.request_stop()
     await my_job.async_await_stop()
 
 
-def ServerStop(index: int = -1):  # pylint: disable=invalid-name
+def ServerStop():  # pylint: disable=invalid-name
     """Terminate server."""
-    my_job = _serverList.get_server(index)
+    my_job = _serverList.get_server()
     my_job.request_stop()
     my_job.await_stop()

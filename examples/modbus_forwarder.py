@@ -39,7 +39,7 @@ def setup_forwarder(args):
         for i in args.slaves:
             store[i.to_bytes(1, "big")] = RemoteSlaveContext(args.client, unit=i)
     else:
-        store = RemoteSlaveContext(args.client)
+        store = RemoteSlaveContext(args.client, unit=1)
     args.context = ModbusServerContext(slaves=store, single=True)
     return args
 

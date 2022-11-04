@@ -7,6 +7,7 @@ complicated memory layout using builder.
 import asyncio
 import logging
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.constants import Endian
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -23,13 +24,14 @@ from pymodbus.server import StartAsyncTcpServer
 from pymodbus.version import version
 
 
-# set logging level for library.
 _logger = logging.getLogger()
-_logger.setLevel(logging.DEBUG)
 
 
-async def run_payload_server():
+async def run_payload_server(port):
     """Run payload server."""
+    pymodbus_apply_logging_config()
+    _logger.setLevel(logging.DEBUG)
+
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
@@ -78,10 +80,10 @@ async def run_payload_server():
     await StartAsyncTcpServer(
         context,
         identity=identity,
-        address=("127.0.0.1", 5020),
+        address=("127.0.0.1", port),
         allow_reuse_address=True,
     )
 
 
 if __name__ == "__main__":
-    asyncio.run(run_payload_server())
+    asyncio.run(run_payload_server(5020))

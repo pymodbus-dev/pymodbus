@@ -1,5 +1,6 @@
 version 3.0.2
 ----------------------------------------------------------
+* Add pygments as requirement for repl
 * Update datastore remote to handle write requests (#1166)
 * Allow multiple servers. (#1164)
 * Fix typo. (#1162)

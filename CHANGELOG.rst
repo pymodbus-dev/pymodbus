@@ -1,3 +1,45 @@
+version 3.0.1
+----------------------------------------------------------
+Update datastore remote to handle write requests (#1166)
+Allow multiple servers. (#1164)
+Fix typo. (#1162)
+Transfer parms. to connected client. (#1161)
+Repl enhancements 2 (#1141)
+Server simulator with datastore with json data. (#1157)
+Avoid unwanted reconnects (#1154)
+Do not initialize framer twice. (#1153)
+Allow timeout as float. (#1152)
+Improve Docker Support (#1145)
+Fix unreachable code in AsyncModbusTcpClient (#1151)
+Fix type hints for port and timeout (#1147)
+Start/stop multiple servers. (#1138)
+Server/asyncio.py correct logging when disconnecting the socket (#1135)
+Add Docker and container registry support  (#1132)
+Removes undue reported error when forwarding (#1134)
+Obey timeout parameter on connection (#1131)
+Readme typos (#1129)
+Clean noqa directive. (#1125)
+Add isort and activate CI fail for black/isort. (#1124)
+Update examples. (#1117)
+Move logging configuration behind function call (#1120)
+serial2TCP forwarding example (#1116)
+Make serial import dynamic. (#1114)
+Bugfix ModbusSerialServer setup so handler is called correctly. (#1113)
+Clean configurations. (#1111)
+
+Thanks to:
+
+  Alex
+  Alexandre CUER
+  Blaise Thompson
+  dhoomakethu
+  Gao Fang
+  jan Iversen
+  Joe Burmeister
+  Sebastian Machuca
+  Thijs W
+  WouterTuinstra
+
 version 3.0.0
 ----------------------------------------------------------
 * Solve multiple incomming frames. (#1107)

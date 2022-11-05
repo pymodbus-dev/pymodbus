@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Pymodbus synchronous forwarder.
 
-This is a repeater or converter and  an example of just how powerful datastore is.
+This is a repeater or converter and an example of just how powerful datastore is.
 
-It consist of a server (any comm) and a client (any comm) and basically all request
-received by the server is sent by client and all responses received by the
-client is sent back by the server.
+It consist of a server (any comm) and a client (any comm), functionality:
+
+a) server receives a read/write request from external client:
+
+    - client sends a new read/write request to target server
+    - client receives response and updates the datastore
+    - server sends new response to external client
 
 Both server and client are tcp based, but it can be easily modified to any server/client
 (see client_sync.py and server_sync.py for other communication types)
@@ -69,5 +73,7 @@ if __name__ == "__main__":
             )
         ],
     )
+    cmd_args.port = 5021
+    cmd_args.client_port = 5020
     run_args = setup_forwarder(cmd_args)
     asyncio.run(run_forwarder(run_args))

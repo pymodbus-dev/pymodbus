@@ -49,11 +49,19 @@ class RemoteSlaveContext(IModbusSlaveContext):
         """
         txt = f"validate[{fc_as_hex}] {address}:{count}"
         _logger.debug(txt)
-        self.result = self.__get_callbacks[self.decode(fc_as_hex)](address, count)
+        hx = self.decode(fc_as_hex)
+        if fc_as_hex in self._write_fc:
+            hx = f"{hx}{fc_as_hex}"
+            fx = self.__set_callbacks[hx]
+        else:
+            fx = self.__get_callbacks[hx]
+        self.result = fx(address, count)
         return not self.result.isError()
 
     def getValues(self, fc_as_hex, address, count=1):
         """Get values from real call in validate"""
+        if fc_as_hex in self._write_fc:
+            return [0]
         return self.__extract_result(self.decode(fc_as_hex), self.result)
 
     def setValues(self, fc_as_hex, address, values):
@@ -89,19 +97,32 @@ class RemoteSlaveContext(IModbusSlaveContext):
             ),
         }
         self.__set_callbacks = {
-            "d": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
+            "d5": lambda a, v: self._client.write_coil(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "c": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
+            "d15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "h": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
+            "c5": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
-            "i": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
+            "c15": lambda a, v: self._client.write_coils(  # pylint: disable=unnecessary-lambda
+                a, v, **kwargs
+            ),
+            "h6": lambda a, v: self._client.write_register(  # pylint: disable=unnecessary-lambda
+                a, v, **kwargs
+            ),
+            "h16": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
+                a, v, **kwargs
+            ),
+            "i6": lambda a, v: self._client.write_register(  # pylint: disable=unnecessary-lambda
+                a, v, **kwargs
+            ),
+            "i16": lambda a, v: self._client.write_registers(  # pylint: disable=unnecessary-lambda
                 a, v, **kwargs
             ),
         }
+        self._write_fc = (0x05, 0x06, 0x15, 0x16, 0x17)
 
     def __extract_result(self, fc_as_hex, result):
         """Extract the values out of a response.

@@ -12,7 +12,9 @@ from examples.client_async import run_async_client, setup_async_client
 from examples.client_calls import run_async_calls, run_sync_calls
 from examples.client_payload import run_binary_payload_client
 from examples.client_sync import run_sync_client, setup_sync_client
-from examples.modbus_forwarder import run_forwarder, setup_forwarder
+from examples.modbus_forwarder import setup_forwarder
+
+# from examples.modbus_forwarder import run_forwarder, setup_forwarder
 from examples.server_async import run_async_server, setup_server
 from examples.server_payload import run_payload_server
 from examples.server_sync import run_sync_server
@@ -171,16 +173,16 @@ async def test_exp_forwarder(  # pylint: disable=unused-argument
     """Test modbus forwarder."""
     if pytest.IS_WINDOWS:
         return
-    return
 
-    pymodbus_apply_logging_config()  # pylint: disable=unreachable
+    pymodbus_apply_logging_config()
     cmd_args = Commandline
     cmd_args.comm = test_comm
     cmd_args.framer = test_framer
     cmd_args.port = test_port + test_port_offset + 1
     cmd_args.client_port = test_port + test_port_offset
     run_args = setup_forwarder(cmd_args)
-    task = asyncio.create_task(run_forwarder(run_args))
+    # task = asyncio.create_task(run_forwarder(run_args))
+    task = asyncio.create_task(run_async_server(run_args))
     await asyncio.sleep(0.1)
 
     real_client = AsyncModbusTcpClient(host="127.0.0.1", port=cmd_args.port)
@@ -190,6 +192,16 @@ async def test_exp_forwarder(  # pylint: disable=unused-argument
     await check_client.connect()
     assert check_client.connected
     await asyncio.sleep(0.1)
+
+    # rr = _check_call(client.read_holding_registers(1, 1, slave=SLAVE))
+    # rr = _check_call(client.read_coils(1, 1, slave=SLAVE))
+    # rr = _check_call(client.read_discrete_inputs(0, 8, slave=SLAVE))
+    # rr = _check_call(client.read_input_registers(1, 8, slave=SLAVE))
+    # --
+    # rr = _check_call(client.write_register(1, 10, slave=SLAVE))
+    # rr = _check_call(client.write_coil(0, True, slave=SLAVE))
+    # rr =_check_call(client.write_registers(1, [10] * 8, slave=SLAVE))
+    # rr = _check_call(client.write_coils(1, [True] * 21, slave=SLAVE))
 
     # Verify read values are identical
     # rr_real = await real_client.read_holding_registers(1,1,slave=1)

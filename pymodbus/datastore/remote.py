@@ -49,13 +49,12 @@ class RemoteSlaveContext(IModbusSlaveContext):
         """
         txt = f"validate[{fc_as_hex}] {address}:{count}"
         _logger.debug(txt)
-        hx = self.decode(fc_as_hex)
+        group_fx = self.decode(fc_as_hex)
         if fc_as_hex in self._write_fc:
-            hx = f"{hx}{fc_as_hex}"
-            fx = self.__set_callbacks[hx]
+            func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
         else:
-            fx = self.__get_callbacks[hx]
-        self.result = fx(address, count)
+            func_fc = self.__get_callbacks[group_fx]
+        self.result = func_fc(address, count)
         return not self.result.isError()
 
     def getValues(self, fc_as_hex, address, count=1):

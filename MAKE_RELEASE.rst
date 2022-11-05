@@ -32,13 +32,6 @@ Prepare/make release on dev.
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/
-* on local repo
-   * update github pages
-     git checkout gh-pages
-     git checkout origin/master -- README.rst
-   * Convert README.rst to index.md
-     https://cloudconvert.com/rst-to-md
-   * commit and push index.md
 * Make an announcement in discussions.
 
 

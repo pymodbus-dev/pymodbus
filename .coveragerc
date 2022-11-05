@@ -1,8 +1,0 @@
-[run]
-include =
-    pymodbus/
-    test/
-omit =
-    test/TO_DO_REWRITE
-    examples/common/tornado_twister
-    examples/contrib/tornado_twister

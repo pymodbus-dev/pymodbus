@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Pymodbus Server Payload Example.
 
 This example shows how to initialize a server with a
@@ -6,6 +7,7 @@ complicated memory layout using builder.
 import asyncio
 import logging
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.constants import Endian
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -22,12 +24,14 @@ from pymodbus.server import StartAsyncTcpServer
 from pymodbus.version import version
 
 
-# set logging level for library.
-logging.getLogger().setLevel(logging.DEBUG)
+_logger = logging.getLogger()
 
 
-async def run_payload_server():
+async def run_payload_server(port):
     """Run payload server."""
+    pymodbus_apply_logging_config()
+    _logger.setLevel(logging.DEBUG)
+
     # ----------------------------------------------------------------------- #
     # build your payload
     # ----------------------------------------------------------------------- #
@@ -73,17 +77,13 @@ async def run_payload_server():
             "MajorMinorRevision": version.short(),
         }
     )
-    server = await StartAsyncTcpServer(
+    await StartAsyncTcpServer(
         context,
         identity=identity,
-        address=("0.0.0.0", 5020),
+        address=("127.0.0.1", port),
         allow_reuse_address=True,
-        defer_start=True,
     )
-
-    asyncio.get_event_loop().call_later(20, lambda: server.serve_forever)
-    await server.serve_forever()
 
 
 if __name__ == "__main__":
-    asyncio.run(run_payload_server())
+    asyncio.run(run_payload_server(5020))

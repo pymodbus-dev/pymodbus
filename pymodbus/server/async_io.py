@@ -1,14 +1,12 @@
 """Implementation of a Threaded Modbus Server."""
 # pylint: disable=missing-type-doc
 import asyncio
-from binascii import b2a_hex
 import logging
-import traceback
+import platform
 import ssl
+import traceback
+from binascii import b2a_hex
 from time import sleep
-
-import serial
-from serial_asyncio import create_serial_connection
 
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
@@ -25,16 +23,17 @@ from pymodbus.transaction import (
 from pymodbus.utilities import hexlify_packets
 
 
+try:
+    import serial
+    from serial_asyncio import create_serial_connection
+except ImportError:
+    pass
+
+
 # --------------------------------------------------------------------------- #
 # Logging
 # --------------------------------------------------------------------------- #
 _logger = logging.getLogger(__name__)
-
-# --------------------------------------------------------------------------- #
-# Allow access to server object, to e.g. make a shutdown
-# --------------------------------------------------------------------------- #
-_server_stopped = None  # pylint: disable=invalid-name
-_server_stop = None   # pylint: disable=invalid-name
 
 
 def sslctx_provider(
@@ -69,6 +68,7 @@ def sslctx_provider(
 
     return sslctx
 
+
 # --------------------------------------------------------------------------- #
 # Protocol Handlers
 # --------------------------------------------------------------------------- #
@@ -97,9 +97,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         """Show log exception."""
         if isinstance(self, ModbusConnectedRequestHandler):
             txt = f"Handler for stream [{self.client_address[:2]}] has been canceled"
-            _logger.error(txt)
+            _logger.debug(txt)
         elif isinstance(self, ModbusSingleRequestHandler):
-            _logger.error("Handler for serial port has been cancelled")
+            _logger.debug("Handler for serial port has been cancelled")
         else:
             if hasattr(self, "protocol"):
                 sock_name = (
@@ -108,7 +108,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             else:
                 sock_name = "No socket"
             txt = f"Handler for UDP socket [{sock_name[1]}] has been canceled"
-            _logger.error(txt)
+            _logger.debug(txt)
 
     def connection_made(self, transport):
         """Call for socket establish
@@ -231,8 +231,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
             except asyncio.CancelledError:
                 # catch and ignore cancellation errors
-                self._log_exception()
-                self.running = False
+                if self.running:
+                    self._log_exception()
+                    self.running = False
             except Exception as exc:  # pylint: disable=broad-except
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
@@ -464,7 +465,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusTcpServer:  # pylint: disable=too-many-instance-attributes
+class ModbusTcpServer:
     """A modbus threaded tcp socket server.
 
     We inherit and overload the socket server so that we
@@ -654,7 +655,7 @@ class ModbusTlsServer(ModbusTcpServer):
         self.factory_parms["ssl"] = self.sslctx
 
 
-class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
+class ModbusUdpServer:
     """A modbus threaded udp socket server.
 
     We inherit and overload the socket server so that we
@@ -757,7 +758,7 @@ class ModbusUdpServer:  # pylint: disable=too-many-instance-attributes
             self.protocol = None
 
 
-class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
+class ModbusSerialServer:
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we
@@ -841,7 +842,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         try:
             self.transport, self.protocol = await create_serial_connection(
                 asyncio.get_event_loop(),
-                self.handler(self),
+                lambda: self.handler(self),
                 self.device,
                 baudrate=self.baudrate,
                 bytesize=self.bytesize,
@@ -888,8 +889,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         """Start endless loop."""
         if self.device.startswith("socket:"):
             # Socket server means listen so start a socket server
-            parts = self.device[7:].split(':')
-            host_port = ('', int(parts[1]))
+            parts = self.device[7:].split(":")
+            host_port = ("", int(parts[1]))
             self.server = await asyncio.get_event_loop().create_server(
                 lambda: self.handler(self),
                 *host_port,
@@ -909,31 +910,84 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
 # Creation Factories
 # --------------------------------------------------------------------------- #
 
-async def _helper_run_server(server, custom_functions):
-    """Help starting/stopping server."""
-    global _server_stopped, _server_stop  # pylint: disable=global-statement,invalid-name
 
-    for func in custom_functions:
-        server.decoder.register(func)
-    _server_stopped = asyncio.Event()
-    _server_stop = asyncio.Event()
-    try:
-        server_task = asyncio.create_task(server.serve_forever())
-    except Exception as exc:  # pylint: disable=broad-except
-        txt = f"Server caught exception: {exc}"
-        _logger.error(txt)
-    await _server_stop.wait()
-    await server.shutdown()
-    server_task.cancel()
-    owntask = asyncio.current_task()
-    for task in asyncio.all_tasks():
-        if task != owntask:
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
-    _server_stopped.set()
+class _serverList:
+    """Maintains a list of active servers.
+
+    The list allows applications to have multiple servers and
+    being able to do shutdown gracefully.
+    """
+
+    _servers = []
+
+    def __init__(self, server, custom_functions, register):
+        """Register new server."""
+        for func in custom_functions:
+            server.decoder.register(func)
+        self.server = server
+        if register:
+            self._servers.append(self)
+        self.job_stop = asyncio.Event()
+        self.job_is_stopped = asyncio.Event()
+        self.task = None
+
+    @classmethod
+    def get_server(cls):
+        """Get server at index."""
+        return cls._servers[-1]
+
+    def _remove(self):
+        """Remove server from active list."""
+        server = self._servers[-1]
+        self._servers.pop()
+        del server
+
+    async def run(self):
+        """Help starting/stopping server."""
+        try:
+            self.task = asyncio.create_task(self.server.serve_forever())
+        except Exception as exc:  # pylint: disable=broad-except
+            txt = f"Server caught exception: {exc}"
+            _logger.error(txt)
+        await self.job_stop.wait()
+        await self.server.shutdown()
+        await asyncio.sleep(0.1)
+        self.task.cancel()
+        await asyncio.sleep(0.1)
+        try:
+            await asyncio.wait_for(self.task, 10)
+        except asyncio.CancelledError:
+            pass
+        if platform.system().lower() == "windows":
+            owntask = asyncio.current_task()
+            for task in asyncio.all_tasks():
+                if task != owntask:
+                    task.cancel()
+                    try:
+                        await asyncio.wait_for(task, 10)
+                    except asyncio.CancelledError:
+                        pass
+        self.job_is_stopped.set()
+
+    def request_stop(self):
+        """Request server stop."""
+        self.job_stop.set()
+
+    async def async_await_stop(self):
+        """Wait for server stop."""
+        try:
+            await self.job_is_stopped.wait()
+        except asyncio.exceptions.CancelledError:
+            pass
+        self._remove()
+
+    def await_stop(self):
+        """Wait for server stop."""
+        for i in range(30):  # Loop for 3 seconds
+            sleep(0.1)  # in steps of 100 milliseconds.
+            if self.job_is_stopped.is_set():
+                break
+        self._remove()
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -957,18 +1011,13 @@ async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
-    framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusTcpServer(
-        context,
-        framer,
-        identity,
-        address,
-        **kwargs
+        context, kwargs.pop("framer", ModbusSocketFramer), identity, address, **kwargs
     )
-
+    job = _serverList(server, custom_functions, not defer_start)
     if defer_start:
         return server
-    await _helper_run_server(server, custom_functions)
+    await job.run()
 
 
 async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default-value,too-many-arguments
@@ -1007,10 +1056,9 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     :param kwargs: The rest
     :return: an initialized but inactive server object coroutine
     """
-    framer = kwargs.pop("framer", ModbusTlsFramer)
     server = ModbusTlsServer(
         context,
-        framer,
+        kwargs.pop("framer", ModbusTlsFramer),
         identity,
         address,
         sslctx,
@@ -1022,9 +1070,10 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
         allow_reuse_port=allow_reuse_port,
         **kwargs,
     )
+    job = _serverList(server, custom_functions, not defer_start)
     if defer_start:
         return server
-    await _helper_run_server(server, custom_functions)
+    await job.run()
 
 
 async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -1047,17 +1096,13 @@ async def StartAsyncUdpServer(  # pylint: disable=invalid-name,dangerous-default
             up without the ability to shut it off
     :param kwargs:
     """
-    framer = kwargs.pop("framer", ModbusSocketFramer)
     server = ModbusUdpServer(
-        context,
-        framer,
-        identity,
-        address,
-        **kwargs
+        context, kwargs.pop("framer", ModbusSocketFramer), identity, address, **kwargs
     )
+    job = _serverList(server, custom_functions, not defer_start)
     if defer_start:
         return server
-    await _helper_run_server(server, custom_functions)
+    await job.run()
 
 
 async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-default-value
@@ -1078,17 +1123,14 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
             up without the ability to shut it off
     :param kwargs: The rest
     """
-    framer = kwargs.pop("framer", ModbusAsciiFramer)
     server = ModbusSerialServer(
-        context,
-        framer,
-        identity=identity,
-        **kwargs
+        context, kwargs.pop("framer", ModbusAsciiFramer), identity=identity, **kwargs
     )
+    job = _serverList(server, custom_functions, not defer_start)
     if defer_start:
         return server
     await server.start()
-    await _helper_run_server(server, custom_functions)
+    await job.run()
 
 
 def StartSerialServer(**kwargs):  # pylint: disable=invalid-name
@@ -1113,18 +1155,13 @@ def StartUdpServer(**kwargs):  # pylint: disable=invalid-name
 
 async def ServerAsyncStop():  # pylint: disable=invalid-name
     """Terminate server."""
-    global _server_stopped, _server_stop  # pylint: disable=invalid-name,global-variable-not-assigned
-
-    _server_stop.set()
-    try:
-        await _server_stopped.wait()
-    except asyncio.exceptions.CancelledError:
-        pass
+    my_job = _serverList.get_server()
+    my_job.request_stop()
+    await my_job.async_await_stop()
 
 
 def ServerStop():  # pylint: disable=invalid-name
     """Terminate server."""
-    global _server_stopped, _server_stop  # pylint: disable=invalid-name,global-variable-not-assigned
-
-    _server_stop.set()
-    sleep(10)
+    my_job = _serverList.get_server()
+    my_job.request_stop()
+    my_job.await_stop()

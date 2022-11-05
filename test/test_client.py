@@ -2,26 +2,26 @@
 import asyncio
 import socket
 import ssl
-
 from test.conftest import return_as_coroutine, run_coroutine
 from unittest import mock
+
 import pytest
 
 import pymodbus.bit_read_message as pdu_bit_read
 import pymodbus.bit_write_message as pdu_bit_write
 import pymodbus.client as lib_client
+import pymodbus.diag_message as pdu_diag
+import pymodbus.other_message as pdu_other_msg
+import pymodbus.register_read_message as pdu_reg_read
+import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
-import pymodbus.diag_message as pdu_diag
 from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-import pymodbus.other_message as pdu_other_msg
-import pymodbus.register_read_message as pdu_reg_read
-import pymodbus.register_write_message as pdu_req_write
 
 
 @pytest.mark.parametrize(
@@ -247,12 +247,10 @@ def test_client_instanciate(
     client.reset_delay()
     assert client.delay_ms == initial_delay
 
-    assert socket.AF_INET == client._get_address_family(  # pylint: disable=protected-access
-        "127.0.0.1"
-    )
-    assert socket.AF_INET6 == client._get_address_family(  # pylint: disable=protected-access
-        "::1"
-    )
+    rc1 = client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
+    assert socket.AF_INET == rc1
+    rc2 = client._get_address_family("::1")  # pylint: disable=protected-access
+    assert socket.AF_INET6 == rc2
 
     # a successful execute
     client.connect = lambda: True

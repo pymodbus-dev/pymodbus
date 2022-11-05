@@ -1,4 +1,4 @@
 ==================================================
 Thread Safe Datastore Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/thread_safe_datastore.py
+.. literalinclude:: ../../../examples/v2.5.3/thread_safe_datastore.py

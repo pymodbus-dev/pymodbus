@@ -8,10 +8,11 @@ import typing
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
-from pymodbus.exceptions import ConnectionException
 from pymodbus.utilities import ModbusTransactionState
+
 
 _logger = logging.getLogger(__name__)
 
@@ -66,15 +67,27 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
-        if self.connected and self.protocol and self.protocol.transport:
-            self.protocol.transport.close()
 
         # prevent reconnect.
         self.params.host = None
 
+        if self.connected and self.protocol and self.protocol.transport:
+            self.protocol.transport.close()
+
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(framer=self.params.framer, **self.params.kwargs)
+        protocol = ModbusClientProtocol(
+            framer=self.params.framer,
+            xframer=self.framer,
+            timeout=self.params.timeout,
+            retries=self.params.retries,
+            retry_on_empty=self.params.retry_on_empty,
+            close_comm_on_error=self.params.close_comm_on_error,
+            strict=self.params.strict,
+            broadcast_enable=self.params.broadcast_enable,
+            reconnect_delay=self.params.reconnect_delay,
+            **self.params.kwargs,
+        )
         protocol.factory = self
         return protocol
 
@@ -82,10 +95,12 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Connect."""
         _logger.debug("Connecting.")
         try:
-            transport, protocol = await self.loop.create_connection(
-                self._create_protocol, host=self.params.host, port=self.params.port
+            transport, protocol = await asyncio.wait_for(
+                self.loop.create_connection(
+                    self._create_protocol, host=self.params.host, port=self.params.port
+                ),
+                timeout=self.params.timeout,
             )
-            return transport, protocol
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
@@ -94,6 +109,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
             self.reset_delay()
+            return transport, protocol
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""

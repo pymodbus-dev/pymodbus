@@ -13,7 +13,7 @@ Before opening a new issue, make sure you do the following:
 * Python:
 * OS:
 * Pymodbus:
-* Modbus Hardware (if used): 
+* Modbus Hardware (if used):
 
 ### Pymodbus Specific
 * Server: tcp/rtu/ascii - sync/async
@@ -26,6 +26,9 @@ What were you trying, what has happened, what went wrong, and what did you expec
 ### Code and Logs
 
 ```python
- # code and logs here.
+# code and logs here.
 
+# please use the following to format logs when posting them here
+import pymodbus
+pymodbus.pymodbus_apply_logging_config()
 ```

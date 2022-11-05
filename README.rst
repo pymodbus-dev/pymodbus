@@ -19,12 +19,15 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the latest release of 3.0.0 (Supports Python >=3.8).
+Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the current release (Supports Python >=3.8).
 
 Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
 
 .. important::
    **Note 3.0.0 is a major release with a number of incompatible changes.**
+
+   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
+
 
 ------------------------------------------------------------
 Summary
@@ -36,7 +39,7 @@ Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
 Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.
 
-Pymodbus also provides a lot os ready to use examples as well as a server/client simulator which can be controlled via REST Api and can be easily integrated into test suites.
+Pymodbus also provides a lot of ready to use examples as well as a server/client simulator which can be controlled via a REST API and can be easily integrated into test suites.
 
 Requires Python >= 3.8
 
@@ -115,21 +118,14 @@ Examples Directory structure
 
 ::
 
-   examples
-   ├── common.      -> Common examples for clients and server (sync/async), Payload encoders and decoders.
-   ├── contrib.     -> Examples contributed by contributors. Serial Forwarder, Database contexts etc.
-
-If you are looking for UI, checkout `Modbus Simulator <https://github.com/riptideio/modbus-simulator>`_ or
-`Modbus Cli <https://github.com/dhoomakethu/modbus_sim_cli>`_
+   examples      -> Essential examples guaranteed to work (tested with our CI)
+   ├── v2.5.3    -> Examples not updated to version 3.0.0.
+   ├── contrib   -> Examples contributed by contributors.
 
 Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
 If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
-
-.. important::
-   **Note For async clients, it is recommended to use `asyncio` as the async facilitator.**
-
 
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
@@ -183,7 +179,7 @@ Available options are:
 
 - **serial**, installs serial drivers.
 
-- **datastore**, installs databases (SQLAlchemy and Redit) for datastore.
+- **datastore**, installs databases (SQLAlchemy and Redis) for datastore.
 
 - **documentation**, installs tools to generate documentation.
 
@@ -194,14 +190,35 @@ Or to install a specific release:
 
     pip install -U pymodbus==X.Y.Z
 
+You can also use Docker to run a local image with the package installed on the image:
+
+    docker pull riptideio/pymodbus
+   
+To run this, you will need to expose ports 8080 and 5020, you can the container running:
+
+    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus
+
+You can also override the default command running the server with any of the examples:
+
+    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus examples/server_sync.py
+
 Otherwise you can pull the trunk source and install from there::
 
     git clone git://github.com/riptideio/pymodbus.git
     cd pymodbus
     pip install -r requirements.txt
 
+Before cloning the repo, you need to install python3 (preferable 3.10)
+and make a virtual environment::
 
-To get latest release (for now v2.5.3 with Python 2.7 support)::
+   python3 -m venv /path/to/new/virtual/environment
+
+To activeate the virtual environment please do::
+
+   source .venv/bin/activate
+
+
+To get latest release (for now v3.0.0 with Python 3.8 support)::
 
     git checkout master
 
@@ -213,14 +230,31 @@ To get a specific version:
 
     git checkout tags/vX.Y.Z -b vX.Y.Z
 
-Then::
+Then:
+
    pip install -r requirements.txt
+
    pip install -e .
 
 This installs pymodbus in your virtual environment with pointers directly to the pymodbus directory, so any change you make is immediately available as if installed.
 
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
+
+------------------------------------------------------------
+Docker Compose
+------------------------------------------------------------
+
+If you would like to use this image as part of a `docker compose` project, you can provide a custom command. For example,
+you can spin the server by creating a docker compose file containing the following::
+
+   pymodbus-server:
+      container_name: pymodbus-server
+      image: riptideio/pymodbus:X.Y.Z
+      command: ["./examples/server_sync.py"]
+
+After running `docker compose up`, you should have running the `server_sync.py` example, ready to accept connections from a client. You can,
+of course, add a custom script instead, to run your own logic instead.
 
 ------------------------------------------------------------
 Repository structure
@@ -248,7 +282,6 @@ we accept devices via mail or by IP address.
 That said, the current work mainly involves polishing the library and
 solving issues:
 
-  * Get version 3.0.0 released
   * Fixing bugs/feature requests
   * Architecture documentation
   * Functional testing against any reference we can find
@@ -260,23 +293,26 @@ Development Instructions
 The current code base is compatible python >= 3.8.
 Here are some of the common commands to perform a range of activities
 
-::
    pip install -r requirements.txt   install all requirements
+
    pip install -e .                  source directory is "release", useful for testing
 
    tox -e py38 (or py39, py310, pypy38) Run pytest on source code
 
    tox -e pylint                     Run pylint on source code
+
    tox -e codespell                  Run codespell on source code
+
    tox -e bandit                     Run bandit on source code
+
    tox -e flake8                     Run flake8 on source code
+
    tox -e black                      Run black on source code
 
 ------------------------------------------------------------
 Generate documentation
 ------------------------------------------------------------
 
-::
    cd doc
    make clean
    make html

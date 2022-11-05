@@ -7,9 +7,10 @@ import typing
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
-from pymodbus.exceptions import ConnectionException
+
 
 _logger = logging.getLogger(__name__)
 
@@ -95,7 +96,17 @@ class AsyncModbusUdpClient(ModbusBaseClient):
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
         protocol = ModbusClientProtocol(
-            use_udp=True, framer=self.params.framer, **self.params.kwargs
+            use_udp=True,
+            framer=self.params.framer,
+            xframer=self.framer,
+            timeout=self.params.timeout,
+            retries=self.params.retries,
+            retry_on_empty=self.params.retry_on_empty,
+            close_comm_on_error=self.params.close_comm_on_error,
+            strict=self.params.strict,
+            broadcast_enable=self.params.broadcast_enable,
+            reconnect_delay=self.params.reconnect_delay,
+            **self.params.kwargs,
         )
         protocol.params.host = host
         protocol.params.port = port

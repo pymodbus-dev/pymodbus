@@ -32,6 +32,13 @@ pymodbus\.datastore\.remote module
     :undoc-members:
     :show-inheritance:
 
+pymodbus\.datastore\.simulator module
+-------------------------------------
+
+.. automodule:: pymodbus.datastore.simulator
+    :members:
+    :member-order: bysource
+
 pymodbus\.datastore\.store module
 ---------------------------------
 
@@ -39,5 +46,3 @@ pymodbus\.datastore\.store module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

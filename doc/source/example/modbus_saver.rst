@@ -1,4 +1,4 @@
 ==================================================
 Modbus Saver Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/modbus_saver.py
+.. literalinclude:: ../../../examples/v2.5.3/modbus_saver.py

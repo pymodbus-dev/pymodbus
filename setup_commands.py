@@ -109,18 +109,18 @@ class LintCommand(Command):
 
     def _try_pychecker(self):
         try:
-            import pychecker  # noqa: F401
+            import pychecker
             sys.argv = """pychecker pymodbus/*.py""".split()
-            main()  # noqa: F821
+            main()
             return True
         except Exception:
             return False
 
     def _try_pylint(self):
         try:
-            import pylint  # noqa: F401
+            import pylint
             sys.argv = """pylint pymodbus/*.py""".split()
-            main()  # noqa: F821
+            main()
             return True
         except Exception:
             return False

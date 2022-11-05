@@ -2,11 +2,11 @@
 
 import external classes, to make them easier to use:
 """
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.serial import AsyncModbusSerialClient, ModbusSerialClient
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.client.tls import AsyncModbusTlsClient, ModbusTlsClient
 from pymodbus.client.udp import AsyncModbusUdpClient, ModbusUdpClient
-from pymodbus.client.base import ModbusBaseClient
 
 
 # ---------------------------------------------------------------------------#

@@ -1,4 +1,4 @@
 ==================================================
 Modicon Payload Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/modicon_payload.py
+.. literalinclude:: ../../../examples/v2.5.3/modicon_payload.py

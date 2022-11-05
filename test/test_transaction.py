@@ -1,7 +1,7 @@
 """Test transaction."""
+import unittest
 from binascii import a2b_hex
 from itertools import count
-import unittest
 from unittest.mock import MagicMock, patch
 
 from pymodbus.exceptions import (

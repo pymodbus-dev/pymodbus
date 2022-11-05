@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Pymodbus Client Payload Example.
 
 This example shows how to build a client with a
@@ -6,36 +7,30 @@ complicated memory layout using builder-
 
 Works out of the box together with payload_server.py
 """
-from collections import OrderedDict
+import asyncio
 import logging
+from collections import OrderedDict
 
-from pymodbus.client import ModbusTcpClient as ModbusClient
+from pymodbus import pymodbus_apply_logging_config
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
 
-# --------------------------------------------------------------------------- #
-# configure the client logging
-# --------------------------------------------------------------------------- #
-
-FORMAT = (
-    "%(asctime)-15s %(threadName)-15s"
-    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-)
-logging.basicConfig(format=FORMAT)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-
+_logger = logging.getLogger()
 ORDER_DICT = {"<": "LITTLE", ">": "BIG"}
 
 
-def run_binary_payload_client():
+async def run_binary_payload_client(port):
     """Run binary payload."""
+    pymodbus_apply_logging_config()
+    _logger.setLevel(logging.DEBUG)
+
     # ----------------------------------------------------------------------- #
     # We are going to use a simple sync client to send our requests
     # ----------------------------------------------------------------------- #
-    client = ModbusClient("127.0.0.1", port=5020)
-    client.connect()
+    client = AsyncModbusTcpClient("127.0.0.1", port=port)
+    await client.connect()
 
     # ----------------------------------------------------------------------- #
     # If you need to build a complex message to send, you can use the payload
@@ -96,23 +91,26 @@ def run_binary_payload_client():
         print("\n")
         payload = builder.build()
         address = 0
+        slave = 1
         # We can write registers
-        client.write_registers(address, registers, unit=1)
+        rr = await client.write_registers(address, registers, slave=slave)
+        assert not rr.isError()
         # Or we can write an encoded binary string
-        client.write_registers(address, payload, skip_encode=True, unit=1)
+        rr = await client.write_registers(address, payload, skip_encode=True, slave=1)
+        assert not rr.isError()
 
         # ----------------------------------------------------------------------- #
         # If you need to decode a collection of registers in a weird layout, the
         # payload decoder can help you as well.
         # ----------------------------------------------------------------------- #
         print("Reading Registers:")
-        address = 0x0
         count = len(payload)
-        result = client.read_holding_registers(address, count, slave=1)
-        print(result.registers)
+        rr = await client.read_holding_registers(address, count, slave=slave)
+        assert not rr.isError()
+        print(rr.registers)
         print("\n")
         decoder = BinaryPayloadDecoder.fromRegisters(
-            result.registers, byteorder=byte_endian, wordorder=word_endian
+            rr.registers, byteorder=byte_endian, wordorder=word_endian
         )
         # Make sure word/byte order is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder
         assert (
@@ -145,17 +143,14 @@ def run_binary_payload_client():
         )
         print("Decoded Data")
         for name, value in iter(decoded.items()):
-            print(
-                "%s\t" % name,  # pylint: disable=consider-using-f-string
-                hex(value) if isinstance(value, int) else value,
-            )
+            print(f"{name}\t{hex(value) if isinstance(value, int) else value}")
         print("\n")
 
     # ----------------------------------------------------------------------- #
     # close the client
     # ----------------------------------------------------------------------- #
-    client.close()
+    await client.close()
 
 
 if __name__ == "__main__":
-    run_binary_payload_client()
+    asyncio.run(run_binary_payload_client(5020))

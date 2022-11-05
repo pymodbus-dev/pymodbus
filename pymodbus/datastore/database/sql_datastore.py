@@ -3,10 +3,10 @@
 import logging
 
 import sqlalchemy
+import sqlalchemy.types as sqltypes
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import bindparam
-import sqlalchemy.types as sqltypes
 
 from pymodbus.interfaces import IModbusSlaveContext
 
@@ -28,6 +28,10 @@ class SqlSlaveContext(IModbusSlaveContext):
 
         :param kwargs: Each element is a ModbusDataBlock
         """
+        self._engine = None
+        self._metadata = None
+        self._table = None
+        self._connection = None
         self.table = kwargs.get("table", "pymodbus")
         self.database = kwargs.get("database", "sqlite:///pymodbus.db")
         self._db_create(self.table, self.database)

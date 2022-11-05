@@ -1,9 +1,9 @@
 """Test server asyncio."""
 import asyncio
-from asyncio import CancelledError
 import logging
 import ssl
 import unittest
+from asyncio import CancelledError
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest

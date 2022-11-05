@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 import logging
 import socket
+from dataclasses import dataclass
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -25,7 +25,7 @@ class ModbusBaseClient(ModbusClientMixin):
     **Parameters common to all clients**:
 
     :param framer: (optional) Modbus Framer class.
-    :param timeout: (optional) Timeout for a request.
+    :param timeout: (optional) Timeout for a request, in seconds.
     :param retries: (optional) Max number of retries pr request.
     :param retry_on_empty: (optional) Retry on empty response.
     :param close_comm_on_error: (optional) Close connection on error.
@@ -71,7 +71,7 @@ class ModbusBaseClient(ModbusClientMixin):
         host: str = None
         port: str | int = None
         framer: ModbusFramer = None
-        timeout: int = None
+        timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
         close_comm_on_error: bool = None
@@ -97,7 +97,7 @@ class ModbusBaseClient(ModbusClientMixin):
     def __init__(
         self,
         framer: str = None,
-        timeout: str | int = Defaults.Timeout,
+        timeout: str | float = Defaults.Timeout,
         retries: str | int = Defaults.Retries,
         retry_on_empty: bool = Defaults.RetryOnEmpty,
         close_comm_on_error: bool = Defaults.CloseCommOnError,
@@ -109,7 +109,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Initialize a client instance."""
         self.params = self._params()
         self.params.framer = framer
-        self.params.timeout = int(timeout)
+        self.params.timeout = float(timeout)
         self.params.retries = int(retries)
         self.params.retry_on_empty = bool(retry_on_empty)
         self.params.close_comm_on_error = bool(close_comm_on_error)
@@ -119,7 +119,10 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.kwargs = kwargs
 
         # Common variables.
-        self.framer = self.params.framer(ClientDecoder(), self)
+        if xframer := kwargs.get("xframer", None):
+            self.framer = xframer
+        else:
+            self.framer = self.params.framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(self, **kwargs)
         self.delay_ms = self.params.reconnect_delay
         self.use_protocol = hasattr(self, "protocol")
@@ -155,7 +158,7 @@ class ModbusBaseClient(ModbusClientMixin):
         raise NotImplementedException
 
     def idle_time(self) -> int:
-        """Time before initiatiating next transaction (call **sync**).
+        """Time before initiating next transaction (call **sync**).
 
         Applications can call message functions without checking idle_time(),
         this is done automatically.

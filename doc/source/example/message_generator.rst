@@ -1,4 +1,4 @@
 ==================================================
 Message Generator Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/message_generator.py
+.. literalinclude:: ../../../examples/v2.5.3/message_generator.py

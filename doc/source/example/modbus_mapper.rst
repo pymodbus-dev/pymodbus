@@ -1,4 +1,4 @@
 ==================================================
 Modbus Mapper Example
 ==================================================
-.. literalinclude:: ../../../examples/contrib/modbus_mapper.py
+.. literalinclude:: ../../../examples/v2.5.3/modbus_mapper.py

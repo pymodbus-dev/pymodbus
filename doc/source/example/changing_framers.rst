@@ -1,4 +1,4 @@
 ==================================================
 Changing Framers Example
 ==================================================
-.. literalinclude:: ../../../examples/common/changing_framers.py
+.. literalinclude:: ../../../examples/v2.5.3/changing_framers.py

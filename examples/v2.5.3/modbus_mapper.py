@@ -124,16 +124,14 @@ populated slave contexts that can be run behind a modbus server::
     StartTcpServer(context=context, identity=identity, address=("localhost", 5020))
 
 """
-from collections import defaultdict
 import csv
-from io import StringIO
 import json
+from collections import defaultdict
+from io import StringIO
 from tokenize import generate_tokens
 
-from pymodbus.datastore import (
-    ModbusSlaveContext,
-    ModbusSparseDataBlock,
-)
+from pymodbus.datastore import ModbusSlaveContext, ModbusSparseDataBlock
+
 
 # --------------------------------------------------------------------------- #
 # raw mapping input parsers

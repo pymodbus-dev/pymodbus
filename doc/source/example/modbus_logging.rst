@@ -1,4 +1,4 @@
 ==================================================
 Modbus Logging Example
 ==================================================
-.. literalinclude:: ../../../examples/common/modbus_logging.py
+.. literalinclude:: ../../../examples/v2.5.3/modbus_logging.py

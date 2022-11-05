@@ -4,12 +4,12 @@ from typing import List, Union
 
 import pymodbus.bit_read_message as pdu_bit_read
 import pymodbus.bit_write_message as pdu_bit_write
-from pymodbus.constants import Defaults
 import pymodbus.diag_message as pdu_diag
 import pymodbus.other_message as pdu_other_msg
-from pymodbus.pdu import ModbusRequest, ModbusResponse
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
+from pymodbus.constants import Defaults
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import ModbusTransactionState
 
 

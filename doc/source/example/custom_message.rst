@@ -1,4 +1,4 @@
 ==================================================
 Custom Message Example
 ==================================================
-.. literalinclude:: ../../../examples/common/custom_message.py
+.. literalinclude:: ../../../examples/v2.5.3/custom_message.py

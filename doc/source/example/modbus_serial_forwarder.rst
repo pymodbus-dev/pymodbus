@@ -1,4 +1,4 @@
 ==================================================
-Modbus Payload Example
+Serial Forwarder Example
 ==================================================
-.. literalinclude:: ../../../examples/common/payload_client.py
+.. literalinclude:: ../../../examples/contrib/serial_forwarder.py

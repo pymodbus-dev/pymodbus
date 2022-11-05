@@ -19,7 +19,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.0>`_ is the current release (Supports Python >=3.8).
+Version `3.0.1 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.1>`_ is the current release (Supports Python >=3.8).
 
 Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
 
@@ -193,7 +193,7 @@ Or to install a specific release:
 You can also use Docker to run a local image with the package installed on the image:
 
     docker pull riptideio/pymodbus
-   
+
 To run this, you will need to expose ports 8080 and 5020, you can the container running:
 
     docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus

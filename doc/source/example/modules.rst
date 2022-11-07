@@ -42,6 +42,7 @@ Examples.
    server_async
    server_payload
    server_sync
+   server_updating
 
 Examples version 2.5.3
 ----------------------
@@ -72,7 +73,6 @@ Examples version 2.5.3
    performance
    remote_server_context
    thread_safe_datastore
-   updating_server
 
 Examples contributions
 ----------------------

@@ -1,8 +1,13 @@
 """Test datastore."""
+import asyncio
 import json
 
 import pytest
 
+from examples.client_async import setup_async_client
+from examples.helper import Commandline
+from examples.server_simulator import run_server_simulator, setup_simulator
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import (
     CELL_ACCESS_INVALID,
@@ -16,6 +21,8 @@ from pymodbus.datastore.simulator import (
     CELL_TYPE_UINT32_NEXT,
     Cell,
 )
+from pymodbus.server import ServerAsyncStop
+from pymodbus.transaction import ModbusSocketFramer
 
 
 FX_READ = 1
@@ -171,3 +178,24 @@ class TestSimulator:
 
         self.simulator.setValues(FX_WRITE, 3, values=[5])
         assert self.simulator.getValues(FX_READ, 3) == [5]
+
+    async def test_simulator_example(self):
+        """Test datastore simulator example."""
+        pymodbus_apply_logging_config()
+
+        args = Commandline.copy()
+        args.comm = "tcp"
+        args.framer = ModbusSocketFramer
+        args.port = 5021
+        args.json = None
+        run_args = setup_simulator(args, json_dict=self.json_dict)
+        asyncio.create_task(run_server_simulator(run_args))
+        await asyncio.sleep(0.1)
+        client = setup_async_client(args)
+        await client.connect()
+        assert client.protocol
+
+        rr = await client.read_holding_registers(3, 1, slave=1)
+        assert rr.registers
+        await client.close()
+        await ServerAsyncStop()

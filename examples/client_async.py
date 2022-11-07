@@ -44,7 +44,7 @@ def setup_async_client(args):
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
-            "127.0.0.1",
+            args.host,
             port=args.port,  # on which port
             # Common optional paramers:
             framer=args.framer,
@@ -58,7 +58,7 @@ def setup_async_client(args):
         )
     elif args.comm == "udp":
         client = AsyncModbusUdpClient(
-            "127.0.0.1",
+            args.host,
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
@@ -96,7 +96,7 @@ def setup_async_client(args):
         else:
             path = "examples"
         client = AsyncModbusTlsClient(
-            "127.0.0.1",
+            args.host,
             port=args.port,
             # Common optional paramers:
             framer=args.framer,

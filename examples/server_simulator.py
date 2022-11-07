@@ -11,7 +11,7 @@ Command line options for examples
 
 options:
   -h, --help            show this help message and exit
-  --path JSON_FILE      path to json device configuration file
+  --json JSON_FILE      path to json device configuration file
   --log {critical,error,warning,info,debug}
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
@@ -42,11 +42,7 @@ def get_commandline():
         default="info",
         type=str,
     )
-    parser.add_argument(
-        "--port",
-        help="set port",
-        type=str,
-    )
+    parser.add_argument("--port", help="set port", type=str, default="5020")
     parser.add_argument(
         "--json",
         help="path to json device configuration file",
@@ -58,17 +54,17 @@ def get_commandline():
     pymodbus_apply_logging_config()
     _logger.setLevel(args.log.upper())
     args.framer = ModbusSocketFramer
-    args.port = int(args.port) or 5020
+    args.port = int(args.port)
     return args
 
 
-def setup_server(args, json_dict=None):
+def setup_simulator(args, json_dict=None):
     """Run server setup."""
     _logger.info("### Create datastore")
     context = ModbusSimulatorContext()
 
-    if args.path:
-        context.load_file(args.path, None)
+    if args.json:
+        context.load_file(args.json, None)
     else:
         context.load_dict(json_dict, None)
     args.context = ModbusServerContext(slaves=context, single=True)
@@ -80,13 +76,13 @@ async def run_server_simulator(args):
     _logger.info("### start server simulator")
     await StartAsyncTcpServer(
         context=args.context,
-        address=("", args.port) if args.port else None,
-        framer=args.framer,  # The framer strategy to use
-        allow_reuse_address=True,  # allow the reuse of an address
+        address=("", args.port),
+        framer=args.framer,
+        allow_reuse_address=True,
     )
 
 
 if __name__ == "__main__":
     cmd_args = get_commandline()
-    run_args = setup_server(cmd_args)
+    run_args = setup_simulator(cmd_args)
     asyncio.run(run_server_simulator(run_args), debug=True)

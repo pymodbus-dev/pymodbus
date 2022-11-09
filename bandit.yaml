@@ -1,5 +1,9 @@
 # https://bandit.readthedocs.io/en/latest/config.html
-
+exclude_dirs:
+  - doc
+  - .venv
+  - .git
+  - .tox
 tests:
   - B103
   - B108

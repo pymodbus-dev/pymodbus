@@ -102,6 +102,10 @@ jobs:
               matrix: windows
             python:
               implementation: pypy
+          - os:
+              matrix: macos
+            python:
+              implementation: pypy
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}

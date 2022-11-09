@@ -125,13 +125,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - name: Add Brew
-        if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
-        shell: bash
-        run: |
-          brew install openssl@1.1 rust
-          echo "LDFLAGS=-L$(brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
-          echo "CFLAGS=-I$(brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
       - name: Test
         env:
           # When compiling Cryptography for PyPy on Windows there is a cleanup

@@ -5,12 +5,14 @@
 # --------------------------------------------------------------------------- #
 # initialization
 # --------------------------------------------------------------------------- #
-from setuptools import find_packages, setup
+from setuptools import setup
+
+
 try:
     from setup_commands import command_classes
 except ImportError:
     command_classes = {}
-from pymodbus import __author__, __maintainer__, __version__
+
 
 dependencies = {}
 with open('requirements.txt') as reqs:

@@ -125,19 +125,6 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install --upgrade tox
-      - name: Add PyPy Externals
-        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
-        env:
-          PYPY_EXTERNALS_PATH: ${{ github.workspace }}/pypy_externals
-        shell: bash
-        run: |
-          echo $PYPY_EXTERNALS_PATH
-          mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)
-          hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
-          dir $PYPY_EXTERNALS_PATH
-          cd $PYPY_EXTERNALS_PATH && hg update win$(python -c 'import struct; print(struct.calcsize("P") * 8)')_14x
-          echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
-          echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
       - name: Add Brew
         if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
         shell: bash
@@ -145,11 +132,6 @@ jobs:
           brew install openssl@1.1 rust
           echo "LDFLAGS=-L$(brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
           echo "CFLAGS=-I$(brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
-      - name: rustup
-        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
-        shell: bash
-        run: |
-          rustup target add i686-pc-windows-msvc
       - name: Test
         env:
           # When compiling Cryptography for PyPy on Windows there is a cleanup

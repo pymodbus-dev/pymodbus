@@ -75,6 +75,13 @@ jobs:
             matrix: 3.8
             implementation: pypy
             openssl_msvc_version: 2019
+          - name: PyPy 3.9
+            tox: pypy39
+            action: pypy-3.9
+            docker: pypy3.9
+            matrix: 3.9
+            implementation: pypy
+            openssl_msvc_version: 2019
         arch:
           - name: x86
             action: x86
@@ -95,29 +102,22 @@ jobs:
               matrix: windows
             python:
               implementation: pypy
-            arch:
-              matrix: x64
-          - os:
-              matrix: windows
-            python:
-              implementation: pypy
-              matrix: 3.8
     env:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up ${{ matrix.python.name }} (if CPython)
         if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
           architecture: '${{ matrix.arch.action }}'
       - name: Set up ${{ matrix.python.name }} (if PyPy)
         if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '${{ matrix.python.action }}'
           architecture: '${{ matrix.arch.action }}'
@@ -138,7 +138,6 @@ jobs:
           cd $PYPY_EXTERNALS_PATH && hg update win$(python -c 'import struct; print(struct.calcsize("P") * 8)')_14x
           echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
           echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
-#          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
       - name: Add Brew
         if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
         shell: bash
@@ -166,7 +165,7 @@ jobs:
           cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
       - name: Upload Coverage
         if: matrix.task.coverage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: coverage_reports/*
@@ -220,7 +219,7 @@ jobs:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install
@@ -266,7 +265,7 @@ jobs:
       # Should match name above
       JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install
@@ -275,7 +274,7 @@ jobs:
           pip install --upgrade tox
       - name: Download Coverage
         if: matrix.task.download_coverage
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: coverage
           path: coverage_reports

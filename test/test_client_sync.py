@@ -476,13 +476,11 @@ class SynchronousClientTest(
         self.assertEqual(b"", client.recv(0))
         client.socket.mock_store(b"\x00" * 4)
         self.assertEqual(b"\x00" * 4, client.recv(4))
-        client.socket = MagicMock()
-        client.socket.read.return_value = b""
+        client.socket = mockSocket()
+        client.socket.mock_store(b"")
         self.assertEqual(b"", client.recv(None))
         client.socket.timeout = 0
         self.assertEqual(b"", client.recv(0))
-        client.params.timeout = None
-        self.assertEqual(b"", client.recv(None))
 
     def test_serial_client_repr(self):
         """Test serial client."""

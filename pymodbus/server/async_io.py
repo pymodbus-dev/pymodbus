@@ -92,6 +92,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
+        self._sent = b""  # for handle_local_echo
 
     def _log_exception(self):
         """Show log exception."""
@@ -450,6 +451,19 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 
     def data_received(self, data):
         """Receive data."""
+        if (
+            hasattr(self.server, "handle_local_echo")
+            and self.server.handle_local_echo is True
+            and self._sent
+        ):
+            if self._sent in data:
+                data, self._sent = data.replace(self._sent, b"", 1), b""
+            elif self._sent.startswith(data):
+                self._sent, data = self._sent.replace(data, b"", 1), b""
+            else:
+                self._sent = b""
+            if not data:
+                return
         self.receive_queue.put_nowait(data)
 
     async def _recv_(self):
@@ -458,6 +472,11 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     def _send_(self, data):
         if self.transport is not None:
             self.transport.write(data)
+            if (
+                hasattr(self.server, "handle_local_echo")
+                and self.server.handle_local_echo is True
+            ):
+                self._sent = data
 
 
 # --------------------------------------------------------------------------- #
@@ -758,7 +777,7 @@ class ModbusUdpServer:
             self.protocol = None
 
 
-class ModbusSerialServer:
+class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we
@@ -784,6 +803,7 @@ class ModbusSerialServer:
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
+        :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
@@ -800,6 +820,9 @@ class ModbusSerialServer:
         self.timeout = kwargs.get("timeout", Defaults.Timeout)
         self.device = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+        self.handle_local_echo = kwargs.get(
+            "handle_local_echo", Defaults.HandleLocalEcho
+        )
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )

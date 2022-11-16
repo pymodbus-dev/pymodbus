@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
 from enum import Enum
 from pathlib import Path
 from typing import List
@@ -25,6 +26,7 @@ CANCELLED_ERROR = asyncio.exceptions.CancelledError
 _logger = logging.getLogger(__name__)
 
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
+
 
 # TBD class ModbusServerConfig:
 
@@ -71,6 +73,22 @@ def servers(incomplete: str) -> List[str]:
     return _completer(incomplete, _servers)
 
 
+def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
+    """Process extra args passed to server."""
+    options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
+    extra_args = dict(list(zip(options_stripped, extra_args[1::2])))
+    for option, value in extra_args.items():
+        if option in modbus_config:
+            try:
+                modbus_config[option] = type(modbus_config[option])(value)
+            except ValueError as err:
+                msg = f"Error parsing extra arg {option}' " \
+                      f"with value '{value}'. {err}"
+                _logger.error(msg)
+                sys.exit(1)
+    return modbus_config
+
+
 app = typer.Typer(
     no_args_is_help=True,
     context_settings=CONTEXT_SETTING,
@@ -80,16 +98,16 @@ app = typer.Typer(
 
 @app.callback()
 def server(
-    ctx: typer.Context,
-    host: str = typer.Option("localhost", "--host", help="Host address"),
-    web_port: int = typer.Option(8080, "--web-port", help="Web app port"),
-    broadcast_support: bool = typer.Option(
-        False, "-b", help="Support broadcast messages"
-    ),
-    repl: bool = typer.Option(True, help="Enable/Disable repl for server"),
-    verbose: bool = typer.Option(
-        False, help="Run with debug logs enabled for pymodbus"
-    ),
+        ctx: typer.Context,
+        host: str = typer.Option("localhost", "--host", help="Host address"),
+        web_port: int = typer.Option(8080, "--web-port", help="Web app port"),
+        broadcast_support: bool = typer.Option(
+            False, "-b", help="Support broadcast messages"
+        ),
+        repl: bool = typer.Option(True, help="Enable/Disable repl for server"),
+        verbose: bool = typer.Option(
+            False, help="Run with debug logs enabled for pymodbus"
+        ),
 ):
     """Run server code."""
     FORMAT = (  # pylint: disable=invalid-name
@@ -116,37 +134,38 @@ def server(
 
 @app.command("run", context_settings=CONTEXT_SETTING)
 def run(
-    ctx: typer.Context,
-    modbus_server: str = typer.Option(
-        ModbusServerTypes.tcp,
-        "--modbus-server",
-        "-s",
-        case_sensitive=False,
-        autocompletion=servers,
-        help="Modbus Server",
-    ),
-    modbus_framer: str = typer.Option(
-        ModbusFramerTypes.socket,
-        "--framer",
-        "-f",
-        case_sensitive=False,
-        autocompletion=framers,
-        help="Modbus framer to use",
-    ),
-    modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
-    modbus_unit_id: List[int] = typer.Option(
-        None, "--unit-id", "-u", help="Supported Modbus unit id's"
-    ),
-    modbus_config: Path = typer.Option(
-        None, help="Path to additional modbus server config"
-    ),
-    randomize: int = typer.Option(
-        0,
-        "--random",
-        "-r",
-        help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
-        ", and so on. Applicable IR and DI.",
-    ),
+        ctx: typer.Context,
+        modbus_server: str = typer.Option(
+            ModbusServerTypes.tcp,
+            "--modbus-server",
+            "-s",
+            case_sensitive=False,
+            autocompletion=servers,
+            help="Modbus Server",
+        ),
+        modbus_framer: str = typer.Option(
+            ModbusFramerTypes.socket,
+            "--framer",
+            "-f",
+            case_sensitive=False,
+            autocompletion=framers,
+            help="Modbus framer to use",
+        ),
+        modbus_port: str = typer.Option("5020", "--modbus-port", "-p",
+                                        help="Modbus port"),
+        modbus_unit_id: List[int] = typer.Option(
+            None, "--unit-id", "-u", help="Supported Modbus unit id's"
+        ),
+        modbus_config: Path = typer.Option(
+            None, help="Path to additional modbus server config"
+        ),
+        randomize: int = typer.Option(
+            0,
+            "--random",
+            "-r",
+            help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
+                 ", and so on. Applicable IR and DI.",
+        ),
 ):
     """Run Reactive Modbus server.
 
@@ -163,8 +182,10 @@ def run(
     else:
         modbus_config = DEFAULT_CONFIG
 
+    extra_args = ctx.args
     data_block_settings = modbus_config.pop("data_block_settings", {})
     modbus_config = modbus_config.get(modbus_server, {})
+    modbus_config = process_extra_args(extra_args, modbus_config)
     if modbus_server != "serial":
         modbus_port = int(modbus_port)
         handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")

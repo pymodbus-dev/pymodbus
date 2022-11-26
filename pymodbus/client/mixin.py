@@ -42,6 +42,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     last_frame_end = 0
     silent_interval = 0
 
+    def __init__(self):
+        """Initialize."""
+
     def execute(self, request: ModbusRequest) -> ModbusResponse:
         """Execute request.
 

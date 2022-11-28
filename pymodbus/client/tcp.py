@@ -69,7 +69,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Stop client."""
 
         # prevent reconnect.
-        self.params.host = None
+        self.delay_ms = 0
 
         if self.connected and self.protocol and self.protocol.transport:
             self.protocol.transport.close()
@@ -104,7 +104,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect())
+            if self.delay_ms > 0:
+                asyncio.ensure_future(self._reconnect())
         else:
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
@@ -130,7 +131,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
         self.connected = False
         self.protocol = None
-        if self.params.host:
+        if self.delay_ms > 0:
             asyncio.ensure_future(self._reconnect())
 
     async def _reconnect(self):

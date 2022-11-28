@@ -104,7 +104,8 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect())
+            if self.delay_ms > 0:
+                asyncio.ensure_future(self._reconnect())
         else:
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)

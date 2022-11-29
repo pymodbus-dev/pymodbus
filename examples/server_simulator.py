@@ -3,7 +3,7 @@
 
 An example of using simulator datastore with json interface.
 
-usage: server_simulator.py [-h] [--path JSON_FILE]
+usage: server_simulator.py [-h]
                        [--log {critical,error,warning,info,debug}]
                        [--port PORT]
 
@@ -11,7 +11,6 @@ Command line options for examples
 
 options:
   -h, --help            show this help message and exit
-  --json JSON_FILE      path to json device configuration file
   --log {critical,error,warning,info,debug}
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
@@ -31,6 +30,86 @@ from pymodbus.transaction import ModbusSocketFramer
 
 _logger = logging.getLogger()
 
+demo_config = {
+    "setup": {
+        "co size": 100,
+        "di size": 150,
+        "hr size": 200,
+        "ir size": 250,
+        "shared blocks": True,
+        "type exception": False,
+        "defaults": {
+            "value": {
+                "bits": 0x0708,
+                "uint16": 1,
+                "uint32": 45000,
+                "float32": 127.4,
+                "string": "X",
+            },
+            "action": {
+                "bits": None,
+                "uint16": None,
+                "uint32": None,
+                "float32": None,
+                "string": None,
+            },
+        },
+    },
+    "invalid": [
+        1,
+        [3, 4],
+    ],
+    "write": [
+        5,
+        [7, 8],
+        [16, 18],
+        [21, 26],
+        [31, 36],
+    ],
+    "bits": [
+        5,
+        [7, 8],
+        {"addr": 10, "value": 0x81},
+        {"addr": [11, 12], "value": 0x04342},
+        {"addr": 13, "action": "reset"},
+        {"addr": 14, "value": 15, "action": "reset"},
+    ],
+    "uint16": [
+        {"addr": 16, "value": 3124},
+        {"addr": [17, 18], "value": 5678},
+        {"addr": [19, 20], "value": 14661, "action": "increment"},
+    ],
+    "uint32": [
+        {"addr": 21, "value": 3124},
+        {"addr": [23, 25], "value": 5678},
+        {"addr": [27, 29], "value": 345000, "action": "increment"},
+    ],
+    "float32": [
+        {"addr": 31, "value": 3124.17},
+        {"addr": [33, 35], "value": 5678.19},
+        {"addr": [37, 39], "value": 345000.18, "action": "increment"},
+    ],
+    "string": [
+        {"addr": [41, 42], "value": "Str"},
+        {"addr": [43, 44], "value": "Strxyz"},
+    ],
+    "repeat": [{"addr": [0, 45], "to": [46, 138]}],
+}
+
+
+def custom_action1(_inx, _cell):
+    """Test action."""
+
+
+def custom_action2(_inx, _cell):
+    """Test action."""
+
+
+demo_actions = {
+    "custom1": custom_action1,
+    "custom2": custom_action2,
+}
+
 
 def get_commandline():
     """Read and validate command line arguments"""
@@ -43,12 +122,6 @@ def get_commandline():
         type=str,
     )
     parser.add_argument("--port", help="set port", type=str, default="5020")
-    parser.add_argument(
-        "--json",
-        help="path to json device configuration file",
-        default=None,
-        type=str,
-    )
     args = parser.parse_args()
 
     pymodbus_apply_logging_config()
@@ -58,15 +131,14 @@ def get_commandline():
     return args
 
 
-def setup_simulator(args, json_dict=None):
+def setup_simulator(args, setup=None, actions=None):
     """Run server setup."""
     _logger.info("### Create datastore")
-    context = ModbusSimulatorContext()
-
-    if args.json:
-        context.load_file(args.json, None)
-    else:
-        context.load_dict(json_dict, None)
+    if not setup:
+        setup = demo_config
+    if not actions:
+        actions = demo_actions
+    context = ModbusSimulatorContext(setup, actions)
     args.context = ModbusServerContext(slaves=context, single=True)
     return args
 

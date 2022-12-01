@@ -60,9 +60,12 @@ class ModbusBaseClient(ModbusClientMixin):
             rr = client.read_coils(0x01)
             client.close()
 
-
     **Application methods, common to all clients**:
     """
+
+    state = ModbusTransactionState.IDLE
+    last_frame_end = 0
+    silent_interval = 0
 
     @dataclass
     class _params:  # pylint: disable=too-many-instance-attributes

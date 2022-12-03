@@ -56,6 +56,9 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     :param server_hostname: (optional) Bind certificate to host,
     :param kwargs: (optional) Experimental parameters.
 
+    ..tip::
+        See ModbusBaseClient for common parameters.
+
     Example::
 
         from pymodbus.client import AsyncModbusTlsClient
@@ -125,6 +128,9 @@ class ModbusTlsClient(ModbusTcpClient):
     :param password: (optional) Password for for decrypting private key file
     :param server_hostname: (optional) Bind certificate to host,
     :param kwargs: (optional) Experimental parameters.
+
+    ..tip::
+        See ModbusBaseClient for common parameters.
 
     Example::
 

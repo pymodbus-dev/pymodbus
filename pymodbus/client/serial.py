@@ -35,6 +35,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
 
+    ..tip::
+        See ModbusBaseClient for common parameters.
+
     The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
 
     Example::
@@ -160,6 +163,9 @@ class ModbusSerialClient(ModbusBaseClient):
     :param stopbits: (optional) Number of stop bits 0-2¡.
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
+
+    ..tip::
+        See ModbusBaseClient for common parameters.
 
     The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
 

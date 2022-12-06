@@ -3,6 +3,7 @@ import random
 import unittest
 from unittest.mock import MagicMock
 
+import pytest
 import redis
 
 from pymodbus.datastore import (
@@ -308,154 +309,184 @@ class MockSqlResult:  # pylint: disable=too-few-public-methods
 class SqlDataStoreTest(unittest.TestCase):
     """Unittest for the pymodbus.datastore.database.SqlSlaveContext module."""
 
+    class SQLunit:  # pylint: disable=too-few-public-methods
+        """Single test setup."""
+
+        def __init__(self):
+            """Prepare test."""
+            self.slave = SqlSlaveContext()
+            self.slave._metadata.drop_all = MagicMock()
+            self.slave._db_create = MagicMock()
+            self.slave._table.select = MagicMock()
+            self.slave._connection = MagicMock()
+
+            self.mock_addr = random.randint(0, 65000)  # nosec
+            self.mock_values = random.sample(range(1, 100), 5)  # nosec
+            self.mock_function = 0x01
+            self.mock_type = "h"
+            self.mock_offset = 0
+            self.mock_count = 1
+
+            self.function_map = {2: "d", 4: "i"}
+            self.function_map.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+            self.function_map.update([(i, "c") for i in (1, 5, 15)])
+
     def setUp(self):
         """Do setup."""
-        self.slave = SqlSlaveContext()
-        self.slave._metadata.drop_all = MagicMock()  # pylint: disable=protected-access
-        self.slave._db_create = MagicMock()  # pylint: disable=protected-access
-        self.slave._table.select = MagicMock()  # pylint: disable=protected-access
-        self.slave._connection = MagicMock()  # pylint: disable=protected-access
-
-        self.mock_addr = random.randint(0, 65000)  # nosec
-        self.mock_values = random.sample(range(1, 100), 5)  # nosec
-        self.mock_function = 0x01
-        self.mock_type = "h"
-        self.mock_offset = 0
-        self.mock_count = 1
-
-        self.function_map = {2: "d", 4: "i"}
-        self.function_map.update([(i, "h") for i in (3, 6, 16, 22, 23)])
-        self.function_map.update([(i, "c") for i in (1, 5, 15)])
 
     def tearDown(self):
         """Clean up the test environment"""
 
+    @pytest.mark.xdist_group(name="sql")
     def test_str(self):
         """Test string."""
-        self.assertEqual(str(self.slave), "Modbus Slave Context")
+        unit = self.SQLunit()
+        self.assertEqual(str(unit.slave), "Modbus Slave Context")
 
+    @pytest.mark.xdist_group(name="sql")
     def test_reset(self):
         """Test reset."""
-        self.slave.reset()
+        unit = self.SQLunit()
+        unit.slave.reset()
 
-        self.slave._metadata.drop_all.assert_called_once_with()  # pylint: disable=protected-access
-        self.slave._db_create.assert_called_once_with(  # pylint: disable=protected-access
-            self.slave.table, self.slave.database
+        unit.slave._metadata.drop_all.assert_called_once_with()  # pylint: disable=protected-access
+        unit.slave._db_create.assert_called_once_with(  # pylint: disable=protected-access
+            unit.slave.table, unit.slave.database
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_validate_success(self):
         """Test validate success."""
-        self.slave._connection.execute.return_value.fetchall.return_value = (  # pylint: disable=protected-access
-            self.mock_values
+        unit = self.SQLunit()
+        unit.slave._connection.execute.return_value.fetchall.return_value = (  # pylint: disable=protected-access
+            unit.mock_values
         )
         self.assertTrue(
-            self.slave.validate(
-                self.mock_function, self.mock_addr, len(self.mock_values)
+            unit.slave.validate(
+                unit.mock_function, unit.mock_addr, len(unit.mock_values)
             )
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_validate_failure(self):
         """Test validate failure."""
+        unit = self.SQLunit()
         wrong_count = 9
-        self.slave._connection.execute.return_value.fetchall.return_value = (  # pylint: disable=protected-access
-            self.mock_values
+        unit.slave._connection.execute.return_value.fetchall.return_value = (  # pylint: disable=protected-access
+            unit.mock_values
         )
         self.assertFalse(
-            self.slave.validate(self.mock_function, self.mock_addr, wrong_count)
+            unit.slave.validate(unit.mock_function, unit.mock_addr, wrong_count)
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_build_set(self):
         """Test build set."""
+        unit = self.SQLunit()
         mock_set = [
             {"index": 0, "type": "h", "value": 11},
             {"index": 1, "type": "h", "value": 12},
         ]
         self.assertListEqual(
-            self.slave._build_set("h", 0, [11, 12]),  # pylint: disable=protected-access
+            unit.slave._build_set("h", 0, [11, 12]),  # pylint: disable=protected-access
             mock_set,
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_check_success(self):
         """Test check success."""
+        unit = self.SQLunit()
         mock_success_results = [1, 2, 3]
-        self.slave._get = MagicMock(  # pylint: disable=protected-access
+        unit.slave._get = MagicMock(  # pylint: disable=protected-access
             return_value=mock_success_results
         )
         self.assertFalse(
-            self.slave._check("h", 0, 1)  # pylint: disable=protected-access
+            unit.slave._check("h", 0, 1)  # pylint: disable=protected-access
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_check_failure(self):
         """Test check failure."""
+        unit = self.SQLunit()
         mock_success_results = []
-        self.slave._get = MagicMock(  # pylint: disable=protected-access
+        unit.slave._get = MagicMock(  # pylint: disable=protected-access
             return_value=mock_success_results
         )
         self.assertTrue(
-            self.slave._check("h", 0, 1)  # pylint: disable=protected-access
+            unit.slave._check("h", 0, 1)  # pylint: disable=protected-access
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_get_values(self):
         """Test get values."""
-        self.slave._get = MagicMock()  # pylint: disable=protected-access
+        unit = self.SQLunit()
+        unit.slave._get = MagicMock()  # pylint: disable=protected-access
 
-        for key, value in self.function_map.items():
-            self.slave.getValues(key, self.mock_addr, self.mock_count)
-            self.slave._get.assert_called_with(  # pylint: disable=protected-access
-                value, self.mock_addr + 1, self.mock_count
+        for key, value in unit.function_map.items():
+            unit.slave.getValues(key, unit.mock_addr, unit.mock_count)
+            unit.slave._get.assert_called_with(  # pylint: disable=protected-access
+                value, unit.mock_addr + 1, unit.mock_count
             )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_set_values(self):
         """Test set values."""
-        self.slave._set = MagicMock()  # pylint: disable=protected-access
+        unit = self.SQLunit()
+        unit.slave._set = MagicMock()  # pylint: disable=protected-access
 
-        for key, value in self.function_map.items():
-            self.slave.setValues(key, self.mock_addr, self.mock_values, update=False)
-            self.slave._set.assert_called_with(  # pylint: disable=protected-access
-                value, self.mock_addr + 1, self.mock_values
+        for key, value in unit.function_map.items():
+            unit.slave.setValues(key, unit.mock_addr, unit.mock_values, update=False)
+            unit.slave._set.assert_called_with(  # pylint: disable=protected-access
+                value, unit.mock_addr + 1, unit.mock_values
             )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_set(self):
         """Test set."""
-        self.slave._check = MagicMock(  # pylint: disable=protected-access
+        unit = self.SQLunit()
+        unit.slave._check = MagicMock(  # pylint: disable=protected-access
             return_value=True
         )
-        self.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
-            return_value=MockSqlResult(rowcount=len(self.mock_values))
+        unit.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
+            return_value=MockSqlResult(rowcount=len(unit.mock_values))
         )
         self.assertTrue(
-            self.slave._set(  # pylint: disable=protected-access
-                self.mock_type, self.mock_offset, self.mock_values
+            unit.slave._set(  # pylint: disable=protected-access
+                unit.mock_type, unit.mock_offset, unit.mock_values
             )
         )
 
-        self.slave._check = MagicMock(  # pylint: disable=protected-access
+        unit.slave._check = MagicMock(  # pylint: disable=protected-access
             return_value=False
         )
         self.assertFalse(
-            self.slave._set(  # pylint: disable=protected-access
-                self.mock_type, self.mock_offset, self.mock_values
+            unit.slave._set(  # pylint: disable=protected-access
+                unit.mock_type, unit.mock_offset, unit.mock_values
             )
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_update_success(self):
         """Test update success."""
-        self.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
-            return_value=MockSqlResult(rowcount=len(self.mock_values))
+        unit = self.SQLunit()
+        unit.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
+            return_value=MockSqlResult(rowcount=len(unit.mock_values))
         )
         self.assertTrue(
-            self.slave._update(  # pylint: disable=protected-access
-                self.mock_type, self.mock_offset, self.mock_values
+            unit.slave._update(  # pylint: disable=protected-access
+                unit.mock_type, unit.mock_offset, unit.mock_values
             )
         )
 
+    @pytest.mark.xdist_group(name="sql")
     def test_update_failure(self):
         """Test update failure."""
-        self.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
+        unit = self.SQLunit()
+        unit.slave._connection.execute = MagicMock(  # pylint: disable=protected-access
             return_value=MockSqlResult(rowcount=100)
         )
         self.assertFalse(
-            self.slave._update(  # pylint: disable=protected-access
-                self.mock_type, self.mock_offset, self.mock_values
+            unit.slave._update(  # pylint: disable=protected-access
+                unit.mock_type, unit.mock_offset, unit.mock_values
             )
         )

@@ -394,6 +394,7 @@ async def test_client_protocol():
     assert call_args[0] == request
     assert isinstance(call_args[1], ConnectionException)
     protocol.transport = mock.MagicMock()
+    protocol.transport = None
     await protocol.close()
 
 

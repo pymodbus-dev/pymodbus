@@ -66,6 +66,7 @@ class Label:  # pylint: disable=too-many-instance-attributes
     type_uint32: str = "uint32"
     type_float32: str = "float32"
     type_string: str = "string"
+    uptime: str = "uptime"
     value: str = "value"
     write: str = "write"
 
@@ -123,6 +124,7 @@ class Setup:
                 Label.method: self.handle_type_string,
             },
         }
+        self.endianness = sys.byteorder
 
     def handle_type_bits(self, registers, reg_count, start, stop, value, action):
         """Handle type bits.
@@ -226,9 +228,11 @@ class Setup:
             if registers[inx].type != CELL_TYPE_NONE:
                 txt = f'ERROR Configuration invalid in section "{Label.type_string}" register {inx} already defined'
                 raise RuntimeError(txt)
-            registers[inx].value = value[i * 2 : (i + 1) * 2]
+            registers[inx].value = int.from_bytes(
+                bytes(value[i * 2 : (i + 1) * 2], "UTF-8"), "big"
+            )
             registers[inx].type = CELL_TYPE_STRING
-            registers[inx].action = action
+            registers[start].action = action
 
     def handle_setup_section(self, config, actions):
         """Load setup section"""
@@ -462,6 +466,7 @@ class ModbusSimulatorContext:
     # --------------------------------------------
     # External interfaces
     # --------------------------------------------
+    start_time = int(datetime.now().timestamp())
 
     def __init__(self, config: Dict[str, any], actions: Dict[str, Callable]) -> None:
         """Initialize."""
@@ -470,6 +475,7 @@ class ModbusSimulatorContext:
             Label.random: self.action_random,
             Label.reset: self.action_reset,
             Label.timestamp: self.action_timestamp,
+            Label.uptime: self.action_uptime,
         }
         res = Setup().setup(config, builtin_actions, actions)
         self.registers = res[0]
@@ -617,13 +623,13 @@ class ModbusSimulatorContext:
         :meta private:
         """
         system_time = datetime.now()
-        registers[inx].value = system_time.tm_year - 1900
-        registers[inx + 1].value = system_time.tm_mon
-        registers[inx + 2].value = system_time.tm_mday
-        registers[inx + 3].value = system_time.tm_wday
-        registers[inx + 4].value = system_time.tm_hour
-        registers[inx + 5].value = system_time.tm_min
-        registers[inx + 1].value = system_time.tm_sec
+        registers[inx].value = system_time.year
+        registers[inx + 1].value = system_time.month - 1
+        registers[inx + 2].value = system_time.day
+        registers[inx + 3].value = system_time.weekday() + 1
+        registers[inx + 4].value = system_time.hour
+        registers[inx + 5].value = system_time.minute
+        registers[inx + 6].value = system_time.second
 
     @classmethod
     def action_reset(cls, _registers, _inx, _cell):
@@ -632,6 +638,28 @@ class ModbusSimulatorContext:
         :meta private:
         """
         raise RuntimeError("RESET server")
+
+    @classmethod
+    def action_uptime(cls, registers, inx, cell):
+        """Return uptime in seconds.
+
+        :meta private:
+        """
+        value = int(datetime.now().timestamp()) - cls.start_time
+        value = 123456789
+
+        if cell.type == CELL_TYPE_BIT:
+            registers[inx].value = 0
+        elif cell.type == CELL_TYPE_FLOAT32:
+            regs = cls.build_registers_from_value(value, False)
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
+        elif cell.type == CELL_TYPE_UINT16:
+            registers[inx].value = value
+        elif cell.type == CELL_TYPE_UINT32:
+            regs = cls.build_registers_from_value(value, True)
+            registers[inx].value = regs[0]
+            registers[inx + 1].value = regs[1]
 
     # --------------------------------------------
     # Internal helper methods
@@ -667,21 +695,21 @@ class ModbusSimulatorContext:
         """Build registers from int32 or float32"""
         regs = [0, 0]
         if is_int:
-            value_bytes = int.to_bytes(value, 4, sys.byteorder)
+            value_bytes = int.to_bytes(value, 4, "big")
         else:
             value_bytes = struct.pack("f", value)
-        regs[0] = int.from_bytes(value_bytes[:2], sys.byteorder)
-        regs[1] = int.from_bytes(value_bytes[-2:], sys.byteorder)
+        regs[0] = int.from_bytes(value_bytes[:2], "big")
+        regs[1] = int.from_bytes(value_bytes[-2:], "big")
         return regs
 
     @classmethod
     def build_value_from_registers(cls, registers, is_int):
         """Build registers from int32 or float32"""
-        value_bytes = int.to_bytes(registers[0], 2, sys.byteorder) + int.to_bytes(
-            registers[1], 2, sys.byteorder
+        value_bytes = int.to_bytes(registers[0], 2, "big") + int.to_bytes(
+            registers[1], 2, "big"
         )
         if is_int:
-            value = int.from_bytes(value_bytes, sys.byteorder)
+            value = int.from_bytes(value_bytes, "big")
         else:
             value = struct.unpack("f", value_bytes)[0]
         return value

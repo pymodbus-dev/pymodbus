@@ -119,30 +119,38 @@ class TestSimulator:
         Cell(CELL_TYPE_UINT16, True, 5678, None),
         Cell(CELL_TYPE_UINT16, False, 14661, True),
         Cell(CELL_TYPE_UINT16, False, 14661, True),  # 20
-        Cell(CELL_TYPE_UINT32, True, 3124, None),
-        Cell(CELL_TYPE_NEXT, True, 0, None),
-        Cell(CELL_TYPE_UINT32, True, 5678, None),
-        Cell(CELL_TYPE_NEXT, True, 0, None),
-        Cell(CELL_TYPE_UINT32, True, 5678, None),
-        Cell(CELL_TYPE_NEXT, True, 0, None),
-        Cell(CELL_TYPE_UINT32, False, 17320, True),
-        Cell(CELL_TYPE_NEXT, False, 5, None),
-        Cell(CELL_TYPE_UINT32, False, 17320, True),
-        Cell(CELL_TYPE_NEXT, False, 5, None),  # 30
-        Cell(CELL_TYPE_FLOAT32, True, 17080, None),
-        Cell(CELL_TYPE_NEXT, True, 17731, None),
-        Cell(CELL_TYPE_FLOAT32, True, 29061, None),
-        Cell(CELL_TYPE_NEXT, True, 17841, None),
-        Cell(CELL_TYPE_FLOAT32, True, 29061, None),
-        Cell(CELL_TYPE_NEXT, True, 17841, None),
-        Cell(CELL_TYPE_FLOAT32, False, 29958, True),
-        Cell(CELL_TYPE_NEXT, False, 18600, None),
-        Cell(CELL_TYPE_FLOAT32, False, 29958, True),
-        Cell(CELL_TYPE_NEXT, False, 18600, None),
-        Cell(CELL_TYPE_STRING, False, "St", None),
-        Cell(CELL_TYPE_STRING, False, "r ", None),
-        Cell(CELL_TYPE_STRING, False, "St", None),
-        Cell(CELL_TYPE_STRING, False, "rx", None),  # 29 MAX before repeat
+        Cell(CELL_TYPE_UINT32, True, 0, None),
+        Cell(CELL_TYPE_NEXT, True, 3124, None),
+        Cell(CELL_TYPE_UINT32, True, 0, None),
+        Cell(CELL_TYPE_NEXT, True, 5678, None),
+        Cell(CELL_TYPE_UINT32, True, 0, None),
+        Cell(CELL_TYPE_NEXT, True, 5678, None),
+        Cell(CELL_TYPE_UINT32, False, 5, True),
+        Cell(CELL_TYPE_NEXT, False, 17320, None),
+        Cell(CELL_TYPE_UINT32, False, 5, True),
+        Cell(CELL_TYPE_NEXT, False, 17320, None),  # 30
+        Cell(CELL_TYPE_FLOAT32, True, 47170, None),
+        Cell(CELL_TYPE_NEXT, True, 17221, None),
+        Cell(CELL_TYPE_FLOAT32, True, 34161, None),
+        Cell(CELL_TYPE_NEXT, True, 45381, None),
+        Cell(CELL_TYPE_FLOAT32, True, 34161, None),
+        Cell(CELL_TYPE_NEXT, True, 45381, None),
+        Cell(CELL_TYPE_FLOAT32, False, 1653, True),
+        Cell(CELL_TYPE_NEXT, False, 43080, None),
+        Cell(CELL_TYPE_FLOAT32, False, 1653, True),
+        Cell(CELL_TYPE_NEXT, False, 43080, None),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("r ", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("rx", "utf-8"), "big"), None
+        ),  # 29 MAX before repeat
     ]
 
     @classmethod

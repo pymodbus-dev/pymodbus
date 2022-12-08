@@ -6,7 +6,7 @@
 #
 # pymodbus is only being tested on python version 3.8, 3.9 and 3.10
 # depending on the usage profile it might work on other versions.
-python_version>="3.8"
+# python_version>=3.8
 
 # -------------------------------------------------------------------
 # Required packages.

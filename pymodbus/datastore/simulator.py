@@ -124,7 +124,7 @@ class Setup:
                 Label.method: self.handle_type_string,
             },
         }
-        self.endianess = sys.byteorder
+        self.endianness = sys.byteorder
 
     def handle_type_bits(self, registers, reg_count, start, stop, value, action):
         """Handle type bits.

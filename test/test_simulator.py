@@ -139,10 +139,18 @@ class TestSimulator:
         Cell(CELL_TYPE_NEXT, False, 43080, None),
         Cell(CELL_TYPE_FLOAT32, False, 1653, True),
         Cell(CELL_TYPE_NEXT, False, 43080, None),
-        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), 'big'), None),
-        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("r ", "utf-8"), 'big'), None),
-        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), 'big'), None),
-        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("rx", "utf-8"), 'big'), None),  # 29 MAX before repeat
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("r ", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
+        ),
+        Cell(
+            CELL_TYPE_STRING, False, int.from_bytes(bytes("rx", "utf-8"), "big"), None
+        ),  # 29 MAX before repeat
     ]
 
     @classmethod

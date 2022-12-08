@@ -646,7 +646,6 @@ class ModbusSimulatorContext:
         :meta private:
         """
         value = int(datetime.now().timestamp()) - cls.start_time
-        value = 123456789
 
         if cell.type == CELL_TYPE_BIT:
             registers[inx].value = 0

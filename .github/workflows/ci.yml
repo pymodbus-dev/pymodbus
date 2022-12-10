@@ -1,18 +1,27 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      run_check:
+        description: 'Run checks'
+        required: false
+        default: true
+        type: boolean
+      run_test:
+        description: 'Run tests'
+        required: false
+        default: true
+        type: boolean
   push:
     branches:
-      - "*"
+      - dev
       - master
     tags:
       - v*
   pull_request:
     branches:
-      - "*"
-  schedule:
-    # Daily at 05:14
-    - cron: '14 5 * * *'
+      - dev
 
 jobs:
   test:

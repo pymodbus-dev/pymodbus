@@ -270,17 +270,9 @@ Here are some of the common commands to perform a range of activities
 
    pip install -e .                  source directory is "release", useful for testing
 
-   tox -e py38 (or py39, py310, pypy38) Run pytest on source code
+   ./check_ci                        run the same checks as CI runs on a pull request.
 
-   tox -e pylint                     Run pylint on source code
-
-   tox -e codespell                  Run codespell on source code
-
-   tox -e bandit                     Run bandit on source code
-
-   tox -e flake8                     Run flake8 on source code
-
-   tox -e black                      Run black on source code
+   OBS: tox is no longer supported.
 
 ------------------------------------------------------------
 Generate documentation

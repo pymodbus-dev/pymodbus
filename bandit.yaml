@@ -2,8 +2,8 @@
 exclude_dirs:
   - doc
   - .venv
+  - venv
   - .git
-  - .tox
 tests:
   - B103
   - B108

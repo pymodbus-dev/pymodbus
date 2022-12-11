@@ -3,13 +3,13 @@ name: CI
 on:
   workflow_dispatch:
     inputs:
-      run_check:
-        description: 'Run checks'
+      run_lint:
+        description: 'Run lint'
         required: false
         default: true
         type: boolean
       run_test:
-        description: 'Run tests'
+        description: 'Run test'
         required: false
         default: true
         type: boolean
@@ -23,26 +23,45 @@ on:
     branches:
       - dev
 
+
 jobs:
-  test:
-    # Should match JOB_NAME below
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+  integreation_test:
+    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.python.docker] }}
-    # present runtime seems to be about 2-4 minutes
-    # with pypy being the exception (7 minutes)
-    timeout-minutes: 15
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         task:
-          - name: Test
-            tox: test
-            coverage: true
+          - name: pylint
+            type: lint
+            cmd: pylint --recursive=y examples pymodbus test
+          - name: codespell
+            type: lint
+            cmd: codespell
+          - name: bandit
+            type: lint
+            cmd: bandit -r -c bandit.yaml .
+          - name: flake8
+            type: lint
+            cmd: flake8
+          - name: isort
+            type: lint
+            cmd: isort --check .
+          - name: black
+            type: lint
+            cmd: black --check --safe --quiet examples/ pymodbus/ test/
+          - name: docs
+            type: lint
+            cmd: make -C doc/ html
+          - name: pytest
+            type: test
+            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
         os:
           - name: Linux
             runs-on: ubuntu-latest
-            matrix: linux
+            activate: '. venv/bin/activate'
             container:
               3.8: docker://python:3.8-buster
               3.9: docker://python:3.9-buster
@@ -50,182 +69,116 @@ jobs:
               pypy3: docker://pypy:3-stretch
           - name: macOS
             runs-on: macos-latest
-            matrix: macos
+            activate: '. venv/bin/activate'
           - name: Windows
             runs-on: windows-latest
-            matrix: windows
+            activate: 'venv/Scripts/activate'
             ports: 5020-5099
-            openssl:
-              x86: win32
-              x64: win64
         python:
           - name: CPython 3.8
-            tox: py38
             action: 3.8
             docker: 3.8
             matrix: 3.8
             implementation: cpython
           - name: CPython 3.9
-            tox: py39
             action: 3.9
             docker: 3.9
             matrix: 3.9
             implementation: cpython
           - name: 'CPython 3.10'
-            tox: 'py310'
             action: '3.10'
             docker: '3.10'
             matrix: '3.10'
             implementation: cpython
           - name: PyPy 3.8
-            tox: pypy38
             action: pypy-3.8
             docker: pypy3.8
             matrix: 3.8
             implementation: pypy
-            openssl_msvc_version: 2019
           - name: PyPy 3.9
-            tox: pypy39
             action: pypy-3.9
             docker: pypy3.9
             matrix: 3.9
             implementation: pypy
-            openssl_msvc_version: 2019
-        arch:
-          - name: x86
-            action: x86
-            matrix: x86
-          - name: x64
-            action: x64
-            matrix: x64
         exclude:
-          - os:
-              matrix: linux
-            arch:
-              matrix: x86
-          - os:
-              matrix: macos
-            arch:
-              matrix: x86
-          - os:
-              matrix: windows
+          - task:
+              type: lint
+            os:
+              name: macOS
+          - task:
+              type: lint
+            os:
+              name: Windows
+          - task:
+              type: lint
+            python:
+              matrix: 3.9
+          - task:
+              type: lint
+            python:
+              matrix: '3.10'
+          - task:
+              type: lint
             python:
               implementation: pypy
-          - os:
-              matrix: macos
-            python:
+          - python:
               implementation: pypy
-    env:
-      # Should match name above
-      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+            os:
+              name: macOS
+          - python:
+              implementation: pypy
+            os:
+              name: Windows
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up ${{ matrix.python.name }} (if CPython)
-        if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
+        if: ${{ job.container == '' && matrix.python.implementation == 'cpython' }}
         uses: actions/setup-python@v3
         with:
           python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
-          architecture: '${{ matrix.arch.action }}'
+          check-latest: true
+
       - name: Set up ${{ matrix.python.name }} (if PyPy)
-        if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
+        if: ${{ job.container == '' && matrix.python.implementation == 'pypy' }}
         uses: actions/setup-python@v3
         with:
           python-version: '${{ matrix.python.action }}'
-          architecture: '${{ matrix.arch.action }}'
-      - name: Install
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox
-      - name: Test
-        env:
-          # When compiling Cryptography for PyPy on Windows there is a cleanup
-          # failure.  This is CI, it doesn't matter.
-          PIP_NO_CLEAN: 1
-        run: |
-          tox -vv -e ${{ matrix.python.tox }}
-      - name: Coverage Processing
-        if: matrix.task.coverage
-        run: |
-          mkdir coverage_reports
-          cp .coverage "coverage_reports/.coverage.${{ env.JOB_NAME }}"
-          cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
-      - name: Upload Coverage
-        if: matrix.task.coverage
-        uses: actions/upload-artifact@v3
+          check-latest: true
+
+      - name: venv restore
+        id: cache-venv
+        uses: actions/cache@v3
         with:
-          name: coverage
-          path: coverage_reports/*
-  check:
-    # Should match JOB_NAME below
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ${{ matrix.os.container[matrix.python.docker] }}
-    strategy:
-      fail-fast: false
-      matrix:
-        task:
-          - name: pylint
-            tox: pylint
-            # continue_on_error: true
-          - name: codespell
-            tox: codespell
-            # continue_on_error: true
-          - name: bandit
-            tox: bandit
-            # continue_on_error: true
-          - name: flake8
-            tox: flake8
-            # continue_on_error: true
-          - name: isort
-            tox: isort_CI
-            # continue_on_error: true
-          - name: black
-            tox: black_CI
-            # continue_on_error: true
-          - name: Docs
-            tox: docs
-            # continue_on_error: true
-        os:
-          - name: Linux
-            runs-on: ubuntu-latest
-            matrix: linux
-            container:
-              3.8: docker://python:3.8-buster
-        python:
-          - name: CPython 3.8
-            tox: py38
-            action: 3.8
-            docker: 3.8
-            implementation: cpython
-        arch:
-          - name: x64
-            action: x64
-            matrix: x64
-    env:
-      # Should match name above
-      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Install
+          path: venv
+          key: "venv_${{ matrix.os.name }}_${{ matrix.python.name }}_${{ hashFiles('requirements.txt') }}"
+
+      - name: venv create
+        if: ${{ steps.cache-venv.outputs.cache-hit != 'true' }}
         run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox
-      - name: Test format
-        continue-on-error: ${{ matrix.task.continue_on_error == true }}
+          python -m venv venv
+          ${{ matrix.os.activate }}
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: test
         run: |
-          tox -vv -e ${{ matrix.task.tox }}
+          ${{ matrix.os.activate }}
+          ${{ matrix.task.cmd }}
+
+      - name: lint
+        if: ${{ matrix.task.type == 'lint' && inputs.run_lint }}
+        run: |
+          ${{ matrix.os.activate }}
+          ${{ matrix.task.cmd }}
+
   all:
     name: All
     runs-on: ubuntu-latest
     needs:
-      - check
-      - test
+      - integreation_test
     steps:
       - name: This
-        shell: python
         run: |
-          import this
+          ls -l

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Modbus simulator.</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple60.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple76.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple120.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple152.png">
+  <link rel="stylesheet" type="text/css" href="/pymodbus.css">
+  <!--REFRESH-->
+</head>
+<body>
+<center><h1>Log clear</h1></center>
+
+<a href="formdata/log/get_raw.html">Get raw</a>
+<a href="formdata/log/monitor.html">Monitor</a>
+<a href="formdata/log/save.html">Save</a>
+<a href="formdata/log/clear.html">Clear</a>
+
+</body>
+</html>

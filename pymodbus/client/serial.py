@@ -5,6 +5,7 @@ import time
 from functools import partial
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -14,8 +15,6 @@ from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 try:
     import serial
-
-    from serial_asyncio import create_serial_connection
 except ImportError:
     pass
 

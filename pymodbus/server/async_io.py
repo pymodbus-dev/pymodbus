@@ -8,6 +8,7 @@ import traceback
 from binascii import b2a_hex
 from time import sleep
 
+from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -25,8 +26,6 @@ from pymodbus.utilities import hexlify_packets
 
 try:
     import serial
-
-    from serial_asyncio import create_serial_connection
 except ImportError:
     pass
 

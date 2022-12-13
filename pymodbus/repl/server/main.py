@@ -166,6 +166,13 @@ def run(
         help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
         ", and so on. Applicable IR and DI.",
     ),
+    change_rate: int = typer.Option(
+        0,
+        "--change-rate",
+        "-c",
+        help="Chance of randomizing reads. 0=never, 100=always, 1=1%"
+        ", and so on. Applicable IR and DI.",
+    ),
 ):
     """Run Reactive Modbus server.
 
@@ -195,6 +202,7 @@ def run(
 
     modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
+    modbus_config["change_rate"] = change_rate
     app = ReactiveServer.factory(
         modbus_server,
         framer,

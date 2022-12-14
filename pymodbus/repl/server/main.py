@@ -170,7 +170,7 @@ def run(
         0,
         "--change-rate",
         "-c",
-        help="Chance of randomizing reads. 0=never, 100=always, 1=1%"
+        help="Rate in % registers to change. 0=none, 100=all, 12=12% of registers"
         ", and so on. Applicable IR and DI.",
     ),
 ):

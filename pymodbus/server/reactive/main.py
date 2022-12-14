@@ -125,7 +125,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         :param zero_mode: Enable zero mode for data blocks
         :param randomize: Randomize reads every <n> reads for DI and IR,
                           default is disabled (0)
-        :param change_rate: Chance of randomizing reads for DI and IR,
+        :param change_rate: Rate in % of registers to change for DI and IR,
                           default is disabled (0)
         :param min_binary_value: Minimum value for coils and discrete inputs
         :param max_binary_value: Max value for discrete inputs
@@ -413,7 +413,7 @@ class ReactiveServer:
         :param unit: Unit id for the slave
         :param single: To run as a single slave
         :param randomize: Randomize every <n> reads for DI and IR.
-        :param change_rate: Chance of randomizing reads for DI and IR.
+        :param change_rate: Rate in % of registers to change for DI and IR.
         :return: ModbusServerContext object
         """
         data_block = data_block_settings.pop("data_block", DEFAULT_DATA_BLOCK)

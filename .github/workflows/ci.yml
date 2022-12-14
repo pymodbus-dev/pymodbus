@@ -22,13 +22,15 @@ on:
   pull_request:
     branches:
       - dev
+  schedule:
+    # Daily at 02:10 UTC.
+    - cron: '10 2 * * *'
 
 
 jobs:
   integreation_test:
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }}
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ${{ matrix.os.container[matrix.python.docker] }}
+    name: ${{ matrix.task.name }} - ${{ matrix.os.on }} - ${{ matrix.python.version }}
+    runs-on: ${{ matrix.os.on }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -59,110 +61,69 @@ jobs:
             type: test
             cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
         os:
-          - name: Linux
-            runs-on: ubuntu-latest
+          - on: ubuntu-latest
             activate: '. venv/bin/activate'
-            container:
-              3.8: docker://python:3.8-buster
-              3.9: docker://python:3.9-buster
-              3.10: docker://python:3.10-buster
-              pypy3: docker://pypy:3-stretch
-          - name: macOS
-            runs-on: macos-latest
+          - on: macos-latest
             activate: '. venv/bin/activate'
-          - name: Windows
-            runs-on: windows-latest
+            no-lint: 'yes'
+          - on: windows-latest
             activate: 'venv/Scripts/activate'
-            ports: 5020-5099
+            no-lint: 'yes'
         python:
-          - name: CPython 3.8
-            action: 3.8
-            docker: 3.8
-            matrix: 3.8
-            implementation: cpython
-          - name: CPython 3.9
-            action: 3.9
-            docker: 3.9
-            matrix: 3.9
-            implementation: cpython
-          - name: 'CPython 3.10'
-            action: '3.10'
-            docker: '3.10'
-            matrix: '3.10'
-            implementation: cpython
-          - name: PyPy 3.8
-            action: pypy-3.8
-            docker: pypy3.8
-            matrix: 3.8
+          - version: '3.8'
+            no-lint: 'no'
+          - version: '3.9'
+            no-lint: 'yes'
+          - version: '3.10'
+            no-lint: 'yes'
+          - version: pypy-3.8
             implementation: pypy
-          - name: PyPy 3.9
-            action: pypy-3.9
-            docker: pypy3.9
-            matrix: 3.9
+            no-lint: 'yes'
+          - version: pypy-3.9
             implementation: pypy
+            no-lint: 'yes'
         exclude:
           - task:
               type: lint
             os:
-              name: macOS
-          - task:
-              type: lint
-            os:
-              name: Windows
+              no-lint: 'yes'
           - task:
               type: lint
             python:
-              matrix: 3.9
-          - task:
-              type: lint
-            python:
-              matrix: '3.10'
-          - task:
-              type: lint
+              no-lint: 'yes'
+          - os:
+              on: macos-latest
             python:
               implementation: pypy
-          - python:
+          - os:
+              on: windows-latest
+            python:
               implementation: pypy
-            os:
-              name: macOS
-          - python:
-              implementation: pypy
-            os:
-              name: Windows
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up ${{ matrix.python.name }} (if CPython)
-        if: ${{ job.container == '' && matrix.python.implementation == 'cpython' }}
-        uses: actions/setup-python@v3
+      - name: Set up ${{ matrix.python.version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
-          check-latest: true
-
-      - name: Set up ${{ matrix.python.name }} (if PyPy)
-        if: ${{ job.container == '' && matrix.python.implementation == 'pypy' }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: '${{ matrix.python.action }}'
-          check-latest: true
+          python-version: ${{ matrix.python.version }}
 
       - name: venv restore
         id: cache-venv
         uses: actions/cache@v3
         with:
           path: venv
-          key: "venv_${{ matrix.os.name }}_${{ matrix.python.name }}_${{ hashFiles('requirements.txt') }}"
+          key: "venv_${{ matrix.os.on }}_${{ matrix.python.version }}_${{ hashFiles('requirements.txt') }}"
 
       - name: venv create
         if: ${{ steps.cache-venv.outputs.cache-hit != 'true' }}
         run: |
           python -m venv venv
           ${{ matrix.os.activate }}
-          pip install -r requirements.txt
-          pip install -e .
+          pip install -e . -r requirements.txt
 
       - name: test
+        if: ${{ matrix.task.type == 'test' && inputs.run_test }}
         run: |
           ${{ matrix.os.activate }}
           ${{ matrix.task.cmd }}

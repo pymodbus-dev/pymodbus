@@ -11,8 +11,8 @@ on:
         required: false
         default: 6
   schedule:
-    # Sundays at 01:35 UTC.
-    - cron: '35 1 * * 0'
+    # Daily at 02:35 UTC.
+    - cron: '35 2 * * *'
 
 jobs:
   del_runs:

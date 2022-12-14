@@ -146,8 +146,10 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         max_register_value = kwargs.get("max_register_value", 65535)
         self._randomize = randomize
         self._change_rate = change_rate
-        if self._randomize > 0:
-            self._change_rate = 0
+        if self._randomize > 0 and self._change_rate > 0:
+            sys.exit(
+                "'randomize' and 'change_rate' is not allowed to use at the same time"
+            )
         self._lock = threading.Lock()
         self._read_counter = {"d": 0, "i": 0}
         self._min_binary_value = min_binary_value

@@ -22,6 +22,9 @@ on:
   pull_request:
     branches:
       - dev
+  schedule:
+    # Daily at 02:10 UTC.
+    - cron: '10 2 * * *'
 
 
 jobs:

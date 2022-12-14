@@ -184,19 +184,20 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
                     self.store[_block_type].setValues(address, values)
                 self._read_counter[_block_type] += 1
         elif self._change_rate > 0 and _block_type in {"d", "i"}:
-            for offset in range(count):
-                if random.randint(1, 100) <= self._change_rate:
-                    with self._lock:
-                        # Update values
-                        if _block_type == "d":
-                            min_val = self._min_binary_value
-                            max_val = self._max_binary_value
-                        else:
-                            min_val = self._min_register_value
-                            max_val = self._max_register_value
-                        self.store[_block_type].setValues(
-                            address + offset, random.randint(min_val, max_val)
-                        )
+            regs_to_changes = round(count * self._change_rate / 100)
+            random_indices = random.sample(range(count), regs_to_changes)
+            for offset in random_indices:
+                with self._lock:
+                    # Update values
+                    if _block_type == "d":
+                        min_val = self._min_binary_value
+                        max_val = self._max_binary_value
+                    else:
+                        min_val = self._min_register_value
+                        max_val = self._max_register_value
+                    self.store[_block_type].setValues(
+                        address + offset, random.randint(min_val, max_val)
+                    )
         values = self.store[_block_type].getValues(address, count)
         return values
 

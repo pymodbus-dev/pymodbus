@@ -21,9 +21,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     """**AsyncModbusTcpClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
     Example::
@@ -153,9 +153,9 @@ class ModbusTcpClient(ModbusBaseClient):
     """**ModbusTcpClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
     Example::
@@ -257,7 +257,7 @@ class ModbusTcpClient(ModbusBaseClient):
 
         timeout = self.params.timeout
 
-        # If size isn"t specified read up to 4096 bytes at a time.
+        # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
             recv_size = 4096
         else:
@@ -281,12 +281,12 @@ class ModbusTcpClient(ModbusBaseClient):
                 data_length += len(recv_data)
             time_ = time.time()
 
-            # If size isn"t specified continue to read until timeout expires.
+            # If size isn't specified continue to read until timeout expires.
             if size:
                 recv_size = size - data_length
 
             # Timeout is reduced also if some data has been received in order
-            # to avoid infinite loops when there isn"t an expected response
+            # to avoid infinite loops when there isn't an expected response
             # size and the slave sends noisy data continuously.
             if time_ > end:
                 break

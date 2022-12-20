@@ -27,14 +27,14 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     :param port: Serial port used for communication.
     :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits pr second.
-    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param baudrate: (optional) Bits per second.
+    :param bytesize: (optional) Number of bits per byte 7-8.
     :param parity: (optional) 'E'ven, 'O'dd or 'N'one
     :param stopbits: (optional) Number of stop bits 0-2¡.
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
 
-    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
 
     Example::
 
@@ -153,14 +153,14 @@ class ModbusSerialClient(ModbusBaseClient):
 
     :param port: Serial port used for communication.
     :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits pr second.
-    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param baudrate: (optional) Bits per second.
+    :param bytesize: (optional) Number of bits per byte 7-8.
     :param parity: (optional) 'E'ven, 'O'dd or 'N'one
     :param stopbits: (optional) Number of stop bits 0-2¡.
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
 
-    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
 
     Example::
 

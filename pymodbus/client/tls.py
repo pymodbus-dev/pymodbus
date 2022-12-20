@@ -23,9 +23,9 @@ def sslctx_provider(
 
     :param sslctx: The user defined SSLContext to use for TLS (default None and
                    auto create)
-    :param certfile: The optional client"s cert file path for TLS server request
-    :param keyfile: The optional client"s key file path for TLS server request
-    :param password: The password for for decrypting client"s private key file
+    :param certfile: The optional client's cert file path for TLS server request
+    :param keyfile: The optional client's key file path for TLS server request
+    :param password: The password for decrypting client's private key file
     """
     if sslctx:
         return sslctx
@@ -46,15 +46,15 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
     """**AsyncModbusTlsClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) Source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) Source address of client
     :param sslctx: (optional) SSLContext to use for TLS
     :param certfile: (optional) Cert file path for TLS server request
     :param keyfile: (optional) Key file path for TLS server request
     :param password: (optional) Password for for decrypting private key file
-    :param server_hostname: (optional) Bind certificate to host,
-    :param kwargs: (optional) Experimental parameters.
+    :param server_hostname: (optional) Bind certificate to host
+    :param kwargs: (optional) Experimental parameters
 
     Example::
 
@@ -116,15 +116,15 @@ class ModbusTlsClient(ModbusTcpClient):
     """**ModbusTlsClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) Source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) Source address of client
     :param sslctx: (optional) SSLContext to use for TLS
     :param certfile: (optional) Cert file path for TLS server request
     :param keyfile: (optional) Key file path for TLS server request
-    :param password: (optional) Password for for decrypting private key file
-    :param server_hostname: (optional) Bind certificate to host,
-    :param kwargs: (optional) Experimental parameters.
+    :param password: (optional) Password for decrypting private key file
+    :param server_hostname: (optional) Bind certificate to host
+    :param kwargs: (optional) Experimental parameters
 
     Example::
 

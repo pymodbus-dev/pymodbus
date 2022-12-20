@@ -27,8 +27,8 @@ async def run_payload_calls(client):
     If you need to build a complex message to send, you can use the payload
     builder to simplify the packing logic
 
-    Packing/unpacking depends on your CPU´s word/byte order. Modbus messages
-    are always using big endian. BinaryPayloadBuilder will pr default use
+    Packing/unpacking depends on your CPU's word/byte order. Modbus messages
+    are always using big endian. BinaryPayloadBuilder will per default use
     what your CPU uses.
     The wordorder is applicable only for 32 and 64 bit values
     Lets say we need to write a value 0x12345678 to a 32 bit register

@@ -188,11 +188,11 @@ class Endian(Singleton):  # pylint: disable=too-few-public-methods
 
     .. attribute:: Big
 
-       This indicates that the bytes are in little endian format
+       This indicates that the bytes are in big endian format
 
     .. attribute:: Little
 
-       This indicates that the bytes are in big endian format
+       This indicates that the bytes are in little endian format
 
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.

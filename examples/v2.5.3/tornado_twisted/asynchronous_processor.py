@@ -104,7 +104,7 @@ class ExampleProtocol(ModbusClientProtocol):
 # --------------------------------------------------------------------------- #
 # a factory for the example protocol
 # --------------------------------------------------------------------------- #
-# This is used to build client protocol"s if you tie into twisted"s method
+# This is used to build client protocol's if you tie into twisted's method
 # of processing. It basically produces client instances of the underlying
 # protocol::
 #

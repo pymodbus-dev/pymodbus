@@ -198,7 +198,7 @@ class RemoteServerContext:
         :param slave: slave The slave to check for existence
         :returns: True if the slave exists, False otherwise
         """
-        # we don"t want to check the cache here as the
+        # we don't want to check the cache here as the
         # slave may not exist yet or may not exist any
         # more. The best thing to do is try and fail.
         return True
@@ -209,14 +209,14 @@ class RemoteServerContext:
         :param slave: The slave context to set
         :param context: The new context to set for this slave
         """
-        raise NotImplementedException()  # doesn"t make sense here
+        raise NotImplementedException()  # doesn't make sense here
 
     def __delitem__(self, slave):
         """Use to access the slave context
 
         :param slave: The slave context to remove
         """
-        raise NotImplementedException()  # doesn"t make sense here
+        raise NotImplementedException()  # doesn't make sense here
 
     def __getitem__(self, slave):
         """Use to get access to a slave context

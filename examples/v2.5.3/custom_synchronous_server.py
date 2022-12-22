@@ -103,7 +103,7 @@ def run_server():
     # ----------------------------------------------------------------------- #
     # initialize the server information
     # ----------------------------------------------------------------------- #
-    # If you don"t set this or any fields, they are defaulted to empty strings.
+    # If you don't set this or any fields, they are defaulted to empty strings.
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification(
         info_name={

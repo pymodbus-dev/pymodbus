@@ -338,7 +338,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     def get_com_event_counter(self, **kwargs):
         """Read status word and an event count.
 
-        From the remote device"s communication event counter.
+        From the remote device's communication event counter.
 
         :param kwargs:
         :return:

@@ -296,7 +296,7 @@ class RestartCommunicationsOptionResponse(DiagnosticStatusResponse):
 #  Diagnostic Sub Code 02
 # ---------------------------------------------------------------------------#
 class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
-    """The contents of the remote device"s 16-bit diagnostic register are returned in the response."""
+    """The contents of the remote device's 16-bit diagnostic register are returned in the response."""
 
     sub_function_code = 0x0002
 
@@ -313,7 +313,7 @@ class ReturnDiagnosticRegisterRequest(DiagnosticStatusSimpleRequest):
 class ReturnDiagnosticRegisterResponse(DiagnosticStatusSimpleResponse):
     """Return diagnostic register.
 
-    The contents of the remote device"s 16-bit diagnostic register are
+    The contents of the remote device's 16-bit diagnostic register are
     returned in the response
     """
 

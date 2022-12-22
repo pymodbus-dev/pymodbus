@@ -22,14 +22,14 @@ _logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------------- #
 # Extra Global Functions
 # -------------------------------------------------------------------------- #
-# These are extra helper functions that don"t belong in a class
+# These are extra helper functions that don't belong in a class
 # -------------------------------------------------------------------------- #
 # import getpass
 
 
 def root_test():
     """Check to see if we are running as root"""
-    return True  # removed for the time being as it isn"t portable
+    return True  # removed for the time being as it isn't portable
     # return getpass.getuser() == "root"
 
 

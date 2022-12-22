@@ -113,13 +113,13 @@ class ReadExceptionStatusResponse(ModbusResponse):
 class GetCommEventCounterRequest(ModbusRequest):
     """This function code is used to get a status word.
 
-    And an event count from the remote device"s communication event counter.
+    And an event count from the remote device's communication event counter.
 
     By fetching the current count before and after a series of messages, a
     client can determine whether the messages were handled normally by the
     remote device.
 
-    The device"s event counter is incremented once  for each successful
+    The device's event counter is incremented once  for each successful
     message completion. It is not incremented for exception responses,
     poll commands, or fetch event counter commands.
 

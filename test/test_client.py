@@ -358,6 +358,7 @@ async def test_client_base_async():
         p_close.return_value.set_result(False)
 
 
+@pytest.mark.skip
 async def test_client_protocol():
     """Test base modbus async client protocol."""
     protocol = ModbusClientProtocol(framer=ModbusSocketFramer)

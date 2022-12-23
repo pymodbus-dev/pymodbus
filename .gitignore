@@ -22,4 +22,4 @@ build/
 /doc/_build/
 /dist/
 /pymodbus.egg-info/
-/venv/
+venv

@@ -25,6 +25,7 @@ from pymodbus.utilities import hexlify_packets
 
 try:
     import serial
+
     from serial_asyncio import create_serial_connection
 except ImportError:
     pass

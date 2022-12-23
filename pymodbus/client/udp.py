@@ -89,9 +89,12 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         """
         # prevent reconnect:
         self.delay_ms = 0
-
-        if self.connected and self.protocol and self.protocol.transport:
-            self.protocol.transport.close()
+        if self.connected:
+            if self.protocol.transport:
+                self.protocol.transport.close()
+            if self.protocol:
+                await self.protocol.close()
+            await asyncio.sleep(0.1)
 
     def _create_protocol(self, host=None, port=0):
         """Create initialized protocol instance with factory function."""
@@ -157,7 +160,9 @@ class AsyncModbusUdpClient(ModbusBaseClient):
                 )
 
             self.connected = False
-            self.protocol = None
+            if self.protocol is not None:
+                del self.protocol
+                self.protocol = None
             if self.delay_ms > 0:
                 asyncio.create_task(self._reconnect())
         else:
@@ -201,7 +206,7 @@ class ModbusUdpClient(ModbusBaseClient):
         source_address: typing.Tuple[str, int] = None,
         **kwargs: any,
     ) -> None:
-        """Initialize Asyncio Modbus UDP Client."""
+        """Initialize Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port

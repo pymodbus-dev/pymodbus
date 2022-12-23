@@ -315,6 +315,8 @@ class ModbusClientProtocol(
         """Close connection."""
         if self.transport:
             self.transport.close()
+            while self.transport is not None:
+                await asyncio.sleep(0.1)
         self._connected = False
 
     def connection_lost(self, reason):

@@ -68,11 +68,14 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
 
-        # prevent reconnect.
+        # prevent reconnect:
         self.delay_ms = 0
-
-        if self.connected and self.protocol and self.protocol.transport:
-            self.protocol.transport.close()
+        if self.connected:
+            if self.protocol.transport:
+                self.protocol.transport.close()
+            if self.protocol:
+                await self.protocol.close()
+            await asyncio.sleep(0.1)
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
@@ -130,7 +133,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             )
 
         self.connected = False
-        self.protocol = None
+        if self.protocol is not None:
+            del self.protocol
+            self.protocol = None
         if self.delay_ms > 0:
             asyncio.ensure_future(self._reconnect())
 

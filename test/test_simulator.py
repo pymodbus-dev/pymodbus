@@ -10,7 +10,7 @@ from pymodbus.datastore import ModbusSimulatorContext
 from pymodbus.datastore.simulator import (
     CELL_TYPE_BIT,
     CELL_TYPE_FLOAT32,
-    CELL_TYPE_ILLEGAL,
+    CELL_TYPE_INVALID,
     CELL_TYPE_NEXT,
     CELL_TYPE_STRING,
     CELL_TYPE_UINT16,
@@ -98,58 +98,52 @@ class TestSimulator:
     }
 
     test_registers = [
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_BIT, True, 1800, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_BIT, True, 1800, None),
-        Cell(CELL_TYPE_BIT, True, 1800, None),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_BIT, False, 0x81, None),  # 10
-        Cell(CELL_TYPE_BIT, False, 0x4342, None),
-        Cell(CELL_TYPE_BIT, False, 0x4342, None),
-        Cell(CELL_TYPE_BIT, False, 1800, True),
-        Cell(CELL_TYPE_BIT, False, 15, True),
-        Cell(CELL_TYPE_ILLEGAL, False, 0, None),
-        Cell(CELL_TYPE_UINT16, True, 3124, None),
-        Cell(CELL_TYPE_UINT16, True, 5678, None),
-        Cell(CELL_TYPE_UINT16, True, 5678, None),
-        Cell(CELL_TYPE_UINT16, False, 14661, True),
-        Cell(CELL_TYPE_UINT16, False, 14661, True),  # 20
-        Cell(CELL_TYPE_UINT32, True, 0, None),
-        Cell(CELL_TYPE_NEXT, True, 3124, None),
-        Cell(CELL_TYPE_UINT32, True, 0, None),
-        Cell(CELL_TYPE_NEXT, True, 5678, None),
-        Cell(CELL_TYPE_UINT32, True, 0, None),
-        Cell(CELL_TYPE_NEXT, True, 5678, None),
-        Cell(CELL_TYPE_UINT32, False, 5, True),
-        Cell(CELL_TYPE_NEXT, False, 17320, None),
-        Cell(CELL_TYPE_UINT32, False, 5, True),
-        Cell(CELL_TYPE_NEXT, False, 17320, None),  # 30
-        Cell(CELL_TYPE_FLOAT32, True, 47170, None),
-        Cell(CELL_TYPE_NEXT, True, 17221, None),
-        Cell(CELL_TYPE_FLOAT32, True, 34161, None),
-        Cell(CELL_TYPE_NEXT, True, 45381, None),
-        Cell(CELL_TYPE_FLOAT32, True, 34161, None),
-        Cell(CELL_TYPE_NEXT, True, 45381, None),
-        Cell(CELL_TYPE_FLOAT32, False, 1653, True),
-        Cell(CELL_TYPE_NEXT, False, 43080, None),
-        Cell(CELL_TYPE_FLOAT32, False, 1653, True),
-        Cell(CELL_TYPE_NEXT, False, 43080, None),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_BIT, True, 1800, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_BIT, True, 1800, 0),
+        Cell(CELL_TYPE_BIT, True, 1800, 0),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_BIT, False, 0x81, 0),  # 10
+        Cell(CELL_TYPE_BIT, False, 0x4342, 0),
+        Cell(CELL_TYPE_BIT, False, 0x4342, 0),
+        Cell(CELL_TYPE_BIT, False, 1800, 4),
+        Cell(CELL_TYPE_BIT, False, 15, 4),
+        Cell(CELL_TYPE_INVALID, False, 0, 0),
+        Cell(CELL_TYPE_UINT16, True, 3124, 0),
+        Cell(CELL_TYPE_UINT16, True, 5678, 0),
+        Cell(CELL_TYPE_UINT16, True, 5678, 0),
+        Cell(CELL_TYPE_UINT16, False, 14661, 1),
+        Cell(CELL_TYPE_UINT16, False, 14661, 1),  # 20
+        Cell(CELL_TYPE_UINT32, True, 0, 0),
+        Cell(CELL_TYPE_NEXT, True, 3124, 0),
+        Cell(CELL_TYPE_UINT32, True, 0, 0),
+        Cell(CELL_TYPE_NEXT, True, 5678, 0),
+        Cell(CELL_TYPE_UINT32, True, 0, 0),
+        Cell(CELL_TYPE_NEXT, True, 5678, 0),
+        Cell(CELL_TYPE_UINT32, False, 5, 1),
+        Cell(CELL_TYPE_NEXT, False, 17320, 0),
+        Cell(CELL_TYPE_UINT32, False, 5, 1),
+        Cell(CELL_TYPE_NEXT, False, 17320, 0),  # 30
+        Cell(CELL_TYPE_FLOAT32, True, 47170, 0),
+        Cell(CELL_TYPE_NEXT, True, 17221, 0),
+        Cell(CELL_TYPE_FLOAT32, True, 34161, 0),
+        Cell(CELL_TYPE_NEXT, True, 45381, 0),
+        Cell(CELL_TYPE_FLOAT32, True, 34161, 0),
+        Cell(CELL_TYPE_NEXT, True, 45381, 0),
+        Cell(CELL_TYPE_FLOAT32, False, 1653, 1),
+        Cell(CELL_TYPE_NEXT, False, 43080, 0),
+        Cell(CELL_TYPE_FLOAT32, False, 1653, 1),
+        Cell(CELL_TYPE_NEXT, False, 43080, 0),  # 40
+        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), 0),
+        Cell(CELL_TYPE_NEXT, False, int.from_bytes(bytes("r ", "utf-8"), "big"), 0),
+        Cell(CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), 0),
         Cell(
-            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
-        ),
-        Cell(
-            CELL_TYPE_STRING, False, int.from_bytes(bytes("r ", "utf-8"), "big"), None
-        ),
-        Cell(
-            CELL_TYPE_STRING, False, int.from_bytes(bytes("St", "utf-8"), "big"), None
-        ),
-        Cell(
-            CELL_TYPE_STRING, False, int.from_bytes(bytes("rx", "utf-8"), "big"), None
+            CELL_TYPE_NEXT, False, int.from_bytes(bytes("rx", "utf-8"), "big"), 0
         ),  # 29 MAX before repeat
     ]
 
@@ -199,8 +193,8 @@ class TestSimulator:
                 assert (
                     self.simulator.registers[i + offset].value == test_cell.value
                 ), f"at index {i} - {offset}"
-                assert (self.simulator.registers[i + offset].action is None) == (
-                    test_cell.action is None
+                assert (
+                    self.simulator.registers[i + offset].action == test_cell.action
                 ), f"at index {i} - {offset}"
         assert self.simulator.registers[138] == self.test_registers[0]
 

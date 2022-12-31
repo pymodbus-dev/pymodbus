@@ -259,6 +259,9 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         :param request: The decoded request message
         :param addr: the address
         """
+        if self.server.request_tracer:
+            self.server.request_tracer(request, *addr)
+
         broadcast = False
         try:
             if self.server.broadcast_enable and not request.unit_id:
@@ -546,6 +549,7 @@ class ModbusTcpServer:
         )
         self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
         self.response_manipulator = kwargs.get("response_manipulator", None)
+        self.request_tracer = kwargs.get("request_tracer", None)
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
 
@@ -741,6 +745,7 @@ class ModbusUdpServer:
             "reuse_port": allow_reuse_port,
             "allow_broadcast": True,
         }
+        self.request_tracer = None
 
     async def serve_forever(self):
         """Start endless loop."""

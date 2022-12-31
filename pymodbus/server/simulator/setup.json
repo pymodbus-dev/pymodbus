@@ -92,9 +92,9 @@
                     },
                     "action": {
                         "bits": null,
-                        "uint16": "register",
-                        "uint32": "register",
-                        "float32": "register",
+                        "uint16": "increment",
+                        "uint32": "increment",
+                        "float32": "increment",
                         "string": null
                     }
                 }
@@ -103,7 +103,7 @@
                 1
             ],
             "write": [
-                5
+                3
             ],
             "bits": [
                 {"addr": 2, "value": 7}
@@ -113,12 +113,12 @@
                 2100
             ],
             "uint32": [
-                {"addr": 4, "value": 617001},
-                3037
+                {"addr": [4, 5], "value": 617001},
+                [3037, 3038]
             ],
             "float32": [
-                {"addr": 6, "value": 404.17},
-                4100
+                {"addr": [6, 7], "value": 404.17},
+                [4100, 4101]
             ],
             "string": [
                 5047,
@@ -177,22 +177,22 @@
                 {"addr": [2208, 2306], "action": null}
             ],
             "uint32": [
-                12,
-                3037,
+                [12, 13],
+                [3037, 3038],
                 [3136, 3139],
-                {"addr": 3174, "value": 1},
+                {"addr": [3174, 3175], "value": 1},
                 {"addr": [3188,3189], "value": 32514},
-                {"addr": [3308, 3406], "action": null},
-                {"addr": [3688, 3878], "value": 115, "action": "increment"}
+                {"addr": [3308, 3407], "action": null},
+                {"addr": [3688, 3879], "value": 115, "action": "increment"}
             ],
             "float32": [
-                14,
-                4047,
+                [14, 15],
+                [4047, 4048],
                 [4146, 4149],
-                {"addr": 4184, "value": 1},
-                {"addr": [4198,4191], "value": 32514.1},
-                {"addr": [4308, 4406], "action": null},
-                {"addr": [4688, 4878], "value": 115.7, "action": "increment"}
+                {"addr": [4184, 4185], "value": 1},
+                {"addr": [4188, 4191], "value": 32514.1},
+                {"addr": [4308, 4407], "action": null},
+                {"addr": [4688, 4879], "value": 115.7, "action": "increment"}
             ],
             "string": [
                 {"addr": [16, 20], "value": "A_B_C_D_E_"},

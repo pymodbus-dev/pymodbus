@@ -49,7 +49,7 @@ def sslctx_provider(
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client"s certificate
+    :param reqclicert: Force the sever request client's certificate
     """
     if sslctx is None:
         # According to MODBUS/TCP Security Protocol Specification, it is
@@ -179,7 +179,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
-        the ModbusBaseRequestHandler class"s callback Future.
+        the ModbusBaseRequestHandler class's callback Future.
 
         This callback future gets data from either
         asyncio.DatagramProtocol.datagram_received or
@@ -640,7 +640,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client"s certificate
+        :param reqclicert: Force the sever request client's certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler. The handler class
                         receives connection create/teardown events
@@ -1067,7 +1067,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client"s certificate
+    :param reqclicert: Force the sever request client's certificate
     :param allow_reuse_address: Whether the server will allow the reuse of an
                                 address.
     :param allow_reuse_port: Whether the server will allow the reuse of a port.

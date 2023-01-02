@@ -26,7 +26,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
     :param framer: (optional) Modbus Framer class.
     :param timeout: (optional) Timeout for a request, in seconds.
-    :param retries: (optional) Max number of retries pr request.
+    :param retries: (optional) Max number of retries per request.
     :param retry_on_empty: (optional) Retry on empty response.
     :param close_comm_on_error: (optional) Close connection on error.
     :param strict: (optional) Strict timing, 1.5 character between requests.

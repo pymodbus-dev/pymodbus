@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
-# Base PDU"s
+# Base PDUs
 # --------------------------------------------------------------------------- #
 class ModbusPDU:
     """Base class for all Modbus messages.
@@ -149,7 +149,7 @@ class ModbusResponse(ModbusPDU):
 
 
 # --------------------------------------------------------------------------- #
-# Exception PDU"s
+# Exception PDUs
 # --------------------------------------------------------------------------- #
 class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
     """An enumeration of the valid modbus exceptions."""

@@ -211,7 +211,7 @@ class SimpleFactoryTest(unittest.TestCase):
         self.assertTrue(func_raised)
 
     # ---------------------------------------------------------------------------#
-    #  I don"t actually know what is supposed to be returned here, I assume that
+    #  I don't actually know what is supposed to be returned here, I assume that
     #  since the high bit is set, it will simply echo the resulting message
     # ---------------------------------------------------------------------------#
 

@@ -2,7 +2,7 @@
 
 The following factories make it easy to decode request/response messages.
 To add a new request/response pair to be decodeable by the library, simply
-add them to the respective function lookup table (order doesn"t matter, but
+add them to the respective function lookup table (order doesn't matter, but
 it does help keep things organized).
 
 Regardless of how many functions are added to the lookup, O(1) behavior is

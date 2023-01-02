@@ -56,12 +56,12 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
 
     .. attribute:: ProtocolId
 
-       The modbus protocol id.  Currently this is set to 0 in all
+       The modbus protocol id. Currently, this is set to 0 in all
        but proprietary implementations.
 
     .. attribute:: Slave
 
-       The modbus slave address.  Currently this is set to 0x00 which
+       The modbus slave address. Currently, this is set to 0x00 which
        means this request should be broadcast to all the slave devices
        (really means that all the devices should respond).
 
@@ -188,11 +188,11 @@ class Endian(Singleton):  # pylint: disable=too-few-public-methods
 
     .. attribute:: Big
 
-       This indicates that the bytes are in little endian format
+       This indicates that the bytes are in big endian format
 
     .. attribute:: Little
 
-       This indicates that the bytes are in big endian format
+       This indicates that the bytes are in little endian format
 
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.

@@ -227,7 +227,7 @@ class ModbusBinaryFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn"t have the resolution to
+        end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
         self._buffer = b""

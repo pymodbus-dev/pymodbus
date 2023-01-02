@@ -142,7 +142,7 @@ class NotImplementedException(Exception):
 class LibmodbusLevel1Client:
     """A raw wrapper around the libmodbus c library.
 
-    Feel free to use it if you want increased performance and don"t mind the
+    Feel free to use it if you want increased performance and don't mind the
     entire protocol not being implemented.
     """
 

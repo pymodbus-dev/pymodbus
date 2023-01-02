@@ -184,7 +184,7 @@ def computeCRC(data):  # pylint: disable=invalid-name
     For modbus, this is only used on the binary serial protocols (in this
     case RTU).
 
-    The difference between modbus"s crc16 and a normal crc16
+    The difference between modbus's crc16 and a normal crc16
     is that modbus starts the crc value out at 0xffff.
 
     :param data: The data to create a crc16 of

@@ -271,7 +271,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     """This function code is used to modify the contents.
 
     Of a specified holding register using a combination of an AND mask,
-    an OR mask, and the register"s current contents.
+    an OR mask, and the register's current contents.
     The function can be used to set or clear individual bits in the register.
     """
 

@@ -22,7 +22,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
 
     .. attribute:: Backoff
 
-       The default exponential backoff delay (0.3 seconds)
+       The default exponential backoff delay (0.3 seconds) for a request
 
     .. attribute:: Retries
 
@@ -110,6 +110,21 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
       contexts and not respond and the client will skip trying to receive a
       response. Default value False does not conform to Modbus spec but maintains
       legacy behavior for existing pymodbus users.
+   
+   .. attribute: reconnectDelayMin
+
+      When a connection has been dropped, the client will initially wait 
+      reconnectDelayMin milliseconds before attempting a reconnect.  If the
+      attempt fails, it will double the delay before attempting again, up to a
+      a maximum of ReconnectDelayMax.  (binary exponential backoff).
+   
+   .. attribute: reconnectDelayMax
+
+      When a connection has been dropped, the client will initially wait 
+      reconnectDelayMin milliseconds before attempting a reconnect.  If the
+      attempt fails, it will double the delay before attempting again, up to a
+      a maximum of ReconnectDelayMax.  (binary exponential backoff)
+
 
     """
 
@@ -136,7 +151,8 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     IgnoreMissingSlaves = False
     ReadSize = 1024
     BroadcastEnable = False
-    ReconnectDelay = 1000 * 60 * 5
+    ReconnectDelayMin = 100
+    ReconnectDelayMax = 1000 * 60 * 5
     Count = 1
 
 

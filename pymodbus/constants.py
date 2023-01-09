@@ -103,7 +103,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
        serial server emulater where a request to a non-existent slave on a bus
        will never respond. The client in this case will simply timeout.
 
-    .. attribute:: broadcast_enable
+    .. attribute:: broadcastEnable
 
       When False unit_id 0 will be treated as any other unit_id. When True and
       the unit_id is 0 the server will execute all requests on all server

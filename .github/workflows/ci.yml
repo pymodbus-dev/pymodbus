@@ -66,6 +66,8 @@ jobs:
             lint: 'no'
           - version: '3.10'
             lint: 'no'
+          - version: '3.11'
+            lint: 'no'
           - version: pypy-3.8
             lint: 'no'
         exclude:

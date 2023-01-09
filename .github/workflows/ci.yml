@@ -47,7 +47,7 @@ jobs:
             cmd: make -C doc/ html
             type: lint
           - name: pytest
-            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20 --numprocesses auto
             type: test
         os:
           - name: Linux

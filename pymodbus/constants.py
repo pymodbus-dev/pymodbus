@@ -151,7 +151,7 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     IgnoreMissingSlaves = False
     ReadSize = 1024
     BroadcastEnable = False
-    ReconnectDelayMin = 100
+    ReconnectDelay = 100
     ReconnectDelayMax = 1000 * 60 * 5
     Count = 1
 

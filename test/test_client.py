@@ -109,7 +109,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "close_comm_on_error": not Defaults.CloseCommOnError,
                     "strict": not Defaults.Strict,
                     "broadcast_enable": not Defaults.BroadcastEnable,
-                    "reconnect_delay_min": 117,
+                    "reconnect_delay": 117,
                     "reconnect_delay_max": 250,
                 },
                 "defaults": {
@@ -119,7 +119,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "close_comm_on_error": Defaults.CloseCommOnError,
                     "strict": Defaults.Strict,
                     "broadcast_enable": Defaults.BroadcastEnable,
-                    "reconnect_delay_min": Defaults.ReconnectDelayMin,
+                    "reconnect_delay": Defaults.ReconnectDelay,
                     "reconnect_delay_max": Defaults.ReconnectDelayMax,
                 },
             },

@@ -54,7 +54,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         self.params.source_address = source_address
         self.loop = None
         self.connected = False
-        self.delay_ms = self.params.reconnect_delay_min
+        self.delay_ms = self.params.reconnect_delay
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
         """Initiate connection to start client."""
@@ -88,7 +88,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             close_comm_on_error=self.params.close_comm_on_error,
             strict=self.params.strict,
             broadcast_enable=self.params.broadcast_enable,
-            reconnect_delay_min=self.params.reconnect_delay_min,
+            reconnect_delay=self.params.reconnect_delay,
             reconnect_delay_max=self.params.reconnect_delay_max,
             **self.params.kwargs,
         )

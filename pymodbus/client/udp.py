@@ -55,7 +55,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
         self.loop = asyncio.get_event_loop()
         self.connected = False
-        self.delay_ms = self.params.reconnect_delay_min
+        self.delay_ms = self.params.reconnect_delay
         self.reset_delay()
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
@@ -108,7 +108,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             close_comm_on_error=self.params.close_comm_on_error,
             strict=self.params.strict,
             broadcast_enable=self.params.broadcast_enable,
-            reconnect_delay_min=self.params.reconnect_delay_min,
+            reconnect_delay=self.params.reconnect_delay,
             reconnect_delay_max=self.params.reconnect_delay_max,
             **self.params.kwargs,
         )

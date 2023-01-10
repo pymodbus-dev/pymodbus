@@ -689,7 +689,6 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        allow_reuse_address=False,
         allow_reuse_port=False,
         defer_start=False,  # pylint: disable=unused-argument
         backlog=20,  # pylint: disable=unused-argument
@@ -737,7 +736,6 @@ class ModbusUdpServer:
         self.serving = self.loop.create_future()
         self.factory_parms = {
             "local_addr": self.address,
-            "reuse_address": allow_reuse_address,
             "reuse_port": allow_reuse_port,
             "allow_broadcast": True,
         }

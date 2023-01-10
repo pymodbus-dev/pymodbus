@@ -109,6 +109,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             strict=self.params.strict,
             broadcast_enable=self.params.broadcast_enable,
             reconnect_delay=self.params.reconnect_delay,
+            reconnect_delay_max=self.params.reconnect_delay_max,
             **self.params.kwargs,
         )
         protocol.params.host = host

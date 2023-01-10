@@ -110,6 +110,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "strict": not Defaults.Strict,
                     "broadcast_enable": not Defaults.BroadcastEnable,
                     "reconnect_delay": 117,
+                    "reconnect_delay_max": 250,
                 },
                 "defaults": {
                     "timeout": Defaults.Timeout,
@@ -119,6 +120,7 @@ def test_client_mixin(arglist, method, arg, response):
                     "strict": Defaults.Strict,
                     "broadcast_enable": Defaults.BroadcastEnable,
                     "reconnect_delay": Defaults.ReconnectDelay,
+                    "reconnect_delay_max": Defaults.ReconnectDelayMax,
                 },
             },
             "serial": {

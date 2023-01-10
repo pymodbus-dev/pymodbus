@@ -31,7 +31,8 @@ class ModbusBaseClient(ModbusClientMixin):
     :param close_comm_on_error: (optional) Close connection on error.
     :param strict: (optional) Strict timing, 1.5 character between requests.
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
-    :param reconnect_delay: (optional) Delay in milliseconds before reconnecting.
+    :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
@@ -39,7 +40,8 @@ class ModbusBaseClient(ModbusClientMixin):
         and not repeated with each client.
 
     .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect.
+        **delay_ms** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
         Set `reconnect_delay=0` to avoid automatic reconnection.
 
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`,
@@ -82,6 +84,7 @@ class ModbusBaseClient(ModbusClientMixin):
         broadcast_enable: bool = None
         kwargs: dict = None
         reconnect_delay: int = None
+        reconnect_delay_max: int = None
 
         baudrate: int = None
         bytesize: int = None
@@ -107,6 +110,7 @@ class ModbusBaseClient(ModbusClientMixin):
         strict: bool = Defaults.Strict,
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
+        reconnect_delay_max: int = Defaults.ReconnectDelayMax,
         **kwargs: any,
     ) -> None:
         """Initialize a client instance."""
@@ -118,7 +122,8 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
-        self.params.reconnect_delay = reconnect_delay
+        self.params.reconnect_delay = int(reconnect_delay)
+        self.params.reconnect_delay_max = int(reconnect_delay_max)
         self.params.kwargs = kwargs
 
         # Common variables.

@@ -12,6 +12,9 @@ PyModbus - A Python Modbus Stack
 .. image:: https://pepy.tech/badge/pymodbus
    :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
+.. image:: https://ghcr-badge.deta.dev/pymodbus-dev/pymodbus/tags?label=Docker
+   :target: https://github.com/pymodbus-dev/pymodbus/pkgs/container/pymodbus
+   :alt: Docker Tags
 
 ------------------------------------------------------------
 Supported versions
@@ -229,9 +232,7 @@ This installs pymodbus in your virtual environment with pointers directly to the
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
 
-------------------------------------------------------------
-Repository structure
-------------------------------------------------------------
+   
 The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.
   * **master** is where are releases are kept.

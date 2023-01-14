@@ -1,3 +1,37 @@
+version 3.1.0
+----------------------------------------------------------
+* Add xdist pr default. (#1253)
+* Create docker-publish.yml (#1250)
+* Parallelize pytest with pytest-xdist (#1247)
+* Support Python3.11 (#1246)
+* Fix reconnectDelay to be within (100ms, 5min) (#1244)
+* Fix typos in comments (#1233)
+* WEB simulator, first version. (#1226)
+* Clean async serial problem. (#1235)
+* terminate when using 'randomize' and 'change_rate' at the same time (#1231)
+* Used tooled python and OS (#1232)
+* add 'change_rate' randomization option (#1229)
+* add check_ci.sh (#1225)
+* Simplify CI and use cache. (#1217)
+* Solve issue 1210, update simulator (#1211)
+* Add missing client calls in mixin.py. (#1206)
+* Advanced simulator with cross memory. (#1195)
+* AsyncModbusTcp/UdpClient honors delay_ms == 0 (#1203) (#1205)
+* Fix #1188 and some pylint issues (#1189)
+* Serial receive incomplete bytes.issue #1183 (#1185)
+* Handle echo (#1186)
+* Add updating server example. (#1176)
+
+Thanks to:
+
+  Alex
+  banana-sun
+  Chris Hung
+  dhoomakethu
+  jan iversen
+  Matthias Straka
+  Pavel Kostromitinov
+
 version 3.0.2
 ----------------------------------------------------------
 * Add pygments as requirement for repl

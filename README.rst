@@ -1,6 +1,8 @@
 ================================
 PyModbus - A Python Modbus Stack
 ================================
+We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
+The move from riptideio (a company) was done to allow a 100% openess in the spirit of FOSS.
 
 .. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml
@@ -22,13 +24,9 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.2 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.2>`_ is the current release (Supports Python >=3.8).
-
-Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
+Version `3.1.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.1.0>`_ is the current release (Supports Python >=3.8).
 
 .. important::
-   **Note 3.0.0 is a major release with a number of incompatible changes.**
-
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
 
 
@@ -232,7 +230,7 @@ This installs pymodbus in your virtual environment with pointers directly to the
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
 
-   
+
 The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.
   * **master** is where are releases are kept.
@@ -261,7 +259,7 @@ Pull the latest image on ``dev`` branch with ``docker pull ghcr.io/pymodbus-dev/
    Digest: sha256:cfeee09a87dde5863574779416490fd47cacbb6f37332a3cdaf995c416e16b69
    Status: Downloaded newer image for ghcr.io/pymodbus-dev/pymodbus:dev
    ghcr.io/pymodbus-dev/pymodbus:dev
-   
+
 The image when run with out any further options supplied will start a repl server in non interactive mode.::
 
    ❯ docker run -it --rm -p 8080:8080 -p 5020:5020 ghcr.io/pymodbus-dev/pymodbus:dev
@@ -318,7 +316,7 @@ To check the repl console.::
    Commands:
      serial  Define serial communication.
      tcp     Define TCP.
-     
+
 To run examples (assuming server is running). ::
 
    ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "examples/client_async.py"

@@ -5,7 +5,9 @@ code that are not relevant for the examples as such, like e.g.
 get_command_line
 """
 import argparse
+import dataclasses
 import logging
+from dataclasses import dataclass
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
@@ -18,6 +20,31 @@ from pymodbus.transaction import (
 
 
 _logger = logging.getLogger()
+
+
+@dataclass
+class Commandline:
+    """Simulate commandline parameters.
+
+    Replaces get_commandline() and allows application to set arguments directly.
+    """
+
+    comm = None
+    framer = None
+    host = "127.0.0.1"
+    port = None
+    store = "sequential"
+    identity = None
+    context = None
+    slaves = None
+    client_port = None
+    client = None
+
+    @classmethod
+    def copy(cls):
+        """Copy Commandline"""
+        to_copy = cls()
+        return dataclasses.replace(to_copy)
 
 
 def get_commandline(server=False, description=None, extras=None):
@@ -63,6 +90,19 @@ def get_commandline(server=False, description=None, extras=None):
             type=int,
             nargs="+",
         )
+        parser.add_argument(
+            "--context",
+            help="ADVANCED USAGE: set datastore context object",
+            default=None,
+        )
+    else:
+        parser.add_argument(
+            "--host",
+            help="set host, default is 127.0.0.1",
+            default="127.0.0.1",
+            type=str,
+        )
+
     if extras:
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])

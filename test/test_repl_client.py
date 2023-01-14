@@ -1,5 +1,5 @@
 """Test client sync."""
-from pymodbus.repl.client.main import _process_args as process_args
+from pymodbus.repl.client.main import process_args
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 
 
@@ -10,7 +10,7 @@ def test_repl_default_config():
 
 
 def test_repl_client_process_args():
-    """Test argument processing in repl.client.main (_process_args function)."""
+    """Test argument processing in repl.client.main ( process_args function)."""
     resp = process_args(["address=11"], False)
     assert resp == ({"address": 11}, True)
 

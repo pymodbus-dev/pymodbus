@@ -15,12 +15,6 @@ Install pymodbus with repl support
 $ pip install pymodbus[repl] --upgrade
 ```
 
-## Docker
-Pull Docker image with everything installed
-
-`docker pull riptideio/pymodbus`
-
-
 ## Usage Instructions
 RTU and TCP are supported as of now
 

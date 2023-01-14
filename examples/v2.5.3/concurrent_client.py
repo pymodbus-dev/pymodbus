@@ -218,7 +218,7 @@ class ConcurrentClient(ModbusClientMixin):
         of the call.
 
         :param request: The request to execute
-        :returns: A future linked to the call"s response
+        :returns: A future linked to the call's response
         """
         fut, work_id = Future(), next(self.counter)
         self.input_queue.put(WorkRequest(request, work_id))

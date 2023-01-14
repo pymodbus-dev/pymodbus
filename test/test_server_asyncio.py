@@ -219,7 +219,7 @@ class AsyncioServerTest(
             await self.server.serve_forever()
 
     async def test_async_tcp_server_receive_data(self):
-        """Test data sent on socket is received by internals - doesn"t not process data"""
+        """Test data sent on socket is received by internals - doesn't not process data"""
         BasicClient.data = b"\x01\x00\x00\x00\x00\x06\x01\x03\x00\x00\x00\x19"
         await self.start_server()
         with patch(
@@ -357,7 +357,7 @@ class AsyncioServerTest(
         with self.assertRaises(RuntimeError):
             await self.server.serve_forever()
 
-    @pytest.mark.skifif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
+    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
     async def test_async_udp_server_receive_data(self):
         """Test that the sending data on datagram socket gets data pushed to framer"""
         await self.start_server(do_udp=True)

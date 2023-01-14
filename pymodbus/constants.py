@@ -11,105 +11,120 @@ from pymodbus.interfaces import Singleton
 class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     """A collection of modbus default values.
 
-    .. attribute:: Port
+     .. attribute:: Port
 
-       The default modbus tcp server port (502)
+        The default modbus tcp server port (502)
 
-    .. attribute:: TLSPort
+     .. attribute:: TLSPort
 
-       The default modbus tcp over tls server port (802)
+        The default modbus tcp over tls server port (802)
 
 
-    .. attribute:: Backoff
+     .. attribute:: Backoff
 
-       The default exponential backoff delay (0.3 seconds)
+        The default exponential backoff delay (0.3 seconds) for a request
 
-    .. attribute:: Retries
+     .. attribute:: Retries
 
-       The default number of times a client should retry the given
-       request before failing (3)
+        The default number of times a client should retry the given
+        request before failing (3)
 
-    .. attribute:: RetryOnEmpty
+     .. attribute:: RetryOnEmpty
 
-       A flag indicating if a transaction should be retried in the
-       case that an empty response is received. This is useful for
-       slow clients that may need more time to process a request.
+        A flag indicating if a transaction should be retried in the
+        case that an empty response is received. This is useful for
+        slow clients that may need more time to process a request.
 
-    .. attribute:: RetryOnInvalid
+     .. attribute:: RetryOnInvalid
 
-       A flag indicating if a transaction should be retried in the
-       case that an invalid response is received.
+        A flag indicating if a transaction should be retried in the
+        case that an invalid response is received.
 
-    .. attribute:: Timeout
+     .. attribute:: Timeout
 
-       The default amount of time a client should wait for a request
-       to be processed (3 seconds)
+        The default amount of time a client should wait for a request
+        to be processed (3 seconds)
 
-    .. attribute:: Reconnects
+     .. attribute:: Reconnects
 
-       The default number of times a client should attempt to reconnect
-       before deciding the server is down (0)
+        The default number of times a client should attempt to reconnect
+        before deciding the server is down (0)
 
-    .. attribute:: TransactionId
+     .. attribute:: TransactionId
 
-       The starting transaction identifier number (0)
+        The starting transaction identifier number (0)
 
-    .. attribute:: ProtocolId
+     .. attribute:: ProtocolId
 
-       The modbus protocol id.  Currently this is set to 0 in all
-       but proprietary implementations.
+        The modbus protocol id. Currently, this is set to 0 in all
+        but proprietary implementations.
 
-    .. attribute:: Slave
+     .. attribute:: Slave
 
-       The modbus slave address.  Currently this is set to 0x00 which
-       means this request should be broadcast to all the slave devices
-       (really means that all the devices should respond).
+        The modbus slave address. Currently, this is set to 0x00 which
+        means this request should be broadcast to all the slave devices
+        (really means that all the devices should respond).
 
-    .. attribute:: Baudrate
+     .. attribute:: Baudrate
 
-       The speed at which the data is transmitted over the serial line.
-       This defaults to 19200.
+        The speed at which the data is transmitted over the serial line.
+        This defaults to 19200.
 
-    .. attribute:: Parity
+     .. attribute:: Parity
 
-       The type of checksum to use to verify data integrity. This can be
-       on of the following::
+        The type of checksum to use to verify data integrity. This can be
+        on of the following::
 
-         - (E)ven - 1 0 1 0 | P(0)
-         - (O)dd  - 1 0 1 0 | P(1)
-         - (N)one - 1 0 1 0 | no parity
+          - (E)ven - 1 0 1 0 | P(0)
+          - (O)dd  - 1 0 1 0 | P(1)
+          - (N)one - 1 0 1 0 | no parity
 
-       This defaults to (N)one.
+        This defaults to (N)one.
 
-    .. attribute:: Bytesize
+     .. attribute:: Bytesize
 
-       The number of bits in a byte of serial data.  This can be one of
-       5, 6, 7, or 8. This defaults to 8.
+        The number of bits in a byte of serial data.  This can be one of
+        5, 6, 7, or 8. This defaults to 8.
 
-    .. attribute:: Stopbits
+     .. attribute:: Stopbits
 
-       The number of bits sent after each character in a message to
-       indicate the end of the byte.  This defaults to 1.
+        The number of bits sent after each character in a message to
+        indicate the end of the byte.  This defaults to 1.
 
-    .. attribute:: ZeroMode
+     .. attribute:: ZeroMode
 
-       Indicates if the slave datastore should use indexing at 0 or 1.
-       More about this can be read in section 4.4 of the modbus specification.
+        Indicates if the slave datastore should use indexing at 0 or 1.
+        More about this can be read in section 4.4 of the modbus specification.
 
-    .. attribute:: IgnoreMissingSlaves
+     .. attribute:: IgnoreMissingSlaves
 
-       In case a request is made to a missing slave, this defines if an error
-       should be returned or simply ignored. This is useful for the case of a
-       serial server emulater where a request to a non-existent slave on a bus
-       will never respond. The client in this case will simply timeout.
+        In case a request is made to a missing slave, this defines if an error
+        should be returned or simply ignored. This is useful for the case of a
+        serial server emulater where a request to a non-existent slave on a bus
+        will never respond. The client in this case will simply timeout.
 
-    .. attribute:: broadcast_enable
+     .. attribute:: broadcastEnable
 
-      When False unit_id 0 will be treated as any other unit_id. When True and
-      the unit_id is 0 the server will execute all requests on all server
-      contexts and not respond and the client will skip trying to receive a
-      response. Default value False does not conform to Modbus spec but maintains
-      legacy behavior for existing pymodbus users.
+       When False unit_id 0 will be treated as any other unit_id. When True and
+       the unit_id is 0 the server will execute all requests on all server
+       contexts and not respond and the client will skip trying to receive a
+       response. Default value False does not conform to Modbus spec but maintains
+       legacy behavior for existing pymodbus users.
+
+    .. attribute: reconnectDelayMin
+
+       When a connection has been dropped, the client will initially wait
+       reconnectDelayMin milliseconds before attempting a reconnect.  If the
+       attempt fails, it will double the delay before attempting again, up to a
+       a maximum of ReconnectDelayMax.  (binary exponential backoff).
+
+    .. attribute: reconnectDelayMax
+
+       When a connection has been dropped, the client will initially wait
+       reconnectDelayMin milliseconds before attempting a reconnect.  If the
+       attempt fails, it will double the delay before attempting again, up to a
+       a maximum of ReconnectDelayMax.  (binary exponential backoff)
+
 
     """
 
@@ -136,7 +151,8 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     IgnoreMissingSlaves = False
     ReadSize = 1024
     BroadcastEnable = False
-    ReconnectDelay = 1000 * 60 * 5
+    ReconnectDelay = 100
+    ReconnectDelayMax = 1000 * 60 * 5
     Count = 1
 
 
@@ -188,11 +204,11 @@ class Endian(Singleton):  # pylint: disable=too-few-public-methods
 
     .. attribute:: Big
 
-       This indicates that the bytes are in little endian format
+       This indicates that the bytes are in big endian format
 
     .. attribute:: Little
 
-       This indicates that the bytes are in big endian format
+       This indicates that the bytes are in little endian format
 
     .. note:: I am simply borrowing the format strings from the
        python struct module for my convenience.

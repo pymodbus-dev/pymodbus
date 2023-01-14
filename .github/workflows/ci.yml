@@ -3,294 +3,108 @@ name: CI
 on:
   push:
     branches:
-      - dev*
+      - dev
       - master
     tags:
       - v*
   pull_request:
     branches:
-      - "*"
+      - dev
   schedule:
-    # Daily at 05:14
-    - cron: '14 5 * * *'
+    # Sunday at 02:10 UTC.
+    - cron: '10 2 * * 0'
+  workflow_dispatch:
+
 
 jobs:
-  test:
-    # Should match JOB_NAME below
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ${{ matrix.os.container[matrix.python.docker] }}
-    # present runtime seems to be about 2-4 minutes
-    # with pypy being the exception (7 minutes)
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        task:
-          - name: Test
-            tox: test
-            coverage: true
-        os:
-          - name: Linux
-            runs-on: ubuntu-latest
-            matrix: linux
-            container:
-              3.8: docker://python:3.8-buster
-              3.9: docker://python:3.9-buster
-              3.10: docker://python:3.10-buster
-              pypy3: docker://pypy:3-stretch
-          - name: macOS
-            runs-on: macos-latest
-            matrix: macos
-          - name: Windows
-            runs-on: windows-latest
-            matrix: windows
-            openssl:
-              x86: win32
-              x64: win64
-        python:
-          - name: CPython 3.8
-            tox: py38
-            action: 3.8
-            docker: 3.8
-            matrix: 3.8
-            implementation: cpython
-          - name: CPython 3.9
-            tox: py39
-            action: 3.9
-            docker: 3.9
-            matrix: 3.9
-            implementation: cpython
-          - name: 'CPython 3.10'
-            tox: 'py310'
-            action: '3.10'
-            docker: '3.10'
-            matrix: '3.10'
-            implementation: cpython
-          - name: PyPy 3.8
-            tox: pypy38
-            action: pypy-3.8
-            docker: pypy3.8
-            matrix: 3.8
-            implementation: pypy
-            openssl_msvc_version: 2019
-        arch:
-          - name: x86
-            action: x86
-            matrix: x86
-          - name: x64
-            action: x64
-            matrix: x64
-        exclude:
-          - os:
-              matrix: linux
-            arch:
-              matrix: x86
-          - os:
-              matrix: macos
-            arch:
-              matrix: x86
-          - os:
-              matrix: windows
-            python:
-              implementation: pypy
-            arch:
-              matrix: x64
-          - os:
-              matrix: windows
-            python:
-              implementation: pypy
-              matrix: 3.8
-    env:
-      # Should match name above
-      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up ${{ matrix.python.name }} (if CPython)
-        if: ${{ job.container == '' && matrix.python.implementation == 'cpython'}}
-        uses: actions/setup-python@v2
-        with:
-          python-version: '${{ matrix.python.action }}.0-alpha - ${{ matrix.python.action }}.X'
-          architecture: '${{ matrix.arch.action }}'
-      - name: Set up ${{ matrix.python.name }} (if PyPy)
-        if: ${{ job.container == '' && matrix.python.implementation == 'pypy'}}
-        uses: actions/setup-python@v2
-        with:
-          python-version: '${{ matrix.python.action }}'
-          architecture: '${{ matrix.arch.action }}'
-      - name: Install
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox
-      - name: Add PyPy Externals
-        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
-        env:
-          PYPY_EXTERNALS_PATH: ${{ github.workspace }}/pypy_externals
-        shell: bash
-        run: |
-          echo $PYPY_EXTERNALS_PATH
-          mkdir --parents $(dirname $PYPY_EXTERNALS_PATH)
-          hg clone https://foss.heptapod.net/pypy/externals/ $PYPY_EXTERNALS_PATH
-          dir $PYPY_EXTERNALS_PATH
-          cd $PYPY_EXTERNALS_PATH && hg update win$(python -c 'import struct; print(struct.calcsize("P") * 8)')_14x
-          echo "INCLUDE=$PYPY_EXTERNALS_PATH/include;$INCLUDE" >> $GITHUB_ENV
-          echo "LIB=$PYPY_EXTERNALS_PATH/lib;$LIB" >> $GITHUB_ENV
-#          echo "CL=${{ matrix.PYTHON.CL_FLAGS }}" >> $GITHUB_ENV
-      - name: Add Brew
-        if: ${{ matrix.os.matrix == 'macos' && matrix.python.implementation == 'pypy'}}
-        shell: bash
-        run: |
-          brew install openssl@1.1 rust
-          echo "LDFLAGS=-L$(brew --prefix openssl@1.1)/lib" >> $GITHUB_ENV
-          echo "CFLAGS=-I$(brew --prefix openssl@1.1)/include" >> $GITHUB_ENV
-      - name: rustup
-        if: ${{ matrix.os.matrix == 'windows' && matrix.python.implementation == 'pypy'}}
-        shell: bash
-        run: |
-          rustup target add i686-pc-windows-msvc
-      - name: Test
-        env:
-          # When compiling Cryptography for PyPy on Windows there is a cleanup
-          # failure.  This is CI, it doesn't matter.
-          PIP_NO_CLEAN: 1
-        run: |
-          tox -vv -e ${{ matrix.python.tox }}
-      - name: Coverage Processing
-        if: matrix.task.coverage
-        run: |
-          mkdir coverage_reports
-          cp .coverage "coverage_reports/.coverage.${{ env.JOB_NAME }}"
-          cp coverage.xml "coverage_reports/coverage.${{ env.JOB_NAME }}.xml"
-      - name: Upload Coverage
-        if: matrix.task.coverage
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage
-          path: coverage_reports/*
-  check:
-    # Should match JOB_NAME below
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    runs-on: ${{ matrix.os.runs-on }}
-    container: ${{ matrix.os.container[matrix.python.docker] }}
+  integreation_test:
+    name: ${{ matrix.task.name }} - ${{ matrix.os.on }} - ${{ matrix.python.version }}
+    runs-on: ${{ matrix.os.on }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         task:
           - name: pylint
-            tox: pylint
-            # continue_on_error: true
+            cmd: pylint --recursive=y examples pymodbus test
+            type: lint
           - name: codespell
-            tox: codespell
-            # continue_on_error: true
+            cmd: codespell
+            type: lint
           - name: bandit
-            tox: bandit
-            # continue_on_error: true
+            cmd: bandit -r -c bandit.yaml .
+            type: lint
           - name: flake8
-            tox: flake8
-            # continue_on_error: true
+            cmd: flake8
+            type: lint
           - name: isort
-            tox: isort_CI
-            # continue_on_error: true
+            cmd: isort --check .
+            type: lint
           - name: black
-            tox: black_CI
-            # continue_on_error: true
-          - name: Docs
-            tox: docs
-            # continue_on_error: true
+            cmd: black --check --safe --quiet examples/ pymodbus/ test/
+            type: lint
+          - name: docs
+            cmd: make -C doc/ html
+            type: lint
+          - name: pytest
+            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+            type: test
         os:
           - name: Linux
-            runs-on: ubuntu-latest
-            matrix: linux
-            container:
-              3.8: docker://python:3.8-buster
+            on: ubuntu-latest
+            lint: 'yes'
+          - name: Macos
+            on: macos-latest
+            lint: 'no'
+          - name: Windows
+            on: windows-latest
+            lint: 'no'
         python:
-          - name: CPython 3.8
-            tox: py38
-            action: 3.8
-            docker: 3.8
-            implementation: cpython
-        arch:
-          - name: x64
-            action: x64
-            matrix: x64
-    env:
-      # Should match name above
-      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
+          - version: '3.8'
+            lint: 'yes'
+          - version: '3.9'
+            lint: 'no'
+          - version: '3.10'
+            lint: 'no'
+          - version: '3.11'
+            lint: 'no'
+          - version: pypy-3.8
+            lint: 'no'
+        exclude:
+          - task:
+              type: lint
+            os:
+              lint: 'no'
+          - task:
+              type: lint
+            python:
+              lint: 'no'
+          - os:
+              name: Macos
+            python:
+              version: pypy-3.8
+          - os:
+              name: Windows
+            python:
+              version: pypy-3.8
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up ${{ matrix.python.version }}
+        uses: actions/setup-python@v4
         with:
-          fetch-depth: 0
-      - name: Install
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox
-      - name: Test
-        continue-on-error: ${{ matrix.task.continue_on_error == true }}
-        run: |
-          tox -vv -e ${{ matrix.task.tox }}
-  coverage:
-    # Should match JOB_NAME below
-    name: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    runs-on: ${{ matrix.os.runs-on }}
-    if: always()
-    needs:
-      - test
-    container: ${{ matrix.os.container[matrix.python.docker] }}
-    strategy:
-      fail-fast: false
-      matrix:
-        task:
-          - name: Coverage
-            tox: combined-coverage
-            download_coverage: true
-        os:
-          - name: Linux
-            runs-on: ubuntu-latest
-            matrix: linux
-            container:
-              3.8: docker://python:3.8-buster
-        python:
-          - name: CPython 3.8
-            tox: py38
-            action: 3.8
-            docker: 3.8
-            implementation: cpython
-        arch:
-          - name: x64
-            action: x64
-            matrix: x64
-    env:
-      # Should match name above
-      JOB_NAME: ${{ matrix.task.name }} - ${{ matrix.os.name }} ${{ matrix.python.name }} ${{ matrix.arch.name }}
-    steps:
-      - uses: actions/checkout@v2
+          python-version: ${{ matrix.python.version }}
+
+      - name: venv restore
+        id: cache-venv
+        uses: syphar/restore-virtualenv@v1
         with:
-          fetch-depth: 0
-      - name: Install
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade tox
-      - name: Download Coverage
-        if: matrix.task.download_coverage
-        uses: actions/download-artifact@v2
-        with:
-          name: coverage
-          path: coverage_reports
-      - name: Test
-        continue-on-error: ${{ matrix.task.continue_on_error == true }}
-        run: |
-          tox -vv -e ${{ matrix.task.tox }}
-  all:
-    name: All
-    runs-on: ubuntu-latest
-    needs:
-      - check
-      - coverage
-      - test
-    steps:
-      - name: This
-        shell: python
-        run: |
-          import this
+          requirement_files: requirements.txt
+
+      - name: venv create
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: pip install -e . -r requirements.txt
+
+      - name: test/lint
+        run: ${{ matrix.task.cmd }}

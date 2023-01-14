@@ -26,12 +26,13 @@ class ModbusBaseClient(ModbusClientMixin):
 
     :param framer: (optional) Modbus Framer class.
     :param timeout: (optional) Timeout for a request, in seconds.
-    :param retries: (optional) Max number of retries pr request.
+    :param retries: (optional) Max number of retries per request.
     :param retry_on_empty: (optional) Retry on empty response.
     :param close_comm_on_error: (optional) Close connection on error.
     :param strict: (optional) Strict timing, 1.5 character between requests.
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
-    :param reconnect_delay: (optional) Delay in milliseconds before reconnecting.
+    :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
+    :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
@@ -39,7 +40,8 @@ class ModbusBaseClient(ModbusClientMixin):
         and not repeated with each client.
 
     .. tip::
-        **reconnect_delay** doubles automatically with each unsuccessful connect.
+        **delay_ms** doubles automatically with each unsuccessful connect, from
+        **reconnect_delay** to **reconnect_delay_max**.
         Set `reconnect_delay=0` to avoid automatic reconnection.
 
     :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`,
@@ -60,9 +62,12 @@ class ModbusBaseClient(ModbusClientMixin):
             rr = client.read_coils(0x01)
             client.close()
 
-
     **Application methods, common to all clients**:
     """
+
+    state = ModbusTransactionState.IDLE
+    last_frame_end = 0
+    silent_interval = 0
 
     @dataclass
     class _params:  # pylint: disable=too-many-instance-attributes
@@ -79,6 +84,7 @@ class ModbusBaseClient(ModbusClientMixin):
         broadcast_enable: bool = None
         kwargs: dict = None
         reconnect_delay: int = None
+        reconnect_delay_max: int = None
 
         baudrate: int = None
         bytesize: int = None
@@ -104,6 +110,7 @@ class ModbusBaseClient(ModbusClientMixin):
         strict: bool = Defaults.Strict,
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
+        reconnect_delay_max: int = Defaults.ReconnectDelayMax,
         **kwargs: any,
     ) -> None:
         """Initialize a client instance."""
@@ -115,7 +122,8 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.close_comm_on_error = bool(close_comm_on_error)
         self.params.strict = bool(strict)
         self.params.broadcast_enable = bool(broadcast_enable)
-        self.params.reconnect_delay = reconnect_delay
+        self.params.reconnect_delay = int(reconnect_delay)
+        self.params.reconnect_delay_max = int(reconnect_delay_max)
         self.params.kwargs = kwargs
 
         # Common variables.
@@ -312,6 +320,8 @@ class ModbusClientProtocol(
         """Close connection."""
         if self.transport:
             self.transport.close()
+            while self.transport is not None:
+                await asyncio.sleep(0.1)
         self._connected = False
 
     def connection_lost(self, reason):

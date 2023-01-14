@@ -5,6 +5,7 @@ import time
 from functools import partial
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -14,7 +15,6 @@ from pymodbus.utilities import ModbusTransactionState, hexlify_packets
 
 try:
     import serial
-    from serial_asyncio import create_serial_connection
 except ImportError:
     pass
 
@@ -27,14 +27,14 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     :param port: Serial port used for communication.
     :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits pr second.
-    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param baudrate: (optional) Bits per second.
+    :param bytesize: (optional) Number of bits per byte 7-8.
     :param parity: (optional) 'E'ven, 'O'dd or 'N'one
     :param stopbits: (optional) Number of stop bits 0-2¡.
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
 
-    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
 
     Example::
 
@@ -76,8 +76,15 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop connection."""
-        if self.connected and self.protocol and self.protocol.transport:
-            self.protocol.transport.close()
+
+        # prevent reconnect:
+        self.delay_ms = 0
+        if self.connected:
+            if self.protocol.transport:
+                self.protocol.transport.close()
+            if self.protocol:
+                await self.protocol.close()
+            await asyncio.sleep(0.1)
 
     def _create_protocol(self):
         """Create protocol."""
@@ -132,7 +139,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
                 _logger.error("Serial: protocol is not self.protocol.")
 
             self._connected_event.clear()
-            self.protocol = None
+            if self.protocol is not None:
+                del self.protocol
+                self.protocol = None
             # if self.host:
             #     asyncio.asynchronous(self._reconnect())
         else:
@@ -144,14 +153,14 @@ class ModbusSerialClient(ModbusBaseClient):
 
     :param port: Serial port used for communication.
     :param framer: (optional) Framer class.
-    :param baudrate: (optional) Bits pr second.
-    :param bytesize: (optional) Number of bits pr byte 7-8.
+    :param baudrate: (optional) Bits per second.
+    :param bytesize: (optional) Number of bits per byte 7-8.
     :param parity: (optional) 'E'ven, 'O'dd or 'N'one
     :param stopbits: (optional) Number of stop bits 0-2¡.
     :param handle_local_echo: (optional) Discard local echo from dongle.
     :param kwargs: (optional) Experimental parameters
 
-    The serial communication is RS-485 based, and usually used vith a usb RS485 dongle.
+    The serial communication is RS-485 based, and usually used with a usb RS485 dongle.
 
     Example::
 
@@ -304,6 +313,8 @@ class ModbusSerialClient(ModbusBaseClient):
             )
         if size is None:
             size = self._wait_for_data()
+        elif size > self._in_waiting():
+            self._wait_for_data()
         result = self.socket.read(size)
         return result
 

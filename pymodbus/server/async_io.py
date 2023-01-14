@@ -8,6 +8,7 @@ import traceback
 from binascii import b2a_hex
 from time import sleep
 
+from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -25,7 +26,6 @@ from pymodbus.utilities import hexlify_packets
 
 try:
     import serial
-    from serial_asyncio import create_serial_connection
 except ImportError:
     pass
 
@@ -49,7 +49,7 @@ def sslctx_provider(
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client"s certificate
+    :param reqclicert: Force the sever request client's certificate
     """
     if sslctx is None:
         # According to MODBUS/TCP Security Protocol Specification, it is
@@ -92,6 +92,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
+        self._sent = b""  # for handle_local_echo
 
     def _log_exception(self):
         """Show log exception."""
@@ -178,7 +179,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
-        the ModbusBaseRequestHandler class"s callback Future.
+        the ModbusBaseRequestHandler class's callback Future.
 
         This callback future gets data from either
         asyncio.DatagramProtocol.datagram_received or
@@ -450,6 +451,19 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 
     def data_received(self, data):
         """Receive data."""
+        if (
+            hasattr(self.server, "handle_local_echo")
+            and self.server.handle_local_echo is True
+            and self._sent
+        ):
+            if self._sent in data:
+                data, self._sent = data.replace(self._sent, b"", 1), b""
+            elif self._sent.startswith(data):
+                self._sent, data = self._sent.replace(data, b"", 1), b""
+            else:
+                self._sent = b""
+            if not data:
+                return
         self.receive_queue.put_nowait(data)
 
     async def _recv_(self):
@@ -458,6 +472,11 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     def _send_(self, data):
         if self.transport is not None:
             self.transport.write(data)
+            if (
+                hasattr(self.server, "handle_local_echo")
+                and self.server.handle_local_echo is True
+            ):
+                self._sent = data
 
 
 # --------------------------------------------------------------------------- #
@@ -621,7 +640,7 @@ class ModbusTlsServer(ModbusTcpServer):
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client"s certificate
+        :param reqclicert: Force the sever request client's certificate
         :param handler: A handler for each client session; default is
                         ModbusConnectedRequestHandler. The handler class
                         receives connection create/teardown events
@@ -670,7 +689,6 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        allow_reuse_address=False,
         allow_reuse_port=False,
         defer_start=False,  # pylint: disable=unused-argument
         backlog=20,  # pylint: disable=unused-argument
@@ -718,7 +736,6 @@ class ModbusUdpServer:
         self.serving = self.loop.create_future()
         self.factory_parms = {
             "local_addr": self.address,
-            "reuse_address": allow_reuse_address,
             "reuse_port": allow_reuse_port,
             "allow_broadcast": True,
         }
@@ -758,7 +775,7 @@ class ModbusUdpServer:
             self.protocol = None
 
 
-class ModbusSerialServer:
+class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we
@@ -784,6 +801,7 @@ class ModbusSerialServer:
         :param parity: Which kind of parity to use
         :param baudrate: The baud rate to use for the serial device
         :param timeout: The timeout to use for the serial device
+        :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
         :param broadcast_enable: True to treat unit_id 0 as broadcast address,
@@ -800,6 +818,9 @@ class ModbusSerialServer:
         self.timeout = kwargs.get("timeout", Defaults.Timeout)
         self.device = kwargs.get("port", 0)
         self.stopbits = kwargs.get("stopbits", Defaults.Stopbits)
+        self.handle_local_echo = kwargs.get(
+            "handle_local_echo", Defaults.HandleLocalEcho
+        )
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
@@ -1044,7 +1065,7 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client"s certificate
+    :param reqclicert: Force the sever request client's certificate
     :param allow_reuse_address: Whether the server will allow the reuse of an
                                 address.
     :param allow_reuse_port: Whether the server will allow the reuse of a port.

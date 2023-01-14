@@ -5,6 +5,7 @@ import sys
 
 from setuptools import Command
 
+
 # --------------------------------------------------------------------------- #
 # Extra Commands
 # --------------------------------------------------------------------------- #
@@ -107,20 +108,11 @@ class LintCommand(Command):
         except Exception:
             return False
 
-    def _try_pychecker(self):
-        try:
-            import pychecker
-            sys.argv = """pychecker pymodbus/*.py""".split()
-            main()
-            return True
-        except Exception:
-            return False
-
     def _try_pylint(self):
         try:
             import pylint
             sys.argv = """pylint pymodbus/*.py""".split()
-            main()
+            pylint.main()
             return True
         except Exception:
             return False

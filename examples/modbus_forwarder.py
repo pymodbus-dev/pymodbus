@@ -13,12 +13,14 @@ a) server receives a read/write request from external client:
 
 Both server and client are tcp based, but it can be easily modified to any server/client
 (see client_sync.py and server_sync.py for other communication types)
+
+**WARNING** THIS EXAMPLE IS KNOWN TO HAVE PROBLEMS, a wrong solution.
 """
 import asyncio
 import logging
 
 from examples.helper import get_commandline
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server import StartAsyncTcpServer
@@ -27,13 +29,23 @@ from pymodbus.server import StartAsyncTcpServer
 _logger = logging.getLogger()
 
 
-def setup_forwarder(args):
+async def setup_forwarder(args):
     """Do setup forwarder."""
-    args.client = ModbusTcpClient(
+
+    return args
+
+
+async def run_forwarder(args):
+    """Run forwarder setup."""
+    txt = f"### start forwarder, listen {args.port}, connect to {args.client_port}"
+    _logger.info(txt)
+
+    args.client = AsyncModbusTcpClient(
         host="localhost",
         port=args.client_port,
     )
-
+    await args.client.connect()
+    assert args.client.connected
     # If required to communicate with a specified client use unit=<unit_id>
     # in RemoteSlaveContext
     # For e.g to forward the requests to slave with unit address 1 use
@@ -45,16 +57,7 @@ def setup_forwarder(args):
     else:
         store = RemoteSlaveContext(args.client, unit=1)
     args.context = ModbusServerContext(slaves=store, single=True)
-    return args
 
-
-async def run_forwarder(args):
-    """Run forwarder setup."""
-    txt = f"### start forwarder, listen {args.port}, connect to {args.client_port}"
-    _logger.info(txt)
-
-    # start forwarding client and server
-    args.client.connect()
     await StartAsyncTcpServer(context=args.context, address=("localhost", args.port))
     # loop forever
 
@@ -73,7 +76,4 @@ if __name__ == "__main__":
             )
         ],
     )
-    cmd_args.port = 5021
-    cmd_args.client_port = 5020
-    run_args = setup_forwarder(cmd_args)
-    asyncio.run(run_forwarder(run_args))
+    asyncio.run(run_forwarder(cmd_args))

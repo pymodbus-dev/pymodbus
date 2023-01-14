@@ -113,6 +113,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         holding_registers: BaseModbusDataBlock = None,
         zero_mode: bool = False,
         randomize: int = 0,
+        change_rate: int = 0,
         **kwargs,
     ):
         """Reactive Modbus slave context supporting simulating data.
@@ -123,6 +124,8 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         :param holding_registers: Holding registers data block
         :param zero_mode: Enable zero mode for data blocks
         :param randomize: Randomize reads every <n> reads for DI and IR,
+                          default is disabled (0)
+        :param change_rate: Rate in % of registers to change for DI and IR,
                           default is disabled (0)
         :param min_binary_value: Minimum value for coils and discrete inputs
         :param max_binary_value: Max value for discrete inputs
@@ -142,6 +145,11 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         min_register_value = kwargs.get("min_register_value", 0)
         max_register_value = kwargs.get("max_register_value", 65535)
         self._randomize = randomize
+        self._change_rate = change_rate
+        if self._randomize > 0 and self._change_rate > 0:
+            sys.exit(
+                "'randomize' and 'change_rate' is not allowed to use at the same time"
+            )
         self._lock = threading.Lock()
         self._read_counter = {"d": 0, "i": 0}
         self._min_binary_value = min_binary_value
@@ -177,6 +185,21 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
                     #              "'%s'", _block_type, values, address)
                     self.store[_block_type].setValues(address, values)
                 self._read_counter[_block_type] += 1
+        elif self._change_rate > 0 and _block_type in {"d", "i"}:
+            regs_to_changes = round(count * self._change_rate / 100)
+            random_indices = random.sample(range(count), regs_to_changes)
+            for offset in random_indices:
+                with self._lock:
+                    # Update values
+                    if _block_type == "d":
+                        min_val = self._min_binary_value
+                        max_val = self._max_binary_value
+                    else:
+                        min_val = self._min_register_value
+                        max_val = self._max_register_value
+                    self.store[_block_type].setValues(
+                        address + offset, random.randint(min_val, max_val)
+                    )
         values = self.store[_block_type].getValues(address, count)
         return values
 
@@ -385,6 +408,7 @@ class ReactiveServer:
         unit: list[int] = [1],
         single: bool = False,
         randomize: int = 0,
+        change_rate: int = 0,
     ):  # pylint: disable=dangerous-default-value
         """Create Modbus context.
 
@@ -392,6 +416,7 @@ class ReactiveServer:
         :param unit: Unit id for the slave
         :param single: To run as a single slave
         :param randomize: Randomize every <n> reads for DI and IR.
+        :param change_rate: Rate in % of registers to change for DI and IR.
         :return: ModbusServerContext object
         """
         data_block = data_block_settings.pop("data_block", DEFAULT_DATA_BLOCK)
@@ -422,7 +447,11 @@ class ReactiveServer:
                     block[modbus_entity] = db(start_address, default_values)
 
             slave_context = ReactiveModbusSlaveContext(
-                **block, randomize=randomize, zero_mode=True, **data_block_settings
+                **block,
+                randomize=randomize,
+                change_rate=change_rate,
+                zero_mode=True,
+                **data_block_settings,
             )
             if not single:
                 slaves[i] = slave_context
@@ -471,6 +500,7 @@ class ReactiveServer:
             sys.exit(1)
         server = SERVER_MAPPER.get(server)
         randomize = kwargs.pop("randomize", 0)
+        change_rate = kwargs.pop("change_rate", 0)
         if not framer:
             framer = DEFAULT_FRAMER.get(server)
         if not context:
@@ -479,6 +509,7 @@ class ReactiveServer:
                 unit=unit,
                 single=single,
                 randomize=randomize,
+                change_rate=change_rate,
             )
         if not identity:
             identity = cls.create_identity()

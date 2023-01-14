@@ -21,9 +21,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     """**AsyncModbusTcpClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
     Example::
@@ -68,11 +68,14 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
 
-        # prevent reconnect.
-        self.params.host = None
-
-        if self.connected and self.protocol and self.protocol.transport:
-            self.protocol.transport.close()
+        # prevent reconnect:
+        self.delay_ms = 0
+        if self.connected:
+            if self.protocol.transport:
+                self.protocol.transport.close()
+            if self.protocol:
+                await self.protocol.close()
+            await asyncio.sleep(0.1)
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
@@ -86,6 +89,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             strict=self.params.strict,
             broadcast_enable=self.params.broadcast_enable,
             reconnect_delay=self.params.reconnect_delay,
+            reconnect_delay_max=self.params.reconnect_delay_max,
             **self.params.kwargs,
         )
         protocol.factory = self
@@ -104,7 +108,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
-            asyncio.ensure_future(self._reconnect())
+            if self.delay_ms > 0:
+                asyncio.ensure_future(self._reconnect())
         else:
             txt = f"Connected to {self.params.host}:{self.params.port}."
             _logger.info(txt)
@@ -129,8 +134,10 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             )
 
         self.connected = False
-        self.protocol = None
-        if self.params.host:
+        if self.protocol is not None:
+            del self.protocol
+            self.protocol = None
+        if self.delay_ms > 0:
             asyncio.ensure_future(self._reconnect())
 
     async def _reconnect(self):
@@ -138,7 +145,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         txt = f"Waiting {self.delay_ms} ms before next connection attempt."
         _logger.debug(txt)
         await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = 2 * self.delay_ms
+        self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
 
         return await self._connect()
 
@@ -147,9 +154,9 @@ class ModbusTcpClient(ModbusBaseClient):
     """**ModbusTcpClient**.
 
     :param host: Host IP address or host name
-    :param port: (optional) Port used for communication.
-    :param framer: (optional) Framer class.
-    :param source_address: (optional) source address of client,
+    :param port: (optional) Port used for communication
+    :param framer: (optional) Framer class
+    :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
     Example::
@@ -251,7 +258,7 @@ class ModbusTcpClient(ModbusBaseClient):
 
         timeout = self.params.timeout
 
-        # If size isn"t specified read up to 4096 bytes at a time.
+        # If size isn't specified read up to 4096 bytes at a time.
         if size is None:
             recv_size = 4096
         else:
@@ -275,12 +282,12 @@ class ModbusTcpClient(ModbusBaseClient):
                 data_length += len(recv_data)
             time_ = time.time()
 
-            # If size isn"t specified continue to read until timeout expires.
+            # If size isn't specified continue to read until timeout expires.
             if size:
                 recv_size = size - data_length
 
             # Timeout is reduced also if some data has been received in order
-            # to avoid infinite loops when there isn"t an expected response
+            # to avoid infinite loops when there isn't an expected response
             # size and the slave sends noisy data continuously.
             if time_ > end:
                 break

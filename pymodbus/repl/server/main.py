@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
 from enum import Enum
 from pathlib import Path
 from typing import List
@@ -25,6 +26,7 @@ CANCELLED_ERROR = asyncio.exceptions.CancelledError
 _logger = logging.getLogger(__name__)
 
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
+
 
 # TBD class ModbusServerConfig:
 
@@ -69,6 +71,23 @@ def servers(incomplete: str) -> List[str]:
     """Return an autocompleted list of supported clouds."""
     _servers = ["tcp", "serial", "tls", "udp"]
     return _completer(incomplete, _servers)
+
+
+def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
+    """Process extra args passed to server."""
+    options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
+    extra_args = dict(list(zip(options_stripped, extra_args[1::2])))
+    for option, value in extra_args.items():
+        if option in modbus_config:
+            try:
+                modbus_config[option] = type(modbus_config[option])(value)
+            except ValueError as err:
+                msg = (
+                    f"Error parsing extra arg {option}' " f"with value '{value}'. {err}"
+                )
+                _logger.error(msg)
+                sys.exit(1)
+    return modbus_config
 
 
 app = typer.Typer(
@@ -147,6 +166,13 @@ def run(
         help="Randomize every `r` reads. 0=never, 1=always,2=every-second-read"
         ", and so on. Applicable IR and DI.",
     ),
+    change_rate: int = typer.Option(
+        0,
+        "--change-rate",
+        "-c",
+        help="Rate in % registers to change. 0=none, 100=all, 12=12% of registers"
+        ", and so on. Applicable IR and DI.",
+    ),
 ):
     """Run Reactive Modbus server.
 
@@ -163,8 +189,10 @@ def run(
     else:
         modbus_config = DEFAULT_CONFIG
 
+    extra_args = ctx.args
     data_block_settings = modbus_config.pop("data_block_settings", {})
     modbus_config = modbus_config.get(modbus_server, {})
+    modbus_config = process_extra_args(extra_args, modbus_config)
     if modbus_server != "serial":
         modbus_port = int(modbus_port)
         handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
@@ -174,6 +202,7 @@ def run(
 
     modbus_config["handler"] = handler
     modbus_config["randomize"] = randomize
+    modbus_config["change_rate"] = change_rate
     app = ReactiveServer.factory(
         modbus_server,
         framer,

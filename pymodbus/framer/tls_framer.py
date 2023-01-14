@@ -57,7 +57,7 @@ class ModbusTlsFramer(ModbusFramer):
             # we have at least a complete message, continue
             if len(self._buffer) - self._hsize >= 1:
                 return True
-        # we don"t have enough of a message yet, wait
+        # we don't have enough of a message yet, wait
         return False
 
     def advanceFrame(self):
@@ -171,7 +171,7 @@ class ModbusTlsFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn"t have the resolution to
+        end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
         self._buffer = b""

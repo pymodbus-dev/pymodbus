@@ -83,10 +83,12 @@ class mockSocket:  # pylint: disable=invalid-name
     def __init__(self):
         """Initialize."""
         self.data = None
+        self.in_waiting = 0
 
     def mock_store(self, msg):
         """Store message."""
         self.data = msg
+        self.in_waiting = len(self.data)
 
     def mock_retrieve(self, size):
         """Get message."""
@@ -97,6 +99,7 @@ class mockSocket:  # pylint: disable=invalid-name
         else:
             retval = self.data[0:size]
         self.data = None
+        self.in_waiting = 0
         return retval
 
     def close(self):

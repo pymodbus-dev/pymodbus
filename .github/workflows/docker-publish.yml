@@ -10,10 +10,8 @@ on:
     - cron: '36 11 * * *'
   push:
     branches: [ "dev" ]
-    # Publish semver tags as releases.
+    # Publish version tags as releases.
     tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "dev" ]
 
 env:
   # Use docker.io for Docker Hub if empty

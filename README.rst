@@ -2,7 +2,7 @@
 PyModbus - A Python Modbus Stack
 ================================
 We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
-The move from riptideio (a company) was done to allow a 100% openess in the spirit of FOSS.
+The move from riptideio (a company) was done to allow a 100% openness in the spirit of FOSS.
 
 .. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml

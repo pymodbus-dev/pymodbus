@@ -121,6 +121,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
+        return self.connected
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""

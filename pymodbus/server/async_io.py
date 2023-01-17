@@ -483,6 +483,107 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 # --------------------------------------------------------------------------- #
 
 
+class ModbusUnixServer:
+    """A modbus threaded Unix socket server.
+
+    We inherit and overload the socket server so that we
+    can control the client threads as well as have a single
+    server context instance.
+    """
+
+    def __init__(
+        self,
+        context,
+        path,
+        framer=None,
+        identity=None,
+        handler=None,
+        **kwargs,
+    ):
+        """Initialize the socket server.
+
+        If the identify structure is not passed in, the ModbusControlBlock
+        uses its own default structure.
+
+        :param context: The ModbusServerContext datastore
+        :param path: unix socket path
+        :param framer: The framer strategy to use
+        :param identity: An optional identify structure
+        :param handler: A handler for each client session; default is
+                        ModbusConnectedRequestHandler. The handler class
+                        receives connection create/teardown events
+        :param allow_reuse_address: Whether the server will allow the
+                        reuse of an address.
+        :param ignore_missing_slaves: True to not send errors on a request
+                        to a missing slave
+        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
+                        False to treat 0 as any other unit_id
+        :param response_manipulator: Callback method for manipulating the
+                                        response
+        """
+        self.active_connections = {}
+        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
+        self.decoder = ServerDecoder()
+        self.framer = framer or ModbusSocketFramer
+        self.context = context or ModbusServerContext()
+        self.control = ModbusControlBlock()
+        self.path = path
+        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler.server = self
+        self.ignore_missing_slaves = kwargs.get(
+            "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
+        )
+        self.broadcast_enable = kwargs.get("broadcast_enable", Defaults.BroadcastEnable)
+        self.response_manipulator = kwargs.get("response_manipulator", None)
+        if isinstance(identity, ModbusDeviceIdentification):
+            self.control.Identity.update(identity)
+
+        # asyncio future that will be done once server has started
+        self.serving = self.loop.create_future()
+        # constructors cannot be declared async, so we have to
+        # defer the initialization of the server
+        self.server = None
+        self.factory_parms = {}
+
+    async def serve_forever(self):
+        """Start endless loop."""
+        if self.server is None:
+            self.server = await self.loop.create_unix_server(
+                lambda: self.handler(self),
+                *self.path,
+                **self.factory_parms,
+            )
+            self.serving.set_result(True)
+            try:
+                await self.server.serve_forever()
+            except asyncio.exceptions.CancelledError:
+                raise
+            except Exception as exc:  # pylint: disable=broad-except
+                txt = f"Server unexpected exception {exc}"
+                _logger.error(txt)
+        else:
+            raise RuntimeError(
+                "Can't call serve_forever on an already running server object"
+            )
+        _logger.info("Server graceful shutdown.")
+
+    async def shutdown(self):
+        """Shutdown server."""
+        await self.server_close()
+
+    async def server_close(self):
+        """Close server."""
+        for k_item, v_item in self.active_connections.items():
+            txt = f"aborting active session {k_item}"
+            _logger.warning(txt)
+            v_item.handler_task.cancel()
+        self.active_connections = {}
+        if self.server is not None:
+            self.server.close()
+            await self.server.wait_closed()
+            self.server = None
+
+
 class ModbusTcpServer:
     """A modbus threaded tcp socket server.
 
@@ -996,6 +1097,36 @@ class _serverList:
         # except asyncio.exceptions.CancelledError:
         #    pass
         # self._remove()
+
+
+async def StartAsyncUnixServer(  # pylint: disable=invalid-name,dangerous-default-value
+    context=None,
+    identity=None,
+    path=None,
+    custom_functions=[],
+    defer_start=False,
+    **kwargs,
+):
+    """Start and run a tcp modbus server.
+
+    :param context: The ModbusServerContext datastore
+    :param identity: An optional identify structure
+    :param path: An optional path to bind to.
+    :param custom_functions: An optional list of custom function classes
+        supported by server instance.
+    :param defer_start: if set, the server object will be returned ready to start.
+            Otherwise, the server will be immediately spun
+            up without the ability to shut it off
+    :param kwargs: The rest
+    :return: an initialized but inactive server object coroutine
+    """
+    server = ModbusUnixServer(
+        context, path, kwargs.pop("framer", ModbusSocketFramer), identity, **kwargs
+    )
+    if not defer_start:
+        job = _serverList(server, custom_functions, not defer_start)
+        await job.run()
+    return server
 
 
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value

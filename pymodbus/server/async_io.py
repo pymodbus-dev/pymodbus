@@ -548,13 +548,12 @@ class ModbusUnixServer:
     async def serve_forever(self):
         """Start endless loop."""
         if self.server is None:
-            self.server = await self.loop.create_unix_server(
-                lambda: self.handler(self),
-                *self.path,
-                **self.factory_parms,
-            )
-            self.serving.set_result(True)
             try:
+                self.server = await self.loop.create_unix_server(
+                    lambda: self.handler(self),
+                    self.path,
+                )
+                self.serving.set_result(True)
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
                 raise

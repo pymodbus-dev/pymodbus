@@ -41,7 +41,6 @@ async def _helper_server():
     await ServerAsyncStop()
 
 
-
 async def test_unix_server(_mock_run_server):
     """Run async server with unit domain socket."""
     await asyncio.sleep(0.1)

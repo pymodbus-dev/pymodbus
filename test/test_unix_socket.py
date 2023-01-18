@@ -2,6 +2,7 @@
 import asyncio
 import logging
 
+import pytest
 import pytest_asyncio
 
 from pymodbus import pymodbus_apply_logging_config
@@ -41,11 +42,13 @@ async def _helper_server():
     await ServerAsyncStop()
 
 
+@pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
 async def test_unix_server(_mock_run_server):
     """Run async server with unit domain socket."""
     await asyncio.sleep(0.1)
 
 
+@pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
 async def test_unix_async_client(_mock_run_server):
     """Run async client with unit domain socket."""
     await asyncio.sleep(0.1)

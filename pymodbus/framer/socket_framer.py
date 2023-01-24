@@ -167,8 +167,9 @@ class ModbusSocketFramer(ModbusFramer):
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         single = kwargs.get("single", False)
-        txt = f"Processing: {hexlify_packets(data)}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"Processing: {hexlify_packets(data)}"
+            _logger.debug(txt)
         self.addToFrame(data)
         while True:
             if self.isFrameReady():

@@ -3,8 +3,8 @@ Please use the Pymodbus gitter channel at https://gitter.im/pymodbus_dev/Lobby o
 support questions.
 
 Before opening a new issue, make sure you do the following:
-    * check that your issue isn't already filed: https://github.com/riptideio/pymodbus/issues
-    * check the discussions forum https://github.com/riptideio/pymodbus/discussions
+    * check that your issue isn't already filed: https://github.com/pymodbus-dev/pymodbus/issues
+    * check the discussions forum https://github.com/pymodbus-dev/pymodbus/discussions
     * prepare a short, runnable example that reproduce the issue with the latest development version of Pymodbus
 -->
 

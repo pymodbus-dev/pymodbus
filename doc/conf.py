@@ -38,7 +38,7 @@ sys.path.append(example_contrib)
 # sys.path.extend([examples, example_common, example_contrib, example_gui])
 # sys.path.insert(0, os.path.abspath("../"))
 
-github_doc_root = "https://github.com/riptideio/pymodbus/tree/master/doc/"  # pylint: disable=invalid-name
+github_doc_root = "https://github.com/pymodbus-dev/pymodbus/tree/master/doc/"  # pylint: disable=invalid-name
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

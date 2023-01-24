@@ -86,7 +86,7 @@ async def run_dbstore_update_server():
         info_name={
             "VendorName": "pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
             "MajorMinorRevision": version.short(),

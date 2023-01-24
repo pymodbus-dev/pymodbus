@@ -115,7 +115,7 @@ populated slave contexts that can be run behind a modbus server::
         info_name={
             "VendorName": "Pymodbus",
             "ProductCode": "PM",
-            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),

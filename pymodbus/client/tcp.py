@@ -210,7 +210,7 @@ class ModbusTcpClient(ModbusBaseClient):
         if self.socket:
             return True
         try:
-            if self.params.host.startswith("unit:"):
+            if self.params.host.startswith("unix:"):
                 self.socket = socket.socket(socket.AF_UNIX)
                 self.socket.settimeout(self.params.timeout)
                 self.socket.connect(self.params.host[5:])

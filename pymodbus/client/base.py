@@ -389,15 +389,17 @@ class ModbusClientProtocol(
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        txt = f"send: {hexlify_packets(packet)}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"send: {hexlify_packets(packet)}"
+            _logger.debug(txt)
         self.write_transport(packet)
         return self._build_response(request.transaction_id)
 
     def _data_received(self, data):
         """Get response, check for valid message, decode result."""
-        txt = f"recv: {hexlify_packets(data)}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"recv: {hexlify_packets(data)}"
+            _logger.debug(txt)
         self.framer.processIncomingPacket(data, self._handle_response, unit=0)
 
     def _handle_response(self, reply, **kwargs):  # pylint: disable=unused-argument

@@ -88,7 +88,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     def _create_protocol(self):
         """Create protocol."""
-        protocol = ModbusClientProtocol(framer=self.params.framer, xframer=self.framer)
+        protocol = ModbusClientProtocol(
+            framer=self.params.framer, xframer=self.framer, timeout=self.params.timeout
+        )
         protocol.factory = self
         return protocol
 
@@ -121,6 +123,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
+        return self.connected
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""

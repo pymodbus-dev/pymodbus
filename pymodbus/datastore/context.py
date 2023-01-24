@@ -62,8 +62,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        txt = f"validate: fc-[{fc_as_hex}] address-{address}: count-{count}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"validate: fc-[{fc_as_hex}] address-{address}: count-{count}"
+            _logger.debug(txt)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
     def getValues(self, fc_as_hex, address, count=1):
@@ -76,8 +77,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
+            _logger.debug(txt)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
     def setValues(self, fc_as_hex, address, values):
@@ -89,8 +91,9 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        txt = f"setValues[{fc_as_hex}] address-{address}: count-{len(values)}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"setValues[{fc_as_hex}] address-{address}: count-{len(values)}"
+            _logger.debug(txt)
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 
     def register(self, function_code, fc_as_hex, datablock=None):

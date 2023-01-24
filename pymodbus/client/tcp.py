@@ -26,6 +26,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
+    using unix domain socket can be achieved by setting host="unix:<path>"
+
     Example::
 
         from pymodbus.client import AsyncModbusTcpClient
@@ -99,12 +101,22 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Connect."""
         _logger.debug("Connecting.")
         try:
-            transport, protocol = await asyncio.wait_for(
-                self.loop.create_connection(
-                    self._create_protocol, host=self.params.host, port=self.params.port
-                ),
-                timeout=self.params.timeout,
-            )
+            if self.params.host.startswith("unix:"):
+                transport, protocol = await asyncio.wait_for(
+                    self.loop.create_unix_connection(
+                        self._create_protocol, path=self.params.host[5:]
+                    ),
+                    timeout=self.params.timeout,
+                )
+            else:
+                transport, protocol = await asyncio.wait_for(
+                    self.loop.create_connection(
+                        self._create_protocol,
+                        host=self.params.host,
+                        port=self.params.port,
+                    ),
+                    timeout=self.params.timeout,
+                )
         except Exception as exc:  # pylint: disable=broad-except
             txt = f"Failed to connect: {exc}"
             _logger.warning(txt)
@@ -159,6 +171,8 @@ class ModbusTcpClient(ModbusBaseClient):
     :param source_address: (optional) source address of client
     :param kwargs: (optional) Experimental parameters
 
+    using unix domain socket can be achieved by setting host="unix:<path>"
+
     Example::
 
         from pymodbus.client import ModbusTcpClient
@@ -196,11 +210,16 @@ class ModbusTcpClient(ModbusBaseClient):
         if self.socket:
             return True
         try:
-            self.socket = socket.create_connection(
-                (self.params.host, self.params.port),
-                timeout=self.params.timeout,
-                source_address=self.params.source_address,
-            )
+            if self.params.host.startswith("unix:"):
+                self.socket = socket.socket(socket.AF_UNIX)
+                self.socket.settimeout(self.params.timeout)
+                self.socket.connect(self.params.host[5:])
+            else:
+                self.socket = socket.create_connection(
+                    (self.params.host, self.params.port),
+                    timeout=self.params.timeout,
+                    source_address=self.params.source_address,
+                )
             txt = f"Connection to Modbus server established. Socket {self.socket.getsockname()}"
             _logger.debug(txt)
         except socket.error as msg:

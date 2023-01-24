@@ -24,7 +24,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.1.0 <https://github.com/riptideio/pymodbus/releases/tag/v3.1.0>`_ is the current release (Supports Python >=3.8).
+Version `3.1.1 <https://github.com/riptideio/pymodbus/releases/tag/v3.1.1>`_ is the current release (Supports Python >=3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
@@ -104,6 +104,7 @@ For those of you that just want to get started fast, here you go::
     from pymodbus.client import ModbusTcpClient
 
     client = ModbusTcpClient('127.0.0.1')
+    client.connect()
     client.write_coil(1, True)
     result = client.read_coils(1,1)
     print(result.bits[0])

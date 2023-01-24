@@ -1,3 +1,25 @@
+version 3.1.1
+----------------------------------------------------------
+* add missing server.start() (#1282)
+* small performance improvement on debug log (#1279)
+* Fix Unix sockets parsing (#1281)
+* client: Allow unix domain socket. (#1274)
+* transfer timeout to protocol object. (#1275)
+* Add ModbusUnixServer / StartAsyncUnixServer. (#1273)
+* Added return in AsyncModbusSerialClient.connect (#1271)
+* add connect() to the very first example (#1270)
+* Solve docker problem. (#1268)
+* Test stop of server task. (#1256)
+
+Thanks to:
+
+  Alex
+  Alexandre CUER
+  Dries
+  jan iversen
+  peufeu2
+
+
 version 3.1.0
 ----------------------------------------------------------
 * Add xdist pr default. (#1253)

@@ -2,13 +2,10 @@
 PyModbus - A Python Modbus Stack
 ================================
 We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
-The move from riptideio (a company) was done to allow a 100% openness in the spirit of FOSS.
+The move from a company organization to pymodbus-dev was done to allow a 100% openness in the spirit of FOSS.
 
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
-   :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pymodbus_dev/Lobby
-.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
+   :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://pepy.tech/badge/pymodbus

@@ -1,6 +1,4 @@
 <!--
-Please use the Pymodbus gitter channel at https://gitter.im/pymodbus_dev/Lobby or Stack Overflow(tag [pymodbus](https://stackoverflow.com/questions/tagged/pymodbus) for
-support questions.
 
 Before opening a new issue, make sure you do the following:
     * check that your issue isn't already filed: https://github.com/pymodbus-dev/pymodbus/issues

@@ -13,10 +13,10 @@ version 3.1.1
 
 Thanks to:
 
-  Alex
-  Alexandre CUER
-  Dries
-  jan iversen
+  Alex,
+  Alexandre CUER,
+  Dries,
+  jan iversen,
   peufeu2
 
 
@@ -46,13 +46,13 @@ version 3.1.0
 
 Thanks to:
 
-  Alex
-  banana-sun
-  Chris Hung
-  dhoomakethu
-  jan iversen
-  Matthias Straka
-  Pavel Kostromitinov
+  Alex,
+  banana-sun,
+  Chris Hung,
+  dhoomakethu,
+  jan iversen,
+  Matthias Straka,
+  Pavel Kostromitinov,
 
 version 3.0.2
 ----------------------------------------------------------
@@ -86,15 +86,15 @@ version 3.0.2
 
 Thanks to:
 
-  Alex
-  Alexandre CUER
-  Blaise Thompson
-  dhoomakethu
-  Gao Fang
-  jan Iversen
-  Joe Burmeister
-  Sebastian Machuca
-  Thijs W
+  Alex,
+  Alexandre CUER,
+  Blaise Thompson,
+  dhoomakethu,
+  Gao Fang,
+  jan Iversen,
+  Joe Burmeister,
+  Sebastian Machuca,
+  Thijs W,
   WouterTuinstra
 
 version 3.0.1

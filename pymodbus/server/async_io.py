@@ -1263,6 +1263,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     )
     if not defer_start:
         job = _serverList(server, custom_functions, not defer_start)
+        await server.start()
         await job.run()
     return server
 

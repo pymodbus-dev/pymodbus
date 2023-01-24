@@ -123,7 +123,7 @@ def run_async_server():
             "ModelName": "Pymodbus Server",
             "MajorMinorRevision": version.short(),
             "ProductCode": "PM",
-            "VendorUrl": "https://github.com/riptideio/pymodbus/",
+            "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
         }
     )

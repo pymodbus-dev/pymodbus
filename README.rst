@@ -2,12 +2,10 @@
 PyModbus - A Python Modbus Stack
 ================================
 We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
-The move from riptideio (a company) was done to allow a 100% openness in the spirit of FOSS.
+The move from a company organization to pymodbus-dev was done to allow a 100% openness in the spirit of FOSS.
 
-.. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
-   :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pymodbus_dev/Lobby
+.. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
+   :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
 .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
@@ -22,12 +20,12 @@ The move from riptideio (a company) was done to allow a 100% openness in the spi
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
+Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.1.1 <https://github.com/riptideio/pymodbus/releases/tag/v3.1.1>`_ is the current release (Supports Python >=3.8).
+Version `3.1.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.1>`_ is the current release (Supports Python >=3.8).
 
 .. important::
-   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
+   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
 
 
 ------------------------------------------------------------
@@ -91,7 +89,7 @@ base operating system will allow (*allow* in this case means how many Virtual IP
 
 For more information please browse the project documentation:
 
-https://riptideio.github.io/pymodbus/
+https://pymodbus-dev.github.io/pymodbus/
 or
 https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
@@ -124,10 +122,10 @@ Examples Directory structure
    ├── v2.5.3    -> Examples not updated to version 3.0.0.
    ├── contrib   -> Examples contributed by contributors.
 
-Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
+Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/pymodbus-dev/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
-If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
 
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
@@ -143,7 +141,7 @@ Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
-For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/pymodbus-dev/pymodbus/tree/dev/pymodbus/repl>`_
 
 .. image:: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
@@ -154,7 +152,7 @@ Pymodbus REPL Server
 
 Pymodbus also comes with a REPL server to quickly run an asynchronous server with additional capabilities out of the box like simulating errors, delay, mangled messages etc.
 
-For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/pymodbus-dev/pymodbus/tree/dev/pymodbus/repl>`_
 
 .. image:: https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg
    :target: https://youtu.be/OutaVz0JkWg
@@ -194,7 +192,7 @@ Or to install a specific release:
 
 Otherwise you can pull the trunk source and install from there::
 
-    git clone git://github.com/riptideio/pymodbus.git
+    git clone git://github.com/pymodbus-dev/pymodbus.git
     cd pymodbus
     pip install -r requirements.txt
 
@@ -370,7 +368,7 @@ Contributing
 Just fork the repo and raise your PR against `dev` branch.
 
 Here are some of the items waiting to be done:
-   https://github.com/riptideio/pymodbus/blob/dev/doc/TODO
+   https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/TODO
 
 ------------------------------------------------------------
 License Information

@@ -34,7 +34,7 @@ Commands:
 
 # Or using a Docker run command instead
 
-✗ docker run -it riptideio/pymodbus pymodbus.console --help
+✗ docker run -it pymodbus-dev/pymodbus pymodbus.console --help
 ```
 TCP Options
 

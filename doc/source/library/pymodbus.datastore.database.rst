@@ -6,8 +6,6 @@ pymodbus\.datastore\.database package
     :undoc-members:
     :show-inheritance:
 
-Submodules
-----------
 
 pymodbus\.datastore\.database\.redis\_datastore module
 ------------------------------------------------------
@@ -24,5 +22,3 @@ pymodbus\.datastore\.database\.sql\_datastore module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

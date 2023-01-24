@@ -1,14 +1,11 @@
-pymodbus\.repl.\.server package
-==================================
+pymodbus.repl.server package
+===============================
 
 .. automodule:: pymodbus.repl.server
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Submodules
--------------
 
 pymodbus\.repl\.server\.cli module
 -------------------------------------

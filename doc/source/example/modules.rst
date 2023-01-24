@@ -28,8 +28,8 @@ The examples are divived in 3 (4) parts:
       commit using CI.
 
 
-Examples.
----------
+Examples version 3.x
+--------------------
 
 .. toctree::
    :maxdepth: 4

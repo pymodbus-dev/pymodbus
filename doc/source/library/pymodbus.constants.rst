@@ -7,8 +7,3 @@ pymodbus\.constants package
     :show-inheritance:
     :noindex:
 
-Submodules
-----------
-
-
-

@@ -6,7 +6,7 @@ The move from a company organization to pymodbus-dev was done to allow a 100% op
 
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
-.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
+ .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://pepy.tech/badge/pymodbus
@@ -89,8 +89,6 @@ base operating system will allow (*allow* in this case means how many Virtual IP
 
 For more information please browse the project documentation:
 
-https://pymodbus-dev.github.io/pymodbus/
-or
 https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 ------------------------------------------------------------

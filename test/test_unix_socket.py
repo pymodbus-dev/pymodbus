@@ -53,7 +53,7 @@ async def test_unix_async_client(_mock_run_server):
     """Run async client with unit domain socket."""
     await asyncio.sleep(1)
     client = AsyncModbusTcpClient(
-        HOST,
+        HOST + "_client",
         framer=ModbusSocketFramer,
     )
     await client.connect()

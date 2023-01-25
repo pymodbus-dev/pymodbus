@@ -51,7 +51,7 @@ async def test_unix_server(_mock_run_server):
 @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
 async def test_unix_async_client(_mock_run_server):
     """Run async client with unit domain socket."""
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(1)
     client = AsyncModbusTcpClient(
         HOST,
         framer=ModbusSocketFramer,

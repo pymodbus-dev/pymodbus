@@ -11,12 +11,29 @@
   <!--REFRESH-->
 </head>
 <body>
-<center><h1>Log clear</h1></center>
-
-<a href="formdata/log/get_raw.html">Get raw</a>
-<a href="formdata/log/monitor.html">Monitor</a>
-<a href="formdata/log/save.html">Save</a>
-<a href="formdata/log/clear.html">Clear</a>
-
+  <center><h1>Log</h1></center>
+  <table width="80%">
+    <thead>
+      <tr>
+        <th width="10%">Log entries</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!--LOG_ROWS-->
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="7"><!--LOG_FOOT--></th>
+      </tr>
+    </tfoot>
+  </table>
+  <fieldset class="tools_fieldset" width="30%">
+    <legend>Log</legend>
+    <form action="/api/log" method="get">
+      <input type="submit" value="Download" name="submit" />
+      <input type="submit" value="Monitor" name="submit" />
+      <input type="submit" value="Clear" name="submit" />
+    </form>
+  </fieldset>
 </body>
 </html>

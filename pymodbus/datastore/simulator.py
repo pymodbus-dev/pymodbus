@@ -3,7 +3,6 @@ import dataclasses
 import logging
 import random
 import struct
-import sys
 from datetime import datetime
 from typing import Callable, Dict
 
@@ -11,26 +10,31 @@ from typing import Callable, Dict
 _logger = logging.getLogger()
 
 
-CELL_TYPE_NONE = " "
-CELL_TYPE_BIT = "B"
-CELL_TYPE_UINT16 = "i"
-CELL_TYPE_UINT32 = "I"
-CELL_TYPE_FLOAT32 = "F"
-CELL_TYPE_STRING = "S"
-CELL_TYPE_NEXT = "n"
-CELL_TYPE_INVALID = "X"
-
 WORD_SIZE = 16
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
+class CellType:
+    """Define single cell types"""
+
+    INVALID: int = 0
+    BITS: int = 1
+    UINT16: int = 2
+    UINT32: int = 3
+    FLOAT32: int = 4
+    STRING: int = 5
+    NEXT: int = 6
+
+
+@dataclasses.dataclass(repr=False, eq=False)
 class Cell:
     """Handle a single cell."""
 
-    type: int = CELL_TYPE_NONE
+    type: int = CellType.INVALID
     access: bool = False
     value: int = 0
     action: int = 0
+    action_kwargs: int = None
     count_read: int = 0
     count_write: int = 0
 
@@ -52,10 +56,11 @@ class Label:  # pylint: disable=too-many-instance-attributes
     increment: str = "increment"
     invalid: str = "invalid"
     ir_size: str = "ir size"
+    kwargs: str = "kwargs"
     method: str = "method"
     next: str = "next"
+    none: str = "none"
     random: str = "random"
-    register: str = "register"
     repeat: str = "repeat"
     reset: str = "reset"
     setup: str = "setup"
@@ -65,7 +70,6 @@ class Label:  # pylint: disable=too-many-instance-attributes
     type: str = "type"
     type_bits = "bits"
     type_exception: str = "type exception"
-    type_none: str = "none"
     type_uint16: str = "uint16"
     type_uint32: str = "uint32"
     type_float32: str = "float32"
@@ -89,262 +93,212 @@ class Setup:
     :meta private:
     """
 
-    def __init__(self):
+    def __init__(self, runtime):
         """Initialize."""
+        self.runtime = runtime
+        self.config = None
         self.config_types = {
             Label.type_bits: {
-                Label.type: CELL_TYPE_BIT,
+                Label.type: CellType.BITS,
                 Label.next: None,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_bits,
             },
             Label.type_uint16: {
-                Label.type: CELL_TYPE_UINT16,
+                Label.type: CellType.UINT16,
                 Label.next: None,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_uint16,
             },
             Label.type_uint32: {
-                Label.type: CELL_TYPE_UINT32,
-                Label.next: CELL_TYPE_NEXT,
+                Label.type: CellType.UINT32,
+                Label.next: CellType.NEXT,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_uint32,
             },
             Label.type_float32: {
-                Label.type: CELL_TYPE_FLOAT32,
-                Label.next: CELL_TYPE_NEXT,
+                Label.type: CellType.FLOAT32,
+                Label.next: CellType.NEXT,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_float32,
             },
             Label.type_string: {
-                Label.type: CELL_TYPE_STRING,
-                Label.next: CELL_TYPE_NEXT,
+                Label.type: CellType.STRING,
+                Label.next: CellType.NEXT,
                 Label.value: 0,
                 Label.action: None,
                 Label.method: self.handle_type_string,
             },
         }
-        self.endianness = sys.byteorder
 
-    def handle_type_bits(self, registers, reg_count, start, stop, value, action):
-        """Handle type bits.
+    def handle_type_bits(self, start, stop, value, action, action_kwargs):
+        """Handle type bits."""
+        for reg in self.runtime.registers[start:stop]:
+            if reg.type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{Label.type_bits}" {reg} used')
+            reg.value = value
+            reg.type = CellType.BITS
+            reg.action = action
+            reg.action_kwargs = action_kwargs
 
-        :meta private:
-        """
-        for i in range(start, stop):
-            if i >= reg_count:
-                raise RuntimeError(
-                    f'Error section "{Label.type_bits}" addr {start},  {stop} out of range'
-                )
-            if registers[i].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_bits}" register {i} already defined'
-                raise RuntimeError(txt)
-            registers[i].value = value
-            registers[i].type = CELL_TYPE_BIT
-            registers[i].action = action
+    def handle_type_uint16(self, start, stop, value, action, action_kwargs):
+        """Handle type uint16."""
+        for reg in self.runtime.registers[start:stop]:
+            if reg.type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{Label.type_uint16}" {reg} used')
+            reg.value = value
+            reg.type = CellType.UINT16
+            reg.action = action
+            reg.action_kwargs = action_kwargs
 
-    def handle_type_uint16(self, registers, reg_count, start, stop, value, action):
-        """Handle type uint16.
-
-        :meta private:
-        """
-        for i in range(start, stop):
-            if i >= reg_count:
-                raise RuntimeError(
-                    f'Error section "{Label.type_uint16}" addr {start},  {stop} out of range'
-                )
-            if registers[i].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_uint16}" register {i} already defined'
-                raise RuntimeError(txt)
-            registers[i].value = value
-            registers[i].type = CELL_TYPE_UINT16
-            registers[i].action = action
-
-    def handle_type_uint32(self, registers, reg_count, start, stop, value, action):
-        """Handle type uint32.
-
-        :meta private:
-        """
-        regs = ModbusSimulatorContext.build_registers_from_value(value, True)
+    def handle_type_uint32(self, start, stop, value, action, action_kwargs):
+        """Handle type uint32."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, True)
         for i in range(start, stop, 2):
-            if i + 1 >= reg_count:
-                raise RuntimeError(
-                    f'Error section "{Label.type_uint32}" addr {start},  {stop} out of range'
-                )
-            if registers[i].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_uint32}" register {i} already defined'
-                raise RuntimeError(txt)
-            registers[i].value = regs[0]
-            registers[i].type = CELL_TYPE_UINT32
-            registers[i].action = action
-            j = i + 1
-            if registers[j].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_uint32}" register {j} already defined'
-                raise RuntimeError(txt)
-            registers[j].value = regs[1]
-            registers[j].type = CELL_TYPE_NEXT
+            regs = self.runtime.registers[i : i + 2]
+            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{Label.type_uint32}" {i},{i + 1} used')
+            regs[0].value = regs_value[0]
+            regs[0].type = CellType.UINT32
+            regs[0].action = action
+            regs[0].action_kwargs = action_kwargs
+            regs[1].value = regs_value[1]
+            regs[1].type = CellType.NEXT
 
-    def handle_type_float32(self, registers, reg_count, start, stop, value, action):
-        """Handle type uint32.
-
-        :meta private:
-        """
-        regs = ModbusSimulatorContext.build_registers_from_value(value, False)
+    def handle_type_float32(self, start, stop, value, action, action_kwargs):
+        """Handle type uint32."""
+        regs_value = ModbusSimulatorContext.build_registers_from_value(value, False)
         for i in range(start, stop, 2):
-            if i + 1 >= reg_count:
-                raise RuntimeError(
-                    f'Error section "{Label.type_float32}" addr {start},  {stop} out of range'
-                )
-            if registers[i].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_float32}" register {i} already defined'
-                raise RuntimeError(txt)
-            registers[i].value = regs[0]
-            registers[i].type = CELL_TYPE_FLOAT32
-            registers[i].action = action
-            j = i + 1
-            if registers[j].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_float32}" register {j} already defined'
-                raise RuntimeError(txt)
-            registers[j].value = regs[1]
-            registers[j].type = CELL_TYPE_NEXT
+            regs = self.runtime.registers[i : i + 2]
+            if regs[0].type != CellType.INVALID or regs[1].type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{Label.type_float32}" {i},{i + 1} used')
+            regs[0].value = regs_value[0]
+            regs[0].type = CellType.FLOAT32
+            regs[0].action = action
+            regs[0].action_kwargs = action_kwargs
+            regs[1].value = regs_value[1]
+            regs[1].type = CellType.NEXT
 
-    def handle_type_string(self, registers, reg_count, start, stop, value, action):
-        """Handle type string.
-
-        :meta private:
-        """
+    def handle_type_string(self, start, stop, value, action, action_kwargs):
+        """Handle type string."""
         regs = stop - start
         reg_len = regs * 2
         if len(value) > reg_len:
-            value = value[:reg_len]
-        else:
-            value = value.ljust(reg_len)
-        for i in range(stop - start):
-            inx = start + i
-            if i + 1 >= reg_count:
-                raise RuntimeError(
-                    f'Error section "{Label.type_string}" addr {start},  {stop} out of range'
-                )
-            if registers[inx].type != CELL_TYPE_NONE:
-                txt = f'ERROR Configuration invalid in section "{Label.type_string}" register {inx} already defined'
-                raise RuntimeError(txt)
-            registers[inx].value = int.from_bytes(
-                bytes(value[i * 2 : (i + 1) * 2], "UTF-8"), "big"
+            raise RuntimeError(
+                f'ERROR "{Label.type_string}" {start} too long "{value}"'
             )
-            registers[inx].type = CELL_TYPE_STRING if not i else CELL_TYPE_NEXT
-            registers[start].action = action
+        value = value.ljust(reg_len)
+        for i in range(stop - start):
+            reg = self.runtime.registers[start + i]
+            if reg.type != CellType.INVALID:
+                raise RuntimeError(f'ERROR "{Label.type_string}" {start + i} used')
+            j = i * 2
+            reg.value = int.from_bytes(bytes(value[j : j + 2], "UTF-8"), "big")
+            reg.type = CellType.NEXT
+        self.runtime.registers[start].type = CellType.STRING
+        self.runtime.registers[start].action = action
+        self.runtime.registers[start].action_kwargs = action_kwargs
 
-    def handle_setup_section(self, config, actions):
+    def handle_setup_section(self):
         """Load setup section"""
-        layout = Label.try_get(Label.setup, config)
-        offset = {
-            1: 0,
-            2: 0,
-            3: 0,
-            4: 0,
-            5: 0,
-            6: 0,
-            15: 0,
-            16: 0,
-            22: 0,
-            23: 0,
-        }
+        layout = Label.try_get(Label.setup, self.config)
+        self.runtime.fc_offset = {key: 0 for key in range(25)}
         size_co = Label.try_get(Label.co_size, layout)
         size_di = Label.try_get(Label.di_size, layout)
         size_hr = Label.try_get(Label.hr_size, layout)
         size_ir = Label.try_get(Label.ir_size, layout)
         if Label.try_get(Label.shared_blocks, layout):
-            total_size = 0
-            for i in (size_co, size_di, size_hr, size_ir):
-                if i > total_size:
-                    total_size = i
+            total_size = max(size_co, size_di, size_hr, size_ir)
         else:
-            offset[1] = 0
-            offset[5] = 0
-            offset[15] = 0
-            total_size = size_co
-            offset[2] = total_size
-            total_size += size_di
-            offset[4] = total_size
-            total_size = size_ir
-            offset[3] = total_size
-            offset[6] = total_size
-            offset[16] = total_size
-            offset[22] = total_size
-            offset[23] = total_size
+            # set offset (block) for each function code
+            # starting with fc = 1, 5, 15
+            self.runtime.fc_offset[2] = size_co
+            total_size = size_co + size_di
+            self.runtime.fc_offset[4] = total_size
+            total_size += size_ir
+            for i in (3, 6, 16, 22, 23):
+                self.runtime.fc_offset[i] = total_size
             total_size += size_hr
         first_cell = Cell()
-        registers = [dataclasses.replace(first_cell) for i in range(total_size)]
+        self.runtime.registers = [
+            dataclasses.replace(first_cell) for i in range(total_size)
+        ]
+        self.runtime.register_count = total_size
+        self.runtime.type_exception = bool(Label.try_get(Label.type_exception, layout))
         defaults = Label.try_get(Label.defaults, layout)
-        type_exception = Label.try_get(Label.type_exception, layout)
         defaults_value = Label.try_get(Label.value, defaults)
         defaults_action = Label.try_get(Label.action, defaults)
         for key, entry in self.config_types.items():
             entry[Label.value] = Label.try_get(key, defaults_value)
-            if (action := Label.try_get(key, defaults_action)) not in actions:
-                txt = f"ERROR Configuration invalid, illegal action {key} in {defaults_action}"
-                raise RuntimeError(txt)
+            if (
+                action := Label.try_get(key, defaults_action)
+            ) not in self.runtime.action_name_to_id:
+                raise RuntimeError(f"ERROR illegal action {key} in {defaults_action}")
             entry[Label.action] = action
-        return registers, offset, type_exception
+        del self.config[Label.setup]
 
-    def handle_invalid_address(self, registers, reg_count, config):
+    def handle_invalid_address(self):
         """Handle invalid address"""
-        for entry in Label.try_get(Label.invalid, config):
+        for entry in Label.try_get(Label.invalid, self.config):
             if isinstance(entry, int):
                 entry = [entry, entry]
             for i in range(entry[0], entry[1] + 1):
-                if i >= reg_count:
+                if i >= self.runtime.register_count:
                     raise RuntimeError(
                         f'Error section "{Label.invalid}" addr {entry} out of range'
                     )
-                if registers[i].type != CELL_TYPE_NONE:
-                    txt = f'ERROR Configuration invalid in section "invalid" register {i} already defined'
-                    raise RuntimeError(txt)
-                registers[i].type = CELL_TYPE_INVALID
+                reg = self.runtime.registers[i]
+                reg.type = CellType.INVALID
+        del self.config[Label.invalid]
 
-    def handle_write_allowed(self, registers, reg_count, config):
+    def handle_write_allowed(self):
         """Handle write allowed"""
-        for entry in Label.try_get(Label.write, config):
+        for entry in Label.try_get(Label.write, self.config):
             if isinstance(entry, int):
                 entry = [entry, entry]
             for i in range(entry[0], entry[1] + 1):
-                if i >= reg_count:
+                if i >= self.runtime.register_count:
                     raise RuntimeError(
                         f'Error section "{Label.write}" addr {entry} out of range'
                     )
-                if registers[i].type in (CELL_TYPE_NONE, CELL_TYPE_INVALID):
+                reg = self.runtime.registers[i]
+                if reg.type == CellType.INVALID:
                     txt = f'ERROR Configuration invalid in section "write" register {i} not defined'
                     raise RuntimeError(txt)
-                registers[i].access = True
+                reg.access = True
+        del self.config[Label.write]
 
-    def handle_types(self, registers, actions, reg_count, config):
+    def handle_types(self):
         """Handle the different types"""
         for section, type_entry in self.config_types.items():
-            layout = Label.try_get(section, config)
+            layout = Label.try_get(section, self.config)
             for entry in layout:
                 if not isinstance(entry, dict):
                     entry = {Label.addr: entry}
-                if not isinstance(Label.try_get(Label.addr, entry), list):
-                    entry[Label.addr] = [entry[Label.addr], entry[Label.addr]]
+                regs = Label.try_get(Label.addr, entry)
+                if not isinstance(regs, list):
+                    regs = [regs, regs]
+                start = regs[0]
+                if (stop := regs[1]) >= self.runtime.register_count:
+                    raise RuntimeError(f'Error "{section}" {start}, {stop} illegal')
                 type_entry[Label.method](
-                    registers,
-                    reg_count,
-                    entry[Label.addr][0],
-                    entry[Label.addr][1] + 1,
+                    start,
+                    stop + 1,
                     entry.get(Label.value, type_entry[Label.value]),
-                    actions[entry.get("action", type_entry[Label.action])],
+                    self.runtime.action_name_to_id[
+                        entry.get(Label.action, type_entry[Label.action])
+                    ],
+                    entry.get(Label.kwargs, None),
                 )
+            del self.config[section]
 
-    def handle_repeat(self, registers, reg_count, config):
-        """Handle repeat.
-
-        :meta private:
-        """
-        for entry in Label.try_get(Label.repeat, config):
+    def handle_repeat(self):
+        """Handle repeat."""
+        for entry in Label.try_get(Label.repeat, self.config):
             addr = Label.try_get(Label.addr, entry)
             copy_start = addr[0]
             copy_end = addr[1]
@@ -352,28 +306,58 @@ class Setup:
             addr_to = Label.try_get(Label.repeat_to, entry)
             for inx in range(addr_to[0], addr_to[1] + 1):
                 copy_inx = copy_start if copy_inx >= copy_end else copy_inx + 1
-                if inx >= reg_count:
+                if inx >= self.runtime.register_count:
                     raise RuntimeError(
                         f'Error section "{Label.repeat}" entry {entry} out of range'
                     )
-                registers[inx] = dataclasses.replace(registers[copy_inx])
+                self.runtime.registers[inx] = dataclasses.replace(
+                    self.runtime.registers[copy_inx]
+                )
+        del self.config[Label.repeat]
 
-    def setup(self, config, actions) -> None:
-        """Load layout from dict with json structure.
+    def setup(self, config, custom_actions) -> None:
+        """Load layout from dict with json structure."""
+        actions = {
+            Label.increment: self.runtime.action_increment,
+            Label.random: self.runtime.action_random,
+            Label.reset: self.runtime.action_reset,
+            Label.timestamp: self.runtime.action_timestamp,
+            Label.uptime: self.runtime.action_uptime,
+        }
+        if custom_actions:
+            actions.update(custom_actions)
+        self.runtime.action_name_to_id = {None: 0}
+        self.runtime.action_id_to_name = [Label.none]
+        self.runtime.action_methods = [None]
+        i = 1
+        for key, method in actions.items():
+            self.runtime.action_name_to_id[key] = i
+            self.runtime.action_id_to_name.append(key)
+            self.runtime.action_methods.append(method)
+            i += 1
+        self.runtime.registerType_name_to_id = {
+            Label.type_bits: CellType.BITS,
+            Label.type_uint16: CellType.UINT16,
+            Label.type_uint32: CellType.UINT32,
+            Label.type_float32: CellType.FLOAT32,
+            Label.type_string: CellType.STRING,
+            Label.next: CellType.NEXT,
+            Label.invalid: CellType.INVALID,
+        }
+        self.runtime.registerType_id_to_name = [None] * len(
+            self.runtime.registerType_name_to_id
+        )
+        for name, cell_type in self.runtime.registerType_name_to_id.items():
+            self.runtime.registerType_id_to_name[cell_type] = name
 
-        :meta private:
-        """
-        registers, offset, typ_exc = self.handle_setup_section(config, actions)
-        reg_count = len(registers)
-        self.handle_invalid_address(registers, reg_count, config)
-        self.handle_types(registers, actions, reg_count, config)
-        self.handle_write_allowed(registers, reg_count, config)
-        self.handle_repeat(registers, reg_count, config)
-        for i in range(reg_count):
-            if registers[i].type == CELL_TYPE_NONE:
-                registers[i].type = CELL_TYPE_INVALID
-
-        return (registers, offset, typ_exc, reg_count)
+        self.config = config
+        self.handle_setup_section()
+        self.handle_invalid_address()
+        self.handle_types()
+        self.handle_write_allowed()
+        self.handle_repeat()
+        if self.config:
+            raise RuntimeError(f"INVALID key in setup: {self.config}")
 
 
 class ModbusSimulatorContext:
@@ -443,6 +427,7 @@ class ModbusSimulatorContext:
                 {"addr": [32, 34], "value": 0xF1},  --> with value
                 {"addr": [35, 36], "action": "increment"},  --> with action
                 {"addr": [37, 38], "action": "increment", "value": 0xF1}  --> with action and value
+                {"addr": [37, 38], "action": "increment", "kwargs": {"min": 0, "max": 100}}  --> with action with arguments
             ],
             "uint16": [  --> Define uint16 (1 register == 2 bytes)
                 --> same as type_bits
@@ -474,42 +459,60 @@ class ModbusSimulatorContext:
         self, config: Dict[str, any], custom_actions: Dict[str, Callable]
     ) -> None:
         """Initialize."""
-        self.action_names = {
-            Label.increment: self.action_increment,
-            Label.register: self.action_register,
-            Label.random: self.action_random,
-            Label.reset: self.action_reset,
-            Label.timestamp: self.action_timestamp,
-            Label.uptime: self.action_uptime,
-        }
-        if custom_actions:
-            self.action_names.update(custom_actions)
-        j = len(self.action_names) + 1
-        self.action_inx_to_name = ["None"] * j
-        self.action_methods = [None] * j
-        j = 1
-        for key, method in self.action_names.items():
-            self.action_inx_to_name[j] = key
-            self.action_methods[j] = method
-            self.action_names[key] = j
-            j += 1
-        self.action_names[None] = 0
-        self.type_names = {
-            Label.type_none: CELL_TYPE_NONE,
-            Label.type_bits: CELL_TYPE_BIT,
-            Label.type_uint16: CELL_TYPE_UINT16,
-            Label.type_uint32: CELL_TYPE_UINT32,
-            Label.type_float32: CELL_TYPE_FLOAT32,
-            Label.type_string: CELL_TYPE_STRING,
-            Label.next: CELL_TYPE_NEXT,
-            Label.invalid: CELL_TYPE_INVALID,
-            Label.any: None,
-        }
-        res = Setup().setup(config, self.action_names)
-        self.registers = res[0]
-        self.offset = res[1]
-        self.type_exception = res[2]
-        self.register_count = res[3]
+        self.registers = []
+        self.fc_offset = {}
+        self.register_count = 0
+        self.type_exception = False
+        self.action_name_to_id = {}
+        self.action_id_to_name = []
+        self.action_methods = []
+        self.registerType_name_to_id = {}
+        self.registerType_id_to_name = []
+        Setup(self).setup(config, custom_actions)
+
+    # --------------------------------------------
+    # Simulator server interface
+    # --------------------------------------------
+    def get_text_register(self, register):
+        """Get raw register."""
+        reg = self.registers[register]
+        text_cell = Cell()
+        text_cell.type = self.registerType_id_to_name[reg.type]
+        text_cell.access = str(reg.access)
+        text_cell.count_read = str(reg.count_read)
+        text_cell.count_write = str(reg.count_write)
+        text_cell.action = self.action_id_to_name[reg.action]
+        if reg.action_kwargs:
+            text_cell.action = f"{text_cell.action}({reg.action_kwargs})"
+        if reg.type in (CellType.INVALID, CellType.UINT16, CellType.NEXT):
+            text_cell.value = str(reg.value)
+            build_len = 0
+        elif reg.type == CellType.BITS:
+            text_cell.value = hex(reg.value)
+            build_len = 0
+        elif reg.type == CellType.UINT32:
+            tmp_regs = [reg.value, self.registers[register + 1].value]
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, True))
+            build_len = 1
+        elif reg.type == CellType.FLOAT32:
+            tmp_regs = [reg.value, self.registers[register + 1].value]
+            text_cell.value = str(self.build_value_from_registers(tmp_regs, False))
+            build_len = 1
+        else:  # reg.type == CellType.STRING:
+            j = register
+            text_cell.value = ""
+            while True:
+                text_cell.value += str(
+                    self.registers[j].value.to_bytes(2, "big"),
+                    encoding="utf-8",
+                    errors="ignore",
+                )
+                j += 1
+                if self.registers[j].type != CellType.NEXT:
+                    break
+            build_len = j - register - 1
+        reg_txt = f"{register}-{register + build_len}" if build_len else f"{register}"
+        return reg_txt, text_cell
 
     # --------------------------------------------
     # Modbus server interface
@@ -527,14 +530,14 @@ class ModbusSimulatorContext:
             # Bit count, correct to register count
             count = int((count + WORD_SIZE - 1) / WORD_SIZE)
             address = int(address / 16)
-        real_address = self.offset[func_code] + address
+        real_address = self.fc_offset[func_code] + address
         if real_address <= 0 or real_address > self.register_count:
             return False
 
         fx_write = func_code in self._write_func_code
         for i in range(real_address, real_address + count):
             reg = self.registers[i]
-            if reg.type == CELL_TYPE_INVALID:
+            if reg.type == CellType.INVALID:
                 return False
             if fx_write and not reg.access:
                 return False
@@ -549,22 +552,26 @@ class ModbusSimulatorContext:
         """
         result = []
         if func_code not in self._bits_func_code:
-            real_address = self.offset[func_code] + address
+            real_address = self.fc_offset[func_code] + address
             for i in range(real_address, real_address + count):
                 reg = self.registers[i]
                 if reg.action:
-                    self.action_methods[reg.action](self.registers, i, reg)
+                    self.action_methods[reg.action](
+                        self.registers, i, reg, reg.action_kwargs
+                    )
                 self.registers[i].count_read += 1
                 result.append(reg.value)
         else:
             # bit access
-            real_address = self.offset[func_code] + int(address / 16)
+            real_address = self.fc_offset[func_code] + int(address / 16)
             bit_index = address % 16
             reg_count = int((count + bit_index + 15) / 16)
             for i in range(real_address, real_address + reg_count):
                 reg = self.registers[i]
                 if reg.action:
-                    self.action_methods[reg.action](i, reg)
+                    self.action_methods[reg.action](
+                        self.registers, i, reg, reg.action_kwargs
+                    )
                 self.registers[i].count_read += 1
                 while count and bit_index < 16:
                     result.append(bool(reg.value & (2**bit_index)))
@@ -579,7 +586,7 @@ class ModbusSimulatorContext:
         :meta private:
         """
         if func_code not in self._bits_func_code:
-            real_address = self.offset[func_code] + address
+            real_address = self.fc_offset[func_code] + address
             for value in values:
                 self.registers[real_address].value = value
                 self.registers[real_address].count_write += 1
@@ -587,7 +594,7 @@ class ModbusSimulatorContext:
             return
 
         # bit access
-        real_address = self.offset[func_code] + int(address / 16)
+        real_address = self.fc_offset[func_code] + int(address / 16)
         bit_index = address % 16
         for value in values:
             bit_mask = 2**bit_index
@@ -607,39 +614,18 @@ class ModbusSimulatorContext:
     # --------------------------------------------
 
     @classmethod
-    def action_register(cls, registers, inx, cell):
-        """Update with register number.
-
-        :meta private:
-        """
-        if cell.type == CELL_TYPE_BIT:
-            registers[inx].value = inx
-        elif cell.type == CELL_TYPE_FLOAT32:
-            regs = cls.build_registers_from_value(float(inx), False)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
-        elif cell.type == CELL_TYPE_UINT16:
-            registers[inx].value = inx
-        elif cell.type == CELL_TYPE_UINT32:
-            regs = cls.build_registers_from_value(inx, True)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
-
-    @classmethod
-    def action_random(cls, registers, inx, cell):
+    def action_random(cls, registers, inx, cell, _kwargs):
         """Update with random value.
 
         :meta private:
         """
-        if cell.type == CELL_TYPE_BIT:
-            registers[inx].value = random.randint(0, 65536)
-        elif cell.type == CELL_TYPE_FLOAT32:
-            regs = cls.build_registers_from_value(random.uniform(0.0, 65000.0), False)
+        if cell.type in (CellType.BITS, CellType.UINT16):
+            registers[inx].value = random.randint(1, 65536)
+        elif cell.type == CellType.FLOAT32:
+            regs = cls.build_registers_from_value(random.uniform(1.0, 65000.0), False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        elif cell.type == CELL_TYPE_UINT16:
-            registers[inx].value = random.randint(0, 65536)
-        elif cell.type == CELL_TYPE_UINT32:
+        elif cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(
                 int(random.uniform(0.0, 65000.0)), True
             )
@@ -647,30 +633,32 @@ class ModbusSimulatorContext:
             registers[inx + 1].value = regs[1]
 
     @classmethod
-    def action_increment(cls, registers, inx, cell):
+    def action_increment(cls, registers, inx, cell, _kwargs):
         """Increment value reset with overflow.
 
         :meta private:
         """
-        if cell.type == CELL_TYPE_BIT:
-            registers[inx].value += 1
-        elif cell.type == CELL_TYPE_FLOAT32:
-            value = cls.build_value_from_registers(registers[inx : inx + 2], False)
+        reg = registers[inx]
+        reg2 = registers[inx + 1]
+        if cell.type in (CellType.BITS, CellType.UINT16):
+            reg.value += 1
+        elif cell.type == CellType.FLOAT32:
+            tmp_reg = [reg.value, reg2.value]
+            value = cls.build_value_from_registers(tmp_reg, False)
             value += 1.0
-            regs = cls.build_registers_from_value(value, False)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
-        elif cell.type == CELL_TYPE_UINT16:
-            registers[inx].value += 1
-        elif cell.type == CELL_TYPE_UINT32:
-            value = cls.build_value_from_registers(registers[inx : inx + 2], True)
+            new_regs = cls.build_registers_from_value(value, False)
+            reg.value = new_regs[0]
+            reg2.value = new_regs[1]
+        elif cell.type == CellType.UINT32:
+            tmp_reg = [reg.value, reg2.value]
+            value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
-            regs = cls.build_registers_from_value(value, True)
-            registers[inx].value = regs[0]
-            registers[inx + 1].value = regs[1]
+            new_regs = cls.build_registers_from_value(value, True)
+            reg.value = new_regs[0]
+            reg2.value = new_regs[1]
 
     @classmethod
-    def action_timestamp(cls, registers, inx, _cell):
+    def action_timestamp(cls, registers, inx, _cell, _kwargs):
         """Set current time.
 
         :meta private:
@@ -685,7 +673,7 @@ class ModbusSimulatorContext:
         registers[inx + 6].value = system_time.second
 
     @classmethod
-    def action_reset(cls, _registers, _inx, _cell):
+    def action_reset(cls, _registers, _inx, _cell, _kwargs):
         """Reboot server.
 
         :meta private:
@@ -693,22 +681,20 @@ class ModbusSimulatorContext:
         raise RuntimeError("RESET server")
 
     @classmethod
-    def action_uptime(cls, registers, inx, cell):
+    def action_uptime(cls, registers, inx, cell, _kwargs):
         """Return uptime in seconds.
 
         :meta private:
         """
-        value = int(datetime.now().timestamp()) - cls.start_time
+        value = int(datetime.now().timestamp()) - cls.start_time + 1
 
-        if cell.type == CELL_TYPE_BIT:
-            registers[inx].value = 0
-        elif cell.type == CELL_TYPE_FLOAT32:
+        if cell.type in (CellType.BITS, CellType.UINT16):
+            registers[inx].value = value
+        elif cell.type == CellType.FLOAT32:
             regs = cls.build_registers_from_value(value, False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
-        elif cell.type == CELL_TYPE_UINT16:
-            registers[inx].value = value
-        elif cell.type == CELL_TYPE_UINT32:
+        elif cell.type == CellType.UINT32:
             regs = cls.build_registers_from_value(value, True)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
@@ -725,14 +711,14 @@ class ModbusSimulatorContext:
 
         if func_code in self._bits_func_code:
             # Bit access
-            check = CELL_TYPE_BIT
+            check = (CellType.BITS, -1)
             reg_step = 1
         elif count % 2:
             # 16 bit access
-            check = (CELL_TYPE_UINT16, CELL_TYPE_STRING)
+            check = (CellType.UINT16, CellType.STRING)
             reg_step = 1
         else:
-            check = (CELL_TYPE_UINT32, CELL_TYPE_FLOAT32, CELL_TYPE_STRING)
+            check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)
             reg_step = 2
 
         for i in range(  # pylint: disable=consider-using-any-or-all

@@ -11,11 +11,17 @@
   <!--REFRESH-->
 </head>
 <body>
-<center><h1>Server clear</h1></center>
-
-<a href="formdata/server/status.html">Status</a>
-<a href="formdata/server/clear.html">Clear</a>
-<a href="formdata/server/restart.html">Restart</a>
-
-</body>
+  <body>
+    <center><h1>Server</h1></center>
+    <fieldset class="tools_fieldset" width="30%">
+      <legend>Status</legend>
+      Uptime: <!--UPTIME-->
+    </fieldset>
+    <fieldset class="tools_fieldset" width="30%">
+      <legend>Status</legend>
+      <form action="/api/server" method="get">
+        <input type="submit" value="Restart" name="submit" />
+      </form>
+    </fieldset>
+  </body>
 </html>

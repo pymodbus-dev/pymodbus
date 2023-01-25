@@ -23,49 +23,51 @@
         <th width="10%"># read</th>
         <th width="10%"># write</th>
       </tr>
-  </thead>
-  <tbody>
-    <!--REGISTER_ROWS-->
-  </tbody>
-  <tfoot>
-    <tr>
-      <th colspan="7"><!--REGISTER_FOOT--></th>
-    </tr>
-  </tfoot>
-</table>
-<fieldset class="tools_fieldset">
-  <legend>Filter</legend>
-  <form action="/api/registers" method="get">
-    <label>Register range</label>
-    <input type="number" name="range_start">
-    <input type="number" name="range_stop"><br>
-    <label>Type</label>
-    <select name="type">
-      <!--REGISTER_TYPES-->
-    </select><br>
-    <label>Action</label>
-    <select name="action">
-      <!--REGISTER_ACTIONS-->
-    </select><br>
-    <label>Writeable</label>
-    <input type="checkbox" name="writeable"><br>
-    <input type="submit" value="Add" name="submit">
-    <input type="submit" value="Clear" name="submit">
-  </form>
-</fieldset>
-<fieldset class="tools_fieldset">
-  <legend>Set</legend>
-  <form action="/api/registers" method="get">
-    <br>
-    <label>Register</label>
-    <input type="number" name="register"><br>
-    <label>Value</label>
-    <input type="text" name="value"><br>
-    <label>Writeable</label>
-    <input type="checkbox" name="writeable"><br>
-    <input type="submit" value="Set" name="submit">
+    </thead>
+    <tbody>
+      <!--REGISTER_ROWS-->
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="7"><!--REGISTER_FOOT--></th>
+      </tr>
+    </tfoot>
+  </table>
+  <fieldset class="tools_fieldset" width="40%">
+    <legend>Filter</legend>
+    <form action="/api/registers" method="get">
+      <label>Register range</label>
+      <input type="number" name="range_start" />
+      <input type="number" name="range_stop" /><br>
+      <label>Type</label>
+      <select name="type">
+        <option value=-1 selected>Any</option>
+        <!--REGISTER_TYPES-->
+      </select><br>
+      <label>Action</label>
+      <select name="action">
+        <option value=-1 selected>Any</option>
+        <!--REGISTER_ACTIONS-->
+      </select><br>
+      <label>Writeable</label>
+      <input type="checkbox" name="writeable" /><br>
+      <input type="submit" value="Add" name="submit" />
+      <input type="submit" value="Clear" name="submit" />
     </form>
-</fieldset><br>
-<p>Result of last command: <!--RESULT--></p>
+  </fieldset>
+  <fieldset class="tools_fieldset" width="20%">
+    <legend>Set</legend>
+    <form action="/api/registers" method="get">
+      <br>
+      <label>Register</label>
+      <input type="number" name="register" /><br>
+      <label>Value</label>
+      <input type="text" name="value" /><br>
+      <label>Writeable</label>
+      <input type="checkbox" name="writeable" /><br>
+      <input type="submit" value="Set" name="submit" />
+    </form>
+  </fieldset><br>
+  <p>Result of last command: <!--RESULT--></p>
 </body>
 </html>

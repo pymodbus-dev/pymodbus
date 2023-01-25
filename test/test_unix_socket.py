@@ -24,7 +24,7 @@ HOST = f"unix:{PATH}"
 
 
 @pytest_asyncio.fixture(name="_mock_run_server")
-async def _helper_server():
+async def _helper_server(path_addon):
     """Run server."""
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
     context = ModbusSlaveContext(
@@ -33,7 +33,7 @@ async def _helper_server():
     asyncio.create_task(
         StartAsyncUnixServer(
             context=ModbusServerContext(slaves=context, single=True),
-            path=PATH,
+            path=PATH + path_addon,
             framer=ModbusSocketFramer,
         )
     )
@@ -43,17 +43,19 @@ async def _helper_server():
 
 
 @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
+@pytest.mark.parametrize("path_addon", ["_1"])
 async def test_unix_server(_mock_run_server):
     """Run async server with unit domain socket."""
     await asyncio.sleep(0.1)
 
 
 @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows have a timeout problem.")
-async def test_unix_async_client(_mock_run_server):
+@pytest.mark.parametrize("path_addon", ["_2"])
+async def test_unix_async_client(path_addon, _mock_run_server):
     """Run async client with unit domain socket."""
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(1)
     client = AsyncModbusTcpClient(
-        HOST,
+        HOST + path_addon,
         framer=ModbusSocketFramer,
     )
     await client.connect()

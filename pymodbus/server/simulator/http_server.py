@@ -1,9 +1,11 @@
 """HTTP server for modbus simulator."""
 import asyncio
+import dataclasses
 import importlib
 import json
 import logging
 import os
+from time import time
 
 
 try:
@@ -12,17 +14,8 @@ except ImportError:
     web = None
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
-from pymodbus.datastore.simulator import (
-    CELL_TYPE_BIT,
-    CELL_TYPE_FLOAT32,
-    CELL_TYPE_INVALID,
-    CELL_TYPE_NEXT,
-    CELL_TYPE_NONE,
-    CELL_TYPE_STRING,
-    CELL_TYPE_UINT16,
-    CELL_TYPE_UINT32,
-    Label,
-)
+from pymodbus.datastore.simulator import Label
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import (
     ModbusSerialServer,
     ModbusTcpServer,
@@ -42,6 +35,36 @@ _logger = logging.getLogger(__name__)
 
 MAX_FILTER = 200
 
+RESPONSE_NORMAL = 0
+RESPONSE_ERROR = 1
+RESPONSE_EMPTY = 2
+RESPONSE_JUNK = 3
+
+
+@dataclasses.dataclass()
+class CallTypeMonitor:
+    """Define Request/Response monitor"""
+
+    active: bool = False
+    range_start: int = ""
+    range_stop: int = ""
+    function: int = -1
+    hex: bool = False
+    decode: bool = False
+
+
+@dataclasses.dataclass()
+class CallTypeResponse:
+    """Define Response manipulation"""
+
+    active: int = RESPONSE_NORMAL
+    split: int = 0
+    delay: int = 0
+    junk_len: int = 10
+    error_response: int = 0
+    change_rate: int = 0
+    clear_after: int = 1
+
 
 class ModbusSimulatorServer:
     """**ModbusSimulatorServer**.
@@ -56,12 +79,11 @@ class ModbusSimulatorServer:
     if either http_port or http_host is none, HTTP will not be started.
     This class starts a http server, that serves a couple of endpoints:
 
-    - **"<addr>/"** standard entry index.html (see html.py)
-    - **"<addr>/web"** standard entry for web pages (see html.py)
-    - **"<addr>/log"** standard entry for server log (see html.py)
-    - **"<addr>/api"** REST-API general calls(see rest_api.py)
-    - **"<addr>/api/register"** REST-API for register handling (uses datastore/simulator)
-    - **"<addr>/api/function"** REST-API for function handling (uses Modbus<x>RequestHandler)
+    - **"<addr>/"** static files
+    - **"<addr>/api/log"** log handling, HTML with GET, REST-API with post
+    - **"<addr>/api/registers"** register handling, HTML with GET, REST-API with post
+    - **"<addr>/api/calls"** call (function code / message) handling, HTML with GET, REST-API with post
+    - **"<addr>/api/server"** server handling, HTML with GET, REST-API with post
 
     Example::
 
@@ -111,6 +133,11 @@ class ModbusSimulatorServer:
             actions_module = importlib.import_module(custom_actions_module)
             custom_actions_module = actions_module.custom_actions_dict
         server = setup["server_list"][modbus_server]
+        server["loop"] = asyncio.get_running_loop()
+        if server["comm"] != "serial":
+            server["address"] = (server["host"], server["port"])
+            del server["host"]
+            del server["port"]
         device = setup["device_list"][modbus_device]
         self.datastore_context = ModbusSimulatorContext(device, custom_actions_module)
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
@@ -140,15 +167,26 @@ class ModbusSimulatorServer:
             "calls": [None, self.build_html_calls],
             "server": [None, self.build_html_server],
         }
+        self.generator_json = {
+            "log_json": [None, self.build_json_log],
+            "registers_json": [None, self.build_json_registers],
+            "calls_json": [None, self.build_json_calls],
+            "server_json": [None, self.build_json_server],
+        }
         for entry in self.generator_html:  # pylint: disable=consider-using-dict-items
             file = os.path.join(self.web_path, "generator", entry)
             with open(file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter = []
+        self.call_list = []
+        self.call_monitor = CallTypeMonitor()
+        self.call_response = CallTypeResponse()
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
+        self.modbus_server.response_manipulator = self.server_response_manipulator
+        self.modbus_server.request_tracer = self.server_request_tracer
         try:
             if getattr(self.modbus_server, "start", None):
                 await self.modbus_server.start()
@@ -168,21 +206,20 @@ class ModbusSimulatorServer:
         await app["modbus_server"]
         _logger.info("Modbus server Stopped")
 
-    def run_forever(self):
+    async def run_forever(self):
         """Start modbus and http servers."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
             runner = web.AppRunner(self.web_app)
-            loop.run_until_complete(runner.setup())
+            await runner.setup()
             self.site = web.TCPSite(runner, self.http_host, self.http_port)
-            loop.run_until_complete(self.site.start())
+            await self.site.start()
         except Exception as exc:
             txt = f"Error starting http server, reason: {exc}"
             _logger.error(txt)
             raise exc
         _logger.info("HTTP server started")
-        loop.run_forever()
+        while True:
+            await asyncio.sleep(1)
 
     async def stop(self):
         """Stop modbus and http servers."""
@@ -218,145 +255,342 @@ class ModbusSimulatorServer:
 
     async def handle_json(self, request):
         """Handle api registers."""
-        action = request.path.split("/")[-1]
+        page_type = request.path.split("/")[-1]
         params = await request.post()
-        return web.Response(text=f"json build: {action} - {params}")
+        json_dict = self.generator_html[page_type][0].copy()
+        result = await self.generator_json[page_type][1](params, json_dict)
+        return web.Response(text=f"json build: {page_type} - {params} - {result}")
+
+    def helper_build_html_registers_submit(self, params):
+        """Build html register submit."""
+        result_txt = "ok"
+        register_foot = ""
+        if params["submit"] == "Add":
+            res_ok, txt = self.helper_build_filter(params)
+            if not res_ok:
+                result_txt = txt
+            else:
+                register_foot = txt
+        elif params["submit"] == "Clear":
+            self.register_filter = []
+        elif params["submit"] == "Set":
+            if not (register := params["register"]):
+                result_txt = "Missing register"
+            else:
+                register = int(register)
+                if value := params["value"]:
+                    self.datastore_context.registers[register].value = int(value)
+                if bool(params.get("writeable", False)):
+                    self.datastore_context.registers[
+                        register
+                    ].access = not self.datastore_context.registers[register].access
+        return result_txt, register_foot
+
+    async def build_html_registers(self, params, html):
+        """Build html registers page."""
+        result_txt, register_foot = self.helper_build_html_registers_submit(params)
+        register_types = "".join(
+            f"<option value={reg_id}>{name}</option>"
+            for name, reg_id in self.datastore_context.registerType_name_to_id.items()
+        )
+        register_actions = "".join(
+            f"<option value={action_id}>{name}</option>"
+            for name, action_id in self.datastore_context.action_name_to_id.items()
+        )
+        rows = ""
+        for i in self.register_filter:
+            inx, reg = self.datastore_context.get_text_register(i)
+            if reg.type == Label.next:
+                continue
+            row = "".join(
+                f"<td>{entry}</td>"
+                for entry in (
+                    inx,
+                    reg.type,
+                    reg.access,
+                    reg.action,
+                    reg.value,
+                    reg.count_read,
+                    reg.count_write,
+                )
+            )
+            rows += f"<tr>{row}</tr>"
+        new_html = (
+            html.replace("<!--REGISTER_ACTIONS-->", register_actions)
+            .replace("<!--REGISTER_TYPES-->", register_types)
+            .replace("<!--REGISTER_FOOT-->", register_foot)
+            .replace("<!--REGISTER_ROWS-->", rows)
+            .replace("<!--RESULT-->", result_txt)
+        )
+        return new_html
 
     async def build_html_log(self, _params, html):
         """Build html log page."""
         return html
 
-    async def build_html_registers(self, params, html):  # pylint: disable=too-complex
-        """Build html log page."""
-        register_foot = ""
-        register_types = ""
-        for name, xtype in self.datastore_context.type_names.items():
-            register_types += f"<option value={xtype} selected>{name}</option>"
-        register_actions = ""
-        for name, action in self.datastore_context.action_names.items():
-            if name is None:
-                name = "Any"
-            if action is None:
-                action = 0
-            register_actions += f"<option value={action} selected>{name}</option>"
-        html = html.replace("<!--REGISTER_ACTIONS-->", register_actions).replace(
-            "<!--REGISTER_TYPES-->", register_types
-        )
-
-        if params["submit"] == "Add":
-            res_ok, result_txt = self.helper_build_filter(params)
-            if not res_ok:
-                return html.replace("<!--RESULT-->", result_txt)
-        elif params["submit"] == "Clear":  # pylint: disable=confusing-consecutive-elif
-            self.register_filter = []
-        elif params["submit"] == "Set":
-            if not (register := params["register"]):
-                return html.replace("<!--RESULT-->", "Missing register")
-            register = int(register)
-            if not (value := params["value"]):
-                self.datastore_context.registers[register].value = int(value)
-            if bool(params.get("writeable", False)):
-                self.datastore_context.registers[register].access = True
-        rows = ""
-        for i in self.register_filter:
-            reg = self.datastore_context.registers[i]
-            inx = f"{i}"
-            value = reg.value
-            if reg.type == CELL_TYPE_INVALID:
-                xtype = Label.invalid
-            elif reg.type == CELL_TYPE_NONE:
-                xtype = Label.type_none
-            elif reg.type == CELL_TYPE_BIT:
-                xtype = Label.type_bits
-            elif reg.type == CELL_TYPE_NEXT:
-                continue
-            elif reg.type == CELL_TYPE_UINT16:
-                xtype = Label.type_uint16
-            elif reg.type == CELL_TYPE_UINT32:
-                xtype = Label.type_uint32
-                inx = f"{i}-{i+1}"
-                tmp_regs = [value, self.datastore_context.registers[i + 1].value]
-                value = self.datastore_context.build_value_from_registers(
-                    tmp_regs, True
-                )
-            elif reg.type == CELL_TYPE_FLOAT32:
-                xtype = Label.type_float32
-                inx = f"{i}-{i+1}"
-                tmp_regs = [value, self.datastore_context.registers[i + 1].value]
-                value = self.datastore_context.build_value_from_registers(
-                    tmp_regs, False
-                )
-            elif reg.type == CELL_TYPE_STRING:
-                xtype = Label.type_string
-                inx = f"{i}-{i+1}"
-                j = i
-                value = ""
-                while True:
-                    tmp_value = self.datastore_context.registers[j].value
-                    value += str(
-                        tmp_value.to_bytes(2, "big"), encoding="utf-8", errors="ignore"
-                    )
-                    j += 1
-                    if self.datastore_context.registers[j].type != CELL_TYPE_NEXT:
-                        break
-                inx = f"{i}-{j-1}"
-
+    def helper_build_html_calls_submit_monitor(self, params):
+        """Build html calls submit."""
+        if params["range_start"]:
+            self.call_monitor.range_start = int(params["range_start"])
+            if params["range_stop"]:
+                self.call_monitor.range_stop = int(params["range_stop"])
             else:
-                xtype = "????"
-            action = self.datastore_context.action_inx_to_name[reg.action]
-            rows += f"<tr><td>{inx}</td><td>{xtype}</td><td>{reg.access}</td><td>{action}</td><td>{value}</td><td>{reg.count_read}</td><td>{reg.count_write}</td></tr>"
+                self.call_monitor.range_stop = self.call_monitor.range_start
+        else:
+            self.call_monitor.range_start = ""
+            self.call_monitor.range_stop = ""
+        if params["function"]:
+            self.call_monitor.function = int(params["function"])
+        else:
+            self.call_monitor.function = ""
+        self.call_monitor.hex = "show_hex" in params
+        self.call_monitor.decode = "show_decode" in params
+        self.call_monitor.active = True
 
-        new_html = (
-            html.replace("<!--REGISTER_FOOT-->", register_foot)
-            .replace("<!--REGISTER_ROWS-->", rows)
-            .replace("<!--RESULT-->", "ok")
+    def helper_build_html_calls_submit_set(self, params):
+        """Build html calls submit."""
+        self.call_response.active = int(params["response_type"])
+        if "response_split" in params:
+            if params["split_delay"]:
+                self.call_response.split = int(params["split_delay"])
+            else:
+                self.call_response.split = 1
+        else:
+            self.call_response.split = 0
+        if "response_cr" in params:
+            if params["response_cr_pct"]:
+                self.call_response.change_rate = int(params["response_cr_pct"])
+            else:
+                self.call_response.change_rate = 0
+        else:
+            self.call_response.change_rate = 0
+        if params["response_delay"]:
+            self.call_response.delay = int(params["response_delay"])
+        else:
+            self.call_response.delay = 0
+        if params["response_junk_datalen"]:
+            self.call_response.junk_len = int(params["response_junk_datalen"])
+        else:
+            self.call_response.junk_len = 0
+        self.call_response.error_response = int(params["response_error"])
+        if params["response_clear_after"]:
+            self.call_response.clear_after = int(params["response_clear_after"])
+        else:
+            self.call_response.clear_after = 1
+
+    def helper_build_html_calls_submit(self, params):
+        """Build html calls submit."""
+        call_foot = ""
+        if params["submit"] == "Clear":
+            self.call_list = []
+            call_foot = "Cleared list, monitoring active"
+        elif params["submit"] == "Stop":
+            self.call_monitor = CallTypeMonitor()
+            call_foot = "Stopped monitoring"
+        elif params["submit"] == "Reset":
+            self.call_response = CallTypeResponse()
+        return call_foot
+
+    async def build_html_calls(self, params, html):
+        """Build html calls page."""
+        call_foot = ""
+        if params["submit"] == "Monitor":
+            self.helper_build_html_calls_submit_monitor(params)
+        elif params["submit"] == "Set":
+            self.helper_build_html_calls_submit_set(params)
+        else:
+            call_foot = self.helper_build_html_calls_submit(params)
+        function_error = ""
+        for i, txt in (
+            (-1, "Any"),
+            (0, "None"),
+            (1, "IllegalFunction"),
+            (2, "IllegalAddress"),
+            (3, "IllegalValue"),
+            (4, "SlaveFailure"),
+            (5, "Acknowledge"),
+            (6, "SlaveBusy"),
+            (7, "MemoryParityError"),
+            (10, "GatewayPathUnavailable"),
+            (11, "GatewayNoResponse"),
+        ):
+            selected = "selected" if i == self.call_response.error_response else ""
+            function_error += f"<option value={i} {selected}>{txt}</option>"
+        html = (
+            html.replace("FUNCTION_RANGE_START", str(self.call_monitor.range_start))
+            .replace("FUNCTION_RANGE_STOP", str(self.call_monitor.range_stop))
+            .replace("<!--FUNCTION_TYPES-->", function_error)
+            .replace(
+                "FUNCTION_SHOW_HEX_CHECKED", "checked" if self.call_monitor.hex else ""
+            )
+            .replace(
+                "FUNCTION_SHOW_DECODED_CHECKED",
+                "checked" if self.call_monitor.decode else "",
+            )
+            .replace(
+                "<!--FUNCTION_MONITORING_ACTIVE-->",
+                '"MONITORING"' if self.call_monitor.active else "",
+            )
+            .replace(
+                "FUNCTION_RESPONSE_NORMAL_CHECKED",
+                "checked" if self.call_response.active == RESPONSE_NORMAL else "",
+            )
+            .replace(
+                "FUNCTION_RESPONSE_ERROR_CHECKED",
+                "checked" if self.call_response.active == RESPONSE_ERROR else "",
+            )
+            .replace(
+                "FUNCTION_RESPONSE_EMPTY_CHECKED",
+                "checked" if self.call_response.active == RESPONSE_EMPTY else "",
+            )
+            .replace(
+                "FUNCTION_RESPONSE_JUNK_CHECKED",
+                "checked" if self.call_response.active == RESPONSE_JUNK else "",
+            )
+            .replace(
+                "FUNCTION_RESPONSE_SPLIT_CHECKED",
+                "checked" if self.call_response.split > 0 else "",
+            )
+            .replace("FUNCTION_RESPONSE_SPLIT_DELAY", str(self.call_response.split))
+            .replace(
+                "FUNCTION_RESPONSE_CR_CHECKED",
+                "checked" if self.call_response.change_rate > 0 else "",
+            )
+            .replace("FUNCTION_RESPONSE_CR_PCT", str(self.call_response.change_rate))
+            .replace("FUNCTION_RESPONSE_DELAY", str(self.call_response.delay))
+            .replace("FUNCTION_RESPONSE_JUNK", str(self.call_response.junk_len))
+            .replace("<!--FUNCTION_ERROR-->", function_error)
+            .replace(
+                "FUNCTION_RESPONSE_CLEAR_AFTER", str(self.call_response.clear_after)
+            )
         )
-        return new_html
 
-    async def build_html_calls(self, _params, html):
-        """Build html log page."""
+        call_rows = ""
+        if not call_foot:
+            call_foot = "<b>Monitoring</b>" if self.call_monitor.active else ""
+        # <!--FC_ROWS-->
+        # <!--FC_FOOT-->
+        html = html.replace("<!--FC_ROWS-->", call_rows).replace(
+            "<!--FC_FOOT-->", call_foot
+        )
         return html
 
     async def build_html_server(self, _params, html):
-        """Build html log page."""
+        """Build html server page."""
         return html
 
-    def helper_build_filter(self, params):  # pylint: disable=too-complex
+    async def build_json_log(self, params, json_dict):
+        """Build json log page."""
+        return f"json build log: {params} - {json_dict}"
+
+    async def build_json_registers(self, params, json_dict):
+        """Build html registers page."""
+        return f"json build registers: {params} - {json_dict}"
+
+    async def build_json_calls(self, params, json_dict):
+        """Build html calls page."""
+        return f"json build calls: {params} - {json_dict}"
+
+    async def build_json_server(self, params, json_dict):
+        """Build html server page."""
+        return f"json build server: {params} - {json_dict}"
+
+    def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        if range_start := params["range_start"]:
-            range_start = int(range_start)
+        if x := params.get("range_start"):
+            range_start = int(x)
         else:
-            range_start = None
-        if range_stop := params["range_stop"]:
-            range_stop = int(range_stop)
+            range_start = -1
+        if x := params.get("range_stop"):
+            range_stop = int(x)
         else:
             range_stop = range_start
-        action = int(params["action"])
-        writeable = "writeable" in params
+        reg_action = int(params["action"])
+        reg_writeable = "writeable" in params
+        reg_type = int(params["type"])
         filter_updated = 0
-        if range_start:
-            steps = range(range_start, range_stop)
+        if range_start != -1:
+            steps = range(range_start, range_stop + 1)
         else:
             steps = range(1, self.datastore_context.register_count)
         for i in steps:
-            if range_start and (i < range_start or i > range_stop):
+            if range_start != -1 and (i < range_start or i > range_stop):
                 continue
             reg = self.datastore_context.registers[i]
-            if writeable and not reg.access:
+            skip_filter = reg_writeable and not reg.access
+            skip_filter |= reg_type not in (-1, reg.type)
+            skip_filter |= reg_action not in (-1, reg.action)
+            skip_filter |= i in self.register_filter
+            if skip_filter:
                 continue
-            if type and reg.type != type:
-                continue
-            if action and reg.action != action:
-                continue
-            if i not in self.register_filter:
-                self.register_filter.append(i)
-                filter_updated += 1
-                if len(self.register_filter) > MAX_FILTER:
-                    return False, f"Max. filter size {MAX_FILTER} exceeded!"
+            self.register_filter.append(i)
+            filter_updated += 1
+            if len(self.register_filter) >= MAX_FILTER:
+                self.register_filter.sort()
+                return True, f"Max. filter size {MAX_FILTER} exceeded!"
         self.register_filter.sort()
-        txt = (
+        return True, (
             f"Added {filter_updated} registers."
             if filter_updated
             else "NO registers added."
         )
-        return True, txt
+
+    def helper_list_response(self, response):
+        """List response"""
+        # JAN
+        return response
+
+    def server_response_manipulator(self, response):
+        """Manipulate responses.
+
+        All server responses passes this filter before being sent.
+        The filter returns:
+
+        - response, either original or modified
+        - skip_encoding, signals whether or not to encode the response
+        """
+        if self.call_response.delay:
+            txt = f"Delaying response by {self.call_response.delay}s for all incoming requests"
+            _logger.warning(txt)
+            time.sleep(self.call_response.delay)  # change to async
+
+        if self.call_response.active == RESPONSE_NORMAL:
+            return self.helper_list_response(response), False
+
+        if self.call_response.clear_after:
+            self.call_response.clear_after -= 1
+            if not self.call_response.clear_after:
+                txt = "Resetting manipulator due to clear_after"
+                _logger.info(txt)
+                self.call_response = CallTypeResponse
+                return self.helper_list_response(response), False
+
+        if self.call_response.active == RESPONSE_ERROR:
+            _logger.warning("Sending error response for all incoming requests")
+            err_response = ExceptionResponse(
+                response.function_code, self.call_response.error_response
+            )
+            err_response.transaction_id = response.transaction_id
+            err_response.unit_id = response.unit_id
+            return self.helper_list_response(err_response), False
+
+        if self.call_response.active == RESPONSE_EMPTY:
+            _logger.warning("Sending empty response")
+            response.should_respond = False
+            return self.helper_list_response(response), False
+
+        if self.call_response.active == RESPONSE_JUNK:
+            response = os.urandom(self.call_response.junk_len)
+            return self.helper_list_response(response), True
+
+        # JAN REMEMBER SPLIT
+        return self.helper_list_response(response), False
+
+    def server_request_tracer(self, _request, *_addr):
+        """Trace requests.
+
+        All server requests passes this filter before being handled.
+        """
+        if self.call_monitor.active:
+            # build list box
+            pass

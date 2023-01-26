@@ -164,6 +164,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self._launch_reconnect()
             
     def _launch_reconnect( self ):
+        """Launch delayed reconnection coroutine"""
         if self._reconnect_future:
             _logger.warning("Ignoring attempt to launch a delayed reconnection while another is already in progress")
         else:
@@ -178,7 +179,6 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
 
-        oldfut = self._reconnect_future
         self._reconnect_future = None
         return await self._connect()
 

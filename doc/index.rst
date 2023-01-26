@@ -20,7 +20,7 @@ Welcome to PyModbus's documentation!
    source/library/framer.rst
    source/library/constants.rst
    source/library/pymodbus.rst
-   source/example/modules.rst
+   source/examples.rst
 
 
 Indices and tables

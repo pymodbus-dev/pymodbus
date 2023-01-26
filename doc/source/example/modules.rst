@@ -88,15 +88,34 @@ Asynchronous Asyncio Modbus TLS Client example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../../examples/v2.5.3/asynchronous_asyncio_modbus_tls_client.py
 
+Bcd Payload example
+^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/bcd_payload.py
+
+Callback Server example
+^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/callback_server.py
+
+Changing Framers example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/changing_framers.py
+
+Concurrent Client example
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/concurrent_client.py
+
+Custom Datablock example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/custom_datablock.py
+
+Custom Message example
+^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/custom_message.py
+
+
 .. toctree::
    :maxdepth: 4
 
-   bcd_payload
-   callback_server
-   changing_framers
-   concurrent_client
-   custom_datablock
-   custom_message
    dbstore_update_server
    deviceinfo_showcase_client
    deviceinfo_showcase_server

@@ -31,27 +31,66 @@ The examples are divived in 3 (4) parts:
 Examples version 3.x
 --------------------
 
-.. toctree::
-   :maxdepth: 4
+Asynchronous Client Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/client_async.py
 
-   client_async
-   client_calls
-   client_payload
-   client_sync
-   modbus_forwarder
-   server_async
-   server_payload
-   server_sync
-   server_updating
+Asynchronous Client basic calls example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/client_calls.py
+
+Modbus Payload Example
+^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/client_payload.py
+
+Synchronous Client Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/client_sync.py
+
+Forwarder Example
+^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/modbus_forwarder.py
+
+Asynchronous server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/server_async.py
+
+Modbus Payload Server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/server_payload.py
+
+Synchronous server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/server_sync.py
+
+Updating server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/server_updating.py
+
+Modbus Simulator example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modbus_simulator.py
+
+
+Examples contributions
+----------------------
+
+Serial Forwarder example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/contrib/serial_forwarder.py
+
+
 
 Examples version 2.5.3
 ----------------------
 
+Asynchronous Asyncio Modbus TLS Client example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/asynchronous_asyncio_modbus_tls_client.py
 
 .. toctree::
    :maxdepth: 4
 
-   asynchronous_asyncio_modbus_tls_client
    bcd_payload
    callback_server
    changing_framers
@@ -67,17 +106,8 @@ Examples version 2.5.3
    modbus_logging
    modbus_mapper
    modbus_saver
-   modbus_simulator
    modbus_tls_client
    modicon_payload
    performance
    remote_server_context
    thread_safe_datastore
-
-Examples contributions
-----------------------
-
-.. toctree::
-   :maxdepth: 4
-
-   modbus_serial_forwarder

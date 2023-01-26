@@ -7,9 +7,6 @@ pymodbus\.repl package
     :show-inheritance:
 
 
-Subpackages
---------------
-
 .. toctree::
 
     pymodbus.repl.client

@@ -7,14 +7,18 @@ Welcome to PyModbus's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 6
+   :maxdepth: 8
    :caption: Contents:
 
    readme.rst
    changelog.rst
-   source/library/modules.rst
+   source/library/client.rst
+   source/library/server.rst
    source/library/simulator/simulator
    source/library/REPL
+   source/library/datastore.rst
+   source/library/framer.rst
+   source/library/modules.rst
    source/example/modules.rst
 
 

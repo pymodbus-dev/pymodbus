@@ -1,5 +1,5 @@
-Pymodbus REPL
-=============
+REPL
+====
 
 Dependencies
 ------------
@@ -293,3 +293,13 @@ DEMO
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
 .. |asciicast2| image:: https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI.png
    :target: https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI
+
+
+REPL classes
+------------
+
+.. toctree::
+    :maxdepth: 4
+
+    pymodbus.repl.server
+    pymodbus.repl.client

@@ -6,10 +6,4 @@ The simulator allows to simulate the registers of a real life modbus device by a
 
 The simulator datastore allows to add actions (functions) to a register, and thus allows a low level automation.
 
-
-pymodbus\.datastore\.simulator module
--------------------------------------
-
-.. automodule:: pymodbus.datastore.simulator
-    :members:
-    :member-order: bysource
+Documentation :class:`pymodbus.datastore.ModbusSimulatorContext`

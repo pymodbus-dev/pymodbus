@@ -1,5 +1,5 @@
-pymodbus\.framer package
-========================
+Framer
+======
 
 pymodbus\.framer\.ascii_framer module
 -------------------------------------

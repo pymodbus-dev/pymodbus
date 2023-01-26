@@ -12,12 +12,7 @@ Subpackages
 .. toctree::
     :maxdepth: 4
 
-    pymodbus.client
     pymodbus.constants
-    pymodbus.datastore
-    pymodbus.framer
-    pymodbus.server
-    pymodbus.repl
 
 
 Submodules

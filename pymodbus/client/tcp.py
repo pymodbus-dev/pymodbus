@@ -162,11 +162,13 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self.protocol = None
         if self.delay_ms > 0:
             self._launch_reconnect()
-            
-    def _launch_reconnect( self ):
+
+    def _launch_reconnect(self):
         """Launch delayed reconnection coroutine"""
         if self._reconnect_future:
-            _logger.warning("Ignoring attempt to launch a delayed reconnection while another is already in progress")
+            _logger.warning(
+                "Ignoring attempt to launch a delayed reconnection while another is already in progress"
+            )
         else:
             # store the future in a member variable so we know we have a pending reconnection attempt
             # also prevents its garbage collection

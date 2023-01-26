@@ -1,6 +1,5 @@
-================
-pymodbus\.server
-================
+Server
+======
 
 Pymodbus offers servers with transport protocols for
 
@@ -20,19 +19,7 @@ synchronous servers are just an interface layer allowing synchronous
 applications to use the server as if it was synchronous.
 
 
-pymodbus\.server package
-========================
-
 .. automodule:: pymodbus.server
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-pymodbus\.server module
------------------------
-
-.. automodule:: pymodbus.server.async_io
     :members:
     :undoc-members:
     :show-inheritance:

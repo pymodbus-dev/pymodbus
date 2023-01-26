@@ -1,5 +1,5 @@
-Pymodbus REPL
-=============
+REPL
+====
 
 Dependencies
 ------------
@@ -293,3 +293,42 @@ DEMO
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
 .. |asciicast2| image:: https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI.png
    :target: https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI
+
+
+REPL client classes
+-------------------
+
+.. automodule:: pymodbus.repl.client.completer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.repl.client.helper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. automodule:: pymodbus.repl.client.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. automodule:: pymodbus.repl.client.mclient
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+REPL server classes
+-------------------
+
+.. automodule:: pymodbus.repl.server.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.repl.server.main
+    :members:
+    :undoc-members:
+    :show-inheritance:

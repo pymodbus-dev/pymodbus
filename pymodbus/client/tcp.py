@@ -108,7 +108,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         protocol.factory = self
         return protocol
 
-    async def _connect( self ):
+    async def _connect(self):
         """Connect."""
         _logger.debug("Connecting.")
         try:

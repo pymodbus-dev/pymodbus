@@ -112,21 +112,58 @@ Custom Message example
 ^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../../examples/v2.5.3/custom_message.py
 
+Dbstore update Server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/dbstore_update_server.py
 
-.. toctree::
-   :maxdepth: 4
+Deviceinfo showcase client example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/deviceinfo_showcase_client.py
 
-   dbstore_update_server
-   deviceinfo_showcase_client
-   deviceinfo_showcase_server
-   libmodbus_client
-   message_generator
-   message_parser
-   modbus_logging
-   modbus_mapper
-   modbus_saver
-   modbus_tls_client
-   modicon_payload
-   performance
-   remote_server_context
-   thread_safe_datastore
+Deviceinfo showcase server example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/deviceinfo_showcase_server.py
+
+Libmodbus Client example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/libmodbus_client.py
+
+Message Generator example
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/message_generator.py
+
+Message Parser example
+^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/message_parser.py
+
+Modbus Logging example
+^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modbus_logging.py
+
+Modbus Mapper example
+^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modbus_mapper.py
+
+Modbus Saver example
+^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modbus_saver.py
+
+Modbus Tls client example
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modbus_tls_client.py
+
+Modicon Payload example
+^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/modicon_payload.py
+
+performance module
+^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/performance.py
+
+Remote Server Context example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/remote_server_context.py
+
+Thread Safe Datastore example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../../examples/v2.5.3/thread_safe_datastore.py

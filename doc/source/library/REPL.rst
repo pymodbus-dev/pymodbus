@@ -295,11 +295,40 @@ DEMO
    :target: https://asciinema.org/a/edUqZN77fdjxL2toisiilJNwI
 
 
-REPL classes
-------------
+REPL client classes
+-------------------
 
-.. toctree::
-    :maxdepth: 4
+.. automodule:: pymodbus.repl.client.completer
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-    pymodbus.repl.server
-    pymodbus.repl.client
+.. automodule:: pymodbus.repl.client.helper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. automodule:: pymodbus.repl.client.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. automodule:: pymodbus.repl.client.mclient
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+REPL server classes
+-------------------
+
+.. automodule:: pymodbus.repl.server.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: pymodbus.repl.server.main
+    :members:
+    :undoc-members:
+    :show-inheritance:

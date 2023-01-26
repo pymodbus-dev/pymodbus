@@ -28,8 +28,6 @@ pymodbus\.server package
     :undoc-members:
     :show-inheritance:
 
-Submodules
-----------
 
 pymodbus\.server module
 -----------------------

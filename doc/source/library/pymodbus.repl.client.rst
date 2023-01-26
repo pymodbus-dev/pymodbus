@@ -1,14 +1,11 @@
-pymodbus\.repl\.client package
-=================================
+pymodbus.repl.client package
+============================
 
 .. automodule:: pymodbus.repl.client
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Submodules
--------------
 
 pymodbus\.repl\.client.completer module
 ------------------------------------------

@@ -724,6 +724,11 @@ class ModbusSimulatorContext:
         for i in range(  # pylint: disable=consider-using-any-or-all
             real_address, real_address + count, reg_step
         ):
+            if i is not real_address:
+                if self.registers[i].type is CellType.NEXT:
+                    continue
+                else:
+                    return False
             if self.registers[i].type not in check:
                 return False
         return True

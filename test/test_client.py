@@ -538,7 +538,7 @@ async def test_client_reconnect(mock_sleep):
     client = lib_client.AsyncModbusTcpClient(
         "127.0.0.1", protocol_class=mock_protocol_class
     )
-    
+
     # set delay long enough so we have only one connection attempt below
     client.params.reconnect_delay = 5000
     await client.connect()

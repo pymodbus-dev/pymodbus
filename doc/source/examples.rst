@@ -1,6 +1,7 @@
 Examples
 ========
 
+The examples can be downloaded from https://github.com/pymodbus-dev/pymodbus/tree/dev/examples
 
 Examples version 3.x
 --------------------

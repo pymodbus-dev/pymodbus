@@ -49,14 +49,14 @@ async def updating_task(context):
     that there is a lrace condition for the update.
     """
     _logger.debug("updating the context")
-    register = 3
+    fc_as_hex = 3
     slave_id = 0x00
     address = 0x10
-    values = context[slave_id].getValues(register, address, count=5)
+    values = context[slave_id].getValues(fc_as_hex, address, count=5)
     values = [v + 1 for v in values]  # increment by 1.
     txt = f"new values: {str(values)}"
     _logger.debug(txt)
-    context[slave_id].setValues(register, address, values)
+    context[slave_id].setValues(fc_as_hex, address, values)
     await asyncio.sleep(1)
 
 

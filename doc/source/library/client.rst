@@ -1,8 +1,5 @@
-
-
-================
-pymodbus\.client
-================
+Client
+======
 
 Pymodbus offers clients with transport protocols for
 
@@ -51,46 +48,57 @@ and a asynchronous example::
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
 
-Client setup.
--------------
+Tranport classes
+----------------
 
-.. autoclass:: pymodbus.client.base.ModbusBaseClient
+.. autoclass:: pymodbus.client.ModbusBaseClient
     :members:
     :member-order: bysource
+    :show-inheritance:
 
-Serial RS-485 transport.
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: pymodbus.client.serial.AsyncModbusSerialClient
-
-.. autoclass:: pymodbus.client.serial.ModbusSerialClient
-
-TCP transport.
-~~~~~~~~~~~~~~
-
-.. autoclass:: pymodbus.client.tcp.AsyncModbusTcpClient
-
-.. autoclass:: pymodbus.client.tcp.ModbusTcpClient
-
-TLS transport.
-~~~~~~~~~~~~~~
-
-.. autoclass:: pymodbus.client.tls.AsyncModbusTlsClient
-
-.. autoclass:: pymodbus.client.tls.ModbusTlsClient
-
-UDP transport.
-~~~~~~~~~~~~~~
-
-.. autoclass:: pymodbus.client.udp.AsyncModbusUdpClient
+.. autoclass:: pymodbus.client.AsyncModbusSerialClient
     :members:
+    :member-order: bysource
+    :show-inheritance:
 
-.. autoclass:: pymodbus.client.udp.ModbusUdpClient
+.. autoclass:: pymodbus.client.ModbusSerialClient
     :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.AsyncModbusTcpClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.ModbusTcpClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.AsyncModbusTlsClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.ModbusTlsClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.AsyncModbusUdpClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+.. autoclass:: pymodbus.client.ModbusUdpClient
+    :members:
+    :member-order: bysource
+    :show-inheritance:
 
 
-Client device calls.
---------------------
+Modbus calls
+------------
 
 Pymodbus makes all standard modbus requests/responses available as simple calls.
 
@@ -99,3 +107,5 @@ and handled automatically.
 
 .. autoclass:: pymodbus.client.mixin.ModbusClientMixin
     :members:
+    :member-order: bysource
+    :show-inheritance:

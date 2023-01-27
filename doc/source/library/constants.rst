@@ -1,14 +1,8 @@
-pymodbus\.constants package
-===========================
+Constants
+=========
 
 .. automodule:: pymodbus.constants
     :members:
     :undoc-members:
     :show-inheritance:
     :noindex:
-
-Submodules
-----------
-
-
-

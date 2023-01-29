@@ -1,8 +1,5 @@
-pymodbus\.framer package
-========================
-
-Submodules
-----------
+Framer
+======
 
 pymodbus\.framer\.ascii_framer module
 -------------------------------------
@@ -44,4 +41,3 @@ Module contents
     :members:
     :undoc-members:
     :show-inheritance:
-

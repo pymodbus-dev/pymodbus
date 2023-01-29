@@ -80,18 +80,18 @@ demo_config = {
         {"addr": [19, 20], "value": 14661, "action": "increment"},
     ],
     "uint32": [
-        {"addr": 21, "value": 3124},
-        {"addr": [23, 25], "value": 5678},
-        {"addr": [27, 29], "value": 345000, "action": "increment"},
+        {"addr": [21, 22], "value": 3124},
+        {"addr": [23, 26], "value": 5678},
+        {"addr": [27, 30], "value": 345000, "action": "increment"},
     ],
     "float32": [
-        {"addr": 31, "value": 3124.17},
-        {"addr": [33, 35], "value": 5678.19},
-        {"addr": [37, 39], "value": 345000.18, "action": "increment"},
+        {"addr": [31, 32], "value": 3124.17},
+        {"addr": [33, 36], "value": 5678.19},
+        {"addr": [37, 40], "value": 345000.18, "action": "increment"},
     ],
     "string": [
         {"addr": [41, 42], "value": "Str"},
-        {"addr": [43, 44], "value": "Strxyz"},
+        {"addr": [43, 44], "value": "Strx"},
     ],
     "repeat": [{"addr": [0, 45], "to": [46, 138]}],
 }

@@ -1,3 +1,32 @@
+version 3.1.2
+----------------------------------------------------------
+* Update README.rst
+* Correct README link. (#1316)
+* More direct readme links for REPL (#1314)
+* Add classifier for 3.11 (#1312)
+* Update README.rst (#1313)
+* Delete ModbusCommonBlock.png (#1311)
+* Add modbus standard to README. (#1308)
+* fix no auto reconnect after close/connect in TCPclient (#1298)
+* Update examples.rst (#1307)
+* var name clarification (#1304)
+* Bump external libraries. (#1302)
+* Reorganize documentation to make it easier accessible (#1299)
+* Simulator documentation (first version). (#1296)
+* Updated datastore Simulator. (#1255)
+* Update links to pydmodbus-dev (#1291)
+* Change riptideio to pymodbus-dev. (#1292)
+* #1258 Avoid showing unit as a seperate command line argument (#1288)
+* Solve docker cache problem. (#1287)
+
+Thanks to:
+
+  Alex,
+  Alexandre CUER,
+  dhoomakethu,
+  jan iversen,
+  peufeu2
+
 version 3.1.1
 ----------------------------------------------------------
 * add missing server.start() (#1282)
@@ -13,10 +42,10 @@ version 3.1.1
 
 Thanks to:
 
-  Alex
-  Alexandre CUER
-  Dries
-  jan iversen
+  Alex,
+  Alexandre CUER,
+  Dries,
+  jan iversen,
   peufeu2
 
 
@@ -46,13 +75,13 @@ version 3.1.0
 
 Thanks to:
 
-  Alex
-  banana-sun
-  Chris Hung
-  dhoomakethu
-  jan iversen
-  Matthias Straka
-  Pavel Kostromitinov
+  Alex,
+  banana-sun,
+  Chris Hung,
+  dhoomakethu,
+  jan iversen,
+  Matthias Straka,
+  Pavel Kostromitinov,
 
 version 3.0.2
 ----------------------------------------------------------
@@ -86,15 +115,15 @@ version 3.0.2
 
 Thanks to:
 
-  Alex
-  Alexandre CUER
-  Blaise Thompson
-  dhoomakethu
-  Gao Fang
-  jan Iversen
-  Joe Burmeister
-  Sebastian Machuca
-  Thijs W
+  Alex,
+  Alexandre CUER,
+  Blaise Thompson,
+  dhoomakethu,
+  Gao Fang,
+  jan Iversen,
+  Joe Burmeister,
+  Sebastian Machuca,
+  Thijs W,
   WouterTuinstra
 
 version 3.0.1

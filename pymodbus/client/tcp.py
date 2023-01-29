@@ -54,7 +54,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         self.loop = None
         self.connected = False
         self.delay_ms = self.params.reconnect_delay
-        self._reconnect_future = None
+        self._reconnect_task = None
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
         """Initiate connection to start client."""
@@ -70,20 +70,19 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop client."""
-
-        # if there is an unfinished delayed reconnection attempt pending, cancel it
-        if self._reconnect_future:
-            self._reconnect_future.cancel()
-            self._reconnect_future = None
-
-        # prevent reconnect:
         self.delay_ms = 0
         if self.connected:
             if self.protocol.transport:
+                self.protocol.transport.abort()
                 self.protocol.transport.close()
             if self.protocol:
                 await self.protocol.close()
+                self.protocol = None
             await asyncio.sleep(0.1)
+
+        if self._reconnect_task:
+            self._reconnect_task.cancel()
+            self._reconnect_task = None
 
     def _create_protocol(self):
         """Create initialized protocol instance with factory function."""
@@ -156,14 +155,12 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     def _launch_reconnect(self):
         """Launch delayed reconnection coroutine"""
-        if self._reconnect_future:
+        if self._reconnect_task:
             Log.warning(
                 "Ignoring launch of delayed reconnection, another is in progress"
             )
         else:
-            # store the future in a member variable so we know we have a pending reconnection attempt
-            # also prevents its garbage collection
-            self._reconnect_future = asyncio.ensure_future(self._reconnect())
+            self._reconnect_task = asyncio.create_task(self._reconnect())
 
     async def _reconnect(self):
         """Reconnect."""
@@ -171,7 +168,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
 
-        self._reconnect_future = None
+        self._reconnect_task = None
         return await self._connect()
 
 

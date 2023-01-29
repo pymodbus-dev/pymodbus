@@ -297,7 +297,11 @@ class ModbusClientProtocol(
         if self.params.broadcast_enable and not request.unit_id:
             resp = b"Broadcast write sent - no response expected"
         else:
-            resp = await asyncio.wait_for(req, timeout=self.params.timeout)
+            try:
+                resp = await asyncio.wait_for(req, timeout=self.params.timeout)
+            except asyncio.exceptions.TimeoutError:
+                self.connection_lost("trying to send")
+                raise
         return resp
 
     def connection_made(self, transport):
@@ -309,16 +313,12 @@ class ModbusClientProtocol(
         self._connection_made()
 
         if self.factory:
-            self.factory.protocol_made_connection(  # pylint: disable=no-member,useless-suppression
-                self
-            )
+            self.factory.protocol_made_connection(self)  # pylint: disable=no-member
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Close connection."""
         if self.transport:
             self.transport.close()
-            while self.transport is not None:
-                await asyncio.sleep(0.1)
         self._connected = False
 
     def connection_lost(self, reason):
@@ -326,13 +326,14 @@ class ModbusClientProtocol(
 
         The argument is either an exception object or None
         """
-        self.transport = None
-        self._connection_lost(reason)
-
+        if self.transport:
+            self.transport.abort()
+            if hasattr(self.transport, "_sock"):
+                self.transport._sock.close()  # pylint: disable=protected-access
+            self.transport = None
         if self.factory:
-            self.factory.protocol_lost_connection(  # pylint: disable=no-member,useless-suppression
-                self
-            )
+            self.factory.protocol_lost_connection(self)  # pylint: disable=no-member
+        self._connection_lost(reason)
 
     def data_received(self, data):
         """Call when some data is received.

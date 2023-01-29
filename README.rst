@@ -34,7 +34,7 @@ Summary
 
 Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous (using asyncio) core.
 
-The modbus protocol documentation can be found `here <../_static/Modbus_Application_Protocol_V1_1b3.pdf>`_
+The modbus protocol documentation can be found `here <https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/source/_static/Modbus_Application_Protocol_V1_1b3.pdf>`_
 Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
 Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.

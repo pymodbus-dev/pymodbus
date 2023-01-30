@@ -22,7 +22,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.1.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.1>`_ is the current release (Supports Python >=3.8).
+Version `3.1.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.2>`_ is the current release (Supports Python >=3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
@@ -34,7 +34,8 @@ Summary
 
 Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous (using asyncio) core.
 
-The modbus protocol documentation can be found `here <../_static/Modbus_Application_Protocol_V1_1b3.pdf>`_
+The modbus protocol documentation can be found `here <https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/source/_static/Modbus_Application_Protocol_V1_1b3.pdf>`_
+
 Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
 Pymodbus can be used without any third party dependencies (aside from pyserial) and is a very lightweight project.
@@ -107,7 +108,7 @@ For those of you that just want to get started fast, here you go::
     print(result.bits[0])
     client.close()
 
-For more advanced examples, check out the `Examples <https://pymodbus.readthedocs.io/en/dev/source/example/modules.html>`_ included in the
+For more advanced examples, check out the `Examples <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_ included in the
 repository. If you have created any utilities that meet a specific
 need, feel free to submit them so others can benefit.
 

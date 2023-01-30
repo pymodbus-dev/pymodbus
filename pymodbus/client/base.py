@@ -311,9 +311,10 @@ class ModbusClientProtocol(
         """
         self.transport = transport
         if sock := transport.get_extra_info("socket"):
-            if sys.platform != "win32":
-                #    sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
-                #else:
+            if sys.platform == "win32":
+                if not self.use_udp:
+                    sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
+            else:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self._connection_made()
 

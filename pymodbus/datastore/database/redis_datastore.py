@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import logging
 
+
 try:
     import redis
 except ImportError:

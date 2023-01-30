@@ -94,6 +94,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self._sent = b""  # for handle_local_echo
+        self.use_udp = False
 
     def _log_exception(self):
         """Show log exception."""
@@ -126,7 +127,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             ):
                 if sock := transport.get_extra_info("socket"):
                     if sys.platform == "win32":
-                        sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
+                        if not self.use_udp:
+                            sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
                     else:
                         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
                 sockname = transport.get_extra_info("sockname")[:2]
@@ -402,6 +404,7 @@ class ModbusDisconnectedRequestHandler(
     def __init__(self, owner):
         """Initialize."""
         super().__init__(owner)
+        self.use_udp = True
         _future = asyncio.get_running_loop().create_future()
         self.server.on_connection_terminated = _future
 

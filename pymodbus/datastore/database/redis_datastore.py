@@ -2,7 +2,10 @@
 # pylint: disable=missing-type-doc
 import logging
 
-import redis
+try:
+    import redis
+except ImportError:
+    pass
 
 from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.utilities import pack_bitstring, unpack_bitstring

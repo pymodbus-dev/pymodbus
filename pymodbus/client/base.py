@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
+import sys
 from dataclasses import dataclass
 
 from pymodbus.client.mixin import ModbusClientMixin
@@ -309,6 +310,11 @@ class ModbusClientProtocol(
         The transport argument is the transport representing the connection.
         """
         self.transport = transport
+        if sock := transport.get_extra_info("socket"):
+            if sys.platform != "win32":
+                #    sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
+                #else:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self._connection_made()
 
         if self.factory:

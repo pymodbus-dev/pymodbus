@@ -126,8 +126,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             ):
                 if sock := transport.get_extra_info("socket"):
                     if sys.platform == "win32":
-                        _logger.debug("JAN var her")
-                        # sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
+                        sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 3000, 1000))
                     else:
                         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
                 sockname = transport.get_extra_info("sockname")[:2]

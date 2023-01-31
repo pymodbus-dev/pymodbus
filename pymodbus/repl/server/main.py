@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import logging
 import sys
 from enum import Enum
 from pathlib import Path
@@ -11,7 +10,9 @@ from typing import List
 
 import typer
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.logging import Log
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 from pymodbus.server.reactive.main import (
@@ -22,9 +23,6 @@ from pymodbus.server.reactive.main import (
 
 
 CANCELLED_ERROR = asyncio.exceptions.CancelledError
-
-_logger = logging.getLogger(__name__)
-
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
 
 
@@ -82,10 +80,9 @@ def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
             try:
                 modbus_config[option] = type(modbus_config[option])(value)
             except ValueError as err:
-                msg = (
-                    f"Error parsing extra arg {option}' " f"with value '{value}'. {err}"
+                Log.error(
+                    "Error parsing extra arg {} with value '{}'. {}", option, value, err
                 )
-                _logger.error(msg)
                 sys.exit(1)
     return modbus_config
 
@@ -111,19 +108,8 @@ def server(
     ),
 ):
     """Run server code."""
-    FORMAT = (  # pylint: disable=invalid-name
-        "%(asctime)-15s %(threadName)-15s"
-        " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-    )
-    pymodbus_logger = logging.getLogger("pymodbus")
-    logging.basicConfig(format=FORMAT)
-    logger = logging.getLogger(__name__)
-    if verbose:
-        pymodbus_logger.setLevel(logging.DEBUG)
-        logger.setLevel(logging.DEBUG)
-    else:
-        pymodbus_logger.setLevel(logging.ERROR)
-        logger.setLevel(logging.ERROR)
+    log_level = Log.DEBUG if verbose else Log.ERROR
+    pymodbus_apply_logging_config(log_level)
 
     ctx.obj = {
         "repl": repl,

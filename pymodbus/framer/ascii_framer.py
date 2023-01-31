@@ -1,20 +1,15 @@
 """Ascii_framer."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 from binascii import a2b_hex, b2a_hex
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.logging import Log
 from pymodbus.utilities import checkLRC, computeLRC
 
 
 ASCII_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
@@ -184,8 +179,7 @@ class ModbusAsciiFramer(ModbusFramer):
                     callback(result)  # defer this
                 else:
                     header_txt = self._header["uid"]
-                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
-                    _logger.error(txt)
+                    Log.error("Not a valid unit id - {}, ignoring!!", header_txt)
                     self.resetFrame()
             else:
                 break

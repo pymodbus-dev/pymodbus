@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import socket
 from dataclasses import dataclass
 
@@ -11,12 +10,10 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException, NotImplementedException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
+from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.utilities import ModbusTransactionState, hexlify_packets
-
-
-_logger = logging.getLogger(__name__)
+from pymodbus.utilities import ModbusTransactionState
 
 
 class ModbusBaseClient(ModbusClientMixin):
@@ -207,7 +204,7 @@ class ModbusBaseClient(ModbusClientMixin):
         :meta private:
         """
         if self.state != ModbusTransactionState.RETRYING:
-            _logger.debug('New Transaction state "SENDING"')
+            Log.debug('New Transaction state "SENDING"')
             self.state = ModbusTransactionState.SENDING
         return request
 
@@ -360,13 +357,12 @@ class ModbusClientProtocol(
 
     def _connection_made(self):
         """Call upon a successful client connection."""
-        _logger.debug("Client connected to modbus server")
+        Log.debug("Client connected to modbus server")
         self._connected = True
 
     def _connection_lost(self, reason):
         """Call upon a client disconnect."""
-        txt = f"Client disconnected from modbus server: {reason}"
-        _logger.debug(txt)
+        Log.debug("Client disconnected from modbus server: {}", reason)
         self._connected = False
         for tid in list(self.transaction):
             self.raise_future(
@@ -389,17 +385,13 @@ class ModbusClientProtocol(
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"send: {hexlify_packets(packet)}"
-            _logger.debug(txt)
+        Log.debug("send: {}", packet, ":hex")
         self.write_transport(packet)
         return self._build_response(request.transaction_id)
 
     def _data_received(self, data):
         """Get response, check for valid message, decode result."""
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"recv: {hexlify_packets(data)}"
-            _logger.debug(txt)
+        Log.debug("recv: {}", data, ":hex")
         self.framer.processIncomingPacket(data, self._handle_response, unit=0)
 
     def _handle_response(self, reply, **kwargs):  # pylint: disable=unused-argument
@@ -409,8 +401,7 @@ class ModbusClientProtocol(
             if handler := self.transaction.getTransaction(tid):
                 self.resolve_future(handler, reply)
             else:
-                txt = f"Unrequested message: {str(reply)}"
-                _logger.debug(txt)
+                Log.debug("Unrequested message: {}", reply, ":str")
 
     def _build_response(self, tid):
         """Return a deferred response for the current request."""

@@ -1,6 +1,5 @@
 """Datastore using redis."""
 # pylint: disable=missing-type-doc
-import logging
 
 
 try:
@@ -9,13 +8,8 @@ except ImportError:
     pass
 
 from pymodbus.interfaces import IModbusSlaveContext
+from pymodbus.logging import Log
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
-
-
-# ---------------------------------------------------------------------------#
-#  Logging
-# ---------------------------------------------------------------------------#
-_logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------#
@@ -57,8 +51,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"validate[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("validate[{}] {}:{}", fx, address, count)
         return self._val_callbacks[self.decode(fx)](address, count)
 
     def getValues(self, fx, address, count=1):
@@ -70,8 +63,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"getValues[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("getValues[{}] {}:{}", fx, address, count)
         return self._get_callbacks[self.decode(fx)](address, count)
 
     def setValues(self, fx, address, values):
@@ -82,8 +74,7 @@ class RedisSlaveContext(IModbusSlaveContext):
         :param values: The new values to be set
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"setValues[{fx}] {address}:{len(values)}"
-        _logger.debug(txt)
+        Log.debug("setValues[{}] {}:{}", fx, address, len(values))
         self._set_callbacks[self.decode(fx)](address, values)
 
     # --------------------------------------------------------------------------#

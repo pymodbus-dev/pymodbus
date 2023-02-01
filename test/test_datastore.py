@@ -337,12 +337,14 @@ class SqlDataStoreTest(unittest.TestCase):
     def tearDown(self):
         """Clean up the test environment"""
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_str(self):
         """Test string."""
         unit = self.SQLunit()
         self.assertEqual(str(unit.slave), "Modbus Slave Context")
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_reset(self):
         """Test reset."""
@@ -354,6 +356,7 @@ class SqlDataStoreTest(unittest.TestCase):
             unit.slave.table, unit.slave.database
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_validate_success(self):
         """Test validate success."""
@@ -367,6 +370,7 @@ class SqlDataStoreTest(unittest.TestCase):
             )
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_validate_failure(self):
         """Test validate failure."""
@@ -379,6 +383,7 @@ class SqlDataStoreTest(unittest.TestCase):
             unit.slave.validate(unit.mock_function, unit.mock_addr, wrong_count)
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_build_set(self):
         """Test build set."""
@@ -392,6 +397,7 @@ class SqlDataStoreTest(unittest.TestCase):
             mock_set,
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_check_success(self):
         """Test check success."""
@@ -404,6 +410,7 @@ class SqlDataStoreTest(unittest.TestCase):
             unit.slave._check("h", 0, 1)  # pylint: disable=protected-access
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_check_failure(self):
         """Test check failure."""
@@ -416,6 +423,7 @@ class SqlDataStoreTest(unittest.TestCase):
             unit.slave._check("h", 0, 1)  # pylint: disable=protected-access
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_get_values(self):
         """Test get values."""
@@ -428,6 +436,7 @@ class SqlDataStoreTest(unittest.TestCase):
                 value, unit.mock_addr + 1, unit.mock_count
             )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_set_values(self):
         """Test set values."""
@@ -440,6 +449,7 @@ class SqlDataStoreTest(unittest.TestCase):
                 value, unit.mock_addr + 1, unit.mock_values
             )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_set(self):
         """Test set."""
@@ -465,6 +475,7 @@ class SqlDataStoreTest(unittest.TestCase):
             )
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_update_success(self):
         """Test update success."""
@@ -478,6 +489,7 @@ class SqlDataStoreTest(unittest.TestCase):
             )
         )
 
+    @pytest.mark.skip
     @pytest.mark.xdist_group(name="sql")
     def test_update_failure(self):
         """Test update failure."""

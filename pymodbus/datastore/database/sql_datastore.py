@@ -49,7 +49,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         """Reset all the datastores to their default values."""
-        self._metadata.drop_all()
+        self._metadata.drop_all(None)
         self._db_create(self.table, self.database)
 
     def validate(self, fx, address, count=1):

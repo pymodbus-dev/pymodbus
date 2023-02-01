@@ -34,7 +34,7 @@ pyserial-asyncio==0.6
 
 # install:datastore
 redis>=2.10.6
-sqlalchemy>=1.1.15
+sqlalchemy==1.1.15
 
 
 # -------------------------------------------------------------------

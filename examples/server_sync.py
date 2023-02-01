@@ -84,7 +84,6 @@ def run_sync_server(args):
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
             # TBD handler=None,  # handler for each session
-            # TBD allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete

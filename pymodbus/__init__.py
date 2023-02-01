@@ -11,7 +11,7 @@ import pymodbus.version as __version
 
 __version__ = __version.version.short()
 __author__ = "Galen Collins"
-__maintainer__ = "dhoomakethu"
+__maintainer__ = "dhoomakethu, janiversen"
 
 # ---------------------------------------------------------------------------#
 #  Block unhandled logging
@@ -19,7 +19,7 @@ __maintainer__ = "dhoomakethu"
 __logging.getLogger(__name__).addHandler(__null())
 
 
-def pymodbus_apply_logging_config():
+def pymodbus_apply_logging_config(level=__logging.WARNING):
     """Apply basic logging configuration used by default by Pymodbus maintainers.
 
     Please call this function to format logging appropriately when opening issues.
@@ -27,5 +27,5 @@ def pymodbus_apply_logging_config():
     __logging.basicConfig(
         format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
         datefmt="%H:%M:%S",
-        level=__logging.WARNING,
+        level=level,
     )

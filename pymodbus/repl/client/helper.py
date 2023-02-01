@@ -164,7 +164,7 @@ def _get_requests(members):
     )
     commands = {
         f"client.{c[0]}": Command(
-            f"client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), unit=True
+            f"client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), unit=False
         )
         for c in commands
         if not c[0].startswith("_")

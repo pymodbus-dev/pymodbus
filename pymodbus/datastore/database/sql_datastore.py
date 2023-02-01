@@ -2,11 +2,15 @@
 # pylint: disable=missing-type-doc
 import logging
 
-import sqlalchemy
-import sqlalchemy.types as sqltypes
-from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.sql import and_
-from sqlalchemy.sql.expression import bindparam
+
+try:
+    import sqlalchemy
+    import sqlalchemy.types as sqltypes
+    from sqlalchemy.schema import UniqueConstraint
+    from sqlalchemy.sql import and_
+    from sqlalchemy.sql.expression import bindparam
+except ImportError:
+    pass
 
 from pymodbus.interfaces import IModbusSlaveContext
 

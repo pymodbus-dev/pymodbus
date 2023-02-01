@@ -124,7 +124,7 @@ class NumericChoice(click.Choice):
         return None
 
 
-def _process_args(args: list, string: bool = True):
+def process_args(args: list, string: bool = True):
     """Internal function to parse arguments provided on command line.
 
     :param args: Array of argument values
@@ -226,7 +226,7 @@ def cli(client):  # pylint: disable=too-complex
                     text = text.strip().split()
                     cmd = text[0].split(".")[1]
                     args = text[1:]
-                    kwargs, execute = _process_args(args, string=False)
+                    kwargs, execute = process_args(args, string=False)
                     if execute:
                         if text[0] in CLIENT_ATTRIBUTES:
                             result = Result(getattr(client, cmd))
@@ -242,7 +242,7 @@ def cli(client):  # pylint: disable=too-complex
                         result.raw()
                     if words[0] == "result.decode":
                         args = words[1:]
-                        kwargs, execute = _process_args(args)
+                        kwargs, execute = process_args(args)
                         if execute:
                             result.decode(**kwargs)
         except KeyboardInterrupt:

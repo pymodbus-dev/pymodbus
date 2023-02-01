@@ -1,44 +1,134 @@
-version 3.0.1
+version 3.1.2
 ----------------------------------------------------------
-Update datastore remote to handle write requests (#1166)
-Allow multiple servers. (#1164)
-Fix typo. (#1162)
-Transfer parms. to connected client. (#1161)
-Repl enhancements 2 (#1141)
-Server simulator with datastore with json data. (#1157)
-Avoid unwanted reconnects (#1154)
-Do not initialize framer twice. (#1153)
-Allow timeout as float. (#1152)
-Improve Docker Support (#1145)
-Fix unreachable code in AsyncModbusTcpClient (#1151)
-Fix type hints for port and timeout (#1147)
-Start/stop multiple servers. (#1138)
-Server/asyncio.py correct logging when disconnecting the socket (#1135)
-Add Docker and container registry support  (#1132)
-Removes undue reported error when forwarding (#1134)
-Obey timeout parameter on connection (#1131)
-Readme typos (#1129)
-Clean noqa directive. (#1125)
-Add isort and activate CI fail for black/isort. (#1124)
-Update examples. (#1117)
-Move logging configuration behind function call (#1120)
-serial2TCP forwarding example (#1116)
-Make serial import dynamic. (#1114)
-Bugfix ModbusSerialServer setup so handler is called correctly. (#1113)
-Clean configurations. (#1111)
+* Update README.rst
+* Correct README link. (#1316)
+* More direct readme links for REPL (#1314)
+* Add classifier for 3.11 (#1312)
+* Update README.rst (#1313)
+* Delete ModbusCommonBlock.png (#1311)
+* Add modbus standard to README. (#1308)
+* fix no auto reconnect after close/connect in TCPclient (#1298)
+* Update examples.rst (#1307)
+* var name clarification (#1304)
+* Bump external libraries. (#1302)
+* Reorganize documentation to make it easier accessible (#1299)
+* Simulator documentation (first version). (#1296)
+* Updated datastore Simulator. (#1255)
+* Update links to pydmodbus-dev (#1291)
+* Change riptideio to pymodbus-dev. (#1292)
+* #1258 Avoid showing unit as a seperate command line argument (#1288)
+* Solve docker cache problem. (#1287)
 
 Thanks to:
 
-  Alex
-  Alexandre CUER
-  Blaise Thompson
-  dhoomakethu
-  Gao Fang
-  jan Iversen
-  Joe Burmeister
-  Sebastian Machuca
-  Thijs W
+  Alex,
+  Alexandre CUER,
+  dhoomakethu,
+  jan iversen,
+  peufeu2
+
+version 3.1.1
+----------------------------------------------------------
+* add missing server.start() (#1282)
+* small performance improvement on debug log (#1279)
+* Fix Unix sockets parsing (#1281)
+* client: Allow unix domain socket. (#1274)
+* transfer timeout to protocol object. (#1275)
+* Add ModbusUnixServer / StartAsyncUnixServer. (#1273)
+* Added return in AsyncModbusSerialClient.connect (#1271)
+* add connect() to the very first example (#1270)
+* Solve docker problem. (#1268)
+* Test stop of server task. (#1256)
+
+Thanks to:
+
+  Alex,
+  Alexandre CUER,
+  Dries,
+  jan iversen,
+  peufeu2
+
+
+version 3.1.0
+----------------------------------------------------------
+* Add xdist pr default. (#1253)
+* Create docker-publish.yml (#1250)
+* Parallelize pytest with pytest-xdist (#1247)
+* Support Python3.11 (#1246)
+* Fix reconnectDelay to be within (100ms, 5min) (#1244)
+* Fix typos in comments (#1233)
+* WEB simulator, first version. (#1226)
+* Clean async serial problem. (#1235)
+* terminate when using 'randomize' and 'change_rate' at the same time (#1231)
+* Used tooled python and OS (#1232)
+* add 'change_rate' randomization option (#1229)
+* add check_ci.sh (#1225)
+* Simplify CI and use cache. (#1217)
+* Solve issue 1210, update simulator (#1211)
+* Add missing client calls in mixin.py. (#1206)
+* Advanced simulator with cross memory. (#1195)
+* AsyncModbusTcp/UdpClient honors delay_ms == 0 (#1203) (#1205)
+* Fix #1188 and some pylint issues (#1189)
+* Serial receive incomplete bytes.issue #1183 (#1185)
+* Handle echo (#1186)
+* Add updating server example. (#1176)
+
+Thanks to:
+
+  Alex,
+  banana-sun,
+  Chris Hung,
+  dhoomakethu,
+  jan iversen,
+  Matthias Straka,
+  Pavel Kostromitinov,
+
+version 3.0.2
+----------------------------------------------------------
+* Add pygments as requirement for repl
+* Update datastore remote to handle write requests (#1166)
+* Allow multiple servers. (#1164)
+* Fix typo. (#1162)
+* Transfer parms. to connected client. (#1161)
+* Repl enhancements 2 (#1141)
+* Server simulator with datastore with json data. (#1157)
+* Avoid unwanted reconnects (#1154)
+* Do not initialize framer twice. (#1153)
+* Allow timeout as float. (#1152)
+* Improve Docker Support (#1145)
+* Fix unreachable code in AsyncModbusTcpClient (#1151)
+* Fix type hints for port and timeout (#1147)
+* Start/stop multiple servers. (#1138)
+* Server/asyncio.py correct logging when disconnecting the socket (#1135)
+* Add Docker and container registry support  (#1132)
+* Removes undue reported error when forwarding (#1134)
+* Obey timeout parameter on connection (#1131)
+* Readme typos (#1129)
+* Clean noqa directive. (#1125)
+* Add isort and activate CI fail for black/isort. (#1124)
+* Update examples. (#1117)
+* Move logging configuration behind function call (#1120)
+* serial2TCP forwarding example (#1116)
+* Make serial import dynamic. (#1114)
+* Bugfix ModbusSerialServer setup so handler is called correctly. (#1113)
+* Clean configurations. (#1111)
+
+Thanks to:
+
+  Alex,
+  Alexandre CUER,
+  Blaise Thompson,
+  dhoomakethu,
+  Gao Fang,
+  jan Iversen,
+  Joe Burmeister,
+  Sebastian Machuca,
+  Thijs W,
   WouterTuinstra
+
+version 3.0.1
+----------------------------------------------------------
+* Faulty release!
 
 version 3.0.0
 ----------------------------------------------------------

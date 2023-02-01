@@ -1,32 +1,31 @@
 ================================
 PyModbus - A Python Modbus Stack
 ================================
+We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
+The move from a company organization to pymodbus-dev was done to allow a 100% openness in the spirit of FOSS.
 
-.. image:: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
-   :target: https://github.com/riptideio/pymodbus/actions/workflows/ci.yml
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pymodbus_dev/Lobby
-.. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
+.. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
+   :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
+ .. image:: https://readthedocs.org/projects/pymodbus/badge/?version=latest
    :target: https://pymodbus.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 .. image:: https://pepy.tech/badge/pymodbus
    :target: https://pepy.tech/project/pymodbus
    :alt: Downloads
+.. image:: https://ghcr-badge.deta.dev/pymodbus-dev/pymodbus/tags?label=Docker
+   :target: https://github.com/pymodbus-dev/pymodbus/pkgs/container/pymodbus
+   :alt: Docker Tags
 
 ------------------------------------------------------------
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/riptideio/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
+Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.0.1 <https://github.com/riptideio/pymodbus/releases/tag/v3.0.1>`_ is the current release (Supports Python >=3.8).
-
-Remark: "Supports" means that we only test with those versions, lower versions (e.g. 3.7) might work depending on the functionality used.
+Version `3.1.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.2>`_ is the current release (Supports Python >=3.8).
 
 .. important::
-   **Note 3.0.0 is a major release with a number of incompatible changes.**
-
-   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/riptideio/pymodbus/blob/dev/API_changes.rst>`_
+   All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
 
 
 ------------------------------------------------------------
@@ -34,6 +33,8 @@ Summary
 ------------------------------------------------------------
 
 Pymodbus is a full Modbus protocol implementation using a synchronous or asynchronous (using asyncio) core.
+
+The modbus protocol documentation can be found `here <https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/source/_static/Modbus_Application_Protocol_V1_1b3.pdf>`_
 
 Supported modbus communication modes: tcp, rtu-over-tcp, udp, serial, tls
 
@@ -43,7 +44,7 @@ Pymodbus also provides a lot of ready to use examples as well as a server/client
 
 Requires Python >= 3.8
 
-The tests are run against Python 3.8, 3.9, 3.10 on Windows, Linux and MacOS.
+The tests are run against Python 3.8, 3.9, 3.10, 3.11 on Windows, Linux and MacOS.
 
 ------------------------------------------------------------
 Features
@@ -90,8 +91,6 @@ base operating system will allow (*allow* in this case means how many Virtual IP
 
 For more information please browse the project documentation:
 
-https://riptideio.github.io/pymodbus/
-or
 https://readthedocs.org/docs/pymodbus/en/latest/index.html
 
 ------------------------------------------------------------
@@ -103,12 +102,13 @@ For those of you that just want to get started fast, here you go::
     from pymodbus.client import ModbusTcpClient
 
     client = ModbusTcpClient('127.0.0.1')
+    client.connect()
     client.write_coil(1, True)
     result = client.read_coils(1,1)
     print(result.bits[0])
     client.close()
 
-For more advanced examples, check out the `Examples <https://pymodbus.readthedocs.io/en/dev/source/example/modules.html>`_ included in the
+For more advanced examples, check out the `Examples <https://pymodbus.readthedocs.io/en/dev/source/examples.html>`_ included in the
 repository. If you have created any utilities that meet a specific
 need, feel free to submit them so others can benefit.
 
@@ -122,10 +122,10 @@ Examples Directory structure
    ├── v2.5.3    -> Examples not updated to version 3.0.0.
    ├── contrib   -> Examples contributed by contributors.
 
-Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/riptideio/pymodbus/discussions/new?category=q-a>`_,
+Also, if you have a question, please `create a post in discussions q&a topic <https://github.com/pymodbus-dev/pymodbus/discussions/new?category=q-a>`_,
 so that others can benefit from the results.
 
-If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/riptideio/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
+If you think, that something in the code is broken/not running well, please `open an issue <https://github.com/pymodbus-dev/pymodbus/issues/new>`_, read the Template-text first and then post your issue with your setup information.
 
 ------------------------------------------------------------
 Pymodbus REPL (Read Evaluate Print Loop)
@@ -141,7 +141,7 @@ Pymodbus REPL comes with many handy features such as payload decoder
 to directly retrieve the values in desired format and supports all
 the diagnostic function codes directly .
 
-For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+For more info on REPL Client refer  `Pymodbus REPL Client <https://github.com/pymodbus-dev/pymodbus/blob/dev/pymodbus/repl/client/README.md>`_
 
 .. image:: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o.png
    :target: https://asciinema.org/a/y1xOk7lm59U1bRBE2N1pDIj2o
@@ -152,7 +152,7 @@ Pymodbus REPL Server
 
 Pymodbus also comes with a REPL server to quickly run an asynchronous server with additional capabilities out of the box like simulating errors, delay, mangled messages etc.
 
-For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/riptideio/pymodbus/tree/dev/pymodbus/repl>`_
+For more info on REPL Server refer `Pymodbus REPL Server <https://github.com/pymodbus-dev/pymodbus/blob/dev/pymodbus/repl/server/README.md>`_
 
 .. image:: https://img.youtube.com/vi/OutaVz0JkWg/maxresdefault.jpg
    :target: https://youtu.be/OutaVz0JkWg
@@ -190,21 +190,9 @@ Or to install a specific release:
 
     pip install -U pymodbus==X.Y.Z
 
-You can also use Docker to run a local image with the package installed on the image:
-
-    docker pull riptideio/pymodbus
-
-To run this, you will need to expose ports 8080 and 5020, you can the container running:
-
-    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus
-
-You can also override the default command running the server with any of the examples:
-
-    docker run -it -p 8080:8080 -p 5020:502 riptideio/pymodbus examples/server_sync.py
-
 Otherwise you can pull the trunk source and install from there::
 
-    git clone git://github.com/riptideio/pymodbus.git
+    git clone git://github.com/pymodbus-dev/pymodbus.git
     cd pymodbus
     pip install -r requirements.txt
 
@@ -241,24 +229,7 @@ This installs pymodbus in your virtual environment with pointers directly to the
 Either method will install all the required dependencies
 (at their appropriate versions) for your current python distribution.
 
-------------------------------------------------------------
-Docker Compose
-------------------------------------------------------------
 
-If you would like to use this image as part of a `docker compose` project, you can provide a custom command. For example,
-you can spin the server by creating a docker compose file containing the following::
-
-   pymodbus-server:
-      container_name: pymodbus-server
-      image: riptideio/pymodbus:X.Y.Z
-      command: ["./examples/server_sync.py"]
-
-After running `docker compose up`, you should have running the `server_sync.py` example, ready to accept connections from a client. You can,
-of course, add a custom script instead, to run your own logic instead.
-
-------------------------------------------------------------
-Repository structure
-------------------------------------------------------------
 The repository contains a number of important branches and tags.
   * **dev** is where all development happens, this branch is not always stable.
   * **master** is where are releases are kept.
@@ -268,6 +239,88 @@ The repository contains a number of important branches and tags.
 If a maintenance release of an old version is needed (e.g. v2.5.4),
 the release tag is used to create a branch with the same name,
 and maintenance development is merged here.
+
+-----------------------------------------------------------
+Install with Docker
+-----------------------------------------------------------
+Pull the latest image on ``dev`` branch with ``docker pull ghcr.io/pymodbus-dev/pymodbus:dev``::
+
+   doker pull ghcr.io/pymodbus-dev/pymodbus:dev
+   dev: Pulling from pymodbus-dev/pymodbus
+   548fcab5fe88: Pull complete
+   a4d3f9f008ef: Pull complete
+   eb83acb05730: Pull complete
+   71cd28d529fd: Pull complete
+   66607ad8f4f0: Pull complete
+   64dff4c66d3b: Pull complete
+   8b26e5718a7a: Pull complete
+   dc87d8707532: Pull complete
+   Digest: sha256:cfeee09a87dde5863574779416490fd47cacbb6f37332a3cdaf995c416e16b69
+   Status: Downloaded newer image for ghcr.io/pymodbus-dev/pymodbus:dev
+   ghcr.io/pymodbus-dev/pymodbus:dev
+
+The image when run with out any further options supplied will start a repl server in non interactive mode.::
+
+   ❯ docker run -it --rm -p 8080:8080 -p 5020:5020 ghcr.io/pymodbus-dev/pymodbus:dev
+
+   Reactive Modbus Server started.
+   ======== Running on http://127.0.0.1:8080 ========
+
+   ===========================================================================
+   Example Usage:
+   curl -X POST http://127.0.0.1:8080 -d "{"response_type": "error", "error_code": 4}"
+   ===========================================================================
+
+The default command can be overridden by passing any valid command at the end.::
+
+   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "pymodbus.server --help"
+
+    Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
+
+    Reactive modebus server
+
+   ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+   │ --host                                    TEXT     Host address [default: localhost]                                       │
+   │ --web-port                                INTEGER  Web app port [default: 8080]                                            │
+   │                       -b                           Support broadcast messages                                              │
+   │ --repl                    --no-repl                Enable/Disable repl for server [default: repl]                          │
+   │ --verbose                 --no-verbose             Run with debug logs enabled for pymodbus [default: no-verbose]          │
+   │ --install-completion                               Install completion for the current shell.                               │
+   │ --show-completion                                  Show completion for the current shell, to copy it or customize the      │
+   │                                                    installation.                                                           │
+   │ --help                                             Show this message and exit.                                             │
+   ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+   ╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+   │ run              Run Reactive Modbus server.                                                                               │
+   ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+To check the repl console.::
+
+   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "pymodbus.console --help"
+   Usage: pymodbus.console [OPTIONS] COMMAND [ARGS]...
+
+     Run Main.
+
+   Options:
+     --version                       Show the version and exit.
+     --verbose                       Verbose logs
+     --broadcast-support             Support broadcast messages
+     --retry-on-empty                Retry on empty response
+     --retry-on-error                Retry on error response
+     --retries INTEGER               Retry count
+     --reset-socket / --no-reset-socket
+                                     Reset client socket on error
+     --help                          Show this message and exit.
+
+   Commands:
+     serial  Define serial communication.
+     tcp     Define TCP.
+
+To run examples (assuming server is running). ::
+
+   ❯ docker run -p 8080:8080 -p 5020:5020 -it --rm ghcr.io/pymodbus-dev/pymodbus:dev bash -c "examples/client_async.py"
+   14:52:13 INFO  client_async:44 ### Create client object
+   14:52:13 INFO  client_async:120 ### Client starting
 
 ------------------------------------------------------------
 Current Work In Progress
@@ -297,17 +350,9 @@ Here are some of the common commands to perform a range of activities
 
    pip install -e .                  source directory is "release", useful for testing
 
-   tox -e py38 (or py39, py310, pypy38) Run pytest on source code
+   ./check_ci                        run the same checks as CI runs on a pull request.
 
-   tox -e pylint                     Run pylint on source code
-
-   tox -e codespell                  Run codespell on source code
-
-   tox -e bandit                     Run bandit on source code
-
-   tox -e flake8                     Run flake8 on source code
-
-   tox -e black                      Run black on source code
+   OBS: tox is no longer supported.
 
 ------------------------------------------------------------
 Generate documentation
@@ -323,7 +368,7 @@ Contributing
 Just fork the repo and raise your PR against `dev` branch.
 
 Here are some of the items waiting to be done:
-   https://github.com/riptideio/pymodbus/blob/dev/doc/TODO
+   https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/TODO
 
 ------------------------------------------------------------
 License Information

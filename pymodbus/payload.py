@@ -333,7 +333,7 @@ class BinaryPayloadDecoder:
         """
         if isinstance(coils, list):
             payload = b""
-            if padding := len(coils) % 8:  # Pad zero"s
+            if padding := len(coils) % 8:  # Pad zeros
                 extra = [False] * padding
                 coils = extra + coils
             chunks = cls.bit_chunks(coils)

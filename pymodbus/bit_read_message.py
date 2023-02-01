@@ -111,7 +111,7 @@ class ReadBitsResponseBase(ModbusResponse):
         self.setBit(address, 0)
 
     def getBit(self, address):  # pylint: disable=invalid-name
-        """Get the specified bit"s value.
+        """Get the specified bit's value.
 
         :param address: The bit to query
         :returns: The value of the requested bit

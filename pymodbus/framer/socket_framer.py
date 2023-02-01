@@ -75,7 +75,7 @@ class ModbusSocketFramer(ModbusFramer):
             # we have at least a complete message, continue
             elif len(self._buffer) - self._hsize + 1 >= self._header["len"]:
                 return True
-        # we don"t have enough of a message yet, wait
+        # we don't have enough of a message yet, wait
         return False
 
     def advanceFrame(self):
@@ -167,8 +167,9 @@ class ModbusSocketFramer(ModbusFramer):
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         single = kwargs.get("single", False)
-        txt = f"Processing: {hexlify_packets(data)}"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"Processing: {hexlify_packets(data)}"
+            _logger.debug(txt)
         self.addToFrame(data)
         while True:
             if self.isFrameReady():
@@ -207,7 +208,7 @@ class ModbusSocketFramer(ModbusFramer):
         This allows us to skip ovver errors that may be in the stream.
         It is hard to know if we are simply out of sync or if there is
         an error in the stream as we have no way to check the start or
-        end of the message (python just doesn"t have the resolution to
+        end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
         self._buffer = b""

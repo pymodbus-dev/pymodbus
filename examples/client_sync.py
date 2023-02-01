@@ -43,7 +43,7 @@ def setup_sync_client(args):
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
-            "127.0.0.1",
+            args.host,
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
@@ -57,7 +57,7 @@ def setup_sync_client(args):
         )
     elif args.comm == "udp":
         client = ModbusUdpClient(
-            "localhost",
+            args.host,
             port=args.port,
             # Common optional paramers:
             framer=args.framer,
@@ -95,7 +95,7 @@ def setup_sync_client(args):
         else:
             path = "examples"
         client = ModbusTlsClient(
-            "localhost",
+            args.host,
             port=args.port,
             # Common optional paramers:
             framer=args.framer,

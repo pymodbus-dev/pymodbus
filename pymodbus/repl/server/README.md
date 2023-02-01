@@ -19,11 +19,6 @@ Install `pymodbus` with the required dependencies
 
 `pip install pymodbus[repl]`
 
-## Docker
-Pull Docker image with everything installed
-
-`docker pull riptideio/pymodbus`
-
 ## Usage
 
 Invoke REPL server with `pymodbus.server run` command.
@@ -54,7 +49,7 @@ Invoke REPL server with `pymodbus.server run` command.
 If using the docker image, you can run all the same commands, prepending the `docker run` command. For example:
 
 ```shell
-docker run -it riptideio/pymodbus pymodbus.server --help
+docker run -it pymodbus-dev/pymodbus pymodbus.server --help
 ```
 
 ```shell
@@ -148,7 +143,7 @@ pymodbus.server --host <host-ip> --web-port <new-port> run .....
 
 ```
 
-The payload for the `POST` requests is 
+The payload for the `POST` requests is
 
 ```
 {

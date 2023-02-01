@@ -22,7 +22,7 @@ sslctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 sslctx.verify_mode = ssl.CERT_REQUIRED
 sslctx.check_hostname = True
 
-# Prepare client"s certificate which the server requires for TLS full handshake
+# Prepare client's certificate which the server requires for TLS full handshake
 # sslctx.load_cert_chain(certfile="client.crt", keyfile="client.key",
 #                        password="pwd")
 

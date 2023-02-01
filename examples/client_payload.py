@@ -11,8 +11,8 @@ import asyncio
 import logging
 from collections import OrderedDict
 
-from pymodbus import pymodbus_apply_logging_config
-from pymodbus.client import AsyncModbusTcpClient
+from examples.client_async import run_async_client, setup_async_client
+from examples.helper import get_commandline
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
@@ -21,37 +21,27 @@ _logger = logging.getLogger()
 ORDER_DICT = {"<": "LITTLE", ">": "BIG"}
 
 
-async def run_binary_payload_client(port):
-    """Run binary payload."""
-    pymodbus_apply_logging_config()
-    _logger.setLevel(logging.DEBUG)
+async def run_payload_calls(client):
+    """Run binary payload.
 
-    # ----------------------------------------------------------------------- #
-    # We are going to use a simple sync client to send our requests
-    # ----------------------------------------------------------------------- #
-    client = AsyncModbusTcpClient("127.0.0.1", port=port)
-    await client.connect()
+    If you need to build a complex message to send, you can use the payload
+    builder to simplify the packing logic
 
-    # ----------------------------------------------------------------------- #
-    # If you need to build a complex message to send, you can use the payload
-    # builder to simplify the packing logic
-    #
-    # Packing/unpacking depends on your CPU´s word/byte order. Modbus messages
-    # are always using big endian. BinaryPayloadBuilder will pr default use
-    # what your CPU uses.
-    # The wordorder is applicable only for 32 and 64 bit values
-    # Lets say we need to write a value 0x12345678 to a 32 bit register
-    # The following combinations could be used to write the register
-    # ++++++++++++++++++++++++++++++++++++++++++++ #
-    # Word Order  | Byte order | Word1  | Word2  |
-    # ------------+------------+--------+--------+
-    #     Big     |     Big    | 0x1234 | 0x5678 |
-    #     Big     |    Little  | 0x3412 | 0x7856 |
-    #    Little   |     Big    | 0x5678 | 0x1234 |
-    #    Little   |    Little  | 0x7856 | 0x3412 |
-    # ++++++++++++++++++++++++++++++++++++++++++++ #
-
-    # ----------------------------------------------------------------------- #
+    Packing/unpacking depends on your CPU's word/byte order. Modbus messages
+    are always using big endian. BinaryPayloadBuilder will per default use
+    what your CPU uses.
+    The wordorder is applicable only for 32 and 64 bit values
+    Lets say we need to write a value 0x12345678 to a 32 bit register
+    The following combinations could be used to write the register
+    ++++++++++++++++++++++++++++++++++++++++++++
+    Word Order  | Byte order | Word1  | Word2  |
+    ------------+------------+--------+--------+
+        Big     |     Big    | 0x1234 | 0x5678 |
+        Big     |    Little  | 0x3412 | 0x7856 |
+       Little   |     Big    | 0x5678 | 0x1234 |
+       Little   |    Little  | 0x7856 | 0x3412 |
+    ++++++++++++++++++++++++++++++++++++++++++++
+    """
     for word_endian, byte_endian in (
         (Endian.Big, Endian.Big),
         (Endian.Big, Endian.Little),
@@ -146,11 +136,10 @@ async def run_binary_payload_client(port):
             print(f"{name}\t{hex(value) if isinstance(value, int) else value}")
         print("\n")
 
-    # ----------------------------------------------------------------------- #
-    # close the client
-    # ----------------------------------------------------------------------- #
-    await client.close()
-
 
 if __name__ == "__main__":
-    asyncio.run(run_binary_payload_client(5020))
+    cmd_args = get_commandline(
+        description="Run payload client.",
+    )
+    testclient = setup_async_client(cmd_args)
+    asyncio.run(run_async_client(testclient, modbus_calls=run_payload_calls))

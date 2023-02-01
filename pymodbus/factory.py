@@ -2,7 +2,7 @@
 
 The following factories make it easy to decode request/response messages.
 To add a new request/response pair to be decodeable by the library, simply
-add them to the respective function lookup table (order doesn"t matter, but
+add them to the respective function lookup table (order doesn't matter, but
 it does help keep things organized).
 
 Regardless of how many functions are added to the lookup, O(1) behavior is
@@ -202,8 +202,9 @@ class ServerDecoder(IModbusDecoder):
         """
         function_code = int(data[0])
         if not (request := self.__lookup.get(function_code, lambda: None)()):
-            txt = f"Factory Request[{function_code}]"
-            _logger.debug(txt)
+            if _logger.isEnabledFor(logging.DEBUG):
+                txt = f"Factory Request[{function_code}]"
+                _logger.debug(txt)
             request = IllegalFunctionRequest(function_code)
         else:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
@@ -212,8 +213,9 @@ class ServerDecoder(IModbusDecoder):
                 .rstrip('">"'),
                 function_code,
             )
-            txt = f"Factory Request[{fc_string}]"
-            _logger.debug(txt)
+            if _logger.isEnabledFor(logging.DEBUG):
+                txt = f"Factory Request[{fc_string}]"
+                _logger.debug(txt)
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
@@ -344,8 +346,9 @@ class ClientDecoder(IModbusDecoder):
                 .rstrip('">"'),
                 function_code,
             )
-        txt = f"Factory Response[{fc_string}]"
-        _logger.debug(txt)
+        if _logger.isEnabledFor(logging.DEBUG):
+            txt = f"Factory Response[{fc_string}]"
+            _logger.debug(txt)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion

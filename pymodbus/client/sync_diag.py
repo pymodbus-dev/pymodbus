@@ -128,7 +128,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
 
             return result
         except ConnectionException as exc:
-            # Only log actual network errors, "if not self.socket" then it"s a internal code issue
+            # Only log actual network errors, "if not self.socket" then it's a internal code issue
             if "Connection unexpectedly closed" in exc.string:
                 _logger.error(LOG_MSGS["unexpected_dc_msg"], self, exc)
             raise ConnectionException from exc

@@ -7,6 +7,8 @@ complicated memory layout using builder.
 import asyncio
 import logging
 
+from examples.helper import get_commandline
+from examples.server_async import run_async_server, setup_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.constants import Endian
 from pymodbus.datastore import (
@@ -14,21 +16,15 @@ from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
 )
-from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.payload import BinaryPayloadBuilder
-from pymodbus.server import StartAsyncTcpServer
-
-# --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
 
 
 _logger = logging.getLogger()
 
 
-async def run_payload_server(port):
-    """Run payload server."""
+def setup_payload_server(args):
+    """Define payload for server and do setup."""
+
     pymodbus_apply_logging_config()
     _logger.setLevel(logging.DEBUG)
 
@@ -61,29 +57,14 @@ async def run_payload_server(port):
 
     block = ModbusSequentialDataBlock(1, builder.to_registers())
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
-    context = ModbusServerContext(slaves=store, single=True)
-
-    # ----------------------------------------------------------------------- #
-    # initialize the server information
-    # If you don't set this or any fields, they are defaulted to empty strings.
-    # ----------------------------------------------------------------------- #
-    identity = ModbusDeviceIdentification(
-        info_name={
-            "VendorName": "Pymodbus",
-            "ProductCode": "PM",
-            "VendorUrl": "https://github.com/riptideio/pymodbus/",
-            "ProductName": "Pymodbus Server",
-            "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
-        }
-    )
-    await StartAsyncTcpServer(
-        context,
-        identity=identity,
-        address=("127.0.0.1", port),
-        allow_reuse_address=True,
-    )
+    args.context = ModbusServerContext(slaves=store, single=True)
+    return setup_server(args)
 
 
 if __name__ == "__main__":
-    asyncio.run(run_payload_server(5020))
+    cmd_args = get_commandline(
+        server=True,
+        description="Run payload server.",
+    )
+    run_args = setup_payload_server(cmd_args)
+    asyncio.run(run_async_server(run_args))

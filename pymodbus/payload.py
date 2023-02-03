@@ -356,7 +356,7 @@ class BinaryPayloadDecoder:
 
         # Repack as unsigned Integer
         handle = [pack(self._byteorder + "H", p) for p in handle]
-        Log.debug(handle)
+        Log.debug("handle: {}", handle)
         handle = b"".join(handle)
         return handle
 

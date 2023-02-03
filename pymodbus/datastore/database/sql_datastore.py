@@ -3,6 +3,7 @@
 try:
     import sqlalchemy
     import sqlalchemy.types as sqltypes
+    from sqlalchemy.pool import StaticPool
     from sqlalchemy.schema import UniqueConstraint
     from sqlalchemy.sql import and_
     from sqlalchemy.sql.expression import bindparam
@@ -29,7 +30,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._table = None
         self._connection = None
         self.table = kwargs.get("table", "pymodbus")
-        self.database = kwargs.get("database", "sqlite:///pymodbus.db")
+        self.database = kwargs.get("database", "sqlite:///:memory:")
         self._db_create(self.table, self.database)
 
     def __str__(self):
@@ -92,7 +93,12 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param table: The table name to create
         :param database: The database uri to use
         """
-        self._engine = sqlalchemy.create_engine(database, echo=False)
+        self._engine = sqlalchemy.create_engine(
+            database,
+            echo=False,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
         self._metadata = sqlalchemy.MetaData(self._engine)
         self._table = sqlalchemy.Table(
             table,
@@ -102,7 +108,7 @@ class SqlSlaveContext(IModbusSlaveContext):
             sqlalchemy.Column("value", sqltypes.Integer),
             UniqueConstraint("type", "index", name="key"),
         )
-        self._table.create(checkfirst=True)
+        self._table.create(self._engine)
         self._connection = self._engine.connect()
 
     def _get(self, type, offset, count):  # pylint: disable=redefined-builtin

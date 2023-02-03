@@ -1,5 +1,4 @@
 """Modbus Client Common."""
-import logging
 from typing import List, Tuple, Union
 
 import pymodbus.bit_read_message as pdu_bit_read
@@ -11,9 +10,6 @@ import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
 from pymodbus.pdu import ModbusRequest, ModbusResponse
-
-
-_logger = logging.getLogger(__name__)
 
 
 class ModbusClientMixin:  # pylint: disable=too-many-public-methods

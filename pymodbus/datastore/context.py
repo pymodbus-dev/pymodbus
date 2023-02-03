@@ -1,17 +1,10 @@
 """Context for datastore."""
 # pylint: disable=missing-type-doc
-import logging
-
 from pymodbus.constants import Defaults
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.interfaces import IModbusSlaveContext
-
-
-# ---------------------------------------------------------------------------#
-#  Logging
-# ---------------------------------------------------------------------------#
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 # ---------------------------------------------------------------------------#
@@ -62,9 +55,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"validate: fc-[{fc_as_hex}] address-{address}: count-{count}"
-            _logger.debug(txt)
+        Log.debug("validate: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
     def getValues(self, fc_as_hex, address, count=1):
@@ -77,9 +68,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
-            _logger.debug(txt)
+        Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
     def setValues(self, fc_as_hex, address, values):
@@ -91,9 +80,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"setValues[{fc_as_hex}] address-{address}: count-{len(values)}"
-            _logger.debug(txt)
+        Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 
     def register(self, function_code, fc_as_hex, datablock=None):

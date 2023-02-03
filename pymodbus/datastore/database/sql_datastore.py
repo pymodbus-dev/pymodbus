@@ -1,8 +1,5 @@
 """Datastore using SQL."""
 # pylint: disable=missing-type-doc
-import logging
-
-
 try:
     import sqlalchemy
     import sqlalchemy.types as sqltypes
@@ -13,12 +10,7 @@ except ImportError:
     pass
 
 from pymodbus.interfaces import IModbusSlaveContext
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #
@@ -61,8 +53,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"validate[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("validate[{}] {}:{}", fx, address, count)
         return self._validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
@@ -74,8 +65,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"get-values[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("get-values[{}] {}:{}", fx, address, count)
         return self._get(self.decode(fx), address, count)
 
     def setValues(self, fx, address, values, update=True):
@@ -87,8 +77,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param update: Update existing register in the db
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"set-values[{fx}] {address}:{len(values)}"
-        _logger.debug(txt)
+        Log.debug("set-values[{}] {}:{}", fx, address, len(values))
         if update:
             self._update(self.decode(fx), address, values)
         else:

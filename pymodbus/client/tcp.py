@@ -1,6 +1,5 @@
 """Modbus client async TCP communication."""
 import asyncio
-import logging
 import select
 import socket
 import time
@@ -11,10 +10,8 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState
-
-
-_logger = logging.getLogger(__name__)
 
 
 class AsyncModbusTcpClient(ModbusBaseClient):
@@ -68,9 +65,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
         # force reconnect if required:
         self.loop = asyncio.get_running_loop()
-
-        txt = f"Connecting to {self.params.host}:{self.params.port}."
-        _logger.debug(txt)
+        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
         return await self._connect()
 
     async def close(self):  # pylint: disable=invalid-overridden-method
@@ -110,7 +105,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def _connect(self):
         """Connect."""
-        _logger.debug("Connecting.")
+        Log.debug("Connecting.")
         try:
             if self.params.host.startswith("unix:"):
                 transport, protocol = await asyncio.wait_for(
@@ -129,32 +124,28 @@ class AsyncModbusTcpClient(ModbusBaseClient):
                     timeout=self.params.timeout,
                 )
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Failed to connect: {exc}"
-            _logger.warning(txt)
+            Log.warning("Failed to connect: {}", exc)
             if self.delay_ms > 0:
                 self._launch_reconnect()
         else:
-            txt = f"Connected to {self.params.host}:{self.params.port}."
-            _logger.info(txt)
+            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
             self.reset_delay()
             return transport, protocol
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""
-        _logger.info("Protocol made connection.")
+        Log.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
             self.protocol = protocol
         else:
-            _logger.error("Factory protocol connect callback called while connected.")
+            Log.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
-        _logger.info("Protocol lost connection.")
+        Log.info("Protocol lost connection.")
         if protocol is not self.protocol:
-            _logger.error(
-                "Factory protocol callback called from unexpected protocol instance."
-            )
+            Log.error("Factory protocol cb from unknown protocol instance.")
 
         self.connected = False
         if self.protocol is not None:
@@ -166,8 +157,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
     def _launch_reconnect(self):
         """Launch delayed reconnection coroutine"""
         if self._reconnect_future:
-            _logger.warning(
-                "Ignoring attempt to launch a delayed reconnection while another is already in progress"
+            Log.warning(
+                "Ignoring launch of delayed reconnection, another is in progress"
             )
         else:
             # store the future in a member variable so we know we have a pending reconnection attempt
@@ -176,8 +167,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
 
     async def _reconnect(self):
         """Reconnect."""
-        txt = f"Waiting {self.delay_ms} ms before next connection attempt."
-        _logger.debug(txt)
+        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
 
@@ -243,13 +233,17 @@ class ModbusTcpClient(ModbusBaseClient):
                     timeout=self.params.timeout,
                     source_address=self.params.source_address,
                 )
-            txt = f"Connection to Modbus server established. Socket {self.socket.getsockname()}"
-            _logger.debug(txt)
-        except socket.error as msg:
-            txt = (
-                f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            Log.debug(
+                "Connection to Modbus server established. Socket {}",
+                self.socket.getsockname(),
             )
-            _logger.error(txt)
+        except socket.error as msg:
+            Log.error(
+                "Connection to ({}, {}) failed: {}",
+                self.params.host,
+                self.params.port,
+                msg,
+            )
             self.close()
         return self.socket is not None
 
@@ -363,8 +357,7 @@ class ModbusTcpClient(ModbusBaseClient):
         )
         if data:
             result = b"".join(data)
-            msg += f" after returning {len(result)} bytes"
-            _logger.warning(msg)
+            Log.warning(" after returning {} bytes", len(result))
             return result
         msg += " without response from unit before it closed connection"
         raise ConnectionException(msg)

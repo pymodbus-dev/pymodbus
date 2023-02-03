@@ -1,13 +1,9 @@
 """Pymodbus ModbusSimulatorContext."""
 import dataclasses
-import logging
 import random
 import struct
 from datetime import datetime
 from typing import Callable, Dict
-
-
-_logger = logging.getLogger()
 
 
 WORD_SIZE = 16

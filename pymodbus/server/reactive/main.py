@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 
 # pylint: disable=missing-type-doc
 import os
@@ -29,6 +28,7 @@ from pymodbus.datastore.store import (
     ModbusSparseDataBlock,
 )
 from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.server.async_io import (
     ModbusConnectedRequestHandler,
@@ -48,8 +48,6 @@ from pymodbus.transaction import (
 )
 from pymodbus.version import version as pymodbus_version
 
-
-logger = logging.getLogger(__name__)
 
 SERVER_MAPPER = {
     "tcp": ModbusTcpServer,
@@ -167,8 +165,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         """
         if not self.zero_mode:
             address = address + 1
-        txt = f"getValues: fc-[{fc_as_hex}] address-{address}: count-{count}"
-        logger.debug(txt)
+        Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         _block_type = self.decode(fc_as_hex)
         if self._randomize > 0 and _block_type in {"d", "i"}:
             with self._lock:
@@ -181,8 +178,6 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
                         min_val = self._min_register_value
                         max_val = self._max_register_value
                     values = [random.randint(min_val, max_val) for _ in range(count)]
-                    # logger.debug("Updating '%s' with values '%s' starting at "
-                    #              "'%s'", _block_type, values, address)
                     self.store[_block_type].setValues(address, values)
                 self._read_counter[_block_type] += 1
         elif self._change_rate > 0 and _block_type in {"d", "i"}:
@@ -266,23 +261,22 @@ class ReactiveServer:
                     self._modbus_server.serve_forever()
                 )
 
-            logger.info("Modbus server started")
+            Log.info("Modbus server started")
 
         except Exception as exc:  # pylint: disable=broad-except
-            logger.error("Error starting modbus server")
-            logger.error(exc)
+            Log.error("Error starting modbus server {}", exc)
 
     async def stop_modbus_server(self, app):
         """Stop modbus server.
 
         :param app: Webapp
         """
-        logger.info("Stopping modbus server")
+        Log.info("Stopping modbus server")
         if isinstance(self._modbus_server, ModbusSerialServer):
             app["modbus_serial_server"].cancel()
         app["modbus_server"].cancel()
         await app["modbus_server"]
-        logger.info("Modbus server Stopped")
+        Log.info("Modbus server Stopped")
 
     async def _response_manipulator(self, request):
         """POST request Handler for response manipulation end point.
@@ -319,14 +313,13 @@ class ReactiveServer:
 
         clear_after = self._manipulator_config.get("clear_after")
         if clear_after and self._counter > clear_after:
-            txt = f"Resetting manipulator after {clear_after} responses"
-            logger.info(txt)
+            Log.info("Resetting manipulator after {} responses", clear_after)
             self.update_manipulator_config(dict(DEFAULT_MANIPULATOR))
             return response
         response_type = self._manipulator_config.get("response_type")
         if response_type == "error":
             error_code = self._manipulator_config.get("error_code")
-            logger.warning("Sending error response for all incoming requests")
+            Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(response.function_code, error_code)
             err_response.transaction_id = response.transaction_id
             err_response.unit_id = response.unit_id
@@ -334,18 +327,16 @@ class ReactiveServer:
             self._counter += 1
         elif response_type == "delayed":
             delay_by = self._manipulator_config.get("delay_by")
-            txt = f"Delaying response by {delay_by}s for all incoming requests"
-            logger.warning(txt)
+            Log.warning("Delaying response by {}s for all incoming requests", delay_by)
             time.sleep(delay_by)  # change to async
             self._counter += 1
         elif response_type == "empty":
-            logger.warning("Sending empty response")
+            Log.warning("Sending empty response")
             self._counter += 1
             response.should_respond = False
         elif response_type == "stray":
             if (data_len := self._manipulator_config.get("data_len", 10)) <= 0:
-                txt = f"Invalid data_len {data_len}, using default 10"
-                logger.warning(txt)
+                Log.warning("Invalid data_len {}, using default 10", data_len)
                 data_len = 10
             response = os.urandom(data_len)
             self._counter += 1
@@ -366,7 +357,7 @@ class ReactiveServer:
                 msg = HINT.format(message, self._host, self._port)
                 print(msg)
         except Exception as exc:  # pylint: disable=broad-except
-            logger.error(exc)
+            Log.error("Exception {}", exc)
 
     @classmethod
     def create_identity(
@@ -495,8 +486,7 @@ class ReactiveServer:
             server = server.value
 
         if server.lower() not in SERVER_MAPPER:
-            txt = f"Invalid server {server}"
-            logger.error(txt)
+            Log.error("Invalid server {}", server)
             sys.exit(1)
         server = SERVER_MAPPER.get(server)
         randomize = kwargs.pop("randomize", 0)

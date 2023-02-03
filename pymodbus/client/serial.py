@@ -1,6 +1,5 @@
 """Modbus client async serial communication."""
 import asyncio
-import logging
 import time
 from functools import partial
 
@@ -10,16 +9,14 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
-from pymodbus.utilities import ModbusTransactionState, hexlify_packets
+from pymodbus.logging import Log
+from pymodbus.utilities import ModbusTransactionState
 
 
 try:
     import serial
 except ImportError:
     pass
-
-
-_logger = logging.getLogger(__name__)
 
 
 class AsyncModbusSerialClient(ModbusBaseClient):
@@ -104,7 +101,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
 
-        _logger.debug("Starting serial connection")
+        Log.debug("Starting serial connection")
         try:
             await create_serial_connection(
                 self.loop,
@@ -118,28 +115,26 @@ class AsyncModbusSerialClient(ModbusBaseClient):
                 **self.params.kwargs,
             )
             await self._connected_event.wait()
-            txt = f"Connected to {self.params.port}"
-            _logger.info(txt)
+            Log.info("Connected to {}", self.params.port)
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Failed to connect: {exc}"
-            _logger.warning(txt)
+            Log.warning("Failed to connect: {}", exc)
         return self.connected
 
     def protocol_made_connection(self, protocol):
         """Notify successful connection."""
-        _logger.info("Serial connected.")
+        Log.info("Serial connected.")
         if not self.connected:
             self._connected_event.set()
             self.protocol = protocol
         else:
-            _logger.error("Factory protocol connect callback called while connected.")
+            Log.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
         if self.connected:
-            _logger.info("Serial lost connection.")
+            Log.info("Serial lost connection.")
             if protocol is not self.protocol:
-                _logger.error("Serial: protocol is not self.protocol.")
+                Log.error("Serial: protocol is not self.protocol.")
 
             self._connected_event.clear()
             if self.protocol is not None:
@@ -148,7 +143,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             # if self.host:
             #     asyncio.asynchronous(self._reconnect())
         else:
-            _logger.error("Serial, lost_connection but not connected.")
+            Log.error("Serial, lost_connection but not connected.")
 
 
 class ModbusSerialClient(ModbusBaseClient):
@@ -235,7 +230,7 @@ class ModbusSerialClient(ModbusBaseClient):
                     self.socket.interCharTimeout = self.inter_char_timeout
                 self.last_frame_end = None
         except serial.SerialException as msg:
-            _logger.error(msg)
+            Log.error("{}", msg)
             self.close()
         return self.socket is not None
 
@@ -270,16 +265,15 @@ class ModbusSerialClient(ModbusBaseClient):
                 if waitingbytes := self._in_waiting():
                     result = self.socket.read(waitingbytes)
                     if self.state == ModbusTransactionState.RETRYING:
-                        txt = f"Sending available data in recv buffer {hexlify_packets(result)}"
-                        _logger.debug(txt)
+                        Log.debug(
+                            "Sending available data in recv buffer {}", result, ":hex"
+                        )
                         return result
-                    if _logger.isEnabledFor(logging.WARNING):
-                        txt = f"Cleanup recv buffer before send: {hexlify_packets(result)}"
-                        _logger.warning(txt)
+                    Log.warning("Cleanup recv buffer before send: {}", result, ":hex")
             except NotImplementedError:
                 pass
             if self.state != ModbusTransactionState.SENDING:
-                _logger.debug('New Transaction state "SENDING"')
+                Log.debug('New Transaction state "SENDING"')
                 self.state = ModbusTransactionState.SENDING
             size = self.socket.write(request)
             return size

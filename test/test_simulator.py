@@ -335,7 +335,7 @@ class TestSimulator:
             (FX_READ_BIT, 116, 16, True),
             (FX_READ_BIT, 112, 32, True),
             (FX_READ_BIT, 128, 17, False),
-            (FX_READ_BIT, 256, 1, False),
+            (FX_READ_BIT, 256, 1, True),
             (FX_READ_REG, 16, 1, True),
             (FX_READ_REG, 43, 1, True),
             (FX_READ_REG, 21, 1, False),

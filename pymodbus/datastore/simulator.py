@@ -531,14 +531,28 @@ class ModbusSimulatorContext:
             return False
 
         fx_write = func_code in self._write_func_code
-        for i in range(real_address, real_address + count):
+        i = real_address
+        end_address = real_address + count
+        while i < end_address:
             reg = self.registers[i]
-            if reg.type == CellType.INVALID:
+            if fx_write and not reg.access or reg.type == CellType.INVALID:
                 return False
-            if fx_write and not reg.access:
+            if not self.type_exception:
+                i += 1
+                continue
+            if reg.type == CellType.NEXT:
                 return False
-        if self.type_exception:
-            return self.validate_type(func_code, real_address, count)
+            if reg.type in (CellType.BITS, CellType.UINT16):
+                i += 1
+            elif reg.type in (CellType.UINT32, CellType.FLOAT32):
+                if i + 1 >= end_address:
+                    return False
+                i += 2
+            else:  #  CellType.STRING
+                i += 1
+                while i  < end_address:
+                    if self.registers[i].type == CellType.NEXT:
+                        i += 1
         return True
 
     def getValues(self, func_code, address, count=1):  # pylint: disable=invalid-name

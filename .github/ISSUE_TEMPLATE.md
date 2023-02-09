@@ -4,6 +4,8 @@ Before opening a new issue, make sure you do the following:
     * check that your issue isn't already filed: https://github.com/pymodbus-dev/pymodbus/issues
     * check the discussions forum https://github.com/pymodbus-dev/pymodbus/discussions
     * prepare a short, runnable example that reproduce the issue with the latest development version of Pymodbus
+
+    Before opening a new issue, make sure you do the following
 -->
 
 ### Versions
@@ -27,6 +29,7 @@ What were you trying, what has happened, what went wrong, and what did you expec
 # code and logs here.
 
 # please use the following to format logs when posting them here
+import logging
 import pymodbus
-pymodbus.pymodbus_apply_logging_config()
+pymodbus.pymodbus_apply_logging_config(logging.DEBUG)
 ```

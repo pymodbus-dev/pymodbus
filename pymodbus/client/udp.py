@@ -1,7 +1,6 @@
 """Modbus client async UDP communication."""
 import asyncio
 import functools
-import logging
 import socket
 import typing
 
@@ -10,9 +9,8 @@ from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.logging import Log
 
-
-_logger = logging.getLogger(__name__)
 
 DGRAM_TYPE = socket.SOCK_DGRAM
 
@@ -70,9 +68,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
-
-        txt = f"Connecting to {self.params.host}:{self.params.port}."
-        _logger.debug(txt)
+        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
 
         # getaddrinfo returns a list of tuples
         # - [(family, type, proto, canonname, sockaddr),]
@@ -119,7 +115,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
     async def _connect(self):
         """Connect."""
-        _logger.debug("Connecting.")
+        Log.debug("Connecting.")
         try:
             endpoint = await self.loop.create_datagram_endpoint(
                 functools.partial(
@@ -127,12 +123,10 @@ class AsyncModbusUdpClient(ModbusBaseClient):
                 ),
                 remote_addr=(self.params.host, self.params.port),
             )
-            txt = f"Connected to {self.params.host}:{self.params.port}."
-            _logger.info(txt)
+            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
             return endpoint
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Failed to connect: {exc}"
-            _logger.warning(txt)
+            Log.warning("Failed to connect: {}", exc)
             asyncio.ensure_future(self._reconnect())
 
     def protocol_made_connection(self, protocol):
@@ -140,12 +134,12 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
         :meta private:
         """
-        _logger.info("Protocol made connection.")
+        Log.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
             self.protocol = protocol
         else:
-            _logger.error("Factory protocol connect callback called while connected.")
+            Log.error("Factory protocol connect callback called while connected.")
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection.
@@ -153,9 +147,9 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         :meta private:
         """
         if self.connected:
-            _logger.info("Protocol lost connection.")
+            Log.info("Protocol lost connection.")
             if protocol is not self.protocol:
-                _logger.error(
+                Log.error(
                     "Factory protocol callback called "
                     "from unexpected protocol instance."
                 )
@@ -167,12 +161,11 @@ class AsyncModbusUdpClient(ModbusBaseClient):
             if self.delay_ms > 0:
                 asyncio.create_task(self._reconnect())
         else:
-            _logger.error("Factory protocol connect callback called while connected.")
+            Log.error("Factory protocol connect callback called while connected.")
 
     async def _reconnect(self):
         """Reconnect."""
-        txt = f"Waiting {self.delay_ms} ms before next connection attempt."
-        _logger.debug(txt)
+        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = 2 * self.delay_ms
         return await self._connect()
@@ -235,8 +228,7 @@ class ModbusUdpClient(ModbusBaseClient):
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
             self.socket.settimeout(self.params.timeout)
         except socket.error as exc:
-            txt = f"Unable to create udp socket {exc}"
-            _logger.error(txt)
+            Log.error("Unable to create udp socket {}", exc)
             self.close()
         return self.socket is not None
 

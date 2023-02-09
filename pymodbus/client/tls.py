@@ -1,6 +1,5 @@
 """Modbus client async TLS communication."""
 import asyncio
-import logging
 import socket
 import ssl
 
@@ -8,9 +7,7 @@ from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-
-
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 def sslctx_provider(
@@ -92,7 +89,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
     async def _connect(self):
         """Connect to server."""
-        _logger.debug("Connecting tls.")
+        Log.debug("Connecting tls.")
         try:
             return await self.loop.create_connection(
                 self._create_protocol,
@@ -102,14 +99,12 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
                 server_hostname=self.params.server_hostname,
             )
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Failed to connect: {exc}"
-            _logger.warning(txt)
+            Log.warning("Failed to connect: {}", exc)
             if self.delay_ms > 0:
                 asyncio.ensure_future(self._reconnect())
-        else:
-            txt = f"Connected to {self.params.host}:{self.params.port}."
-            _logger.info(txt)
-            self.reset_delay()
+            return
+        Log.info("Connected to {}:{}.", self.params.host, self.params.port)
+        self.reset_delay()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -178,10 +173,12 @@ class ModbusTlsClient(ModbusTcpClient):
             self.socket.settimeout(self.params.timeout)
             self.socket.connect((self.params.host, self.params.port))
         except socket.error as msg:
-            txt = (
-                f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            Log.error(
+                "Connection to ({}, {}) failed: {}",
+                self.params.host,
+                self.params.port,
+                msg,
             )
-            _logger.error(txt)
             self.close()
         return self.socket is not None
 

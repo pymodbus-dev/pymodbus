@@ -1,15 +1,8 @@
 """Remote datastore."""
 # pylint: disable=missing-type-doc
-import logging
-
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import IModbusSlaveContext
-
-
-# ---------------------------------------------------------------------------#
-#  Logging
-# ---------------------------------------------------------------------------#
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 # ---------------------------------------------------------------------------#
@@ -33,7 +26,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         self.result = None
         self.__build_mapping()
         if not self.__set_callbacks:
-            _logger.error("Init went wrong.")
+            Log.error("Init went wrong.")
 
     def reset(self):
         """Reset all the datastores to their default values."""
@@ -47,8 +40,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
-        txt = f"validate[{fc_as_hex}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("validate[{}] {}:{}", fc_as_hex, address, count)
         group_fx = self.decode(fc_as_hex)
         if fc_as_hex in self._write_fc:
             func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]

@@ -45,15 +45,7 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 # pylint: disable=missing-type-doc
-import logging
-
 from pymodbus.exceptions import NotImplementedException, ParameterException
-
-
-# ---------------------------------------------------------------------------#
-#  Logging
-# ---------------------------------------------------------------------------#
-_logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------#

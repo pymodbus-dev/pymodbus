@@ -1,6 +1,5 @@
 """Socket framer."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 
 from pymodbus.exceptions import (
@@ -8,13 +7,8 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer import SOCKET_FRAME_HEADER, ModbusFramer
-from pymodbus.utilities import hexlify_packets
+from pymodbus.logging import Log
 
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Modbus TCP Message
@@ -167,9 +161,7 @@ class ModbusSocketFramer(ModbusFramer):
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         single = kwargs.get("single", False)
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"Processing: {hexlify_packets(data)}"
-            _logger.debug(txt)
+        Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
         while True:
             if self.isFrameReady():
@@ -178,11 +170,10 @@ class ModbusSocketFramer(ModbusFramer):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        txt = f"Not a valid unit id - {header_txt}, ignoring!!"
-                        _logger.debug(txt)
+                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                 else:
-                    _logger.debug("Frame check failed, ignoring!!")
+                    Log.debug("Frame check failed, ignoring!!")
                     self.resetFrame()
             else:
                 if len(self._buffer):

@@ -3,7 +3,6 @@ import asyncio
 import dataclasses
 import importlib
 import json
-import logging
 import os
 from time import time
 
@@ -15,6 +14,7 @@ except ImportError:
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
+from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import (
     ModbusSerialServer,
@@ -30,8 +30,6 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
 )
 
-
-_logger = logging.getLogger(__name__)
 
 MAX_FILTER = 200
 
@@ -194,17 +192,16 @@ class ModbusSimulatorServer:
                 self.modbus_server.serve_forever()
             )
         except Exception as exc:
-            txt = f"Error starting modbus server, reason: {exc}"
-            _logger.error(txt)
+            Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
-        _logger.info("Modbus server started")
+        Log.info("Modbus server started")
 
     async def stop_modbus_server(self, app):
         """Stop modbus server."""
-        _logger.info("Stopping modbus server")
+        Log.info("Stopping modbus server")
         app["modbus_server"].cancel()
         await app["modbus_server"]
-        _logger.info("Modbus server Stopped")
+        Log.info("Modbus server Stopped")
 
     async def run_forever(self):
         """Start modbus and http servers."""
@@ -214,10 +211,9 @@ class ModbusSimulatorServer:
             self.site = web.TCPSite(runner, self.http_host, self.http_port)
             await self.site.start()
         except Exception as exc:
-            txt = f"Error starting http server, reason: {exc}"
-            _logger.error(txt)
+            Log.error("Error starting http server, reason: {}", exc)
             raise exc
-        _logger.info("HTTP server started")
+        Log.info("HTTP server started")
         while True:
             await asyncio.sleep(1)
 
@@ -550,8 +546,10 @@ class ModbusSimulatorServer:
         - skip_encoding, signals whether or not to encode the response
         """
         if self.call_response.delay:
-            txt = f"Delaying response by {self.call_response.delay}s for all incoming requests"
-            _logger.warning(txt)
+            Log.warning(
+                "Delaying response by {}s for all incoming requests",
+                self.call_response.delay,
+            )
             time.sleep(self.call_response.delay)  # change to async
 
         if self.call_response.active == RESPONSE_NORMAL:
@@ -560,13 +558,12 @@ class ModbusSimulatorServer:
         if self.call_response.clear_after:
             self.call_response.clear_after -= 1
             if not self.call_response.clear_after:
-                txt = "Resetting manipulator due to clear_after"
-                _logger.info(txt)
+                Log.info("Resetting manipulator due to clear_after")
                 self.call_response = CallTypeResponse
                 return self.helper_list_response(response), False
 
         if self.call_response.active == RESPONSE_ERROR:
-            _logger.warning("Sending error response for all incoming requests")
+            Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(
                 response.function_code, self.call_response.error_response
             )
@@ -575,7 +572,7 @@ class ModbusSimulatorServer:
             return self.helper_list_response(err_response), False
 
         if self.call_response.active == RESPONSE_EMPTY:
-            _logger.warning("Sending empty response")
+            Log.warning("Sending empty response")
             response.should_respond = False
             return self.helper_list_response(response), False
 

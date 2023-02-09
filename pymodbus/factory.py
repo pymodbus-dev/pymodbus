@@ -9,8 +9,6 @@ Regardless of how many functions are added to the lookup, O(1) behavior is
 kept as a result of a pre-computed lookup dictionary.
 """
 # pylint: disable=missing-type-doc
-import logging
-
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,
     ReadCoilsResponse,
@@ -71,6 +69,7 @@ from pymodbus.file_message import (
     WriteFileRecordResponse,
 )
 from pymodbus.interfaces import IModbusDecoder
+from pymodbus.logging import Log
 from pymodbus.mei_message import (
     ReadDeviceInformationRequest,
     ReadDeviceInformationResponse,
@@ -104,12 +103,6 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterRequest,
     WriteSingleRegisterResponse,
 )
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
@@ -180,8 +173,7 @@ class ServerDecoder(IModbusDecoder):
         try:
             return self._helper(message)
         except ModbusException as exc:
-            txt = f"Unable to decode request {exc}"
-            _logger.warning(txt)
+            Log.warning("Unable to decode request {}", exc)
         return None
 
     def lookupPduClass(self, function_code):
@@ -202,9 +194,7 @@ class ServerDecoder(IModbusDecoder):
         """
         function_code = int(data[0])
         if not (request := self.__lookup.get(function_code, lambda: None)()):
-            if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"Factory Request[{function_code}]"
-                _logger.debug(txt)
+            Log.debug("Factory Request[{}]", function_code)
             request = IllegalFunctionRequest(function_code)
         else:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
@@ -213,9 +203,7 @@ class ServerDecoder(IModbusDecoder):
                 .rstrip('">"'),
                 function_code,
             )
-            if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"Factory Request[{fc_string}]"
-                _logger.debug(txt)
+            Log.debug("Factory Request[{}]", fc_string)
         request.decode(data[1:])
 
         if hasattr(request, "sub_function_code"):
@@ -322,11 +310,9 @@ class ClientDecoder(IModbusDecoder):
         try:
             return self._helper(message)
         except ModbusException as exc:
-            txt = f"Unable to decode response {exc}"
-            _logger.error(txt)
-
+            Log.error("Unable to decode response {}", exc)
         except Exception as exc:  # pylint: disable=broad-except
-            _logger.error(exc)
+            Log.error("General exception: {}", exc)
         return None
 
     def _helper(self, data):
@@ -346,9 +332,7 @@ class ClientDecoder(IModbusDecoder):
                 .rstrip('">"'),
                 function_code,
             )
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"Factory Response[{fc_string}]"
-            _logger.debug(txt)
+        Log.debug("Factory Response[{}]", fc_string)
         response = self.__lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion

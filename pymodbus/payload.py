@@ -4,23 +4,17 @@ A collection of utilities for building and decoding
 modbus messages payloads.
 """
 # pylint: disable=missing-type-doc
-import logging
 from struct import pack, unpack
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.interfaces import IPayloadBuilder
+from pymodbus.logging import Log
 from pymodbus.utilities import (
     make_byte_string,
     pack_bitstring,
     unpack_bitstring,
 )
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 
 WC = {"b": 1, "h": 2, "e": 2, "i": 4, "l": 4, "q": 8, "f": 4, "d": 8}
@@ -114,7 +108,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
             payload = [unpack(self._byteorder + "H", value)[0] for value in payload]
         else:
             payload = [unpack(fstring, value)[0] for value in payload]
-        _logger.debug(payload)
+        Log.debug(payload)
         return payload
 
     def to_coils(self):
@@ -302,7 +296,7 @@ class BinaryPayloadDecoder:
         :returns: An initialized PayloadDecoder
         :raises ParameterException:
         """
-        _logger.debug(registers)
+        Log.debug(registers)
         if isinstance(registers, list):  # repack into flat binary
             payload = b"".join(pack("!H", x) for x in registers)
             return cls(payload, byteorder, wordorder)
@@ -362,7 +356,7 @@ class BinaryPayloadDecoder:
 
         # Repack as unsigned Integer
         handle = [pack(self._byteorder + "H", p) for p in handle]
-        _logger.debug(handle)
+        Log.debug("handle: {}", handle)
         handle = b"".join(handle)
         return handle
 

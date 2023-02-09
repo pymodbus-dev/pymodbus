@@ -108,7 +108,7 @@ class BinaryPayloadBuilder(IPayloadBuilder):
             payload = [unpack(self._byteorder + "H", value)[0] for value in payload]
         else:
             payload = [unpack(fstring, value)[0] for value in payload]
-        Log.debug(payload)
+        Log.debug("{}", payload)
         return payload
 
     def to_coils(self):
@@ -296,7 +296,7 @@ class BinaryPayloadDecoder:
         :returns: An initialized PayloadDecoder
         :raises ParameterException:
         """
-        Log.debug(registers)
+        Log.debug("{}", registers)
         if isinstance(registers, list):  # repack into flat binary
             payload = b"".join(pack("!H", x) for x in registers)
             return cls(payload, byteorder, wordorder)

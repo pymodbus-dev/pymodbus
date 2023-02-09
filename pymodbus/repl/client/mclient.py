@@ -236,7 +236,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
         :param write_registers: List of register values to write (comma separated)
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave unit ID
         :param kwargs:
         :return:
         """
@@ -245,7 +245,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             read_count=read_count,
             write_address=write_address,
             write_registers=write_registers,
-            unit=unit,
+            slave=slave,
             **kwargs,
         )
         if not resp.isError():
@@ -257,7 +257,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         address=0x0000,
         and_mask=0xFFFF,
         or_mask=0x0000,
-        unit=Defaults.Slave,
+        slave=Defaults.Slave,
         **kwargs,
     ):
         """Mask content of holding register at `address` with `and_mask` and `or_mask`.
@@ -265,12 +265,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param address: Reference address of register
         :param and_mask: And Mask
         :param or_mask: OR Mask
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave unit ID
         :param kwargs:
         :return:
         """
         resp = super().mask_write_register(  # pylint: disable=no-member
-            address=address, and_mask=and_mask, or_mask=or_mask, unit=unit, **kwargs
+            address=address, and_mask=and_mask, or_mask=or_mask, slave=slave, **kwargs
         )
         if not resp.isError():
             return {
@@ -303,14 +303,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp)
 
-    def report_slave_id(self, unit=Defaults.Slave, **kwargs):
+    def report_slave_id(self, slave=Defaults.Slave, **kwargs):
         """Report information about remote slave ID.
 
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave unit ID
         :param kwargs:
         :return:
         """
-        request = ReportSlaveIdRequest(unit, **kwargs)
+        request = ReportSlaveIdRequest(slave, **kwargs)
         resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {

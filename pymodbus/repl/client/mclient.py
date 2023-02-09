@@ -224,7 +224,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         read_count,
         write_address,
         write_registers,
-        unit=Defaults.Slave,
+        slave=Defaults.Slave,
         **kwargs,
     ):
         """Read `read_count` number of holding registers.

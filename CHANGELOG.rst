@@ -1,5 +1,6 @@
 version 3.1.3
 ----------------------------------------------------------
+* Solve log problem in payload.
 * Fix register type check for size bigger than 3 registers (6 bytes) (#1323)
 * Re-add SQL tests. (#1329)
 * Central logging. (#1324)

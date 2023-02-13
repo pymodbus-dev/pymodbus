@@ -47,10 +47,6 @@ from pymodbus.logging import Log
 from pymodbus.server.simulator.http_server import ModbusSimulatorServer
 
 
-async def run():
-    """Run simulator."""
-
-
 def get_commandline():
     """Get command line arguments."""
     parser = argparse.ArgumentParser(
@@ -110,13 +106,11 @@ def get_commandline():
     return cmd_args
 
 
-async def main():
+def main():
     """Run server."""
     cmd_args = get_commandline()
     task = ModbusSimulatorServer(**cmd_args)
-
-    await task.run_forever()
-
+    asyncio.run(task.run_forever(), debug=True)
 
 if __name__ == "__main__":
-    asyncio.run(main(), debug=True)
+    main()

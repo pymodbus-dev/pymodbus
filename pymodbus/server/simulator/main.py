@@ -112,5 +112,6 @@ def main():
     task = ModbusSimulatorServer(**cmd_args)
     asyncio.run(task.run_forever(), debug=True)
 
+
 if __name__ == "__main__":
     main()

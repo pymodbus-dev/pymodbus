@@ -243,7 +243,7 @@ def test_sync_task_no_server(comm):
 def test_sync_task_ok(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
-    if comm in ("serial", "udp", "tls"):
+    if comm in {"serial", "udp", "tls"}:
         return
     thread = Thread(target=run_server, kwargs=server_args)
     thread.daemon = True

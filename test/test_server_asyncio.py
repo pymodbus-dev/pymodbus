@@ -15,11 +15,8 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.server import (
-    StartAsyncTcpServer,
-    StartAsyncTlsServer,
-    StartAsyncUdpServer,
-)
+from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 
 
 _logger = logging.getLogger()
@@ -168,11 +165,17 @@ class AsyncioServerTest(
         if do_ident:
             args["identity"] = self.identity
         if do_tls:
-            self.server = await StartAsyncTlsServer(**args)
+            self.server = ModbusTlsServer(
+                self.context, ModbusTlsFramer, self.identity, SERV_ADDR
+            )
         elif do_udp:
-            self.server = await StartAsyncUdpServer(**args)
+            self.server = ModbusUdpServer(
+                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+            )
         else:
-            self.server = await StartAsyncTcpServer(**args)
+            self.server = ModbusTcpServer(
+                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+            )
         self.assertIsNotNone(self.server)
         if do_forever:
             self.task = asyncio.create_task(self.server.serve_forever())

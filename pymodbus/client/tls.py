@@ -1,5 +1,4 @@
 """Modbus client async TLS communication."""
-import asyncio
 import socket
 import ssl
 
@@ -101,7 +100,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
             if self.delay_ms > 0:
-                asyncio.ensure_future(self._reconnect())
+                self._launch_reconnect()
             return
         Log.info("Connected to {}:{}.", self.params.host, self.params.port)
         self.reset_delay()

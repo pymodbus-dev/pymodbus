@@ -212,7 +212,7 @@ def test_client_mixin(arglist, method, arg, response):
     ],
 )
 @pytest.mark.parametrize("test_default", [True, False])
-def test_client_instanciate(
+async def test_client_instanciate(
     arg_list,
     type_args,
     clientclass,

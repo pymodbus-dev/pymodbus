@@ -3,6 +3,12 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.2.0
+-------------
+- StartAsync<type>Server, removed defer_start argument, return is None.
+  instead of using defer_start instantiate the Modbus<type>Server directly.
+
+-------------
 Version 3.1.0
 -------------
 - Added --host to client_* examples, to allow easier use.

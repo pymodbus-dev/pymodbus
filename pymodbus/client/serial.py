@@ -70,6 +70,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         self.params.handle_local_echo = handle_local_echo
         self.loop = None
         self._connected_event = asyncio.Event()
+        self._reconnect_task = None
 
     async def close(self):  # pylint: disable=invalid-overridden-method
         """Stop connection."""
@@ -81,7 +82,13 @@ class AsyncModbusSerialClient(ModbusBaseClient):
                 self.protocol.transport.close()
             if self.protocol:
                 await self.protocol.close()
+                self.protocol = None
             await asyncio.sleep(0.1)
+
+        # if there is an unfinished delayed reconnection attempt pending, cancel it
+        if self._reconnect_task:
+            self._reconnect_task.cancel()
+            self._reconnect_task = None
 
     def _create_protocol(self):
         """Create protocol."""
@@ -118,6 +125,8 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             Log.info("Connected to {}", self.params.port)
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
+            if self.delay_ms > 0:
+                self._launch_reconnect()
         return self.connected
 
     def protocol_made_connection(self, protocol):
@@ -131,19 +140,36 @@ class AsyncModbusSerialClient(ModbusBaseClient):
 
     def protocol_lost_connection(self, protocol):
         """Notify lost connection."""
-        if self.connected:
-            Log.info("Serial lost connection.")
-            if protocol is not self.protocol:
-                Log.error("Serial: protocol is not self.protocol.")
+        Log.info("Serial lost connection.")
+        if protocol is not self.protocol:
+            Log.error("Serial: protocol is not self.protocol.")
 
-            self._connected_event.clear()
-            if self.protocol is not None:
-                del self.protocol
-                self.protocol = None
-            # if self.host:
-            #     asyncio.asynchronous(self._reconnect())
+        self._connected_event.clear()
+        if self.protocol is not None:
+            del self.protocol
+            self.protocol = None
+        if self.delay_ms:
+            self._launch_reconnect()
+
+    def _launch_reconnect(self):
+        """Launch delayed reconnection coroutine"""
+        if self._reconnect_task:
+            Log.warning(
+                "Ignoring launch of delayed reconnection, another is in progress"
+            )
         else:
-            Log.error("Serial, lost_connection but not connected.")
+            # store the future in a member variable so we know we have a pending reconnection attempt
+            # also prevents its garbage collection
+            self._reconnect_task = asyncio.create_task(self._reconnect())
+
+    async def _reconnect(self):
+        """Reconnect."""
+        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
+        await asyncio.sleep(self.delay_ms / 1000)
+        self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
+
+        self._reconnect_task = None
+        return await self.connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):

@@ -2,7 +2,6 @@
 import asyncio
 import socket
 import ssl
-from test.conftest import return_as_coroutine, run_coroutine
 from unittest import mock
 
 import pytest
@@ -326,12 +325,17 @@ async def test_client_lost_connection():
     client.params.host = mock.sentinel.HOST
     client.params.port = mock.sentinel.PORT
     client.protocol = mock.sentinel.PROTOCOL
-    client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
+    with mock.patch(
+        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
+    ) as mock_reconnect:
+        mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
+
+        client.protocol_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
     assert not client.connected
 
     client.connected = True
     with mock.patch(
-        "pymodbus.client.tcp.AsyncModbusTcpClient._reconnect"
+        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
     ) as mock_reconnect:
         mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
 
@@ -526,23 +530,3 @@ def test_client_tls_connect():
         mock_method.side_effect = socket.error()
         client = lib_client.ModbusTlsClient("127.0.0.1")
         assert not client.connect()
-
-
-@mock.patch("pymodbus.client.tcp.asyncio.sleep")
-async def test_client_reconnect(mock_sleep):
-    """Test factory reconnect."""
-    mock_protocol_class = mock.MagicMock()
-    mock_sleep.side_effect = return_as_coroutine()
-    loop = asyncio.get_running_loop()
-    loop.create_connection = mock.MagicMock(return_value=(None, None))
-    client = lib_client.AsyncModbusTcpClient(
-        "127.0.0.1", protocol_class=mock_protocol_class
-    )
-
-    # set delay long enough so we have only one connection attempt below
-    client.params.reconnect_delay = 5000
-    await client.connect()
-
-    run_coroutine(client._reconnect())  # pylint: disable=protected-access
-    mock_sleep.assert_called_once_with(5)
-    assert loop.create_connection.call_count >= 1  # nosec

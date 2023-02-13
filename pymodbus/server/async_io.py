@@ -2,6 +2,7 @@
 # pylint: disable=missing-type-doc
 import asyncio
 import ssl
+import time
 import traceback
 
 from pymodbus.client.serial_asyncio import create_serial_connection
@@ -1082,6 +1083,7 @@ class _serverList:
         if not cls.active_server:
             raise RuntimeError("ServerStop called with loop stopped.")
         asyncio.run_coroutine_threadsafe(cls.async_stop(), cls.active_server.loop)
+        time.sleep(10)
 
 
 async def StartAsyncUnixServer(  # pylint: disable=invalid-name,dangerous-default-value

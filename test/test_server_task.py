@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import os
+from threading import Thread
 from time import sleep
 
 import pytest
@@ -242,23 +243,23 @@ def test_sync_task_no_server(comm):
 def test_sync_task_ok(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
-    if comm:
-        return  # SKIP TEST FOR NOW
+    if comm in ("serial", "udp", "tls"):
+        return
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
+    client = run_client(**client_args)
+    client.connect()
+    sleep(0.1)
+    assert client.socket
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
-    # task = asyncio.create_task(run_server(**server_args))
-    # await asyncio.sleep(0.1)
-    # client = run_client(**client_args)
-    # await client.connect()
-    # await asyncio.sleep(0.1)
-    # assert client.protocol
-    # rr = await client.read_coils(1, 1, slave=0x01)
-    # assert len(rr.bits) == 8
-
-    # await client.close()
-    # await asyncio.sleep(0.1)
-    # assert not client.protocol
-    # await server.ServerAsyncStop()
-    # await task
+    client.close()
+    sleep(0.1)
+    assert not client.socket
+    server.ServerStop()
 
 
 @pytest.mark.xdist_group(name="task_serialize")

@@ -57,7 +57,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusSerialClient,
             },
             "sync": {
-                "srv": "server.StartSerialServer",
+                "srv": server.StartSerialServer,
                 "cli": client.ModbusSerialClient,
             },
         },
@@ -79,7 +79,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusTcpClient,
             },
             "sync": {
-                "srv": "server.StartTcpServer",
+                "srv": server.StartTcpServer,
                 "cli": client.ModbusTcpClient,
             },
         },
@@ -106,7 +106,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusTlsClient,
             },
             "sync": {
-                "srv": "server.StartTlsServer",
+                "srv": server.StartTlsServer,
                 "cli": client.ModbusTlsClient,
             },
         },
@@ -127,7 +127,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusUdpClient,
             },
             "sync": {
-                "srv": "server.StartUdpServer",
+                "srv": server.StartUdpServer,
                 "cli": client.ModbusUdpClient,
             },
         },
@@ -241,9 +241,9 @@ def test_sync_task_no_server(comm):
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_ok(comm):
     """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "sync")
     if comm:
         return  # SKIP TEST FOR NOW
-    run_server, server_args, run_client, client_args = helper_config(comm, "async")
 
     # task = asyncio.create_task(run_server(**server_args))
     # await asyncio.sleep(0.1)
@@ -265,10 +265,10 @@ def test_sync_task_ok(comm):
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_server_stop(comm):
     """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "sync")
     if comm:
         return  # SKIP TEST FOR NOW
 
-    run_server, server_args, run_client, client_args = helper_config(comm, "async")
     # task = asyncio.create_task(run_server(**server_args))
     # await asyncio.sleep(0.1)
     # client = run_client(**client_args)

@@ -39,7 +39,7 @@ class Log:
             datefmt="%H:%M:%S",
         )
         cls._logger.setLevel(level)
-        cls.LOG_LEVEL = level
+        cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
 
     @classmethod
     def build_msg(cls, txt, *args):

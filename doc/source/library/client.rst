@@ -48,8 +48,8 @@ and a asynchronous example::
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
 
-Tranport classes
-----------------
+Transport classes
+-----------------
 
 .. autoclass:: pymodbus.client.ModbusBaseClient
     :members:

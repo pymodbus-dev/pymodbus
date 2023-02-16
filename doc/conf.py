@@ -1,5 +1,4 @@
 """Document configuration."""
-# -*- coding: utf-8 -*-
 #
 # PyModbus documentation build configuration file,
 #
@@ -11,9 +10,9 @@ import os
 import sys
 
 from recommonmark.transform import AutoStructify
-from recommonmark.parser import CommonMarkParser
 
 from pymodbus import __version__
+
 
 parent_dir = os.path.abspath(os.pardir)
 sys.path.insert(0, parent_dir)

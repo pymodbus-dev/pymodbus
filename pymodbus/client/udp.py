@@ -42,7 +42,7 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         port: int = Defaults.UdpPort,
         framer: ModbusFramer = ModbusSocketFramer,
         source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        **kwargs: typing.Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         self.protocol = None
@@ -202,7 +202,7 @@ class ModbusUdpClient(ModbusBaseClient):
         port: int = Defaults.UdpPort,
         framer: ModbusFramer = ModbusSocketFramer,
         source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        **kwargs: typing.Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)

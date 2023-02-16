@@ -43,7 +43,7 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         port: int = Defaults.TcpPort,
         framer: ModbusFramer = ModbusSocketFramer,
         source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        **kwargs: typing.Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
         self.protocol = None
@@ -201,7 +201,7 @@ class ModbusTcpClient(ModbusBaseClient):
         port: int = Defaults.TcpPort,
         framer: ModbusFramer = ModbusSocketFramer,
         source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        **kwargs: typing.Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
         super().__init__(framer=framer, **kwargs)

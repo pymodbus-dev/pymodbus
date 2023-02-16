@@ -2,6 +2,7 @@
 import asyncio
 import time
 from functools import partial
+from typing import Any
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.client.serial_asyncio import create_serial_connection
@@ -57,7 +58,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         parity: chr = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
         handle_local_echo: bool = Defaults.HandleLocalEcho,
-        **kwargs: any,
+        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         self.protocol = None
@@ -211,7 +212,7 @@ class ModbusSerialClient(ModbusBaseClient):
         parity: chr = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
         handle_local_echo: bool = Defaults.HandleLocalEcho,
-        **kwargs: any,
+        **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
         super().__init__(framer=framer, **kwargs)

@@ -3,7 +3,7 @@ import dataclasses
 import random
 import struct
 from datetime import datetime
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 
 
 WORD_SIZE = 16
@@ -452,7 +452,7 @@ class ModbusSimulatorContext:
     start_time = int(datetime.now().timestamp())
 
     def __init__(
-        self, config: Dict[str, any], custom_actions: Dict[str, Callable]
+        self, config: Dict[str, Any], custom_actions: Dict[str, Callable]
     ) -> None:
         """Initialize."""
         self.registers = []

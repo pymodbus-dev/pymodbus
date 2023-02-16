@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
+from typing import Any
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -108,7 +109,7 @@ class ModbusBaseClient(ModbusClientMixin):
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
         reconnect_delay_max: int = Defaults.ReconnectDelayMax,
-        **kwargs: any,
+        **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
         self.params = self._params()

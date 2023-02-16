@@ -118,67 +118,6 @@ class LintCommand(Command):
             return False
 
 
-class Python3Command(Command):
-    """Helper command to scan for potential python 3 errors.
-
-    ./setup.py scan_2to3 > build/diffs_2to3 build/report_2to3
-    """
-
-    description = "perform 2to3 scan of the code"
-    user_options = []
-    directories = ['pymodbus', 'test', 'examples']
-
-    def initialize_options(self):
-        """Initialize options setup."""
-        if not os.path.exists('./build'):
-            os.mkdir('./build')
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Run command"""
-        self._run_python3()
-
-    def _run_python3(self):
-        try:
-            from lib2to3.main import main
-            sys.argv = ['2to3'] + self.directories
-            main("lib2to3.fixes")
-            return True
-        except Exception:
-            return False
-
-
-class Pep8Command(Command):
-    """Helper command to scan for potential pep8 violations."""
-
-    description = "perform pep8 scan of the code"
-    user_options = []
-    directories = ['pymodbus']
-
-    def initialize_options(self):
-        """Initialize options setup"""
-        if not os.path.exists('./build'):
-            os.mkdir('./build')
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Run command."""
-        self._run_pep8()
-
-    def _run_pep8(self):
-        try:
-            from pep8 import _main as main
-            sys.argv = """pep8 --repeat --count --statistics
-            """.split() + self.directories
-            main()
-            return True
-        except Exception:
-            return False
-
 # --------------------------------------------------------------------------- #
 # Command Configuration
 # --------------------------------------------------------------------------- #
@@ -188,8 +127,6 @@ command_classes = {
     'deep_clean': DeepCleanCommand,
     'build_apidocs': BuildApiDocsCommand,
     'lint': LintCommand,
-    'scan_2to3': Python3Command,
-    'pep8': Pep8Command,
 }
 
 # --------------------------------------------------------------------------- #

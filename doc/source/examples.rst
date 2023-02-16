@@ -6,7 +6,7 @@ The examples can be downloaded from https://github.com/pymodbus-dev/pymodbus/tre
 Examples version 3.x
 --------------------
 
-These examples are considered essential usage examples, and are guarenteed to work,
+These examples are considered essential usage examples, and are guaranteed to work,
 because they are tested automatilly with each dev branch commit using CI.
 
 

@@ -197,6 +197,9 @@ class ModbusSerialClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+
+    Remark: There are no automatic reconnect as with AsyncModbusSerialClient
     """
 
     state = ModbusTransactionState.IDLE

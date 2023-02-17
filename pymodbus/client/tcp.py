@@ -193,6 +193,8 @@ class ModbusTcpClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+    Remark: There are no automatic reconnect as with AsyncModbusTcpClient
     """
 
     def __init__(
@@ -354,7 +356,7 @@ class ModbusTcpClient(ModbusBaseClient):
         )
         if data:
             result = b"".join(data)
-            Log.warning(" after returning {} bytes", len(result))
+            Log.warning(" after returning {} bytes: {} ", len(result), result)
             return result
         msg += " without response from unit before it closed connection"
         raise ConnectionException(msg)

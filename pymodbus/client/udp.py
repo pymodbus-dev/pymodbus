@@ -194,6 +194,8 @@ class ModbusUdpClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+    Remark: There are no automatic reconnect as with AsyncModbusUdpClient
     """
 
     def __init__(

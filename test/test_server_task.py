@@ -13,7 +13,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
 )
-from pymodbus.exceptions import ConnectionException
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
@@ -100,7 +100,7 @@ def helper_config(request, def_type):
                 "certfile": f"{path}/certificates/pymodbus.crt",
                 "keyfile": f"{path}/certificates/pymodbus.key",
                 "server_hostname": "localhost",
-                "timeout": 0.2,
+                "timeout": 2,
             },
             "async": {
                 "srv": server.StartAsyncTlsServer,
@@ -224,8 +224,6 @@ async def test_async_task_server_stop(comm):
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_no_server(comm):
     """Test normal client/server handling."""
-    if comm == "udp":
-        return
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
     client = run_client(**client_args)
     try:
@@ -233,8 +231,12 @@ def test_sync_task_no_server(comm):
     except Exception as exc:  # pylint: disable=broad-except
         assert False, f"unexpected exception: {exc}"
     sleep(0.1)
-    with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
-        client.read_coils(1, 1, slave=0x01)
+    if comm == "udp":
+        rr = client.read_coils(1, 1, slave=0x01)
+        assert isinstance(rr, ModbusIOException)
+    else:
+        with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
+            client.read_coils(1, 1, slave=0x01)
     client.close()
 
 
@@ -243,7 +245,7 @@ def test_sync_task_no_server(comm):
 def test_sync_task_ok(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
-    if comm in {"serial", "udp", "tls"}:
+    if comm in {"tls", "udp", "serial"}:
         return
     thread = Thread(target=run_server, kwargs=server_args)
     thread.daemon = True
@@ -251,7 +253,7 @@ def test_sync_task_ok(comm):
     sleep(0.1)
     client = run_client(**client_args)
     client.connect()
-    sleep(0.1)
+    sleep(1)
     assert client.socket
     rr = client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
@@ -260,6 +262,7 @@ def test_sync_task_ok(comm):
     sleep(0.1)
     assert not client.socket
     server.ServerStop()
+    thread.join()
 
 
 @pytest.mark.xdist_group(name="task_serialize")
@@ -267,42 +270,47 @@ def test_sync_task_ok(comm):
 def test_sync_task_server_stop(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
-    if comm:
-        return  # SKIP TEST FOR NOW
+    if comm in {"tls", "udp", "serial", "tcp"}:
+        # CURRENTLY NOT SUPPORTED.
+        return
 
-    # task = asyncio.create_task(run_server(**server_args))
-    # await asyncio.sleep(0.1)
-    # client = run_client(**client_args)
-    # await client.connect()
-    # assert client.protocol
-    # rr = await client.read_coils(1, 1, slave=0x01)
-    # assert len(rr.bits) == 8
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
+    client = run_client(**client_args)
+    client.connect()
+    assert client.socket
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
     # Server breakdown
-    # await server.ServerAsyncStop()
-    # await task
+    server.ServerStop()
+    thread.join()
+    sleep(0.1)
 
-    # with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
-    #     rr = await client.read_coils(1, 1, slave=0x01)
-    # assert not client.protocol
+    with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
+        rr = client.read_coils(1, 1, slave=0x01)
+    assert not client.socket
 
     # Server back online
-    # task = asyncio.create_task(run_server(**server_args))
-    # await asyncio.sleep(0.1)
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
 
-    # timer_allowed = 100
-    # while not client.protocol:
-    #     await asyncio.sleep(0.1)
-    #     timer_allowed -= 1
-    #     if not timer_allowed:
-    #         assert False, "client do not reconnect"
-    # assert client.protocol
+    timer_allowed = 100
+    while not client.socket:
+        sleep(0.1)
+        timer_allowed -= 1
+        if not timer_allowed:
+            assert False, "client do not reconnect"
+    assert client.socket
 
-    # rr = await client.read_coils(1, 1, slave=0x01)
-    # assert len(rr.bits) == 8
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
-    # await client.close()
-    # await asyncio.sleep(0.5)
-    # assert not client.protocol
-    # await server.ServerAsyncStop()
-    # await task
+    client.close()
+    sleep(0.5)
+    assert not client.socket
+    server.ServerStop()

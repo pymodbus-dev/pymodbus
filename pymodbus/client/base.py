@@ -163,7 +163,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Return whether socket/serial is open or not (call **sync**)."""
         raise NotImplementedException
 
-    def idle_time(self) -> int:
+    def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
 
         Applications can call message functions without checking idle_time(),

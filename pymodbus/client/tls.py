@@ -131,6 +131,9 @@ class ModbusTlsClient(ModbusTcpClient):
             client.connect()
             ...
             client.close()
+
+
+    Remark: There are no automatic reconnect as with AsyncModbusTlsClient
     """
 
     def __init__(

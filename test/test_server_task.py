@@ -271,6 +271,7 @@ def test_sync_task_server_stop(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "sync")
     if comm in {"tls", "udp", "serial", "tcp"}:
+        # CURRENTLY NOT SUPPORTED.
         return
 
     thread = Thread(target=run_server, kwargs=server_args)
@@ -285,6 +286,8 @@ def test_sync_task_server_stop(comm):
 
     # Server breakdown
     server.ServerStop()
+    thread.join()
+    sleep(0.1)
 
     with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
         rr = client.read_coils(1, 1, slave=0x01)
@@ -294,9 +297,10 @@ def test_sync_task_server_stop(comm):
     thread = Thread(target=run_server, kwargs=server_args)
     thread.daemon = True
     thread.start()
+    sleep(0.1)
 
     timer_allowed = 100
-    while not client.protocol:
+    while not client.socket:
         sleep(0.1)
         timer_allowed -= 1
         if not timer_allowed:

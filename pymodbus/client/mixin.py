@@ -122,7 +122,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> pdu_bit_write.WriteSingleCoilResponse:
         """Write single coil (code 0x05).
 
-        :param address: Start address to read from
+        :param address: Address to write to
         :param value: Boolean to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
@@ -138,7 +138,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> pdu_req_write.WriteSingleRegisterResponse:
         """Write register (code 0x06).
 
-        :param address: Start address to read from
+        :param address: Address to write to
         :param value: Value to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
@@ -402,7 +402,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> pdu_bit_write.WriteMultipleCoilsResponse:
         """Write coils (code 0x0F).
 
-        :param address: Start address to read from
+        :param address: Start address to write to
         :param values: List of booleans to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
@@ -422,7 +422,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> pdu_req_write.WriteMultipleRegistersResponse:
         """Write registers (code 0x10).
 
-        :param address: Start address to read from
+        :param address: Start address to write to
         :param values: List of booleans to write
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.

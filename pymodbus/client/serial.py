@@ -55,7 +55,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         framer: ModbusFramer = ModbusRtuFramer,
         baudrate: int = Defaults.Baudrate,
         bytesize: int = Defaults.Bytesize,
-        parity: chr = Defaults.Parity,
+        parity: str = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
         handle_local_echo: bool = Defaults.HandleLocalEcho,
         **kwargs: Any,
@@ -203,8 +203,8 @@ class ModbusSerialClient(ModbusBaseClient):
     """
 
     state = ModbusTransactionState.IDLE
-    inter_char_timeout = 0
-    silent_interval = 0
+    inter_char_timeout: float = 0
+    silent_interval: float = 0
 
     def __init__(
         self,
@@ -212,7 +212,7 @@ class ModbusSerialClient(ModbusBaseClient):
         framer: ModbusFramer = ModbusRtuFramer,
         baudrate: int = Defaults.Baudrate,
         bytesize: int = Defaults.Bytesize,
-        parity: chr = Defaults.Parity,
+        parity: str = Defaults.Parity,
         stopbits: int = Defaults.Stopbits,
         handle_local_echo: bool = Defaults.HandleLocalEcho,
         **kwargs: Any,

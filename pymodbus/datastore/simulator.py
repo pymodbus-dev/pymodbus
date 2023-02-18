@@ -3,7 +3,7 @@ import dataclasses
 import random
 import struct
 from datetime import datetime
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 
 
 WORD_SIZE = 16
@@ -30,7 +30,7 @@ class Cell:
     access: bool = False
     value: int = 0
     action: int = 0
-    action_kwargs: int = None
+    action_kwargs: Dict[str, Any] = None
     count_read: int = 0
     count_write: int = 0
 
@@ -455,15 +455,15 @@ class ModbusSimulatorContext:
         self, config: Dict[str, Any], custom_actions: Dict[str, Callable]
     ) -> None:
         """Initialize."""
-        self.registers = []
-        self.fc_offset = {}
+        self.registers: List[int] = []
+        self.fc_offset: Dict[int, int] = {}
         self.register_count = 0
         self.type_exception = False
-        self.action_name_to_id = {}
-        self.action_id_to_name = []
-        self.action_methods = []
-        self.registerType_name_to_id = {}
-        self.registerType_id_to_name = []
+        self.action_name_to_id: Dict[str, int] = {}
+        self.action_id_to_name: List[str] = []
+        self.action_methods: List[Callable] = []
+        self.registerType_name_to_id: Dict[str, int] = {}
+        self.registerType_id_to_name: List[str] = []
         Setup(self).setup(config, custom_actions)
 
     # --------------------------------------------

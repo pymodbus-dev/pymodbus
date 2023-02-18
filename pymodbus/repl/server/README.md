@@ -28,7 +28,7 @@ Invoke REPL server with `pymodbus.server run` command.
 
  Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
 
- Reactive modebus server
+ Reactive Modbus server
 
 ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --host                                    TEXT     Host address [default: localhost]                                       │
@@ -63,7 +63,7 @@ docker run -it pymodbus-dev/pymodbus pymodbus.server --help
 ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --modbus-server  -s      TEXT     Modbus Server [default: ModbusServerTypes.tcp]                                           │
 │ --framer         -f      TEXT     Modbus framer to use [default: ModbusFramerTypes.socket]                                 │
-│ --modbus-port    -p      TEXT     Modbus port [default: 5020]                                                              │
+│ --modbus-port    -p      INTEGER  Modbus port [default: 5020]                                                              │
 │ --unit-id        -u      INTEGER  Supported Modbus unit id's [default: None]                                               │
 │ --modbus-config          PATH     Path to additional modbus server config [default: None]                                  │
 │ --random         -r      INTEGER  Randomize every `r` reads. 0=never, 1=always,2=every-second-read, and so on. Applicable  │

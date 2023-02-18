@@ -277,7 +277,7 @@ The default command can be overridden by passing any valid command at the end.::
 
     Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
 
-    Reactive modebus server
+    Reactive Modbus server
 
    ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
    │ --host                                    TEXT     Host address [default: localhost]                                       │

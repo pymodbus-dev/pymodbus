@@ -64,8 +64,8 @@ class ModbusBaseClient(ModbusClientMixin):
     """
 
     state = ModbusTransactionState.IDLE
-    last_frame_end = 0
-    silent_interval = 0
+    last_frame_end: float = 0
+    silent_interval: float = 0
 
     @dataclass
     class _params:  # pylint: disable=too-many-instance-attributes
@@ -163,7 +163,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Return whether socket/serial is open or not (call **sync**)."""
         raise NotImplementedException
 
-    def idle_time(self) -> int:
+    def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
 
         Applications can call message functions without checking idle_time(),

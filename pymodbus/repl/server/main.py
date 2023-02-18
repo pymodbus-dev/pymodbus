@@ -90,7 +90,7 @@ def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
 app = typer.Typer(
     no_args_is_help=True,
     context_settings=CONTEXT_SETTING,
-    help="Reactive modebus server",
+    help="Reactive Modbus server",
 )
 
 
@@ -138,7 +138,7 @@ def run(
         autocompletion=framers,
         help="Modbus framer to use",
     ),
-    modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
+    modbus_port: int = typer.Option(5020, "--modbus-port", "-p", help="Modbus port"),
     modbus_unit_id: List[int] = typer.Option(
         None, "--unit-id", "-u", help="Supported Modbus unit id's"
     ),
@@ -180,7 +180,6 @@ def run(
     modbus_config = modbus_config.get(modbus_server, {})
     modbus_config = process_extra_args(extra_args, modbus_config)
     if modbus_server != "serial":
-        modbus_port = int(modbus_port)
         handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
     else:
         handler = modbus_config.pop("handler", "ModbusSingleRequestHandler")

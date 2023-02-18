@@ -256,7 +256,7 @@ def cli(client):  # pylint: disable=too-complex
 
 
 @click.group("pymodbus-repl")
-@click.version_option(version, message=TITLE)
+@click.version_option(str(version), message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
 @click.option(
     "--broadcast-support",

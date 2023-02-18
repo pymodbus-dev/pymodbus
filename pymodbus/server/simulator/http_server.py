@@ -44,8 +44,8 @@ class CallTypeMonitor:
     """Define Request/Response monitor"""
 
     active: bool = False
-    range_start: int = ""
-    range_stop: int = ""
+    range_start: int = -1
+    range_stop: int = -1
     function: int = -1
     hex: bool = False
     decode: bool = False
@@ -326,15 +326,11 @@ class ModbusSimulatorServer:
 
     def helper_build_html_calls_submit_monitor(self, params):
         """Build html calls submit."""
-        if params["range_start"]:
-            self.call_monitor.range_start = int(params["range_start"])
-            if params["range_stop"]:
-                self.call_monitor.range_stop = int(params["range_stop"])
-            else:
-                self.call_monitor.range_stop = self.call_monitor.range_start
+        self.call_monitor.range_start = params["range_start"]
+        if params["range_stop"] != -1:
+            self.call_monitor.range_stop = params["range_stop"]
         else:
-            self.call_monitor.range_start = ""
-            self.call_monitor.range_stop = ""
+            self.call_monitor.range_stop = self.call_monitor.range_start
         if params["function"]:
             self.call_monitor.function = int(params["function"])
         else:
@@ -412,9 +408,19 @@ class ModbusSimulatorServer:
         ):
             selected = "selected" if i == self.call_response.error_response else ""
             function_error += f"<option value={i} {selected}>{txt}</option>"
+        range_start_html = (
+            str(self.call_monitor.range_start)
+            if self.call_monitor.range_start != -1
+            else ""
+        )
+        range_stop_html = (
+            str(self.call_monitor.range_stop)
+            if self.call_monitor.range_stop != -1
+            else ""
+        )
         html = (
-            html.replace("FUNCTION_RANGE_START", str(self.call_monitor.range_start))
-            .replace("FUNCTION_RANGE_STOP", str(self.call_monitor.range_stop))
+            html.replace("FUNCTION_RANGE_START", range_start_html)
+            .replace("FUNCTION_RANGE_STOP", range_stop_html)
             .replace("<!--FUNCTION_TYPES-->", function_error)
             .replace(
                 "FUNCTION_SHOW_HEX_CHECKED", "checked" if self.call_monitor.hex else ""
@@ -493,14 +499,8 @@ class ModbusSimulatorServer:
 
     def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        if x := params.get("range_start"):
-            range_start = int(x)
-        else:
-            range_start = -1
-        if x := params.get("range_stop"):
-            range_stop = int(x)
-        else:
-            range_stop = range_start
+        range_start = params.get("range_start", -1)
+        range_stop = params.get("range_stop", range_start)
         reg_action = int(params["action"])
         reg_writeable = "writeable" in params
         reg_type = int(params["type"])

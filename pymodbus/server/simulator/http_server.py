@@ -5,6 +5,7 @@ import importlib
 import json
 import os
 from time import time
+from typing import List
 
 
 try:
@@ -176,7 +177,7 @@ class ModbusSimulatorServer:
             with open(file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
-        self.register_filter = []
+        self.register_filter: List[int] = []
         self.call_list = []
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()

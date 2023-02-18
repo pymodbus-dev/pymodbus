@@ -1,5 +1,4 @@
 """Modbus Client Common."""
-from abc import abstractmethod
 from typing import Any, List, Tuple, Union
 
 import pymodbus.bit_read_message as pdu_bit_read
@@ -10,7 +9,7 @@ import pymodbus.mei_message as pdu_mei
 import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
-from pymodbus.pdu import ModbusRequest
+from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class ModbusClientMixin:  # pylint: disable=too-many-public-methods
@@ -40,8 +39,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def __init__(self):
         """Initialize."""
 
-    @abstractmethod
-    def execute(self, request: ModbusRequest):
+    def execute(self, request: ModbusRequest) -> ModbusResponse:
         """Execute request (code ???).
 
         :param request: Request to send
@@ -53,7 +51,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         .. tip::
             Response is not interpreted.
         """
-        return request  # (for pytest)  Concrete methods return a response
+        return request
 
     def read_coils(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any

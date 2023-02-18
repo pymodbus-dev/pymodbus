@@ -203,8 +203,8 @@ class ModbusSerialClient(ModbusBaseClient):
     """
 
     state = ModbusTransactionState.IDLE
-    inter_char_timeout = 0
-    silent_interval = 0
+    inter_char_timeout: float = 0
+    silent_interval: float = 0
 
     def __init__(
         self,

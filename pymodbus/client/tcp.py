@@ -3,7 +3,7 @@ import asyncio
 import select
 import socket
 import time
-import typing
+from typing import Any, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
@@ -41,9 +41,9 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = Defaults.TcpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: typing.Any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
         self.protocol = None
@@ -201,9 +201,9 @@ class ModbusTcpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = Defaults.TcpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: typing.Any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
         super().__init__(framer=framer, **kwargs)

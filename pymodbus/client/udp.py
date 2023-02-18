@@ -2,7 +2,7 @@
 import asyncio
 import functools
 import socket
-import typing
+from typing import Any, Tuple, Type
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.constants import Defaults
@@ -40,9 +40,9 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = Defaults.UdpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: typing.Any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         self.protocol = None
@@ -202,9 +202,9 @@ class ModbusUdpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = Defaults.UdpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: typing.Any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)

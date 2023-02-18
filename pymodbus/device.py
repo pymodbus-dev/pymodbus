@@ -8,8 +8,10 @@ import struct
 
 # pylint: disable=missing-type-doc
 from collections import OrderedDict
+from typing import List
 
 from pymodbus.constants import DeviceInformation
+from pymodbus.events import ModbusEvent
 from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
@@ -457,7 +459,7 @@ class ModbusControlBlock(Singleton):
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()
-    __events = []
+    __events: List[ModbusEvent] = []
 
     # -------------------------------------------------------------------------#
     #  Magic
@@ -479,7 +481,7 @@ class ModbusControlBlock(Singleton):
     # -------------------------------------------------------------------------#
     #  Events
     # -------------------------------------------------------------------------#
-    def addEvent(self, event):  # pylint: disable=invalid-name
+    def addEvent(self, event: ModbusEvent):  # pylint: disable=invalid-name
         """Add a new event to the event log.
 
         :param event: A new event to add to the log

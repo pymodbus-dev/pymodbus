@@ -24,8 +24,8 @@ class BuildApiDocsCommand(Command):
 
     def initialize_options(self):
         """Initialize options setup."""
-        if not os.path.exists('./build'):
-            os.mkdir('./build')
+        if not os.path.exists("./build"):
+            os.mkdir("./build")
 
     def finalize_options(self):
         """Finalize options teardown."""
@@ -34,10 +34,10 @@ class BuildApiDocsCommand(Command):
     def run(self):
         """Run command."""
         old_cwd = os.getcwd()
-        directories = (d for d in os.listdir('./doc/api') if not d.startswith('.'))
+        directories = (d for d in os.listdir("./doc/api") if not d.startswith("."))
         for entry in directories:
-            os.chdir('./doc/api/%s' % entry)
-            os.system('python build.py')
+            os.chdir("./doc/api/%s" % entry)
+            os.system("python build.py")
             os.chdir(old_cwd)
 
 
@@ -46,9 +46,12 @@ class DeepCleanCommand(Command):
 
     description = "clean everything that we don't want"
     user_options = []
-    trash = ['build', 'dist', 'pymodbus.egg-info',
-             os.path.join(os.path.join('doc', 'sphinx'), 'build'),
-             ]
+    trash = [
+        "build",
+        "dist",
+        "pymodbus.egg-info",
+        os.path.join(os.path.join("doc", "sphinx"), "build"),
+    ]
 
     def initialize_options(self):
         """Initialize options setup."""
@@ -72,9 +75,9 @@ class DeepCleanCommand(Command):
     @staticmethod
     def _delete_pyc_files():
         """Remove all python cache files."""
-        for root, dirs, files in os.walk('.'):
+        for root, dirs, files in os.walk("."):
             for file in files:
-                if file.endswith('.pyc'):
+                if file.endswith(".pyc"):
                     os.remove(os.path.join(root, file))
 
 
@@ -86,15 +89,15 @@ class LintCommand(Command):
 
     def initialize_options(self):
         """Initialize options setup."""
-        if not os.path.exists('./build'):
-            os.mkdir('./build')
+        if not os.path.exists("./build"):
+            os.mkdir("./build")
 
     def finalize_options(self):
         pass
 
     def run(self):
         """Run command."""
-        scanners = [s for s in dir(self) if s.find('__try') >= 0]
+        scanners = [s for s in dir(self) if s.find("__try") >= 0]
         for scanner in scanners:
             if getattr(self, scanner)():
                 break
@@ -102,6 +105,7 @@ class LintCommand(Command):
     def _try_pyflakes(self):
         try:
             from pyflakes.scripts.pyflakes import main
+
             sys.argv = """pyflakes pymodbus""".split()
             main()
             return True
@@ -111,6 +115,7 @@ class LintCommand(Command):
     def _try_pylint(self):
         try:
             import pylint
+
             sys.argv = """pylint pymodbus/*.py""".split()
             pylint.main()
             return True
@@ -124,12 +129,12 @@ class LintCommand(Command):
 
 
 command_classes = {
-    'deep_clean': DeepCleanCommand,
-    'build_apidocs': BuildApiDocsCommand,
-    'lint': LintCommand,
+    "deep_clean": DeepCleanCommand,
+    "build_apidocs": BuildApiDocsCommand,
+    "lint": LintCommand,
 }
 
 # --------------------------------------------------------------------------- #
 # Export command list
 # --------------------------------------------------------------------------- #
-__all__ = ['command_classes']
+__all__ = ["command_classes"]

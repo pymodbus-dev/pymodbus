@@ -5,21 +5,8 @@ import logging
 import pathlib
 import sys
 
-
-try:
-    import click
-except ImportError:
-    print('click not installed!! Install with "pip install click"')
-    sys.exit(1)
-try:
-    from prompt_toolkit import PromptSession, print_formatted_text
-except ImportError:
-    print(
-        "prompt toolkit is not installed!! "
-        'Install with "pip install prompt_toolkit --upgrade"'
-    )
-    sys.exit(1)
-
+import click
+from prompt_toolkit import PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory

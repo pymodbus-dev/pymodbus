@@ -28,6 +28,7 @@ aiohttp==3.8.3
 typer[all]==0.7.0
 prompt-toolkit==3.0.36
 pygments==2.14.0
+click>=8.0.0
 
 # install:serial
 pyserial>=3.5

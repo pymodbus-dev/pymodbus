@@ -291,7 +291,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
     def diag_read_slave_no_response_count(
         self, slave: int = 0, **kwargs: Any
-    ) -> pdu_diag.ReturnSlaveNoReponseCountResponse:
+    ) -> pdu_diag.ReturnSlaveNoResponseCountResponse:
         """Diagnose read Slave No Response Count (code 0x08 sub 0x0F).
 
         :param slave: (optional) Modbus slave ID

@@ -56,8 +56,8 @@ from pymodbus.diag_message import (
     ReturnSlaveMessageCountResponse,
     ReturnSlaveNAKCountRequest,
     ReturnSlaveNAKCountResponse,
-    ReturnSlaveNoReponseCountResponse,
     ReturnSlaveNoResponseCountRequest,
+    ReturnSlaveNoResponseCountResponse,
 )
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.file_message import (
@@ -275,7 +275,7 @@ class ClientDecoder(IModbusDecoder):
         ReturnBusCommunicationErrorCountResponse,
         ReturnBusExceptionErrorCountResponse,
         ReturnSlaveMessageCountResponse,
-        ReturnSlaveNoReponseCountResponse,
+        ReturnSlaveNoResponseCountResponse,
         ReturnSlaveNAKCountResponse,
         ReturnSlaveBusyCountResponse,
         ReturnSlaveBusCharacterOverrunCountResponse,

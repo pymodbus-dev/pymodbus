@@ -119,7 +119,7 @@ class SimpleFactoryTest(unittest.TestCase):
             response = self.client.lookupPduClass(func)
             self.assertNotEqual(response, None)
 
-    def test_request_ookup(self):
+    def test_request_lookup(self):
         """Test a working request factory lookup"""
         for func, _ in self.request:
             request = self.client.lookupPduClass(func)

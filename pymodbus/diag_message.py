@@ -577,10 +577,10 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
         :returns: The initialized response message
         """
         count = _MCB.Counter.SlaveNoResponse
-        return ReturnSlaveNoReponseCountResponse(count)
+        return ReturnSlaveNoResponseCountResponse(count)
 
 
-class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
+class ReturnSlaveNoResponseCountResponse(DiagnosticStatusSimpleResponse):
     """Return slave no response.
 
     The response data field returns the quantity of messages addressed to the
@@ -854,7 +854,7 @@ __all__ = [
     "ReturnSlaveMessageCountRequest",
     "ReturnSlaveMessageCountResponse",
     "ReturnSlaveNoResponseCountRequest",
-    "ReturnSlaveNoReponseCountResponse",
+    "ReturnSlaveNoResponseCountResponse",
     "ReturnSlaveNAKCountRequest",
     "ReturnSlaveNAKCountResponse",
     "ReturnSlaveBusyCountRequest",

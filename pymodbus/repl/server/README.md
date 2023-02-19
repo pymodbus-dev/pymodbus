@@ -65,7 +65,7 @@ docker run -it pymodbus-dev/pymodbus pymodbus.server --help
 │ --framer         -f      TEXT     Modbus framer to use [default: ModbusFramerTypes.socket]                                 │
 │ --modbus-port    -p      INTEGER  Modbus port [default: 5020]                                                              │
 │ --unit-id        -u      INTEGER  Supported Modbus unit id's [default: None]                                               │
-│ --modbus-config          PATH     Path to additional modbus server config [default: None]                                  │
+│ --modbus-config-path     PATH     Path to additional modbus server config [default: None]                                  │
 │ --random         -r      INTEGER  Randomize every `r` reads. 0=never, 1=always,2=every-second-read, and so on. Applicable  │
 │                                   IR and DI.                                                                               │
 │                                   [default: 0]                                                                             │

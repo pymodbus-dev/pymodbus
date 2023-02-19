@@ -322,9 +322,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         return ExtendedRequestSupport._process_exception(resp)
 
     def read_exception_status(self, **kwargs):
-        """Read tcontents of eight Exception Status output.
-
-        In a remote device.
+        """Read contents of eight Exception Status output in a remote device.
 
         :param kwargs:
         :return:

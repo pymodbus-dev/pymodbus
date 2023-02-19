@@ -8,12 +8,6 @@
 from setuptools import setup
 
 
-try:
-    from setup_commands import command_classes
-except ImportError:
-    command_classes = {}
-
-
 dependencies = {}
 with open("requirements.txt") as reqs:
     option = None
@@ -36,5 +30,4 @@ del dependencies["required"]
 setup(
     install_requires=install_req,
     extras_require=dependencies,
-    cmdclass=command_classes,
 )

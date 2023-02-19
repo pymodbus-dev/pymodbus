@@ -130,7 +130,7 @@ class ModbusSimulatorServer:
         }
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
-            custom_actions_module = actions_module.custom_actions_dict
+            custom_actions_dict = actions_module.custom_actions_dict
         server = setup["server_list"][modbus_server]
         server["loop"] = asyncio.get_running_loop()
         if server["comm"] != "serial":
@@ -138,7 +138,9 @@ class ModbusSimulatorServer:
             del server["host"]
             del server["port"]
         device = setup["device_list"][modbus_device]
-        self.datastore_context = ModbusSimulatorContext(device, custom_actions_module)
+        self.datastore_context = ModbusSimulatorContext(
+            device, custom_actions_dict or None
+        )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
         framer = framer_class[server.pop("framer")]

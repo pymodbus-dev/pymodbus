@@ -68,3 +68,4 @@ pytest-asyncio==0.20.3
 pytest-cov==4.0.0
 pytest-timeout==2.1.0
 pytest-xdist==3.1.0
+sqlalchemy-stubs==0.4

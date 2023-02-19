@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Tuple, Type
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -73,7 +73,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
         host: str = None
         port: str | int = None
-        framer: ModbusFramer = None
+        framer: Type[ModbusFramer] = None
         timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
@@ -90,7 +90,7 @@ class ModbusBaseClient(ModbusClientMixin):
         stopbits: int = None
         handle_local_echo: bool = None
 
-        source_address: str = None
+        source_address: Tuple[str, int] = None
 
         sslctx: str = None
         certfile: str = None
@@ -100,7 +100,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
     def __init__(
         self,
-        framer: str = None,
+        framer: Type[ModbusFramer] = None,
         timeout: str | float = Defaults.Timeout,
         retries: str | int = Defaults.Retries,
         retry_on_empty: bool = Defaults.RetryOnEmpty,

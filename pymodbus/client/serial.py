@@ -2,7 +2,7 @@
 import asyncio
 import time
 from functools import partial
-from typing import Any
+from typing import Any, Type
 
 from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
 from pymodbus.client.serial_asyncio import create_serial_connection
@@ -52,7 +52,7 @@ class AsyncModbusSerialClient(ModbusBaseClient):
     def __init__(
         self,
         port: str,
-        framer: ModbusFramer = ModbusRtuFramer,
+        framer: Type[ModbusFramer] = ModbusRtuFramer,
         baudrate: int = Defaults.Baudrate,
         bytesize: int = Defaults.Bytesize,
         parity: str = Defaults.Parity,
@@ -209,7 +209,7 @@ class ModbusSerialClient(ModbusBaseClient):
     def __init__(
         self,
         port: str,
-        framer: ModbusFramer = ModbusRtuFramer,
+        framer: Type[ModbusFramer] = ModbusRtuFramer,
         baudrate: int = Defaults.Baudrate,
         bytesize: int = Defaults.Bytesize,
         parity: str = Defaults.Parity,

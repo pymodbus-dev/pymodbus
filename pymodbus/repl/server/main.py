@@ -69,7 +69,7 @@ def servers(incomplete: str) -> List[str]:
     return _completer(incomplete, _servers)
 
 
-def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
+def process_extra_args(extra_args: List[str], modbus_config: dict) -> dict:
     """Process extra args passed to server."""
     options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
     extra_args_dict = dict(list(zip(options_stripped, extra_args[1::2])))

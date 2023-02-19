@@ -142,7 +142,7 @@ def run(
     modbus_unit_id: List[int] = typer.Option(
         None, "--unit-id", "-u", help="Supported Modbus unit id's"
     ),
-    modbus_config: Path = typer.Option(
+    modbus_config_path: Path = typer.Option(
         None, help="Path to additional modbus server config"
     ),
     randomize: int = typer.Option(
@@ -169,8 +169,8 @@ def run(
     web_app_config = ctx.obj
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
-    if modbus_config:
-        with open(modbus_config) as my_file:  # pylint: disable=unspecified-encoding
+    if modbus_config_path:
+        with open(modbus_config_path, encoding="utf-8") as my_file:
             modbus_config = json.load(my_file)
     else:
         modbus_config = DEFAULT_CONFIG

@@ -1,6 +1,6 @@
 # Pymodbus REPL Server
 
-Pymodbus REPL server helps to quicky spin an [asynchronous server](../../../examples/common/asyncio_server.py) from command line.
+Pymodbus REPL server helps to quickly start an [asynchronous server](../../../examples/common/asyncio_server.py) from the command line.
 
 Support both `Modbus TCP` and `Modbus RTU` server.
 
@@ -9,7 +9,7 @@ Some features offered are
 
 ---
 1. Runs a [reactive server](../../server/reactive/main.py) in `REPL` and `NON REPL` mode.
-2. Exposes REST API's to manipulate the behaviour of the server in non repl mode.
+2. Exposes REST API's to manipulate the behaviour of the server in non REPL mode.
 3. Ability to manipulate the out-going response dynamically (either via REPL console or via REST API request).
 4. Ability to delay the out-going response dynamically (either via REPL console or via REST API request).
 5. Auto revert to normal response after pre-defined number of manipulated responses.

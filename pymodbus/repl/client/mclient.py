@@ -321,13 +321,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
             }
         return ExtendedRequestSupport._process_exception(resp)
 
-    def read_exception_status(self, **kwargs):
+    def read_exception_status(self, slave=Defaults.Slave, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
 
+        :param slave: Modbus slave unit ID
         :param kwargs:
         :return:
         """
-        request = ReadExceptionStatusRequest(**kwargs)
+        request = ReadExceptionStatusRequest(slave, **kwargs)
         resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {"function_code": resp.function_code, "status": resp.status}

@@ -9,6 +9,7 @@ Version 3.2.0
   instead of using defer_start instantiate the Modbus<type>Server directly.
 - `ReturnSlaveNoReponseCountResponse` has been corrected to
   `ReturnSlaveNoResponseCountResponse`
+- Option `--modbus-config` for REPL server renamed to `--modbus-config-path`
 
 -------------
 Version 3.1.0

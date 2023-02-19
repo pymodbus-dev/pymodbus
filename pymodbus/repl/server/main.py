@@ -72,8 +72,8 @@ def servers(incomplete: str) -> List[str]:
 def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
     """Process extra args passed to server."""
     options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
-    extra_args = dict(list(zip(options_stripped, extra_args[1::2])))
-    for option, value in extra_args.items():
+    extra_args_dict = dict(list(zip(options_stripped, extra_args[1::2])))
+    for option, value in extra_args_dict.items():
         if option in modbus_config:
             try:
                 modbus_config[option] = type(modbus_config[option])(value)

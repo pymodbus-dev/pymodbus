@@ -46,8 +46,6 @@ from pymodbus.version import version
 
 _logger = logging.getLogger()
 
-click.disable_unicode_literals_warning = True
-
 TITLE = f"""
 ----------------------------------------------------------------------------
 __________          _____             .___  __________              .__

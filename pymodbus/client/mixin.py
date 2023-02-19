@@ -15,6 +15,10 @@ from pymodbus.pdu import ModbusRequest, ModbusResponse
 class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     """**ModbusClientMixin**.
 
+    This is an interface class to facilitate the sending requests/receiving responses like read_coils.
+    execute() allows to make a call with non-standard or user defined function codes (remember to add a PDU
+    in the transport class to interpret the request/response).
+
     Simple modbus message call::
 
         response = client.read_coils(1, 10)
@@ -32,8 +36,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     .. tip::
         All methods can be used directly (synchronous) or
         with await <method> (asynchronous) depending on the client used.
-
-    jan
     """
 
     def __init__(self):
@@ -51,6 +53,10 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         .. tip::
             Response is not interpreted.
         """
+
+        # The implementation of this method is only used in test, to secure that
+        # the methods uses the correct PDU.
+        # execute() will be overwritten in the transport class.
         return request
 
     def read_coils(

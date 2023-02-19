@@ -1,9 +1,6 @@
 """Pymodbus REPL Entry point."""
-# pylint: disable=anomalous-backslash-in-string
-# flake8: noqa
 import logging
 import pathlib
-import sys
 
 import click
 from prompt_toolkit import PromptSession, print_formatted_text
@@ -33,7 +30,7 @@ from pymodbus.version import version
 
 _logger = logging.getLogger()
 
-TITLE = f"""
+TITLE = rf"""
 ----------------------------------------------------------------------------
 __________          _____             .___  __________              .__
 \______   \___.__. /     \   ____   __| _/  \______   \ ____ ______ |  |
@@ -109,8 +106,8 @@ class NumericChoice(click.Choice):
         return None
 
 
-def process_args(args: list, string: bool = True):
-    """Internal function to parse arguments provided on command line.
+def _process_args(args: list, string: bool = True):
+    """Parse arguments provided on command line.
 
     :param args: Array of argument values
     :param string: True if arguments values are strings, false if argument values are integers
@@ -211,7 +208,7 @@ def cli(client):  # pylint: disable=too-complex
                     text = text.strip().split()
                     cmd = text[0].split(".")[1]
                     args = text[1:]
-                    kwargs, execute = process_args(args, string=False)
+                    kwargs, execute = _process_args(args, string=False)
                     if execute:
                         if text[0] in CLIENT_ATTRIBUTES:
                             result = Result(getattr(client, cmd))
@@ -227,7 +224,7 @@ def cli(client):  # pylint: disable=too-complex
                         result.raw()
                     if words[0] == "result.decode":
                         args = words[1:]
-                        kwargs, execute = process_args(args)
+                        kwargs, execute = _process_args(args)
                         if execute:
                             result.decode(**kwargs)
         except KeyboardInterrupt:

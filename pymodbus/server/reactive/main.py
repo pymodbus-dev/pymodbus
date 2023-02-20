@@ -415,7 +415,7 @@ class ReactiveServer:
             unit = [unit]
         slaves = {}
         for i in unit:
-            block = {}
+            block = BaseModbusDataBlock()
             for modbus_entity, block_desc in data_block.items():
                 start_address = block_desc.get("block_start", 0)
                 default_count = block_desc.get("block_size", 0)

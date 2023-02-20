@@ -163,10 +163,10 @@ class ModbusSimulatorServer:
         self.web_app.on_startup.append(self.start_modbus_server)
         self.web_app.on_shutdown.append(self.stop_modbus_server)
         self.generator_html = {
-            "log": [None, self.build_html_log],
-            "registers": [None, self.build_html_registers],
-            "calls": [None, self.build_html_calls],
-            "server": [None, self.build_html_server],
+            "log": ["", self.build_html_log],
+            "registers": ["", self.build_html_registers],
+            "calls": ["", self.build_html_calls],
+            "server": ["", self.build_html_server],
         }
         self.generator_json = {
             "log_json": [None, self.build_json_log],

@@ -66,9 +66,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_bit_read.ReadCoilsRequest(address, count, slave, **kwargs)
         )
+        assert isinstance(response, pdu_bit_read.ReadCoilsResponse)
+        return response
 
     def read_discrete_inputs(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
@@ -81,9 +83,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_bit_read.ReadDiscreteInputsRequest(address, count, slave, **kwargs)
         )
+        assert isinstance(response, pdu_bit_read.ReadDiscreteInputsResponse)
+        return response
 
     def read_holding_registers(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
@@ -96,9 +100,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_reg_read.ReadHoldingRegistersRequest(address, count, slave, **kwargs)
         )
+        assert isinstance(response, pdu_reg_read.ReadHoldingRegistersResponse)
+        return response
 
     def read_input_registers(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
@@ -111,9 +117,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_reg_read.ReadInputRegistersRequest(address, count, slave, **kwargs)
         )
+        assert isinstance(response, pdu_reg_read.ReadInputRegistersResponse)
+        return response
 
     def write_coil(
         self, address: int, value: bool, slave: int = 0, **kwargs: Any
@@ -126,9 +134,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_bit_write.WriteSingleCoilRequest(address, value, slave, **kwargs)
         )
+        assert isinstance(response, pdu_bit_write.WriteSingleCoilResponse)
+        return response
 
     def write_register(
         self, address: int, value: Union[int, float, str], slave: int = 0, **kwargs: Any
@@ -141,9 +151,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_req_write.WriteSingleRegisterRequest(address, value, slave, **kwargs)
         )
+        assert isinstance(response, pdu_req_write.WriteSingleRegisterResponse)
+        return response
 
     def read_exception_status(
         self, slave: int = 0, **kwargs: Any
@@ -154,7 +166,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs))
+        response = self.execute(pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs))
+        assert isinstance(response, pdu_other_msg.ReadExceptionStatusResponse)
+        return response
 
     def diag_query_data(
         self, msg: bytearray, slave: int = 0, **kwargs: Any
@@ -166,7 +180,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnQueryDataResponse)
+        return response
 
     def diag_restart_communication(
         self, toggle: bool, slave: int = 0, **kwargs: Any
@@ -178,9 +194,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_diag.RestartCommunicationsOptionRequest(toggle, slave, **kwargs)
         )
+        assert isinstance(response, pdu_diag.RestartCommunicationsOptionResponse)
+        return response
 
     def diag_read_diagnostic_register(
         self, slave: int = 0, **kwargs: Any
@@ -191,7 +209,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnDiagnosticRegisterResponse)
+        return response
 
     def diag_change_ascii_input_delimeter(
         self, slave: int = 0, **kwargs: Any
@@ -202,7 +222,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ChangeAsciiInputDelimiterResponse)
+        return response
 
     def diag_force_listen_only(
         self, slave: int = 0, **kwargs: Any
@@ -213,7 +235,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ForceListenOnlyModeResponse)
+        return response
 
     def diag_clear_counters(
         self, slave: int = 0, **kwargs: Any
@@ -224,7 +248,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ClearCountersRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ClearCountersRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ClearCountersResponse)
+        return response
 
     def diag_read_bus_message_count(
         self, slave: int = 0, **kwargs: Any
@@ -235,7 +261,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnBusMessageCountResponse)
+        return response
 
     def diag_read_bus_comm_error_count(
         self, slave: int = 0, **kwargs: Any
@@ -246,9 +274,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_diag.ReturnBusCommunicationErrorCountRequest(slave, **kwargs)
         )
+        assert isinstance(response, pdu_diag.ReturnBusCommunicationErrorCountResponse)
+        return response
 
     def diag_read_bus_exception_error_count(
         self, slave: int = 0, **kwargs: Any
@@ -259,9 +289,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_diag.ReturnBusExceptionErrorCountRequest(slave, **kwargs)
         )
+        assert isinstance(response, pdu_diag.ReturnBusExceptionErrorCountResponse)
+        return response
 
     def diag_read_slave_message_count(
         self, slave: int = 0, **kwargs: Any
@@ -272,7 +304,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnSlaveMessageCountResponse)
+        return response
 
     def diag_read_slave_no_response_count(
         self, slave: int = 0, **kwargs: Any
@@ -283,7 +317,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnSlaveNoResponseCountResponse)
+        return response
 
     def diag_read_slave_nak_count(
         self, slave: int = 0, **kwargs: Any
@@ -294,7 +330,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnSlaveNAKCountResponse)
+        return response
 
     def diag_read_slave_busy_count(
         self, slave: int = 0, **kwargs: Any
@@ -305,7 +343,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnSlaveBusyCountResponse)
+        return response
 
     def diag_read_bus_char_overrun_count(
         self, slave: int = 0, **kwargs: Any
@@ -316,9 +356,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave, **kwargs)
         )
+        assert isinstance(response, pdu_diag.ReturnSlaveBusCharacterOverrunCountResponse)
+        return response
 
     def diag_read_iop_overrun_count(
         self, slave: int = 0, **kwargs: Any
@@ -329,7 +371,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ReturnIopOverrunCountResponse)
+        return response
 
     def diag_clear_overrun_counter(
         self, slave: int = 0, **kwargs: Any
@@ -340,7 +384,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.ClearOverrunCountRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.ClearOverrunCountRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.ClearOverrunCountResponse)
+        return response
 
     def diag_getclear_modbus_response(
         self, slave: int = 0, **kwargs: Any
@@ -351,7 +397,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_diag.GetClearModbusPlusRequest(slave, **kwargs))
+        response = self.execute(pdu_diag.GetClearModbusPlusRequest(slave, **kwargs))
+        assert isinstance(response, pdu_diag.GetClearModbusPlusResponse)
+        return response
 
     def diag_get_comm_event_counter(
         self, **kwargs: Any
@@ -361,7 +409,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_other_msg.GetCommEventCounterRequest(**kwargs))
+        response = self.execute(pdu_other_msg.GetCommEventCounterRequest(**kwargs))
+        assert isinstance(response, pdu_other_msg.GetCommEventCounterResponse)
+        return response
 
     def diag_get_comm_event_log(
         self, **kwargs: Any
@@ -371,7 +421,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_other_msg.GetCommEventLogRequest(**kwargs))
+        response = self.execute(pdu_other_msg.GetCommEventLogRequest(**kwargs))
+        assert isinstance(response, pdu_other_msg.GetCommEventLogResponse)
+        return response
 
     def write_coils(
         self, address: int, values: List[bool], slave: int = 0, **kwargs: Any
@@ -384,9 +436,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_bit_write.WriteMultipleCoilsRequest(address, values, slave, **kwargs)
         )
+        assert isinstance(response, pdu_bit_write.WriteMultipleCoilsResponse)
+        return response
 
     def write_registers(
         self,
@@ -403,11 +457,13 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_req_write.WriteMultipleRegistersRequest(
                 address, values, slave, **kwargs
             )
         )
+        assert isinstance(response, pdu_req_write.WriteMultipleRegistersResponse)
+        return response
 
     def report_slave_id(
         self, slave: int = 0, **kwargs: Any
@@ -418,7 +474,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_other_msg.ReportSlaveIdRequest(slave, **kwargs))
+        response = self.execute(pdu_other_msg.ReportSlaveIdRequest(slave, **kwargs))
+        assert isinstance(response, pdu_other_msg.ReportSlaveIdResponse)
+        return response
 
     def read_file_record(
         self, records: List[Tuple], **kwargs: Any
@@ -429,7 +487,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_file_msg.ReadFileRecordRequest(records, **kwargs))
+        response = self.execute(pdu_file_msg.ReadFileRecordRequest(records, **kwargs))
+        assert isinstance(response, pdu_file_msg.ReadFileRecordResponse)
+        return response
 
     def write_file_record(
         self, records: List[Tuple], **kwargs: Any
@@ -440,7 +500,9 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(pdu_file_msg.WriteFileRecordRequest(records, **kwargs))
+        response = self.execute(pdu_file_msg.WriteFileRecordRequest(records, **kwargs))
+        assert isinstance(response, pdu_file_msg.ReadFileRecordResponse)
+        return response
 
     def mask_write_register(
         self,
@@ -457,9 +519,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_req_write.MaskWriteRegisterRequest(address, and_mask, or_mask, **kwargs)
         )
+        assert isinstance(response, pdu_req_write.MaskWriteRegisterResponse)
+        return response
 
     def readwrite_registers(
         self,
@@ -480,7 +544,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs:
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_reg_read.ReadWriteMultipleRegistersRequest(
                 read_address=read_address,
                 read_count=read_count,
@@ -490,6 +554,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
                 **kwargs
             )
         )
+        assert isinstance(response, pdu_reg_read.ReadWriteMultipleRegistersResponse)
+        return response
 
     def read_fifo_queue(
         self, address: int = 0x0000, **kwargs: Any
@@ -500,10 +566,11 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs:
         :raises ModbusException:
         """
-        return self.execute(pdu_file_msg.ReadFifoQueueRequest(address, **kwargs))
+        response = self.execute(pdu_file_msg.ReadFifoQueueRequest(address, **kwargs))
+        assert isinstance(response, pdu_file_msg.ReadFifoQueueResponse)
+        return response
 
     # code 0x2B sub 0x0D: CANopen General Reference Request and Response, NOT IMPLEMENTED
-
     def read_device_information(
         self, read_code: int = None, object_id: int = 0x00, **kwargs: Any
     ) -> pdu_mei.ReadDeviceInformationResponse:
@@ -514,6 +581,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param kwargs:
         :raises ModbusException:
         """
-        return self.execute(
+        response = self.execute(
             pdu_mei.ReadDeviceInformationRequest(read_code, object_id, **kwargs)
         )
+        assert isinstance(response, pdu_mei.ReadDeviceInformationResponse)
+        return response

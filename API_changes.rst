@@ -10,6 +10,8 @@ Version 3.2.0
 - `ReturnSlaveNoReponseCountResponse` has been corrected to
   `ReturnSlaveNoResponseCountResponse`
 - Option `--modbus-config` for REPL server renamed to `--modbus-config-path`
+- client.protocol.<something> --> client.<something>
+- client.factory.<something> --> client.<something>
 
 -------------
 Version 3.1.0

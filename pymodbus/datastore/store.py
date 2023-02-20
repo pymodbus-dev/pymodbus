@@ -45,6 +45,9 @@ I have both methods implemented, and leave it up to the user to change
 based on their preference.
 """
 # pylint: disable=missing-type-doc
+from collections import abc
+from typing import Collection, List, Mapping, Union
+
 from pymodbus.exceptions import NotImplementedException, ParameterException
 
 
@@ -174,13 +177,13 @@ class ModbusSequentialDataBlock(BaseModbusDataBlock):
         start = address - self.address
         return self.values[start : start + count]
 
-    def setValues(self, address, values):
+    def setValues(self, address: int, values: Collection):
         """Set the requested values of the datastore.
 
         :param address: The starting address
         :param values: The new values to be set
         """
-        if not isinstance(values, list):
+        if not isinstance(values, abc.Collection):
             values = [values]
         start = address - self.address
         self.values[start : start + len(values)] = values
@@ -263,10 +266,10 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         """
         return [self.values[i] for i in range(address, address + count)]
 
-    def _process_values(self, values):
+    def _process_values(self, values: Union[Mapping, List]):
         """Process values."""
 
-        def _process_as_dict(values):
+        def _process_as_mapping(values):
             for idx, val in iter(values.items()):
                 if isinstance(val, (list, tuple)):
                     for i, v_item in enumerate(val):
@@ -274,8 +277,8 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
                 else:
                     self.values[idx] = int(val)
 
-        if isinstance(values, dict):
-            _process_as_dict(values)
+        if isinstance(values, abc.Mapping):
+            _process_as_mapping(values)
             return
         if hasattr(values, "__iter__"):
             values = dict(enumerate(values))
@@ -283,11 +286,16 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
             values = {}  # Must make a new dict here per instance
         else:
             raise ParameterException(
-                "Values for datastore must be a list or dictionary"
+                "Values for datastore must be a mapping or dictionary"
             )
-        _process_as_dict(values)
+        _process_as_mapping(values)
 
-    def setValues(self, address, values, use_as_default=False):
+    def setValues(
+        self,
+        address: int,
+        values: Union[Mapping, Collection, float],
+        use_as_default=False,
+    ):
         """Set the requested values of the datastore.
 
         :param address: The starting address
@@ -295,13 +303,13 @@ class ModbusSparseDataBlock(BaseModbusDataBlock):
         :param use_as_default: Use the values as default
         :raises ParameterException:
         """
-        if isinstance(values, dict):
+        if isinstance(values, abc.Mapping):
             new_offsets = list(set(values.keys()) - set(self.values.keys()))
             if new_offsets and not self.mutable:
                 raise ParameterException(f"Offsets {new_offsets} not in range")
             self._process_values(values)
         else:
-            if not isinstance(values, list):
+            if not isinstance(values, abc.Collection):
                 values = [values]
             for idx, val in enumerate(values):
                 if address + idx not in self.values and not self.mutable:

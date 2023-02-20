@@ -173,8 +173,8 @@ class ModbusSimulatorServer:
             "server_json": [None, self.build_json_server],
         }
         for entry in self.generator_html:  # pylint: disable=consider-using-dict-items
-            file = os.path.join(self.web_path, "generator", entry)
-            with open(file, encoding="utf-8") as handle:
+            html_file = os.path.join(self.web_path, "generator", entry)
+            with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: List[int] = []

@@ -38,7 +38,7 @@ from pymodbus.framer.tls_framer import ModbusTlsFramer
     ],
 )
 @pytest.mark.parametrize(
-    "method, arg, response",
+    "method, arg, pdu_request",
     [
         ("read_coils", 1, pdu_bit_read.ReadCoilsRequest),
         ("read_discrete_inputs", 1, pdu_bit_read.ReadDiscreteInputsRequest),
@@ -90,10 +90,17 @@ from pymodbus.framer.tls_framer import ModbusTlsFramer
         ("mask_write_register", 1, pdu_req_write.MaskWriteRegisterRequest),
     ],
 )
-def test_client_mixin(arglist, method, arg, response):
+def test_client_mixin(arglist, method, arg, pdu_request):
     """Test mixin responses."""
-    rr = getattr(ModbusClientMixin(), method)(**arglist[arg])
-    assert isinstance(rr, response)
+    pdu_to_call = None
+    def fake_execute(self, request):
+        """Set PDU request."""
+        nonlocal pdu_to_call
+        pdu_to_call = request
+
+    with mock.patch.object(ModbusClientMixin, "execute", fake_execute):
+        getattr(ModbusClientMixin(), method)(**arglist[arg])
+        assert isinstance(pdu_to_call, pdu_request)
 
 
 @pytest.mark.xdist_group(name="client")

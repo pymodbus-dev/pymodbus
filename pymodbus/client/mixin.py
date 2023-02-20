@@ -53,11 +53,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         .. tip::
             Response is not interpreted.
         """
-
-        # The implementation of this method is only used in test, to secure that
-        # the methods uses the correct PDU.
-        # execute() will be overwritten in the transport class.
-        return request
+        raise RuntimeError("Pymodbus internal ERROR")
 
     def read_coils(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any

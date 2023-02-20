@@ -9,6 +9,7 @@ import pymodbus.mei_message as pdu_mei
 import pymodbus.other_message as pdu_other_msg
 import pymodbus.register_read_message as pdu_reg_read
 import pymodbus.register_write_message as pdu_req_write
+from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
@@ -45,7 +46,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Execute request (code ???).
 
         :param request: Request to send
-        :returns: A deferred response handle
         :raises ModbusException:
 
         Call with custom function codes.
@@ -53,7 +53,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         .. tip::
             Response is not interpreted.
         """
-        raise RuntimeError("Pymodbus internal ERROR")
+        raise ModbusException("Pymodbus internal ERROR")
 
     def read_coils(
         self, address: int, count: int = 1, slave: int = 0, **kwargs: Any
@@ -64,7 +64,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -80,7 +79,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -96,7 +94,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -112,7 +109,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param count: (optional) Number of coils to read
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -128,7 +124,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param value: Boolean to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -144,7 +139,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param value: Value to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -158,7 +152,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_other_msg.ReadExceptionStatusRequest(slave, **kwargs))
@@ -171,7 +164,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param msg: Message to be returned
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnQueryDataRequest(msg, slave, **kwargs))
@@ -184,7 +176,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param toggle: True if toogled.
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -198,7 +189,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnDiagnosticRegisterRequest(slave, **kwargs))
@@ -210,7 +200,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs))
@@ -222,7 +211,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs))
@@ -234,7 +222,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ClearCountersRequest(slave, **kwargs))
@@ -246,7 +233,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnBusMessageCountRequest(slave, **kwargs))
@@ -258,7 +244,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -272,7 +257,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -286,7 +270,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnSlaveMessageCountRequest(slave, **kwargs))
@@ -298,7 +281,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnSlaveNoResponseCountRequest(slave, **kwargs))
@@ -310,7 +292,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnSlaveNAKCountRequest(slave, **kwargs))
@@ -322,7 +303,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnSlaveBusyCountRequest(slave, **kwargs))
@@ -334,7 +314,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -348,7 +327,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ReturnIopOverrunCountRequest(slave, **kwargs))
@@ -360,7 +338,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.ClearOverrunCountRequest(slave, **kwargs))
@@ -372,7 +349,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_diag.GetClearModbusPlusRequest(slave, **kwargs))
@@ -383,7 +359,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Diagnose get event counter (code 0x0B).
 
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_other_msg.GetCommEventCounterRequest(**kwargs))
@@ -394,7 +369,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Diagnose get event counter (code 0x0C).
 
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_other_msg.GetCommEventLogRequest(**kwargs))
@@ -408,7 +382,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param values: List of booleans to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -428,7 +401,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param values: List of booleans to write
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -444,7 +416,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_other_msg.ReportSlaveIdRequest(slave, **kwargs))
@@ -456,7 +427,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_file_msg.ReadFileRecordRequest(records, **kwargs))
@@ -468,7 +438,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_file_msg.WriteFileRecordRequest(records, **kwargs))
@@ -486,7 +455,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param and_mask: The and bitmask to apply to the register address
         :param or_mask: The or bitmask to apply to the register address
         :param kwargs: (optional) Experimental parameters.
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -510,7 +478,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param values: The registers to write to the specified address
         :param slave: (optional) Modbus slave unit ID
         :param kwargs:
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(
@@ -531,7 +498,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param address: The address to start reading from
         :param kwargs:
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(pdu_file_msg.ReadFifoQueueRequest(address, **kwargs))
@@ -546,7 +512,6 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param read_code: The device information read code
         :param object_id: The object to read from
         :param kwargs:
-        :returns: A deferred response handle
         :raises ModbusException:
         """
         return self.execute(

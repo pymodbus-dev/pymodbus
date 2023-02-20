@@ -93,7 +93,8 @@ from pymodbus.framer.tls_framer import ModbusTlsFramer
 def test_client_mixin(arglist, method, arg, pdu_request):
     """Test mixin responses."""
     pdu_to_call = None
-    def fake_execute(self, request):
+
+    def fake_execute(_self, request):
         """Set PDU request."""
         nonlocal pdu_to_call
         pdu_to_call = request

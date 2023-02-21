@@ -10,6 +10,7 @@ import functools
 # import needed libraries
 # ---------------------------------------------------------------------------#
 import logging
+from tempfile import gettempdir
 
 from tornado.ioloop import IOLoop
 
@@ -170,7 +171,7 @@ if __name__ == "__main__":
     ) = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
         schedulers.IO_LOOP,
         method="rtu",
-        port="/tmp/ptyp0",
+        port=gettempdir() + "/ptyp0",
         baudrate=9600,
         timeout=2,
     )

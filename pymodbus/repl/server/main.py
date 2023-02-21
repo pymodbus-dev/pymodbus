@@ -121,7 +121,7 @@ def server(
 def run(
     ctx: typer.Context,
     modbus_server: str = typer.Option(
-        ModbusServerTypes.tcp,
+        ModbusServerTypes.tcp.value,
         "--modbus-server",
         "-s",
         case_sensitive=False,
@@ -129,7 +129,7 @@ def run(
         help="Modbus Server",
     ),
     modbus_framer: str = typer.Option(
-        ModbusFramerTypes.socket,
+        ModbusFramerTypes.socket.value,
         "--framer",
         "-f",
         case_sensitive=False,

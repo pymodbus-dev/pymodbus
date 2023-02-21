@@ -447,7 +447,7 @@ class ReactiveServer:
             if not single:
                 slaves[i] = slave_context
             else:
-                slaves = slave_context
+                slaves[0] = slave_context
         server_context = ModbusServerContext(slaves, single=single)
         return server_context
 

@@ -105,10 +105,10 @@ async def run_payload_calls(client):
         # Make sure word/byte order is consistent between BinaryPayloadBuilder and BinaryPayloadDecoder
         assert (
             decoder._byteorder == builder._byteorder  # pylint: disable=protected-access
-        )  # nosec
+        )
         assert (
             decoder._wordorder == builder._wordorder  # pylint: disable=protected-access
-        )  # nosec
+        )
 
         decoded = OrderedDict(
             [

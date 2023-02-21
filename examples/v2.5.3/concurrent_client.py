@@ -111,7 +111,7 @@ def _client_worker_process(factory, input_queue, output_queue, is_shutdown):
                 txt = f"error in worker thread: {threading.current_thread()}"
                 log.exception(txt)
                 output_queue.put(WorkResponse(True, workitem.work_id, exc))
-        except Exception:  # nosec pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             pass
     txt = f"request worker shutting down: {threading.current_thread()}"
     log.info(txt)

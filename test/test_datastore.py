@@ -320,8 +320,8 @@ class SqlDataStoreTest(unittest.TestCase):
             self.slave._table.select = MagicMock()
             self.slave._connection = MagicMock()
 
-            self.mock_addr = random.randint(0, 65000)  # nosec
-            self.mock_values = random.sample(range(1, 100), 5)  # nosec
+            self.mock_addr = random.randint(0, 65000)
+            self.mock_values = random.sample(range(1, 100), 5)
             self.mock_function = 0x01
             self.mock_type = "h"
             self.mock_offset = 0

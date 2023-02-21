@@ -46,8 +46,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        self.protocol = None
         super().__init__(framer=framer, **kwargs)
+        self.use_protocol = True
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address

@@ -124,7 +124,7 @@ class ModbusBaseClient(ModbusClientMixin):
         self.framer = self.params.framer(ClientDecoder(), self)
         self.transaction = DictTransactionManager(self, **kwargs)
         self.delay_ms = self.params.reconnect_delay
-        self.use_protocol = hasattr(self, "protocol")
+        self.use_protocol = False
         self._connected = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE

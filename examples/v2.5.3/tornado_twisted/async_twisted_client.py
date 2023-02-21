@@ -42,7 +42,7 @@ def dassert(deferred, callback):
     """Dassert."""
 
     def _assertor(value):
-        assert value  # nosec
+        assert value
 
     deferred.addCallback(lambda r: _assertor(callback(r)))
     deferred.addErrback(err)

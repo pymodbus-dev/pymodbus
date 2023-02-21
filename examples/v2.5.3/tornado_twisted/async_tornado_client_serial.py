@@ -45,7 +45,7 @@ def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value  # nosec
+        assert value
 
     def on_done(f_trans):
         if exc := f_trans.exception():
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     ) = AsyncModbusSerialClient(  # pylint: disable=unpacking-non-sequence
         schedulers.IO_LOOP,
         method="rtu",
-        port="/tmp/ptyp0",  # nosec
+        port="/tmp/ptyp0",
         baudrate=9600,
         timeout=2,
     )

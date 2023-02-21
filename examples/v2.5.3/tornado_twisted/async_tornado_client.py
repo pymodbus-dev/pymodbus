@@ -39,7 +39,7 @@ def dassert(future, callback):
 
     def _assertor(value):
         # by pass assertion, an error here stops the write callbacks
-        assert value  # nosec
+        assert value
 
     def on_done(f_trans):
         if exc := f_trans.exception():

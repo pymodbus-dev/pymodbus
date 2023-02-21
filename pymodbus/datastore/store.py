@@ -51,7 +51,7 @@ from pymodbus.exceptions import NotImplementedException, ParameterException
 # ---------------------------------------------------------------------------#
 #  Datablock Storage
 # ---------------------------------------------------------------------------#
-class BaseModbusDataBlock(dict):
+class BaseModbusDataBlock:
     """Base class for a modbus datastore
 
     Derived classes must create the following fields:
@@ -72,12 +72,16 @@ class BaseModbusDataBlock(dict):
         :param value: The default value to set to the fields
         """
         self.default_value = value  # pylint: disable=attribute-defined-outside-init
-        self.values = [self.default_value] * count
+        self.values = [  # pylint: disable=attribute-defined-outside-init
+            self.default_value
+        ] * count
         self.address = 0x00  # pylint: disable=attribute-defined-outside-init
 
     def reset(self):
         """Reset the datastore to the initialized default value."""
-        self.values = [self.default_value] * len(self.values)
+        self.values = [  # pylint: disable=attribute-defined-outside-init
+            self.default_value
+        ] * len(self.values)
 
     def validate(self, address, count=1):
         """Check to see if the request is in range.

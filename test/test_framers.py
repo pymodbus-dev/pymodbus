@@ -46,20 +46,20 @@ def test_framer_initialization(framer):
     """Test framer initialization."""
     decoder = ClientDecoder()
     framer = framer(decoder)
-    assert framer.client is None  # nosec
-    assert framer._buffer == b""  # nosec pylint: disable=protected-access
-    assert framer.decoder == decoder  # nosec
+    assert framer.client is None
+    assert framer._buffer == b""  # pylint: disable=protected-access
+    assert framer.decoder == decoder
     if isinstance(framer, ModbusAsciiFramer):
-        assert framer._header == {  # nosec pylint: disable=protected-access
+        assert framer._header == {  # pylint: disable=protected-access
             "lrc": "0000",
             "len": 0,
             "uid": 0x00,
         }
-        assert framer._hsize == 0x02  # nosec pylint: disable=protected-access
-        assert framer._start == b":"  # nosec pylint: disable=protected-access
-        assert framer._end == b"\r\n"  # nosec pylint: disable=protected-access
+        assert framer._hsize == 0x02  # pylint: disable=protected-access
+        assert framer._start == b":"  # pylint: disable=protected-access
+        assert framer._end == b"\r\n"  # pylint: disable=protected-access
     elif isinstance(framer, ModbusRtuFramer):
-        assert framer._header == {  # nosec pylint: disable=protected-access
+        assert framer._header == {  # pylint: disable=protected-access
             "uid": 0x00,
             "len": 0,
             "crc": b"\x00\x00",

@@ -180,7 +180,7 @@ class ModbusSimulatorServer:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: List[int] = []
-        self.call_list = []
+        self.call_list: List[str] = []  # not implemented yet
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
 

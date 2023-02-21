@@ -131,7 +131,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         )
 
     def write_register(
-        self, address: int, value: Union[int, float, str], slave: int = 0, **kwargs: Any
+        self, address: int, value: int, slave: int = 0, **kwargs: Any
     ) -> pdu_req_write.WriteSingleRegisterResponse:
         """Write register (code 0x06).
 
@@ -374,12 +374,16 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(pdu_other_msg.GetCommEventLogRequest(**kwargs))
 
     def write_coils(
-        self, address: int, values: List[bool], slave: int = 0, **kwargs: Any
+        self,
+        address: int,
+        values: Union[List[bool], bool],
+        slave: int = 0,
+        **kwargs: Any
     ) -> pdu_bit_write.WriteMultipleCoilsResponse:
         """Write coils (code 0x0F).
 
         :param address: Start address to write to
-        :param values: List of booleans to write
+        :param values: List of booleans to write, or a single boolean to write to all
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
@@ -389,16 +393,12 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         )
 
     def write_registers(
-        self,
-        address: int,
-        values: List[Union[int, float, str]],
-        slave: int = 0,
-        **kwargs: Any
+        self, address: int, values: Union[List[int], int], slave: int = 0, **kwargs: Any
     ) -> pdu_req_write.WriteMultipleRegistersResponse:
         """Write registers (code 0x10).
 
         :param address: Start address to write to
-        :param values: List of booleans to write
+        :param values: List of values to write, or a single value to write to all
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
@@ -466,7 +466,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         read_address: int = 0,
         read_count: int = 0,
         write_address: int = 0,
-        values: int = 0,
+        values: Union[List[int], int] = [0],
         slave: int = 0,
         **kwargs
     ) -> pdu_reg_read.ReadWriteMultipleRegistersResponse:
@@ -475,7 +475,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param read_address: The address to start reading from
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
-        :param values: The registers to write to the specified address
+        :param values: List of values to write, or a single value to write to all
         :param slave: (optional) Modbus slave unit ID
         :param kwargs:
         :raises ModbusException:

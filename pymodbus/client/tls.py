@@ -1,4 +1,5 @@
 """Modbus client async TLS communication."""
+import asyncio
 import socket
 import ssl
 from typing import Any, Type
@@ -39,7 +40,7 @@ def sslctx_provider(
     return sslctx
 
 
-class AsyncModbusTlsClient(AsyncModbusTcpClient):
+class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
     """**AsyncModbusTlsClient**.
 
     :param host: Host IP address or host name

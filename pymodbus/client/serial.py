@@ -4,7 +4,7 @@ import time
 from functools import partial
 from typing import Any, Type
 
-from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-class AsyncModbusSerialClient(ModbusBaseClient):
+class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusSerialClient**.
 
     :param port: Serial port used for communication.
@@ -61,8 +61,8 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        self.protocol = None
         super().__init__(framer=framer, **kwargs)
+        self.use_protocol = True
         self.params.port = port
         self.params.baudrate = baudrate
         self.params.bytesize = bytesize
@@ -79,11 +79,9 @@ class AsyncModbusSerialClient(ModbusBaseClient):
         # prevent reconnect:
         self.delay_ms = 0
         if self.connected:
-            if self.protocol.transport:
-                self.protocol.transport.close()
-            if self.protocol:
-                await self.protocol.close()
-                self.protocol = None
+            if self.transport:
+                self.transport.close()
+            await self.async_close()
             await asyncio.sleep(0.1)
 
         # if there is an unfinished delayed reconnection attempt pending, cancel it
@@ -92,12 +90,8 @@ class AsyncModbusSerialClient(ModbusBaseClient):
             self._reconnect_task = None
 
     def _create_protocol(self):
-        """Create protocol."""
-        protocol = ModbusClientProtocol(
-            framer=self.params.framer, xframer=self.framer, timeout=self.params.timeout
-        )
-        protocol.factory = self
-        return protocol
+        """Create a protocol instance."""
+        return self
 
     @property
     def connected(self):
@@ -130,25 +124,21 @@ class AsyncModbusSerialClient(ModbusBaseClient):
                 self._launch_reconnect()
         return self.connected
 
-    def protocol_made_connection(self, protocol):
+    def client_made_connection(self, protocol):
         """Notify successful connection."""
         Log.info("Serial connected.")
         if not self.connected:
             self._connected_event.set()
-            self.protocol = protocol
         else:
             Log.error("Factory protocol connect callback called while connected.")
 
-    def protocol_lost_connection(self, protocol):
+    def client_lost_connection(self, protocol):
         """Notify lost connection."""
         Log.info("Serial lost connection.")
-        if protocol is not self.protocol:
-            Log.error("Serial: protocol is not self.protocol.")
+        if protocol is not self:
+            Log.error("Serial: protocol is not self.")
 
         self._connected_event.clear()
-        if self.protocol is not None:
-            del self.protocol
-            self.protocol = None
         if self.delay_ms:
             self._launch_reconnect()
 

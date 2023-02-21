@@ -166,13 +166,13 @@ async def test_async_task_ok(comm):
     client = run_client(**client_args)
     await client.connect()
     await asyncio.sleep(0.1)
-    assert client.protocol
+    assert client._connected  # pylint: disable=protected-access
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
     await client.close()
     await asyncio.sleep(0.1)
-    assert not client.protocol
+    assert not client._connected  # pylint: disable=protected-access
     await server.ServerAsyncStop()
     await task
 
@@ -186,7 +186,7 @@ async def test_async_task_server_stop(comm):
     await asyncio.sleep(0.1)
     client = run_client(**client_args)
     await client.connect()
-    assert client.protocol
+    assert client._connected  # pylint: disable=protected-access
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
@@ -196,26 +196,26 @@ async def test_async_task_server_stop(comm):
 
     with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
         rr = await client.read_coils(1, 1, slave=0x01)
-    assert not client.protocol
+    assert not client._connected  # pylint: disable=protected-access
 
     # Server back online
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.1)
 
     timer_allowed = 100
-    while not client.protocol:
+    while not client._connected:  # pylint: disable=protected-access
         await asyncio.sleep(0.1)
         timer_allowed -= 1
         if not timer_allowed:
             assert False, "client do not reconnect"
-    assert client.protocol
+    assert client._connected  # pylint: disable=protected-access
 
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
     await client.close()
     await asyncio.sleep(0.5)
-    assert not client.protocol
+    assert not client._connected  # pylint: disable=protected-access
     await server.ServerAsyncStop()
     await task
 

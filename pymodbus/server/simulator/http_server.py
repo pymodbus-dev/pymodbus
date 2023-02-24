@@ -128,6 +128,7 @@ class ModbusSimulatorServer:
             "socket": ModbusSocketFramer,
             "tls": ModbusTlsFramer,
         }
+        custom_actions_dict = None
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
             custom_actions_dict = actions_module.custom_actions_dict

@@ -121,7 +121,7 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.kwargs = kwargs
 
         # Common variables.
-        self.framer = self.params.framer(ClientDecoder(), self)
+        self.framer = self.params.framer(ClientDecoder(), self)  # type: ignore
         self.transaction = DictTransactionManager(self, **kwargs)
         self.delay_ms = self.params.reconnect_delay
         self.use_protocol = False
@@ -147,7 +147,7 @@ class ModbusBaseClient(ModbusClientMixin):
         Use register() to add non-standard responses (like e.g. a login prompt) and
         have them interpreted automatically.
         """
-        self.framer.decoder.register(custom_response_class)
+        self.framer.decoder.register(custom_response_class)  # type: ignore
 
     def connect(self) -> None:
         """Connect to the modbus remote host (call **sync/async**).
@@ -187,7 +187,7 @@ class ModbusBaseClient(ModbusClientMixin):
             if not self._connected:
                 raise ConnectionException(f"Not connected[{str(self)}]")
             return self.async_execute(request)
-        if not self.connect():
+        if not self.connect():  # type: ignore
             raise ConnectionException(f"Failed to connect[{str(self)}]")
         return self.transaction.execute(request)
 

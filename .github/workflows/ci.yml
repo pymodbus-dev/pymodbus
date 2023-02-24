@@ -46,12 +46,12 @@ jobs:
           - name: docs
             cmd: make -C doc/ html
             type: lint
-          - name: pytest
-            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
-            type: test
           - name: mypy
             cmd: mypy pymodbus
             type: lint
+          - name: pytest
+            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
+            type: test
         os:
           - name: Linux
             on: ubuntu-latest

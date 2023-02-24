@@ -383,7 +383,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Write coils (code 0x0F).
 
         :param address: Start address to write to
-        :param values: List of booleans to write, or a single boolean to write to all
+        :param values: List of booleans to write, or a single boolean to write
         :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
@@ -398,7 +398,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """Write registers (code 0x10).
 
         :param address: Start address to write to
-        :param values: List of values to write, or a single value to write to all
+        :param values: List of values to write, or a single value to write
         :param slave: (optional) Modbus slave unit ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
@@ -475,7 +475,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param read_address: The address to start reading from
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
-        :param values: List of values to write, or a single value to write to all
+        :param values: List of values to write, or a single value to write
         :param slave: (optional) Modbus slave unit ID
         :param kwargs:
         :raises ModbusException:

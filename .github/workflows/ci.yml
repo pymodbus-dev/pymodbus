@@ -49,6 +49,9 @@ jobs:
           - name: pytest
             cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
             type: test
+          - name: mypy
+            cmd: mypy pymodbus
+            type: lint
         os:
           - name: Linux
             on: ubuntu-latest

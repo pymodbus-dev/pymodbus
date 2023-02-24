@@ -5,7 +5,7 @@
 with read/write data as well as user configurable base data
 """
 import logging
-import pickle  # nosec
+import pickle
 from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
@@ -82,7 +82,7 @@ class Configuration:  # pylint: disable=too-few-public-methods
 
     def parse(self):
         """Parse the config file and creates a server context"""
-        handle = pickle.load(self.file)  # nosec
+        handle = pickle.load(self.file)
         try:  # test for existence, or bomb
             dsd = handle["di"]
             csd = handle["ci"]

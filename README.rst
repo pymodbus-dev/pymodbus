@@ -22,7 +22,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
 
-Version `3.1.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.2>`_ is the current release (Supports Python >=3.8).
+Version `3.1.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.1.3>`_ is the current release (Supports Python >=3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
@@ -277,7 +277,7 @@ The default command can be overridden by passing any valid command at the end.::
 
     Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
 
-    Reactive modebus server
+    Reactive Modbus server
 
    ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
    │ --host                                    TEXT     Host address [default: localhost]                                       │

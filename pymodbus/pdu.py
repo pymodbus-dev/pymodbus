@@ -1,18 +1,12 @@
 """Contains base classes for modbus request/response/error packets."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import NotImplementedException
 from pymodbus.interfaces import Singleton
+from pymodbus.logging import Log
 from pymodbus.utilities import rtuFrameSize
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
@@ -115,7 +109,7 @@ class ModbusRequest(ModbusPDU):
         :raises: An exception response
         """
         exc = ExceptionResponse(self.function_code, exception)
-        _logger.error(exc)
+        Log.error("Exception response {}", exc)
         return exc
 
 

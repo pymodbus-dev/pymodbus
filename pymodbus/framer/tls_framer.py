@@ -1,6 +1,5 @@
 """TLS framer."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 
 from pymodbus.exceptions import (
@@ -8,13 +7,8 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer import TLS_FRAME_HEADER, ModbusFramer
-from pymodbus.utilities import hexlify_packets
+from pymodbus.logging import Log
 
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Modbus TLS Message
@@ -138,8 +132,7 @@ class ModbusTlsFramer(ModbusFramer):
             unit = [unit]
         # no unit id for Modbus Security Application Protocol
         single = kwargs.get("single", True)
-        txt = f"Processing: {hexlify_packets(data)}"
-        _logger.debug(txt)
+        Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
 
         if self.isFrameReady():
@@ -147,11 +140,10 @@ class ModbusTlsFramer(ModbusFramer):
                 if self._validate_unit_id(unit, single):
                     self._process(callback)
                 else:
-                    txt = f"Not in valid unit id - {unit}, ignoring!!"
-                    _logger.debug(txt)
+                    Log.debug("Not in valid unit id - {}, ignoring!!", unit)
                     self.resetFrame()
             else:
-                _logger.debug("Frame check failed, ignoring!!")
+                Log.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
 
     def _process(self, callback, error=False):

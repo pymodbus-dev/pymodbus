@@ -1,6 +1,6 @@
 # Pymodbus REPL Server
 
-Pymodbus REPL server helps to quicky spin an [asynchronous server](../../../examples/common/asyncio_server.py) from command line.
+Pymodbus REPL server helps to quickly start an [asynchronous server](../../../examples/common/asyncio_server.py) from the command line.
 
 Support both `Modbus TCP` and `Modbus RTU` server.
 
@@ -9,7 +9,7 @@ Some features offered are
 
 ---
 1. Runs a [reactive server](../../server/reactive/main.py) in `REPL` and `NON REPL` mode.
-2. Exposes REST API's to manipulate the behaviour of the server in non repl mode.
+2. Exposes REST API's to manipulate the behaviour of the server in non REPL mode.
 3. Ability to manipulate the out-going response dynamically (either via REPL console or via REST API request).
 4. Ability to delay the out-going response dynamically (either via REPL console or via REST API request).
 5. Auto revert to normal response after pre-defined number of manipulated responses.
@@ -28,7 +28,7 @@ Invoke REPL server with `pymodbus.server run` command.
 
  Usage: pymodbus.server [OPTIONS] COMMAND [ARGS]...
 
- Reactive modebus server
+ Reactive Modbus server
 
 ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --host                                    TEXT     Host address [default: localhost]                                       │
@@ -63,9 +63,9 @@ docker run -it pymodbus-dev/pymodbus pymodbus.server --help
 ╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --modbus-server  -s      TEXT     Modbus Server [default: ModbusServerTypes.tcp]                                           │
 │ --framer         -f      TEXT     Modbus framer to use [default: ModbusFramerTypes.socket]                                 │
-│ --modbus-port    -p      TEXT     Modbus port [default: 5020]                                                              │
+│ --modbus-port    -p      INTEGER  Modbus port [default: 5020]                                                              │
 │ --unit-id        -u      INTEGER  Supported Modbus unit id's [default: None]                                               │
-│ --modbus-config          PATH     Path to additional modbus server config [default: None]                                  │
+│ --modbus-config-path     PATH     Path to additional modbus server config [default: None]                                  │
 │ --random         -r      INTEGER  Randomize every `r` reads. 0=never, 1=always,2=every-second-read, and so on. Applicable  │
 │                                   IR and DI.                                                                               │
 │                                   [default: 0]                                                                             │

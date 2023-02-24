@@ -41,17 +41,10 @@ options:
 """
 import argparse
 import asyncio
-import logging
 
 from pymodbus import pymodbus_apply_logging_config
+from pymodbus.logging import Log
 from pymodbus.server.simulator.http_server import ModbusSimulatorServer
-
-
-_logger = logging.getLogger(__name__)
-
-
-async def run():
-    """Run simulator."""
 
 
 def get_commandline():
@@ -103,8 +96,7 @@ def get_commandline():
     )
     args = parser.parse_args()
     pymodbus_apply_logging_config(args.log.upper())
-    _logger.setLevel(args.log.upper())
-    _logger.info("Start simulator")
+    Log.info("Start simulator")
     cmd_args = {}
     for argument in args.__dict__:
         if argument == "log":
@@ -114,13 +106,17 @@ def get_commandline():
     return cmd_args
 
 
-async def main():
-    """Run server."""
+async def run_main():
+    """Run server async."""
     cmd_args = get_commandline()
     task = ModbusSimulatorServer(**cmd_args)
-
     await task.run_forever()
 
 
+def main():
+    """Run server."""
+    asyncio.run(run_main(), debug=True)
+
+
 if __name__ == "__main__":
-    asyncio.run(main(), debug=True)
+    main()

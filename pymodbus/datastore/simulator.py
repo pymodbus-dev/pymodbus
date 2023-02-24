@@ -1,13 +1,9 @@
 """Pymodbus ModbusSimulatorContext."""
 import dataclasses
-import logging
 import random
 import struct
 from datetime import datetime
-from typing import Callable, Dict
-
-
-_logger = logging.getLogger()
+from typing import Any, Callable, Dict, List
 
 
 WORD_SIZE = 16
@@ -34,7 +30,7 @@ class Cell:
     access: bool = False
     value: int = 0
     action: int = 0
-    action_kwargs: int = None
+    action_kwargs: Dict[str, Any] = None
     count_read: int = 0
     count_write: int = 0
 
@@ -456,18 +452,18 @@ class ModbusSimulatorContext:
     start_time = int(datetime.now().timestamp())
 
     def __init__(
-        self, config: Dict[str, any], custom_actions: Dict[str, Callable]
+        self, config: Dict[str, Any], custom_actions: Dict[str, Callable]
     ) -> None:
         """Initialize."""
-        self.registers = []
-        self.fc_offset = {}
+        self.registers: List[int] = []
+        self.fc_offset: Dict[int, int] = {}
         self.register_count = 0
         self.type_exception = False
-        self.action_name_to_id = {}
-        self.action_id_to_name = []
-        self.action_methods = []
-        self.registerType_name_to_id = {}
-        self.registerType_id_to_name = []
+        self.action_name_to_id: Dict[str, int] = {}
+        self.action_id_to_name: List[str] = []
+        self.action_methods: List[Callable] = []
+        self.registerType_name_to_id: Dict[str, int] = {}
+        self.registerType_id_to_name: List[str] = []
         Setup(self).setup(config, custom_actions)
 
     # --------------------------------------------
@@ -521,6 +517,34 @@ class ModbusSimulatorContext:
     _write_func_code = (5, 6, 15, 16, 22, 23)
     _bits_func_code = (1, 2, 5, 15)
 
+    def loop_validate(self, address, end_address, fx_write):
+        """Validate entry in loop.
+
+        :meta private:
+        """
+        i = address
+        while i < end_address:
+            reg = self.registers[i]
+            if fx_write and not reg.access or reg.type == CellType.INVALID:
+                return False
+            if not self.type_exception:
+                i += 1
+                continue
+            if reg.type == CellType.NEXT:
+                return False
+            if reg.type in (CellType.BITS, CellType.UINT16):
+                i += 1
+            elif reg.type in (CellType.UINT32, CellType.FLOAT32):
+                if i + 1 >= end_address:
+                    return False
+                i += 2
+            else:
+                i += 1
+                while i < end_address:
+                    if self.registers[i].type == CellType.NEXT:
+                        i += 1
+        return True
+
     def validate(self, func_code, address, count=1):
         """Check to see if the request is in range.
 
@@ -535,15 +559,7 @@ class ModbusSimulatorContext:
             return False
 
         fx_write = func_code in self._write_func_code
-        for i in range(real_address, real_address + count):
-            reg = self.registers[i]
-            if reg.type == CellType.INVALID:
-                return False
-            if fx_write and not reg.access:
-                return False
-        if self.type_exception:
-            return self.validate_type(func_code, real_address, count)
-        return True
+        return self.loop_validate(real_address, real_address + count, fx_write)
 
     def getValues(self, func_code, address, count=1):  # pylint: disable=invalid-name
         """Return the requested values of the datastore.
@@ -721,11 +737,12 @@ class ModbusSimulatorContext:
             check = (CellType.UINT32, CellType.FLOAT32, CellType.STRING)
             reg_step = 2
 
-        for i in range(  # pylint: disable=consider-using-any-or-all
-            real_address, real_address + count, reg_step
-        ):
-            if self.registers[i].type not in check:
-                return False
+        for i in range(real_address, real_address + count, reg_step):
+            if self.registers[i].type in check:
+                continue
+            if self.registers[i].type is CellType.NEXT:
+                continue
+            return False
         return True
 
     @classmethod

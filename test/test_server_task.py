@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import os
+from threading import Thread
 from time import sleep
 
 import pytest
@@ -12,6 +13,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
 )
+from pymodbus.exceptions import ConnectionException, ModbusIOException
 from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
@@ -56,7 +58,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusSerialClient,
             },
             "sync": {
-                "srv": "server.StartSerialServer",
+                "srv": server.StartSerialServer,
                 "cli": client.ModbusSerialClient,
             },
         },
@@ -78,7 +80,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusTcpClient,
             },
             "sync": {
-                "srv": "server.StartTcpServer",
+                "srv": server.StartTcpServer,
                 "cli": client.ModbusTcpClient,
             },
         },
@@ -98,14 +100,14 @@ def helper_config(request, def_type):
                 "certfile": f"{path}/certificates/pymodbus.crt",
                 "keyfile": f"{path}/certificates/pymodbus.key",
                 "server_hostname": "localhost",
-                "timeout": 0.2,
+                "timeout": 2,
             },
             "async": {
                 "srv": server.StartAsyncTlsServer,
                 "cli": client.AsyncModbusTlsClient,
             },
             "sync": {
-                "srv": "server.StartTlsServer",
+                "srv": server.StartTlsServer,
                 "cli": client.ModbusTlsClient,
             },
         },
@@ -126,7 +128,7 @@ def helper_config(request, def_type):
                 "cli": client.AsyncModbusUdpClient,
             },
             "sync": {
-                "srv": "server.StartUdpServer",
+                "srv": server.StartUdpServer,
                 "cli": client.ModbusUdpClient,
             },
         },
@@ -137,140 +139,178 @@ def helper_config(request, def_type):
     return cur_m["srv"], cur["srv_args"], cur_m["cli"], cur["cli_args"]
 
 
-async def helper_start_async_server(comm):
-    """Start async server"""
-    run_server, server_args, _run_client, _client_args = helper_config(comm, "async")
+@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.parametrize("comm", TEST_TYPES)
+async def test_async_task_no_server(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "async")
+    client = run_client(**client_args)
+    try:
+        await client.connect()
+    except Exception as exc:  # pylint: disable=broad-except
+        assert False, f"unexpected exception: {exc}"
+    await asyncio.sleep(0.1)
+    with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
+        await client.read_coils(1, 1, slave=0x01)
+    await client.close()
+
+
+@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.parametrize("comm", TEST_TYPES)
+async def test_async_task_ok(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "async")
+
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.1)
-    return task
+    client = run_client(**client_args)
+    await client.connect()
+    await asyncio.sleep(0.1)
+    assert client._connected  # pylint: disable=protected-access
+    rr = await client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
-
-async def helper_stop_async_server(task):
-    """Stop async server"""
+    await client.close()
+    await asyncio.sleep(0.1)
+    assert not client._connected  # pylint: disable=protected-access
     await server.ServerAsyncStop()
     await task
 
 
-async def helper_start_async_client(comm, check_connect=True):
-    """Start async client"""
-    _run_server, _server_args, run_client, client_args = helper_config(comm, "async")
+@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.parametrize("comm", TEST_TYPES)
+async def test_async_task_server_stop(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "async")
+    task = asyncio.create_task(run_server(**server_args))
+    await asyncio.sleep(0.1)
     client = run_client(**client_args)
     await client.connect()
+    assert client._connected  # pylint: disable=protected-access
+    rr = await client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
+
+    # Server breakdown
+    await server.ServerAsyncStop()
+    await task
+
+    with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
+        rr = await client.read_coils(1, 1, slave=0x01)
+    assert not client._connected  # pylint: disable=protected-access
+
+    # Server back online
+    task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.1)
-    if check_connect:
-        assert client.protocol
-    return client
 
+    timer_allowed = 100
+    while not client._connected:  # pylint: disable=protected-access
+        await asyncio.sleep(0.1)
+        timer_allowed -= 1
+        if not timer_allowed:
+            assert False, "client do not reconnect"
+    assert client._connected  # pylint: disable=protected-access
 
-async def helper_stop_async_client(test_client):
-    """Stop async client"""
-    await test_client.close()
-    await asyncio.sleep(0)
-    assert not test_client.protocol
-
-
-async def helper_read_async(test_client):
-    """Read async"""
-    rr = await test_client.read_coils(1, 1, slave=0x01)
+    rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
-
-def helper_start_sync_server(comm):
-    """Start sync server"""
-    run_server, server_args, _run_client, _client_args = helper_config(comm, "sync")
-    proc = None
-    return proc
-
-
-def helper_stop_sync_server(_proc):
-    """Stop sync server"""
-    sleep(0.1)
+    await client.close()
+    await asyncio.sleep(0.5)
+    assert not client._connected  # pylint: disable=protected-access
+    await server.ServerAsyncStop()
+    await task
 
 
-def helper_start_sync_client(comm, _check_connect=True):
-    """Start sync client"""
-    _run_server, _server_args, run_client, client_args = helper_config(comm, "sync")
-    client = None
-    return client
-
-
-def helper_stop_sync_client(_test_client):
-    """Stop sync client"""
-
-
-def helper_read_sync(test_client):
-    """Read sync"""
-    rr = test_client.read_coils(1, 1, slave=0x01)
-    assert len(rr.bits) == 8
-
-
-@pytest.mark.xdist_group(name="serial")
+@pytest.mark.xdist_group(name="task_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
-async def test_async_task_normal(comm):
+def test_sync_task_no_server(comm):
     """Test normal client/server handling."""
-    task = await helper_start_async_server(comm)
-    client = await helper_start_async_client(comm)
+    run_server, server_args, run_client, client_args = helper_config(comm, "sync")
+    client = run_client(**client_args)
+    try:
+        client.connect()
+    except Exception as exc:  # pylint: disable=broad-except
+        assert False, f"unexpected exception: {exc}"
+    sleep(0.1)
+    if comm == "udp":
+        rr = client.read_coils(1, 1, slave=0x01)
+        assert isinstance(rr, ModbusIOException)
+    else:
+        with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
+            client.read_coils(1, 1, slave=0x01)
+    client.close()
 
-    await helper_read_async(client)
 
-    await helper_stop_async_client(client)
-    await helper_stop_async_server(task)
-
-
-@pytest.mark.xdist_group(name="serial")
+@pytest.mark.xdist_group(name="task_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
-async def test_async_task_reconnect(comm):
-    """Test server stops."""
-    if comm:
-        return  # SKIP TEST FOR NOW
-    if comm == "serial":
+def test_sync_task_ok(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "sync")
+    if comm in {"tls", "udp", "serial"}:
+        return
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
+    client = run_client(**client_args)
+    client.connect()
+    sleep(1)
+    assert client.socket
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
+
+    client.close()
+    sleep(0.1)
+    assert not client.socket
+    server.ServerStop()
+    thread.join()
+
+
+@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.parametrize("comm", TEST_TYPES)
+def test_sync_task_server_stop(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "sync")
+    if comm in {"tls", "udp", "serial", "tcp"}:
+        # CURRENTLY NOT SUPPORTED.
         return
 
-    task = await helper_start_async_server(comm)
-    client = await helper_start_async_client(comm)
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
+    client = run_client(**client_args)
+    client.connect()
+    assert client.socket
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
-    await helper_read_async(client)
+    # Server breakdown
+    server.ServerStop()
+    thread.join()
+    sleep(0.1)
 
-    # restart server to break connection
-    await helper_stop_async_server(task)
+    with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
+        rr = client.read_coils(1, 1, slave=0x01)
+    assert not client.socket
 
-    # client must reconnect
-    with pytest.raises(asyncio.exceptions.TimeoutError):
-        await helper_read_async(client)
+    # Server back online
+    thread = Thread(target=run_server, kwargs=server_args)
+    thread.daemon = True
+    thread.start()
+    sleep(0.1)
 
-    await helper_stop_async_client(client)
-    await helper_stop_async_server(task)
+    timer_allowed = 100
+    while not client.socket:
+        sleep(0.1)
+        timer_allowed -= 1
+        if not timer_allowed:
+            assert False, "client do not reconnect"
+    assert client.socket
 
+    rr = client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
 
-@pytest.mark.xdist_group(name="serial")
-@pytest.mark.parametrize("comm", TEST_TYPES)
-def test_sync_task_normal(comm):
-    """Test normal client/server handling."""
-    if comm:
-        return  # SKIP TEST FOR NOW
-    task = helper_start_sync_server(comm)
-    client = helper_start_sync_client(comm)
-    helper_read_sync(client)
-    helper_stop_sync_client(client)
-    helper_stop_sync_server(task)
-
-
-@pytest.mark.xdist_group(name="serial")
-@pytest.mark.parametrize("comm", TEST_TYPES)
-async def test_sync_task_reconnect(comm):
-    """Test server stops."""
-    if comm:
-        return  # SKIP TEST FOR NOW
-
-    # JAN WAITING
-    # Client does not clear client.protocol, timeout problem ?
-
-    task = helper_start_sync_server(comm)
-    client = helper_start_sync_client(comm)
-    helper_read_sync(client)
-
-    # Stop server before client, client must stop automatically
-    helper_stop_sync_server(task)
-    sleep(2)
-    assert not client.protocol
-    helper_stop_sync_client(client)
+    client.close()
+    sleep(0.5)
+    assert not client.socket
+    server.ServerStop()

@@ -3,9 +3,9 @@ import asyncio
 import dataclasses
 import importlib
 import json
-import logging
 import os
 from time import time
+from typing import List
 
 
 try:
@@ -15,6 +15,7 @@ except ImportError:
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
+from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import (
     ModbusSerialServer,
@@ -31,8 +32,6 @@ from pymodbus.transaction import (
 )
 
 
-_logger = logging.getLogger(__name__)
-
 MAX_FILTER = 200
 
 RESPONSE_NORMAL = 0
@@ -46,8 +45,8 @@ class CallTypeMonitor:
     """Define Request/Response monitor"""
 
     active: bool = False
-    range_start: int = ""
-    range_stop: int = ""
+    range_start: int = -1
+    range_stop: int = -1
     function: int = -1
     hex: bool = False
     decode: bool = False
@@ -131,7 +130,7 @@ class ModbusSimulatorServer:
         }
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
-            custom_actions_module = actions_module.custom_actions_dict
+            custom_actions_dict = actions_module.custom_actions_dict
         server = setup["server_list"][modbus_server]
         server["loop"] = asyncio.get_running_loop()
         if server["comm"] != "serial":
@@ -139,7 +138,9 @@ class ModbusSimulatorServer:
             del server["host"]
             del server["port"]
         device = setup["device_list"][modbus_device]
-        self.datastore_context = ModbusSimulatorContext(device, custom_actions_module)
+        self.datastore_context = ModbusSimulatorContext(
+            device, custom_actions_dict or None
+        )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
         framer = framer_class[server.pop("framer")]
@@ -162,10 +163,10 @@ class ModbusSimulatorServer:
         self.web_app.on_startup.append(self.start_modbus_server)
         self.web_app.on_shutdown.append(self.stop_modbus_server)
         self.generator_html = {
-            "log": [None, self.build_html_log],
-            "registers": [None, self.build_html_registers],
-            "calls": [None, self.build_html_calls],
-            "server": [None, self.build_html_server],
+            "log": ["", self.build_html_log],
+            "registers": ["", self.build_html_registers],
+            "calls": ["", self.build_html_calls],
+            "server": ["", self.build_html_server],
         }
         self.generator_json = {
             "log_json": [None, self.build_json_log],
@@ -174,12 +175,12 @@ class ModbusSimulatorServer:
             "server_json": [None, self.build_json_server],
         }
         for entry in self.generator_html:  # pylint: disable=consider-using-dict-items
-            file = os.path.join(self.web_path, "generator", entry)
-            with open(file, encoding="utf-8") as handle:
+            html_file = os.path.join(self.web_path, "generator", entry)
+            with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
-        self.register_filter = []
-        self.call_list = []
+        self.register_filter: List[int] = []
+        self.call_list: List[str] = []  # not implemented yet
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
 
@@ -194,17 +195,16 @@ class ModbusSimulatorServer:
                 self.modbus_server.serve_forever()
             )
         except Exception as exc:
-            txt = f"Error starting modbus server, reason: {exc}"
-            _logger.error(txt)
+            Log.error("Error starting modbus server, reason: {}", exc)
             raise exc
-        _logger.info("Modbus server started")
+        Log.info("Modbus server started")
 
     async def stop_modbus_server(self, app):
         """Stop modbus server."""
-        _logger.info("Stopping modbus server")
+        Log.info("Stopping modbus server")
         app["modbus_server"].cancel()
         await app["modbus_server"]
-        _logger.info("Modbus server Stopped")
+        Log.info("Modbus server Stopped")
 
     async def run_forever(self):
         """Start modbus and http servers."""
@@ -214,10 +214,9 @@ class ModbusSimulatorServer:
             self.site = web.TCPSite(runner, self.http_host, self.http_port)
             await self.site.start()
         except Exception as exc:
-            txt = f"Error starting http server, reason: {exc}"
-            _logger.error(txt)
+            Log.error("Error starting http server, reason: {}", exc)
             raise exc
-        _logger.info("HTTP server started")
+        Log.info("HTTP server started")
         while True:
             await asyncio.sleep(1)
 
@@ -330,15 +329,11 @@ class ModbusSimulatorServer:
 
     def helper_build_html_calls_submit_monitor(self, params):
         """Build html calls submit."""
-        if params["range_start"]:
-            self.call_monitor.range_start = int(params["range_start"])
-            if params["range_stop"]:
-                self.call_monitor.range_stop = int(params["range_stop"])
-            else:
-                self.call_monitor.range_stop = self.call_monitor.range_start
+        self.call_monitor.range_start = params["range_start"]
+        if params["range_stop"] != -1:
+            self.call_monitor.range_stop = params["range_stop"]
         else:
-            self.call_monitor.range_start = ""
-            self.call_monitor.range_stop = ""
+            self.call_monitor.range_stop = self.call_monitor.range_start
         if params["function"]:
             self.call_monitor.function = int(params["function"])
         else:
@@ -416,9 +411,19 @@ class ModbusSimulatorServer:
         ):
             selected = "selected" if i == self.call_response.error_response else ""
             function_error += f"<option value={i} {selected}>{txt}</option>"
+        range_start_html = (
+            str(self.call_monitor.range_start)
+            if self.call_monitor.range_start != -1
+            else ""
+        )
+        range_stop_html = (
+            str(self.call_monitor.range_stop)
+            if self.call_monitor.range_stop != -1
+            else ""
+        )
         html = (
-            html.replace("FUNCTION_RANGE_START", str(self.call_monitor.range_start))
-            .replace("FUNCTION_RANGE_STOP", str(self.call_monitor.range_stop))
+            html.replace("FUNCTION_RANGE_START", range_start_html)
+            .replace("FUNCTION_RANGE_STOP", range_stop_html)
             .replace("<!--FUNCTION_TYPES-->", function_error)
             .replace(
                 "FUNCTION_SHOW_HEX_CHECKED", "checked" if self.call_monitor.hex else ""
@@ -497,14 +502,8 @@ class ModbusSimulatorServer:
 
     def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        if x := params.get("range_start"):
-            range_start = int(x)
-        else:
-            range_start = -1
-        if x := params.get("range_stop"):
-            range_stop = int(x)
-        else:
-            range_stop = range_start
+        range_start = params.get("range_start", -1)
+        range_stop = params.get("range_stop", range_start)
         reg_action = int(params["action"])
         reg_writeable = "writeable" in params
         reg_type = int(params["type"])
@@ -550,8 +549,10 @@ class ModbusSimulatorServer:
         - skip_encoding, signals whether or not to encode the response
         """
         if self.call_response.delay:
-            txt = f"Delaying response by {self.call_response.delay}s for all incoming requests"
-            _logger.warning(txt)
+            Log.warning(
+                "Delaying response by {}s for all incoming requests",
+                self.call_response.delay,
+            )
             time.sleep(self.call_response.delay)  # change to async
 
         if self.call_response.active == RESPONSE_NORMAL:
@@ -560,13 +561,12 @@ class ModbusSimulatorServer:
         if self.call_response.clear_after:
             self.call_response.clear_after -= 1
             if not self.call_response.clear_after:
-                txt = "Resetting manipulator due to clear_after"
-                _logger.info(txt)
+                Log.info("Resetting manipulator due to clear_after")
                 self.call_response = CallTypeResponse
                 return self.helper_list_response(response), False
 
         if self.call_response.active == RESPONSE_ERROR:
-            _logger.warning("Sending error response for all incoming requests")
+            Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(
                 response.function_code, self.call_response.error_response
             )
@@ -575,7 +575,7 @@ class ModbusSimulatorServer:
             return self.helper_list_response(err_response), False
 
         if self.call_response.active == RESPONSE_EMPTY:
-            _logger.warning("Sending empty response")
+            Log.warning("Sending empty response")
             response.should_respond = False
             return self.helper_list_response(response), False
 

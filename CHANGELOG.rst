@@ -1,3 +1,16 @@
+version 3.1.3
+----------------------------------------------------------
+* Solve log problem in payload.
+* Fix register type check for size bigger than 3 registers (6 bytes) (#1323)
+* Re-add SQL tests. (#1329)
+* Central logging. (#1324)
+* Skip sqlAlchemy test. (#1325)
+* Solve 1319 (#1320)
+
+Thanks to:
+  duc996,
+  jan iversen
+
 version 3.1.2
 ----------------------------------------------------------
 * Update README.rst

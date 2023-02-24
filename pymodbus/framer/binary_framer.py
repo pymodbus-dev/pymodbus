@@ -1,17 +1,12 @@
 """Binary framer."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.logging import Log
 from pymodbus.utilities import checkCRC, computeCRC
 
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 BINARY_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
@@ -180,13 +175,12 @@ class ModbusBinaryFramer(ModbusFramer):
                     callback(result)  # defer or push to a thread?
                 else:
                     header_txt = self._header["uid"]
-                    txt = f"Not a valid unit id - {header_txt}, ignoring!!"
-                    _logger.debug(txt)
+                    Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
                     self.resetFrame()
                     break
 
             else:
-                _logger.debug("Frame check failed, ignoring!!")
+                Log.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
                 break
 

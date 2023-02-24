@@ -1,6 +1,5 @@
 """Collection of transaction based abstractions."""
 # pylint: disable=missing-type-doc
-import logging
 import socket
 import struct
 import time
@@ -18,13 +17,8 @@ from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
+from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState, hexlify_packets
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
@@ -123,20 +117,17 @@ class ModbusTransactionManager:
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
-                txt = (
-                    "Current transaction state - "
-                    f"{ModbusTransactionState.to_string(self.client.state)}"
+                Log.debug(
+                    "Current transaction state - {}",
+                    ModbusTransactionState.to_string(self.client.state),
                 )
-                _logger.debug(txt)
                 retries = self.retries
                 request.transaction_id = self.getNextTID()
-                txt = f"Running transaction {request.transaction_id}"
-                _logger.debug(txt)
+                Log.debug("Running transaction {}", request.transaction_id)
                 if _buffer := hexlify_packets(
                     self.client.framer._buffer  # pylint: disable=protected-access
                 ):
-                    txt = f"Clearing current Frame: - {_buffer}"
-                    _logger.debug(txt)
+                    Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
                 if broadcast := (
                     self.client.params.broadcast_enable and not request.unit_id
@@ -181,7 +172,7 @@ class ModbusTransactionManager:
                                 and response
                             ):
                                 self._no_response_devices.remove(request.unit_id)
-                                _logger.debug("Got response!!!")
+                                Log.debug("Got response!!!")
                             break
                         if not response:
                             if request.unit_id not in self._no_response_devices:
@@ -231,7 +222,7 @@ class ModbusTransactionManager:
                         if self.reset_socket:
                             self.client.close()
                     if hasattr(self.client, "state"):
-                        _logger.debug(
+                        Log.debug(
                             "Changing transaction state from "
                             '"PROCESSING REPLY" to '
                             '"TRANSACTION_COMPLETE"'
@@ -241,7 +232,7 @@ class ModbusTransactionManager:
                 return response
             except ModbusIOException as exc:
                 # Handle decode errors in processIncomingPacket method
-                _logger.exception(exc)
+                Log.error("Modbus IO exception {}", exc)
                 self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 if self.reset_socket:
                     self.client.close()
@@ -249,17 +240,13 @@ class ModbusTransactionManager:
 
     def _retry_transaction(self, retries, reason, packet, response_length, full=False):
         """Retry transaction."""
-        txt = f"Retry on {reason} response - {retries}"
-        _logger.debug(txt)
-        _logger.debug(
-            'Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"'
-        )
+        Log.debug("Retry on {} response - {}", reason, retries)
+        Log.debug('Changing transaction state from "WAITING_FOR_REPLY" to "RETRYING"')
         self.client.state = ModbusTransactionState.RETRYING
         if self.backoff:
             delay = 2 ** (self.retries - retries) * self.backoff
             time.sleep(delay)
-            txt = f"Sleeping {delay}"
-            _logger.debug(txt)
+            Log.debug("Sleeping {}", delay)
         self.client.connect()
         if hasattr(self.client, "_in_waiting"):
             if (
@@ -270,9 +257,7 @@ class ModbusTransactionManager:
                     return result, None
         return self._transact(packet, response_length, full=full)
 
-    def _transact(
-        self, packet, response_length, full=False, broadcast=False
-    ):  # pylint: disable=too-complex
+    def _transact(self, packet, response_length, full=False, broadcast=False):
         """Do a Write and Read transaction.
 
         :param packet: packet to be sent
@@ -286,15 +271,13 @@ class ModbusTransactionManager:
         try:
             self.client.connect()
             packet = self.client.framer.buildPacket(packet)
-            if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"SEND: {hexlify_packets(packet)}"
-                _logger.debug(txt)
+            Log.debug("SEND: {}", packet, ":hex")
             size = self._send(packet)
             if (
                 isinstance(size, bytes)
                 and self.client.state == ModbusTransactionState.RETRYING
             ):
-                _logger.debug(
+                Log.debug(
                     "Changing transaction state from "
                     '"RETRYING" to "PROCESSING REPLY"'
                 )
@@ -302,14 +285,14 @@ class ModbusTransactionManager:
                 return size, None
             if broadcast:
                 if size:
-                    _logger.debug(
+                    Log.debug(
                         'Changing transaction state from "SENDING" '
                         'to "TRANSACTION_COMPLETE"'
                     )
                     self.client.state = ModbusTransactionState.TRANSACTION_COMPLETE
                 return b"", None
             if size:
-                _logger.debug(
+                Log.debug(
                     'Changing transaction state from "SENDING" '
                     'to "WAITING FOR REPLY"'
                 )
@@ -322,10 +305,7 @@ class ModbusTransactionManager:
                     return b"", "Wrong local echo"
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
-            if _logger.isEnabledFor(logging.DEBUG):
-                txt = f"RECV: {hexlify_packets(result)}"
-                _logger.debug(txt)
-
+            Log.debug("RECV: {}", result, ":hex")
         except (
             socket.error,
             ModbusIOException,
@@ -333,8 +313,7 @@ class ModbusTransactionManager:
         ) as msg:
             if self.reset_socket:
                 self.client.close()
-            txt = f"Transaction failed. ({msg}) "
-            _logger.debug(txt)
+            Log.debug("Transaction failed. ({}) ", msg)
             last_exception = msg
             result = b""
         return result, last_exception
@@ -414,18 +393,18 @@ class ModbusTransactionManager:
         actual = len(result)
         if total is not None and actual != total:
             msg_start = "Incomplete message" if actual else "No response"
-            txt = (
-                "{msg_start} received, "
-                f"Expected {total} bytes Received "
-                f"{actual} bytes !!!!"
+            Log.debug(
+                "{} received, Expected {} bytes Received {} bytes !!!!",
+                msg_start,
+                total,
+                actual,
             )
-            _logger.debug(txt)
         elif not actual:
             # If actual == 0 and total is not None then the above
             # should be triggered, so total must be None here
-            _logger.debug("No response received to unbounded read !!!!")
+            Log.debug("No response received to unbounded read !!!!")
         if self.client.state != ModbusTransactionState.PROCESSING_REPLY:
-            _logger.debug(
+            Log.debug(
                 "Changing transaction state from "
                 '"WAITING FOR REPLY" to "PROCESSING REPLY"'
             )
@@ -512,8 +491,7 @@ class DictTransactionManager(ModbusTransactionManager):
         :param tid: The overloaded transaction id to use
         """
         tid = tid if tid is not None else request.transaction_id
-        txt = f"Adding transaction {tid}"
-        _logger.debug(txt)
+        Log.debug("Adding transaction {}", tid)
         self.transactions[tid] = request
 
     def getTransaction(self, tid):
@@ -524,8 +502,7 @@ class DictTransactionManager(ModbusTransactionManager):
         :param tid: The transaction to retrieve
 
         """
-        txt = f"Getting transaction {tid}"
-        _logger.debug(txt)
+        Log.debug("Getting transaction {}", tid)
         if not tid:
             if self.transactions:
                 return self.transactions.popitem()[1]
@@ -537,9 +514,7 @@ class DictTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to remove
         """
-        txt = f"deleting transaction {tid}"
-        _logger.debug(txt)
-
+        Log.debug("deleting transaction {}", tid)
         self.transactions.pop(tid, None)
 
 
@@ -574,9 +549,7 @@ class FifoTransactionManager(ModbusTransactionManager):
         :param tid: The overloaded transaction id to use
         """
         tid = tid if tid is not None else request.transaction_id
-        txt = f"Adding transaction {tid}"
-        _logger.debug(txt)
-
+        Log.debug("Adding transaction {}", tid)
         self.transactions.append(request)
 
     def getTransaction(self, tid):
@@ -593,8 +566,7 @@ class FifoTransactionManager(ModbusTransactionManager):
 
         :param tid: The transaction to remove
         """
-        txt = f"Deleting transaction {tid}"
-        _logger.debug(txt)
+        Log.debug("Deleting transaction {}", tid)
         if self.transactions:
             self.transactions.pop(0)
 

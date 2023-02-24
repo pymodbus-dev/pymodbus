@@ -1,6 +1,5 @@
 """RTU framer."""
 # pylint: disable=missing-type-doc
-import logging
 import struct
 import time
 
@@ -9,18 +8,9 @@ from pymodbus.exceptions import (
     ModbusIOException,
 )
 from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
-from pymodbus.utilities import (
-    ModbusTransactionState,
-    checkCRC,
-    computeCRC,
-    hexlify_packets,
-)
+from pymodbus.logging import Log
+from pymodbus.utilities import ModbusTransactionState, checkCRC, computeCRC
 
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
 
 RTU_FRAME_HEADER = BYTE_ORDER + FRAME_HEADER
 
@@ -113,7 +103,7 @@ class ModbusRtuFramer(ModbusFramer):
         current frame header handle
         """
         self._buffer = self._buffer[self._header["len"] :]
-        _logger.debug("Frame advanced, resetting header!!")
+        Log.debug("Frame advanced, resetting header!!")
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def resetFrame(self):  # pylint: disable=invalid-name
@@ -125,12 +115,9 @@ class ModbusRtuFramer(ModbusFramer):
         end of the message (python just doesn't have the resolution to
         check for millisecond delays).
         """
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = (
-                f"Resetting frame - Current Frame in "
-                f"buffer - {hexlify_packets(self._buffer)}"
-            )
-            _logger.debug(txt)
+        Log.debug(
+            "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
+        )
         self._buffer = b""
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
@@ -190,9 +177,7 @@ class ModbusRtuFramer(ModbusFramer):
         end = self._header["len"] - 2
         buffer = self._buffer[start:end]
         if end > 0:
-            txt = f"Getting Frame - {hexlify_packets(buffer)}"
-            if _logger.isEnabledFor(logging.DEBUG):
-                _logger.debug(txt)
+            Log.debug("Getting Frame - {}", buffer, ":hex")
             return buffer
         return b""
 
@@ -241,18 +226,15 @@ class ModbusRtuFramer(ModbusFramer):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        txt = f"Not a valid unit id - {header_txt}, ignoring!!"
-                        _logger.debug(txt)
+                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                         break
                 else:
-                    _logger.debug("Frame check failed, ignoring!!")
+                    Log.debug("Frame check failed, ignoring!!")
                     self.resetFrame()
                     break
             else:
-                if _logger.isEnabledFor(logging.DEBUG):
-                    txt = f"Frame - [{data}] not ready"
-                    _logger.debug(txt)
+                Log.debug("Frame - [{}] not ready", data)
                 break
 
     def buildPacket(self, message):
@@ -280,22 +262,18 @@ class ModbusRtuFramer(ModbusFramer):
         while self.client.state != ModbusTransactionState.IDLE:
             if self.client.state == ModbusTransactionState.TRANSACTION_COMPLETE:
                 timestamp = round(time.time(), 6)
-                if _logger.isEnabledFor(logging.DEBUG):
-                    txt = (
-                        f"Changing state to IDLE - Last Frame End - {self.client.last_frame_end}, "
-                        f"Current Time stamp - {timestamp}"
-                    )
-                    _logger.debug(txt)
-
+                Log.debug(
+                    "Changing state to IDLE - Last Frame End - {} Current Time stamp - {}",
+                    self.client.last_frame_end,
+                    timestamp,
+                )
                 if self.client.last_frame_end:
                     idle_time = self.client.idle_time()
                     if round(timestamp - idle_time, 6) <= self.client.silent_interval:
-                        if _logger.isEnabledFor(logging.DEBUG):
-                            txt = (
-                                f"Waiting for 3.5 char before next "
-                                f"send - {self.client.silent_interval * 1000} ms"
-                            )
-                            _logger.debug(txt)
+                        Log.debug(
+                            "Waiting for 3.5 char before next send - {} ms",
+                            self.client.silent_interval * 1000,
+                        )
                         time.sleep(self.client.silent_interval)
                 else:
                     # Recovering from last error ??
@@ -307,13 +285,13 @@ class ModbusRtuFramer(ModbusFramer):
                 time.sleep(self.client.params.timeout)
                 break
             elif time.time() > timeout:
-                _logger.debug(
+                Log.debug(
                     "Spent more time than the read time out, "
                     "resetting the transaction to IDLE"
                 )
                 self.client.state = ModbusTransactionState.IDLE
             else:
-                _logger.debug("Sleeping")
+                Log.debug("Sleeping")
                 time.sleep(self.client.silent_interval)
         size = self.client.send(message)
         self.client.last_frame_end = round(time.time(), 6)
@@ -342,9 +320,7 @@ class ModbusRtuFramer(ModbusFramer):
 
     def getRawFrame(self):  # pylint: disable=invalid-name
         """Return the complete buffer."""
-        if _logger.isEnabledFor(logging.DEBUG):
-            txt = f"Getting Raw Frame - {hexlify_packets(self._buffer)}"
-            _logger.debug(txt)
+        Log.debug("Getting Raw Frame - {}", self._buffer, ":hex")
         return self._buffer
 
     def get_expected_response_length(self, data):

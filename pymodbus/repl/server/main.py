@@ -1,9 +1,6 @@
 """Repl server main."""
-from __future__ import annotations
-
 import asyncio
 import json
-import logging
 import sys
 from enum import Enum
 from pathlib import Path
@@ -11,7 +8,9 @@ from typing import List
 
 import typer
 
+from pymodbus import pymodbus_apply_logging_config
 from pymodbus.framer.socket_framer import ModbusSocketFramer
+from pymodbus.logging import Log
 from pymodbus.repl.server.cli import run_repl
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 from pymodbus.server.reactive.main import (
@@ -22,9 +21,6 @@ from pymodbus.server.reactive.main import (
 
 
 CANCELLED_ERROR = asyncio.exceptions.CancelledError
-
-_logger = logging.getLogger(__name__)
-
 CONTEXT_SETTING = {"allow_extra_args": True, "ignore_unknown_options": True}
 
 
@@ -73,19 +69,18 @@ def servers(incomplete: str) -> List[str]:
     return _completer(incomplete, _servers)
 
 
-def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
+def process_extra_args(extra_args: List[str], modbus_config: dict) -> dict:
     """Process extra args passed to server."""
     options_stripped = [x.strip().replace("--", "") for x in extra_args[::2]]
-    extra_args = dict(list(zip(options_stripped, extra_args[1::2])))
-    for option, value in extra_args.items():
+    extra_args_dict = dict(list(zip(options_stripped, extra_args[1::2])))
+    for option, value in extra_args_dict.items():
         if option in modbus_config:
             try:
                 modbus_config[option] = type(modbus_config[option])(value)
             except ValueError as err:
-                msg = (
-                    f"Error parsing extra arg {option}' " f"with value '{value}'. {err}"
+                Log.error(
+                    "Error parsing extra arg {} with value '{}'. {}", option, value, err
                 )
-                _logger.error(msg)
                 sys.exit(1)
     return modbus_config
 
@@ -93,7 +88,7 @@ def process_extra_args(extra_args: list[str], modbus_config: dict) -> dict:
 app = typer.Typer(
     no_args_is_help=True,
     context_settings=CONTEXT_SETTING,
-    help="Reactive modebus server",
+    help="Reactive Modbus server",
 )
 
 
@@ -111,19 +106,8 @@ def server(
     ),
 ):
     """Run server code."""
-    FORMAT = (  # pylint: disable=invalid-name
-        "%(asctime)-15s %(threadName)-15s"
-        " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-    )
-    pymodbus_logger = logging.getLogger("pymodbus")
-    logging.basicConfig(format=FORMAT)
-    logger = logging.getLogger(__name__)
-    if verbose:
-        pymodbus_logger.setLevel(logging.DEBUG)
-        logger.setLevel(logging.DEBUG)
-    else:
-        pymodbus_logger.setLevel(logging.ERROR)
-        logger.setLevel(logging.ERROR)
+    log_level = Log.DEBUG if verbose else Log.ERROR
+    pymodbus_apply_logging_config(log_level)
 
     ctx.obj = {
         "repl": repl,
@@ -137,7 +121,7 @@ def server(
 def run(
     ctx: typer.Context,
     modbus_server: str = typer.Option(
-        ModbusServerTypes.tcp,
+        ModbusServerTypes.tcp.value,
         "--modbus-server",
         "-s",
         case_sensitive=False,
@@ -145,18 +129,18 @@ def run(
         help="Modbus Server",
     ),
     modbus_framer: str = typer.Option(
-        ModbusFramerTypes.socket,
+        ModbusFramerTypes.socket.value,
         "--framer",
         "-f",
         case_sensitive=False,
         autocompletion=framers,
         help="Modbus framer to use",
     ),
-    modbus_port: str = typer.Option("5020", "--modbus-port", "-p", help="Modbus port"),
+    modbus_port: int = typer.Option(5020, "--modbus-port", "-p", help="Modbus port"),
     modbus_unit_id: List[int] = typer.Option(
         None, "--unit-id", "-u", help="Supported Modbus unit id's"
     ),
-    modbus_config: Path = typer.Option(
+    modbus_config_path: Path = typer.Option(
         None, help="Path to additional modbus server config"
     ),
     randomize: int = typer.Option(
@@ -183,8 +167,8 @@ def run(
     web_app_config = ctx.obj
     loop = asyncio.get_event_loop()
     framer = DEFAULT_FRAMER.get(modbus_framer, ModbusSocketFramer)
-    if modbus_config:
-        with open(modbus_config) as my_file:  # pylint: disable=unspecified-encoding
+    if modbus_config_path:
+        with open(modbus_config_path, encoding="utf-8") as my_file:
             modbus_config = json.load(my_file)
     else:
         modbus_config = DEFAULT_CONFIG
@@ -194,7 +178,6 @@ def run(
     modbus_config = modbus_config.get(modbus_server, {})
     modbus_config = process_extra_args(extra_args, modbus_config)
     if modbus_server != "serial":
-        modbus_port = int(modbus_port)
         handler = modbus_config.pop("handler", "ModbusConnectedRequestHandler")
     else:
         handler = modbus_config.pop("handler", "ModbusSingleRequestHandler")

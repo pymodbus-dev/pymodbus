@@ -1,16 +1,14 @@
 """Modbus client async TLS communication."""
 import asyncio
-import logging
 import socket
 import ssl
+from typing import Any, Type
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.constants import Defaults
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.tls_framer import ModbusTlsFramer
-
-
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 def sslctx_provider(
@@ -42,7 +40,7 @@ def sslctx_provider(
     return sslctx
 
 
-class AsyncModbusTlsClient(AsyncModbusTcpClient):
+class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
     """**AsyncModbusTlsClient**.
 
     :param host: Host IP address or host name
@@ -72,13 +70,13 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self,
         host: str,
         port: int = Defaults.TlsPort,
-        framer: ModbusFramer = ModbusTlsFramer,
+        framer: Type[ModbusFramer] = ModbusTlsFramer,
         sslctx: str = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
         server_hostname: str = None,
-        **kwargs: any,
+        **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
         super().__init__(host, port=port, framer=framer, **kwargs)
@@ -92,7 +90,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
     async def _connect(self):
         """Connect to server."""
-        _logger.debug("Connecting tls.")
+        Log.debug("Connecting tls.")
         try:
             return await self.loop.create_connection(
                 self._create_protocol,
@@ -102,14 +100,12 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
                 server_hostname=self.params.server_hostname,
             )
         except Exception as exc:  # pylint: disable=broad-except
-            txt = f"Failed to connect: {exc}"
-            _logger.warning(txt)
+            Log.warning("Failed to connect: {}", exc)
             if self.delay_ms > 0:
-                asyncio.ensure_future(self._reconnect())
-        else:
-            txt = f"Connected to {self.params.host}:{self.params.port}."
-            _logger.info(txt)
-            self.reset_delay()
+                self._launch_reconnect()
+            return
+        Log.info("Connected to {}:{}.", self.params.host, self.params.port)
+        self.reset_delay()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -136,19 +132,22 @@ class ModbusTlsClient(ModbusTcpClient):
             client.connect()
             ...
             client.close()
+
+
+    Remark: There are no automatic reconnect as with AsyncModbusTlsClient
     """
 
     def __init__(
         self,
         host: str,
         port: int = Defaults.TlsPort,
-        framer: ModbusFramer = ModbusTlsFramer,
+        framer: Type[ModbusFramer] = ModbusTlsFramer,
         sslctx: str = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
         server_hostname: str = None,
-        **kwargs: any,
+        **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
         super().__init__(host, port=port, framer=framer, **kwargs)
@@ -178,10 +177,12 @@ class ModbusTlsClient(ModbusTcpClient):
             self.socket.settimeout(self.params.timeout)
             self.socket.connect((self.params.host, self.params.port))
         except socket.error as msg:
-            txt = (
-                f"Connection to ({self.params.host}, {self.params.port}) failed: {msg}"
+            Log.error(
+                "Connection to ({}, {}) failed: {}",
+                self.params.host,
+                self.params.port,
+                msg,
             )
-            _logger.error(txt)
             self.close()
         return self.socket is not None
 

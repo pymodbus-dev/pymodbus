@@ -97,9 +97,9 @@ class TestSimulator:
         ],
         "string": [
             {"addr": [43, 44], "value": "Str"},
-            {"addr": [45, 47], "value": "Strxyz"},
+            {"addr": [45, 48], "value": "Strxyz12"},
         ],
-        "repeat": [{"addr": [0, 47], "to": [48, 144]}],
+        "repeat": [{"addr": [0, 48], "to": [49, 147]}],
     }
 
     test_registers = [
@@ -151,7 +151,8 @@ class TestSimulator:
         Cell(type=CellType.STRING, value=int.from_bytes(bytes("St", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("rx", "utf-8"), "big")),
         Cell(type=CellType.NEXT, value=int.from_bytes(bytes("yz", "utf-8"), "big")),
-        # 47 MAX before repeat
+        Cell(type=CellType.NEXT, value=int.from_bytes(bytes("12", "utf-8"), "big")),
+        # 48 MAX before repeat
     ]
 
     @classmethod
@@ -188,7 +189,7 @@ class TestSimulator:
         """Test basic configuration."""
         # Manually build expected memory image and then compare.
         assert self.simulator.register_count == 250
-        for offset in (0, 48, 96):
+        for offset in (0, 49, 98):
             for i, test_cell in enumerate(self.test_registers):
                 reg = self.simulator.registers[i + offset]
                 assert reg.type == test_cell.type, f"at index {i} - {offset}"
@@ -334,12 +335,13 @@ class TestSimulator:
             (FX_READ_BIT, 116, 16, True),
             (FX_READ_BIT, 112, 32, True),
             (FX_READ_BIT, 128, 17, False),
-            (FX_READ_BIT, 256, 1, False),
+            (FX_READ_BIT, 256, 1, True),
             (FX_READ_REG, 16, 1, True),
             (FX_READ_REG, 43, 1, True),
             (FX_READ_REG, 21, 1, False),
             (FX_READ_REG, 21, 2, True),
             (FX_READ_REG, 43, 2, True),
+            (FX_READ_REG, 45, 4, True),
         ):
             validated = exc_simulator.validate(entry[0], entry[1], entry[2])
             assert entry[3] == validated, f"at entry {entry}"
@@ -478,7 +480,7 @@ class TestSimulator:
         await asyncio.sleep(0.1)
         client = setup_async_client(args)
         await client.connect()
-        assert client.protocol
+        assert client.connected
 
         rr = await client.read_holding_registers(16, 1, slave=1)
         assert rr.registers

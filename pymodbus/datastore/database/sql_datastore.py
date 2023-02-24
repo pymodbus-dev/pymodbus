@@ -1,11 +1,9 @@
 """Datastore using SQL."""
 # pylint: disable=missing-type-doc
-import logging
-
-
 try:
     import sqlalchemy
     import sqlalchemy.types as sqltypes
+    from sqlalchemy.pool import StaticPool
     from sqlalchemy.schema import UniqueConstraint
     from sqlalchemy.sql import and_
     from sqlalchemy.sql.expression import bindparam
@@ -13,12 +11,7 @@ except ImportError:
     pass
 
 from pymodbus.interfaces import IModbusSlaveContext
-
-
-# --------------------------------------------------------------------------- #
-# Logging
-# --------------------------------------------------------------------------- #
-_logger = logging.getLogger(__name__)
+from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #
@@ -37,7 +30,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._table = None
         self._connection = None
         self.table = kwargs.get("table", "pymodbus")
-        self.database = kwargs.get("database", "sqlite:///pymodbus.db")
+        self.database = kwargs.get("database", "sqlite:///:memory:")
         self._db_create(self.table, self.database)
 
     def __str__(self):
@@ -49,7 +42,7 @@ class SqlSlaveContext(IModbusSlaveContext):
 
     def reset(self):
         """Reset all the datastores to their default values."""
-        self._metadata.drop_all()
+        self._metadata.drop_all(None)
         self._db_create(self.table, self.database)
 
     def validate(self, fx, address, count=1):
@@ -61,8 +54,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"validate[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("validate[{}] {}:{}", fx, address, count)
         return self._validate(self.decode(fx), address, count)
 
     def getValues(self, fx, address, count=1):
@@ -74,8 +66,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"get-values[{fx}] {address}:{count}"
-        _logger.debug(txt)
+        Log.debug("get-values[{}] {}:{}", fx, address, count)
         return self._get(self.decode(fx), address, count)
 
     def setValues(self, fx, address, values, update=True):
@@ -87,8 +78,7 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param update: Update existing register in the db
         """
         address = address + 1  # section 4.4 of specification
-        txt = f"set-values[{fx}] {address}:{len(values)}"
-        _logger.debug(txt)
+        Log.debug("set-values[{}] {}:{}", fx, address, len(values))
         if update:
             self._update(self.decode(fx), address, values)
         else:
@@ -103,7 +93,12 @@ class SqlSlaveContext(IModbusSlaveContext):
         :param table: The table name to create
         :param database: The database uri to use
         """
-        self._engine = sqlalchemy.create_engine(database, echo=False)
+        self._engine = sqlalchemy.create_engine(
+            database,
+            echo=False,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
         self._metadata = sqlalchemy.MetaData(self._engine)
         self._table = sqlalchemy.Table(
             table,
@@ -113,7 +108,7 @@ class SqlSlaveContext(IModbusSlaveContext):
             sqlalchemy.Column("value", sqltypes.Integer),
             UniqueConstraint("type", "index", name="key"),
         )
-        self._table.create(checkfirst=True)
+        self._table.create(self._engine)
         self._connection = self._engine.connect()
 
     def _get(self, type, offset, count):  # pylint: disable=redefined-builtin

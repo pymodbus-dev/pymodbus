@@ -466,7 +466,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         read_address: int = 0,
         read_count: int = 0,
         write_address: int = 0,
-        values: Union[List[int], int] = [0],
+        values: Union[List[int], int] = 0,
         slave: int = 0,
         **kwargs
     ) -> pdu_reg_read.ReadWriteMultipleRegistersResponse:

@@ -145,9 +145,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
             pdu_req_write.WriteSingleRegisterRequest(address, value, slave, **kwargs)
         )
 
-    def read_exception_status(
-        self, slave: int = 0, **kwargs: Any
-    ) -> ModbusResponse:
+    def read_exception_status(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Read Exception Status (code 0x07).
 
         :param slave: (optional) Modbus slave ID
@@ -204,9 +202,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_diag.ChangeAsciiInputDelimiterRequest(slave, **kwargs))
 
-    def diag_force_listen_only(
-        self, slave: int = 0, **kwargs: Any
-    ) -> ModbusResponse:
+    def diag_force_listen_only(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Diagnose force listen only (code 0x08 sub 0x04).
 
         :param slave: (optional) Modbus slave ID
@@ -215,9 +211,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_diag.ForceListenOnlyModeRequest(slave, **kwargs))
 
-    def diag_clear_counters(
-        self, slave: int = 0, **kwargs: Any
-    ) -> ModbusResponse:
+    def diag_clear_counters(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Diagnose clear counters (code 0x08 sub 0x0A).
 
         :param slave: (optional) Modbus slave ID
@@ -353,9 +347,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_diag.GetClearModbusPlusRequest(slave, **kwargs))
 
-    def diag_get_comm_event_counter(
-        self, **kwargs: Any
-    ) -> ModbusResponse:
+    def diag_get_comm_event_counter(self, **kwargs: Any) -> ModbusResponse:
         """Diagnose get event counter (code 0x0B).
 
         :param kwargs: (optional) Experimental parameters.
@@ -363,9 +355,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_other_msg.GetCommEventCounterRequest(**kwargs))
 
-    def diag_get_comm_event_log(
-        self, **kwargs: Any
-    ) -> ModbusResponse:
+    def diag_get_comm_event_log(self, **kwargs: Any) -> ModbusResponse:
         """Diagnose get event counter (code 0x0C).
 
         :param kwargs: (optional) Experimental parameters.
@@ -409,9 +399,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
             )
         )
 
-    def report_slave_id(
-        self, slave: int = 0, **kwargs: Any
-    ) -> ModbusResponse:
+    def report_slave_id(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Report slave ID (code 0x11).
 
         :param slave: (optional) Modbus slave unit ID
@@ -420,9 +408,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_other_msg.ReportSlaveIdRequest(slave, **kwargs))
 
-    def read_file_record(
-        self, records: List[Tuple], **kwargs: Any
-    ) -> ModbusResponse:
+    def read_file_record(self, records: List[Tuple], **kwargs: Any) -> ModbusResponse:
         """Read file record (code 0x14).
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
@@ -431,9 +417,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         """
         return self.execute(pdu_file_msg.ReadFileRecordRequest(records, **kwargs))
 
-    def write_file_record(
-        self, records: List[Tuple], **kwargs: Any
-    ) -> ModbusResponse:
+    def write_file_record(self, records: List[Tuple], **kwargs: Any) -> ModbusResponse:
         """Write file record (code 0x15).
 
         :param records: List of (Reference type, File number, Record Number, Record Length)
@@ -491,9 +475,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
             )
         )
 
-    def read_fifo_queue(
-        self, address: int = 0x0000, **kwargs: Any
-    ) -> ModbusResponse:
+    def read_fifo_queue(self, address: int = 0x0000, **kwargs: Any) -> ModbusResponse:
         """Read FIFO queue (code 0x18).
 
         :param address: The address to start reading from

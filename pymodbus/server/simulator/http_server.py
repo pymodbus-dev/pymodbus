@@ -504,8 +504,14 @@ class ModbusSimulatorServer:
 
     def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        range_start = int(params.get("range_start", -1))
-        range_stop = int(params.get("range_stop", range_start))
+        try:
+            range_start = int(params.get("range_start", -1))
+        except ValueError:
+            range_start = -1
+        try:
+            range_stop = int(params.get("range_stop", range_start))
+        except ValueError:
+            range_stop = -1
         reg_action = int(params["action"])
         reg_writeable = "writeable" in params
         reg_type = int(params["type"])

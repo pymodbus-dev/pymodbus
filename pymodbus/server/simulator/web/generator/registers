@@ -70,7 +70,6 @@
       <input type="submit" value="Add" name="submit" />
       <input type="submit" value="Clear" name="submit" />
     </form>
-    <p>Default filter: Nothing</p>
   </fieldset>
   <fieldset class="tools_fieldset" width="20%">
     <legend>Set</legend>

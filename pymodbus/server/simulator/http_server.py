@@ -265,7 +265,7 @@ class ModbusSimulatorServer:
     def helper_build_html_registers_submit(self, params):
         """Build html register submit."""
         result_txt = "ok"
-        register_foot = ""
+        register_foot = "NO registers in filter"
         if params["submit"] == "Add":
             res_ok, txt = self.helper_build_filter(params)
             if not res_ok:

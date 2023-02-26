@@ -114,7 +114,7 @@ class ServerDecoder(IModbusDecoder):
     To add more implemented functions, simply add them to the list
     """
 
-    __function_table = [
+    function_table = [
         ReadHoldingRegistersRequest,
         ReadDiscreteInputsRequest,
         ReadInputRegistersRequest,
@@ -158,8 +158,8 @@ class ServerDecoder(IModbusDecoder):
 
     def __init__(self):
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {f.function_code: f for f in self.__function_table}
+        functions = {f.function_code for f in self.function_table}
+        self.__lookup = {f.function_code: f for f in self.function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -243,7 +243,7 @@ class ClientDecoder(IModbusDecoder):
     To add more implemented functions, simply add them to the list
     """
 
-    __function_table = [
+    function_table = [
         ReadHoldingRegistersResponse,
         ReadDiscreteInputsResponse,
         ReadInputRegistersResponse,
@@ -287,8 +287,8 @@ class ClientDecoder(IModbusDecoder):
 
     def __init__(self):
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {f.function_code: f for f in self.__function_table}
+        functions = {f.function_code for f in self.function_table}
+        self.__lookup = {f.function_code: f for f in self.function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f

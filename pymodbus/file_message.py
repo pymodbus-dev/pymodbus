@@ -84,6 +84,7 @@ class ReadFileRecordRequest(ModbusRequest):
     """
 
     function_code = 0x14
+    function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records=None, **kwargs):
@@ -202,6 +203,7 @@ class WriteFileRecordRequest(ModbusRequest):
     """
 
     function_code = 0x15
+    function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records=None, **kwargs):
@@ -331,6 +333,7 @@ class ReadFifoQueueRequest(ModbusRequest):
     """
 
     function_code = 0x18
+    function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
     def __init__(self, address=0x0000, **kwargs):

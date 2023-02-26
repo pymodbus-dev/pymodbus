@@ -37,6 +37,8 @@ class WriteSingleCoilRequest(ModbusRequest):
     """
 
     function_code = 5
+    function_code_name = "write_coil"
+
     _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, unit=None, **kwargs):
@@ -160,6 +162,7 @@ class WriteMultipleCoilsRequest(ModbusRequest):
     """
 
     function_code = 15
+    function_code_name = "write_coils"
     _rtu_byte_count_pos = 6
 
     def __init__(self, address=None, values=None, unit=None, **kwargs):

@@ -136,6 +136,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     """
 
     function_code = 1
+    function_code_name = "read_coils"
 
     def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance.
@@ -201,6 +202,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     """
 
     function_code = 2
+    function_code_name = "read_discrete_input"
 
     def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance.

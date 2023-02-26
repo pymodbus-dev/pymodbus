@@ -26,6 +26,7 @@ class DiagnosticStatusRequest(ModbusRequest):
     """This is a base class for all of the diagnostic request functions."""
 
     function_code = 0x08
+    function_code_name = "diagnostic_status"
     _rtu_frame_size = 8
 
     def __init__(self, **kwargs):

@@ -47,6 +47,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
     function_code = 0x2B
     sub_function_code = 0x0E
+    function_code_name = "read_device_information"
     _rtu_frame_size = 7
 
     def __init__(self, read_code=None, object_id=0x00, **kwargs):

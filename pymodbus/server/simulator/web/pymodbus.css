@@ -7,16 +7,16 @@ body {
   width: 100%;
   background-color: bisque;
 }
-table {
+table.listbox {
   border-collapse: collapse;
   border: 1px solid black;
 }
-th {
+table.listbox th {
   background-color: lightgray;
   border: 1px solid black;
   padding: 5px
 }
-td {
+table.listbox td {
   border: 1px solid black;
   text-align: right;
   background-color: #f1f1f1;
@@ -58,4 +58,5 @@ input[type="submit"] {
 
 .tools_fieldset {
   display: inline;
+  vertical-align:top
 }

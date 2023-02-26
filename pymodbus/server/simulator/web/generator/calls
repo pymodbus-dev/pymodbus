@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1><center>Calls</center></h1>
-  <table width="80%">
+  <table width="80%" class="listbox">
     <thead>
       <tr>
         <th width="10%">C/R</th>
@@ -34,50 +34,83 @@
   <fieldset class="tools_fieldset">
     <legend>Monitor</legend>
     <form action="/api/calls" method="get">
-      <label>Register range</label>
-      <input type="number" value="FUNCTION_RANGE_START" name="range_start" />
-      <input type="number" value="FUNCTION_RANGE_STOP" name="range_stop" /><br>
-      <label>Function</label>
-      <input type="number" value="FUNCTION_CODE" name="function" /><br>
-      <label>Show as</label>
-      <input type="checkbox" FUNCTION_SHOW_HEX_CHECKED name="show_hex">Hex</input>
-      <input type="checkbox" FUNCTION_SHOW_DECODED_CHECKED name="show_decode">Decoded</input><br>
-      <br><br>
-      <b><!--FUNCTION_MONITORING_ACTIVE--></b>
-      <br><br>
+      <table>
+        <tr>
+          <td><label>Register range</label></td>
+          <td>
+            <input type="number" value="FUNCTION_RANGE_START" name="range_start" />
+            <input type="number" value="FUNCTION_RANGE_STOP" name="range_stop" />
+          </td>
+        </tr>
+        <tr>
+          <td><label>Function</label></td>
+          <td><input type="number" value="FUNCTION_CODE" name="function" /></td>
+        </tr>
+        <tr>
+          <td><label>Show as</label></td>
+          <td>
+            <input type="checkbox" FUNCTION_SHOW_HEX_CHECKED name="show_hex">Hex</input>
+            <input type="checkbox" FUNCTION_SHOW_DECODED_CHECKED name="show_decode">Decoded</input>
+          </td>
+        </tr>
+      </table>
+      <p><b><!--FUNCTION_MONITORING_ACTIVE--></b><br>
       <input type="submit" value="Monitor" name="submit" />
       <input type="submit" value="Clear" name="submit" />
       <input type="submit" value="Stop" name="submit" />
     </form>
   </fieldset>
-  <fieldset class="tools_fieldset">
+<fieldset class="tools_fieldset">
     <legend>Set</legend>
     <form action="/api/calls" method="get">
-      <label>Response</label>
-      <input type="radio" name="response_type" value="0" FUNCTION_RESPONSE_NORMAL_CHECKED>Normal</input>
-      <input type="radio" name="response_type" value="1" FUNCTION_RESPONSE_ERROR_CHECKED>Error</input>
-      <input type="radio" name="response_type" value="2" FUNCTION_RESPONSE_EMPTY_CHECKED>Empty</input>
-      <input type="radio" name="response_type" value="3" FUNCTION_RESPONSE_JUNK_CHECKED>Junk</input><br>
-      <Label>Split response</Label>
-      <input type="checkbox" name="response_split" FUNCTION_RESPONSE_SPLIT_CHECKED/>
-      <Label>Delay</Label>
-      <input type="number" name="split_delay" value="FUNCTION_RESPONSE_SPLIT_DELAY"/>seconds<br>
-      <Label>Change rate</Label>
-      <input type="checkbox" name="response_cr" FUNCTION_RESPONSE_CR_CHECKED/>
-      <input type="number" name="response_cr_pct" value="FUNCTION_RESPONSE_CR_PCT"/>%<br>
-      <Label>Delay response</Label>
-      <input type="number" name="response_delay" value="FUNCTION_RESPONSE_DELAY"/>seconds<br>
-      <Label>Junk datalength</Label>
-      <input type="number" name="response_junk_datalen" value="FUNCTION_RESPONSE_JUNK" />bytes<br>
-      <Label>Error response</Label>
-      <select name="response_error">
-        <!--FUNCTION_ERROR-->
-      </select><br>
-      <Label>Clear after</Label>
-      <input type="number" name="response_clear_after" value="FUNCTION_RESPONSE_CLEAR_AFTER" />requests<br>
+      <table>
+        <tr>
+          <td><label>Response type</label></td>
+          <td>
+            <input type="radio" name="response_type" value="0" FUNCTION_RESPONSE_NORMAL_CHECKED>Normal</input>
+            <input type="radio" name="response_type" value="1" FUNCTION_RESPONSE_ERROR_CHECKED>Error</input>
+            <input type="radio" name="response_type" value="2" FUNCTION_RESPONSE_EMPTY_CHECKED>Empty</input>
+            <input type="radio" name="response_type" value="3" FUNCTION_RESPONSE_JUNK_CHECKED>Junk</input><br>
+          </td>
+        </tr>
+        <tr>
+          <td><Label>split response</Label></td>
+          <td>
+            <input type="checkbox" name="response_split" FUNCTION_RESPONSE_SPLIT_CHECKED/>
+            <input type="number" name="split_delay" value="FUNCTION_RESPONSE_SPLIT_DELAY"/>seconds delay, type <b>normal</b>
+          </td>
+        </tr>
+        <tr>
+          <td><Label>Change rate</Label></td>
+          <td>
+            <input type="checkbox" name="response_cr" FUNCTION_RESPONSE_CR_CHECKED/>
+            <input type="number" name="response_cr_pct" value="FUNCTION_RESPONSE_CR_PCT"/>%, type <b>normal</b>
+          </td>
+        </tr>
+        <tr>
+          <td><Label>Delay response</Label></td>
+          <td><input type="number" name="response_delay" value="FUNCTION_RESPONSE_DELAY"/>seconds, type <b>normal</b></td>
+        </tr>
+        <tr>
+          <td><Label>Junk datalength</Label></td>
+          <td><input type="number" name="response_junk_datalen" value="FUNCTION_RESPONSE_JUNK" />bytes, type <b>junk</b></td>
+        </tr>
+        <tr>
+          <td><Label>Error response</Label></td>
+          <td>
+            <select name="response_error">
+              <!--FUNCTION_ERROR-->
+            </select>type <b>error</b>
+          </td>
+        </tr>
+        <tr>
+          <td><Label>Clear after</Label></td>
+          <td><input type="number" name="response_clear_after" value="FUNCTION_RESPONSE_CLEAR_AFTER" />requests</td>
+        </tr>
+      </table>
       <input type="submit" value="Set" name="submit" />
       <input type="submit" value="Reset" name="submit" />
-    </form>
+  </form>
   </fieldset>
 </body>
 </html>

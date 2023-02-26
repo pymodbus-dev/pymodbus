@@ -265,7 +265,7 @@ class ModbusSimulatorServer:
     def helper_build_html_registers_submit(self, params):
         """Build html register submit."""
         result_txt = "ok"
-        register_foot = ""
+        register_foot = "NO registers in filter"
         if params["submit"] == "Add":
             res_ok, txt = self.helper_build_filter(params)
             if not res_ok:
@@ -504,8 +504,14 @@ class ModbusSimulatorServer:
 
     def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        range_start = int(params.get("range_start", -1))
-        range_stop = int(params.get("range_stop", range_start))
+        try:
+            range_start = int(params.get("range_start", -1))
+        except ValueError:
+            range_start = -1
+        try:
+            range_stop = int(params.get("range_stop", range_start))
+        except ValueError:
+            range_stop = -1
         reg_action = int(params["action"])
         reg_writeable = "writeable" in params
         reg_type = int(params["type"])

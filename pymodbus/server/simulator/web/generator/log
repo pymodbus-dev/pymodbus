@@ -12,7 +12,7 @@
 </head>
 <body>
   <center><h1>Log</h1></center>
-  <table width="80%">
+  <table width="80%" class="listbox">
     <thead>
       <tr>
         <th width="10%">Log entries</th>

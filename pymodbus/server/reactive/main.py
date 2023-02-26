@@ -429,11 +429,8 @@ class ReactiveServer:
                             range(start_address + 1, default_count), default_count - 1
                         )
                         address_map.insert(0, 0)
-                    block[modbus_entity] = {
-                        add: val
-                        for add in sorted(address_map)
-                        for val in default_values
-                    }
+                        address_map.sort()
+                    block[modbus_entity] = db(address_map, default_values)
                 else:
                     block[modbus_entity] = db(start_address, default_values)
 
@@ -447,7 +444,7 @@ class ReactiveServer:
             if not single:
                 slaves[i] = slave_context
             else:
-                slaves = slave_context
+                slaves[0] = slave_context
         server_context = ModbusServerContext(slaves, single=single)
         return server_context
 

@@ -130,7 +130,9 @@ class ModbusSimulatorServer:
         }
         if custom_actions_module:
             actions_module = importlib.import_module(custom_actions_module)
-            custom_actions_module = actions_module.custom_actions_dict
+            custom_actions_dict = actions_module.custom_actions_dict
+        else:
+            custom_actions_dict = None
         server = setup["server_list"][modbus_server]
         server["loop"] = asyncio.get_running_loop()
         if server["comm"] != "serial":
@@ -138,7 +140,9 @@ class ModbusSimulatorServer:
             del server["host"]
             del server["port"]
         device = setup["device_list"][modbus_device]
-        self.datastore_context = ModbusSimulatorContext(device, custom_actions_module)
+        self.datastore_context = ModbusSimulatorContext(
+            device, custom_actions_dict or None
+        )
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
         framer = framer_class[server.pop("framer")]
@@ -161,10 +165,10 @@ class ModbusSimulatorServer:
         self.web_app.on_startup.append(self.start_modbus_server)
         self.web_app.on_shutdown.append(self.stop_modbus_server)
         self.generator_html = {
-            "log": [None, self.build_html_log],
-            "registers": [None, self.build_html_registers],
-            "calls": [None, self.build_html_calls],
-            "server": [None, self.build_html_server],
+            "log": ["", self.build_html_log],
+            "registers": ["", self.build_html_registers],
+            "calls": ["", self.build_html_calls],
+            "server": ["", self.build_html_server],
         }
         self.generator_json = {
             "log_json": [None, self.build_json_log],
@@ -178,7 +182,7 @@ class ModbusSimulatorServer:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: List[int] = []
-        self.call_list = []
+        self.call_list: List[str] = []  # not implemented yet
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
 
@@ -261,7 +265,7 @@ class ModbusSimulatorServer:
     def helper_build_html_registers_submit(self, params):
         """Build html register submit."""
         result_txt = "ok"
-        register_foot = ""
+        register_foot = "NO registers in filter"
         if params["submit"] == "Add":
             res_ok, txt = self.helper_build_filter(params)
             if not res_ok:
@@ -500,8 +504,14 @@ class ModbusSimulatorServer:
 
     def helper_build_filter(self, params):
         """Build list of registers matching filter."""
-        range_start = params.get("range_start", -1)
-        range_stop = params.get("range_stop", range_start)
+        try:
+            range_start = int(params.get("range_start", -1))
+        except ValueError:
+            range_start = -1
+        try:
+            range_stop = int(params.get("range_stop", range_start))
+        except ValueError:
+            range_stop = -1
         reg_action = int(params["action"])
         reg_writeable = "writeable" in params
         reg_type = int(params["type"])

@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1><center>Registers</center></h1>
-  <table width="80%">
+  <table width="80%" class="listbox">
     <thead>
       <tr>
         <th width="10%">Register</th>
@@ -36,21 +36,37 @@
   <fieldset class="tools_fieldset" width="40%">
     <legend>Filter</legend>
     <form action="/api/registers" method="get">
-      <label>Register range</label>
-      <input type="number" name="range_start" />
-      <input type="number" name="range_stop" /><br>
-      <label>Type</label>
-      <select name="type">
-        <option value=-1 selected>Any</option>
-        <!--REGISTER_TYPES-->
-      </select><br>
-      <label>Action</label>
-      <select name="action">
-        <option value=-1 selected>Any</option>
-        <!--REGISTER_ACTIONS-->
-      </select><br>
-      <label>Writeable</label>
-      <input type="checkbox" name="writeable" /><br>
+      <table>
+        <tr>
+          <td><label>Register range</label></td>
+          <td>
+            <input type="number" name="range_start" />
+            <input type="number" name="range_stop" />
+          </td>
+        </tr>
+        <tr>
+          <td><label>Register type</label></td>
+          <td>
+            <select name="type">
+              <option value=-1 selected>Any</option>
+              <!--REGISTER_TYPES-->
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Register action</label></td>
+          <td>
+            <select name="action">
+              <option value=-1 selected>Any</option>
+              <!--REGISTER_ACTIONS-->
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Register writeable</label></td>
+          <td><input type="checkbox" name="writeable" /><br></td>
+        </tr>
+      </table>
       <input type="submit" value="Add" name="submit" />
       <input type="submit" value="Clear" name="submit" />
     </form>
@@ -58,13 +74,17 @@
   <fieldset class="tools_fieldset" width="20%">
     <legend>Set</legend>
     <form action="/api/registers" method="get">
-      <br>
-      <label>Register</label>
-      <input type="number" name="register" /><br>
-      <label>Value</label>
-      <input type="text" name="value" /><br>
-      <label>Writeable</label>
-      <input type="checkbox" name="writeable" /><br>
+      <table>
+        <tr>
+          <td><label>Register</label></td>
+          <td><input type="number" name="register" /></td>
+        </tr>
+        <tr>
+          <td><label>Value</label></td>
+          <td><input type="text" name="value" /></td>
+        </tr>
+
+      </table>
       <input type="submit" value="Set" name="submit" />
     </form>
   </fieldset><br>

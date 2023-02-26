@@ -5,7 +5,7 @@ import socket
 import time
 from typing import Any, Tuple, Type
 
-from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -14,7 +14,7 @@ from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState
 
 
-class AsyncModbusTcpClient(ModbusBaseClient):
+class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
     """**AsyncModbusTcpClient**.
 
     :param host: Host IP address or host name
@@ -46,8 +46,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        self.protocol = None
         super().__init__(framer=framer, **kwargs)
+        self.use_protocol = True
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
@@ -72,12 +72,10 @@ class AsyncModbusTcpClient(ModbusBaseClient):
         """Stop client."""
         self.delay_ms = 0
         if self.connected:
-            if self.protocol.transport:
-                self.protocol.transport.abort()
-                self.protocol.transport.close()
-            if self.protocol:
-                await self.protocol.close()
-                self.protocol = None
+            if self.transport:
+                self.transport.abort()
+                self.transport.close()
+            await self.async_close()
             await asyncio.sleep(0.1)
 
         if self._reconnect_task:
@@ -85,22 +83,8 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self._reconnect_task = None
 
     def _create_protocol(self):
-        """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(
-            framer=self.params.framer,
-            xframer=self.framer,
-            timeout=self.params.timeout,
-            retries=self.params.retries,
-            retry_on_empty=self.params.retry_on_empty,
-            close_comm_on_error=self.params.close_comm_on_error,
-            strict=self.params.strict,
-            broadcast_enable=self.params.broadcast_enable,
-            reconnect_delay=self.params.reconnect_delay,
-            reconnect_delay_max=self.params.reconnect_delay_max,
-            **self.params.kwargs,
-        )
-        protocol.factory = self
-        return protocol
+        """Create initialized protocol instance with function."""
+        return self
 
     async def _connect(self):
         """Connect."""
@@ -131,25 +115,21 @@ class AsyncModbusTcpClient(ModbusBaseClient):
             self.reset_delay()
             return transport, protocol
 
-    def protocol_made_connection(self, protocol):
+    def client_made_connection(self, protocol):
         """Notify successful connection."""
         Log.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
-            self.protocol = protocol
         else:
             Log.error("Factory protocol connect callback called while connected.")
 
-    def protocol_lost_connection(self, protocol):
+    def client_lost_connection(self, protocol):
         """Notify lost connection."""
         Log.info("Protocol lost connection.")
-        if protocol is not self.protocol:
+        if protocol is not self:
             Log.error("Factory protocol cb from unknown protocol instance.")
 
         self.connected = False
-        if self.protocol is not None:
-            del self.protocol
-            self.protocol = None
         if self.delay_ms > 0:
             self._launch_reconnect()
 

@@ -480,7 +480,7 @@ class TestSimulator:
         await asyncio.sleep(0.1)
         client = setup_async_client(args)
         await client.connect()
-        assert client.protocol
+        assert client.connected
 
         rr = await client.read_holding_registers(16, 1, slave=1)
         assert rr.registers

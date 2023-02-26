@@ -85,7 +85,7 @@ class BasicClient(asyncio.BaseProtocol):
         BasicClient.done = None
         BasicClient.received_data = None
         BasicClient.eof = None
-        BasicClient.protocol = None
+        BasicClient.my_protocol = None
 
 
 class AsyncioServerTest(
@@ -197,7 +197,10 @@ class AsyncioServerTest(
         random_port = self.server.server.sockets[0].getsockname()[
             1
         ]  # get the random server port
-        BasicClient.transport, BasicClient.protocol = await self.loop.create_connection(
+        (
+            BasicClient.transport,
+            BasicClient.my_protocol,
+        ) = await self.loop.create_connection(
             BasicClient, host="127.0.0.1", port=random_port
         )
         await asyncio.wait_for(BasicClient.connected, timeout=0.1)
@@ -248,7 +251,7 @@ class AsyncioServerTest(
         await self.connect_server()
         self.assertEqual(len(self.server.active_connections), 1)
 
-        BasicClient.protocol.transport.close()
+        BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
         self.assertFalse(self.server.active_connections)
 
@@ -351,7 +354,7 @@ class AsyncioServerTest(
         self.assertFalse(self.server.on_connection_terminated.done())
 
         await self.server.server_close()
-        # TBD self.assertTrue(self.server.protocol.is_closing())
+        # TBD self.assertTrue(self.server.is_closing())
         self.server = None
 
     async def test_async_udp_server_serve_forever_twice(self):

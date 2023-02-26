@@ -38,9 +38,6 @@ class Version:
 
 
 version = Version("pymodbus", 3, 1, "x", "")
-version.__name__ = (  # fix epydoc error # pylint: disable=attribute-defined-outside-init
-    "pymodbus"
-)
 
 
 # --------------------------------------------------------------------------- #

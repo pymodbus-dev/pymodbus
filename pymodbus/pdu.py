@@ -4,7 +4,6 @@ import struct
 
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.interfaces import Singleton
 from pymodbus.logging import Log
 from pymodbus.utilities import rtuFrameSize
 
@@ -145,7 +144,7 @@ class ModbusResponse(ModbusPDU):
 # --------------------------------------------------------------------------- #
 # Exception PDUs
 # --------------------------------------------------------------------------- #
-class ModbusExceptions(Singleton):  # pylint: disable=too-few-public-methods
+class ModbusExceptions:  # pylint: disable=too-few-public-methods
     """An enumeration of the valid modbus exceptions."""
 
     IllegalFunction = 0x01

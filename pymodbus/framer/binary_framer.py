@@ -46,14 +46,13 @@ class ModbusBinaryFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
         self._hsize = 0x01
         self._start = b"\x7b"  # {
         self._end = b"\x7d"  # }
         self._repeat = [b"}"[0], b"{"[0]]  # python3 hack
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

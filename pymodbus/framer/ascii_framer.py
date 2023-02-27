@@ -37,13 +37,12 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

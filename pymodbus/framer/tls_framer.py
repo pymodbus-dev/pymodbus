@@ -33,11 +33,10 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {}
         self._hsize = 0x0
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

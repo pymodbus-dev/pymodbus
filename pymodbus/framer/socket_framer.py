@@ -41,11 +41,10 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
         self._hsize = 0x07
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions

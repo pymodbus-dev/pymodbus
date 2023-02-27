@@ -10,9 +10,8 @@ import struct
 from collections import OrderedDict
 from typing import List
 
-from pymodbus.constants import DeviceInformation
+from pymodbus.constants import INTERNAL_ERROR, DeviceInformation
 from pymodbus.events import ModbusEvent
-from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
 
@@ -233,7 +232,7 @@ class ModbusDeviceIdentification:
     )
 
 
-class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-methods
+class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
     """This is a helper factory.
 
     That really just hides
@@ -293,6 +292,10 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         :returns: The requested data (id, length, value)
         """
         return {oid: identity[oid] for oid in object_ids if identity[oid]}
+
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
 
 # ---------------------------------------------------------------------------#
@@ -444,7 +447,7 @@ class ModbusCountersHandler:
 # ---------------------------------------------------------------------------#
 #  Main server control block
 # ---------------------------------------------------------------------------#
-class ModbusControlBlock(Singleton):
+class ModbusControlBlock:
     """This is a global singleton that controls all system information.
 
     All activity should be logged here and all diagnostic requests
@@ -477,6 +480,12 @@ class ModbusControlBlock(Singleton):
         :returns: An iterator of the device counters
         """
         return self.__counters.__iter__()
+
+    def __new__(cls, *_args, **_kwargs):
+        """Create a new instance."""
+        if "_inst" not in vars(cls):
+            cls._inst = object.__new__(cls)
+        return cls._inst
 
     # -------------------------------------------------------------------------#
     #  Events

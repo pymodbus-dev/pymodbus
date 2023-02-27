@@ -4,6 +4,7 @@ import asyncio
 import ssl
 import time
 import traceback
+from typing import Union
 
 from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
@@ -873,7 +874,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    handler = None
+    handler: ModbusSingleRequestHandler = None
 
     def __init__(
         self, context, framer=ModbusRtuFramer, identity=None, **kwargs
@@ -1052,7 +1053,9 @@ class _serverList:
     :meta private:
     """
 
-    active_server = None
+    active_server: Union[
+        ModbusUnixServer, ModbusTcpServer, ModbusUdpServer, ModbusSerialServer
+    ] = None
 
     def __init__(self, server):
         """Register new server."""

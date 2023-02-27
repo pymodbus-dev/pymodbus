@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 from enum import Enum
+from typing import Union
 
 
 try:
@@ -396,7 +397,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: list[int] = [1],
+        unit: Union[list[int]] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,

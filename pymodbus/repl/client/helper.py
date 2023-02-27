@@ -4,6 +4,7 @@ import inspect
 # pylint: disable=missing-type-doc
 import json
 from collections import OrderedDict
+from typing import Any, Dict, List, Union
 
 import pygments
 from prompt_toolkit import print_formatted_text
@@ -58,7 +59,7 @@ CLIENT_METHODS = [
     "set_timeout",
     "get_serial_settings",
 ]
-CLIENT_ATTRIBUTES = []
+CLIENT_ATTRIBUTES: List[str] = []
 
 
 class Command:
@@ -230,8 +231,8 @@ def get_commands(client):
 class Result:
     """Represent result command."""
 
-    function_code = None
-    data = None
+    function_code: int = None
+    data: Union[Dict[int, Any], Any] = None
 
     def __init__(self, result):
         """Initialize.

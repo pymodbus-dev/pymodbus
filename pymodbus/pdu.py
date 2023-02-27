@@ -74,7 +74,7 @@ class ModbusPDU:
         raise NotImplementedException()
 
     @classmethod
-    def calculateRtuFrameSize(cls, buffer):  # pylint: disable=invalid-name
+    def calculateRtuFrameSize(cls, buffer):
         """Calculate the size of a PDU.
 
         :param buffer: A buffer containing the data that have been received.
@@ -102,7 +102,7 @@ class ModbusRequest(ModbusPDU):
         """
         super().__init__(unit, **kwargs)
 
-    def doException(self, exception):  # pylint: disable=invalid-name
+    def doException(self, exception):
         """Build an error response based on the function.
 
         :param exception: The exception to return
@@ -137,7 +137,7 @@ class ModbusResponse(ModbusPDU):
         """
         super().__init__(unit, **kwargs)
 
-    def isError(self):  # pylint: disable=invalid-name
+    def isError(self):
         """Check if the error is a success or failure."""
         return self.function_code > 0x80  # pylint: disable=no-member
 
@@ -235,16 +235,12 @@ class IllegalFunctionRequest(ModbusRequest):
         super().__init__(**kwargs)
         self.function_code = function_code
 
-    def decode(self, data):
-        """Decode so this failure will run correctly.
+    def decode(self, _data):
+        """Decode so this failure will run correctly."""
 
-        :param data: Not used
-        """
-
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Build an illegal function request error response.
 
-        :param context: The current context for the message
         :returns: The error response packet
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)

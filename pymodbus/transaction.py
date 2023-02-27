@@ -318,7 +318,7 @@ class ModbusTransactionManager:
             result = b""
         return result, last_exception
 
-    def _send(self, packet, retrying=False):  # pylint: disable=unused-argument
+    def _send(self, packet, _retrying=False):
         """Send."""
         return self.client.framer.sendPacket(packet)
 
@@ -411,7 +411,7 @@ class ModbusTransactionManager:
             self.client.state = ModbusTransactionState.PROCESSING_REPLY
         return result
 
-    def addTransaction(self, request, tid=None):  # pylint: disable=invalid-name
+    def addTransaction(self, request, tid=None):
         """Add a transaction to the handler.
 
         This holds the request in case it needs to be resent.
@@ -423,7 +423,7 @@ class ModbusTransactionManager:
         """
         raise NotImplementedException("addTransaction")
 
-    def getTransaction(self, tid):  # pylint: disable=invalid-name
+    def getTransaction(self, tid):
         """Return a transaction matching the referenced tid.
 
         If the transaction does not exist, None is returned
@@ -433,7 +433,7 @@ class ModbusTransactionManager:
         """
         raise NotImplementedException("getTransaction")
 
-    def delTransaction(self, tid):  # pylint: disable=invalid-name
+    def delTransaction(self, tid):
         """Remove a transaction matching the referenced tid.
 
         :param tid: The transaction to remove
@@ -441,7 +441,7 @@ class ModbusTransactionManager:
         """
         raise NotImplementedException("delTransaction")
 
-    def getNextTID(self):  # pylint: disable=invalid-name
+    def getNextTID(self):
         """Retrieve the next unique transaction identifier.
 
         This handles incrementing the identifier after

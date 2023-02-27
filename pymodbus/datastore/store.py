@@ -92,7 +92,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Address Check")
 
-    def getValues(self, address, count=1):  # pylint: disable=invalid-name
+    def getValues(self, address, count=1):
         """Return the requested values from the datastore.
 
         :param address: The starting address
@@ -101,7 +101,7 @@ class BaseModbusDataBlock:
         """
         raise NotImplementedException("Datastore Value Retrieve")
 
-    def setValues(self, address, values):  # pylint: disable=invalid-name
+    def setValues(self, address, values):
         """Return the requested values from the datastore.
 
         :param address: The starting address

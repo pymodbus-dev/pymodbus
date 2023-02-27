@@ -47,11 +47,6 @@ Extra functions
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: pymodbus.interfaces
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 .. automodule:: pymodbus.mei_message
     :members:
     :undoc-members:

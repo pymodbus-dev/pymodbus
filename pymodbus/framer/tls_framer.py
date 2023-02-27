@@ -88,14 +88,8 @@ class ModbusTlsFramer(ModbusFramer):
         """
         return self._buffer[self._hsize :]
 
-    def populateResult(self, result):
-        """Populate the modbus result.
-
-        With the transport specific header
-        information (no header before PDU in decrypted message)
-
-        :param result: The response packet
-        """
+    def populateResult(self, _result):
+        """Populate the modbus result."""
         return
 
     # ----------------------------------------------------------------------- #
@@ -110,7 +104,7 @@ class ModbusTlsFramer(ModbusFramer):
 
     def processIncomingPacket(
         self, data, callback, unit, **kwargs
-    ):  # pylint: disable=arguments-differ
+    ):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -157,7 +151,7 @@ class ModbusTlsFramer(ModbusFramer):
         self.advanceFrame()
         callback(result)  # defer or push to a thread?
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip ovver errors that may be in the stream.
@@ -168,7 +162,7 @@ class ModbusTlsFramer(ModbusFramer):
         """
         self._buffer = b""
 
-    def getRawFrame(self):  # pylint: disable=invalid-name
+    def getRawFrame(self):
         """Return the complete buffer."""
         return self._buffer
 

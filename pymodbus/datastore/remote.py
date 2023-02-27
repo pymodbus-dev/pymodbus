@@ -1,14 +1,14 @@
 """Remote datastore."""
 # pylint: disable=missing-type-doc
+from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.logging import Log
 
 
 # ---------------------------------------------------------------------------#
 #  Context
 # ---------------------------------------------------------------------------#
-class RemoteSlaveContext(IModbusSlaveContext):
+class RemoteSlaveContext(ModbusBaseSlaveContext):
     """TODO.
 
     This creates a modbus data model that connects to
@@ -49,7 +49,7 @@ class RemoteSlaveContext(IModbusSlaveContext):
         self.result = func_fc(address, count)
         return not self.result.isError()
 
-    def getValues(self, fc_as_hex, address, count=1):
+    def getValues(self, fc_as_hex, _address, _count=1):
         """Get values from real call in validate"""
         if fc_as_hex in self._write_fc:
             return [0]

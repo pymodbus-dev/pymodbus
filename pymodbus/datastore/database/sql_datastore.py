@@ -10,14 +10,14 @@ try:
 except ImportError:
     pass
 
-from pymodbus.interfaces import IModbusSlaveContext
+from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #
 # Context
 # --------------------------------------------------------------------------- #
-class SqlSlaveContext(IModbusSlaveContext):
+class SqlSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access in its a block."""
 
     def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
@@ -45,44 +45,44 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._metadata.drop_all(None)
         self._db_create(self.table, self.database)
 
-    def validate(self, fx, address, count=1):
+    def validate(self, fc, address, count=1):
         """Validate the request to make sure it is in range.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("validate[{}] {}:{}", fx, address, count)
-        return self._validate(self.decode(fx), address, count)
+        Log.debug("validate[{}] {}:{}", fc, address, count)
+        return self._validate(self.decode(fc), address, count)
 
-    def getValues(self, fx, address, count=1):
+    def getValues(self, fc, address, count=1):
         """Get `count` values from datastore.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("get-values[{}] {}:{}", fx, address, count)
-        return self._get(self.decode(fx), address, count)
+        Log.debug("get-values[{}] {}:{}", fc, address, count)
+        return self._get(self.decode(fc), address, count)
 
-    def setValues(self, fx, address, values, update=True):
+    def setValues(self, fc, address, values, update=True):
         """Set the datastore with the supplied values.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         :param update: Update existing register in the db
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("set-values[{}] {}:{}", fx, address, len(values))
+        Log.debug("set-values[{}] {}:{}", fc, address, len(values))
         if update:
-            self._update(self.decode(fx), address, values)
+            self._update(self.decode(fc), address, values)
         else:
-            self._set(self.decode(fx), address, values)
+            self._set(self.decode(fc), address, values)
 
     # ----------------------------------------------------------------------- #
     # Sqlite Helper Methods

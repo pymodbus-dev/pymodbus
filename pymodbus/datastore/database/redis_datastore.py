@@ -7,7 +7,7 @@ try:
 except ImportError:
     pass
 
-from pymodbus.interfaces import IModbusSlaveContext
+from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.logging import Log
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
@@ -15,7 +15,7 @@ from pymodbus.utilities import pack_bitstring, unpack_bitstring
 # ---------------------------------------------------------------------------#
 #  Context
 # ---------------------------------------------------------------------------#
-class RedisSlaveContext(IModbusSlaveContext):
+class RedisSlaveContext(ModbusBaseSlaveContext):
     """This is a modbus slave context using redis as a backing store."""
 
     def __init__(self, **kwargs):
@@ -42,40 +42,40 @@ class RedisSlaveContext(IModbusSlaveContext):
         """Reset all the datastores to their default values."""
         self.client.flushall()
 
-    def validate(self, fx, address, count=1):
+    def validate(self, fc, address, count=1):
         """Validate the request to make sure it is in range.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("validate[{}] {}:{}", fx, address, count)
-        return self._val_callbacks[self.decode(fx)](address, count)
+        Log.debug("validate[{}] {}:{}", fc, address, count)
+        return self._val_callbacks[self.decode(fc)](address, count)
 
-    def getValues(self, fx, address, count=1):
+    def getValues(self, fc, address, count=1):
         """Get `count` values from datastore.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("getValues[{}] {}:{}", fx, address, count)
-        return self._get_callbacks[self.decode(fx)](address, count)
+        Log.debug("getValues[{}] {}:{}", fc, address, count)
+        return self._get_callbacks[self.decode(fc)](address, count)
 
-    def setValues(self, fx, address, values):
+    def setValues(self, fc, address, values):
         """Set the datastore with the supplied values.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("setValues[{}] {}:{}", fx, address, len(values))
-        self._set_callbacks[self.decode(fx)](address, values)
+        Log.debug("setValues[{}] {}:{}", fc, address, len(values))
+        self._set_callbacks[self.decode(fc)](address, values)
 
     # --------------------------------------------------------------------------#
     #  Redis Helper Methods

@@ -19,7 +19,7 @@ class ModbusException(Exception):
         """Return string representation."""
         return f"Modbus Error: {self.string}"
 
-    def isError(self):  # pylint: disable=invalid-name
+    def isError(self):
         """Error"""
         return True
 

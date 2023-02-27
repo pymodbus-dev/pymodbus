@@ -4,7 +4,7 @@ import platform
 
 import pytest
 
-from pymodbus.interfaces import IModbusSlaveContext
+from pymodbus.datastore import ModbusBaseSlaveContext
 
 
 def pytest_configure():
@@ -18,7 +18,7 @@ def pytest_configure():
 # -----------------------------------------------------------------------#
 
 
-class MockContext(IModbusSlaveContext):
+class MockContext(ModbusBaseSlaveContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):
@@ -38,7 +38,7 @@ class MockContext(IModbusSlaveContext):
         """Set values."""
 
 
-class MockLastValuesContext(IModbusSlaveContext):
+class MockLastValuesContext(ModbusBaseSlaveContext):
     """Mock context."""
 
     def __init__(self, valid=False, default=True):

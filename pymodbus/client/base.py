@@ -149,7 +149,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """
         self.framer.decoder.register(custom_response_class)
 
-    def connect(self) -> None:
+    def connect(self) -> bool:
         """Connect to the modbus remote host (call **sync/async**).
 
         :raises ModbusException: Different exceptions, check exception text.

@@ -128,10 +128,9 @@ class ReadFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run a read exception status request against the store.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         # TODO do some new context operation here # pylint: disable=fixme
@@ -253,10 +252,9 @@ class WriteFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run the write file record request against the context.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         # TODO do some new context operation here # pylint: disable=fixme
@@ -359,10 +357,9 @@ class ReadFifoQueueRequest(ModbusRequest):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run a read exception status request against the store.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         if not 0x0000 <= self.address <= 0xFFFF:

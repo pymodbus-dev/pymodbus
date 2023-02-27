@@ -20,7 +20,7 @@ from pymodbus.logging import Log
 class SqlSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access in its a block."""
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
         :param kwargs: Each element is a ModbusDataBlock
@@ -111,17 +111,11 @@ class SqlSlaveContext(ModbusBaseSlaveContext):
         self._table.create(self._engine)
         self._connection = self._engine.connect()
 
-    def _get(self, type, offset, count):  # pylint: disable=redefined-builtin
-        """Get.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param count: The number of bits to read
-        :returns: The resulting values
-        """
+    def _get(self, sqltype, offset, count):
+        """Get."""
         query = self._table.select(
             and_(
-                self._table.c.type == type,
+                self._table.c.type == sqltype,
                 self._table.c.index >= offset,
                 self._table.c.index <= offset + count - 1,
             )
@@ -130,60 +124,40 @@ class SqlSlaveContext(ModbusBaseSlaveContext):
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(
-        self, type, offset, values, prefix=""
-    ):  # pylint: disable=redefined-builtin
-        """Generate the sql update context.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        :param prefix: Prefix fields index and type, defaults to empty string
-        """
+    def _build_set(self, sqltype, offset, values, prefix=""):
+        """Generate the sql update context."""
         result = []
         for index, value in enumerate(values):
             result.append(
                 {
-                    prefix + "type": type,
+                    prefix + "type": sqltype,
                     prefix + "index": offset + index,
                     "value": value,
                 }
             )
         return result
 
-    def _check(
-        self, type, offset, values  # pylint: disable=unused-argument,redefined-builtin
-    ):
+    def _check(self, sqltype, offset, _values):
         """Check."""
-        result = self._get(type, offset, count=1)
+        result = self._get(sqltype, offset, count=1)
         return (
             False  # pylint: disable=simplifiable-if-expression
             if len(result) > 0
             else True
         )
 
-    def _set(self, type, offset, values):  # pylint: disable=redefined-builtin
-        """Set.
-
-        :param type: The type prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        """
-        if self._check(type, offset, values):
-            context = self._build_set(type, offset, values)
+    def _set(self, sqltype, offset, values):
+        """Set."""
+        if self._check(sqltype, offset, values):
+            context = self._build_set(sqltype, offset, values)
             query = self._table.insert()
             result = self._connection.execute(query, context)
             return result.rowcount == len(values)
         return False
 
-    def _update(self, type, offset, values):  # pylint: disable=redefined-builtin
-        """Update.
-
-        :param type: The type prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        """
-        context = self._build_set(type, offset, values, prefix="x_")
+    def _update(self, sqltype, offset, values):
+        """Update."""
+        context = self._build_set(sqltype, offset, values, prefix="x_")
         query = self._table.update().values(value="value")
         query = query.where(
             and_(
@@ -194,17 +168,11 @@ class SqlSlaveContext(ModbusBaseSlaveContext):
         result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
-    def _validate(self, type, offset, count):  # pylint: disable=redefined-builtin
-        """Validate.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param count: The number of bits to read
-        :returns: The result of the validation
-        """
+    def _validate(self, sqltype, offset, count):
+        """Validate."""
         query = self._table.select(
             and_(
-                self._table.c.type == type,
+                self._table.c.type == sqltype,
                 self._table.c.index >= offset,
                 self._table.c.index <= offset + count - 1,
             )

@@ -37,9 +37,7 @@ no-value-for-parameter
 non-iterator-returned
 protected-access
 raise-missing-from
-redefined-builtin
 redefined-outer-name
-reimported
 signature-differs
 simplifiable-if-expression
 simplifiable-if-statement
@@ -60,8 +58,6 @@ unexpected-keyword-arg
 unnecessary-comprehension
 unnecessary-lambda
 unspecified-encoding
-unused-argument
-unused-import
 unused-private-member
 unused-variable
 use-implicit-booleaness-not-len

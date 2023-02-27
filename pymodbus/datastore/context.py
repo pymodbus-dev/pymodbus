@@ -16,9 +16,9 @@ class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
             setValues(self, fx, address, values)
     """
 
-    __fx_mapper = {2: "d", 4: "i"}
-    __fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
-    __fx_mapper.update([(i, "c") for i in (1, 5, 15)])
+    _fx_mapper = {2: "d", 4: "i"}
+    _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+    _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
 
     def decode(self, fx):  # pylint: disable=invalid-name
         """Convert the function code to the datastore to.
@@ -26,7 +26,7 @@ class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
         :param fx: The function we are working with
         :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
         """
-        return self.__fx_mapper[fx]
+        return self._fx_mapper[fx]
 
 
 # ---------------------------------------------------------------------------#
@@ -35,7 +35,7 @@ class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
 class ModbusSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access stored in a block."""
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
         Defaults to fully populated
@@ -113,7 +113,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param datablock: datablock to associate with this function code
         """
         self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
-        self.__fx_mapper[function_code] = fc_as_hex
+        self._fx_mapper[function_code] = fc_as_hex
 
 
 class ModbusServerContext:

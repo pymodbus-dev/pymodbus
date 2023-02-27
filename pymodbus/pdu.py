@@ -235,16 +235,12 @@ class IllegalFunctionRequest(ModbusRequest):
         super().__init__(**kwargs)
         self.function_code = function_code
 
-    def decode(self, data):
-        """Decode so this failure will run correctly.
+    def decode(self, _data):
+        """Decode so this failure will run correctly."""
 
-        :param data: Not used
-        """
-
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Build an illegal function request error response.
 
-        :param context: The current context for the message
         :returns: The error response packet
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)

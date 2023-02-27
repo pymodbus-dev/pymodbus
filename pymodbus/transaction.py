@@ -318,7 +318,7 @@ class ModbusTransactionManager:
             result = b""
         return result, last_exception
 
-    def _send(self, packet, retrying=False):  # pylint: disable=unused-argument
+    def _send(self, packet, _retrying=False):
         """Send."""
         return self.client.framer.sendPacket(packet)
 

@@ -26,15 +26,15 @@ class MockContext(ModbusBaseSlaveContext):
         self.valid = valid
         self.default = default
 
-    def validate(self, fx, address, count=0):
+    def validate(self, _fc, _address, _count=0):
         """Validate values."""
         return self.valid
 
-    def getValues(self, fx, address, count=0):
+    def getValues(self, _fc, _address, count=0):
         """Get values."""
         return [self.default] * count
 
-    def setValues(self, fx, address, values):
+    def setValues(self, _fc, _address, _values):
         """Set values."""
 
 
@@ -47,15 +47,15 @@ class MockLastValuesContext(ModbusBaseSlaveContext):
         self.default = default
         self.last_values = []
 
-    def validate(self, fx, address, count=0):
+    def validate(self, _fc, _address, _count=0):
         """Validate values."""
         return self.valid
 
-    def getValues(self, fx, address, count=0):
+    def getValues(self, _fc, _address, count=0):
         """Get values."""
         return [self.default] * count
 
-    def setValues(self, fx, address, values):
+    def setValues(self, _fc, _address, values):
         """Set values."""
         self.last_values = values
 
@@ -123,12 +123,12 @@ class mockSocket:  # pylint: disable=invalid-name
         """Receive from."""
         return [self.mock_retrieve(size)]
 
-    def sendto(self, msg, *args):  # pylint: disable=unused-argument
+    def sendto(self, msg, *_args):
         """Send to."""
         self.mock_store(msg)
         return len(msg)
 
-    def setblocking(self, flag):  # pylint: disable=unused-argument
+    def setblocking(self, _flag):
         """Set blocking."""
         return None
 
@@ -145,7 +145,7 @@ def run_coroutine(coro):
         return exc.value
 
 
-def _yielded_return(return_value, *args):  # pylint: disable=unused-argument
+def _yielded_return(_return_value, *_args):
     """Return Generator factory function with return value."""
 
     async def _():

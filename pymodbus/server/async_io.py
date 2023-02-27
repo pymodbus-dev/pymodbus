@@ -778,8 +778,8 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        defer_start=False,  # pylint: disable=unused-argument
-        backlog=20,  # pylint: disable=unused-argument
+        defer_start=False,
+        backlog=20,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -800,6 +800,10 @@ class ModbusUdpServer:
         :param response_manipulator: Callback method for
                             manipulating the response
         """
+        # TO BE REMOVED:
+        self.defer_start = defer_start
+        self.backlog = backlog
+        # ----------------
         self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer

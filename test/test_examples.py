@@ -129,7 +129,7 @@ def test_exp_sync_server_client(
 # JAN
 @pytest.mark.parametrize("test_port_offset", [30])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-async def xtest_exp_client_calls(  # pylint: disable=unused-argument
+async def xtest_exp_client_calls(
     test_comm,
     test_framer,
     test_port_offset,
@@ -137,6 +137,7 @@ async def xtest_exp_client_calls(  # pylint: disable=unused-argument
     mock_run_server,
 ):
     """Test client-server async with different framers and calls."""
+    assert not mock_run_server
     if test_comm == "serial" and test_framer in (ModbusAsciiFramer, ModbusBinaryFramer):
         return
     if pytest.IS_WINDOWS and test_comm == "serial":
@@ -150,7 +151,7 @@ async def xtest_exp_client_calls(  # pylint: disable=unused-argument
 
 @pytest.mark.parametrize("test_port_offset", [40])
 @pytest.mark.parametrize("test_comm, test_framer, test_port", [TEST_COMMS_FRAMER[0]])
-async def test_exp_forwarder(  # pylint: disable=unused-argument
+async def test_exp_forwarder(
     test_comm,
     test_framer,
     test_port_offset,
@@ -158,9 +159,10 @@ async def test_exp_forwarder(  # pylint: disable=unused-argument
     mock_run_server,
 ):
     """Test modbus forwarder."""
+    assert not mock_run_server
     if pytest.IS_WINDOWS:
         return
-
+    print(test_comm, test_framer, test_port_offset, test_port)
     pymodbus_apply_logging_config()
     # cmd_args = Commandline.copy()
     # cmd_args.comm = test_comm

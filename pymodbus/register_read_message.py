@@ -91,7 +91,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
-    def getRegister(self, index):  # pylint: disable=(invalid-name
+    def getRegister(self, index):
         """Get the requested register.
 
         :param index: The indexed register to retrieve

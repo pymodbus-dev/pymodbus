@@ -561,7 +561,7 @@ class ModbusSimulatorContext:
         fx_write = func_code in self._write_func_code
         return self.loop_validate(real_address, real_address + count, fx_write)
 
-    def getValues(self, func_code, address, count=1):  # pylint: disable=invalid-name
+    def getValues(self, func_code, address, count=1):
         """Return the requested values of the datastore.
 
         :meta private:
@@ -596,7 +596,7 @@ class ModbusSimulatorContext:
                 bit_index = 0
         return result
 
-    def setValues(self, func_code, address, values):  # pylint: disable=invalid-name
+    def setValues(self, func_code, address, values):
         """Set the requested values of the datastore.
 
         :meta private:

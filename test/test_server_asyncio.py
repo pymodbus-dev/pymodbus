@@ -59,7 +59,7 @@ class BasicClient(asyncio.BaseProtocol):
         if BasicClient.done is not None:
             BasicClient.done.set_result(True)
 
-    def datagram_received(self, data, addr):  # pylint: disable=unused-argument
+    def datagram_received(self, data, _addr):
         """Get Datagram received."""
         _logger.debug("TEST Client datagram received")
         BasicClient.received_data = data

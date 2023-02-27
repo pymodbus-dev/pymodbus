@@ -68,7 +68,6 @@ from pymodbus.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
-from pymodbus.interfaces import IModbusDecoder
 from pymodbus.logging import Log
 from pymodbus.mei_message import (
     ReadDeviceInformationRequest,
@@ -108,7 +107,7 @@ from pymodbus.register_write_message import (
 # --------------------------------------------------------------------------- #
 # Server Decoder
 # --------------------------------------------------------------------------- #
-class ServerDecoder(IModbusDecoder):
+class ServerDecoder:
     """Request Message Factory (Server).
 
     To add more implemented functions, simply add them to the list
@@ -237,7 +236,7 @@ class ServerDecoder(IModbusDecoder):
 # --------------------------------------------------------------------------- #
 # Client Decoder
 # --------------------------------------------------------------------------- #
-class ClientDecoder(IModbusDecoder):
+class ClientDecoder:
     """Response Message Factory (Client).
 
     To add more implemented functions, simply add them to the list

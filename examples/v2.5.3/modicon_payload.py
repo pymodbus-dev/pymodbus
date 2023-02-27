@@ -9,11 +9,10 @@ from struct import pack, unpack
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
-from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-class ModiconPayloadBuilder(IPayloadBuilder):
+class ModiconPayloadBuilder:
     """A utility that helps build modicon encoded payload messages.
 
     to be written with the various modbus messages.

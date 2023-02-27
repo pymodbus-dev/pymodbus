@@ -22,8 +22,8 @@ slave for the client::
 """
 import logging
 
+from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.exceptions import NotImplementedException
-from pymodbus.interfaces import IModbusSlaveContext
 
 
 # -------------------------------------------------------------------------- #
@@ -40,7 +40,7 @@ _logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------------- #
 
 
-class RemoteSingleSlaveContext(IModbusSlaveContext):
+class RemoteSingleSlaveContext(ModbusBaseSlaveContext):
     """This is a remote server context,
 
     that allows one to create a server context backed by a single client that

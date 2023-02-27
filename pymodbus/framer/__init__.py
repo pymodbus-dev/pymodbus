@@ -1,6 +1,5 @@
 """Framer start."""
 # pylint: disable=missing-type-doc
-from pymodbus.interfaces import IModbusFramer
 
 
 # Unit ID, Function Code
@@ -14,7 +13,7 @@ SOCKET_FRAME_HEADER = BYTE_ORDER + "HHH" + FRAME_HEADER
 TLS_FRAME_HEADER = BYTE_ORDER + "B"
 
 
-class ModbusFramer(IModbusFramer):
+class ModbusFramer:
     """Base Framer class."""
 
     name = ""
@@ -42,7 +41,7 @@ class ModbusFramer(IModbusFramer):
             return True
         return self._header["uid"] in units  # pylint: disable=no-member
 
-    def sendPacket(self, message):  # pylint: disable=invalid-name
+    def sendPacket(self, message):
         """Send packets on the bus.
 
         With 3.5char delay between frames
@@ -51,7 +50,7 @@ class ModbusFramer(IModbusFramer):
         """
         return self.client.send(message)
 
-    def recvPacket(self, size):  # pylint: disable=invalid-name
+    def recvPacket(self, size):
         """Receive packet from the bus.
 
         With specified len

@@ -139,9 +139,7 @@ class ModbusBinaryFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(
-        self, data, callback, unit, **kwargs
-    ):  # pylint: disable=arguments-differ
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -214,7 +212,7 @@ class ModbusBinaryFramer(ModbusFramer):
             array.append(item)
         return bytes(array)
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip ovver errors that may be in the stream.

@@ -95,7 +95,7 @@ class ReadBitsResponseBase(ModbusResponse):
         self.byte_count = int(data[0])  # pylint: disable=attribute-defined-outside-init
         self.bits = unpack_bitstring(data[1:])
 
-    def setBit(self, address, value=1):  # pylint: disable=invalid-name
+    def setBit(self, address, value=1):
         """Set the specified bit.
 
         :param address: The bit to set
@@ -103,14 +103,14 @@ class ReadBitsResponseBase(ModbusResponse):
         """
         self.bits[address] = bool(value)
 
-    def resetBit(self, address):  # pylint: disable=invalid-name
+    def resetBit(self, address):
         """Set the specified bit to 0.
 
         :param address: The bit to reset
         """
         self.setBit(address, 0)
 
-    def getBit(self, address):  # pylint: disable=invalid-name
+    def getBit(self, address):
         """Get the specified bit's value.
 
         :param address: The bit to query

@@ -4,11 +4,10 @@ This is the single location for storing default
 values for the servers and clients.
 """
 
+INTERNAL_ERROR = "Pymodbus internal error"
 
-from pymodbus.interfaces import Singleton
 
-
-class Defaults(Singleton):  # pylint: disable=too-few-public-methods
+class Defaults:  # pylint: disable=too-few-public-methods
     """A collection of modbus default values.
 
      .. attribute:: Port
@@ -155,8 +154,12 @@ class Defaults(Singleton):  # pylint: disable=too-few-public-methods
     ReconnectDelayMax = 1000 * 60 * 5
     Count = 1
 
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
-class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods
+
+class ModbusStatus:  # pylint: disable=too-few-public-methods
     """These represent various status codes in the modbus protocol.
 
     .. attribute:: Waiting
@@ -193,8 +196,12 @@ class ModbusStatus(Singleton):  # pylint: disable=too-few-public-methods
     SlaveOn = 0xFF
     SlaveOff = 0x00
 
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
-class Endian(Singleton):  # pylint: disable=too-few-public-methods
+
+class Endian:  # pylint: disable=too-few-public-methods
     """An enumeration representing the various byte endianness.
 
     .. attribute:: Auto
@@ -218,8 +225,12 @@ class Endian(Singleton):  # pylint: disable=too-few-public-methods
     Big = ">"
     Little = "<"
 
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
-class ModbusPlusOperation(Singleton):  # pylint: disable=too-few-public-methods
+
+class ModbusPlusOperation:  # pylint: disable=too-few-public-methods
     """Represents the type of modbus plus request.
 
     .. attribute:: GetStatistics
@@ -236,8 +247,12 @@ class ModbusPlusOperation(Singleton):  # pylint: disable=too-few-public-methods
     GetStatistics = 0x0003
     ClearStatistics = 0x0004
 
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
-class DeviceInformation(Singleton):  # pylint: disable=too-few-public-methods
+
+class DeviceInformation:  # pylint: disable=too-few-public-methods
     """Represents what type of device information to read.
 
     .. attribute:: Basic
@@ -269,8 +284,12 @@ class DeviceInformation(Singleton):  # pylint: disable=too-few-public-methods
     Extended = 0x03
     Specific = 0x04
 
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
-class MoreData(Singleton):  # pylint: disable=too-few-public-methods
+
+class MoreData:  # pylint: disable=too-few-public-methods
     """Represents the more follows condition.
 
     .. attribute:: Nothing
@@ -284,6 +303,10 @@ class MoreData(Singleton):  # pylint: disable=too-few-public-methods
 
     Nothing = 0x00
     KeepReading = 0xFF
+
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
 
 # ---------------------------------------------------------------------------#

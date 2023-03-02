@@ -226,7 +226,9 @@ class ModbusSerialClient(ModbusBaseClient):
         Setting too large a setting affects efficiency.
         """
         self._recv_interval = round((100 * self._t0), 2) + 0.01
-        self._recv_interval = self._recv_interval if self._recv_interval < 0.05 else 0.05
+        self._recv_interval = (
+            self._recv_interval if self._recv_interval < 0.05 else 0.05
+        )
 
         if isinstance(self.framer, ModbusRtuFramer):
             if self.params.baudrate > 19200:

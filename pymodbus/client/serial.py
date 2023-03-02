@@ -220,9 +220,14 @@ class ModbusSerialClient(ModbusBaseClient):
         self.last_frame_end = None
 
         self._t0 = float((1 + 8 + 2)) / self.params.baudrate
-        self.recv_interval = 100 * self._t0
-        self.recv_interval = round(self.recv_interval, 2) + 0.01
-        self.recv_interval = self.recv_interval if self.recv_interval < 0.05 else 0.05  # unit: s
+
+        """
+        The minimum delay is 0.01s and the maximum can be set to 0.05s.
+        Setting too large a setting affects efficiency.
+        """
+        self._recv_interval = round((100 * self._t0), 2) + 0.01
+        self._recv_interval = self._recv_interval if self._recv_interval < 0.05 else 0.05
+
         if isinstance(self.framer, ModbusRtuFramer):
             if self.params.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
@@ -322,7 +327,7 @@ class ModbusSerialClient(ModbusBaseClient):
             if available and available != size:
                 more_data = True
                 size = available
-            time.sleep(self.recv_interval)
+            time.sleep(self._recv_interval)
         return size
 
     def recv(self, size):

@@ -48,6 +48,13 @@ and a asynchronous example::
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
 
+The synchronous clients are not thread safe nor is a single client intented to be used from multiple threads.
+Due to the nature of the modbus protocol, it makes little sense to have client calls split over different threads,
+however the application can do it with proper locking implemented.
+
+The asynchronous client only runs in the thread where the asyncio loop is created, it does not provide mechanisms to
+prevent (semi)parallel calls, that must be prevented at application level.
+
 Transport classes
 -----------------
 

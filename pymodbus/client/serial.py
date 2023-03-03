@@ -218,11 +218,23 @@ class ModbusSerialClient(ModbusBaseClient):
         self.socket = None
 
         self.last_frame_end = None
+
+        self._t0 = float((1 + 8 + 2)) / self.params.baudrate
+
+        """
+        The minimum delay is 0.01s and the maximum can be set to 0.05s.
+        Setting too large a setting affects efficiency.
+        """
+        self._recv_interval = (
+            (round((100 * self._t0), 2) + 0.01)
+            if (round((100 * self._t0), 2) + 0.01) < 0.05
+            else 0.05
+        )
+
         if isinstance(self.framer, ModbusRtuFramer):
             if self.params.baudrate > 19200:
                 self.silent_interval = 1.75 / 1000  # ms
             else:
-                self._t0 = float((1 + 8 + 2)) / self.params.baudrate
                 self.inter_char_timeout = 1.5 * self._t0
                 self.silent_interval = 3.5 * self._t0
             self.silent_interval = round(self.silent_interval, 6)
@@ -318,7 +330,7 @@ class ModbusSerialClient(ModbusBaseClient):
             if available and available != size:
                 more_data = True
                 size = available
-            time.sleep(0.01)
+            time.sleep(self._recv_interval)
         return size
 
     def recv(self, size):
@@ -331,7 +343,7 @@ class ModbusSerialClient(ModbusBaseClient):
         if size is None:
             size = self._wait_for_data()
         if size > self._in_waiting():
-            size = self._wait_for_data()
+            self._wait_for_data()
         result = self.socket.read(size)
         return result
 

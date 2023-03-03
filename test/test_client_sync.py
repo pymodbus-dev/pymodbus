@@ -388,7 +388,7 @@ class SynchronousClientTest(
         self.assertEqual(0, client.send(None))
         client.state = 0
         self.assertEqual(1, client.send(b"\x00"))
-        self.assertEqual(b"", client.recv(1))
+        self.assertEqual(b"\x00", client.recv(1))
 
         # connect/disconnect
         self.assertTrue(client.connect())

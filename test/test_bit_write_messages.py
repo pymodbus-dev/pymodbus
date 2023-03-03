@@ -43,6 +43,8 @@ class ModbusBitMessageTests(unittest.TestCase):
             WriteSingleCoilResponse(1, 0xABCD): b"\x00\x01\xff\x00",
             WriteMultipleCoilsRequest(1, [True] * 5): b"\x00\x01\x00\x05\x01\x1f",
             WriteMultipleCoilsResponse(1, 5): b"\x00\x01\x00\x05",
+            WriteMultipleCoilsRequest(1, True): b"\x00\x01\x00\x01\x01\x01",
+            WriteMultipleCoilsResponse(1, 1): b"\x00\x01\x00\x01",
         }
         for request, expected in iter(messages.items()):
             self.assertEqual(request.encode(), expected)
@@ -61,6 +63,13 @@ class ModbusBitMessageTests(unittest.TestCase):
         self.assertEqual(request.byte_count, 1)
         self.assertEqual(request.address, 1)
         self.assertEqual(request.values, [True] * 5)
+        self.assertEqual(request.get_response_pdu_size(), 5)
+
+        request = WriteMultipleCoilsRequest(1, True)
+        request.decode(b"\x00\x01\x00\x01\x01\x01")
+        self.assertEqual(request.byte_count, 1)
+        self.assertEqual(request.address, 1)
+        self.assertEqual(request.values, [True])
         self.assertEqual(request.get_response_pdu_size(), 5)
 
     def test_invalid_write_multiple_coils_request(self):

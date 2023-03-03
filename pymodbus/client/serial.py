@@ -225,9 +225,10 @@ class ModbusSerialClient(ModbusBaseClient):
         The minimum delay is 0.01s and the maximum can be set to 0.05s.
         Setting too large a setting affects efficiency.
         """
-        self._recv_interval = round((100 * self._t0), 2) + 0.01
         self._recv_interval = (
-            self._recv_interval if self._recv_interval < 0.05 else 0.05
+            (round((100 * self._t0), 2) + 0.01)
+            if (round((100 * self._t0), 2) + 0.01) < 0.05
+            else 0.05
         )
 
         if isinstance(self.framer, ModbusRtuFramer):

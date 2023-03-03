@@ -122,7 +122,9 @@ class ModbusBaseClient(ModbusClientMixin):
 
         # Common variables.
         self.framer = self.params.framer(ClientDecoder(), self)
-        self.transaction = DictTransactionManager(self, **kwargs)
+        self.transaction = DictTransactionManager(
+            self, retries=retries, retry_on_empty=retry_on_empty, **kwargs
+        )
         self.delay_ms = self.params.reconnect_delay
         self.use_protocol = False
         self._connected = False

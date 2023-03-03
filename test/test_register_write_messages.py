@@ -42,6 +42,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
             WriteMultipleRegistersRequest(
                 1, self.values
             ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
+            WriteMultipleRegistersRequest(1, 0xD): b"\x00\x01\x00\x01\x02\x00\x0D",
             WriteMultipleRegistersResponse(1, 5): b"\x00\x01\x00\x05",
             WriteSingleRegisterRequest(
                 1, self.payload[0], skip_encode=True
@@ -114,6 +115,10 @@ class WriteRegisterMessagesTest(unittest.TestCase):
 
         context.valid = True
         request = WriteMultipleRegistersRequest(0x00, [0x00] * 10)
+        result = request.execute(context)
+        self.assertEqual(result.function_code, request.function_code)
+
+        request = WriteMultipleRegistersRequest(0x00, 0x00)
         result = request.execute(context)
         self.assertEqual(result.function_code, request.function_code)
 

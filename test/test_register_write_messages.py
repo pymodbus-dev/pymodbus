@@ -41,7 +41,7 @@ class WriteRegisterMessagesTest(unittest.TestCase):
             WriteSingleRegisterResponse(1, self.value): b"\x00\x01\xab\xcd",
             WriteMultipleRegistersRequest(
                 1, self.values
-            ): b"\x00\x01\x00\x03\x06\x00\n\x00\x0b\x00\x0c",
+            ): b"\x00\x01\x00\x03\x06\x00\x0a\x00\x0b\x00\x0c",
             WriteMultipleRegistersResponse(1, 5): b"\x00\x01\x00\x05",
             WriteSingleRegisterRequest(
                 1, self.payload[0], skip_encode=True

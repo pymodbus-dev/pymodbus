@@ -48,7 +48,7 @@ and a asynchronous example::
 Large parts of the implementation are shared between the different classes,
 to ensure high stability and efficient maintenance.
 
-The synchronous clients are not thread safe nor is a single client intented to be used from multiple threads.
+The synchronous clients are not thread safe nor is a single client intended to be used from multiple threads.
 Due to the nature of the modbus protocol, it makes little sense to have client calls split over different threads,
 however the application can do it with proper locking implemented.
 

@@ -256,7 +256,7 @@ class ModbusSimulatorServer:
 
     async def handle_html_static(self, request):
         """Handle static html."""
-        if (page := request.path[1:]) == "":  # pylint: disable=compare-to-empty-string
+        if not (page := request.path[1:]):
             page = "index.html"
         file = os.path.join(self.web_path, page)
         try:
@@ -374,7 +374,9 @@ class ModbusSimulatorServer:
                 else ""
             )
             function_codes += f"<option value={function.function_code} {selected}>{function.function_code_name}</option>"
-        simulation_action = "ACTIVE" if self.call_response.active >= 0 else ""
+        simulation_action = (
+            "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+        )
 
         max_len = MAX_FILTER if self.call_monitor.active else 0
         while len(self.call_list) > max_len:
@@ -479,8 +481,7 @@ class ModbusSimulatorServer:
     def action_stop(self, _params, _range_start, _range_stop):
         """Stop call monitoring."""
         self.call_monitor = CallTypeMonitor()
-        if not self.call_response.active:
-            self.modbus_server.response_manipulator = None
+        self.modbus_server.response_manipulator = None
         self.modbus_server.request_tracer = None
         return None, "Stopped monitoring"
 
@@ -596,45 +597,41 @@ class ModbusSimulatorServer:
             )
             self.call_list.append(tracer)
             self.call_monitor.trace_response = False
-        return response, False
 
-        if self.call_response.delay:  # pylint: disable=unreachable
-            Log.warning(
-                "Delaying response by {}s for all incoming requests",
-                self.call_response.delay,
-            )
-            time.sleep(self.call_response.delay)  # change to async
+        if not self.call_response.active == RESPONSE_INACTIVE:
+            return response, False
 
-        if self.call_response.active == RESPONSE_NORMAL:
-            return "", False
-
-        if self.call_response.clear_after:
-            self.call_response.clear_after -= 1
-            if not self.call_response.clear_after:
-                Log.info("Resetting manipulator due to clear_after")
-                self.call_response = CallTypeResponse
-                return "", False
-
-        if self.call_response.active == RESPONSE_ERROR:
+        skip_encoding = False
+        if self.call_response.active == RESPONSE_EMPTY:
+            Log.warning("Sending empty response")
+            response.should_respond = False
+        elif self.call_response.active == RESPONSE_NORMAL:
+            if self.call_response.delay:
+                Log.warning(
+                    "Delaying response by {}s for all incoming requests",
+                    self.call_response.delay,
+                )
+                time.sleep(self.call_response.delay)  # change to async
+            else:
+                pass
+                # self.call_response.change_rate
+                # self.call_response.split
+        elif self.call_response.active == RESPONSE_ERROR:
             Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(
                 response.function_code, self.call_response.error_response
             )
             err_response.transaction_id = response.transaction_id
             err_response.unit_id = response.unit_id
-            return "", False
-
-        if self.call_response.active == RESPONSE_EMPTY:
-            Log.warning("Sending empty response")
-            response.should_respond = False
-            return response, False
-
-        if self.call_response.active == RESPONSE_JUNK:
+        elif self.call_response.active == RESPONSE_JUNK:
             response = os.urandom(self.call_response.junk_len)
-            return response, True
+            skip_encoding = True
 
-        # JAN REMEMBER SPLIT
-        return response, False
+        self.call_response.clear_after -= 1
+        if self.call_response.clear_after <= 0:
+            Log.info("Resetting manipulator due to clear_after")
+            self.call_response.active = RESPONSE_EMPTY
+        return response, skip_encoding
 
     def server_request_tracer(self, request, *_addr):
         """Trace requests.

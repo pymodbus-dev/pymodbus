@@ -38,7 +38,6 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             "read_address": 1,
             "read_count": 5,
             "write_address": 1,
-            "write_registers": [0x00] * 5,
         }
         self.value = 0xABCD
         self.values = [0xA, 0xB, 0xC]
@@ -47,10 +46,16 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             ReadHoldingRegistersRequest(1, 5): b"\x00\x01\x00\x05",
             ReadInputRegistersRequest(1, 5): b"\x00\x01\x00\x05",
             ReadWriteMultipleRegistersRequest(
-                **arguments
+                write_registers=[0x00] * 5,
+                **arguments,
             ): b"\x00\x01\x00\x05\x00\x01\x00"
             b"\x05\x0a\x00\x00\x00\x00\x00"
             b"\x00\x00\x00\x00\x00",
+            ReadWriteMultipleRegistersRequest(
+                write_registers=0xAB,
+                **arguments,
+            ): b"\x00\x01\x00\x05\x00\x01\x00"
+            b"\x01\x02\x00\xAB",
         }
         self.response_read = {
             ReadRegistersResponseBase(self.values): TEST_MESSAGE,

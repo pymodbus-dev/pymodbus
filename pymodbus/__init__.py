@@ -10,7 +10,7 @@ from pymodbus.logging import Log
 
 
 __version__ = __version.version.short()
-__author__ = "Galen Collins"
+__author__ = "Galen Collins, Jan Iversen"
 __maintainer__ = "dhoomakethu, janiversen"
 
 

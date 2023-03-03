@@ -84,6 +84,7 @@ class ReadFileRecordRequest(ModbusRequest):
     """
 
     function_code = 0x14
+    function_code_name = "read_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records=None, **kwargs):
@@ -127,10 +128,9 @@ class ReadFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run a read exception status request against the store.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         # TODO do some new context operation here # pylint: disable=fixme
@@ -202,6 +202,7 @@ class WriteFileRecordRequest(ModbusRequest):
     """
 
     function_code = 0x15
+    function_code_name = "write_file_record"
     _rtu_byte_count_pos = 2
 
     def __init__(self, records=None, **kwargs):
@@ -251,10 +252,9 @@ class WriteFileRecordRequest(ModbusRequest):
             if decoded[0] == 0x06:
                 self.records.append(record)
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run the write file record request against the context.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         # TODO do some new context operation here # pylint: disable=fixme
@@ -331,6 +331,7 @@ class ReadFifoQueueRequest(ModbusRequest):
     """
 
     function_code = 0x18
+    function_code_name = "read_fifo_queue"
     _rtu_frame_size = 6
 
     def __init__(self, address=0x0000, **kwargs):
@@ -356,10 +357,9 @@ class ReadFifoQueueRequest(ModbusRequest):
         """
         self.address = struct.unpack(">H", data)[0]
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run a read exception status request against the store.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         if not 0x0000 <= self.address <= 0xFFFF:

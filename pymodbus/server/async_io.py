@@ -4,6 +4,7 @@ import asyncio
 import ssl
 import time
 import traceback
+from typing import Union
 
 from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
@@ -778,8 +779,8 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        defer_start=False,  # pylint: disable=unused-argument
-        backlog=20,  # pylint: disable=unused-argument
+        defer_start=False,
+        backlog=20,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -800,6 +801,10 @@ class ModbusUdpServer:
         :param response_manipulator: Callback method for
                             manipulating the response
         """
+        # TO BE REMOVED:
+        self.defer_start = defer_start
+        self.backlog = backlog
+        # ----------------
         self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
@@ -869,7 +874,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    handler = None
+    handler: ModbusSingleRequestHandler = None
 
     def __init__(
         self, context, framer=ModbusRtuFramer, identity=None, **kwargs
@@ -1048,7 +1053,9 @@ class _serverList:
     :meta private:
     """
 
-    active_server = None
+    active_server: Union[
+        ModbusUnixServer, ModbusTcpServer, ModbusUdpServer, ModbusSerialServer
+    ] = None
 
     def __init__(self, server):
         """Register new server."""

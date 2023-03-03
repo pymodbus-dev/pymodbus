@@ -10,9 +10,8 @@ import struct
 from collections import OrderedDict
 from typing import List
 
-from pymodbus.constants import DeviceInformation
+from pymodbus.constants import INTERNAL_ERROR, DeviceInformation
 from pymodbus.events import ModbusEvent
-from pymodbus.interfaces import Singleton
 from pymodbus.utilities import dict_property
 
 
@@ -233,7 +232,7 @@ class ModbusDeviceIdentification:
     )
 
 
-class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-methods
+class DeviceInformationFactory:  # pylint: disable=too-few-public-methods
     """This is a helper factory.
 
     That really just hides
@@ -293,6 +292,10 @@ class DeviceInformationFactory(Singleton):  # pylint: disable=too-few-public-met
         :returns: The requested data (id, length, value)
         """
         return {oid: identity[oid] for oid in object_ids if identity[oid]}
+
+    def __init__(self):
+        """Prohibit objects."""
+        raise RuntimeError(INTERNAL_ERROR)
 
 
 # ---------------------------------------------------------------------------#
@@ -444,7 +447,7 @@ class ModbusCountersHandler:
 # ---------------------------------------------------------------------------#
 #  Main server control block
 # ---------------------------------------------------------------------------#
-class ModbusControlBlock(Singleton):
+class ModbusControlBlock:
     """This is a global singleton that controls all system information.
 
     All activity should be logged here and all diagnostic requests
@@ -453,7 +456,6 @@ class ModbusControlBlock(Singleton):
 
     __mode = "ASCII"
     __diagnostic = [False] * 16
-    __instance = None
     __listen_only = False
     __delimiter = "\r"
     __counters = ModbusCountersHandler()
@@ -478,10 +480,16 @@ class ModbusControlBlock(Singleton):
         """
         return self.__counters.__iter__()
 
+    def __new__(cls, *_args, **_kwargs):
+        """Create a new instance."""
+        if "_inst" not in vars(cls):
+            cls._inst = object.__new__(cls)
+        return cls._inst
+
     # -------------------------------------------------------------------------#
     #  Events
     # -------------------------------------------------------------------------#
-    def addEvent(self, event: ModbusEvent):  # pylint: disable=invalid-name
+    def addEvent(self, event: ModbusEvent):
         """Add a new event to the event log.
 
         :param event: A new event to add to the log
@@ -490,7 +498,7 @@ class ModbusControlBlock(Singleton):
         self.__events = self.__events[0:64]  # chomp to 64 entries
         self.Counter.Event += 1
 
-    def getEvents(self):  # pylint: disable=invalid-name
+    def getEvents(self):
         """Return an encoded collection of the event log.
 
         :returns: The encoded events packet
@@ -498,7 +506,7 @@ class ModbusControlBlock(Singleton):
         events = [event.encode() for event in self.__events]
         return b"".join(events)
 
-    def clearEvents(self):  # pylint: disable=invalid-name
+    def clearEvents(self):
         """Clear the current list of events."""
         self.__events = []
 
@@ -519,7 +527,7 @@ class ModbusControlBlock(Singleton):
     # -------------------------------------------------------------------------#
     #  Listen Properties
     # -------------------------------------------------------------------------#
-    def _setListenOnly(self, value):  # pylint: disable=invalid-name
+    def _setListenOnly(self, value):
         """Toggle the listen only status.
 
         :param value: The value to set the listen status to
@@ -531,7 +539,7 @@ class ModbusControlBlock(Singleton):
     # -------------------------------------------------------------------------#
     #  Mode Properties
     # -------------------------------------------------------------------------#
-    def _setMode(self, mode):  # pylint: disable=invalid-name
+    def _setMode(self, mode):
         """Toggle the current serial mode.
 
         :param mode: The data transfer method in (RTU, ASCII)
@@ -544,7 +552,7 @@ class ModbusControlBlock(Singleton):
     # -------------------------------------------------------------------------#
     #  Delimiter Properties
     # -------------------------------------------------------------------------#
-    def _setDelimiter(self, char):  # pylint: disable=invalid-name
+    def _setDelimiter(self, char):
         """Change the serial delimiter character.
 
         :param char: The new serial delimiter character
@@ -563,7 +571,7 @@ class ModbusControlBlock(Singleton):
     # -------------------------------------------------------------------------#
     #  Diagnostic Properties
     # -------------------------------------------------------------------------#
-    def setDiagnostic(self, mapping):  # pylint: disable=invalid-name
+    def setDiagnostic(self, mapping):
         """Set the value in the diagnostic register.
 
         :param mapping: Dictionary of key:value pairs to set
@@ -572,7 +580,7 @@ class ModbusControlBlock(Singleton):
             if entry[0] >= 0 and entry[0] < len(self.__diagnostic):
                 self.__diagnostic[entry[0]] = bool(entry[1])
 
-    def getDiagnostic(self, bit):  # pylint: disable=invalid-name
+    def getDiagnostic(self, bit):
         """Get the value in the diagnostic register.
 
         :param bit: The bit to get
@@ -585,7 +593,7 @@ class ModbusControlBlock(Singleton):
             return None
         return None
 
-    def getDiagnosticRegister(self):  # pylint: disable=invalid-name
+    def getDiagnosticRegister(self):
         """Get the entire diagnostic register.
 
         :returns: The diagnostic register collection

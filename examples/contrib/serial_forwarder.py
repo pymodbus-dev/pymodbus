@@ -19,7 +19,7 @@ logging.basicConfig(format=FORMAT)
 _logger = logging.getLogger()
 
 
-def raise_graceful_exit(*args):  # pylint: disable=unused-argument
+def raise_graceful_exit(*_args):
     """Enters shutdown mode"""
     _logger.info("receiving shutdown signal now")
     raise SystemExit

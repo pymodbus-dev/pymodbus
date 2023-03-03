@@ -47,6 +47,7 @@ class ReadDeviceInformationRequest(ModbusRequest):
 
     function_code = 0x2B
     sub_function_code = 0x0E
+    function_code_name = "read_device_information"
     _rtu_frame_size = 7
 
     def __init__(self, read_code=None, object_id=0x00, **kwargs):
@@ -77,10 +78,9 @@ class ReadDeviceInformationRequest(ModbusRequest):
         params = struct.unpack(">BBB", data)
         self.sub_function_code, self.read_code, self.object_id = params
 
-    def execute(self, context):  # pylint: disable=unused-argument
+    def execute(self, _context):
         """Run a read exception status request against the store.
 
-        :param context: The datastore to request from
         :returns: The populated response
         """
         if not 0x00 <= self.object_id <= 0xFF:

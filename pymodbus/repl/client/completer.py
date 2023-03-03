@@ -71,16 +71,8 @@ class CmdCompleter(Completer):
         """
         return len(words) > 1 and len(word_before_cursor)
 
-    def arg_completions(
-        self, words, word_before_cursor
-    ):  # pylint: disable=unused-argument
-        """Generate arguments completions based on the input.
-
-        :param words: The input text broken into word tokens.
-        :param word_before_cursor: The current word  before the cursor, \
-            which might be one or more blank spaces.
-        :return: A list of completions.
-        """
+    def arg_completions(self, words, _word_before_cursor):
+        """Generate arguments completions based on the input."""
         cmd = words[0].strip()
         cmd = self._commands.get(cmd, None)
         return cmd if cmd else None

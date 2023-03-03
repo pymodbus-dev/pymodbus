@@ -10,17 +10,17 @@ try:
 except ImportError:
     pass
 
-from pymodbus.interfaces import IModbusSlaveContext
+from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.logging import Log
 
 
 # --------------------------------------------------------------------------- #
 # Context
 # --------------------------------------------------------------------------- #
-class SqlSlaveContext(IModbusSlaveContext):
+class SqlSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access in its a block."""
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
         :param kwargs: Each element is a ModbusDataBlock
@@ -45,44 +45,44 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._metadata.drop_all(None)
         self._db_create(self.table, self.database)
 
-    def validate(self, fx, address, count=1):
+    def validate(self, fc, address, count=1):
         """Validate the request to make sure it is in range.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to test
         :returns: True if the request in within range, False otherwise
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("validate[{}] {}:{}", fx, address, count)
-        return self._validate(self.decode(fx), address, count)
+        Log.debug("validate[{}] {}:{}", fc, address, count)
+        return self._validate(self.decode(fc), address, count)
 
-    def getValues(self, fx, address, count=1):
+    def getValues(self, fc, address, count=1):
         """Get `count` values from datastore.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param count: The number of values to retrieve
         :returns: The requested values from a:a+c
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("get-values[{}] {}:{}", fx, address, count)
-        return self._get(self.decode(fx), address, count)
+        Log.debug("get-values[{}] {}:{}", fc, address, count)
+        return self._get(self.decode(fc), address, count)
 
-    def setValues(self, fx, address, values, update=True):
+    def setValues(self, fc, address, values, update=True):
         """Set the datastore with the supplied values.
 
-        :param fx: The function we are working with
+        :param fc: The function we are working with
         :param address: The starting address
         :param values: The new values to be set
         :param update: Update existing register in the db
         """
         address = address + 1  # section 4.4 of specification
-        Log.debug("set-values[{}] {}:{}", fx, address, len(values))
+        Log.debug("set-values[{}] {}:{}", fc, address, len(values))
         if update:
-            self._update(self.decode(fx), address, values)
+            self._update(self.decode(fc), address, values)
         else:
-            self._set(self.decode(fx), address, values)
+            self._set(self.decode(fc), address, values)
 
     # ----------------------------------------------------------------------- #
     # Sqlite Helper Methods
@@ -111,17 +111,11 @@ class SqlSlaveContext(IModbusSlaveContext):
         self._table.create(self._engine)
         self._connection = self._engine.connect()
 
-    def _get(self, type, offset, count):  # pylint: disable=redefined-builtin
-        """Get.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param count: The number of bits to read
-        :returns: The resulting values
-        """
+    def _get(self, sqltype, offset, count):
+        """Get."""
         query = self._table.select(
             and_(
-                self._table.c.type == type,
+                self._table.c.type == sqltype,
                 self._table.c.index >= offset,
                 self._table.c.index <= offset + count - 1,
             )
@@ -130,60 +124,40 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query).fetchall()
         return [row.value for row in result]
 
-    def _build_set(
-        self, type, offset, values, prefix=""
-    ):  # pylint: disable=redefined-builtin
-        """Generate the sql update context.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        :param prefix: Prefix fields index and type, defaults to empty string
-        """
+    def _build_set(self, sqltype, offset, values, prefix=""):
+        """Generate the sql update context."""
         result = []
         for index, value in enumerate(values):
             result.append(
                 {
-                    prefix + "type": type,
+                    prefix + "type": sqltype,
                     prefix + "index": offset + index,
                     "value": value,
                 }
             )
         return result
 
-    def _check(
-        self, type, offset, values  # pylint: disable=unused-argument,redefined-builtin
-    ):
+    def _check(self, sqltype, offset, _values):
         """Check."""
-        result = self._get(type, offset, count=1)
+        result = self._get(sqltype, offset, count=1)
         return (
             False  # pylint: disable=simplifiable-if-expression
             if len(result) > 0
             else True
         )
 
-    def _set(self, type, offset, values):  # pylint: disable=redefined-builtin
-        """Set.
-
-        :param type: The type prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        """
-        if self._check(type, offset, values):
-            context = self._build_set(type, offset, values)
+    def _set(self, sqltype, offset, values):
+        """Set."""
+        if self._check(sqltype, offset, values):
+            context = self._build_set(sqltype, offset, values)
             query = self._table.insert()
             result = self._connection.execute(query, context)
             return result.rowcount == len(values)
         return False
 
-    def _update(self, type, offset, values):  # pylint: disable=redefined-builtin
-        """Update.
-
-        :param type: The type prefix to use
-        :param offset: The address offset to start at
-        :param values: The values to set
-        """
-        context = self._build_set(type, offset, values, prefix="x_")
+    def _update(self, sqltype, offset, values):
+        """Update."""
+        context = self._build_set(sqltype, offset, values, prefix="x_")
         query = self._table.update().values(value="value")
         query = query.where(
             and_(
@@ -194,17 +168,11 @@ class SqlSlaveContext(IModbusSlaveContext):
         result = self._connection.execute(query, context)
         return result.rowcount == len(values)
 
-    def _validate(self, type, offset, count):  # pylint: disable=redefined-builtin
-        """Validate.
-
-        :param type: The key prefix to use
-        :param offset: The address offset to start at
-        :param count: The number of bits to read
-        :returns: The result of the validation
-        """
+    def _validate(self, sqltype, offset, count):
+        """Validate."""
         query = self._table.select(
             and_(
-                self._table.c.type == type,
+                self._table.c.type == sqltype,
                 self._table.c.index >= offset,
                 self._table.c.index <= offset + count - 1,
             )

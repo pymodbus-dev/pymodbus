@@ -5,6 +5,9 @@ PyModbus - API changes.
 -------------
 Version 3.2.0
 -------------
+- pymodbus/interfaces/IModbusDecoder removed.
+- pymodbus/interfaces/IModbusFramer removed.
+- pymodbus/interfaces/IModbusSlaveContext -> pymodbus/datastore/ModbusBaseSlaveContext.
 - StartAsync<type>Server, removed defer_start argument, return is None.
   instead of using defer_start instantiate the Modbus<type>Server directly.
 - `ReturnSlaveNoReponseCountResponse` has been corrected to

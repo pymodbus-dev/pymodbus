@@ -58,13 +58,12 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
         self._hsize = 0x01
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
@@ -106,7 +105,7 @@ class ModbusRtuFramer(ModbusFramer):
         Log.debug("Frame advanced, resetting header!!")
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip over errors that may be in the stream.
@@ -141,7 +140,7 @@ class ModbusRtuFramer(ModbusFramer):
 
         return len(self._buffer) >= size if size > 0 else False
 
-    def populateHeader(self, data=None):  # pylint: disable=invalid-name
+    def populateHeader(self, data=None):
         """Try to set the headers `uid`, `len` and `crc`.
 
         This method examines `self._buffer` and writes meta
@@ -195,9 +194,7 @@ class ModbusRtuFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(
-        self, data, callback, unit, **kwargs
-    ):  # pylint: disable=arguments-differ
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -318,7 +315,7 @@ class ModbusRtuFramer(ModbusFramer):
         self.advanceFrame()
         callback(result)  # defer or push to a thread?
 
-    def getRawFrame(self):  # pylint: disable=invalid-name
+    def getRawFrame(self):
         """Return the complete buffer."""
         Log.debug("Getting Raw Frame - {}", self._buffer, ":hex")
         return self._buffer

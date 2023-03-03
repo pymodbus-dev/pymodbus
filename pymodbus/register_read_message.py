@@ -91,7 +91,7 @@ class ReadRegistersResponseBase(ModbusResponse):
         for i in range(1, byte_count + 1, 2):
             self.registers.append(struct.unpack(">H", data[i : i + 2])[0])
 
-    def getRegister(self, index):  # pylint: disable=(invalid-name
+    def getRegister(self, index):
         """Get the requested register.
 
         :param index: The indexed register to retrieve
@@ -118,6 +118,7 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
     """
 
     function_code = 3
+    function_code_name = "read_holding_registers"
 
     def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance of the request.
@@ -175,6 +176,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
     """
 
     function_code = 4
+    function_code_name = "read_input_registers"
 
     def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
         """Initialize a new instance of the request.
@@ -238,6 +240,7 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
     """
 
     function_code = 23
+    function_code_name = "read_write_multiple_registers"
     _rtu_byte_count_pos = 10
 
     def __init__(self, **kwargs):

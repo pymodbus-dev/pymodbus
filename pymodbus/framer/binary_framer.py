@@ -46,14 +46,13 @@ class ModbusBinaryFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
         self._hsize = 0x01
         self._start = b"\x7b"  # {
         self._end = b"\x7d"  # }
         self._repeat = [b"}"[0], b"{"[0]]  # python3 hack
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
@@ -140,9 +139,7 @@ class ModbusBinaryFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(
-        self, data, callback, unit, **kwargs
-    ):  # pylint: disable=arguments-differ
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -215,7 +212,7 @@ class ModbusBinaryFramer(ModbusFramer):
             array.append(item)
         return bytes(array)
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip ovver errors that may be in the stream.

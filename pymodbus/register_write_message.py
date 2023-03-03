@@ -15,6 +15,7 @@ class WriteSingleRegisterRequest(ModbusRequest):
     """
 
     function_code = 6
+    function_code_name = "write_register"
     _rtu_frame_size = 8
 
     def __init__(self, address=None, value=None, unit=None, **kwargs):
@@ -143,6 +144,7 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     """
 
     function_code = 16
+    function_code_name = "write_registers"
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
@@ -276,6 +278,7 @@ class MaskWriteRegisterRequest(ModbusRequest):
     """
 
     function_code = 0x16
+    function_code_name = "mask_write_register"
     _rtu_frame_size = 10
 
     def __init__(self, address=0x0000, and_mask=0xFFFF, or_mask=0x0000, **kwargs):

@@ -8,7 +8,6 @@ from struct import pack, unpack
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
-from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.logging import Log
 from pymodbus.utilities import (
     make_byte_string,
@@ -20,7 +19,7 @@ from pymodbus.utilities import (
 WC = {"b": 1, "h": 2, "e": 2, "i": 4, "l": 4, "q": 8, "f": 4, "d": 8}
 
 
-class BinaryPayloadBuilder(IPayloadBuilder):
+class BinaryPayloadBuilder:
     """A utility that helps build payload messages to be written with the various modbus messages.
 
     It really is just a simple wrapper around the struct module,
@@ -276,7 +275,7 @@ class BinaryPayloadDecoder:
         self._wordorder = wordorder
 
     @classmethod
-    def fromRegisters(  # pylint: disable=invalid-name
+    def fromRegisters(
         cls,
         registers,
         byteorder=Endian.Little,
@@ -309,22 +308,13 @@ class BinaryPayloadDecoder:
         return chunks
 
     @classmethod
-    def fromCoils(  # pylint: disable=invalid-name
+    def fromCoils(
         cls,
         coils,
         byteorder=Endian.Little,
-        wordorder=Endian.Big,
-    ):  # pylint: disable=unused-argument
-        """Initialize a payload decoder with the result of reading of coils.
-
-        The coils are treated as a list of bit(boolean) values.
-
-        :param coils: The coil results to initialize with
-        :param byteorder: The endianness of the payload
-        :param wordorder: The endianness of the payload
-        :returns: An initialized PayloadDecoder
-        :raises ParameterException:
-        """
+        _wordorder=Endian.Big,
+    ):
+        """Initialize a payload decoder with the result of reading of coils."""
         if isinstance(coils, list):
             payload = b""
             if padding := len(coils) % 8:  # Pad zeros

@@ -1,6 +1,6 @@
 """Pymodbus: Modbus Protocol Implementation.
 
-Released under the the BSD license
+Released under the BSD license.
 """
 
 from logging import WARNING
@@ -14,9 +14,10 @@ __author__ = "Galen Collins, Jan Iversen"
 __maintainer__ = "dhoomakethu, janiversen"
 
 
-def pymodbus_apply_logging_config(level=WARNING):
-    """Apply basic logging configuration used by default by Pymodbus maintainers.
+def pymodbus_apply_logging_config(level: int = WARNING, **config_overrides) -> None:
+    """Apply basic logging configuration.
 
-    Please call this function to format logging appropriately when opening issues.
+    Please call this function to format logging appropriately when opening
+    issues.  Default formatting is specified by the Pymodbus maintainers.
     """
-    Log.apply_logging_config(level)
+    Log.apply_logging_config(level, **config_overrides)

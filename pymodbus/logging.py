@@ -1,6 +1,6 @@
 """Pymodbus: Modbus Protocol Implementation.
 
-Released under the the BSD license
+Released under the BSD license.
 """
 
 import logging
@@ -32,12 +32,15 @@ class Log:
     _logger = logging.getLogger(__name__)
 
     @classmethod
-    def apply_logging_config(cls, level=logging.WARNING):
-        """Apply basic logging configuration"""
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
-            datefmt="%H:%M:%S",
-        )
+    def apply_logging_config(
+        cls, level: int = logging.WARNING, **config_overrides: dict
+    ) -> None:
+        """Apply basic logging configuration."""
+        default_config: dict = {
+            "format": "%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
+            "datefmt": "%H:%M:%S",
+        }
+        logging.basicConfig(**{**default_config, **config_overrides})
         cls._logger.setLevel(level)
         cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
 

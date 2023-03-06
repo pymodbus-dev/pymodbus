@@ -61,6 +61,7 @@ flake8-noqa==1.3.0
 flake8-comprehensions==3.10.1
 isort==5.11.4
 mypy==1.0.1
+pre-commit==3.1.1
 pyflakes==3.0.1
 pydocstyle==6.3.0
 pycodestyle==2.10.0

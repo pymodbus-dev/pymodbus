@@ -231,7 +231,7 @@ def cli(client):  # pylint: disable=too-complex
             continue  # Control-C pressed. Try again.
         except EOFError:
             break  # Control-D pressed.
-        except Exception as exc:  # Handle all other exceptions pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except
             click.secho(str(exc), fg="red")
 
     click.secho("GoodBye!", fg="blue")

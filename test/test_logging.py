@@ -1,4 +1,7 @@
-"""Test datastore."""
+"""Test logging."""
+
+from unittest.mock import patch, MagicMock
+
 import pytest
 
 from pymodbus import pymodbus_apply_logging_config
@@ -8,13 +11,25 @@ from pymodbus.logging import Log
 class TestLogging:
     """Tests of pymodbus logging."""
 
-    def test_log_our_default(self):
+    def test_defaults(self):
         """Test default logging"""
         pymodbus_apply_logging_config()
         assert Log.LOG_LEVEL == Log.WARNING
 
+    @patch("logging.basicConfig")
+    def test_nondefaults(self, mock_basicConfig: MagicMock):
+        """Test it's possible to override the logging config."""
+        datefmt = "%Y-%m-%d %H:%M:%S"
+
+        pymodbus_apply_logging_config(datefmt=datefmt)
+
+        mock_basicConfig.assert_called_once_with(
+            format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
+            datefmt=datefmt,
+        )
+
     def test_log_set_level(self):
-        """Test default logging"""
+        """Test ability to set the level."""
         pymodbus_apply_logging_config(Log.DEBUG)
         assert Log.LOG_LEVEL == Log.DEBUG
         pymodbus_apply_logging_config(Log.INFO)

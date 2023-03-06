@@ -40,7 +40,8 @@ class Log:
             "format": "%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
             "datefmt": "%H:%M:%S",
         }
-        logging.basicConfig(**{**default_config, **config_overrides})
+        config_kwargs = {**default_config, **config_overrides}
+        logging.basicConfig(**config_kwargs)
         cls._logger.setLevel(level)
         cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
 

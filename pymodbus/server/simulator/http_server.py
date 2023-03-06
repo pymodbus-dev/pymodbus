@@ -15,6 +15,8 @@ except ImportError:
 
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
 from pymodbus.datastore.simulator import Label
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.factory import ServerDecoder
 from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse
 from pymodbus.server import (
@@ -32,8 +34,9 @@ from pymodbus.transaction import (
 )
 
 
-MAX_FILTER = 200
+MAX_FILTER = 1000
 
+RESPONSE_INACTIVE = -1
 RESPONSE_NORMAL = 0
 RESPONSE_ERROR = 1
 RESPONSE_EMPTY = 2
@@ -41,10 +44,22 @@ RESPONSE_JUNK = 3
 
 
 @dataclasses.dataclass()
+class CallTracer:
+    """Define call/response traces"""
+
+    call: bool = False
+    fc: int = -1
+    address: int = -1
+    count: int = -1
+    data: bytes = b""
+
+
+@dataclasses.dataclass()
 class CallTypeMonitor:
     """Define Request/Response monitor"""
 
     active: bool = False
+    trace_response: bool = False
     range_start: int = -1
     range_stop: int = -1
     function: int = -1
@@ -56,7 +71,7 @@ class CallTypeMonitor:
 class CallTypeResponse:
     """Define Response manipulation"""
 
-    active: int = RESPONSE_NORMAL
+    active: int = RESPONSE_INACTIVE
     split: int = 0
     delay: int = 0
     junk_len: int = 10
@@ -146,6 +161,10 @@ class ModbusSimulatorServer:
         datastore = ModbusServerContext(slaves=self.datastore_context, single=True)
         comm = comm_class[server.pop("comm")]
         framer = framer_class[server.pop("framer")]
+        if "identity" in server:
+            server["identity"] = ModbusDeviceIdentification(
+                info_name=server["identity"]
+            )
         self.modbus_server = comm(framer=framer, context=datastore, **server)
 
         self.log_file = log_file
@@ -176,20 +195,28 @@ class ModbusSimulatorServer:
             "calls_json": [None, self.build_json_calls],
             "server_json": [None, self.build_json_server],
         }
+        self.submit = {
+            "Clear": self.action_clear,
+            "Stop": self.action_stop,
+            "Reset": self.action_reset,
+            "Add": self.action_add,
+            "Monitor": self.action_monitor,
+            "Set": self.action_set,
+            "Simulate": self.action_simulate,
+        }
         for entry in self.generator_html:  # pylint: disable=consider-using-dict-items
             html_file = os.path.join(self.web_path, "generator", entry)
             with open(html_file, encoding="utf-8") as handle:
                 self.generator_html[entry][0] = handle.read()
         self.refresh_rate = 0
         self.register_filter: List[int] = []
-        self.call_list: List[str] = []  # not implemented yet
+        self.call_list: List[tuple] = []
+        self.request_lookup = ServerDecoder.getFCdict()
         self.call_monitor = CallTypeMonitor()
         self.call_response = CallTypeResponse()
 
     async def start_modbus_server(self, app):
         """Start Modbus server as asyncio task."""
-        self.modbus_server.response_manipulator = self.server_response_manipulator
-        self.modbus_server.request_tracer = self.server_request_tracer
         try:
             if getattr(self.modbus_server, "start", None):
                 await self.modbus_server.start()
@@ -229,7 +256,7 @@ class ModbusSimulatorServer:
 
     async def handle_html_static(self, request):
         """Handle static html."""
-        if (page := request.path[1:]) == "":  # pylint: disable=compare-to-empty-string
+        if not (page := request.path[1:]):
             page = "index.html"
         file = os.path.join(self.web_path, page)
         try:
@@ -251,7 +278,7 @@ class ModbusSimulatorServer:
             )
         else:
             html = self.generator_html[page_type][0].replace("<!--REFRESH-->", "")
-        new_page = await self.generator_html[page_type][1](params, html)
+        new_page = self.generator_html[page_type][1](params, html)
         return web.Response(text=new_page, content_type="text/html")
 
     async def handle_json(self, request):
@@ -259,37 +286,19 @@ class ModbusSimulatorServer:
         page_type = request.path.split("/")[-1]
         params = await request.post()
         json_dict = self.generator_html[page_type][0].copy()
-        result = await self.generator_json[page_type][1](params, json_dict)
+        result = self.generator_json[page_type][1](params, json_dict)
         return web.Response(text=f"json build: {page_type} - {params} - {result}")
 
-    def helper_build_html_registers_submit(self, params):
-        """Build html register submit."""
-        result_txt = "ok"
-        register_foot = "NO registers in filter"
-        if params["submit"] == "Add":
-            res_ok, txt = self.helper_build_filter(params)
-            if not res_ok:
-                result_txt = txt
-            else:
-                register_foot = txt
-        elif params["submit"] == "Clear":
-            self.register_filter = []
-        elif params["submit"] == "Set":
-            if not (register := params["register"]):
-                result_txt = "Missing register"
-            else:
-                register = int(register)
-                if value := params["value"]:
-                    self.datastore_context.registers[register].value = int(value)
-                if bool(params.get("writeable", False)):
-                    self.datastore_context.registers[
-                        register
-                    ].access = not self.datastore_context.registers[register].access
-        return result_txt, register_foot
-
-    async def build_html_registers(self, params, html):
+    def build_html_registers(self, params, html):
         """Build html registers page."""
-        result_txt, register_foot = self.helper_build_html_registers_submit(params)
+        result_txt, foot = self.helper_build_html_submit(params)
+        if not result_txt:
+            result_txt = "ok"
+        if not foot:
+            if self.register_filter:
+                foot = f"{len(self.register_filter)} register(s) monitored"
+            else:
+                foot = "Nothing selected"
         register_types = "".join(
             f"<option value={reg_id}>{name}</option>"
             for name, reg_id in self.datastore_context.registerType_name_to_id.items()
@@ -319,88 +328,22 @@ class ModbusSimulatorServer:
         new_html = (
             html.replace("<!--REGISTER_ACTIONS-->", register_actions)
             .replace("<!--REGISTER_TYPES-->", register_types)
-            .replace("<!--REGISTER_FOOT-->", register_foot)
+            .replace("<!--REGISTER_FOOT-->", foot)
             .replace("<!--REGISTER_ROWS-->", rows)
             .replace("<!--RESULT-->", result_txt)
         )
         return new_html
 
-    async def build_html_log(self, _params, html):
-        """Build html log page."""
-        return html
-
-    def helper_build_html_calls_submit_monitor(self, params):
-        """Build html calls submit."""
-        self.call_monitor.range_start = params["range_start"]
-        if params["range_stop"] != -1:
-            self.call_monitor.range_stop = params["range_stop"]
-        else:
-            self.call_monitor.range_stop = self.call_monitor.range_start
-        if params["function"]:
-            self.call_monitor.function = int(params["function"])
-        else:
-            self.call_monitor.function = ""
-        self.call_monitor.hex = "show_hex" in params
-        self.call_monitor.decode = "show_decode" in params
-        self.call_monitor.active = True
-
-    def helper_build_html_calls_submit_set(self, params):
-        """Build html calls submit."""
-        self.call_response.active = int(params["response_type"])
-        if "response_split" in params:
-            if params["split_delay"]:
-                self.call_response.split = int(params["split_delay"])
-            else:
-                self.call_response.split = 1
-        else:
-            self.call_response.split = 0
-        if "response_cr" in params:
-            if params["response_cr_pct"]:
-                self.call_response.change_rate = int(params["response_cr_pct"])
-            else:
-                self.call_response.change_rate = 0
-        else:
-            self.call_response.change_rate = 0
-        if params["response_delay"]:
-            self.call_response.delay = int(params["response_delay"])
-        else:
-            self.call_response.delay = 0
-        if params["response_junk_datalen"]:
-            self.call_response.junk_len = int(params["response_junk_datalen"])
-        else:
-            self.call_response.junk_len = 0
-        self.call_response.error_response = int(params["response_error"])
-        if params["response_clear_after"]:
-            self.call_response.clear_after = int(params["response_clear_after"])
-        else:
-            self.call_response.clear_after = 1
-
-    def helper_build_html_calls_submit(self, params):
-        """Build html calls submit."""
-        call_foot = ""
-        if params["submit"] == "Clear":
-            self.call_list = []
-            call_foot = "Cleared list, monitoring active"
-        elif params["submit"] == "Stop":
-            self.call_monitor = CallTypeMonitor()
-            call_foot = "Stopped monitoring"
-        elif params["submit"] == "Reset":
-            self.call_response = CallTypeResponse()
-        return call_foot
-
-    async def build_html_calls(self, params, html):
+    def build_html_calls(self, params, html):
         """Build html calls page."""
-        call_foot = ""
-        if params["submit"] == "Monitor":
-            self.helper_build_html_calls_submit_monitor(params)
-        elif params["submit"] == "Set":
-            self.helper_build_html_calls_submit_set(params)
-        else:
-            call_foot = self.helper_build_html_calls_submit(params)
+        result_txt, foot = self.helper_build_html_submit(params)
+        if not foot:
+            foot = "Montitoring active" if self.call_monitor.active else "not active"
+        if not result_txt:
+            result_txt = "ok"
+
         function_error = ""
         for i, txt in (
-            (-1, "Any"),
-            (0, "None"),
             (1, "IllegalFunction"),
             (2, "IllegalAddress"),
             (3, "IllegalValue"),
@@ -423,20 +366,37 @@ class ModbusSimulatorServer:
             if self.call_monitor.range_stop != -1
             else ""
         )
-        html = (
-            html.replace("FUNCTION_RANGE_START", range_start_html)
+        function_codes = ""
+        for function in self.request_lookup.values():
+            selected = (
+                "selected"
+                if function.function_code == self.call_monitor.function
+                else ""
+            )
+            function_codes += f"<option value={function.function_code} {selected}>{function.function_code_name}</option>"
+        simulation_action = (
+            "ACTIVE" if self.call_response.active != RESPONSE_INACTIVE else ""
+        )
+
+        max_len = MAX_FILTER if self.call_monitor.active else 0
+        while len(self.call_list) > max_len:
+            del self.call_list[0]
+        call_rows = ""
+        for entry in reversed(self.call_list):
+            # req_obj = self.request_lookup[entry[1]]
+            call_rows += f"<tr><td>{entry.call} - {entry.fc}</td><td>{entry.address}</td><td>{entry.count}</td><td>{entry.data}</td></tr>"
+            # line += req_obj.funcion_code_name
+        new_html = (
+            html.replace("<!--SIMULATION_ACTIVE-->", simulation_action)
+            .replace("FUNCTION_RANGE_START", range_start_html)
             .replace("FUNCTION_RANGE_STOP", range_stop_html)
-            .replace("<!--FUNCTION_TYPES-->", function_error)
+            .replace("<!--FUNCTION_CODES-->", function_codes)
             .replace(
                 "FUNCTION_SHOW_HEX_CHECKED", "checked" if self.call_monitor.hex else ""
             )
             .replace(
                 "FUNCTION_SHOW_DECODED_CHECKED",
                 "checked" if self.call_monitor.decode else "",
-            )
-            .replace(
-                "<!--FUNCTION_MONITORING_ACTIVE-->",
-                '"MONITORING"' if self.call_monitor.active else "",
             )
             .replace(
                 "FUNCTION_RESPONSE_NORMAL_CHECKED",
@@ -470,40 +430,37 @@ class ModbusSimulatorServer:
             .replace(
                 "FUNCTION_RESPONSE_CLEAR_AFTER", str(self.call_response.clear_after)
             )
+            .replace("<!--FC_ROWS-->", call_rows)
+            .replace("<!--FC_FOOT-->", foot)
         )
+        return new_html
 
-        call_rows = ""
-        if not call_foot:
-            call_foot = "<b>Monitoring</b>" if self.call_monitor.active else ""
-        # <!--FC_ROWS-->
-        # <!--FC_FOOT-->
-        html = html.replace("<!--FC_ROWS-->", call_rows).replace(
-            "<!--FC_FOOT-->", call_foot
-        )
+    def build_html_log(self, _params, html):
+        """Build html log page."""
         return html
 
-    async def build_html_server(self, _params, html):
+    def build_html_server(self, _params, html):
         """Build html server page."""
         return html
 
-    async def build_json_log(self, params, json_dict):
-        """Build json log page."""
-        return f"json build log: {params} - {json_dict}"
-
-    async def build_json_registers(self, params, json_dict):
+    def build_json_registers(self, params, json_dict):
         """Build html registers page."""
         return f"json build registers: {params} - {json_dict}"
 
-    async def build_json_calls(self, params, json_dict):
+    def build_json_calls(self, params, json_dict):
         """Build html calls page."""
         return f"json build calls: {params} - {json_dict}"
 
-    async def build_json_server(self, params, json_dict):
+    def build_json_log(self, params, json_dict):
+        """Build json log page."""
+        return f"json build log: {params} - {json_dict}"
+
+    def build_json_server(self, params, json_dict):
         """Build html server page."""
         return f"json build server: {params} - {json_dict}"
 
-    def helper_build_filter(self, params):
-        """Build list of registers matching filter."""
+    def helper_build_html_submit(self, params):
+        """Build html register submit."""
         try:
             range_start = int(params.get("range_start", -1))
         except ValueError:
@@ -512,9 +469,34 @@ class ModbusSimulatorServer:
             range_stop = int(params.get("range_stop", range_start))
         except ValueError:
             range_stop = -1
-        reg_action = int(params["action"])
+        if (submit := params["submit"]) not in self.submit:
+            return None, None
+        return self.submit[submit](params, range_start, range_stop)
+
+    def action_clear(self, _params, _range_start, _range_stop):
+        """Clear register filter."""
+        self.register_filter = []
+        return None, None
+
+    def action_stop(self, _params, _range_start, _range_stop):
+        """Stop call monitoring."""
+        self.call_monitor = CallTypeMonitor()
+        self.modbus_server.response_manipulator = None
+        self.modbus_server.request_tracer = None
+        return None, "Stopped monitoring"
+
+    def action_reset(self, _params, _range_start, _range_stop):
+        """Reset call simulation."""
+        self.call_response = CallTypeResponse()
+        if not self.call_monitor.active:
+            self.modbus_server.response_manipulator = self.server_response_manipulator
+        return None, None
+
+    def action_add(self, params, range_start, range_stop):
+        """Build list of registers matching filter."""
+        reg_action = int(params.get("action", -1))
         reg_writeable = "writeable" in params
-        reg_type = int(params["type"])
+        reg_type = int(params.get("type", -1))
         filter_updated = 0
         if range_start != -1:
             steps = range(range_start, range_stop + 1)
@@ -534,18 +516,67 @@ class ModbusSimulatorServer:
             filter_updated += 1
             if len(self.register_filter) >= MAX_FILTER:
                 self.register_filter.sort()
-                return True, f"Max. filter size {MAX_FILTER} exceeded!"
+                return None, f"Max. filter size {MAX_FILTER} exceeded!"
         self.register_filter.sort()
-        return True, (
-            f"Added {filter_updated} registers."
-            if filter_updated
-            else "NO registers added."
-        )
+        return None, None
 
-    def helper_list_response(self, response):
-        """List response"""
-        # JAN
-        return response
+    def action_monitor(self, params, range_start, range_stop):
+        """Start monitoring calls."""
+        self.call_monitor.range_start = range_start
+        self.call_monitor.range_stop = range_stop
+        self.call_monitor.function = (
+            int(params["function"]) if params["function"] else ""
+        )
+        self.call_monitor.hex = "show_hex" in params
+        self.call_monitor.decode = "show_decode" in params
+        self.call_monitor.active = True
+        self.modbus_server.response_manipulator = self.server_response_manipulator
+        self.modbus_server.request_tracer = self.server_request_tracer
+        return None, None
+
+    def action_set(self, params, _range_start, _range_stop):
+        """Set register value."""
+        if not (register := params["register"]):
+            return "Missing register", None
+        register = int(register)
+        if value := params["value"]:
+            self.datastore_context.registers[register].value = int(value)
+        if bool(params.get("writeable", False)):
+            self.datastore_context.registers[register].access = True
+        return None, None
+
+    def action_simulate(self, params, _range_start, _range_stop):
+        """Simulate responses."""
+        self.call_response.active = int(params["response_type"])
+        if "response_split" in params:
+            if params["split_delay"]:
+                self.call_response.split = int(params["split_delay"])
+            else:
+                self.call_response.split = 1
+        else:
+            self.call_response.split = 0
+        if "response_cr" in params:
+            if params["response_cr_pct"]:
+                self.call_response.change_rate = int(params["response_cr_pct"])
+            else:
+                self.call_response.change_rate = 0
+        else:
+            self.call_response.change_rate = 0
+        if params["response_delay"]:
+            self.call_response.delay = int(params["response_delay"])
+        else:
+            self.call_response.delay = 0
+        if params["response_junk_datalen"]:
+            self.call_response.junk_len = int(params["response_junk_datalen"])
+        else:
+            self.call_response.junk_len = 0
+        self.call_response.error_response = int(params["response_error"])
+        if params["response_clear_after"]:
+            self.call_response.clear_after = int(params["response_clear_after"])
+        else:
+            self.call_response.clear_after = 1
+        self.modbus_server.response_manipulator = self.server_response_manipulator
+        return None, None
 
     def server_response_manipulator(self, response):
         """Manipulate responses.
@@ -556,49 +587,72 @@ class ModbusSimulatorServer:
         - response, either original or modified
         - skip_encoding, signals whether or not to encode the response
         """
-        if self.call_response.delay:
-            Log.warning(
-                "Delaying response by {}s for all incoming requests",
-                self.call_response.delay,
+        if self.call_monitor.trace_response:
+            tracer = CallTracer(
+                call=False,
+                fc=response.function_code,
+                address=response.address if hasattr(response, "address") else -1,
+                count=response.count if hasattr(response, "count") else -1,
+                data="-",
             )
-            time.sleep(self.call_response.delay)  # change to async
+            self.call_list.append(tracer)
+            self.call_monitor.trace_response = False
 
-        if self.call_response.active == RESPONSE_NORMAL:
-            return self.helper_list_response(response), False
+        if not self.call_response.active == RESPONSE_INACTIVE:
+            return response, False
 
-        if self.call_response.clear_after:
-            self.call_response.clear_after -= 1
-            if not self.call_response.clear_after:
-                Log.info("Resetting manipulator due to clear_after")
-                self.call_response = CallTypeResponse
-                return self.helper_list_response(response), False
-
-        if self.call_response.active == RESPONSE_ERROR:
+        skip_encoding = False
+        if self.call_response.active == RESPONSE_EMPTY:
+            Log.warning("Sending empty response")
+            response.should_respond = False
+        elif self.call_response.active == RESPONSE_NORMAL:
+            if self.call_response.delay:
+                Log.warning(
+                    "Delaying response by {}s for all incoming requests",
+                    self.call_response.delay,
+                )
+                time.sleep(self.call_response.delay)  # change to async
+            else:
+                pass
+                # self.call_response.change_rate
+                # self.call_response.split
+        elif self.call_response.active == RESPONSE_ERROR:
             Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(
                 response.function_code, self.call_response.error_response
             )
             err_response.transaction_id = response.transaction_id
             err_response.unit_id = response.unit_id
-            return self.helper_list_response(err_response), False
-
-        if self.call_response.active == RESPONSE_EMPTY:
-            Log.warning("Sending empty response")
-            response.should_respond = False
-            return self.helper_list_response(response), False
-
-        if self.call_response.active == RESPONSE_JUNK:
+        elif self.call_response.active == RESPONSE_JUNK:
             response = os.urandom(self.call_response.junk_len)
-            return self.helper_list_response(response), True
+            skip_encoding = True
 
-        # JAN REMEMBER SPLIT
-        return self.helper_list_response(response), False
+        self.call_response.clear_after -= 1
+        if self.call_response.clear_after <= 0:
+            Log.info("Resetting manipulator due to clear_after")
+            self.call_response.active = RESPONSE_EMPTY
+        return response, skip_encoding
 
-    def server_request_tracer(self, _request, *_addr):
+    def server_request_tracer(self, request, *_addr):
         """Trace requests.
 
         All server requests passes this filter before being handled.
         """
-        if self.call_monitor.active:
-            # build list box
-            pass
+        if self.call_monitor.function not in {-1, request.function_code}:
+            return
+        address = (request.address if hasattr(request, "address") else -1,)
+        if self.call_monitor.range_start != -1 and address != -1:
+            if (
+                self.call_monitor.range_start > address
+                or self.call_monitor.range_stop < address
+            ):
+                return
+        tracer = CallTracer(
+            call=True,
+            fc=request.function_code,
+            address=address,
+            count=request.count if hasattr(request, "count") else -1,
+            data="-",
+        )
+        self.call_list.append(tracer)
+        self.call_monitor.trace_response = True

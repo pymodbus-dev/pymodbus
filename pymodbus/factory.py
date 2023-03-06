@@ -113,7 +113,7 @@ class ServerDecoder:
     To add more implemented functions, simply add them to the list
     """
 
-    function_table = [
+    __function_table = [
         ReadHoldingRegistersRequest,
         ReadDiscreteInputsRequest,
         ReadInputRegistersRequest,
@@ -155,10 +155,15 @@ class ServerDecoder:
         ReadDeviceInformationRequest,
     ]
 
+    @classmethod
+    def getFCdict(cls):
+        """Build function code - class list."""
+        return {f.function_code: f for f in cls.__function_table}
+
     def __init__(self):
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.function_table}
-        self.__lookup = {f.function_code: f for f in self.function_table}
+        functions = {f.function_code for f in self.__function_table}
+        self.__lookup = self.getFCdict()
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f

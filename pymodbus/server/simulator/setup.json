@@ -107,11 +107,11 @@
                 {"addr": 2, "value": 7}
             ],
             "uint16": [
-                {"addr": 3, "value": 17001},
+                {"addr": 3, "value": 17001, "action": null},
                 2100
             ],
             "uint32": [
-                {"addr": [4, 5], "value": 617001},
+                {"addr": [4, 5], "value": 617001, "action": null},
                 [3037, 3038]
             ],
             "float32": [

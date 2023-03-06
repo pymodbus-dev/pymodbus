@@ -14,7 +14,9 @@ __author__ = "Galen Collins, Jan Iversen"
 __maintainer__ = "dhoomakethu, janiversen"
 
 
-def pymodbus_apply_logging_config(level: int = WARNING, **config_overrides) -> None:
+def pymodbus_apply_logging_config(
+    level: int = WARNING, **config_overrides: dict
+) -> None:
     """Apply basic logging configuration.
 
     Please call this function to format logging appropriately when opening

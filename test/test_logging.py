@@ -1,6 +1,6 @@
 """Test logging."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,15 +17,15 @@ class TestLogging:
         assert Log.LOG_LEVEL == Log.WARNING
 
     @patch("logging.basicConfig")
-    def test_nondefaults(self, mock_basicConfig: MagicMock):
+    def test_nondefaults(self, mock_basic_config: MagicMock):
         """Test it's possible to override the logging config."""
-        datefmt = "%Y-%m-%d %H:%M:%S"
+        nondefault_datefmt = "%Y-%m-%d %H:%M:%S"
 
-        pymodbus_apply_logging_config(datefmt=datefmt)
+        pymodbus_apply_logging_config(datefmt=nondefault_datefmt)
 
-        mock_basicConfig.assert_called_once_with(
+        mock_basic_config.assert_called_once_with(
             format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
-            datefmt=datefmt,
+            datefmt=nondefault_datefmt,
         )
 
     def test_log_set_level(self):

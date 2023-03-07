@@ -500,3 +500,99 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(
             pdu_mei.ReadDeviceInformationRequest(read_code, object_id, **kwargs)
         )
+
+    # ------------------
+    # Converter methods
+    # ------------------
+
+    @classmethod
+    def convert_registers_to_int(cls, registers: list[int]) -> int:
+        """Convert registers to int.
+
+        :param registers: list of registers received from e.g. read_holding_registers()
+        :returns: int16 (1 reg), int32 (2 reg), int64 (4 reg)
+        :raises ModbusException: when size of registers is not 1, 2 or 4
+        """
+        if len(registers) not in {1, 2, 4}:
+            raise ModbusException("Illegal size of register array, use 1, 2 or 4")
+
+        return 0
+
+    @classmethod
+    def convert_int32_to_registers(cls, value: int) -> list[int]:
+        """Convert int to 2 registers (32 bit).
+
+        :param value: integer to be converted:
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+        value_bytes = int.to_bytes(value, 4, "big")
+        return [
+            int.from_bytes(value_bytes[:2], "big"),
+            int.from_bytes(value_bytes[-2:], "big"),
+        ]
+
+    @classmethod
+    def convert_int64_to_registers(cls, value: int) -> list[int]:
+        """Convert int to 4 registers (64 bits).
+
+        :param value: integer to be converted:
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+        return 0
+
+    @classmethod
+    def convert_registers_to_float(cls, registers: list[int]) -> float:
+        """Convert registers to float.
+
+        :param registers: list of registers received from e.g. read_holding_registers():
+        :returns: float32 (2 reg), float64 (4 reg)
+        :raises ModbusException: when size of registers is not 2 or 4
+        """
+        if len(registers) not in {2, 4}:
+            raise ModbusException("Illegal size of register array, use 2 or 4")
+
+        return 0
+
+    @classmethod
+    def convert_float32_to_registers(cls, value: float) -> list[int]:
+        """Convert float to 2 registers (32 bit).
+
+        :param value: float to be converted:
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+        return 0
+
+    @classmethod
+    def convert_float64_to_registers(cls, value: float) -> list[int]:
+        """Convert float to 4 registers (64 bit).
+
+        :param value: float to be converted:
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+        return 0
+
+    @classmethod
+    def convert_registers_to_string(
+        self, registers: list[int], encoding: str = "utf-8"
+    ) -> str:
+        """Convert registers to float.
+
+        :param registers: list of registers received from e.g. read_holding_registers():
+        :param encoding: (optional) encoding to use, default is utf-8
+        :returns: string
+        """
+
+        return 0
+
+    @classmethod
+    def convert_string_to_registers(
+        self, value: str, encoding: str = "utf-8"
+    ) -> list[int]:
+        """Convert string to registers.
+
+        :param value: string to be converted:
+        :param encoding: (optional) encoding to use, default is utf-8
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+
+        return 0

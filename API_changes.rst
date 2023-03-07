@@ -3,6 +3,11 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.3.0
+-------------
+- Clients have an optional parameter: on_reconnect_callback, Function that will be called just before a reconnection attempt.
+
+-------------
 Version 3.2.0
 -------------
 - helper to convert values in mixin: convert_from_registers, convert_to_registers

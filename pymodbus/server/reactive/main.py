@@ -368,7 +368,7 @@ class ReactiveServer:
         vendor_url="https://github.com/pymodbus-dev/pymodbus/",
         product_name="Pymodbus Server",
         model_name="Reactive Server",
-        version=pymodbus_version.short(),
+        version=pymodbus_version,
     ):
         """Create modbus identity.
 
@@ -397,7 +397,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: Union[list[int]] | int = [1],
+        unit: list[int] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,

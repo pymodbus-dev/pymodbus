@@ -12,6 +12,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.exceptions import ParameterException
 from pymodbus.repl.client.completer import (
     CmdCompleter,
@@ -25,7 +26,6 @@ from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
-from pymodbus import __version__ as pymodbus_version
 
 
 _logger = logging.getLogger()

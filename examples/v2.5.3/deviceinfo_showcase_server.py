@@ -19,6 +19,7 @@ from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartTcpServer
 
+
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #

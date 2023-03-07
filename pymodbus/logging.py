@@ -2,10 +2,10 @@
 
 Released under the the BSD license
 """
-from typing import Union
 import logging
 from binascii import b2a_hex
 from logging import NullHandler as __null
+from typing import Union
 
 from pymodbus.utilities import hexlify_packets
 
@@ -16,7 +16,9 @@ from pymodbus.utilities import hexlify_packets
 logging.getLogger(__name__).addHandler(__null())
 
 
-def pymodbus_apply_logging_config(level: Union[str, int] = logging.DEBUG, log_file_name: str = None):
+def pymodbus_apply_logging_config(
+    level: Union[str, int] = logging.DEBUG, log_file_name: str = None
+):
     """Apply basic logging configuration used by default by Pymodbus maintainers.
 
     :param level: (optional) set log level, if not set it is inherited.
@@ -42,7 +44,9 @@ class Log:
         if level == logging.NOTSET:
             level = cls._logger.getEffectiveLevel()
         log_stream_handler = logging.StreamHandler()
-        log_formatter = logging.Formatter("%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s")
+        log_formatter = logging.Formatter(
+            "%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s"
+        )
         log_stream_handler.setFormatter(log_formatter)
         cls._logger.addHandler(log_stream_handler)
         if log_file_name:

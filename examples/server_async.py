@@ -32,6 +32,7 @@ import logging
 import os
 
 from examples.helper import get_commandline
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -49,7 +50,6 @@ from pymodbus.server import (
     StartAsyncTlsServer,
     StartAsyncUdpServer,
 )
-from pymodbus import __version__ as pymodbus_version
 
 
 _logger = logging.getLogger()

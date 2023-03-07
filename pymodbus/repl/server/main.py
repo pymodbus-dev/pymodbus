@@ -1,6 +1,7 @@
 """Repl server main."""
 import asyncio
 import json
+import logging
 import sys
 from enum import Enum
 from pathlib import Path
@@ -106,7 +107,7 @@ def server(
     ),
 ):
     """Run server code."""
-    log_level = Log.DEBUG if verbose else Log.ERROR
+    log_level = logging.DEBUG if verbose else logging.ERROR
     pymodbus_apply_logging_config(log_level)
 
     ctx.obj = {

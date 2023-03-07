@@ -12,6 +12,7 @@ import logging
 
 from custom_message import CustomModbusRequest
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -22,7 +23,6 @@ from pymodbus.datastore import (
 # from pymodbus.server.asynchronous import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartTcpServer
-from pymodbus import __version__ as pymodbus_version
 
 
 # from pymodbus.transaction import (

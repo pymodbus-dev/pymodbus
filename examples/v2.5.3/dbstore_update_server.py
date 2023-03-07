@@ -17,15 +17,14 @@ import asyncio
 import logging
 import random
 
-from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
-from pymodbus.datastore.database import SqlSlaveContext
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server import StartAsyncTcpServer
-
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
 from pymodbus import __version__ as pymodbus_version
+from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
+from pymodbus.datastore.database import SqlSlaveContext
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.server import StartAsyncTcpServer
 
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer

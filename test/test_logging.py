@@ -1,5 +1,6 @@
 """Test datastore."""
 import logging
+
 import pytest
 
 from pymodbus import pymodbus_apply_logging_config

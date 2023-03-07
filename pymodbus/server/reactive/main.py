@@ -22,6 +22,7 @@ except ImportError:
     )
     sys.exit(1)
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.datastore.store import (
     BaseModbusDataBlock,
@@ -47,7 +48,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus import __version__ as pymodbus_version
 
 
 SERVER_MAPPER = {

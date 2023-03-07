@@ -1,8 +1,9 @@
 """Test version."""
 import unittest
 
+from pymodbus import __version__ as pymodbus_version
+from pymodbus import __version_full__ as pymodbus_version_full
 from pymodbus.version import Version, version
-from pymodbus import __version__ as pymodbus_version, __version_full__ as pymodbus_version_full
 
 
 class ModbusVersionTest(unittest.TestCase):

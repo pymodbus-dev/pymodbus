@@ -47,7 +47,7 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.version import version as pymodbus_version
+from pymodbus import __version__ as pymodbus_version
 
 
 SERVER_MAPPER = {

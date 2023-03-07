@@ -87,8 +87,3 @@ Extra functions
     :members:
     :undoc-members:
     :show-inheritance:
-
-.. automodule:: pymodbus.version
-    :members:
-    :undoc-members:
-    :show-inheritance:

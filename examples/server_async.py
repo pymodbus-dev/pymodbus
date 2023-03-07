@@ -49,7 +49,7 @@ from pymodbus.server import (
     StartAsyncTlsServer,
     StartAsyncUdpServer,
 )
-from pymodbus.version import version
+from pymodbus import __version__ as pymodbus_version
 
 
 _logger = logging.getLogger()
@@ -130,7 +130,7 @@ def setup_server(args):
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
     return args

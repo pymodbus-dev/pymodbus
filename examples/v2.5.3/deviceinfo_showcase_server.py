@@ -20,12 +20,6 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartTcpServer
 
 # --------------------------------------------------------------------------- #
-# import the various server implementations
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
-
-
-# --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
 FORMAT = (
@@ -57,7 +51,7 @@ def run_server():
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
 

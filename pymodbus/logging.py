@@ -2,7 +2,7 @@
 
 Released under the the BSD license
 """
-
+from typing import Union
 import logging
 from binascii import b2a_hex
 from logging import NullHandler as __null
@@ -16,30 +16,46 @@ from pymodbus.utilities import hexlify_packets
 logging.getLogger(__name__).addHandler(__null())
 
 
+def pymodbus_apply_logging_config(level: Union[str, int] = logging.DEBUG, log_file_name: str = None):
+    """Apply basic logging configuration used by default by Pymodbus maintainers.
+
+    :param level: (optional) set log level, if not set it is inherited.
+    :param log_file_name: (optional) log additional to file
+
+    Please call this function to format logging appropriately when opening issues.
+    """
+    Log.apply_logging_config(level, log_file_name)
+
+
 class Log:
     """Class to hide logging complexity.
 
     :meta private:
     """
 
-    CRITICAL = logging.CRITICAL
-    ERROR = logging.ERROR
-    WARNING = logging.WARNING
-    DEBUG = logging.DEBUG
-    INFO = logging.INFO
-
-    LOG_LEVEL = logging.WARNING
+    LOG_LEVEL = logging.NOTSET
     _logger = logging.getLogger(__name__)
 
     @classmethod
-    def apply_logging_config(cls, level=logging.WARNING):
+    def apply_logging_config(cls, level, log_file_name):
         """Apply basic logging configuration"""
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s",
-            datefmt="%H:%M:%S",
-        )
+        if level == logging.NOTSET:
+            level = cls._logger.getEffectiveLevel()
+        log_stream_handler = logging.StreamHandler()
+        log_formatter = logging.Formatter("%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s")
+        log_stream_handler.setFormatter(log_formatter)
+        cls._logger.addHandler(log_stream_handler)
+        if log_file_name:
+            log_file_handler = logging.FileHandler(log_file_name)
+            log_file_handler.setFormatter(log_formatter)
+            cls._logger.addHandler(log_file_handler)
+        cls.setLevel(level)
+
+    @classmethod
+    def setLevel(cls, level):
+        """Apply basic logging level"""
         cls._logger.setLevel(level)
-        cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
+        cls.LOG_LEVEL = level
 
     @classmethod
     def build_msg(cls, txt, *args):
@@ -70,29 +86,39 @@ class Log:
     @classmethod
     def info(cls, txt, *args):
         """Log info messagees."""
+        if cls.LOG_LEVEL == logging.NOTSET:
+            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
         if logging.INFO >= cls.LOG_LEVEL:
             cls._logger.info(cls.build_msg(txt, *args))
 
     @classmethod
     def debug(cls, txt, *args):
         """Log debug messagees."""
+        if cls.LOG_LEVEL == logging.NOTSET:
+            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
         if logging.DEBUG >= cls.LOG_LEVEL:
             cls._logger.debug(cls.build_msg(txt, *args))
 
     @classmethod
     def warning(cls, txt, *args):
         """Log warning messagees."""
+        if cls.LOG_LEVEL == logging.NOTSET:
+            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
         if logging.WARNING >= cls.LOG_LEVEL:
             cls._logger.warning(cls.build_msg(txt, *args))
 
     @classmethod
     def error(cls, txt, *args):
         """Log error messagees."""
+        if cls.LOG_LEVEL == logging.NOTSET:
+            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
         if logging.ERROR >= cls.LOG_LEVEL:
             cls._logger.error(cls.build_msg(txt, *args))
 
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messagees."""
+        if cls.LOG_LEVEL == logging.NOTSET:
+            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
         if logging.CRITICAL >= cls.LOG_LEVEL:
             cls._logger.critical(cls.build_msg(txt, *args))

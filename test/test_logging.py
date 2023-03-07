@@ -1,4 +1,5 @@
 """Test datastore."""
+import logging
 import pytest
 
 from pymodbus import pymodbus_apply_logging_config
@@ -10,15 +11,24 @@ class TestLogging:
 
     def test_log_our_default(self):
         """Test default logging"""
+        logging.getLogger().setLevel(logging.WARNING)
+        Log.setLevel(logging.NOTSET)
+        Log.info("test")
+        assert Log.LOG_LEVEL == logging.WARNING
+        Log.setLevel(logging.NOTSET)
+        logging.getLogger().setLevel(logging.INFO)
+        Log.info("test")
+        assert Log.LOG_LEVEL == logging.INFO
+        Log.setLevel(logging.NOTSET)
         pymodbus_apply_logging_config()
-        assert Log.LOG_LEVEL == Log.WARNING
+        assert Log.LOG_LEVEL == logging.DEBUG
 
     def test_log_set_level(self):
         """Test default logging"""
-        pymodbus_apply_logging_config(Log.DEBUG)
-        assert Log.LOG_LEVEL == Log.DEBUG
-        pymodbus_apply_logging_config(Log.INFO)
-        assert Log.LOG_LEVEL == Log.INFO
+        pymodbus_apply_logging_config(logging.DEBUG)
+        assert Log.LOG_LEVEL == logging.DEBUG
+        pymodbus_apply_logging_config(logging.INFO)
+        assert Log.LOG_LEVEL == logging.INFO
 
     def test_log_simple(self):
         """Test simple string"""

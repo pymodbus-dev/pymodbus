@@ -21,8 +21,8 @@ from pymodbus.datastore import (
 # from pymodbus.server.asynchronous import StartUdpServer
 # from pymodbus.server.asynchronous import StartSerialServer
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server.asynchronous import StartTcpServer
-from pymodbus.version import version
+from pymodbus.server import StartTcpServer
+from pymodbus import __version__ as pymodbus_version
 
 
 # from pymodbus.transaction import (
@@ -121,7 +121,7 @@ def run_async_server():
         info_name={
             "VendorName": "Pymodbus",
             "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
             "ProductCode": "PM",
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",

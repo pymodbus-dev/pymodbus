@@ -3,20 +3,18 @@
 Released under the the BSD license
 """
 
-from logging import WARNING
+from pymodbus.version import version
+from pymodbus.logging import pymodbus_apply_logging_config
 
-import pymodbus.version as __version
-from pymodbus.logging import Log
+__version__ = version.short()
+__version_full__ = str(version)
 
+# --------------------------------------------------------------------------- #
+# Exported symbols
+# --------------------------------------------------------------------------- #
 
-__version__ = __version.version.short()
-__author__ = "Galen Collins, Jan Iversen"
-__maintainer__ = "dhoomakethu, janiversen"
-
-
-def pymodbus_apply_logging_config(level=WARNING):
-    """Apply basic logging configuration used by default by Pymodbus maintainers.
-
-    Please call this function to format logging appropriately when opening issues.
-    """
-    Log.apply_logging_config(level)
+__all__ = [
+    "pymodbus_apply_logging_config",
+    "__version__",
+    "__version_full__",
+]

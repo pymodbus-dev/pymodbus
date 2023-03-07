@@ -10,7 +10,6 @@ import sys
 import threading
 import time
 from enum import Enum
-from typing import Union
 
 
 try:
@@ -22,6 +21,7 @@ except ImportError:
     )
     sys.exit(1)
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.datastore.store import (
     BaseModbusDataBlock,
@@ -47,7 +47,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.version import version as pymodbus_version
 
 
 SERVER_MAPPER = {
@@ -368,7 +367,7 @@ class ReactiveServer:
         vendor_url="https://github.com/pymodbus-dev/pymodbus/",
         product_name="Pymodbus Server",
         model_name="Reactive Server",
-        version=pymodbus_version.short(),
+        version=pymodbus_version,
     ):
         """Create modbus identity.
 
@@ -397,7 +396,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: Union[list[int]] | int = [1],
+        unit: list[int] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,

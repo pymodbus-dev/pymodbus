@@ -11,7 +11,7 @@ import sys
 
 from recommonmark.transform import AutoStructify
 
-from pymodbus import __version__
+from pymodbus import __version__ as pymodbus_version
 
 
 parent_dir = os.path.abspath(os.pardir)
@@ -26,8 +26,8 @@ master_doc = "index"
 project = "PyModbus"
 copyright = "See license"
 author = "Open Source volunteers"
-version = __version__
-release = __version__
+version = pymodbus_version
+release = pymodbus_version
 language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"

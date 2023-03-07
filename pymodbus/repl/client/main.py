@@ -12,6 +12,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.python import PythonLexer
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.exceptions import ParameterException
 from pymodbus.repl.client.completer import (
     CmdCompleter,
@@ -25,7 +26,6 @@ from pymodbus.transaction import (
     ModbusRtuFramer,
     ModbusSocketFramer,
 )
-from pymodbus.version import version
 
 
 _logger = logging.getLogger()
@@ -38,7 +38,7 @@ __________          _____             .___  __________              .__
  |    |    \___  /    Y    (  <_> ) /_/ |    |    |   \  ___/|  |_> >  |__
  |____|    / ____\____|__  /\____/\____ | /\ |____|_  /\___  >   __/|____/
            \/            \/            \/ \/        \/     \/|__|
-                                        v1.3.0 - {version}
+                                        v1.3.0 - {pymodbus_version}
 ----------------------------------------------------------------------------
 """
 
@@ -238,7 +238,7 @@ def cli(client):  # pylint: disable=too-complex
 
 
 @click.group("pymodbus-repl")
-@click.version_option(str(version), message=TITLE)
+@click.version_option(str(pymodbus_version), message=TITLE)
 @click.option("--verbose", is_flag=True, default=False, help="Verbose logs")
 @click.option(
     "--broadcast-support",

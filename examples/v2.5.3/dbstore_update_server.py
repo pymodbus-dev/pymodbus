@@ -17,15 +17,14 @@ import asyncio
 import logging
 import random
 
+# --------------------------------------------------------------------------- #
+# import the modbus libraries we need
+# --------------------------------------------------------------------------- #
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext
 from pymodbus.datastore.database import SqlSlaveContext
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
-
-# --------------------------------------------------------------------------- #
-# import the modbus libraries we need
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
 
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
@@ -89,7 +88,7 @@ async def run_dbstore_update_server():
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
 

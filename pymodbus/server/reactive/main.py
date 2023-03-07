@@ -10,7 +10,6 @@ import sys
 import threading
 import time
 from enum import Enum
-from typing import Union
 
 
 try:

@@ -88,7 +88,7 @@
 # Modbus RTU Messages
 # ------------------------------------------------------------
 # [Address ][ Function Code] [ Data ][ CRC ]
-#  1b         1b               Nb      2b   
+#  1b         1b               Nb      2b
 #
 # ./message-parser -b -p rtu -f messages
 # ------------------------------------------------------------

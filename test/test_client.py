@@ -519,3 +519,31 @@ def test_client_tls_connect():
         mock_method.side_effect = socket.error()
         client = lib_client.ModbusTlsClient("127.0.0.1")
         assert not client.connect()
+
+
+@pytest.mark.parametrize(
+    "datatype,value,registers",
+    [
+        (ModbusClientMixin.DATATYPE.INT16, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.INT16, -27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.INT32, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.INT32, 32145678, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.INT64, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.UINT64, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.FLOAT32, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.FLOAT32, 3.14159265358979, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.FLOAT64, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.FLOAT64, 3.14159265358979, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.STRING, 27123, [0x0000, 0x0001]),
+    ],
+)
+def test_client_mixin_convert(datatype, registers, value):
+    """Test converter methods."""
+    if datatype:
+        return
+    regs = ModbusClientMixin.convert_to_registers(value, datatype)
+    result = ModbusClientMixin.convert_from_registers(registers, datatype)
+    assert regs == registers
+    assert result == value

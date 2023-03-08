@@ -1,4 +1,6 @@
 """Modbus Client Common."""
+import struct
+from enum import Enum
 from typing import Any, List, Tuple, Union
 
 import pymodbus.bit_read_message as pdu_bit_read
@@ -369,7 +371,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         address: int,
         values: Union[List[bool], bool],
         slave: int = 0,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> ModbusResponse:
         """Write coils (code 0x0F).
 
@@ -432,7 +434,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         address: int = 0x0000,
         and_mask: int = 0xFFFF,
         or_mask: int = 0x0000,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> ModbusResponse:
         """Mask write register (code 0x16).
 
@@ -453,7 +455,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         write_address: int = 0,
         values: Union[List[int], int] = 0,
         slave: int = 0,
-        **kwargs
+        **kwargs,
     ) -> ModbusResponse:
         """Read/Write registers (code 0x17).
 
@@ -472,7 +474,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
                 write_address=write_address,
                 values=values,
                 unit=slave,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -505,94 +507,64 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     # Converter methods
     # ------------------
 
+    class DATATYPE(Enum):
+        """Datatype enum for convert_* calls."""
+
+        INT16 = "h"
+        UINT16 = "H"
+        INT32 = "i"
+        UINT32 = "I"
+        INT64 = "q"
+        UINT64 = "Q"
+        FLOAT32 = "f"
+        FLOAT64 = "d"
+        STRING = "s"
+
+    _datatype_register_count = {
+        "h": 1,
+        "H": 1,
+        "i": 2,
+        "I": 2,
+        "q": 4,
+        "Q": 4,
+        "f": 2,
+        "d": 4,
+        "s": 0,
+    }
+
     @classmethod
-    def convert_registers_to_int(cls, registers: list[int]) -> int:
-        """Convert registers to int.
+    def convert_from_registers(
+        cls, registers: list[int], data_type: DATATYPE
+    ) -> Union[int, float, str]:
+        """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
-        :returns: int16 (1 reg), int32 (2 reg), int64 (4 reg)
+        :param data_type: data type to convert to
+        :returns: int, float or str depending on "to_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
-        if len(registers) not in {1, 2, 4}:
-            raise ModbusException("Illegal size of register array, use 1, 2 or 4")
-
-        return 0
+        byte_list = [x.to_bytes(2, "big") for x in registers]
+        if data_type == cls.DATATYPE.STRING:
+            return str(byte_list)
+        if len(registers) != cls._datatype_register_count[str(data_type)]:
+            raise ModbusException(
+                f"Illegal size ({len(registers)}) of register array, cannot convert!"
+            )
+        return struct.unpack(f">{data_type}", byte_list)[0]
 
     @classmethod
-    def convert_int32_to_registers(cls, value: int) -> list[int]:
-        """Convert int to 2 registers (32 bit).
+    def convert_to_registers(
+        cls, value: Union[int, float, str], data_type: DATATYPE
+    ) -> list[int]:
+        """Convert int/float/str to registers (16/32/64 bit).
 
-        :param value: integer to be converted:
+        :param value: value to be converted:
+        :param data_type: data type to convert to
         :returns: List of registers, can be used directly in e.g. write_registers()
         """
-        value_bytes = int.to_bytes(value, 4, "big")
+        # byte_list = struct.pack(f">{data_type[1]}", value)
+        value_bytes = int.to_bytes(value, 4, data_type)
         return [
             int.from_bytes(value_bytes[:2], "big"),
             int.from_bytes(value_bytes[-2:], "big"),
         ]
-
-    @classmethod
-    def convert_int64_to_registers(cls, value: int) -> list[int]:
-        """Convert int to 4 registers (64 bits).
-
-        :param value: integer to be converted:
-        :returns: List of registers, can be used directly in e.g. write_registers()
-        """
-        return 0
-
-    @classmethod
-    def convert_registers_to_float(cls, registers: list[int]) -> float:
-        """Convert registers to float.
-
-        :param registers: list of registers received from e.g. read_holding_registers():
-        :returns: float32 (2 reg), float64 (4 reg)
-        :raises ModbusException: when size of registers is not 2 or 4
-        """
-        if len(registers) not in {2, 4}:
-            raise ModbusException("Illegal size of register array, use 2 or 4")
-
-        return 0
-
-    @classmethod
-    def convert_float32_to_registers(cls, value: float) -> list[int]:
-        """Convert float to 2 registers (32 bit).
-
-        :param value: float to be converted:
-        :returns: List of registers, can be used directly in e.g. write_registers()
-        """
-        return 0
-
-    @classmethod
-    def convert_float64_to_registers(cls, value: float) -> list[int]:
-        """Convert float to 4 registers (64 bit).
-
-        :param value: float to be converted:
-        :returns: List of registers, can be used directly in e.g. write_registers()
-        """
-        return 0
-
-    @classmethod
-    def convert_registers_to_string(
-        self, registers: list[int], encoding: str = "utf-8"
-    ) -> str:
-        """Convert registers to float.
-
-        :param registers: list of registers received from e.g. read_holding_registers():
-        :param encoding: (optional) encoding to use, default is utf-8
-        :returns: string
-        """
-
-        return 0
-
-    @classmethod
-    def convert_string_to_registers(
-        self, value: str, encoding: str = "utf-8"
-    ) -> list[int]:
-        """Convert string to registers.
-
-        :param value: string to be converted:
-        :param encoding: (optional) encoding to use, default is utf-8
-        :returns: List of registers, can be used directly in e.g. write_registers()
-        """
-
-        return 0

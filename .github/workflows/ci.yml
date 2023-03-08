@@ -37,11 +37,8 @@ jobs:
           - name: flake8
             cmd: flake8
             type: lint
-          - name: isort
-            cmd: isort --check .
-            type: lint
-          - name: black
-            cmd: black --check --safe --quiet examples/ pymodbus/ test/
+          - name: precommit (isort and black)
+            cmd: pre-commit run --all-files
             type: lint
           - name: docs
             cmd: make -C doc/ html

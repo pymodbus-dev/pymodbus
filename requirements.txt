@@ -52,14 +52,12 @@ sphinx-rtd-theme==1.1.1
 # -------------------------------------------------------------------
 # install:development
 bandit==1.7.4
-black==22.12.0
 codespell==2.2.2
 coverage==7.1.0
 flake8==6.0.0
 flake8-docstrings==1.7.0
 flake8-noqa==1.3.0
 flake8-comprehensions==3.10.1
-isort==5.11.4
 mypy==1.0.1
 pre-commit==3.1.1
 pyflakes==3.0.1

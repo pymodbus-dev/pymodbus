@@ -554,8 +554,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param data_type: data type to convert to
         :returns: List of registers, can be used directly in e.g. write_registers()
         """
-        if data_type == cls.DATATYPE.STRING:
-            byte_list = value.encode()  # type: ignore[union-attr]
+        if isinstance(value, str):
+            byte_list = value.encode()
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:

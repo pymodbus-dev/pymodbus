@@ -522,7 +522,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_from_registers(
-        cls, registers: list[int], data_type: DATATYPE
+        cls, registers: List[int], data_type: DATATYPE
     ) -> Union[int, float, str]:
         """Convert registers to int/float/str.
 
@@ -547,7 +547,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     @classmethod
     def convert_to_registers(
         cls, value: Union[int, float, str], data_type: DATATYPE
-    ) -> list[int]:
+    ) -> List[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted:

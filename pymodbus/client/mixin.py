@@ -508,7 +508,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     # ------------------
 
     class DATATYPE(Enum):
-        """Datatype enum for convert_* calls."""
+        """Datatype name and number of bytes, used for convert_* calls."""
 
         INT16 = ("h", 1)
         UINT16 = ("H", 1)
@@ -523,7 +523,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     @classmethod
     def convert_from_registers(
         cls, registers: List[int], data_type: DATATYPE
-    ) -> Union[int, float, str]:
+    ) -> Union[float, str]:
         """Convert registers to int/float/str.
 
         :param registers: list of registers received from e.g. read_holding_registers()
@@ -546,12 +546,12 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
     @classmethod
     def convert_to_registers(
-        cls, value: Union[int, float, str], data_type: DATATYPE
+        cls, value: Union[float, str], data_type: DATATYPE
     ) -> List[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
         :param value: value to be converted:
-        :param data_type: data type to convert to
+        :param data_type: data type to be encoded as registers
         :returns: List of registers, can be used directly in e.g. write_registers()
         """
         if isinstance(value, str):

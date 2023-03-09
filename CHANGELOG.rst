@@ -1,3 +1,56 @@
+version 3.2.0
+----------------------------------------------------------
+* Add value <-> registers converter helpers. (#1413)
+* Add pre-commit config (#1406)
+* Make baud rate configurable for examples (#1410)
+* Clean __init_ and update log module. (#1411)
+* Simulator add calls functionality. (#1390)
+* Add note about not being thread safe. (#1404)
+* Update docker-publish.yml
+* Forward retry_on_empty and retries by calling transaction (#1401)
+* serial sync recv interval (#1389)
+* Add tests for writing multiple writes with a single value (#1402)
+* Enable mypy in CI (#1388)
+* Limit use of Singleton. (#1397)
+* Cleanup interfaces (#1396)
+* Add request names. (#1391)
+* Simulator, register look and feel. (#1387)
+* Fix enum for REPL server (#1384)
+* Remove unneeded attribute (#1383)
+* Fix mypy errors in reactive server (#1381)
+* remove nosec (#1379)
+* Fix type hints for http_server (#1369)
+* Merge pull request #1380 from pymodbus-dev/requirements
+* remove second client instance in async mode. (#1367)
+* Pin setuptools to prevent breakage with Version including "X" (#1373)
+* Lint and type hints for REPL (#1364)
+* Clean mixin execute (#1366)
+* Remove unused setup_commands.py. (#1362)
+* Run black on top-level files and /doc (#1361)
+* repl config path (#1359)
+* Fix NoReponse -> NoResponse (#1358)
+* Make whole main async. (#1355)
+* Fix more typing issues (#1351)
+* Test sync task (#1341)
+* Fixed text in ModbusClientMixin's writes (#1352)
+* lint /doc (#1345)
+* Remove unused linters (#1344)
+* Allow log level as string or integer. (#1343)
+* Sync serial, clean recv. (#1340)
+* Test server task, async completed (#1318)
+* main() should be sync (#1339)
+* Bug: Fixed caused by passing wrong arg (#1336)
+
+Thanks to:
+  AKJ7,
+  Alex,
+  Alex Ruddick,
+  banana-sun,
+  cgernert,
+  Jakob Ruhe,
+  James Braza,
+  jan Iversen
+
 version 3.1.3
 ----------------------------------------------------------
 * Solve log problem in payload.

@@ -459,7 +459,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
 
         unit = 0x01
 
-        def mock_callback(self):  # pylint: disable=unused-argument
+        def mock_callback():
             """Mock callback."""
 
         self._tls._process = MagicMock()  # pylint: disable=protected-access
@@ -493,7 +493,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
                 """Init."""
                 self.function_code = code
 
-        def mock_callback(self):  # pylint: disable=unused-argument
+        def mock_callback(_arg):
             """Mock callback."""
 
         self._tls.decoder.decode = MagicMock(return_value=None)
@@ -622,7 +622,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
             def __init__(self, code):
                 self.function_code = code
 
-        def mock_callback(self):  # pylint: disable=unused-argument
+        def mock_callback(_arg):
             """Mock callback."""
 
         mock_result = MockResult(code=0)
@@ -651,7 +651,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         mock_data = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
         unit = 0x00
 
-        def mock_callback(self):  # pylint: disable=unused-argument
+        def mock_callback():
             """Mock callback."""
 
         self._rtu.addToFrame = MagicMock()
@@ -725,9 +725,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         mock_data = b":F7031389000A60\r\n"
         unit = 0x00
 
-        def mock_callback(
-            mock_data, *args, **kwargs
-        ):  # pylint: disable=unused-argument
+        def mock_callback(_mock_data, *_args, **_kwargs):
             """Mock callback."""
 
         self._ascii.processIncomingPacket(mock_data, mock_callback, unit)
@@ -800,7 +798,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         mock_data = TEST_MESSAGE
         unit = 0x00
 
-        def mock_callback(mock_data):  # pylint: disable=unused-argument
+        def mock_callback(_mock_data):
             pass
 
         self._binary.processIncomingPacket(mock_data, mock_callback, unit)

@@ -37,13 +37,12 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param decoder: The decoder implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"lrc": "0000", "len": 0, "uid": 0x00}
         self._hsize = 0x02
         self._start = b":"
         self._end = b"\r\n"
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
@@ -118,7 +117,7 @@ class ModbusAsciiFramer(ModbusFramer):
             return a2b_hex(buffer)
         return b""
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip ovver errors that may be in the stream.
@@ -143,9 +142,7 @@ class ModbusAsciiFramer(ModbusFramer):
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(
-        self, data, callback, unit, **kwargs
-    ):  # pylint: disable=arguments-differ
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current

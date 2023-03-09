@@ -10,6 +10,10 @@ import logging
 from multiprocessing import Queue
 from threading import Thread
 
+# --------------------------------------------------------------------------- #
+# import the modbus libraries we need
+# --------------------------------------------------------------------------- #
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
@@ -17,11 +21,6 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartTcpServer
-
-# --------------------------------------------------------------------------- #
-# import the modbus libraries we need
-# --------------------------------------------------------------------------- #
-from pymodbus.version import version
 
 
 # from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
@@ -137,7 +136,7 @@ def run_callback_server():
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "pymodbus Server",
             "ModelName": "pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
 

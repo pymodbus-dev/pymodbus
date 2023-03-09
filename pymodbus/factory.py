@@ -56,8 +56,8 @@ from pymodbus.diag_message import (
     ReturnSlaveMessageCountResponse,
     ReturnSlaveNAKCountRequest,
     ReturnSlaveNAKCountResponse,
-    ReturnSlaveNoReponseCountResponse,
     ReturnSlaveNoResponseCountRequest,
+    ReturnSlaveNoResponseCountResponse,
 )
 from pymodbus.exceptions import MessageRegisterException, ModbusException
 from pymodbus.file_message import (
@@ -68,7 +68,6 @@ from pymodbus.file_message import (
     WriteFileRecordRequest,
     WriteFileRecordResponse,
 )
-from pymodbus.interfaces import IModbusDecoder
 from pymodbus.logging import Log
 from pymodbus.mei_message import (
     ReadDeviceInformationRequest,
@@ -108,7 +107,7 @@ from pymodbus.register_write_message import (
 # --------------------------------------------------------------------------- #
 # Server Decoder
 # --------------------------------------------------------------------------- #
-class ServerDecoder(IModbusDecoder):
+class ServerDecoder:
     """Request Message Factory (Server).
 
     To add more implemented functions, simply add them to the list
@@ -156,10 +155,15 @@ class ServerDecoder(IModbusDecoder):
         ReadDeviceInformationRequest,
     ]
 
+    @classmethod
+    def getFCdict(cls):
+        """Build function code - class list."""
+        return {f.function_code: f for f in cls.__function_table}
+
     def __init__(self):
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {f.function_code: f for f in self.__function_table}
+        self.__lookup = self.getFCdict()
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -237,13 +241,13 @@ class ServerDecoder(IModbusDecoder):
 # --------------------------------------------------------------------------- #
 # Client Decoder
 # --------------------------------------------------------------------------- #
-class ClientDecoder(IModbusDecoder):
+class ClientDecoder:
     """Response Message Factory (Client).
 
     To add more implemented functions, simply add them to the list
     """
 
-    __function_table = [
+    function_table = [
         ReadHoldingRegistersResponse,
         ReadDiscreteInputsResponse,
         ReadInputRegistersResponse,
@@ -275,7 +279,7 @@ class ClientDecoder(IModbusDecoder):
         ReturnBusCommunicationErrorCountResponse,
         ReturnBusExceptionErrorCountResponse,
         ReturnSlaveMessageCountResponse,
-        ReturnSlaveNoReponseCountResponse,
+        ReturnSlaveNoResponseCountResponse,
         ReturnSlaveNAKCountResponse,
         ReturnSlaveBusyCountResponse,
         ReturnSlaveBusCharacterOverrunCountResponse,
@@ -287,8 +291,8 @@ class ClientDecoder(IModbusDecoder):
 
     def __init__(self):
         """Initialize the client lookup tables."""
-        functions = {f.function_code for f in self.__function_table}
-        self.__lookup = {f.function_code: f for f in self.__function_table}
+        functions = {f.function_code for f in self.function_table}
+        self.__lookup = {f.function_code: f for f in self.function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f

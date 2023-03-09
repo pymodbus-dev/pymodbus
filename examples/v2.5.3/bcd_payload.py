@@ -9,7 +9,6 @@ from struct import pack
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
-from pymodbus.interfaces import IPayloadBuilder
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
@@ -57,7 +56,7 @@ def count_bcd_digits(bcd):
     return count
 
 
-class BcdPayloadBuilder(IPayloadBuilder):
+class BcdPayloadBuilder:
     """A utility that helps build binary coded decimal payload messages
 
     to be written with the various modbus messages.

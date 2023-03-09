@@ -2,6 +2,7 @@
 import asyncio
 import socket
 import ssl
+from typing import Any, Type
 
 from pymodbus.client.tcp import AsyncModbusTcpClient, ModbusTcpClient
 from pymodbus.constants import Defaults
@@ -39,7 +40,7 @@ def sslctx_provider(
     return sslctx
 
 
-class AsyncModbusTlsClient(AsyncModbusTcpClient):
+class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
     """**AsyncModbusTlsClient**.
 
     :param host: Host IP address or host name
@@ -69,13 +70,13 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self,
         host: str,
         port: int = Defaults.TlsPort,
-        framer: ModbusFramer = ModbusTlsFramer,
+        framer: Type[ModbusFramer] = ModbusTlsFramer,
         sslctx: str = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
         server_hostname: str = None,
-        **kwargs: any,
+        **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
         super().__init__(host, port=port, framer=framer, **kwargs)
@@ -101,7 +102,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
             if self.delay_ms > 0:
-                asyncio.ensure_future(self._reconnect())
+                self._launch_reconnect()
             return
         Log.info("Connected to {}:{}.", self.params.host, self.params.port)
         self.reset_delay()
@@ -131,19 +132,22 @@ class ModbusTlsClient(ModbusTcpClient):
             client.connect()
             ...
             client.close()
+
+
+    Remark: There are no automatic reconnect as with AsyncModbusTlsClient
     """
 
     def __init__(
         self,
         host: str,
         port: int = Defaults.TlsPort,
-        framer: ModbusFramer = ModbusTlsFramer,
+        framer: Type[ModbusFramer] = ModbusTlsFramer,
         sslctx: str = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
         server_hostname: str = None,
-        **kwargs: any,
+        **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
         super().__init__(host, port=port, framer=framer, **kwargs)

@@ -1,10 +1,9 @@
 """Modbus client async UDP communication."""
 import asyncio
-import functools
 import socket
-import typing
+from typing import Any, Tuple, Type
 
-from pymodbus.client.base import ModbusBaseClient, ModbusClientProtocol
+from pymodbus.client.base import ModbusBaseClient
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -15,7 +14,9 @@ from pymodbus.logging import Log
 DGRAM_TYPE = socket.SOCK_DGRAM
 
 
-class AsyncModbusUdpClient(ModbusBaseClient):
+class AsyncModbusUdpClient(
+    ModbusBaseClient, asyncio.Protocol, asyncio.DatagramProtocol
+):
     """**AsyncModbusUdpClient**.
 
     :param host: Host IP address or host name
@@ -40,20 +41,21 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         self,
         host: str,
         port: int = Defaults.UdpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
-        self.protocol = None
         super().__init__(framer=framer, **kwargs)
+        self.use_protocol = True
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
-
+        self._reconnect_task = None
         self.loop = asyncio.get_event_loop()
         self.connected = False
         self.delay_ms = self.params.reconnect_delay
+        self._reconnect_task = None
         self.reset_delay()
 
     async def connect(self):  # pylint: disable=invalid-overridden-method
@@ -61,11 +63,6 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
         :meta private:
         """
-        # force reconnect if required:
-        host = self.params.host
-        await self.close()
-        self.params.host = host
-
         # get current loop, if there are no loop a RuntimeError will be raised
         self.loop = asyncio.get_running_loop()
         Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
@@ -83,53 +80,38 @@ class AsyncModbusUdpClient(ModbusBaseClient):
 
         :meta private:
         """
-        # prevent reconnect:
         self.delay_ms = 0
         if self.connected:
-            if self.protocol.transport:
-                self.protocol.transport.close()
-            if self.protocol:
-                await self.protocol.close()
+            if self.transport:
+                self.transport.abort()
+                self.transport.close()
+            await self.async_close()
             await asyncio.sleep(0.1)
 
-    def _create_protocol(self, host=None, port=0):
-        """Create initialized protocol instance with factory function."""
-        protocol = ModbusClientProtocol(
-            use_udp=True,
-            framer=self.params.framer,
-            xframer=self.framer,
-            timeout=self.params.timeout,
-            retries=self.params.retries,
-            retry_on_empty=self.params.retry_on_empty,
-            close_comm_on_error=self.params.close_comm_on_error,
-            strict=self.params.strict,
-            broadcast_enable=self.params.broadcast_enable,
-            reconnect_delay=self.params.reconnect_delay,
-            reconnect_delay_max=self.params.reconnect_delay_max,
-            **self.params.kwargs,
-        )
-        protocol.params.host = host
-        protocol.params.port = port
-        protocol.factory = self
-        return protocol
+        if self._reconnect_task:
+            self._reconnect_task.cancel()
+            self._reconnect_task = None
+
+    def _create_protocol(self):
+        """Create initialized protocol instance with function."""
+        self.use_udp = True
+        return self
 
     async def _connect(self):
         """Connect."""
         Log.debug("Connecting.")
         try:
             endpoint = await self.loop.create_datagram_endpoint(
-                functools.partial(
-                    self._create_protocol, host=self.params.host, port=self.params.port
-                ),
+                self._create_protocol,
                 remote_addr=(self.params.host, self.params.port),
             )
             Log.info("Connected to {}:{}.", self.params.host, self.params.port)
             return endpoint
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
-            asyncio.ensure_future(self._reconnect())
+            self._reconnect_task = asyncio.ensure_future(self._reconnect())
 
-    def protocol_made_connection(self, protocol):
+    def client_made_connection(self, protocol):
         """Notify successful connection.
 
         :meta private:
@@ -137,31 +119,30 @@ class AsyncModbusUdpClient(ModbusBaseClient):
         Log.info("Protocol made connection.")
         if not self.connected:
             self.connected = True
-            self.protocol = protocol
         else:
             Log.error("Factory protocol connect callback called while connected.")
 
-    def protocol_lost_connection(self, protocol):
+    def client_lost_connection(self, protocol):
         """Notify lost connection.
 
         :meta private:
         """
-        if self.connected:
-            Log.info("Protocol lost connection.")
-            if protocol is not self.protocol:
-                Log.error(
-                    "Factory protocol callback called "
-                    "from unexpected protocol instance."
-                )
+        Log.info("Protocol lost connection.")
+        if protocol is not self:
+            Log.error("Factory protocol cb from unexpected protocol instance.")
 
-            self.connected = False
-            if self.protocol is not None:
-                del self.protocol
-                self.protocol = None
-            if self.delay_ms > 0:
-                asyncio.create_task(self._reconnect())
+        self.connected = False
+        if self.delay_ms > 0:
+            self._launch_reconnect()
+
+    def _launch_reconnect(self):
+        """Launch delayed reconnection coroutine"""
+        if self._reconnect_task:
+            Log.warning(
+                "Ignoring launch of delayed reconnection, another is in progress"
+            )
         else:
-            Log.error("Factory protocol connect callback called while connected.")
+            self._reconnect_task = asyncio.create_task(self._reconnect())
 
     async def _reconnect(self):
         """Reconnect."""
@@ -190,15 +171,17 @@ class ModbusUdpClient(ModbusBaseClient):
             client.connect()
             ...
             client.close()
+
+    Remark: There are no automatic reconnect as with AsyncModbusUdpClient
     """
 
     def __init__(
         self,
         host: str,
         port: int = Defaults.UdpPort,
-        framer: ModbusFramer = ModbusSocketFramer,
-        source_address: typing.Tuple[str, int] = None,
-        **kwargs: any,
+        framer: Type[ModbusFramer] = ModbusSocketFramer,
+        source_address: Tuple[str, int] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)

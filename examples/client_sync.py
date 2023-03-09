@@ -16,6 +16,7 @@ options:
   --log {critical,error,warning,info,debug}
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
+  --baudrate BAUDRATE   the baud rate to use for the serial device
 
 The corresponding server must be started before e.g. as:
     python3 server_sync.py
@@ -80,7 +81,7 @@ def setup_sync_client(args):
             #    close_comm_on_error=False,.
             #    strict=True,
             # Serial setup parameters
-            #    baudrate=9600,
+            baudrate=args.baudrate,
             #    bytesize=8,
             #    parity="N",
             #    stopbits=1,

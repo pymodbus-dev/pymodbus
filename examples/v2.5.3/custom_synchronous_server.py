@@ -57,6 +57,7 @@ Steps:
 """
 import logging
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -64,7 +65,6 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartTcpServer
-from pymodbus.version import version
 
 from .custom_message import (  # pylint: disable=relative-beyond-top-level
     CustomModbusRequest,
@@ -112,7 +112,7 @@ def run_server():
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
 

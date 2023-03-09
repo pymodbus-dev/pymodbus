@@ -33,6 +33,7 @@ class Commandline:
     framer = None
     host = "127.0.0.1"
     port = None
+    baudrate = 9600
     store = "sequential"
     identity = None
     context = None
@@ -74,6 +75,12 @@ def get_commandline(server=False, description=None, extras=None):
         "--port",
         help="set port",
         type=str,
+    )
+    parser.add_argument(
+        "--baudrate",
+        help="set serial device baud rate",
+        default=9600,
+        type=int,
     )
     if server:
         parser.add_argument(

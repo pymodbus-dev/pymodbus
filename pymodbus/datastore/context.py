@@ -3,17 +3,39 @@
 from pymodbus.constants import Defaults
 from pymodbus.datastore.store import ModbusSequentialDataBlock
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.interfaces import IModbusSlaveContext
 from pymodbus.logging import Log
+
+
+class ModbusBaseSlaveContext:  # pylint: disable=too-few-public-methods
+    """Interface for a modbus slave data context.
+
+    Derived classes must implemented the following methods:
+            reset(self)
+            validate(self, fx, address, count=1)
+            getValues(self, fx, address, count=1)
+            setValues(self, fx, address, values)
+    """
+
+    _fx_mapper = {2: "d", 4: "i"}
+    _fx_mapper.update([(i, "h") for i in (3, 6, 16, 22, 23)])
+    _fx_mapper.update([(i, "c") for i in (1, 5, 15)])
+
+    def decode(self, fx):  # pylint: disable=invalid-name
+        """Convert the function code to the datastore to.
+
+        :param fx: The function we are working with
+        :returns: one of [d(iscretes),i(nputs),h(olding),c(oils)
+        """
+        return self._fx_mapper[fx]
 
 
 # ---------------------------------------------------------------------------#
 #  Slave Contexts
 # ---------------------------------------------------------------------------#
-class ModbusSlaveContext(IModbusSlaveContext):
+class ModbusSlaveContext(ModbusBaseSlaveContext):
     """This creates a modbus data model with each data access stored in a block."""
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, *_args, **kwargs):
         """Initialize the datastores.
 
         Defaults to fully populated
@@ -91,9 +113,7 @@ class ModbusSlaveContext(IModbusSlaveContext):
         :param datablock: datablock to associate with this function code
         """
         self.store[fc_as_hex] = datablock or ModbusSequentialDataBlock.create()
-        self._IModbusSlaveContext__fx_mapper[  # pylint: disable=no-member
-            function_code
-        ] = fc_as_hex
+        self._fx_mapper[function_code] = fc_as_hex
 
 
 class ModbusServerContext:

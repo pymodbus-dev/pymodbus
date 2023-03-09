@@ -21,6 +21,7 @@ except ImportError:
     )
     sys.exit(1)
 
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
 from pymodbus.datastore.store import (
     BaseModbusDataBlock,
@@ -46,7 +47,6 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
-from pymodbus.version import version as pymodbus_version
 
 
 SERVER_MAPPER = {
@@ -367,7 +367,7 @@ class ReactiveServer:
         vendor_url="https://github.com/pymodbus-dev/pymodbus/",
         product_name="Pymodbus Server",
         model_name="Reactive Server",
-        version=pymodbus_version.short(),
+        version=pymodbus_version,
     ):
         """Create modbus identity.
 
@@ -396,7 +396,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: list[int] = [1],
+        unit: list[int] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,
@@ -429,11 +429,8 @@ class ReactiveServer:
                             range(start_address + 1, default_count), default_count - 1
                         )
                         address_map.insert(0, 0)
-                    block[modbus_entity] = {
-                        add: val
-                        for add in sorted(address_map)
-                        for val in default_values
-                    }
+                        address_map.sort()
+                    block[modbus_entity] = db(address_map, default_values)
                 else:
                     block[modbus_entity] = db(start_address, default_values)
 
@@ -447,7 +444,7 @@ class ReactiveServer:
             if not single:
                 slaves[i] = slave_context
             else:
-                slaves = slave_context
+                slaves[0] = slave_context
         server_context = ModbusServerContext(slaves, single=single)
         return server_context
 

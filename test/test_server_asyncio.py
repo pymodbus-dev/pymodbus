@@ -15,11 +15,8 @@ from pymodbus.datastore import (
 )
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
-from pymodbus.server import (
-    StartAsyncTcpServer,
-    StartAsyncTlsServer,
-    StartAsyncUdpServer,
-)
+from pymodbus.server import ModbusTcpServer, ModbusTlsServer, ModbusUdpServer
+from pymodbus.transaction import ModbusSocketFramer, ModbusTlsFramer
 
 
 _logger = logging.getLogger()
@@ -62,7 +59,7 @@ class BasicClient(asyncio.BaseProtocol):
         if BasicClient.done is not None:
             BasicClient.done.set_result(True)
 
-    def datagram_received(self, data, addr):  # pylint: disable=unused-argument
+    def datagram_received(self, data, _addr):
         """Get Datagram received."""
         _logger.debug("TEST Client datagram received")
         BasicClient.received_data = data
@@ -88,7 +85,7 @@ class BasicClient(asyncio.BaseProtocol):
         BasicClient.done = None
         BasicClient.received_data = None
         BasicClient.eof = None
-        BasicClient.protocol = None
+        BasicClient.my_protocol = None
 
 
 class AsyncioServerTest(
@@ -168,11 +165,17 @@ class AsyncioServerTest(
         if do_ident:
             args["identity"] = self.identity
         if do_tls:
-            self.server = await StartAsyncTlsServer(**args)
+            self.server = ModbusTlsServer(
+                self.context, ModbusTlsFramer, self.identity, SERV_ADDR
+            )
         elif do_udp:
-            self.server = await StartAsyncUdpServer(**args)
+            self.server = ModbusUdpServer(
+                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+            )
         else:
-            self.server = await StartAsyncTcpServer(**args)
+            self.server = ModbusTcpServer(
+                self.context, ModbusSocketFramer, self.identity, SERV_ADDR
+            )
         self.assertIsNotNone(self.server)
         if do_forever:
             self.task = asyncio.create_task(self.server.serve_forever())
@@ -194,7 +197,10 @@ class AsyncioServerTest(
         random_port = self.server.server.sockets[0].getsockname()[
             1
         ]  # get the random server port
-        BasicClient.transport, BasicClient.protocol = await self.loop.create_connection(
+        (
+            BasicClient.transport,
+            BasicClient.my_protocol,
+        ) = await self.loop.create_connection(
             BasicClient, host="127.0.0.1", port=random_port
         )
         await asyncio.wait_for(BasicClient.connected, timeout=0.1)
@@ -245,7 +251,7 @@ class AsyncioServerTest(
         await self.connect_server()
         self.assertEqual(len(self.server.active_connections), 1)
 
-        BasicClient.protocol.transport.close()
+        BasicClient.transport.close()
         await asyncio.sleep(0.2)  # so we have to wait a bit
         self.assertFalse(self.server.active_connections)
 
@@ -348,7 +354,7 @@ class AsyncioServerTest(
         self.assertFalse(self.server.on_connection_terminated.done())
 
         await self.server.server_close()
-        # TBD self.assertTrue(self.server.protocol.is_closing())
+        # TBD self.assertTrue(self.server.is_closing())
         self.server = None
 
     async def test_async_udp_server_serve_forever_twice(self):

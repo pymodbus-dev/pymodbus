@@ -26,6 +26,7 @@ class DiagnosticStatusRequest(ModbusRequest):
     """This is a base class for all of the diagnostic request functions."""
 
     function_code = 0x08
+    function_code_name = "diagnostic_status"
     _rtu_frame_size = 8
 
     def __init__(self, **kwargs):
@@ -201,7 +202,7 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
         else:
             self.message = [message]
 
-    def execute(self, *args):  # pylint: disable=unused-argument
+    def execute(self, *_args):
         """Execute the loopback request (builds the response).
 
         :returns: The populated loopback response message
@@ -258,7 +259,7 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
         else:
             self.message = [ModbusStatus.Off]
 
-    def execute(self, *args):  # pylint: disable=unused-argument
+    def execute(self, *_args):
         """Clear event log and restart.
 
         :returns: The initialized response message
@@ -577,10 +578,10 @@ class ReturnSlaveNoResponseCountRequest(DiagnosticStatusSimpleRequest):
         :returns: The initialized response message
         """
         count = _MCB.Counter.SlaveNoResponse
-        return ReturnSlaveNoReponseCountResponse(count)
+        return ReturnSlaveNoResponseCountResponse(count)
 
 
-class ReturnSlaveNoReponseCountResponse(DiagnosticStatusSimpleResponse):
+class ReturnSlaveNoResponseCountResponse(DiagnosticStatusSimpleResponse):
     """Return slave no response.
 
     The response data field returns the quantity of messages addressed to the
@@ -854,7 +855,7 @@ __all__ = [
     "ReturnSlaveMessageCountRequest",
     "ReturnSlaveMessageCountResponse",
     "ReturnSlaveNoResponseCountRequest",
-    "ReturnSlaveNoReponseCountResponse",
+    "ReturnSlaveNoResponseCountResponse",
     "ReturnSlaveNAKCountRequest",
     "ReturnSlaveNAKCountResponse",
     "ReturnSlaveBusyCountRequest",

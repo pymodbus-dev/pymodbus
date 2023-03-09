@@ -1,5 +1,4 @@
 """Document configuration."""
-# -*- coding: utf-8 -*-
 #
 # PyModbus documentation build configuration file,
 #
@@ -11,9 +10,9 @@ import os
 import sys
 
 from recommonmark.transform import AutoStructify
-from recommonmark.parser import CommonMarkParser
 
-from pymodbus import __version__
+from pymodbus import __version__ as pymodbus_version
+
 
 parent_dir = os.path.abspath(os.pardir)
 sys.path.insert(0, parent_dir)
@@ -21,18 +20,14 @@ sys.path.append(os.path.join(parent_dir, "examples"))
 github_doc_root = "https://github.com/pymodbus-dev/pymodbus/tree/master/doc/"
 
 # -- General configuration ------------------------------------------------
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx_rtd_theme',
-    'sphinx.ext.autosectionlabel'
-]
-source_suffix = ['.rst']
-master_doc = 'index'
-project = 'PyModbus'
+extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme", "sphinx.ext.autosectionlabel"]
+source_suffix = [".rst"]
+master_doc = "index"
+project = "PyModbus"
 copyright = "See license"
 author = "Open Source volunteers"
-version = __version__
-release = __version__
+version = pymodbus_version
+release = pymodbus_version
 language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
@@ -40,7 +35,7 @@ todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 html_static_path = []
 html_sidebars = {
     "**": [

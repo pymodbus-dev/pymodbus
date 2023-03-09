@@ -22,14 +22,14 @@ class Version:
         self.micro = micro
         self.pre = pre
 
-    def short(self):
+    def short(self) -> str:
         """Return a string in canonical short version format: <major>.<minor>.<micro>.<pre>."""
         pre = ""
         if self.pre:
             pre = f".{self.pre}"
         return f"{self.major}.{self.minor}.{self.micro}{pre}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the object.
 
         :returns: A string representation of this object
@@ -37,14 +37,4 @@ class Version:
         return f"[{self.package}, version {self.short()}]"
 
 
-version = Version("pymodbus", 3, 1, 3, "")
-version.__name__ = (  # fix epydoc error # pylint: disable=attribute-defined-outside-init
-    "pymodbus"
-)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-__all__ = ["version"]
+version = Version("pymodbus", 3, 2, 0, "")

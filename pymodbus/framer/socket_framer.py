@@ -41,11 +41,10 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param decoder: The decoder factory implementation to use
         """
+        super().__init__(decoder, client)
         self._buffer = b""
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
         self._hsize = 0x07
-        self.decoder = decoder
-        self.client = client
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
@@ -138,9 +137,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(  # pylint: disable=arguments-differ
-        self, data, callback, unit, **kwargs
-    ):
+    def processIncomingPacket(self, data, callback, unit, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -193,7 +190,7 @@ class ModbusSocketFramer(ModbusFramer):
         self.advanceFrame()
         callback(result)  # defer or push to a thread?
 
-    def resetFrame(self):  # pylint: disable=invalid-name
+    def resetFrame(self):
         """Reset the entire message frame.
 
         This allows us to skip ovver errors that may be in the stream.
@@ -205,7 +202,7 @@ class ModbusSocketFramer(ModbusFramer):
         self._buffer = b""
         self._header = {"tid": 0, "pid": 0, "len": 0, "uid": 0}
 
-    def getRawFrame(self):  # pylint: disable=invalid-name
+    def getRawFrame(self):
         """Return the complete buffer."""
         return self._buffer
 

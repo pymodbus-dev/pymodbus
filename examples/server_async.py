@@ -20,6 +20,7 @@ options:
   --log {critical,error,warning,info,debug}
                         "critical", "error", "warning", "info" or "debug"
   --port PORT           the port to use
+  --baudrate BAUDRATE   the baud rate to use for the serial device
   --store {sequential,sparse,factory,none}
                         "sequential", "sparse", "factory" or "none"
   --slaves SLAVES       number of slaves to respond to
@@ -32,6 +33,7 @@ import logging
 import os
 
 from examples.helper import get_commandline
+from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
     ModbusServerContext,
@@ -49,7 +51,6 @@ from pymodbus.server import (
     StartAsyncTlsServer,
     StartAsyncUdpServer,
 )
-from pymodbus.version import version
 
 
 _logger = logging.getLogger()
@@ -130,7 +131,7 @@ def setup_server(args):
             "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
             "ProductName": "Pymodbus Server",
             "ModelName": "Pymodbus Server",
-            "MajorMinorRevision": version.short(),
+            "MajorMinorRevision": pymodbus_version,
         }
     )
     return args
@@ -187,7 +188,7 @@ async def run_async_server(args):
             # stopbits=1,  # The number of stop bits to use
             # bytesize=8,  # The bytesize of the serial messages
             # parity="N",  # Which kind of parity to use
-            # baudrate=9600,  # The baud rate to use for the serial device
+            baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat unit_id 0 as broadcast address,

@@ -39,8 +39,8 @@ from pymodbus.diag_message import (
     ReturnSlaveMessageCountResponse,
     ReturnSlaveNAKCountRequest,
     ReturnSlaveNAKCountResponse,
-    ReturnSlaveNoReponseCountResponse,
     ReturnSlaveNoResponseCountRequest,
+    ReturnSlaveNoResponseCountResponse,
 )
 from pymodbus.exceptions import NotImplementedException
 
@@ -112,7 +112,7 @@ class SimpleDataStoreTest(unittest.TestCase):
             (ReturnBusCommunicationErrorCountResponse, b"\x00\x0c\x00\x00"),
             (ReturnBusExceptionErrorCountResponse, b"\x00\x0d\x00\x00"),
             (ReturnSlaveMessageCountResponse, b"\x00\x0e\x00\x00"),
-            (ReturnSlaveNoReponseCountResponse, b"\x00\x0f\x00\x00"),
+            (ReturnSlaveNoResponseCountResponse, b"\x00\x0f\x00\x00"),
             (ReturnSlaveNAKCountResponse, b"\x00\x10\x00\x00"),
             (ReturnSlaveBusyCountResponse, b"\x00\x11\x00\x00"),
             (ReturnSlaveBusCharacterOverrunCountResponse, b"\x00\x12\x00\x00"),

@@ -1,6 +1,7 @@
 """Test client async."""
 import asyncio
 import logging
+from tempfile import gettempdir
 
 import pytest
 import pytest_asyncio
@@ -19,7 +20,7 @@ from pymodbus.transaction import ModbusSocketFramer
 _logger = logging.getLogger()
 _logger.setLevel("DEBUG")
 pymodbus_apply_logging_config(logging.DEBUG)
-PATH = "/tmp/unix_domain_socket"  # nosec
+PATH = gettempdir() + "/unix_domain_socket"
 HOST = f"unix:{PATH}"
 
 

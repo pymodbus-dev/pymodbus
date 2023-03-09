@@ -524,26 +524,25 @@ def test_client_tls_connect():
 @pytest.mark.parametrize(
     "datatype,value,registers",
     [
-        (ModbusClientMixin.DATATYPE.INT16, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.INT16, -27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.INT32, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.INT32, 32145678, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.INT64, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.UINT64, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.FLOAT32, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.FLOAT32, 3.14159265358979, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.FLOAT64, 27123, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.FLOAT64, 3.14159265358979, [0x0000, 0x0001]),
-        (ModbusClientMixin.DATATYPE.STRING, 27123, [0x0000, 0x0001]),
+        (ModbusClientMixin.DATATYPE.STRING, "abcd", [0x6162, 0x6364]),
+        (ModbusClientMixin.DATATYPE.STRING, "abc", [0x6162, 0x6300]),
+        # (ModbusClientMixin.DATATYPE.INT16, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.INT16, -27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.INT32, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.INT32, 32145678, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.INT64, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.UINT64, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.FLOAT32, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.FLOAT32, 3.14159265358979, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.FLOAT64, 27123, [0x0000, 0x0001]),
+        # (ModbusClientMixin.DATATYPE.FLOAT64, 3.14159265358979, [0x0000, 0x0001]),
     ],
 )
 def test_client_mixin_convert(datatype, registers, value):
     """Test converter methods."""
-    if datatype:
-        return
     regs = ModbusClientMixin.convert_to_registers(value, datatype)
-    result = ModbusClientMixin.convert_from_registers(registers, datatype)
+    result = ModbusClientMixin.convert_from_registers(regs, datatype)
     assert regs == registers
     assert result == value

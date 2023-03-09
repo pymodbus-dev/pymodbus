@@ -510,27 +510,15 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     class DATATYPE(Enum):
         """Datatype enum for convert_* calls."""
 
-        INT16 = "h"
-        UINT16 = "H"
-        INT32 = "i"
-        UINT32 = "I"
-        INT64 = "q"
-        UINT64 = "Q"
-        FLOAT32 = "f"
-        FLOAT64 = "d"
-        STRING = "s"
-
-    _datatype_register_count = {
-        "h": 1,
-        "H": 1,
-        "i": 2,
-        "I": 2,
-        "q": 4,
-        "Q": 4,
-        "f": 2,
-        "d": 4,
-        "s": 0,
-    }
+        INT16 = ("h", 1)
+        UINT16 = ("H", 1)
+        INT32 = ("i", 2)
+        UINT32 = ("I", 2)
+        INT64 = ("q", 4)
+        UINT64 = ("Q", 4)
+        FLOAT32 = ("f", 2)
+        FLOAT64 = ("d", 4)
+        STRING = ("s", 0)
 
     @classmethod
     def convert_from_registers(
@@ -543,14 +531,18 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :returns: int, float or str depending on "to_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
-        byte_list = [x.to_bytes(2, "big") for x in registers]
+        byte_list = bytearray()
+        for x in registers:
+            byte_list.extend(int.to_bytes(x, 2, "big"))
         if data_type == cls.DATATYPE.STRING:
-            return str(byte_list)
-        if len(registers) != cls._datatype_register_count[str(data_type)]:
+            if byte_list[-1:] == b"\00":
+                byte_list = byte_list[:-1]
+            return byte_list.decode("utf-8")
+        if len(registers) != data_type.value[1]:
             raise ModbusException(
                 f"Illegal size ({len(registers)}) of register array, cannot convert!"
             )
-        return struct.unpack(f">{data_type}", byte_list)[0]
+        return struct.unpack(f">{data_type.value[0]}", byte_list)[0]
 
     @classmethod
     def convert_to_registers(
@@ -562,9 +554,14 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param data_type: data type to convert to
         :returns: List of registers, can be used directly in e.g. write_registers()
         """
-        # byte_list = struct.pack(f">{data_type[1]}", value)
-        value_bytes = int.to_bytes(value, 4, data_type)
-        return [
-            int.from_bytes(value_bytes[:2], "big"),
-            int.from_bytes(value_bytes[-2:], "big"),
+        if data_type == cls.DATATYPE.STRING:
+            byte_list = value.encode()  # type: ignore[union-attr]
+            if len(byte_list) % 2:
+                byte_list += b"\x00"
+        else:
+            byte_list = struct.pack(f">{data_type.value[0]}", value)
+        regs = [
+            int.from_bytes(byte_list[x : x + 2], "big")
+            for x in range(0, len(byte_list), 2)
         ]
+        return regs

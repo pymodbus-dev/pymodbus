@@ -5,6 +5,7 @@ PyModbus - API changes.
 -------------
 Version 3.2.0
 -------------
+- helper to convert values in mixin: convert_from_registers, convert_to_registers
 - import pymodbus.version -> from pymodbus import __version__, __version_full__
 - pymodbus.pymodbus_apply_logging_config(log_file_name="pymodbus.log") to enable file pymodbus_apply_logging_config
 - pymodbus.pymodbus_apply_logging_config have default DEBUG, it not called root settings will be used.

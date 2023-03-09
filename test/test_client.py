@@ -519,3 +519,49 @@ def test_client_tls_connect():
         mock_method.side_effect = socket.error()
         client = lib_client.ModbusTlsClient("127.0.0.1")
         assert not client.connect()
+
+
+@pytest.mark.parametrize(
+    "datatype,value,registers",
+    [
+        (ModbusClientMixin.DATATYPE.STRING, "abcd", [0x6162, 0x6364]),
+        (ModbusClientMixin.DATATYPE.STRING, "a", [0x6100]),
+        (ModbusClientMixin.DATATYPE.UINT16, 27123, [0x69F3]),
+        (ModbusClientMixin.DATATYPE.INT16, -27123, [0x960D]),
+        (ModbusClientMixin.DATATYPE.UINT32, 27123, [0x0000, 0x69F3]),
+        (ModbusClientMixin.DATATYPE.UINT32, 32145678, [0x01EA, 0x810E]),
+        (ModbusClientMixin.DATATYPE.INT32, -32145678, [0xFE15, 0x7EF2]),
+        (
+            ModbusClientMixin.DATATYPE.UINT64,
+            1234567890123456789,
+            [0x1122, 0x10F4, 0x7DE9, 0x8115],
+        ),
+        (
+            ModbusClientMixin.DATATYPE.INT64,
+            -1234567890123456789,
+            [0xEEDD, 0xEF0B, 0x8216, 0x7EEB],
+        ),
+        (ModbusClientMixin.DATATYPE.FLOAT32, 27123.5, [0x46D3, 0xE700]),
+        (ModbusClientMixin.DATATYPE.FLOAT32, 3.141592, [0x4049, 0x0FD8]),
+        (ModbusClientMixin.DATATYPE.FLOAT32, -3.141592, [0xC049, 0x0FD8]),
+        (ModbusClientMixin.DATATYPE.FLOAT64, 27123.5, [0x40DA, 0x7CE0, 0x0000, 0x0000]),
+        (
+            ModbusClientMixin.DATATYPE.FLOAT64,
+            3.14159265358979,
+            [0x4009, 0x21FB, 0x5444, 0x2D11],
+        ),
+        (
+            ModbusClientMixin.DATATYPE.FLOAT64,
+            -3.14159265358979,
+            [0xC009, 0x21FB, 0x5444, 0x2D11],
+        ),
+    ],
+)
+def test_client_mixin_convert(datatype, registers, value):
+    """Test converter methods."""
+    regs = ModbusClientMixin.convert_to_registers(value, datatype)
+    result = ModbusClientMixin.convert_from_registers(regs, datatype)
+    if datatype == ModbusClientMixin.DATATYPE.FLOAT32:
+        result = round(result, 6)
+    assert regs == registers
+    assert result == value

@@ -1,4 +1,6 @@
 """Modbus Client Common."""
+import struct
+from enum import Enum
 from typing import Any, List, Tuple, Union
 
 import pymodbus.bit_read_message as pdu_bit_read
@@ -369,7 +371,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         address: int,
         values: Union[List[bool], bool],
         slave: int = 0,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> ModbusResponse:
         """Write coils (code 0x0F).
 
@@ -432,7 +434,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         address: int = 0x0000,
         and_mask: int = 0xFFFF,
         or_mask: int = 0x0000,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> ModbusResponse:
         """Mask write register (code 0x16).
 
@@ -453,7 +455,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         write_address: int = 0,
         values: Union[List[int], int] = 0,
         slave: int = 0,
-        **kwargs
+        **kwargs,
     ) -> ModbusResponse:
         """Read/Write registers (code 0x17).
 
@@ -472,7 +474,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
                 write_address=write_address,
                 values=values,
                 unit=slave,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -500,3 +502,66 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         return self.execute(
             pdu_mei.ReadDeviceInformationRequest(read_code, object_id, **kwargs)
         )
+
+    # ------------------
+    # Converter methods
+    # ------------------
+
+    class DATATYPE(Enum):
+        """Datatype enum for convert_* calls."""
+
+        INT16 = ("h", 1)
+        UINT16 = ("H", 1)
+        INT32 = ("i", 2)
+        UINT32 = ("I", 2)
+        INT64 = ("q", 4)
+        UINT64 = ("Q", 4)
+        FLOAT32 = ("f", 2)
+        FLOAT64 = ("d", 4)
+        STRING = ("s", 0)
+
+    @classmethod
+    def convert_from_registers(
+        cls, registers: List[int], data_type: DATATYPE
+    ) -> Union[int, float, str]:
+        """Convert registers to int/float/str.
+
+        :param registers: list of registers received from e.g. read_holding_registers()
+        :param data_type: data type to convert to
+        :returns: int, float or str depending on "to_type"
+        :raises ModbusException: when size of registers is not 1, 2 or 4
+        """
+        byte_list = bytearray()
+        for x in registers:
+            byte_list.extend(int.to_bytes(x, 2, "big"))
+        if data_type == cls.DATATYPE.STRING:
+            if byte_list[-1:] == b"\00":
+                byte_list = byte_list[:-1]
+            return byte_list.decode("utf-8")
+        if len(registers) != data_type.value[1]:
+            raise ModbusException(
+                f"Illegal size ({len(registers)}) of register array, cannot convert!"
+            )
+        return struct.unpack(f">{data_type.value[0]}", byte_list)[0]
+
+    @classmethod
+    def convert_to_registers(
+        cls, value: Union[int, float, str], data_type: DATATYPE
+    ) -> List[int]:
+        """Convert int/float/str to registers (16/32/64 bit).
+
+        :param value: value to be converted:
+        :param data_type: data type to convert to
+        :returns: List of registers, can be used directly in e.g. write_registers()
+        """
+        if data_type == cls.DATATYPE.STRING:
+            byte_list = value.encode()  # type: ignore[union-attr]
+            if len(byte_list) % 2:
+                byte_list += b"\x00"
+        else:
+            byte_list = struct.pack(f">{data_type.value[0]}", value)
+        regs = [
+            int.from_bytes(byte_list[x : x + 2], "big")
+            for x in range(0, len(byte_list), 2)
+        ]
+        return regs

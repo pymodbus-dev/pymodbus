@@ -111,10 +111,6 @@ Deviceinfo showcase server example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/v2.5.3/deviceinfo_showcase_server.py
 
-Libmodbus Client example
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/libmodbus_client.py
-
 Message Generator example
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/v2.5.3/message_generator.py
@@ -146,10 +142,6 @@ Modicon Payload example
 performance module
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/v2.5.3/performance.py
-
-Remote Server Context example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/remote_server_context.py
 
 Thread Safe Datastore example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

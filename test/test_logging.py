@@ -1,7 +1,7 @@
 """Test datastore."""
 import logging
-
 from unittest.mock import patch
+
 import pytest
 
 from pymodbus.logging import Log

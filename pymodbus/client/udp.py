@@ -149,6 +149,9 @@ class AsyncModbusUdpClient(
         Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
         await asyncio.sleep(self.delay_ms / 1000)
         self.delay_ms = 2 * self.delay_ms
+
+        if self.params.on_reconnect_callback:
+            self.params.on_reconnect_callback()
         return await self._connect()
 
 

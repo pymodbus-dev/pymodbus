@@ -11,7 +11,7 @@ class TestLogging:
     """Tests of pymodbus logging."""
 
     def test_log_dont_call_build_msg(self):
-        """Verify that build_msg is not called unneccesary"""
+        """Verify that build_msg is not called unnecessary"""
         with patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
             Log.setLevel(logging.INFO)
             Log.debug("test")

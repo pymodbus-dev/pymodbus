@@ -1,6 +1,7 @@
 """Test datastore."""
 import logging
 
+from unittest.mock import patch
 import pytest
 
 from pymodbus import pymodbus_apply_logging_config
@@ -10,26 +11,17 @@ from pymodbus.logging import Log
 class TestLogging:
     """Tests of pymodbus logging."""
 
-    def test_log_our_default(self):
-        """Test default logging"""
-        logging.getLogger().setLevel(logging.WARNING)
-        Log.setLevel(logging.NOTSET)
-        Log.info("test")
-        assert Log.LOG_LEVEL == logging.WARNING
-        Log.setLevel(logging.NOTSET)
-        logging.getLogger().setLevel(logging.INFO)
-        Log.info("test")
-        assert Log.LOG_LEVEL == logging.INFO
-        Log.setLevel(logging.NOTSET)
-        pymodbus_apply_logging_config()
-        assert Log.LOG_LEVEL == logging.DEBUG
+    def test_log_dont_call_build_msg(self):
+        with patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
 
-    def test_log_set_level(self):
-        """Test default logging"""
-        pymodbus_apply_logging_config(logging.DEBUG)
-        assert Log.LOG_LEVEL == logging.DEBUG
-        pymodbus_apply_logging_config(logging.INFO)
-        assert Log.LOG_LEVEL == logging.INFO
+            Log.setLevel(logging.INFO)
+            Log.debug("test")
+            assert build_msg_mock.call_count == 0
+
+            Log.setLevel(logging.DEBUG)
+            Log.debug("test2")
+            assert build_msg_mock.call_count == 1
+
 
     def test_log_simple(self):
         """Test simple string"""

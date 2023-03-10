@@ -58,6 +58,7 @@ class Log:
     def setLevel(cls, level):
         """Apply basic logging level"""
         cls._logger.setLevel(level)
+
     @classmethod
     def build_msg(cls, txt, *args):
         """Build message."""

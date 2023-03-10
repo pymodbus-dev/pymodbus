@@ -31,6 +31,7 @@ class ModbusBaseClient(ModbusClientMixin):
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
     :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
     :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: (optional) Function that will be called just before a reconnection attempt.
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::

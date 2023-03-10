@@ -95,7 +95,7 @@ class ModbusBaseClient(ModbusClientMixin):
         password: str = None
         server_hostname: str = None
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: Type[ModbusFramer] = None,
         timeout: str | float = Defaults.Timeout,

@@ -392,7 +392,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param address: Start address to write to
         :param values: List of values to write, or a single value to write
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
@@ -405,7 +405,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def report_slave_id(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Report slave ID (code 0x11).
 
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
@@ -463,7 +463,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
         :param values: List of values to write, or a single value to write
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs:
         :raises ModbusException:
         """

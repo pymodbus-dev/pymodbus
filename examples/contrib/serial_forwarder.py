@@ -40,7 +40,7 @@ class SerialForwarderTCPServer:
         _logger.info(message)
         store = {}
         for i in slaves:
-            store[i] = RemoteSlaveContext(client, unit=i)
+            store[i] = RemoteSlaveContext(client, slave=i)
         context = ModbusServerContext(slaves=store, single=False)
         self.server = ModbusTcpServer(
             context, address=(server_ip, server_port), allow_reuse_address=True

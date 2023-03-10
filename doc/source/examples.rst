@@ -55,7 +55,7 @@ Examples contributions
 ----------------------
 
 These examples are supplied by users of pymodbus.
-The pymodbus team thanks for making the examples available to the community.
+The pymodbus team thanks for sharing the examples.
 
 Serial Forwarder example
 ^^^^^^^^^^^^^^^^^^^^^^^^

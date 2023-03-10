@@ -186,7 +186,7 @@ _arguments = {
     "write_registers": [0x01] * 8,
     "transaction": 0x01,
     "protocol": 0x00,
-    "unit": 0xFF,
+    "slave": 0xFF,
 }
 
 

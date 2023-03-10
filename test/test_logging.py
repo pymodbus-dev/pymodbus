@@ -4,7 +4,6 @@ import logging
 from unittest.mock import patch
 import pytest
 
-from pymodbus import pymodbus_apply_logging_config
 from pymodbus.logging import Log
 
 
@@ -12,16 +11,15 @@ class TestLogging:
     """Tests of pymodbus logging."""
 
     def test_log_dont_call_build_msg(self):
+        """Verify that build_msg is not called unneccesary"""
         with patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
-
             Log.setLevel(logging.INFO)
             Log.debug("test")
-            assert build_msg_mock.call_count == 0
+            build_msg_mock.assert_not_called()
 
             Log.setLevel(logging.DEBUG)
             Log.debug("test2")
-            assert build_msg_mock.call_count == 1
-
+            build_msg_mock.assert_called_once()
 
     def test_log_simple(self):
         """Test simple string"""

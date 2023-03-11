@@ -269,7 +269,7 @@ class ModbusBaseClient(ModbusClientMixin):
         data is a non-empty bytes object containing the incoming data.
         """
         Log.debug("recv: {}", data, ":hex")
-        self.framer.processIncomingPacket(data, self._handle_response, unit=0)
+        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
 
     def create_future(self):
         """Help function to create asyncio Future object."""

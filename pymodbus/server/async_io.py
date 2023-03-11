@@ -216,7 +216,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.framer.processIncomingPacket(
                     data=data,
                     callback=lambda x: self.execute(x, *addr),
-                    unit=units,
+                    slave=units,
                     single=single,
                 )
 

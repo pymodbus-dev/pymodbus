@@ -101,7 +101,7 @@ class ModbusTlsFramer(ModbusFramer):
             return {"fcode": fcode}
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -115,10 +115,11 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matcheks, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
+        unit = slave
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         # no unit id for Modbus Security Application Protocol

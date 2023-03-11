@@ -137,7 +137,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -155,6 +155,7 @@ class ModbusSocketFramer(ModbusFramer):
                list of unit ids (server) or single unit id(client/server)
         :param kwargs:
         """
+        unit = slave
         if not isinstance(unit, (list, tuple)):
             unit = [unit]
         single = kwargs.get("single", False)

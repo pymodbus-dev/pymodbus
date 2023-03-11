@@ -117,7 +117,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         result.transaction_id = self._header["tid"]
         result.protocol_id = self._header["pid"]
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -217,7 +217,7 @@ class ModbusSocketFramer(ModbusFramer):
             message.transaction_id,
             message.protocol_id,
             len(data) + 2,
-            message.unit_id,
+            message.slave_id,
             message.function_code,
         )
         packet += data

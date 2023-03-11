@@ -137,7 +137,7 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -190,11 +190,13 @@ class ModbusAsciiFramer(ModbusFramer):
         :return: The encoded packet
         """
         encoded = message.encode()
-        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id, message.function_code)
+        buffer = struct.pack(
+            ASCII_FRAME_HEADER, message.slave_id, message.function_code
+        )
         checksum = computeLRC(encoded + buffer)
 
         packet = bytearray()
-        params = (message.unit_id, message.function_code)
+        params = (message.slave_id, message.function_code)
         packet.extend(self._start)
         packet.extend(
             ("%02x%02x" % params).encode()  # pylint: disable=consider-using-f-string

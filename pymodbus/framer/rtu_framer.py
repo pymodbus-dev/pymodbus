@@ -188,7 +188,7 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
         result.transaction_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
@@ -241,11 +241,12 @@ class ModbusRtuFramer(ModbusFramer):
         """
         data = message.encode()
         packet = (
-            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+            struct.pack(RTU_FRAME_HEADER, message.slave_id, message.function_code)
+            + data
         )
         packet += struct.pack(">H", computeCRC(packet))
         # Ensure that transaction is actually the slave id for serial comms
-        message.transaction_id = message.unit_id
+        message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):

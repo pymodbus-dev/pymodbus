@@ -223,7 +223,7 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
     rtu_framer._header["uid"] = 255  # pylint: disable=protected-access
     result = Mock()
     rtu_framer.populateResult(result)
-    assert result.unit_id == 255
+    assert result.slave_id == 255
 
 
 @pytest.mark.parametrize(

@@ -134,7 +134,7 @@ class ModbusBinaryFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -189,7 +189,7 @@ class ModbusBinaryFramer(ModbusFramer):
         """
         data = self._preflight(message.encode())
         packet = (
-            struct.pack(BINARY_FRAME_HEADER, message.unit_id, message.function_code)
+            struct.pack(BINARY_FRAME_HEADER, message.slave_id, message.function_code)
             + data
         )
         packet += struct.pack(">H", computeCRC(packet))

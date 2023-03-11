@@ -224,7 +224,7 @@ class ModbusBaseClient(ModbusClientMixin):
         else:
             self.transport.write(packet)
         req = self._build_response(request.transaction_id)
-        if self.params.broadcast_enable and not request.unit_id:
+        if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
             try:

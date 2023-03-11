@@ -473,7 +473,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
                 read_count=read_count,
                 write_address=write_address,
                 values=values,
-                unit=slave,
+                slave=slave,
                 **kwargs,
             )
         )

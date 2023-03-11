@@ -2,9 +2,9 @@
 import asyncio
 import logging
 import os
+from test import mock
 from threading import Thread
 from time import sleep
-from unittest.mock import Mock
 
 import pytest
 
@@ -36,7 +36,7 @@ def helper_config(request, def_type):
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
     context = ModbusServerContext(
         slaves=ModbusSlaveContext(
-            di=datablock, co=datablock, hr=datablock, ir=datablock, unit=1
+            di=datablock, co=datablock, hr=datablock, ir=datablock, slave=1
         ),
         single=True,
     )
@@ -186,7 +186,7 @@ async def test_async_task_server_stop(comm):
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.1)
 
-    on_reconnect_callback = Mock()
+    on_reconnect_callback = mock.Mock()
 
     client = run_client(**client_args, on_reconnect_callback=on_reconnect_callback)
     await client.connect()

@@ -63,7 +63,7 @@ async def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
     rr = _check_call(
-        await client.execute(req_mei.ReadDeviceInformationRequest(unit=SLAVE))
+        await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     )
     assert rr.information[0] == b"pymodbus"
 
@@ -71,11 +71,11 @@ async def _execute_information_requests(client):
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(slave=SLAVE)))
     assert not rr.message[0]
 
     _check_call(
-        await client.execute(req_diag.RestartCommunicationsOptionRequest(unit=SLAVE))
+        await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
     )
 
 

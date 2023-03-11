@@ -69,9 +69,7 @@ def setup_updating_server(args):
 
     # Continuing, use a sequential block without gaps.
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    context = ModbusSlaveContext(
-        di=datablock, co=datablock, hr=datablock, ir=datablock, unit=1
-    )
+    context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
     args.context = ModbusServerContext(slaves=context, single=True)
     return setup_server(args)
 

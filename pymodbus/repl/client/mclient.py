@@ -54,7 +54,7 @@ def handle_brodcast(func):
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
-        if not kwargs.get("unit") and self.params.broadcast_enable:
+        if not kwargs.get("slave") and self.params.broadcast_enable:
             return {"broadcasted": True}
         if not resp.isError():
             return make_response_dict(resp)
@@ -71,11 +71,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     @staticmethod
     def _process_exception(resp, **kwargs):
         """Set internal process exception."""
-        unit = kwargs.get("unit")
-        if (
-            unit  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
-            == 0
-        ):
+        if "slave" not in kwargs:
             err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
             if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
@@ -99,7 +95,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :returns: List of register values
         """
@@ -115,7 +111,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return: List of bits
         """
@@ -132,7 +128,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param value: bit value to write
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -147,7 +143,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param values: list of bit values to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -162,7 +158,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param value: register value to write
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -177,7 +173,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param values: list of register value to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -191,7 +187,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: starting register offset to read from
         :param count: Number of registers to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -207,7 +203,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: starting register offset to read from to
         :param count: Number of registers to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -236,7 +232,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
         :param values: List of register values to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -265,7 +261,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param address: Reference address of register
         :param and_mask: And Mask
         :param or_mask: OR Mask
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -306,7 +302,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     def report_slave_id(self, slave=Defaults.Slave, **kwargs):
         """Report information about remote slave ID.
 
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave ID
         :param kwargs:
         :return:
         """
@@ -324,7 +320,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     def read_exception_status(self, slave=Defaults.Slave, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
 
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave ID
         :param kwargs:
         :return:
         """

@@ -2,7 +2,7 @@
 import unittest
 from binascii import a2b_hex
 from itertools import count
-from unittest.mock import MagicMock, patch
+from test import mock
 
 from pymodbus.exceptions import (
     InvalidMessageReceivedException,
@@ -60,17 +60,18 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
 
     def test_calculate_expected_response_length(self):
         """Test calculate expected response length."""
-        self._tm.client = MagicMock()
-        self._tm.client.framer = MagicMock()
+        self._tm.client = mock.MagicMock()
+        self._tm.client.framer = mock.MagicMock()
         self._tm._set_adu_size()  # pylint: disable=protected-access
-        self.assertEqual(
-            self._tm._calculate_response_length(0),  # pylint: disable=protected-access
-            None,
+        assert (
+            not self._tm._calculate_response_length(  # pylint: disable=protected-access
+                0
+            )
         )
         self._tm.base_adu_size = 10
-        self.assertEqual(
-            self._tm._calculate_response_length(5),  # pylint: disable=protected-access
-            15,
+        assert (
+            self._tm._calculate_response_length(5)  # pylint: disable=protected-access
+            == 15
         )
 
     def test_calculate_exception_length(self):
@@ -83,7 +84,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
             ("tls", 2),
             ("dummy", None),
         ):
-            self._tm.client = MagicMock()
+            self._tm.client = mock.MagicMock()
             if framer == "ascii":
                 self._tm.client.framer = self._ascii
             elif framer == "binary":
@@ -95,69 +96,69 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
             elif framer == "tls":
                 self._tm.client.framer = self._tls
             else:
-                self._tm.client.framer = MagicMock()
+                self._tm.client.framer = mock.MagicMock()
 
             self._tm._set_adu_size()  # pylint: disable=protected-access
-            self.assertEqual(
-                self._tm._calculate_exception_length(),  # pylint: disable=protected-access
-                exception_length,
+            assert (
+                self._tm._calculate_exception_length()  # pylint: disable=protected-access
+                == exception_length
             )
 
-    @patch("pymodbus.transaction.time")
+    @mock.patch("pymodbus.transaction.time")
     def test_execute(self, mock_time):
         """Test execute."""
         mock_time.time.side_effect = count()
 
-        client = MagicMock()
+        client = mock.MagicMock()
         client.framer = self._ascii
         client.framer._buffer = b"deadbeef"  # pylint: disable=protected-access
-        client.framer.processIncomingPacket = MagicMock()
+        client.framer.processIncomingPacket = mock.MagicMock()
         client.framer.processIncomingPacket.return_value = None
-        client.framer.buildPacket = MagicMock()
+        client.framer.buildPacket = mock.MagicMock()
         client.framer.buildPacket.return_value = b"deadbeef"
-        client.framer.sendPacket = MagicMock()
+        client.framer.sendPacket = mock.MagicMock()
         client.framer.sendPacket.return_value = len(b"deadbeef")
-        client.framer.decode_data = MagicMock()
+        client.framer.decode_data = mock.MagicMock()
         client.framer.decode_data.return_value = {
             "slave": 1,
             "fcode": 222,
             "length": 27,
         }
-        request = MagicMock()
+        request = mock.MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.slave_id = 1
         request.function_code = 222
         trans = ModbusTransactionManager(client)
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"
         )
         self.assertEqual(trans.retries, 3)
         self.assertEqual(trans.retry_on_empty, False)
 
-        trans.getTransaction = MagicMock()
+        trans.getTransaction = mock.MagicMock()
         trans.getTransaction.return_value = "response"
         response = trans.execute(request)
         self.assertEqual(response, "response")
         # No response
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             return_value=b"abcdef"
         )
         trans.transactions = []
-        trans.getTransaction = MagicMock()
+        trans.getTransaction = mock.MagicMock()
         trans.getTransaction.return_value = None
         response = trans.execute(request)
         self.assertIsInstance(response, ModbusIOException)
 
         # No response with retries
         trans.retry_on_empty = True
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             side_effect=iter([b"", b"abcdef"])
         )
         response = trans.execute(request)
         self.assertIsInstance(response, ModbusIOException)
 
         # wrong handle_local_echo
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             side_effect=iter([b"abcdef", b"deadbe", b"123456"])
         )
         client.handle_local_echo = True
@@ -170,17 +171,17 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
 
         # retry on invalid response
         trans.retry_on_invalid = True
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             side_effect=iter([b"", b"abcdef", b"deadbe", b"123456"])
         )
         response = trans.execute(request)
         self.assertIsInstance(response, ModbusIOException)
 
         # Unable to decode response
-        trans._recv = MagicMock(  # pylint: disable=protected-access
+        trans._recv = mock.MagicMock(  # pylint: disable=protected-access
             side_effect=ModbusIOException()
         )
-        client.framer.processIncomingPacket.side_effect = MagicMock(
+        client.framer.processIncomingPacket.side_effect = mock.MagicMock(
             side_effect=ModbusIOException()
         )
         self.assertIsInstance(trans.execute(request), ModbusIOException)
@@ -466,23 +467,20 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         def mock_callback():
             """Mock callback."""
 
-        self._tls._process = MagicMock()  # pylint: disable=protected-access
-        self._tls.isFrameReady = MagicMock(return_value=False)
+        self._tls._process = mock.MagicMock()  # pylint: disable=protected-access
+        self._tls.isFrameReady = mock.MagicMock(return_value=False)
         self._tls.processIncomingPacket(msg, mock_callback, unit)
         self.assertEqual(msg, self._tls.getRawFrame())
         self._tls.advanceFrame()
 
-        self._tls.isFrameReady = MagicMock(return_value=True)
-        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
-            return_value=False
-        )
+        self._tls.isFrameReady = mock.MagicMock(return_value=True)
+        x = mock.MagicMock(return_value=False)
+        self._tls._validate_slave_id = x  # pylint: disable=protected-access
         self._tls.processIncomingPacket(msg, mock_callback, unit)
         self.assertEqual(b"", self._tls.getRawFrame())
         self._tls.advanceFrame()
-
-        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
-            return_value=True
-        )
+        x = mock.MagicMock(return_value=True)
+        self._tls._validate_slave_id = x  # pylint: disable=protected-access
         self._tls.processIncomingPacket(msg, mock_callback, unit)
         self.assertEqual(msg, self._tls.getRawFrame())
         self._tls.advanceFrame()
@@ -500,7 +498,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         def mock_callback(_arg):
             """Mock callback."""
 
-        self._tls.decoder.decode = MagicMock(return_value=None)
+        self._tls.decoder.decode = mock.MagicMock(return_value=None)
         self.assertRaises(
             ModbusIOException,
             lambda: self._tls._process(  # pylint: disable=protected-access
@@ -509,7 +507,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         )
 
         result = MockResult(0x01)
-        self._tls.decoder.decode = MagicMock(return_value=result)
+        self._tls.decoder.decode = mock.MagicMock(return_value=result)
         self.assertRaises(
             InvalidMessageReceivedException,
             lambda: self._tls._process(  # pylint: disable=protected-access
@@ -630,11 +628,11 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
             """Mock callback."""
 
         mock_result = MockResult(code=0)
-        self._rtu.getRawFrame = self._rtu.getFrame = MagicMock()
-        self._rtu.decoder = MagicMock()
-        self._rtu.decoder.decode = MagicMock(return_value=mock_result)
-        self._rtu.populateResult = MagicMock()
-        self._rtu.advanceFrame = MagicMock()
+        self._rtu.getRawFrame = self._rtu.getFrame = mock.MagicMock()
+        self._rtu.decoder = mock.MagicMock()
+        self._rtu.decoder.decode = mock.MagicMock(return_value=mock_result)
+        self._rtu.populateResult = mock.MagicMock()
+        self._rtu.advanceFrame = mock.MagicMock()
 
         self._rtu._process(mock_callback)  # pylint: disable=protected-access
         self._rtu.populateResult.assert_called_with(mock_result)
@@ -642,7 +640,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertTrue(self._rtu.advanceFrame.called)
 
         # Check errors
-        self._rtu.decoder.decode = MagicMock(return_value=None)
+        self._rtu.decoder.decode = mock.MagicMock(return_value=None)
         self.assertRaises(
             ModbusIOException,
             lambda: self._rtu._process(  # pylint: disable=protected-access
@@ -658,9 +656,9 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         def mock_callback():
             """Mock callback."""
 
-        self._rtu.addToFrame = MagicMock()
-        self._rtu._process = MagicMock()  # pylint: disable=protected-access
-        self._rtu.isFrameReady = MagicMock(return_value=False)
+        self._rtu.addToFrame = mock.MagicMock()
+        self._rtu._process = mock.MagicMock()  # pylint: disable=protected-access
+        self._rtu.isFrameReady = mock.MagicMock(return_value=False)
         self._rtu._buffer = mock_data  # pylint: disable=protected-access
 
         self._rtu.processIncomingPacket(mock_data, mock_callback, unit)
@@ -735,7 +733,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._ascii.processIncomingPacket(mock_data, mock_callback, unit)
 
         # Test failure:
-        self._ascii.checkFrame = MagicMock(return_value=False)
+        self._ascii.checkFrame = mock.MagicMock(return_value=False)
         self._ascii.processIncomingPacket(mock_data, mock_callback, unit)
 
     # ----------------------------------------------------------------------- #
@@ -808,5 +806,5 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._binary.processIncomingPacket(mock_data, mock_callback, unit)
 
         # Test failure:
-        self._binary.checkFrame = MagicMock(return_value=False)
+        self._binary.checkFrame = mock.MagicMock(return_value=False)
         self._binary.processIncomingPacket(mock_data, mock_callback, unit)

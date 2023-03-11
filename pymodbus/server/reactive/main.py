@@ -396,7 +396,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: list[int] | int = [1],
+        slave: list[int] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,
@@ -404,17 +404,17 @@ class ReactiveServer:
         """Create Modbus context.
 
         :param data_block_settings: Datablock (dict) Refer DEFAULT_DATA_BLOCK
-        :param unit: Unit id for the slave
+        :param slave: Unit id for the slave
         :param single: To run as a single slave
         :param randomize: Randomize every <n> reads for DI and IR.
         :param change_rate: Rate in % of registers to change for DI and IR.
         :return: ModbusServerContext object
         """
         data_block = data_block_settings.pop("data_block", DEFAULT_DATA_BLOCK)
-        if not isinstance(unit, list):
-            unit = [unit]
+        if not isinstance(slave, list):
+            slave = [slave]
         slaves = {}
-        for i in unit:
+        for i in slave:
             block = {}
             for modbus_entity, block_desc in data_block.items():
                 start_address = block_desc.get("block_start", 0)
@@ -454,7 +454,7 @@ class ReactiveServer:
         server,
         framer=None,
         context=None,
-        unit=1,
+        slave=1,
         single=False,
         host="localhost",
         modbus_port=5020,
@@ -468,7 +468,7 @@ class ReactiveServer:
         :param server: Modbus server type (tcp, rtu, tls, udp)
         :param framer: Modbus framer (ModbusSocketFramer, ModbusRTUFramer, ModbusTLSFramer)
         :param context: Modbus server context to use
-        :param unit: Modbus unit id
+        :param slave: Modbus slave id
         :param single: Run in single mode
         :param host: Host address to use for both web app and modbus server (default localhost)
         :param modbus_port: Modbus port for TCP and UDP server(default: 5020)
@@ -493,7 +493,7 @@ class ReactiveServer:
         if not context:
             context = cls.create_context(
                 data_block_settings=data_block_settings,
-                unit=unit,
+                slave=slave,
                 single=single,
                 randomize=randomize,
                 change_rate=change_rate,

@@ -340,7 +340,7 @@ class ModbusTcpClient(ModbusBaseClient):
             result = b"".join(data)
             Log.warning(" after returning {} bytes: {} ", len(result), result)
             return result
-        msg += " without response from unit before it closed connection"
+        msg += " without response from slave before it closed connection"
         raise ConnectionException(msg)
 
     def is_socket_open(self):

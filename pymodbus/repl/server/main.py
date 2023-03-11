@@ -139,7 +139,7 @@ def run(
     ),
     modbus_port: int = typer.Option(5020, "--modbus-port", "-p", help="Modbus port"),
     modbus_slave_id: List[int] = typer.Option(
-        None, "--unit-id", "-u", help="Supported Modbus slave id's"
+        None, "--slave-id", "-u", help="Supported Modbus slave id's"
     ),
     modbus_config_path: Path = typer.Option(
         None, help="Path to additional modbus server config"
@@ -191,7 +191,7 @@ def run(
         modbus_server,
         framer,
         modbus_port=modbus_port,
-        unit=modbus_slave_id,
+        slave=modbus_slave_id,
         loop=loop,
         single=False,
         data_block_settings=data_block_settings,

@@ -33,7 +33,7 @@ FORMATTERS = {
 }
 
 
-DEFAULT_KWARGS = {"unit": "Slave address"}
+DEFAULT_KWARGS = {"slave": "Slave address"}
 
 OTHER_COMMANDS = {
     "result.raw": "Show RAW Result",
@@ -65,13 +65,13 @@ CLIENT_ATTRIBUTES: List[str] = []
 class Command:
     """Class representing Commands to be consumed by Completer."""
 
-    def __init__(self, name, signature, doc, unit=False):
+    def __init__(self, name, signature, doc, slave=False):
         """Initialize.
 
         :param name: Name of the command
         :param signature: inspect object
         :param doc: Doc string for the command
-        :param unit: Use unit as additional argument in the command .
+        :param slave: Use slave as additional argument in the command .
         """
         self.name = name
         self.doc = doc.split("\n") if doc else " ".join(name.split("_"))
@@ -83,7 +83,7 @@ class Command:
         else:
             self._params = ""
 
-        if self.name.startswith("client.") and unit:
+        if self.name.startswith("client.") and slave:
             self.args.update(**DEFAULT_KWARGS)
 
     def _create_help(self):
@@ -165,7 +165,7 @@ def _get_requests(members):
     )
     commands = {
         f"client.{c[0]}": Command(
-            f"client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), unit=False
+            f"client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), slave=False
         )
         for c in commands
         if not c[0].startswith("_")
@@ -180,7 +180,7 @@ def _get_client_methods(members):
     )
     commands = {
         "client.{c[0]}": Command(
-            "client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), unit=False
+            "client.{c[0]}", argspec(c[1]), inspect.getdoc(c[1]), slave=False
         )
         for c in commands
         if not c[0].startswith("_")
@@ -193,7 +193,7 @@ def _get_client_properties(members):
     global CLIENT_ATTRIBUTES  # pylint: disable=global-variable-not-assigned
     commands = list(filter(lambda x: not callable(x[1]), members))
     commands = {
-        f"client.{c[0]}": Command(f"client.{c[0]}", None, "Read Only!", unit=False)
+        f"client.{c[0]}": Command(f"client.{c[0]}", None, "Read Only!", slave=False)
         for c in commands
         if (not c[0].startswith("_") and isinstance(c[1], (str, int, float)))
     }

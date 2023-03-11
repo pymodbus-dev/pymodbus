@@ -79,7 +79,7 @@ def run_sync_client():
     # specify slave to query
     # ------------------------------------------------------------------------#
     # The slave to query is specified in an optional parameter for each
-    # individual request. This can be done by specifying the `unit` parameter
+    # individual request. This can be done by specifying the `slave` parameter
     # which defaults to `0x00`
     # ----------------------------------------------------------------------- #
     log.debug("Reading Device Information")
@@ -89,7 +89,7 @@ def run_sync_client():
     while not rr or rr.more_follows:
         next_object_id = rr.next_object_id if rr else 0
         rq = ReadDeviceInformationRequest(
-            read_code=0x03, unit=UNIT, object_id=next_object_id
+            read_code=0x03, slave=UNIT, object_id=next_object_id
         )
         rr = client.execute(rq)
         information.update(rr.information)

@@ -196,71 +196,75 @@ async def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
     rr = _check_call(
-        await client.execute(req_mei.ReadDeviceInformationRequest(unit=SLAVE))
+        await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     )
     assert rr.information[0] == b"Pymodbus"
 
-    rr = _check_call(await client.execute(req_other.ReportSlaveIdRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE)))
     assert rr.status
 
     rr = _check_call(
-        await client.execute(req_other.ReadExceptionStatusRequest(unit=SLAVE))
+        await client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
     )
     assert not rr.status
 
     rr = _check_call(
-        await client.execute(req_other.GetCommEventCounterRequest(unit=SLAVE))
+        await client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
     )
     assert rr.status and not rr.count
 
-    rr = _check_call(await client.execute(req_other.GetCommEventLogRequest(unit=SLAVE)))
+    rr = _check_call(
+        await client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
+    )
     assert rr.status and not (rr.event_count + rr.message_count + len(rr.events))
 
 
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(slave=SLAVE)))
     assert not rr.message[0]
 
     _check_call(
-        await client.execute(req_diag.RestartCommunicationsOptionRequest(unit=SLAVE))
+        await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnDiagnosticRegisterRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(unit=SLAVE))
+        await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
     )
 
-    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(unit=SLAVE)))
+    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
     # does not send a response
 
     _check_call(await client.execute(req_diag.ClearCountersRequest()))
     _check_call(
         await client.execute(
-            req_diag.ReturnBusCommunicationErrorCountRequest(unit=SLAVE)
+            req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE)
         )
     )
     _check_call(
-        await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnSlaveMessageCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
     )
-    _check_call(await client.execute(req_diag.ReturnSlaveNAKCountRequest(unit=SLAVE)))
-    _check_call(await client.execute(req_diag.ReturnSlaveBusyCountRequest(unit=SLAVE)))
+    _check_call(await client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE)))
+    _check_call(await client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE)))
     _check_call(
         await client.execute(
-            req_diag.ReturnSlaveBusCharacterOverrunCountRequest(unit=SLAVE)
+            req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE)
         )
     )
-    _check_call(await client.execute(req_diag.ReturnIopOverrunCountRequest(unit=SLAVE)))
-    _check_call(await client.execute(req_diag.ClearOverrunCountRequest(unit=SLAVE)))
-    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(unit=SLAVE)))
+    _check_call(
+        await client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
+    )
+    _check_call(await client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE)))
+    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
 
 
 # ------------------------

@@ -7,7 +7,6 @@ bit based request/response messages:
 * Read Coils
 """
 import struct
-import unittest
 from test.conftest import MockContext
 
 from pymodbus.bit_read_message import (
@@ -26,7 +25,7 @@ res.extend([False] * 3)
 # ---------------------------------------------------------------------------#
 
 
-class ModbusBitMessageTests(unittest.TestCase):
+class TestModbusBitMessage:
     """Modbus bit read message tests."""
 
     # -----------------------------------------------------------------------#
@@ -43,19 +42,19 @@ class ModbusBitMessageTests(unittest.TestCase):
         """Test basic bit message encoding/decoding"""
         handle = ReadBitsRequestBase(1, 1)
         msg = "ReadBitRequest(1,1)"
-        self.assertEqual(msg, str(handle))
+        assert msg == str(handle)
         handle = ReadBitsResponseBase([1, 1])
         msg = "ReadBitsResponseBase(2)"
-        self.assertEqual(msg, str(handle))
+        assert msg == str(handle)
 
     def test_bit_read_base_request_encoding(self):
         """Test basic bit message encoding/decoding"""
         for i in range(20):
             handle = ReadBitsRequestBase(i, i)
             result = struct.pack(">HH", i, i)
-            self.assertEqual(handle.encode(), result)
+            assert handle.encode() == result
             handle.decode(result)
-            self.assertEqual((handle.address, handle.count), (i, i))
+            assert (handle.address, handle.count) == (i, i)
 
     def test_bit_read_base_response_encoding(self):
         """Test basic bit message encoding/decoding"""
@@ -64,7 +63,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             handle = ReadBitsResponseBase(data)
             result = handle.encode()
             handle.decode(result)
-            self.assertEqual(handle.bits[:i], data)
+            assert handle.bits[:i] == data
 
     def test_bit_read_base_response_helper_methods(self):
         """Test the extra methods on a ReadBitsResponseBase"""
@@ -75,7 +74,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         for i in (1, 3, 5):
             handle.resetBit(i)
         for i in range(8):
-            self.assertEqual(handle.getBit(i), False)
+            assert not handle.getBit(i)
 
     def test_bit_read_base_requests(self):
         """Test bit read request encoding"""
@@ -84,7 +83,7 @@ class ModbusBitMessageTests(unittest.TestCase):
             ReadBitsResponseBase([1, 0, 1, 1, 0]): b"\x01\x0d",
         }
         for request, expected in iter(messages.items()):
-            self.assertEqual(request.encode(), expected)
+            assert request.encode() == expected
 
     def test_bit_read_message_execute_value_errors(self):
         """Test bit read request encoding"""
@@ -95,7 +94,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
+            assert ModbusExceptions.IllegalValue == result.exception_code
 
     def test_bit_read_message_execute_address_errors(self):
         """Test bit read request encoding"""
@@ -106,7 +105,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
+            assert ModbusExceptions.IllegalAddress == result.exception_code
 
     def test_bit_read_message_execute_success(self):
         """Test bit read request encoding"""
@@ -118,7 +117,7 @@ class ModbusBitMessageTests(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(result.bits, [True] * 5)
+            assert result.bits == [True] * 5
 
     def test_bit_read_message_get_response_pdu(self):
         """Test bit read message get response pdu."""
@@ -132,4 +131,4 @@ class ModbusBitMessageTests(unittest.TestCase):
         }
         for request, expected in iter(requests.items()):
             pdu_len = request.get_response_pdu_size()
-            self.assertEqual(pdu_len, expected)
+            assert pdu_len == expected

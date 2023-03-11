@@ -120,7 +120,7 @@ class ModbusServerContext:
     """This represents a master collection of slave contexts.
 
     If single is set to true, it will be treated as a single
-    context so every unit-id returns the same context. If single
+    context so every slave_id returns the same context. If single
     is set to false, it will be interpreted as a collection of
     slave contexts.
     """

@@ -1,5 +1,5 @@
 """Test framers."""
-from unittest.mock import Mock, patch
+from test import mock
 
 import pytest
 
@@ -221,7 +221,7 @@ def test_get_frame(rtu_framer):  # pylint: disable=redefined-outer-name
 def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test populate result."""
     rtu_framer._header["uid"] = 255  # pylint: disable=protected-access
-    result = Mock()
+    result = mock.Mock()
     rtu_framer.populateResult(result)
     assert result.slave_id == 255
 
@@ -257,23 +257,23 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
             16,
             True,
             False,
-        ),  # incorrect unit id
+        ),  # incorrect slave id
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, False, True),
         # good frame + part of next frame
     ],
 )
 def test_rtu_incoming_packet(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test rtu process incoming packet."""
-    buffer, units, reset_called, process_called = data
+    buffer, slaves, reset_called, process_called = data
 
-    with patch.object(
+    with mock.patch.object(
         rtu_framer,
         "_process",
         wraps=rtu_framer._process,  # pylint: disable=protected-access
-    ) as mock_process, patch.object(
+    ) as mock_process, mock.patch.object(
         rtu_framer, "resetFrame", wraps=rtu_framer.resetFrame
     ) as mock_reset:
-        rtu_framer.processIncomingPacket(buffer, Mock(), units)
+        rtu_framer.processIncomingPacket(buffer, mock.Mock(), slaves)
         assert mock_process.call_count == (1 if process_called else 0)
         assert mock_reset.call_count == (1 if reset_called else 0)
 
@@ -292,8 +292,8 @@ def test_send_packet(rtu_framer):  # pylint: disable=redefined-outer-name
     client.silent_interval = 1
     client.last_frame_end = 1
     client.params.timeout = 0.25
-    client.idle_time = Mock(return_value=1)
-    client.send = Mock(return_value=len(message))
+    client.idle_time = mock.Mock(return_value=1)
+    client.send = mock.Mock(return_value=len(message))
     rtu_framer.client = client
     assert rtu_framer.sendPacket(message) == len(message)
     client.state = ModbusTransactionState.PROCESSING_REPLY
@@ -303,7 +303,7 @@ def test_send_packet(rtu_framer):  # pylint: disable=redefined-outer-name
 def test_recv_packet(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test receive packet."""
     message = TEST_MESSAGE
-    client = Mock()
+    client = mock.Mock()
     client.recv.return_value = message
     rtu_framer.client = client
     assert rtu_framer.recvPacket(len(message)) == message
@@ -327,7 +327,7 @@ def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
 
 
 def test_validate__slave_id(rtu_framer):  # pylint: disable=redefined-outer-name
-    """Test validate unit."""
+    """Test validate slave."""
     rtu_framer.populateHeader(TEST_MESSAGE)
     assert rtu_framer._validate_slave_id([0], False)  # pylint: disable=protected-access
     assert rtu_framer._validate_slave_id([1], True)  # pylint: disable=protected-access

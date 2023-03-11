@@ -75,11 +75,11 @@ class Decoder:
             try:
                 decoder.addToFrame(message)
                 if decoder.checkFrame():
-                    unit = decoder._header.get(  # pylint: disable=protected-access
+                    slave = decoder._header.get(  # pylint: disable=protected-access
                         "uid", 0x00
                     )
                     decoder.advanceFrame()
-                    decoder.processIncomingPacket(message, self.report, unit)
+                    decoder.processIncomingPacket(message, self.report, slave)
                 else:
                     self.check_errors(decoder, message)
             except Exception:  # pylint: disable=broad-except

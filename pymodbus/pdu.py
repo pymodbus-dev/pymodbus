@@ -53,7 +53,7 @@ class ModbusPDU:
         """
         self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
         self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
-        self.unit_id = unit
+        self.slave_id = unit
         self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
 

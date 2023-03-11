@@ -79,7 +79,7 @@ def run_server():
     #
     # Use this at your discretion, and at the very least ensure that all
     # objects which share a single object ID can fit together within a single
-    # ADU unit. In the case of Modbus RTU, this is about 240 bytes or so. In
+    # ADU slave. In the case of Modbus RTU, this is about 240 bytes or so. In
     # other words, when the spec says "An object is indivisible, therefore
     # any object must have a size consistent with the size of transaction
     # response", if you use repeated OIDs, apply that rule to the entire

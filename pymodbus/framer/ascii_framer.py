@@ -52,7 +52,7 @@ class ModbusAsciiFramer(ModbusFramer):
         if len(data) > 1:
             uid = int(data[1:3], 16)
             fcode = int(data[3:5], 16)
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -137,12 +137,12 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -156,18 +156,18 @@ class ModbusAsciiFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server))
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server))
         :param kwargs:
         :raises ModbusIOException:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
-                if self._validate_unit_id(unit, single):
+                if self._validate_slave_id(slave, single):
                     frame = self.getFrame()
                     if (result := self.decoder.decode(frame)) is None:
                         raise ModbusIOException("Unable to decode response")
@@ -176,7 +176,7 @@ class ModbusAsciiFramer(ModbusFramer):
                     callback(result)  # defer this
                 else:
                     header_txt = self._header["uid"]
-                    Log.error("Not a valid unit id - {}, ignoring!!", header_txt)
+                    Log.error("Not a valid slave id - {}, ignoring!!", header_txt)
                     self.resetFrame()
             else:
                 break
@@ -190,11 +190,13 @@ class ModbusAsciiFramer(ModbusFramer):
         :return: The encoded packet
         """
         encoded = message.encode()
-        buffer = struct.pack(ASCII_FRAME_HEADER, message.unit_id, message.function_code)
+        buffer = struct.pack(
+            ASCII_FRAME_HEADER, message.slave_id, message.function_code
+        )
         checksum = computeLRC(encoded + buffer)
 
         packet = bytearray()
-        params = (message.unit_id, message.function_code)
+        params = (message.slave_id, message.function_code)
         packet.extend(self._start)
         packet.extend(
             ("%02x%02x" % params).encode()  # pylint: disable=consider-using-f-string

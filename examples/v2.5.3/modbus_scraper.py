@@ -40,7 +40,7 @@ log = logging.getLogger("pymodbus")
 # --------------------------------------------------------------------------- #
 COUNT = 8  # The number of bits/registers to read at once
 DELAY = 0  # The delay between subsequent reads
-SLAVE = 0x01  # The slave unit id to read from
+SLAVE = 0x01  # The slave id to read from
 
 # --------------------------------------------------------------------------- #
 # A simple scraper protocol
@@ -82,7 +82,7 @@ class ScraperProtocol(ModbusClientProtocol):
         """Defer fetching holding registers"""
         txt = f"reading holding registers: {self.address}"
         log.debug(txt)
-        data = self.read_holding_registers(self.address, count=COUNT, unit=SLAVE)
+        data = self.read_holding_registers(self.address, count=COUNT, slave=SLAVE)
         data.addCallbacks(self.scrape_discrete_inputs, self.error_handler)
 
     def scrape_discrete_inputs(self, response):
@@ -90,7 +90,7 @@ class ScraperProtocol(ModbusClientProtocol):
         txt = f"reading discrete inputs: {self.address}"
         log.debug(txt)
         self.endpoint.write((3, self.address, response.registers))
-        data = self.read_discrete_inputs(self.address, count=COUNT, unit=SLAVE)
+        data = self.read_discrete_inputs(self.address, count=COUNT, slave=SLAVE)
         data.addCallbacks(self.scrape_input_registers, self.error_handler)
 
     def scrape_input_registers(self, response):
@@ -98,7 +98,7 @@ class ScraperProtocol(ModbusClientProtocol):
         txt = f"reading discrete inputs: {self.address}"
         log.debug(txt)
         self.endpoint.write((2, self.address, response.bits))
-        data = self.read_input_registers(self.address, count=COUNT, unit=SLAVE)
+        data = self.read_input_registers(self.address, count=COUNT, slave=SLAVE)
         data.addCallbacks(self.scrape_coils, self.error_handler)
 
     def scrape_coils(self, response):
@@ -109,7 +109,7 @@ class ScraperProtocol(ModbusClientProtocol):
         txt = f"reading coils: {self.address}"
         log.debug(txt)
         self.endpoint.write((4, self.address, response.registers))
-        data = self.read_coils(self.address, count=COUNT, unit=SLAVE)
+        data = self.read_coils(self.address, count=COUNT, slave=SLAVE)
         data.addCallbacks(self.start_next_cycle, self.error_handler)
 
     def start_next_cycle(self, response):

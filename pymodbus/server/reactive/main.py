@@ -322,7 +322,7 @@ class ReactiveServer:
             Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(response.function_code, error_code)
             err_response.transaction_id = response.transaction_id
-            err_response.unit_id = response.unit_id
+            err_response.slave_id = response.slave_id
             response = err_response
             self._counter += 1
         elif response_type == "delayed":

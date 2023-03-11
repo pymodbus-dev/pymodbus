@@ -104,8 +104,8 @@ class Defaults:  # pylint: disable=too-few-public-methods
 
      .. attribute:: broadcastEnable
 
-       When False unit_id 0 will be treated as any other unit_id. When True and
-       the unit_id is 0 the server will execute all requests on all server
+       When False slave_id 0 will be treated as any other slave_id. When True and
+       the slave_id is 0 the server will execute all requests on all server
        contexts and not respond and the client will skip trying to receive a
        response. Default value False does not conform to Modbus spec but maintains
        legacy behavior for existing pymodbus users.

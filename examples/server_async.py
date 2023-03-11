@@ -78,11 +78,11 @@ def setup_server(args):
 
         if args.slaves:
             # The server then makes use of a server context that allows the server
-            # to respond with different slave contexts for different unit ids.
-            # By default it will return the same context for every unit id supplied
+            # to respond with different slave contexts for different slave ids.
+            # By default it will return the same context for every slave id supplied
             # (broadcast mode).
             # However, this can be overloaded by setting the single flag to False and
-            # then supplying a dictionary of unit id to context mapping::
+            # then supplying a dictionary of slave id to context mapping::
             #
             # The slave context can also be initialized in zero_mode which means
             # that a request to address(0-7) will map to the address (0-7).
@@ -154,7 +154,7 @@ async def run_async_server(args):
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
@@ -169,7 +169,7 @@ async def run_async_server(args):
             framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
@@ -191,7 +191,7 @@ async def run_async_server(args):
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
             # defer_start=False,  # Only define server do not activate
         )
@@ -220,7 +220,7 @@ async def run_async_server(args):
             # password="none",  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
             defer_start=False,  # Only define server do not activate

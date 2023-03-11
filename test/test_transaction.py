@@ -118,10 +118,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         client.framer.sendPacket = MagicMock()
         client.framer.sendPacket.return_value = len(b"deadbeef")
         client.framer.decode_data = MagicMock()
-        client.framer.decode_data.return_value = {"unit": 1, "fcode": 222, "length": 27}
+        client.framer.decode_data.return_value = {
+            "slave": 1,
+            "fcode": 222,
+            "length": 27,
+        }
         request = MagicMock()
         request.get_response_pdu_size.return_value = 10
-        request.unit_id = 1
+        request.slave_id = 1
         request.function_code = 222
         trans = ModbusTransactionManager(client)
         trans._recv = MagicMock(  # pylint: disable=protected-access
@@ -183,7 +187,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
 
         # Broadcast
         client.params.broadcast_enable = True
-        request.unit_id = 0
+        request.slave_id = 0
         response = trans.execute(request)
         self.assertEqual(response, b"Broadcast write sent - no response expected")
 
@@ -364,13 +368,13 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         expected = ModbusRequest()
         expected.transaction_id = 0x0001
         expected.protocol_id = 0x1234
-        expected.unit_id = 0xFF
+        expected.slave_id = 0xFF
         msg = b"\x00\x01\x12\x34\x00\x04\xff\x02\x12\x34"
         self._tcp.addToFrame(msg)
         self.assertTrue(self._tcp.checkFrame())
         actual = ModbusRequest()
         self._tcp.populateResult(actual)
-        for name in ("transaction_id", "protocol_id", "unit_id"):
+        for name in ("transaction_id", "protocol_id", "slave_id"):
             self.assertEqual(getattr(expected, name), getattr(actual, name))
         self._tcp.advanceFrame()
 
@@ -381,7 +385,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         message = ModbusRequest()
         message.transaction_id = 0x0001
         message.protocol_id = 0x1234
-        message.unit_id = 0xFF
+        message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\x00\x01\x12\x34\x00\x02\xff\x01"
         actual = self._tcp.buildPacket(message)
@@ -469,14 +473,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
         self._tls.isFrameReady = MagicMock(return_value=True)
-        self._tls._validate_unit_id = MagicMock(  # pylint: disable=protected-access
+        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
             return_value=False
         )
         self._tls.processIncomingPacket(msg, mock_callback, unit)
         self.assertEqual(b"", self._tls.getRawFrame())
         self._tls.advanceFrame()
 
-        self._tls._validate_unit_id = MagicMock(  # pylint: disable=protected-access
+        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
             return_value=True
         )
         self._tls.processIncomingPacket(msg, mock_callback, unit)
@@ -592,14 +596,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self.assertEqual(int(msg[0]), header_dict["uid"])
         self.assertEqual(msg[-2:], header_dict["crc"])
 
-        self.assertEqual(0x00, request.unit_id)
+        self.assertEqual(0x00, request.slave_id)
 
     def test_rtu_framer_packet(self):
         """Test a rtu frame packet build"""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
-        message.unit_id = 0xFF
+        message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\xff\x01\x81\x80"  # only header + CRC - no data
         actual = self._rtu.buildPacket(message)
@@ -706,14 +710,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         """Test a ascii frame packet build"""
         request = ModbusRequest()
         self._ascii.populateResult(request)
-        self.assertEqual(0x00, request.unit_id)
+        self.assertEqual(0x00, request.slave_id)
 
     def test_ascii_framer_packet(self):
         """Test a ascii frame packet build"""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
-        message.unit_id = 0xFF
+        message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b":FF0100\r\n"
         actual = self._ascii.buildPacket(message)
@@ -779,14 +783,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         """Test a binary frame packet build"""
         request = ModbusRequest()
         self._binary.populateResult(request)
-        self.assertEqual(0x00, request.unit_id)
+        self.assertEqual(0x00, request.slave_id)
 
     def test_binary_framer_packet(self):
         """Test a binary frame packet build"""
         old_encode = ModbusRequest.encode
         ModbusRequest.encode = lambda self: b""
         message = ModbusRequest()
-        message.unit_id = 0xFF
+        message.slave_id = 0xFF
         message.function_code = 0x01
         expected = b"\x7b\xff\x01\x81\x80\x7d"
         actual = self._binary.buildPacket(message)

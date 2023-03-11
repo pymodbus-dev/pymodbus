@@ -622,7 +622,7 @@ class ModbusSimulatorServer:
                 response.function_code, self.call_response.error_response
             )
             err_response.transaction_id = response.transaction_id
-            err_response.unit_id = response.unit_id
+            err_response.slave_id = response.slave_id
         elif self.call_response.active == RESPONSE_JUNK:
             response = os.urandom(self.call_response.junk_len)
             skip_encoding = True

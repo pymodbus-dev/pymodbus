@@ -224,7 +224,7 @@ class ModbusBaseClient(ModbusClientMixin):
         else:
             self.transport.write(packet)
         req = self._build_response(request.transaction_id)
-        if self.params.broadcast_enable and not request.unit_id:
+        if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
             try:
@@ -269,7 +269,7 @@ class ModbusBaseClient(ModbusClientMixin):
         data is a non-empty bytes object containing the incoming data.
         """
         Log.debug("recv: {}", data, ":hex")
-        self.framer.processIncomingPacket(data, self._handle_response, unit=0)
+        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
 
     def create_future(self):
         """Help function to create asyncio Future object."""

@@ -118,7 +118,11 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         client.framer.sendPacket = MagicMock()
         client.framer.sendPacket.return_value = len(b"deadbeef")
         client.framer.decode_data = MagicMock()
-        client.framer.decode_data.return_value = {"unit": 1, "fcode": 222, "length": 27}
+        client.framer.decode_data.return_value = {
+            "slave": 1,
+            "fcode": 222,
+            "length": 27,
+        }
         request = MagicMock()
         request.get_response_pdu_size.return_value = 10
         request.unit_id = 1

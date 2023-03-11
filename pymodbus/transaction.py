@@ -104,7 +104,7 @@ class ModbusTransactionManager:
 
         mbap = self.client.framer.decode_data(response)
         if (
-            mbap.get("unit") != request.unit_id
+            mbap.get("slave") != request.unit_id
             or mbap.get("fcode") & 0x7F != request.function_code
         ):
             return False

@@ -62,7 +62,7 @@ class ModbusBinaryFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = struct.unpack(">B", data[1:2])[0]
             fcode = struct.unpack(">B", data[2:3])[0]
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -158,14 +158,13 @@ class ModbusBinaryFramer(ModbusFramer):
         :param kwargs:
         :raises ModbusIOException:
         """
-        unit = slave
         self.addToFrame(data)
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         while self.isFrameReady():
             if self.checkFrame():
-                if self._validate_slave_id(unit, single):
+                if self._validate_slave_id(slave, single):
                     if (result := self.decoder.decode(self.getFrame())) is None:
                         raise ModbusIOException("Unable to decode response")
                     self.populateResult(result)
@@ -173,7 +172,7 @@ class ModbusBinaryFramer(ModbusFramer):
                     callback(result)  # defer or push to a thread?
                 else:
                     header_txt = self._header["uid"]
-                    Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
+                    Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                     self.resetFrame()
                     break
 

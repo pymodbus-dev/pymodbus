@@ -119,20 +119,19 @@ class ModbusTlsFramer(ModbusFramer):
                list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        unit = slave
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
-        # no unit id for Modbus Security Application Protocol
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
+        # no slave id for Modbus Security Application Protocol
         single = kwargs.get("single", True)
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
 
         if self.isFrameReady():
             if self.checkFrame():
-                if self._validate_slave_id(unit, single):
+                if self._validate_slave_id(slave, single):
                     self._process(callback)
                 else:
-                    Log.debug("Not in valid unit id - {}, ignoring!!", unit)
+                    Log.debug("Not in valid slave id - {}, ignoring!!", slave)
                     self.resetFrame()
             else:
                 Log.debug("Frame check failed, ignoring!!")

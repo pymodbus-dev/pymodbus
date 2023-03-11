@@ -52,7 +52,7 @@ class ModbusAsciiFramer(ModbusFramer):
         if len(data) > 1:
             uid = int(data[1:3], 16)
             fcode = int(data[3:5], 16)
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -161,14 +161,13 @@ class ModbusAsciiFramer(ModbusFramer):
         :param kwargs:
         :raises ModbusIOException:
         """
-        unit = slave
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         self.addToFrame(data)
         while self.isFrameReady():
             if self.checkFrame():
-                if self._validate_slave_id(unit, single):
+                if self._validate_slave_id(slave, single):
                     frame = self.getFrame()
                     if (result := self.decoder.decode(frame)) is None:
                         raise ModbusIOException("Unable to decode response")
@@ -177,7 +176,7 @@ class ModbusAsciiFramer(ModbusFramer):
                     callback(result)  # defer this
                 else:
                     header_txt = self._header["uid"]
-                    Log.error("Not a valid unit id - {}, ignoring!!", header_txt)
+                    Log.error("Not a valid slave id - {}, ignoring!!", header_txt)
                     self.resetFrame()
             else:
                 break

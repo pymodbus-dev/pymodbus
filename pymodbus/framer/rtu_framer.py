@@ -73,7 +73,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -209,22 +209,21 @@ class ModbusRtuFramer(ModbusFramer):
         :param data: The new packet data
         :param callback: The function to send results to
         :param slave: Process if slave id matches, ignore otherwise (could be a
-               list of unit ids (server) or single slave id(client/server)
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        unit = slave
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         self.addToFrame(data)
         single = kwargs.get("single", False)
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    if self._validate_slave_id(unit, single):
+                    if self._validate_slave_id(slave, single):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
+                        Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                         break
                 else:
@@ -245,7 +244,7 @@ class ModbusRtuFramer(ModbusFramer):
             struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
         )
         packet += struct.pack(">H", computeCRC(packet))
-        # Ensure that transaction is actually the unit id for serial comms
+        # Ensure that transaction is actually the slave id for serial comms
         message.transaction_id = message.unit_id
         return packet
 

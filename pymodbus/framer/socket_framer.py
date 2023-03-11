@@ -132,7 +132,7 @@ class ModbusSocketFramer(ModbusFramer):
                 "tid": tid,
                 "pid": pid,
                 "length": length,
-                "unit": uid,
+                "slave": uid,
                 "fcode": fcode,
             }
         return {}
@@ -151,24 +151,23 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        unit = slave
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    if self._validate_slave_id(unit, single):
+                    if self._validate_slave_id(slave, single):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
+                        Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                 else:
                     Log.debug("Frame check failed, ignoring!!")

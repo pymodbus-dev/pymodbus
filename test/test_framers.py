@@ -82,7 +82,7 @@ def test_framer_initialization(framer):
         ]
 
 
-@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "unit": 97})])
+@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "slave": 97})])
 def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test decode data."""
     data, expected = data
@@ -339,7 +339,7 @@ def test_decode_ascii_data(ascii_framer, data):  # pylint: disable=redefined-out
     data = ascii_framer.decode_data(data)
     assert isinstance(data, dict)
     if data:
-        assert data.get("unit") == 1
+        assert data.get("slave") == 1
         assert data.get("fcode") == 1
     else:
         assert not data

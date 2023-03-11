@@ -164,7 +164,7 @@ class ModbusBinaryFramer(ModbusFramer):
         single = kwargs.get("single", False)
         while self.isFrameReady():
             if self.checkFrame():
-                if self._validate_unit_id(unit, single):
+                if self._validate_slave_id(unit, single):
                     if (result := self.decoder.decode(self.getFrame())) is None:
                         raise ModbusIOException("Unable to decode response")
                     self.populateResult(result)

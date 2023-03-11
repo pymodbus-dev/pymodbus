@@ -128,7 +128,7 @@ class ModbusTlsFramer(ModbusFramer):
 
         if self.isFrameReady():
             if self.checkFrame():
-                if self._validate_unit_id(unit, single):
+                if self._validate_slave_id(unit, single):
                     self._process(callback)
                 else:
                     Log.debug("Not in valid unit id - {}, ignoring!!", unit)

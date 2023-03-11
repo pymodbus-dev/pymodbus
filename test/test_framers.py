@@ -326,11 +326,11 @@ def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
     )
 
 
-def test_validate_unit_id(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_validate__slave_id(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test validate unit."""
     rtu_framer.populateHeader(TEST_MESSAGE)
-    assert rtu_framer._validate_unit_id([0], False)  # pylint: disable=protected-access
-    assert rtu_framer._validate_unit_id([1], True)  # pylint: disable=protected-access
+    assert rtu_framer._validate_slave_id([0], False)  # pylint: disable=protected-access
+    assert rtu_framer._validate_slave_id([1], True)  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize("data", [b":010100010001FC\r\n", b""])

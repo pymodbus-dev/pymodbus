@@ -163,7 +163,7 @@ class ModbusSocketFramer(ModbusFramer):
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
+                    if self._validate_slave_id(unit, single):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]

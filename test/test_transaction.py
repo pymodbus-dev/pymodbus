@@ -469,14 +469,14 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._tls.advanceFrame()
 
         self._tls.isFrameReady = MagicMock(return_value=True)
-        self._tls._validate_unit_id = MagicMock(  # pylint: disable=protected-access
+        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
             return_value=False
         )
         self._tls.processIncomingPacket(msg, mock_callback, unit)
         self.assertEqual(b"", self._tls.getRawFrame())
         self._tls.advanceFrame()
 
-        self._tls._validate_unit_id = MagicMock(  # pylint: disable=protected-access
+        self._tls._validate_slave_id = MagicMock(  # pylint: disable=protected-access
             return_value=True
         )
         self._tls.processIncomingPacket(msg, mock_callback, unit)

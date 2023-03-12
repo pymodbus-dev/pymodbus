@@ -93,32 +93,27 @@ class TestAsyncioServer(
 ):  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.server.asyncio module.
 
-    The scope of this unit test is the life-cycle management of the network
+    The scope of this test is the life-cycle management of the network
     connections and server objects.
 
-    This unittest suite does not attempt to test any of the underlying protocol details
+    This test suite does not attempt to test any of the underlying protocol details
     """
 
     server = None
     task = None
     loop = None
-    store = None
-    context = None
-    identity = None
+    store = ModbusSlaveContext(
+        di=ModbusSequentialDataBlock(0, [17] * 100),
+        co=ModbusSequentialDataBlock(0, [17] * 100),
+        hr=ModbusSequentialDataBlock(0, [17] * 100),
+        ir=ModbusSequentialDataBlock(0, [17] * 100),
+    )
+    context = ModbusServerContext(slaves=store, single=True)
+    identity = ModbusDeviceIdentification(info_name={"VendorName": "VendorName"})
 
     async def asyncSetUp(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
-        self.store = ModbusSlaveContext(
-            di=ModbusSequentialDataBlock(0, [17] * 100),
-            co=ModbusSequentialDataBlock(0, [17] * 100),
-            hr=ModbusSequentialDataBlock(0, [17] * 100),
-            ir=ModbusSequentialDataBlock(0, [17] * 100),
-        )
-        self.context = ModbusServerContext(slaves=self.store, single=True)
-        self.identity = ModbusDeviceIdentification(
-            info_name={"VendorName": "VendorName"}
-        )
 
     async def asyncTearDown(self):
         """Clean up the test environment"""
@@ -134,7 +129,6 @@ class TestAsyncioServer(
                 except CancelledError:
                     pass
                 self.task = None
-        self.context = ModbusServerContext(slaves=self.store, single=True)
         BasicClient.clear()
 
     def handle_task(self, result):
@@ -230,7 +224,7 @@ class TestAsyncioServer(
     async def test_async_tcp_server_roundtrip(self):
         """Test sending and receiving data on tcp socket"""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"
-        BasicClient.data = TEST_DATA  # unit 1, read register
+        BasicClient.data = TEST_DATA  # slave 1, read register
         await self.start_server()
         await self.connect_server()
         await asyncio.wait_for(BasicClient.done, timeout=0.1)
@@ -257,7 +251,7 @@ class TestAsyncioServer(
         await self.server.server_close()
 
     async def test_async_tcp_server_no_slave(self):
-        """Test unknown slave unit exception"""
+        """Test unknown slave exception"""
         self.context = ModbusServerContext(
             slaves={0x01: self.store, 0x02: self.store}, single=False
         )
@@ -388,7 +382,7 @@ class TestAsyncioServer(
     async def test_async_udp_server_roundtrip(self):
         """Test sending and receiving data on udp socket"""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
-        BasicClient.dataTo = TEST_DATA  # unit 1, read register
+        BasicClient.dataTo = TEST_DATA  # slave 1, read register
         BasicClient.done = self.loop.create_future()
         await self.start_server(do_udp=True)
         random_port = self.server.protocol._sock.getsockname()[  # pylint: disable=protected-access

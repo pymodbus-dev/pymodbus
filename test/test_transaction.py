@@ -1,5 +1,4 @@
 """Test transaction."""
-import unittest
 from binascii import a2b_hex
 from itertools import count
 from test import mock
@@ -27,15 +26,24 @@ from pymodbus.transaction import (
 TEST_MESSAGE = b"\x7b\x01\x03\x00\x00\x00\x05\x85\xC9\x7d"
 
 
-class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
-    unittest.TestCase
-):
+class TestTransaction:  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.transaction module."""
+
+    client = None
+    decoder = None
+    _tcp = None
+    _tls = None
+    _rtu = None
+    _ascii = None
+    _binary = None
+    _manager = None
+    _queue_manager = None
+    _tm = None
 
     # ----------------------------------------------------------------------- #
     # Test Construction
     # ----------------------------------------------------------------------- #
-    def setUp(self):
+    def setup_method(self):
         """Set up the test environment"""
         self.client = None
         self.decoder = ServerDecoder()
@@ -47,14 +55,6 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._manager = DictTransactionManager(self.client)
         self._queue_manager = FifoTransactionManager(self.client)
         self._tm = ModbusTransactionManager(self.client)
-
-    def tearDown(self):
-        """Clean up the test environment"""
-        del self._manager
-        del self._tcp
-        del self._tls
-        del self._rtu
-        del self._ascii
 
     # ----------------------------------------------------------------------- #
     # Base transaction manager
@@ -460,26 +460,26 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         """Framer tls incoming packet."""
         msg = b"\x01\x12\x34\x00\x08"
 
-        unit = 0x01
+        slave = 0x01
 
         def mock_callback():
             """Mock callback."""
 
         self._tls._process = mock.MagicMock()  # pylint: disable=protected-access
         self._tls.isFrameReady = mock.MagicMock(return_value=False)
-        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self._tls.processIncomingPacket(msg, mock_callback, slave)
         assert msg == self._tls.getRawFrame()
         self._tls.advanceFrame()
 
         self._tls.isFrameReady = mock.MagicMock(return_value=True)
         x = mock.MagicMock(return_value=False)
         self._tls._validate_slave_id = x  # pylint: disable=protected-access
-        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self._tls.processIncomingPacket(msg, mock_callback, slave)
         assert not self._tls.getRawFrame()
         self._tls.advanceFrame()
         x = mock.MagicMock(return_value=True)
         self._tls._validate_slave_id = x  # pylint: disable=protected-access
-        self._tls.processIncomingPacket(msg, mock_callback, unit)
+        self._tls.processIncomingPacket(msg, mock_callback, slave)
         assert msg == self._tls.getRawFrame()
         self._tls.advanceFrame()
 
@@ -637,7 +637,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
     def test_rtu_process_incoming_packets(self):
         """Test rtu process incoming packets."""
         mock_data = b"\x00\x01\x00\x00\x00\x01\xfc\x1b"
-        unit = 0x00
+        slave = 0x00
 
         def mock_callback():
             """Mock callback."""
@@ -647,7 +647,7 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
         self._rtu.isFrameReady = mock.MagicMock(return_value=False)
         self._rtu._buffer = mock_data  # pylint: disable=protected-access
 
-        self._rtu.processIncomingPacket(mock_data, mock_callback, unit)
+        self._rtu.processIncomingPacket(mock_data, mock_callback, slave)
 
     # ----------------------------------------------------------------------- #
     # ASCII tests
@@ -711,16 +711,16 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
     def test_ascii_process_incoming_packets(self):
         """Test ascii process incoming packet."""
         mock_data = b":F7031389000A60\r\n"
-        unit = 0x00
+        slave = 0x00
 
         def mock_callback(_mock_data, *_args, **_kwargs):
             """Mock callback."""
 
-        self._ascii.processIncomingPacket(mock_data, mock_callback, unit)
+        self._ascii.processIncomingPacket(mock_data, mock_callback, slave)
 
         # Test failure:
         self._ascii.checkFrame = mock.MagicMock(return_value=False)
-        self._ascii.processIncomingPacket(mock_data, mock_callback, unit)
+        self._ascii.processIncomingPacket(mock_data, mock_callback, slave)
 
     # ----------------------------------------------------------------------- #
     # Binary tests
@@ -784,13 +784,13 @@ class ModbusTransactionTest(  # pylint: disable=too-many-public-methods
     def test_binary_process_incoming_packet(self):
         """Test binary process incoming packet."""
         mock_data = TEST_MESSAGE
-        unit = 0x00
+        slave = 0x00
 
         def mock_callback(_mock_data):
             pass
 
-        self._binary.processIncomingPacket(mock_data, mock_callback, unit)
+        self._binary.processIncomingPacket(mock_data, mock_callback, slave)
 
         # Test failure:
         self._binary.checkFrame = mock.MagicMock(return_value=False)
-        self._binary.processIncomingPacket(mock_data, mock_callback, unit)
+        self._binary.processIncomingPacket(mock_data, mock_callback, slave)

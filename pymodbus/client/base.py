@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Tuple, Type
+from typing import Any, Callable, Optional, Tuple, Type
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -31,6 +31,7 @@ class ModbusBaseClient(ModbusClientMixin):
     :param broadcast_enable: (optional) True to treat id 0 as broadcast address.
     :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
     :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
+    :param on_reconnect_callback: (optional) Function that will be called just before a reconnection attempt.
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
@@ -79,6 +80,7 @@ class ModbusBaseClient(ModbusClientMixin):
         kwargs: dict = None
         reconnect_delay: int = None
         reconnect_delay_max: int = None
+        on_reconnect_callback: Optional[Callable[[], None]] = None
 
         baudrate: int = None
         bytesize: int = None
@@ -94,7 +96,7 @@ class ModbusBaseClient(ModbusClientMixin):
         password: str = None
         server_hostname: str = None
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         framer: Type[ModbusFramer] = None,
         timeout: str | float = Defaults.Timeout,
@@ -105,6 +107,7 @@ class ModbusBaseClient(ModbusClientMixin):
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
         reconnect_delay_max: int = Defaults.ReconnectDelayMax,
+        on_reconnect_callback: Optional[Callable[[], None]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
@@ -118,6 +121,7 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.broadcast_enable = bool(broadcast_enable)
         self.params.reconnect_delay = int(reconnect_delay)
         self.params.reconnect_delay_max = int(reconnect_delay_max)
+        self.params.on_reconnect_callback = on_reconnect_callback
         self.params.kwargs = kwargs
 
         # Common variables.
@@ -220,7 +224,7 @@ class ModbusBaseClient(ModbusClientMixin):
         else:
             self.transport.write(packet)
         req = self._build_response(request.transaction_id)
-        if self.params.broadcast_enable and not request.unit_id:
+        if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
         else:
             try:
@@ -265,7 +269,7 @@ class ModbusBaseClient(ModbusClientMixin):
         data is a non-empty bytes object containing the incoming data.
         """
         Log.debug("recv: {}", data, ":hex")
-        self.framer.processIncomingPacket(data, self._handle_response, unit=0)
+        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
 
     def create_future(self):
         """Help function to create asyncio Future object."""

@@ -15,14 +15,14 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
     a remote device (depending on the client used)
     """
 
-    def __init__(self, client, unit=None):
+    def __init__(self, client, slave=None):
         """Initialize the datastores.
 
         :param client: The client to retrieve values with
-        :param unit: Unit ID of the remote slave
+        :param slave: Unit ID of the remote slave
         """
         self._client = client
-        self.unit = unit
+        self.slave = slave
         self.result = None
         self.__build_mapping()
         if not self.__set_callbacks:
@@ -71,8 +71,8 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
     def __build_mapping(self):
         """Build the function code mapper."""
         kwargs = {}
-        if self.unit:
-            kwargs["slave"] = self.unit
+        if self.slave:
+            kwargs["slave"] = self.slave
         self.__get_callbacks = {
             "d": lambda a, c: self._client.read_discrete_inputs(  # pylint: disable=unnecessary-lambda
                 a, c, **kwargs

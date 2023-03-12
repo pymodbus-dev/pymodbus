@@ -149,6 +149,8 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
 
         self._reconnect_task = None
+        if self.params.on_reconnect_callback:
+            self.params.on_reconnect_callback()
         return await self._connect()
 
 

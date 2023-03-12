@@ -46,16 +46,16 @@ async def run_forwarder(args):
     )
     await args.client.connect()
     assert args.client.connected
-    # If required to communicate with a specified client use unit=<unit_id>
+    # If required to communicate with a specified client use slave=<slave_id>
     # in RemoteSlaveContext
-    # For e.g to forward the requests to slave with unit address 1 use
-    # store = RemoteSlaveContext(client, unit=1)
+    # For e.g to forward the requests to slave with slave address 1 use
+    # store = RemoteSlaveContext(client, slave=1)
     if args.slaves:
         store = {}
         for i in args.slaves:
-            store[i.to_bytes(1, "big")] = RemoteSlaveContext(args.client, unit=i)
+            store[i.to_bytes(1, "big")] = RemoteSlaveContext(args.client, slave=i)
     else:
-        store = RemoteSlaveContext(args.client, unit=1)
+        store = RemoteSlaveContext(args.client, slave=1)
     args.context = ModbusServerContext(slaves=store, single=True)
 
     await StartAsyncTcpServer(context=args.context, address=("localhost", args.port))

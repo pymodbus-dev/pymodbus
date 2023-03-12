@@ -117,7 +117,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         result.transaction_id = self._header["tid"]
         result.protocol_id = self._header["pid"]
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -132,12 +132,12 @@ class ModbusSocketFramer(ModbusFramer):
                 "tid": tid,
                 "pid": pid,
                 "length": length,
-                "unit": uid,
+                "slave": uid,
                 "fcode": fcode,
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -151,23 +151,23 @@ class ModbusSocketFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
+                    if self._validate_slave_id(slave, single):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
+                        Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                 else:
                     Log.debug("Frame check failed, ignoring!!")
@@ -217,7 +217,7 @@ class ModbusSocketFramer(ModbusFramer):
             message.transaction_id,
             message.protocol_id,
             len(data) + 2,
-            message.unit_id,
+            message.slave_id,
             message.function_code,
         )
         packet += data

@@ -216,7 +216,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.framer.processIncomingPacket(
                     data=data,
                     callback=lambda x: self.execute(x, *addr),
-                    unit=units,
+                    slave=units,
                     single=single,
                 )
 
@@ -256,17 +256,17 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         broadcast = False
         try:
-            if self.server.broadcast_enable and not request.unit_id:
+            if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
-                for unit_id in self.server.context.slaves():
-                    response = request.execute(self.server.context[unit_id])
+                for slave_id in self.server.context.slaves():
+                    response = request.execute(self.server.context[slave_id])
             else:
-                context = self.server.context[request.unit_id]
+                context = self.server.context[request.slave_id]
                 response = request.execute(context)
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.unit_id)
+            Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
@@ -280,7 +280,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id
-            response.unit_id = request.unit_id
+            response.slave_id = request.slave_id
             skip_encoding = False
             if self.server.response_manipulator:
                 response, skip_encoding = self.server.response_manipulator(response)
@@ -513,8 +513,8 @@ class ModbusUnixServer:
                         reuse of an address.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
@@ -618,8 +618,8 @@ class ModbusTcpServer:
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
@@ -744,8 +744,8 @@ class ModbusTlsServer(ModbusTcpServer):
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for
                         manipulating the response
         """
@@ -796,8 +796,8 @@ class ModbusUdpServer:
                             ModbusDisonnectedRequestHandler
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                            False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                            False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for
                             manipulating the response
         """
@@ -895,8 +895,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                            False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                            False to treat 0 as any other slave_id
         :param auto_reconnect: True to enable automatic reconnection,
                             False otherwise
         :param reconnect_delay: reconnect delay in seconds

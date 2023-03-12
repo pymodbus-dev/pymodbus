@@ -28,7 +28,7 @@ Prepare/make release on dev.
 * on local repo
    * git pull, check release tag is pulled
    * git checkout v3.0.0dev0
-   * python3 setup.py sdist bdist_wheel --universal
+   * python3 setup.py sdist bdist_wheel
    * twine upload dist/*  (upload to pypi)
    * Double check Read me docs are updated
       * trigger build https://readthedocs.org/projects/pymodbus/builds/

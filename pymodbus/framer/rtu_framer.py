@@ -73,7 +73,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -188,13 +188,13 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
         result.transaction_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -208,22 +208,22 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         self.addToFrame(data)
         single = kwargs.get("single", False)
         while True:
             if self.isFrameReady():
                 if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
+                    if self._validate_slave_id(slave, single):
                         self._process(callback)
                     else:
                         header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
+                        Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                         self.resetFrame()
                         break
                 else:
@@ -241,11 +241,12 @@ class ModbusRtuFramer(ModbusFramer):
         """
         data = message.encode()
         packet = (
-            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+            struct.pack(RTU_FRAME_HEADER, message.slave_id, message.function_code)
+            + data
         )
         packet += struct.pack(">H", computeCRC(packet))
-        # Ensure that transaction is actually the unit id for serial comms
-        message.transaction_id = message.unit_id
+        # Ensure that transaction is actually the slave id for serial comms
+        message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):

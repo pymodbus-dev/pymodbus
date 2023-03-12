@@ -104,7 +104,7 @@ class ModbusTransactionManager:
 
         mbap = self.client.framer.decode_data(response)
         if (
-            mbap.get("unit") != request.unit_id
+            mbap.get("slave") != request.slave_id
             or mbap.get("fcode") & 0x7F != request.function_code
         ):
             return False
@@ -130,7 +130,7 @@ class ModbusTransactionManager:
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
                 if broadcast := (
-                    self.client.params.broadcast_enable and not request.unit_id
+                    self.client.params.broadcast_enable and not request.slave_id
                 ):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
@@ -146,7 +146,7 @@ class ModbusTransactionManager:
                                     self._calculate_response_length(response_pdu_size)
                                 )
                     if (  # pylint: disable=simplifiable-if-statement
-                        request.unit_id in self._no_response_devices
+                        request.slave_id in self._no_response_devices
                     ):
                         full = True
                     else:
@@ -168,15 +168,15 @@ class ModbusTransactionManager:
                         )
                         if valid_response:
                             if (
-                                request.unit_id in self._no_response_devices
+                                request.slave_id in self._no_response_devices
                                 and response
                             ):
-                                self._no_response_devices.remove(request.unit_id)
+                                self._no_response_devices.remove(request.slave_id)
                                 Log.debug("Got response!!!")
                             break
                         if not response:
-                            if request.unit_id not in self._no_response_devices:
-                                self._no_response_devices.append(request.unit_id)
+                            if request.slave_id not in self._no_response_devices:
+                                self._no_response_devices.append(request.slave_id)
                             if self.retry_on_empty:
                                 response, last_exception = self._retry_transaction(
                                     retries,
@@ -206,7 +206,7 @@ class ModbusTransactionManager:
                         tid=request.transaction_id,
                     )
                     self.client.framer.processIncomingPacket(
-                        response, addTransaction, request.unit_id
+                        response, addTransaction, request.slave_id
                     )
                     if not (response := self.getTransaction(request.transaction_id)):
                         if len(self.transactions):

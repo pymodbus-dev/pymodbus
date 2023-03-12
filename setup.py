@@ -30,4 +30,5 @@ del dependencies["required"]
 setup(
     install_requires=install_req,
     extras_require=dependencies,
+    package_data={"pymodbus": ["py.typed"]},
 )

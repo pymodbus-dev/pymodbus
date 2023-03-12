@@ -78,26 +78,26 @@ class ModbusAllMessagesTests(unittest.TestCase):
 
     def test_initializing_slave_address_request(self):
         """Test that every request can initialize the unit id"""
-        unit_id = 0x12
+        slave_id = 0x12
         for factory in self.requests:
-            request = factory(unit_id)
-            self.assertEqual(request.unit_id, unit_id)
+            request = factory(slave_id)
+            self.assertEqual(request.slave_id, slave_id)
 
     def test_initializing_slave_address_response(self):
         """Test that every response can initialize the unit id"""
-        unit_id = 0x12
+        slave_id = 0x12
         for factory in self.responses:
-            response = factory(unit_id)
-            self.assertEqual(response.unit_id, unit_id)
+            response = factory(slave_id)
+            self.assertEqual(response.slave_id, slave_id)
 
     def test_forwarding_kwargs_to_pdu(self):
         """Test that the kwargs are forwarded to the pdu correctly"""
         request = ReadCoilsRequest(1, 5, unit=0x12, transaction=0x12, protocol=0x12)
-        self.assertEqual(request.unit_id, 0x12)
+        self.assertEqual(request.slave_id, 0x12)
         self.assertEqual(request.transaction_id, 0x12)
         self.assertEqual(request.protocol_id, 0x12)
 
         request = ReadCoilsRequest(1, 5)
-        self.assertEqual(request.unit_id, Defaults.Slave)
+        self.assertEqual(request.slave_id, Defaults.Slave)
         self.assertEqual(request.transaction_id, Defaults.TransactionId)
         self.assertEqual(request.protocol_id, Defaults.ProtocolId)

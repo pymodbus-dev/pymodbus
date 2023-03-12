@@ -76,8 +76,9 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 55
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, **kwargs):
+    def __init__(self, address=None, slave=0, **kwargs):
         """Initialize."""
+        kwargs["unit"] = slave
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = 16
@@ -127,6 +128,6 @@ class Read16CoilsRequest(ReadCoilsRequest):
 if __name__ == "__main__":
     with ModbusClient(host="localhost", port=5020) as client:
         client.register(CustomModbusResponse)
-        request = CustomModbusRequest(1, unit=1)
+        request = CustomModbusRequest(1, slave=1)
         result = client.execute(request)
         print(result.values)

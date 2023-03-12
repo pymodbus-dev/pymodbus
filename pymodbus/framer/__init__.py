@@ -26,20 +26,20 @@ class ModbusFramer:
         self.decoder = decoder
         self.client = client
 
-    def _validate_unit_id(self, units, single):
+    def _validate_slave_id(self, slaves, single):
         """Validate if the received data is valid for the client.
 
-        :param units: list of unit id for which the transaction is valid
+        :param slaves: list of slave id for which the transaction is valid
         :param single: Set to true to treat this as a single context
         :return:
         """
         if single:
             return True
-        if 0 in units or 0xFF in units:
-            # Handle Modbus TCP unit identifier (0x00 0r 0xFF)
+        if 0 in slaves or 0xFF in slaves:
+            # Handle Modbus TCP slave identifier (0x00 0r 0xFF)
             # in asynchronous requests
             return True
-        return self._header["uid"] in units  # pylint: disable=no-member
+        return self._header["uid"] in slaves  # pylint: disable=no-member
 
     def sendPacket(self, message):
         """Send packets on the bus.

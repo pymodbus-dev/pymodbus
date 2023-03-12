@@ -4,6 +4,7 @@ import logging
 import os
 from threading import Thread
 from time import sleep
+from unittest.mock import Mock
 
 import pytest
 
@@ -184,11 +185,15 @@ async def test_async_task_server_stop(comm):
     run_server, server_args, run_client, client_args = helper_config(comm, "async")
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.1)
-    client = run_client(**client_args)
+
+    on_reconnect_callback = Mock()
+
+    client = run_client(**client_args, on_reconnect_callback=on_reconnect_callback)
     await client.connect()
     assert client._connected  # pylint: disable=protected-access
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
+    on_reconnect_callback.assert_not_called()
 
     # Server breakdown
     await server.ServerAsyncStop()
@@ -209,6 +214,7 @@ async def test_async_task_server_stop(comm):
         if not timer_allowed:
             assert False, "client do not reconnect"
     assert client._connected  # pylint: disable=protected-access
+    on_reconnect_callback.assert_called()
 
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8

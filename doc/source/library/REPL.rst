@@ -213,7 +213,7 @@ value are to be supplied in ``arg=val`` format.
 ::
 
 
-   > client.read_holding_registers count=4 address=9 unit=1
+   > client.read_holding_registers count=4 address=9 slave=1
    {
        "registers": [
            60497,

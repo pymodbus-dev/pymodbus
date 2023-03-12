@@ -82,7 +82,7 @@ def test_framer_initialization(framer):
         ]
 
 
-@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "unit": 97})])
+@pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "slave": 97})])
 def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test decode data."""
     data, expected = data
@@ -223,7 +223,7 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
     rtu_framer._header["uid"] = 255  # pylint: disable=protected-access
     result = Mock()
     rtu_framer.populateResult(result)
-    assert result.unit_id == 255
+    assert result.slave_id == 255
 
 
 @pytest.mark.parametrize(
@@ -326,11 +326,11 @@ def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
     )
 
 
-def test_validate_unit_id(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_validate__slave_id(rtu_framer):  # pylint: disable=redefined-outer-name
     """Test validate unit."""
     rtu_framer.populateHeader(TEST_MESSAGE)
-    assert rtu_framer._validate_unit_id([0], False)  # pylint: disable=protected-access
-    assert rtu_framer._validate_unit_id([1], True)  # pylint: disable=protected-access
+    assert rtu_framer._validate_slave_id([0], False)  # pylint: disable=protected-access
+    assert rtu_framer._validate_slave_id([1], True)  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize("data", [b":010100010001FC\r\n", b""])
@@ -339,7 +339,7 @@ def test_decode_ascii_data(ascii_framer, data):  # pylint: disable=redefined-out
     data = ascii_framer.decode_data(data)
     assert isinstance(data, dict)
     if data:
-        assert data.get("unit") == 1
+        assert data.get("slave") == 1
         assert data.get("fcode") == 1
     else:
         assert not data

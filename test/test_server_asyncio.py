@@ -2,7 +2,6 @@
 import asyncio
 import logging
 import ssl
-import unittest
 from asyncio import CancelledError
 from test import mock
 
@@ -88,9 +87,7 @@ class BasicClient(asyncio.BaseProtocol):
         BasicClient.my_protocol = None
 
 
-class TestAsyncioServer(
-    unittest.IsolatedAsyncioTestCase
-):  # pylint: disable=too-many-public-methods
+class TestAsyncioServer:  # pylint: disable=too-many-public-methods
     """Unittest for the pymodbus.server.asyncio module.
 
     The scope of this test is the life-cycle management of the network
@@ -111,12 +108,13 @@ class TestAsyncioServer(
     context = ModbusServerContext(slaves=store, single=True)
     identity = ModbusDeviceIdentification(info_name={"VendorName": "VendorName"})
 
-    async def asyncSetUp(self):
+    @pytest.fixture(autouse=True)
+    async def setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
+        yield
 
-    async def asyncTearDown(self):
-        """Clean up the test environment"""
+        # teardown
         if self.server is not None:
             await self.server.server_close()
             self.server = None

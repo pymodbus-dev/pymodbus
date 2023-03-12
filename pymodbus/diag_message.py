@@ -191,12 +191,12 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000, unit=None, **kwargs):
+    def __init__(self, message=0x0000, slave=None, **kwargs):
         """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
         """
-        DiagnosticStatusRequest.__init__(self, unit=unit, **kwargs)
+        DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
         if isinstance(message, list):
             self.message = message
         else:
@@ -248,12 +248,12 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, unit=None, **kwargs):
+    def __init__(self, toggle=False, slave=None, **kwargs):
         """Initialize a new request.
 
         :param toggle: Set to True to toggle, False otherwise
         """
-        DiagnosticStatusRequest.__init__(self, unit=unit, **kwargs)
+        DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
         if toggle:
             self.message = [ModbusStatus.On]
         else:
@@ -774,9 +774,9 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0015
 
-    def __init__(self, unit=None, **kwargs):
+    def __init__(self, slave=None, **kwargs):
         """Initialize."""
-        super().__init__(unit=unit, **kwargs)
+        super().__init__(slave=slave, **kwargs)
 
     def get_response_pdu_size(self):
         """Return a series of 54 16-bit words (108 bytes) in the data field of the response.

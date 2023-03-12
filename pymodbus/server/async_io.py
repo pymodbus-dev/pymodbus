@@ -193,7 +193,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         reset_frame = False
         while self.running:
             try:
-                units = self.server.context.slaves()
+                slaves = self.server.context.slaves()
                 # this is an asyncio.Queue await, it will never fail
                 data = await self._recv_()
                 if isinstance(data, tuple):
@@ -202,13 +202,13 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     addr = (None,)  # empty tuple
 
-                if not isinstance(units, (list, tuple)):
-                    units = [units]
+                if not isinstance(slaves, (list, tuple)):
+                    slaves = [slaves]
                 # if broadcast is enabled make sure to
                 # process requests to address 0
                 if self.server.broadcast_enable:  # pragma: no cover
-                    if 0 not in units:
-                        units.append(0)
+                    if 0 not in slaves:
+                        slaves.append(0)
 
                 Log.debug("Handling data: {}", data, ":hex")
 
@@ -216,7 +216,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.framer.processIncomingPacket(
                     data=data,
                     callback=lambda x: self.execute(x, *addr),
-                    slave=units,
+                    slave=slaves,
                     single=single,
                 )
 

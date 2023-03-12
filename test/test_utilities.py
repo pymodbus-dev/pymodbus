@@ -1,6 +1,5 @@
 """Test utilities."""
 import struct
-import unittest
 
 from pymodbus.utilities import (
     checkCRC,
@@ -32,16 +31,29 @@ class DictPropertyTester:  # pylint: disable=too-few-public-methods
     g_1 = dict_property(_test_master, 4)
 
 
-class SimpleUtilityTest(unittest.TestCase):
+class TestUtility:
     """Unittest for the pymod.utilities module."""
 
-    def setUp(self):
+    def setup_method(self):
         """Initialize the test environment"""
-        self.data = struct.pack(">HHHH", 0x1234, 0x2345, 0x3456, 0x4567)
-        self.string = b"test the computation"
-        self.bits = [True, False, True, False, True, False, True, False]
+        self.data = struct.pack(  # pylint: disable=attribute-defined-outside-init
+            ">HHHH", 0x1234, 0x2345, 0x3456, 0x4567
+        )
+        self.string = (  # pylint: disable=attribute-defined-outside-init
+            b"test the computation"
+        )
+        self.bits = [  # pylint: disable=attribute-defined-outside-init
+            True,
+            False,
+            True,
+            False,
+            True,
+            False,
+            True,
+            False,
+        ]
 
-    def tearDown(self):
+    def teardown_method(self):
         """Clean up the test environment"""
         del self.bits
         del self.string
@@ -49,44 +61,44 @@ class SimpleUtilityTest(unittest.TestCase):
     def test_dict_property(self):
         """Test all string <=> bit packing functions"""
         result = DictPropertyTester()
-        self.assertEqual(result.l_1, "a")
-        self.assertEqual(result.l_2, "b")
-        self.assertEqual(result.l_3, "c")
-        self.assertEqual(result.s_1, "a")
-        self.assertEqual(result.s_2, "b")
-        self.assertEqual(result.g_1, "d")
+        assert result.l_1 == "a"
+        assert result.l_2 == "b"
+        assert result.l_3 == "c"
+        assert result.s_1 == "a"
+        assert result.s_2 == "b"
+        assert result.g_1 == "d"
 
         for store in "l_1 l_2 l_3 s_1 s_2 g_1".split(" "):
             setattr(result, store, "x")
 
-        self.assertEqual(result.l_1, "x")
-        self.assertEqual(result.l_2, "x")
-        self.assertEqual(result.l_3, "x")
-        self.assertEqual(result.s_1, "x")
-        self.assertEqual(result.s_2, "x")
-        self.assertEqual(result.g_1, "x")
+        assert result.l_1 == "x"
+        assert result.l_2 == "x"
+        assert result.l_3 == "x"
+        assert result.s_1 == "x"
+        assert result.s_2 == "x"
+        assert result.g_1 == "x"
 
     def test_default_value(self):
         """Test all string <=> bit packing functions"""
-        self.assertEqual(default(1), 0)
-        self.assertEqual(default(1.1), 0.0)
-        self.assertEqual(default(1 + 1j), 0j)
-        self.assertEqual(default("string"), "")
-        self.assertEqual(default([1, 2, 3]), [])
-        self.assertEqual(default({1: 1}), {})
-        self.assertEqual(default(True), False)
+        assert not default(1)
+        assert not default(1.1)
+        assert not default(1 + 1)
+        assert not default("string")
+        assert default([1, 2, 3]) == []
+        assert default({1: 1}) == {}
+        assert not default(True)
 
     def test_bit_packing(self):
         """Test all string <=> bit packing functions"""
-        self.assertEqual(unpack_bitstring(b"\x55"), self.bits)
-        self.assertEqual(pack_bitstring(self.bits), b"\x55")
+        assert unpack_bitstring(b"\x55") == self.bits
+        assert pack_bitstring(self.bits) == b"\x55"
 
     def test_longitudinal_redundancycheck(self):
         """Test the longitudinal redundancy check code"""
-        self.assertTrue(checkLRC(self.data, 0x1C))
-        self.assertTrue(checkLRC(self.string, 0x0C))
+        assert checkLRC(self.data, 0x1C)
+        assert checkLRC(self.string, 0x0C)
 
     def test_cyclic_redundancy_check(self):
         """Test the cyclic redundancy check code"""
-        self.assertTrue(checkCRC(self.data, 0xE2DB))
-        self.assertTrue(checkCRC(self.string, 0x889E))
+        assert checkCRC(self.data, 0xE2DB)
+        assert checkCRC(self.string, 0x889E)

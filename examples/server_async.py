@@ -112,7 +112,7 @@ def setup_server(args):
             single = False
         else:
             context = ModbusSlaveContext(
-                di=datablock, co=datablock, hr=datablock, ir=datablock, unit=1
+                di=datablock, co=datablock, hr=datablock, ir=datablock
             )
             single = True
 

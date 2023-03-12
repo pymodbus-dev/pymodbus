@@ -34,13 +34,13 @@ class ModbusTcpDiagClient(ModbusTcpClient):
     +---------+-----------------------------------------------------------------+
     | Level   | Events                                                          |
     +=========+=================================================================+
-    | ERROR   | Failure to connect to modbus unit; unexpected disconnect by     |
-    |         | modbus unit                                                     |
+    | ERROR   | Failure to connect to modbus slave; unexpected disconnect by    |
+    |         | modbus slave                                                    |
     +---------+-----------------------------------------------------------------+
     | WARNING | Timeout on normal read; read took longer than warn_delay_limit  |
     +---------+-----------------------------------------------------------------+
-    | INFO    | Connection attempt to modbus unit; disconnection from modbus    |
-    |         | unit; each time limited read                                    |
+    | INFO    | Connection attempt to modbus slave; disconnection from modbus   |
+    |         | slave; each time limited read                                   |
     +---------+-----------------------------------------------------------------+
     | DEBUG   | Normal read with timing information                             |
     +---------+-----------------------------------------------------------------+

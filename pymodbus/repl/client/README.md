@@ -282,7 +282,7 @@ null
 
 ```
 
-To Send broadcast requests, use `--broadcast-support` and send requests with unit id as `0`.
+To Send broadcast requests, use `--broadcast-support` and send requests with slave id as `0`.
 `write_coil`, `write_coils`, `write_register`, `write_registers` are supported.
 
 ```
@@ -298,12 +298,12 @@ __________          _____             .___  __________              .__
                                         v1.3.0 - [pymodbus, version 3.0.0]
 ----------------------------------------------------------------------------
 
-> client.write_registers address=0 values=10,20,30,40 unit=0
+> client.write_registers address=0 values=10,20,30,40 slave=0
 {
     "broadcasted": true
 }
 
-> client.write_registers address=0 values=10,20,30,40 unit=1
+> client.write_registers address=0 values=10,20,30,40 slave=1
 {
     "address": 0,
     "count": 4

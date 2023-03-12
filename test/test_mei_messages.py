@@ -3,7 +3,7 @@
 This fixture tests the functionality of all the
 mei based request/response messages:
 """
-import unittest
+import pytest
 
 from pymodbus.constants import DeviceInformation
 from pymodbus.device import ModbusControlBlock
@@ -21,7 +21,7 @@ TEST_VERSION = b"v2.1.12"
 TEST_MESSAGE = b"\x00\x07Company\x01\x07Product\x02\x07v2.1.12"
 
 
-class ModbusMeiMessageTest(unittest.TestCase):
+class TestMeiMessage:
     """Unittest for the pymodbus.mei_message module."""
 
     # -----------------------------------------------------------------------#
@@ -33,15 +33,15 @@ class ModbusMeiMessageTest(unittest.TestCase):
         params = {"read_code": DeviceInformation.Basic, "object_id": 0x00}
         handle = ReadDeviceInformationRequest(**params)
         result = handle.encode()
-        self.assertEqual(result, b"\x0e\x01\x00")
-        self.assertEqual("ReadDeviceInformationRequest(1,0)", str(handle))
+        assert result == b"\x0e\x01\x00"
+        assert str(handle) == "ReadDeviceInformationRequest(1,0)"
 
     def test_read_device_information_request_decode(self):
         """Test basic bit message encoding/decoding"""
         handle = ReadDeviceInformationRequest()
         handle.decode(b"\x0e\x01\x00")
-        self.assertEqual(handle.read_code, DeviceInformation.Basic)
-        self.assertEqual(handle.object_id, 0x00)
+        assert handle.read_code == DeviceInformation.Basic
+        assert not handle.object_id
 
     def test_read_device_information_request(self):
         """Test basic bit message encoding/decoding"""
@@ -54,30 +54,30 @@ class ModbusMeiMessageTest(unittest.TestCase):
 
         handle = ReadDeviceInformationRequest()
         result = handle.execute(context)
-        self.assertTrue(isinstance(result, ReadDeviceInformationResponse))
-        self.assertEqual(result.information[0x00], "Company")
-        self.assertEqual(result.information[0x01], "Product")
-        self.assertEqual(result.information[0x02], TEST_VERSION)
-        with self.assertRaises(KeyError):
+        assert isinstance(result, ReadDeviceInformationResponse)
+        assert result.information[0x00] == "Company"
+        assert result.information[0x01] == "Product"
+        assert result.information[0x02] == TEST_VERSION
+        with pytest.raises(KeyError):
             _ = result.information[0x81]
 
         handle = ReadDeviceInformationRequest(
             read_code=DeviceInformation.Extended, object_id=0x80
         )
         result = handle.execute(context)
-        self.assertEqual(result.information[0x81], ["Test", "Repeated"])
+        assert result.information[0x81] == ["Test", "Repeated"]
 
     def test_read_device_information_request_error(self):
         """Test basic bit message encoding/decoding"""
         handle = ReadDeviceInformationRequest()
         handle.read_code = -1
-        self.assertEqual(handle.execute(None).function_code, 0xAB)
+        assert handle.execute(None).function_code == 0xAB
         handle.read_code = 0x05
-        self.assertEqual(handle.execute(None).function_code, 0xAB)
+        assert handle.execute(None).function_code == 0xAB
         handle.object_id = -1
-        self.assertEqual(handle.execute(None).function_code, 0xAB)
+        assert handle.execute(None).function_code == 0xAB
         handle.object_id = 0x100
-        self.assertEqual(handle.execute(None).function_code, 0xAB)
+        assert handle.execute(None).function_code == 0xAB
 
     def test_read_device_information_encode(self):
         """Test that the read fifo queue response can encode"""
@@ -92,8 +92,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
             read_code=DeviceInformation.Basic, information=dataset
         )
         result = handle.encode()
-        self.assertEqual(result, message)
-        self.assertEqual("ReadDeviceInformationResponse(1)", str(handle))
+        assert result == message
+        assert str(handle) == "ReadDeviceInformationResponse(1)"
 
         dataset = {
             0x00: "Company",
@@ -108,7 +108,7 @@ class ModbusMeiMessageTest(unittest.TestCase):
             read_code=DeviceInformation.Extended, information=dataset
         )
         result = handle.encode()
-        self.assertEqual(result, message)
+        assert result == message
 
     def test_read_device_information_encode_long(self):
         """Test that the read fifo queue response can encode"""
@@ -132,8 +132,8 @@ class ModbusMeiMessageTest(unittest.TestCase):
             read_code=DeviceInformation.Basic, information=dataset
         )
         result = handle.encode()
-        self.assertEqual(result, message)
-        self.assertEqual("ReadDeviceInformationResponse(1)", str(handle))
+        assert result == message
+        assert str(handle) == "ReadDeviceInformationResponse(1)"
 
     def test_read_device_information_decode(self):
         """Test that the read device information response can decode"""
@@ -142,12 +142,12 @@ class ModbusMeiMessageTest(unittest.TestCase):
         message += b"\x81\x04Test\x81\x08Repeated\x81\x07Another"
         handle = ReadDeviceInformationResponse(read_code=0x00, information=[])
         handle.decode(message)
-        self.assertEqual(handle.read_code, DeviceInformation.Basic)
-        self.assertEqual(handle.conformity, 0x01)
-        self.assertEqual(handle.information[0x00], b"Company")
-        self.assertEqual(handle.information[0x01], b"Product")
-        self.assertEqual(handle.information[0x02], TEST_VERSION)
-        self.assertEqual(handle.information[0x81], [b"Test", b"Repeated", b"Another"])
+        assert handle.read_code == DeviceInformation.Basic
+        assert handle.conformity == 0x01
+        assert handle.information[0x00] == b"Company"
+        assert handle.information[0x01] == b"Product"
+        assert handle.information[0x02] == TEST_VERSION
+        assert handle.information[0x81] == [b"Test", b"Repeated", b"Another"]
 
     def test_rtu_frame_size(self):
         """Test that the read device information response can decode"""
@@ -155,7 +155,7 @@ class ModbusMeiMessageTest(unittest.TestCase):
             b"\x04\x2B\x0E\x01\x81\x00\x01\x01\x00\x06\x66\x6F\x6F\x62\x61\x72\xD7\x3B"
         )
         result = ReadDeviceInformationResponse.calculateRtuFrameSize(message)
-        self.assertEqual(result, 18)
+        assert result == 18
         message = b"\x00\x2B\x0E\x02\x00\x4D\x47"
         result = ReadDeviceInformationRequest.calculateRtuFrameSize(message)
-        self.assertEqual(result, 7)
+        assert result == 7

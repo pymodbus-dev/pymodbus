@@ -213,7 +213,7 @@ class ModbusTransactionManager:
                             response = self.getTransaction(tid=0)
                         else:
                             last_exception = last_exception or (
-                                "No Response received from the remote unit"
+                                "No Response received from the remote slave"
                                 "/Unable to decode response"
                             )
                             response = ModbusIOException(

@@ -1,6 +1,6 @@
 """Test datastore."""
 import logging
-from unittest.mock import patch
+from test import mock
 
 import pytest
 
@@ -12,7 +12,7 @@ class TestLogging:
 
     def test_log_dont_call_build_msg(self):
         """Verify that build_msg is not called unnecessary"""
-        with patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
+        with mock.patch("pymodbus.logging.Log.build_msg") as build_msg_mock:
             Log.setLevel(logging.INFO)
             Log.debug("test")
             build_msg_mock.assert_not_called()

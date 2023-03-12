@@ -76,9 +76,8 @@ class CustomModbusRequest(ModbusRequest):
     function_code = 55
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, slave=0, **kwargs):
+    def __init__(self, address=None, **kwargs):
         """Initialize."""
-        kwargs["unit"] = slave
         ModbusRequest.__init__(self, **kwargs)
         self.address = address
         self.count = 16

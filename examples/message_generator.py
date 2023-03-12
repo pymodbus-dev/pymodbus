@@ -157,7 +157,7 @@ _response_messages = [
     modbus_diag.ReturnBusCommunicationErrorCountResponse,
     modbus_diag.ReturnBusExceptionErrorCountResponse,
     modbus_diag.ReturnSlaveMessageCountResponse,
-    modbus_diag.ReturnSlaveNoReponseCountResponse,
+    modbus_diag.ReturnSlaveNoResponseCountResponse,
     modbus_diag.ReturnSlaveNAKCountResponse,
     modbus_diag.ReturnSlaveBusyCountResponse,
     modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
@@ -271,10 +271,8 @@ def get_options():
     return opt
 
 
-def main():
+def main(option):
     """Run main runner function"""
-    option = get_options()
-
     if option.debug:
         try:
             modbus_log.setLevel(logging.DEBUG)
@@ -292,4 +290,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(get_options())

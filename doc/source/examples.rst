@@ -10,33 +10,45 @@ These examples are considered essential usage examples, and are guaranteed to wo
 because they are tested automatilly with each dev branch commit using CI.
 
 
-Asynchronous Client Example
+Asynchronous client Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/client_async.py
 
-Asynchronous Client basic calls example
+Asynchronous client basic calls example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/client_calls.py
-
-Modbus Payload Example
-^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/client_payload.py
-
-Synchronous Client Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/client_sync.py
-
-Forwarder Example
-^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/modbus_forwarder.py
 
 Asynchronous server example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/server_async.py
 
-Modbus Payload Server example
+Build bcd Payload example
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/build_bcd_payload.py
+
+Message generator example
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/message_generator.py
+
+Message Parser example
+^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/message_parser.py
+
+Modbus forwarder Example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/modbus_forwarder.py
+
+Modbus payload client Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/client_payload.py
+
+Modbus payload Server example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/server_payload.py
+
+Synchronous client Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/client_sync.py
 
 Synchronous server example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -74,17 +86,9 @@ These examples have not been upgraded to v3.0.0 but are still relevant.
 Help is wanted to upgrade the examples.
 
 
-Bcd Payload example
-^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/bcd_payload.py
-
 Callback Server example
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/v2.5.3/callback_server.py
-
-Concurrent Client example
-^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/concurrent_client.py
 
 Custom Message example
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -97,18 +101,6 @@ Deviceinfo showcase client example
 Deviceinfo showcase server example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/v2.5.3/deviceinfo_showcase_server.py
-
-Message Generator example
-^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/message_generator.py
-
-Message Parser example
-^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/message_parser.py
-
-Modbus Mapper example
-^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/modbus_mapper.py
 
 Modbus Saver example
 ^^^^^^^^^^^^^^^^^^^^

@@ -140,7 +140,7 @@ def helper_config(request, def_type):
     return cur_m["srv"], cur["srv_args"], cur_m["cli"], cur["cli_args"]
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_no_server(comm):
     """Test normal client/server handling."""
@@ -156,7 +156,7 @@ async def test_async_task_no_server(comm):
     await client.close()
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_ok(comm):
     """Test normal client/server handling."""
@@ -175,10 +175,11 @@ async def test_async_task_ok(comm):
     await asyncio.sleep(0.1)
     assert not client._connected  # pylint: disable=protected-access
     await server.ServerAsyncStop()
+    task.cancel()
     await task
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_server_stop(comm):
     """Test normal client/server handling."""
@@ -226,7 +227,7 @@ async def test_async_task_server_stop(comm):
     await task
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_no_server(comm):
     """Test normal client/server handling."""
@@ -246,7 +247,7 @@ def test_sync_task_no_server(comm):
     client.close()
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_ok(comm):
     """Test normal client/server handling."""
@@ -271,7 +272,7 @@ def test_sync_task_ok(comm):
     thread.join()
 
 
-@pytest.mark.xdist_group(name="task_serialize")
+@pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
 def test_sync_task_server_stop(comm):
     """Test normal client/server handling."""

@@ -528,7 +528,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
-        :returns: int, float or str depending on "to_type"
+        :returns: int, float or str depending on "data_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()

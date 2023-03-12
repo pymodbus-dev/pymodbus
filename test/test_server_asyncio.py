@@ -262,7 +262,7 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         await self.start_server()
         await self.connect_server()
         assert not BasicClient.eof.done()
-        self.server.server_close()
+        await self.server.server_close()
         self.server = None
 
     async def test_async_tcp_server_modbus_error(self):

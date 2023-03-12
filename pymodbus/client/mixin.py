@@ -553,12 +553,19 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param value: value to be converted:
         :param data_type: data type to be encoded as registers
         :returns: List of registers, can be used directly in e.g. write_registers()
+        :raises TypeError: when there is a mismatch between data_type and value
         """
-        if data_type == cls.DATATYPE.STRING and isinstance(value, str):
+        if "STRING" in data_type.name:
+            if not isinstance(value, str):
+                raise TypeError(f"Value should be string but is {type(value)}.")
             byte_list = value.encode()
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:
+            if "INT" in data_type.name and not isinstance(value, int):
+                raise TypeError(
+                    f"Value should be {data_type.name} but is {type(value)}."
+                )
             byte_list = struct.pack(f">{data_type.value[0]}", value)
         regs = [
             int.from_bytes(byte_list[x : x + 2], "big")

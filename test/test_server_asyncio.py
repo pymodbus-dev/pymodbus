@@ -99,19 +99,24 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
     server = None
     task = None
     loop = None
-    store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17] * 100),
-        co=ModbusSequentialDataBlock(0, [17] * 100),
-        hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100),
-    )
-    context = ModbusServerContext(slaves=store, single=True)
-    identity = ModbusDeviceIdentification(info_name={"VendorName": "VendorName"})
+    store = None
+    context = None
+    identity = None
 
     @pytest.fixture(autouse=True)
     async def setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
+        self.store = ModbusSlaveContext(
+            di=ModbusSequentialDataBlock(0, [17] * 100),
+            co=ModbusSequentialDataBlock(0, [17] * 100),
+            hr=ModbusSequentialDataBlock(0, [17] * 100),
+            ir=ModbusSequentialDataBlock(0, [17] * 100),
+        )
+        self.context = ModbusServerContext(slaves=self.store, single=True)
+        self.identity = ModbusDeviceIdentification(
+            info_name={"VendorName": "VendorName"}
+        )
         yield
 
         # teardown

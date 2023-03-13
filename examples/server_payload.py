@@ -9,7 +9,6 @@ import logging
 
 from examples.helper import get_commandline
 from examples.server_async import run_async_server, setup_server
-from pymodbus import pymodbus_apply_logging_config
 from pymodbus.constants import Endian
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -24,9 +23,6 @@ _logger = logging.getLogger()
 
 def setup_payload_server(args):
     """Define payload for server and do setup."""
-
-    pymodbus_apply_logging_config()
-    _logger.setLevel(logging.DEBUG)
 
     # ----------------------------------------------------------------------- #
     # build your payload

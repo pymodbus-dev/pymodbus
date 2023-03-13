@@ -552,6 +552,7 @@ class ModbusUnixServer:
                     self.path,
                 )
                 self.serving.set_result(True)
+                Log.info("Server(Unix) listening.")
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
                 raise
@@ -662,6 +663,7 @@ class ModbusTcpServer:
                 **self.factory_parms,
             )
             self.serving.set_result(True)
+            Log.info("Server(TCP) listening.")
             try:
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
@@ -845,6 +847,7 @@ class ModbusUdpServer:
             except Exception as exc:
                 Log.error("Server unexpected exception {}", exc)
                 raise RuntimeError(exc) from exc
+            Log.info("Server(UDP) listening.")
             self.serving.set_result(True)
         else:
             raise RuntimeError(
@@ -1019,6 +1022,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        Log.info("Server(Serial) listening.")
         if self.device.startswith("socket:"):
             # Socket server means listen so start a socket server
             parts = self.device[9:].split(":")

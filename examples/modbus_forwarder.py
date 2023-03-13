@@ -14,7 +14,7 @@ a) server receives a read/write request from external client:
 Both server and client are tcp based, but it can be easily modified to any server/client
 (see client_sync.py and server_sync.py for other communication types)
 
-**WARNING** THIS EXAMPLE IS KNOWN TO HAVE PROBLEMS, a wrong solution.
+**WARNING** This example is a simple solution, that do only forward data (read/write) requests.
 """
 import asyncio
 import logging

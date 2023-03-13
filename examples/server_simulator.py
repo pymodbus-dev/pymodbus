@@ -124,7 +124,7 @@ def get_commandline():
     parser.add_argument("--port", help="set port", type=str, default="5020")
     args = parser.parse_args()
 
-    pymodbus_apply_logging_config()
+    pymodbus_apply_logging_config(args.log)
     _logger.setLevel(args.log.upper())
     args.framer = ModbusSocketFramer
     args.port = int(args.port)

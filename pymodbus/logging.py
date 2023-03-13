@@ -26,6 +26,8 @@ def pymodbus_apply_logging_config(
 
     Please call this function to format logging appropriately when opening issues.
     """
+    if isinstance(level, str):
+        level = level.upper()
     Log.apply_logging_config(level, log_file_name)
 
 
@@ -42,6 +44,8 @@ class Log:
         """Apply basic logging configuration"""
         if level == logging.NOTSET:
             level = cls._logger.getEffectiveLevel()
+        if isinstance(level, str):
+            level = level.upper()
         log_stream_handler = logging.StreamHandler()
         log_formatter = logging.Formatter(
             "%(asctime)s %(levelname)-5s %(module)s:%(lineno)s %(message)s"

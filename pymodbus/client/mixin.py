@@ -550,7 +550,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> List[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
-        :param value: value to be converted:
+        :param value: value to be converted
         :param data_type: data type to be encoded as registers
         :returns: List of registers, can be used directly in e.g. write_registers()
         :raises TypeError: when there is a mismatch between data_type and value

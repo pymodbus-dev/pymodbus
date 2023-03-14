@@ -258,7 +258,7 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
             True,
             False,
         ),  # incorrect slave id
-        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, False, True),
+        (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, True, False),
         # good frame + part of next frame
     ],
 )

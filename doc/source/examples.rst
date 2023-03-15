@@ -53,10 +53,17 @@ Examples contributions
 These examples are supplied by users of pymodbus.
 The pymodbus team thanks for sharing the examples.
 
+Redis datastore example
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/contrib/redis_datastore.py
+
 Serial Forwarder example
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/contrib/serial_forwarder.py
 
+Sqlalchemy datastore example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/contrib/sql_datastore.py
 
 
 Examples version 2.5.3

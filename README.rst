@@ -70,7 +70,7 @@ Server Features
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
   * asynchronous and synchronous versions
   * Full server control context (device information, counters, etc)
-  * A number of backend contexts (database, redis, sqlite, a slave device) as datastore
+  * A number of backend contexts as datastore
 
 ^^^^^^^^^^^
 Use Cases
@@ -178,8 +178,6 @@ Available options are:
 - **repl**, installs pymodbus REPL.
 
 - **serial**, installs serial drivers.
-
-- **datastore**, installs databases (SQLAlchemy and Redis) for datastore.
 
 - **documentation**, installs tools to generate documentation.
 

@@ -193,7 +193,7 @@ class SerialModbusClient(serialport.SerialPort):
 # An example line reader, this can replace with:
 # - the TCP protocol
 # - a context recorder
-# - a database or file recorder
+# - a any recorder
 # --------------------------------------------------------------------------- #
 class LoggingContextReader:
     """Logging context reader."""

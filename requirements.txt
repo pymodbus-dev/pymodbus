@@ -33,10 +33,6 @@ click>=8.0.0
 # install:serial
 pyserial>=3.5
 
-# install:datastore
-redis>=2.10.6
-sqlalchemy>=1.1.15
-
 
 # -------------------------------------------------------------------
 # documentation, everything needed to generate documentation.
@@ -69,6 +65,5 @@ pytest-asyncio==0.20.3
 pytest-cov==4.0.0
 pytest-timeout==2.1.0
 pytest-xdist==3.1.0
-types-redis
 types-Pygments
 types-pyserial

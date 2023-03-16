@@ -22,7 +22,6 @@ import pytest_asyncio
 
 from examples.build_bcd_payload import BcdPayloadBuilder, BcdPayloadDecoder
 from examples.client_async import run_async_client, setup_async_client
-from examples.client_calls import run_async_calls as run_client_calls
 from examples.client_payload import run_payload_calls
 from examples.client_test import run_async_calls as run_client_test
 from examples.helper import Commandline

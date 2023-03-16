@@ -1,74 +1,17 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-type-doc
-"""Modbus Message Generator.
-
-The following is an example of how to generate example encoded messages
-for the supplied modbus format:
-
-* tcp    - `./generate-messages.py -f tcp -m rx -b`
-* ascii  - `./generate-messages.py -f ascii -m tx -a`
-* rtu    - `./generate-messages.py -f rtu -m rx -b`
-* binary - `./generate-messages.py -f binary -m tx -b`
-"""
+"""Modbus Message Generator."""
+import argparse
 import codecs as c
 import logging
-from optparse import OptionParser  # pylint: disable=deprecated-module
 
+import pymodbus.bit_read_message as modbus_bit
+import pymodbus.bit_write_message as modbus_bit_write
 import pymodbus.diag_message as modbus_diag
-from pymodbus.bit_read_message import (
-    ReadCoilsRequest,
-    ReadCoilsResponse,
-    ReadDiscreteInputsRequest,
-    ReadDiscreteInputsResponse,
-)
-from pymodbus.bit_write_message import (
-    WriteMultipleCoilsRequest,
-    WriteMultipleCoilsResponse,
-    WriteSingleCoilRequest,
-    WriteSingleCoilResponse,
-)
-from pymodbus.file_message import (
-    ReadFifoQueueRequest,
-    ReadFifoQueueResponse,
-    ReadFileRecordRequest,
-    ReadFileRecordResponse,
-    WriteFileRecordRequest,
-    WriteFileRecordResponse,
-)
-from pymodbus.mei_message import (
-    ReadDeviceInformationRequest,
-    ReadDeviceInformationResponse,
-)
-from pymodbus.other_message import (
-    GetCommEventCounterRequest,
-    GetCommEventCounterResponse,
-    GetCommEventLogRequest,
-    GetCommEventLogResponse,
-    ReadExceptionStatusRequest,
-    ReadExceptionStatusResponse,
-    ReportSlaveIdRequest,
-    ReportSlaveIdResponse,
-)
-from pymodbus.register_read_message import (
-    ReadHoldingRegistersRequest,
-    ReadHoldingRegistersResponse,
-    ReadInputRegistersRequest,
-    ReadInputRegistersResponse,
-    ReadWriteMultipleRegistersRequest,
-    ReadWriteMultipleRegistersResponse,
-)
-from pymodbus.register_write_message import (
-    MaskWriteRegisterRequest,
-    MaskWriteRegisterResponse,
-    WriteMultipleRegistersRequest,
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterRequest,
-    WriteSingleRegisterResponse,
-)
-
-# -------------------------------------------------------------------------- #
-# import all the available framers
-# -------------------------------------------------------------------------- #
+import pymodbus.file_message as modbus_file
+import pymodbus.mei_message as modbus_mei
+import pymodbus.other_message as modbus_other
+import pymodbus.register_read_message as modbus_register
+import pymodbus.register_write_message as modbus_register_write
 from pymodbus.transaction import (
     ModbusAsciiFramer,
     ModbusBinaryFramer,
@@ -77,217 +20,199 @@ from pymodbus.transaction import (
 )
 
 
-# -------------------------------------------------------------------------- #
-# initialize logging
-# -------------------------------------------------------------------------- #
-modbus_log = logging.getLogger("pymodbus")
+_logger = logging.getLogger()
 
 
 # -------------------------------------------------------------------------- #
-# enumerate all request messages
+# enumerate all request/response messages
 # -------------------------------------------------------------------------- #
-_request_messages = [
-    ReadHoldingRegistersRequest,
-    ReadDiscreteInputsRequest,
-    ReadInputRegistersRequest,
-    ReadCoilsRequest,
-    WriteMultipleCoilsRequest,
-    WriteMultipleRegistersRequest,
-    WriteSingleRegisterRequest,
-    WriteSingleCoilRequest,
-    ReadWriteMultipleRegistersRequest,
-    ReadExceptionStatusRequest,
-    GetCommEventCounterRequest,
-    GetCommEventLogRequest,
-    ReportSlaveIdRequest,
-    ReadFileRecordRequest,
-    WriteFileRecordRequest,
-    MaskWriteRegisterRequest,
-    ReadFifoQueueRequest,
-    ReadDeviceInformationRequest,
-    modbus_diag.ReturnQueryDataRequest,
-    modbus_diag.RestartCommunicationsOptionRequest,
-    modbus_diag.ReturnDiagnosticRegisterRequest,
-    modbus_diag.ChangeAsciiInputDelimiterRequest,
-    modbus_diag.ForceListenOnlyModeRequest,
-    modbus_diag.ClearCountersRequest,
-    modbus_diag.ReturnBusMessageCountRequest,
-    modbus_diag.ReturnBusCommunicationErrorCountRequest,
-    modbus_diag.ReturnBusExceptionErrorCountRequest,
-    modbus_diag.ReturnSlaveMessageCountRequest,
-    modbus_diag.ReturnSlaveNoResponseCountRequest,
-    modbus_diag.ReturnSlaveNAKCountRequest,
-    modbus_diag.ReturnSlaveBusyCountRequest,
-    modbus_diag.ReturnSlaveBusCharacterOverrunCountRequest,
-    modbus_diag.ReturnIopOverrunCountRequest,
-    modbus_diag.ClearOverrunCountRequest,
-    modbus_diag.GetClearModbusPlusRequest,
+messages = [
+    (
+        modbus_register.ReadHoldingRegistersRequest,
+        modbus_register.ReadHoldingRegistersResponse,
+    ),
+    (modbus_bit.ReadDiscreteInputsRequest, modbus_bit.ReadDiscreteInputsResponse),
+    (
+        modbus_register.ReadInputRegistersRequest,
+        modbus_register.ReadInputRegistersResponse,
+    ),
+    (modbus_bit.ReadCoilsRequest, modbus_bit.ReadCoilsResponse),
+    (
+        modbus_bit_write.WriteMultipleCoilsRequest,
+        modbus_bit_write.WriteMultipleCoilsResponse,
+    ),
+    (
+        modbus_register_write.WriteMultipleRegistersRequest,
+        modbus_register_write.WriteMultipleRegistersResponse,
+    ),
+    (
+        modbus_register_write.WriteSingleRegisterRequest,
+        modbus_register_write.WriteSingleRegisterResponse,
+    ),
+    (modbus_bit_write.WriteSingleCoilRequest, modbus_bit_write.WriteSingleCoilResponse),
+    (
+        modbus_register.ReadWriteMultipleRegistersRequest,
+        modbus_register.ReadWriteMultipleRegistersResponse,
+    ),
+    (modbus_other.ReadExceptionStatusRequest, modbus_other.ReadExceptionStatusResponse),
+    (modbus_other.GetCommEventCounterRequest, modbus_other.GetCommEventCounterResponse),
+    (modbus_other.GetCommEventLogRequest, modbus_other.GetCommEventLogResponse),
+    (modbus_other.ReportSlaveIdRequest, modbus_other.ReportSlaveIdResponse),
+    (modbus_file.ReadFileRecordRequest, modbus_file.ReadFileRecordResponse),
+    (modbus_file.WriteFileRecordRequest, modbus_file.WriteFileRecordResponse),
+    (
+        modbus_register_write.MaskWriteRegisterRequest,
+        modbus_register_write.MaskWriteRegisterResponse,
+    ),
+    (modbus_file.ReadFifoQueueRequest, modbus_file.ReadFifoQueueResponse),
+    (modbus_mei.ReadDeviceInformationRequest, modbus_mei.ReadDeviceInformationResponse),
+    (modbus_diag.ReturnQueryDataRequest, modbus_diag.ReturnQueryDataResponse),
+    (
+        modbus_diag.RestartCommunicationsOptionRequest,
+        modbus_diag.RestartCommunicationsOptionResponse,
+    ),
+    (
+        modbus_diag.ReturnDiagnosticRegisterRequest,
+        modbus_diag.ReturnDiagnosticRegisterResponse,
+    ),
+    (
+        modbus_diag.ChangeAsciiInputDelimiterRequest,
+        modbus_diag.ChangeAsciiInputDelimiterResponse,
+    ),
+    (modbus_diag.ForceListenOnlyModeRequest, modbus_diag.ForceListenOnlyModeResponse),
+    (modbus_diag.ClearCountersRequest, modbus_diag.ClearCountersResponse),
+    (
+        modbus_diag.ReturnBusMessageCountRequest,
+        modbus_diag.ReturnBusMessageCountResponse,
+    ),
+    (
+        modbus_diag.ReturnBusCommunicationErrorCountRequest,
+        modbus_diag.ReturnBusCommunicationErrorCountResponse,
+    ),
+    (
+        modbus_diag.ReturnBusExceptionErrorCountRequest,
+        modbus_diag.ReturnBusExceptionErrorCountResponse,
+    ),
+    (
+        modbus_diag.ReturnSlaveMessageCountRequest,
+        modbus_diag.ReturnSlaveMessageCountResponse,
+    ),
+    (
+        modbus_diag.ReturnSlaveNoResponseCountRequest,
+        modbus_diag.ReturnSlaveNoResponseCountResponse,
+    ),
+    (modbus_diag.ReturnSlaveNAKCountRequest, modbus_diag.ReturnSlaveNAKCountResponse),
+    (modbus_diag.ReturnSlaveBusyCountRequest, modbus_diag.ReturnSlaveBusyCountResponse),
+    (
+        modbus_diag.ReturnSlaveBusCharacterOverrunCountRequest,
+        modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
+    ),
+    (
+        modbus_diag.ReturnIopOverrunCountRequest,
+        modbus_diag.ReturnIopOverrunCountResponse,
+    ),
+    (modbus_diag.ClearOverrunCountRequest, modbus_diag.ClearOverrunCountResponse),
+    (modbus_diag.GetClearModbusPlusRequest, modbus_diag.GetClearModbusPlusResponse),
 ]
 
 
-# -------------------------------------------------------------------------- #
-# enumerate all response messages
-# -------------------------------------------------------------------------- #
-_response_messages = [
-    ReadHoldingRegistersResponse,
-    ReadDiscreteInputsResponse,
-    ReadInputRegistersResponse,
-    ReadCoilsResponse,
-    WriteMultipleCoilsResponse,
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterResponse,
-    WriteSingleCoilResponse,
-    ReadWriteMultipleRegistersResponse,
-    ReadExceptionStatusResponse,
-    GetCommEventCounterResponse,
-    GetCommEventLogResponse,
-    ReportSlaveIdResponse,
-    ReadFileRecordResponse,
-    WriteFileRecordResponse,
-    MaskWriteRegisterResponse,
-    ReadFifoQueueResponse,
-    ReadDeviceInformationResponse,
-    modbus_diag.ReturnQueryDataResponse,
-    modbus_diag.RestartCommunicationsOptionResponse,
-    modbus_diag.ReturnDiagnosticRegisterResponse,
-    modbus_diag.ChangeAsciiInputDelimiterResponse,
-    modbus_diag.ForceListenOnlyModeResponse,
-    modbus_diag.ClearCountersResponse,
-    modbus_diag.ReturnBusMessageCountResponse,
-    modbus_diag.ReturnBusCommunicationErrorCountResponse,
-    modbus_diag.ReturnBusExceptionErrorCountResponse,
-    modbus_diag.ReturnSlaveMessageCountResponse,
-    modbus_diag.ReturnSlaveNoResponseCountResponse,
-    modbus_diag.ReturnSlaveNAKCountResponse,
-    modbus_diag.ReturnSlaveBusyCountResponse,
-    modbus_diag.ReturnSlaveBusCharacterOverrunCountResponse,
-    modbus_diag.ReturnIopOverrunCountResponse,
-    modbus_diag.ClearOverrunCountResponse,
-    modbus_diag.GetClearModbusPlusResponse,
-]
-
-
-# -------------------------------------------------------------------------- #
-# build an arguments singleton
-# -------------------------------------------------------------------------- #
-# Feel free to override any values here to generate a specific message
-# in question. It should be noted that many argument names are reused
-# between different messages, and a number of messages are simply using
-# their default values.
-# -------------------------------------------------------------------------- #
-_arguments = {
-    "address": 0x12,
-    "count": 0x08,
-    "value": 0x01,
-    "values": [0x01] * 8,
-    "read_address": 0x12,
-    "read_count": 0x08,
-    "write_address": 0x12,
-    "write_registers": [0x01] * 8,
-    "transaction": 0x01,
-    "protocol": 0x00,
-    "slave": 0xFF,
-}
-
-
-# -------------------------------------------------------------------------- #
-# generate all the requested messages
-# -------------------------------------------------------------------------- #
-def generate_messages(framer, options):
-    """Parse the command line options
-
-    :param framer: The framer to encode the messages with
-    :param options: The message options to use
-    """
-    if options.messages == "tx":
-        messages = _request_messages
-    else:
-        messages = _response_messages
-    for message in messages:
-        message = message(**_arguments)
-        print(
-            "%-44s = "  # pylint: disable=consider-using-f-string
-            % message.__class__.__name__
-        )
-        packet = framer.buildPacket(message)
-        if not options.ascii:
-            packet = c.encode(packet, "hex_codec").decode("utf-8")
-        print(f"{packet}\n")  # because ascii ends with a \r\n
-
-
-# -------------------------------------------------------------------------- #
-# initialize our program settings
-# -------------------------------------------------------------------------- #
-def get_options():
-    """Parse the command line options
-
-    :returns: The options manager
-    """
-    parser = OptionParser()
-
-    parser.add_option(
-        "-f",
+def get_commandline(cmdline=None):
+    """Parse the command line options."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         "--framer",
-        help="The type of framer to use (tcp, rtu, binary, ascii)",
+        choices=["ascii", "binary", "rtu", "socket"],
+        help="set framer, default is rtu",
         dest="framer",
-        default="tcp",
+        default="rtu",
+        type=str,
     )
-
-    parser.add_option(
-        "-D",
-        "--debug",
-        help="Enable debug tracing",
-        action="store_true",
-        dest="debug",
-        default=False,
+    parser.add_argument(
+        "-l",
+        "--log",
+        choices=["critical", "error", "warning", "info", "debug"],
+        help="set log level, default is info",
+        dest="log",
+        default="info",
+        type=str,
     )
-
-    parser.add_option(
+    parser.add_argument(
         "-a",
-        "--ascii",
-        help="The indicates that the message is ascii",
-        action="store_true",
-        dest="ascii",
-        default=True,
+        "--address",
+        help="address to use",
+        dest="address",
+        default=32,
+        type=int,
     )
-
-    parser.add_option(
-        "-b",
-        "--binary",
-        help="The indicates that the message is binary",
-        action="store_false",
-        dest="ascii",
+    parser.add_argument(
+        "-c",
+        "--count",
+        help="count to use",
+        dest="count",
+        default=8,
+        type=int,
     )
-
-    parser.add_option(
-        "-m",
-        "--messages",
-        help="The messages to encode (rx, tx)",
-        dest="messages",
-        default="rx",
+    parser.add_argument(
+        "-v",
+        "--value",
+        help="value to use",
+        dest="value",
+        default=1,
+        type=int,
     )
+    parser.add_argument(
+        "-t",
+        "--transaction",
+        help="transaction to use",
+        dest="transaction",
+        default=1,
+        type=int,
+    )
+    parser.add_argument(
+        "-s",
+        "--slave",
+        help="slave to use",
+        dest="slave",
+        default=1,
+        type=int,
+    )
+    args = parser.parse_args(cmdline)
+    return args
 
-    (opt, _) = parser.parse_args()
-    return opt
 
+def generate_messages(cmdline=None):
+    """Parse the command line options."""
+    args = get_commandline(cmdline=cmdline)
+    _logger.setLevel(args.log.upper())
 
-def main(option):
-    """Run main runner function"""
-    if option.debug:
-        try:
-            modbus_log.setLevel(logging.DEBUG)
-        except Exception:  # pylint: disable=broad-except
-            print("Logging is not supported on this system")
-
+    arguments = {
+        "address": args.address,
+        "count": args.count,
+        "value": args.value,
+        "values": [args.value] * args.count,
+        "read_address": args.address,
+        "read_count": args.count,
+        "write_address": args.address,
+        "write_registers": [args.value] * args.count,
+        "transaction": args.transaction,
+        "slave": args.slave,
+        "protocol": 0x00,
+    }
     framer = {
-        "tcp": ModbusSocketFramer,
-        "rtu": ModbusRtuFramer,
-        "binary": ModbusBinaryFramer,
         "ascii": ModbusAsciiFramer,
-    }.get(option.framer, ModbusSocketFramer)(None)
+        "binary": ModbusBinaryFramer,
+        "rtu": ModbusRtuFramer,
+        "socket": ModbusSocketFramer,
+    }[args.framer](None)
 
-    generate_messages(framer, option)
+    for entry in messages:
+        for inx in (0, 1):
+            message = entry[inx](**arguments)
+            raw_packet = framer.buildPacket(message)
+            packet = c.encode(raw_packet, "hex_codec").decode("utf-8")
+            print(f"{message.__class__.__name__:44} = {packet}")
+        print("")
 
 
 if __name__ == "__main__":
-    main(get_options())
+    generate_messages()

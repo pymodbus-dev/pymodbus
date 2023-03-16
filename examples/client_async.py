@@ -40,8 +40,9 @@ from pymodbus.client import (
 _logger = logging.getLogger()
 
 
-def setup_async_client(args):
+def setup_async_client(description=None, cmdline=None):
     """Run client setup."""
+    args = get_commandline(server=False, description=description, cmdline=cmdline)
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -128,9 +129,5 @@ async def run_async_client(client, modbus_calls=None):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run asynchronous client.",
-    )
-    testclient = setup_async_client(cmd_args)
+    testclient = setup_async_client(description="Run asynchronous client.")
     asyncio.run(run_async_client(testclient), debug=True)

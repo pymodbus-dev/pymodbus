@@ -7,7 +7,6 @@ complicated memory layout using builder.
 import asyncio
 import logging
 
-from examples.helper import get_commandline
 from examples.server_async import run_async_server, setup_server
 from pymodbus.constants import Endian
 from pymodbus.datastore import (
@@ -21,7 +20,7 @@ from pymodbus.payload import BinaryPayloadBuilder
 _logger = logging.getLogger()
 
 
-def setup_payload_server(args):
+def setup_payload_server(cmdline=None):
     """Define payload for server and do setup."""
 
     # ----------------------------------------------------------------------- #
@@ -53,14 +52,12 @@ def setup_payload_server(args):
 
     block = ModbusSequentialDataBlock(1, builder.to_registers())
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
-    args.context = ModbusServerContext(slaves=store, single=True)
-    return setup_server(args)
+    context = ModbusServerContext(slaves=store, single=True)
+    return setup_server(
+        description="Run payload server.", cmdline=cmdline, context=context
+    )
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run payload server.",
-    )
-    run_args = setup_payload_server(cmd_args)
+    run_args = setup_payload_server()
     asyncio.run(run_async_server(run_args))

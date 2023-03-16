@@ -14,7 +14,6 @@ are tested in
 a lot more thoroughly.
 """
 import asyncio
-import dataclasses
 import logging
 
 import pytest
@@ -24,16 +23,14 @@ from examples.build_bcd_payload import BcdPayloadBuilder, BcdPayloadDecoder
 from examples.client_async import run_async_client, setup_async_client
 from examples.client_payload import run_payload_calls
 from examples.client_test import run_async_calls as run_client_test
-from examples.helper import Commandline
-from examples.message_generator import main as run_message_generator
-from examples.message_parser import main as message_parser_main
+from examples.message_generator import generate_messages
+from examples.message_parser import parse_messages
 from examples.server_async import run_async_server, setup_server
 from examples.server_payload import setup_payload_server
 from examples.server_simulator import run_server_simulator, setup_simulator
 from examples.server_updating import run_updating_server, setup_updating_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
-from pymodbus.transaction import ModbusSocketFramer
 
 
 # from examples.serial_forwarder import run_forwarder
@@ -44,18 +41,24 @@ _logger.setLevel("DEBUG")
 pymodbus_apply_logging_config("DEBUG")
 
 
-class CommandlineExp(Commandline):  # pylint: disable=too-few-public-methods
-    """Commandline used in most examples."""
-
-    comm = "tcp"
-    port = 5020
-    framer = ModbusSocketFramer
+CMDARGS = [
+    "--comm",
+    "tcp",
+    "--port",
+    "5020",
+    "--baudrate",
+    "9600",
+    "--log",
+    "debug",
+    "--framer",
+    "socket",
+]
 
 
 @pytest_asyncio.fixture(name="mock_run_server")
 async def _helper_server():
     """Run server."""
-    run_args = setup_server(CommandlineExp)
+    run_args = setup_server(cmdline=CMDARGS)
     task = asyncio.create_task(run_async_server(run_args))
     await asyncio.sleep(0.1)
     yield
@@ -69,10 +72,10 @@ async def _helper_server():
 @pytest.mark.xdist_group(name="server_serialize")
 async def test_exp_server_client_payload():
     """Test server/client with payload."""
-    run_args = setup_payload_server(CommandlineExp)
+    run_args = setup_payload_server(cmdline=CMDARGS)
     task = asyncio.create_task(run_async_server(run_args))
     await asyncio.sleep(0.1)
-    testclient = setup_async_client(CommandlineExp)
+    testclient = setup_async_client(cmdline=CMDARGS)
     await run_async_client(testclient, modbus_calls=run_payload_calls)
     await asyncio.sleep(0.1)
     await ServerAsyncStop()
@@ -86,23 +89,14 @@ async def test_exp_client_test(mock_run_server):
     """Test client used for fast testing."""
     assert not mock_run_server
 
-    testclient = setup_async_client(CommandlineExp)
+    testclient = setup_async_client(cmdline=CMDARGS)
     await run_async_client(testclient, modbus_calls=run_client_test)
 
 
-async def test_exp_message_generator():
+@pytest.mark.parametrize("framer", ["socket", "rtu"])
+async def test_exp_message_generator(framer):
     """Test all message generator."""
-
-    @dataclasses.dataclass
-    class Option:
-        """Simulate commandline parameters."""
-
-        framer = "tcp"
-        debug = False
-        ascii = True
-        messages = "rx"
-
-    run_message_generator(Option())
+    generate_messages(cmdline=["--framer", framer])
 
 
 @pytest.mark.xdist_group(name="server_serialize")
@@ -112,7 +106,7 @@ async def test_exp_server_simulator():
     run_args = setup_simulator(cmdline=cmdargs)
     task = asyncio.create_task(run_server_simulator(run_args))
     await asyncio.sleep(0.1)
-    testclient = setup_async_client(CommandlineExp)
+    testclient = setup_async_client(cmdline=CMDARGS)
     await run_async_client(testclient, modbus_calls=run_client_test)
     await asyncio.sleep(0.1)
     await ServerAsyncStop()
@@ -124,10 +118,10 @@ async def test_exp_server_simulator():
 @pytest.mark.xdist_group(name="server_serialize")
 async def test_exp_updating_server():
     """Test server simulator."""
-    run_args = setup_updating_server(CommandlineExp)
+    run_args = setup_updating_server(cmdline=CMDARGS)
     task = asyncio.create_task(run_updating_server(run_args))
     await asyncio.sleep(0.1)
-    testclient = setup_async_client(CommandlineExp)
+    testclient = setup_async_client(cmdline=CMDARGS)
     await run_async_client(testclient, modbus_calls=run_client_test)
     await asyncio.sleep(0.1)
     await ServerAsyncStop()
@@ -145,7 +139,8 @@ def test_exp_build_bcd_payload():
 
 def test_exp_message_parser():
     """Test message parser."""
-    message_parser_main(["--log", "info"])
+    parse_messages(["--framer", "socket", "-m", "000100000006010100200001"])
+    parse_messages(["--framer", "socket", "-m", "00010000000401010101"])
 
 
 # to be updated:
@@ -169,7 +164,6 @@ async def xtest_exp_forwarder(
     if pytest.IS_WINDOWS:
         return
     print(test_comm, test_framer, test_port_offset, test_port)
-    # cmd_args = Commandline.copy()
     # cmd_args.comm = test_comm
     # cmd_args.framer = test_framer
     # cmd_args.port = test_port + test_port_offset + 1

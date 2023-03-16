@@ -5,7 +5,6 @@ code that are not relevant for the examples as such, like e.g.
 get_command_line
 """
 import argparse
-import dataclasses
 import logging
 
 from pymodbus import pymodbus_apply_logging_config
@@ -21,59 +20,40 @@ from pymodbus.transaction import (
 _logger = logging.getLogger()
 
 
-@dataclasses.dataclass
-class Commandline:
-    """Simulate commandline parameters.
-
-    Replaces get_commandline() and allows application to set arguments directly.
-    """
-
-    comm = None
-    framer = None
-    host = "127.0.0.1"
-    port = None
-    baudrate = 9600
-    store = "sequential"
-    identity = None
-    context = None
-    slaves = None
-    client_port = None
-    client = None
-    log = "debug"
-
-    @classmethod
-    def copy(cls):
-        """Copy kl"""
-        to_copy = cls()
-        return dataclasses.replace(to_copy)
-
-
 def get_commandline(server=False, description=None, extras=None, cmdline=None):
     """Read and validate command line arguments"""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
+        "-c",
         "--comm",
         choices=["tcp", "udp", "serial", "tls"],
         help="set communication, default is tcp",
+        dest="comm",
         default="tcp",
         type=str,
     )
     parser.add_argument(
+        "-f",
         "--framer",
         choices=["ascii", "binary", "rtu", "socket", "tls"],
         help="set framer, default depends on --comm",
+        dest="framer",
         type=str,
     )
     parser.add_argument(
+        "-l",
         "--log",
         choices=["critical", "error", "warning", "info", "debug"],
         help="set log level, default is info",
+        dest="log",
         default="info",
         type=str,
     )
     parser.add_argument(
+        "-p",
         "--port",
         help="set port",
+        dest="port",
         type=str,
     )
     parser.add_argument(
@@ -106,10 +86,10 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         parser.add_argument(
             "--host",
             help="set host, default is 127.0.0.1",
+            dest="host",
             default="127.0.0.1",
             type=str,
         )
-
     if extras:
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])

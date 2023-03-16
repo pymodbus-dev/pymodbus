@@ -13,7 +13,6 @@ import logging
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 from examples.client_async import run_async_client, setup_async_client
-from examples.helper import get_commandline
 from pymodbus.pdu import ExceptionResponse
 
 
@@ -86,17 +85,15 @@ async def _execute_diagnostic_requests(client):
 
 async def run_async_calls(client):
     """Demonstrate basic read/write calls."""
-    # await _handle_coils(client)
-    # await _handle_discrete_input(client)
-    # await _handle_holding_registers(client)
+    await _handle_coils(client)
+    await _handle_discrete_input(client)
+    await _handle_holding_registers(client)
     await _execute_information_requests(client)
-    # await _execute_diagnostic_requests(client)
+    await _execute_diagnostic_requests(client)
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run modbus calls in asynchronous client.",
+    testclient = setup_async_client(
+        description="Run modbus calls in asynchronous client."
     )
-    testclient = setup_async_client(cmd_args)
     asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))

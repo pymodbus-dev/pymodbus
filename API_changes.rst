@@ -8,6 +8,7 @@ Version 3.3.0
 - Clients have an optional parameter: on_reconnect_callback, Function that will be called just before a reconnection attempt.
 - general parameter unit= -> slave=
 - move SqlSlaveContext, RedisSlaveContext to examples/contrib (due to lack of maintenance)
+- BinaryPayloadDecoder/BinaryPayloadEncoder byteorder=Endian.Little -> Endian.Big
 
 -------------
 Version 3.2.0

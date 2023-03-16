@@ -7,7 +7,6 @@ get_command_line
 import argparse
 import dataclasses
 import logging
-from dataclasses import dataclass
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
@@ -22,7 +21,7 @@ from pymodbus.transaction import (
 _logger = logging.getLogger()
 
 
-@dataclass
+@dataclasses.dataclass
 class Commandline:
     """Simulate commandline parameters.
 
@@ -40,15 +39,16 @@ class Commandline:
     slaves = None
     client_port = None
     client = None
+    log = "debug"
 
     @classmethod
     def copy(cls):
-        """Copy Commandline"""
+        """Copy kl"""
         to_copy = cls()
         return dataclasses.replace(to_copy)
 
 
-def get_commandline(server=False, description=None, extras=None):
+def get_commandline(server=False, description=None, extras=None, cmdline=None):
     """Read and validate command line arguments"""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
@@ -113,7 +113,7 @@ def get_commandline(server=False, description=None, extras=None):
     if extras:
         for extra in extras:
             parser.add_argument(extra[0], **extra[1])
-    args = parser.parse_args()
+    args = parser.parse_args(cmdline)
 
     # set defaults
     comm_defaults = {

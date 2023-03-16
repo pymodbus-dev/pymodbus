@@ -24,11 +24,12 @@ import logging
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.datastore import ModbusServerContext, ModbusSimulatorContext
+from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
 from pymodbus.transaction import ModbusSocketFramer
 
 
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 demo_config = {
     "setup": {
@@ -111,7 +112,7 @@ demo_actions = {
 }
 
 
-def get_commandline():
+def get_commandline(cmdline=None):
     """Read and validate command line arguments"""
     parser = argparse.ArgumentParser(description="Run server simulator.")
     parser.add_argument(
@@ -122,17 +123,19 @@ def get_commandline():
         type=str,
     )
     parser.add_argument("--port", help="set port", type=str, default="5020")
-    args = parser.parse_args()
+    args = parser.parse_args(cmdline)
 
+    return args
+
+
+def setup_simulator(setup=None, actions=None, cmdline=None):
+    """Run server setup."""
+    args = get_commandline(cmdline=cmdline)
     pymodbus_apply_logging_config(args.log)
     _logger.setLevel(args.log.upper())
     args.framer = ModbusSocketFramer
     args.port = int(args.port)
-    return args
 
-
-def setup_simulator(args, setup=None, actions=None):
-    """Run server setup."""
     _logger.info("### Create datastore")
     if not setup:
         setup = demo_config
@@ -140,12 +143,24 @@ def setup_simulator(args, setup=None, actions=None):
         actions = demo_actions
     context = ModbusSimulatorContext(setup, actions)
     args.context = ModbusServerContext(slaves=context, single=True)
+    args.identity = ModbusDeviceIdentification(
+        info_name={
+            "VendorName": "Pymodbus",
+            "ProductCode": "PM",
+            "VendorUrl": "https://github.com/pymodbus-dev/pymodbus/",
+            "ProductName": "Pymodbus Server",
+            "ModelName": "Pymodbus Server",
+            "MajorMinorRevision": "test",
+        }
+    )
     return args
 
 
 async def run_server_simulator(args):
     """Run server."""
     _logger.info("### start server simulator")
+
+    pymodbus_apply_logging_config(args.log.upper())
     await StartAsyncTcpServer(
         context=args.context,
         address=("", args.port),
@@ -155,6 +170,5 @@ async def run_server_simulator(args):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline()
-    run_args = setup_simulator(cmd_args)
+    run_args = setup_simulator()
     asyncio.run(run_server_simulator(run_args), debug=True)

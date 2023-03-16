@@ -14,8 +14,6 @@ from pymodbus.datastore.remote import RemoteSlaveContext
 from pymodbus.server.async_io import ModbusTcpServer
 
 
-FORMAT = "%(asctime)-15s %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-logging.basicConfig(format=FORMAT)
 _logger = logging.getLogger()
 
 
@@ -60,10 +58,14 @@ class SerialForwarderTCPServer:
 
 def get_commandline():
     """Read and validate command line arguments"""
-    logchoices = ["critical", "error", "warning", "info", "debug"]
-
     parser = argparse.ArgumentParser(description="Command line options")
-    parser.add_argument("--log", help=",".join(logchoices), default="info", type=str)
+    parser.add_argument(
+        "--log",
+        choices=["critical", "error", "warning", "info", "debug"],
+        help="set log level, default is info",
+        default="info",
+        type=str,
+    )
     parser.add_argument(
         "--port", help="RTU serial port", default="/dev/ttyUSB0", type=str
     )
@@ -77,9 +79,7 @@ def get_commandline():
     args = parser.parse_args()
 
     # set defaults
-    _logger.setLevel(
-        args.log.upper() if args.log.lower() in logchoices else logging.INFO
-    )
+    _logger.setLevel(args.log.upper())
     if not args.slaves:
         args.slaves = {1, 2, 3}
     return args.port, args.baudrate, args.server_port, args.server_ip, args.slaves

@@ -1,4 +1,3 @@
-# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc,missing-raises-doc,missing-any-param-doc
 """Modbus BCD Payload Builder.
 
 This is an example of building a custom payload builder
@@ -13,10 +12,10 @@ from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
-def convert_to_bcd(decimal):
+def convert_to_bcd(decimal: float) -> int:
     """Convert a decimal value to a bcd value
 
-    :param value: The decimal value to to pack into bcd
+    :param decimal: The decimal value to to pack into bcd
     :returns: The number in bcd form
     """
     place, bcd = 0, 0
@@ -28,10 +27,10 @@ def convert_to_bcd(decimal):
     return bcd
 
 
-def convert_from_bcd(bcd):
+def convert_from_bcd(bcd: int) -> int:
     """Convert a bcd value to a decimal value
 
-    :param value: The value to unpack from bcd
+    :param bcd: The value to unpack from bcd
     :returns: The number in decimal form
     """
     place, decimal = 1, 0
@@ -43,7 +42,7 @@ def convert_from_bcd(bcd):
     return decimal
 
 
-def count_bcd_digits(bcd):
+def count_bcd_digits(bcd: int) -> int:
     """Count the number of digits in a bcd value
 
     :param bcd: The bcd number to count the digits of
@@ -101,22 +100,23 @@ class BcdPayloadBuilder:
         string = string + ("\x00" * (length % 2))
         return [string[i : i + 2] for i in range(0, length, 2)]
 
-    def add_bits(self, values):
+    def add_bits(self, values: int) -> int:
         """Add a collection of bits to be encoded
 
         If these are less than a multiple of eight,
         they will be left padded with 0 bits to make
         it so.
 
-        :param value: The value to add to the buffer
+        :param values: The value to add to the buffer
         """
         value = pack_bitstring(values)
         self._payload.append(value)
 
-    def add_number(self, value, size=None):
+    def add_number(self, value: int, size: int = None):
         """Add any 8bit numeric type to the buffer
 
         :param value: The value to add to the buffer
+        :param size: Size of buffer
         """
         encoded = []
         value = convert_to_bcd(value)
@@ -128,7 +128,7 @@ class BcdPayloadBuilder:
             size -= 1
         self._payload.extend(encoded)
 
-    def add_string(self, value):
+    def add_string(self, value: str):
         """Add a string to the buffer
 
         :param value: The value to add to the buffer
@@ -155,7 +155,7 @@ class BcdPayloadDecoder:
         self._pointer = 0x00
 
     @staticmethod
-    def fromRegisters(registers, endian=Endian.Little):  # pylint: disable=invalid-name
+    def fromRegisters(registers: int, endian: str = Endian.Little):
         """Initialize a payload decoder
 
         with the result of reading a collection of registers from a modbus device.
@@ -167,6 +167,7 @@ class BcdPayloadDecoder:
         :param registers: The register results to initialize with
         :param endian: The endianness of the payload
         :returns: An initialized PayloadDecoder
+        :raises ParameterException: parameter exception
         """
         if isinstance(registers, list):  # repack into flat binary
             payload = "".join(pack(">H", x) for x in registers)
@@ -174,7 +175,7 @@ class BcdPayloadDecoder:
         raise ParameterException("Invalid collection of registers supplied")
 
     @staticmethod
-    def fromCoils(coils, endian=Endian.Little):  # pylint: disable=invalid-name
+    def fromCoils(coils: int, endian: str = Endian.Little):
         """Initialize a payload decoder.
 
         with the result of reading a collection of coils from a modbus device.
@@ -184,6 +185,7 @@ class BcdPayloadDecoder:
         :param coils: The coil results to initialize with
         :param endian: The endianness of the payload
         :returns: An initialized PayloadDecoder
+        :raises ParameterException: parameter exception
         """
         if isinstance(coils, list):
             payload = pack_bitstring(coils)
@@ -206,7 +208,7 @@ class BcdPayloadDecoder:
         handle = self._payload[self._pointer - 1 : self._pointer]
         return unpack_bitstring(handle)
 
-    def decode_string(self, size=1):
+    def decode_string(self, size: int = 1):
         """Decode a string from the buffer
 
         :param size: The size of the string to decode
@@ -214,6 +216,9 @@ class BcdPayloadDecoder:
         self._pointer += size
         return self._payload[self._pointer - size : self._pointer]
 
+
+if __name__ == "__main__":
+    print("Test")
 
 # --------------------------------------------------------------------------- #
 # Exported Identifiers

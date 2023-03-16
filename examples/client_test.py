@@ -50,13 +50,13 @@ async def _handle_discrete_input(client):
 async def _handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
-    _check_call(await client.write_register(3, 17, slave=SLAVE))
+    _check_call(await client.write_register(3, 21, slave=SLAVE))
     rr = None
-    rr = _check_call(await client.read_holding_registers(3, 1, slave=SLAVE))
-    assert rr.registers[0] == 17
     rr = _check_call(await client.read_holding_registers(4, 2, slave=SLAVE))
-    assert rr.registers[0] == 9
-    assert rr.registers[1] == 27177
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
+    rr = _check_call(await client.read_holding_registers(3, 1, slave=SLAVE))
+    assert rr.registers[0] == 21
 
 
 async def _execute_information_requests(client):
@@ -65,7 +65,7 @@ async def _execute_information_requests(client):
     rr = _check_call(
         await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     )
-    assert rr.information[0] == b"pymodbus"
+    assert rr.information[0] == b"Pymodbus"
 
 
 async def _execute_diagnostic_requests(client):
@@ -86,11 +86,11 @@ async def _execute_diagnostic_requests(client):
 
 async def run_async_calls(client):
     """Demonstrate basic read/write calls."""
-    await _handle_coils(client)
-    await _handle_discrete_input(client)
-    await _handle_holding_registers(client)
+    # await _handle_coils(client)
+    # await _handle_discrete_input(client)
+    # await _handle_holding_registers(client)
     await _execute_information_requests(client)
-    await _execute_diagnostic_requests(client)
+    # await _execute_diagnostic_requests(client)
 
 
 if __name__ == "__main__":

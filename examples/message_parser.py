@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-type-doc,missing-param-doc,differing-param-doc,missing-any-param-doc
 """Modbus Message Parser.
 
 The following is an example of how to parse modbus messages
@@ -10,15 +9,11 @@ using the supplied framers for a number of protocols:
 * rtu
 * binary
 """
-# -------------------------------------------------------------------------- #
-# import needed libraries
-# -------------------------------------------------------------------------- #
-
+import argparse
 import codecs as c
 import collections
 import logging
 import textwrap
-from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import (
@@ -29,38 +24,22 @@ from pymodbus.transaction import (
 )
 
 
-# -------------------------------------------------------------------------- #
-# -------------------------------------------------------------------------- #
-FORMAT = (
-    "%(asctime)-15s %(threadName)-15s"
-    " %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s"
-)
-logging.basicConfig(format=FORMAT)
-log = logging.getLogger()
-
-
-# -------------------------------------------------------------------------- #
-# build a quick wrapper around the framers
-# -------------------------------------------------------------------------- #
+_logger = logging.getLogger()
 
 
 class Decoder:
-    """Decoder."""
+    """Decoder.
+
+    build a quick wrapper around the framers
+    """
 
     def __init__(self, framer, encode=False):
-        """Initialize a new instance of the decoder
-
-        :param framer: The framer to use
-        :param encode: If the message needs to be encoded
-        """
+        """Initialize a new instance of the decoder"""
         self.framer = framer
         self.encode = encode
 
     def decode(self, message):
-        """Attempt to decode the supplied message
-
-        :param message: The message to decode
-        """
+        """Attempt to decode the supplied message"""
         value = message if self.encode else c.encode(message, "hex_codec")
         print("=" * 80)
         print(f"Decoding Message {value}")
@@ -86,18 +65,12 @@ class Decoder:
                 self.check_errors(decoder, message)
 
     def check_errors(self, decoder, message):
-        """Attempt to find message errors
-
-        :param message: The message to find errors in
-        """
+        """Attempt to find message errors"""
         txt = f"Unable to parse message - {message} with {decoder}"
-        log.error(txt)
+        _logger.error(txt)
 
     def report(self, message):
-        """Print the message information
-
-        :param message: The message to print
-        """
+        """Print the message information"""
         print(
             "%-15s = %s"  # pylint: disable=consider-using-f-string
             % (
@@ -139,88 +112,49 @@ class Decoder:
 # -------------------------------------------------------------------------- #
 # and decode our message
 # -------------------------------------------------------------------------- #
-def get_options():
-    """Parse the command line options
+def get_options(cmdline):
+    """Parse the command line options"""
+    parser = argparse.ArgumentParser()
 
-    :returns: The options manager
-    """
-    parser = OptionParser()
-
-    parser.add_option(
-        "-p",
-        "--parser",
-        help="The type of parser to use (tcp, rtu, binary, ascii)",
-        dest="parser",
-        default="tcp",
+    parser.add_argument(
+        "--framer",
+        choices=["ascii", "binary", "rtu", "socket", "tls"],
+        help="set framer, default depends on --comm",
+        type=str,
+        default="rtu",
+        dest="framer",
     )
-
-    parser.add_option(
-        "-D",
-        "--debug",
-        help="Enable debug tracing",
-        action="store_true",
-        dest="debug",
-        default=False,
+    parser.add_argument(
+        "--log",
+        choices=["critical", "error", "warning", "info", "debug"],
+        help="set log level, default is info",
+        default="info",
+        type=str,
+        dest="log",
     )
-
-    parser.add_option(
-        "-m", "--message", help="The message to parse", dest="message", default=None
+    parser.add_argument(
+        "--message", help="The message to parse", default=None, type=str, dest="message"
     )
-
-    parser.add_option(
-        "-a",
-        "--ascii",
-        help="The indicates that the message is ascii",
-        action="store_true",
-        dest="ascii",
-        default=False,
-    )
-
-    parser.add_option(
-        "-b",
-        "--binary",
-        help="The indicates that the message is binary",
-        action="store_false",
-        dest="ascii",
-    )
-
-    parser.add_option(
-        "-f",
+    parser.add_argument(
         "--file",
         help="The file containing messages to parse",
+        default=None,
+        type=str,
         dest="file",
-        default=None,
     )
-
-    parser.add_option(
+    parser.add_argument(
         "-t",
-        "--transaction",
-        help="If the incoming message is in hexadecimal format",
-        action="store_true",
-        dest="transaction",
-        default=False,
+        "--type",
+        choices=["ascii", "binary", "hex"],
+        help="message/file format",
+        dest="type",
+        default="hex",
     )
-    parser.add_option(
-        "--framer",
-        help="Framer to use",
-        dest="framer",
-        default=None,
-    )
-
-    (opt, arg) = parser.parse_args()
-
-    if not opt.message and len(arg) > 0:
-        opt.message = arg[0]
-
-    return opt
+    return parser.parse_args(cmdline)
 
 
 def get_messages(option):
-    """Do a helper method to generate the messages to parse
-
-    :param options: The option manager
-    :returns: The message iterator to parse
-    """
+    """Do a helper method to generate the messages to parse"""
     if option.message:
         if option.transaction:
             msg = ""
@@ -230,7 +164,7 @@ def get_messages(option):
                 msg = msg + segment
             option.message = msg
 
-        if not option.ascii:
+        if option.type != "ascii":
             option.message = c.decode(option.message.encode(), "hex_codec")
         yield option.message
     elif option.file:
@@ -238,30 +172,25 @@ def get_messages(option):
             for line in handle:
                 if line.startswith("#"):
                     continue
-                if not option.ascii:
+                if option.type != "ascii":
                     line = line.strip()
                     line = line.decode("hex")
                 yield line
 
 
-def main():
+def main(cmdline=None):
     """Run main runner function"""
-    option = get_options()
-
-    if option.debug:
-        try:
-            log.setLevel(logging.DEBUG)
-        except Exception as exc:  # pylint: disable=broad-except
-            print(f"Logging is not supported on this system- {exc}")
+    option = get_options(cmdline)
+    _logger.setLevel(option.log.upper())
 
     framer = {
         "tcp": ModbusSocketFramer,
         "rtu": ModbusRtuFramer,
         "binary": ModbusBinaryFramer,
         "ascii": ModbusAsciiFramer,
-    }.get(option.framer or option.parser, ModbusSocketFramer)
+    }.get(option.framer, ModbusSocketFramer)
 
-    decoder = Decoder(framer, option.ascii)
+    decoder = Decoder(framer)
     for message in get_messages(option):
         decoder.decode(message)
 

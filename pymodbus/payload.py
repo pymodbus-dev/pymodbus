@@ -33,7 +33,7 @@ class BinaryPayloadBuilder:
     """
 
     def __init__(
-        self, payload=None, byteorder=Endian.Little, wordorder=Endian.Big, repack=False
+        self, payload=None, byteorder=Endian.Big, wordorder=Endian.Big, repack=False
     ):
         """Initialize a new instance of the payload builder.
 
@@ -262,7 +262,7 @@ class BinaryPayloadDecoder:
         second  = decoder.decode_16bit_uint()
     """
 
-    def __init__(self, payload, byteorder=Endian.Little, wordorder=Endian.Big):
+    def __init__(self, payload, byteorder=Endian.Big, wordorder=Endian.Big):
         """Initialize a new payload decoder.
 
         :param payload: The payload to decode with

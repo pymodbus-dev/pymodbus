@@ -9,8 +9,6 @@ Regardless of how many functions are added to the lookup, O(1) behavior is
 kept as a result of a pre-computed lookup dictionary.
 """
 
-__all__ = ["ServerDecoder", "ClientDecoder"]
-
 # pylint: disable=missing-type-doc
 from pymodbus.bit_read_message import (
     ReadCoilsRequest,

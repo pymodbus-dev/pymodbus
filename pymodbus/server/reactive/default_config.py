@@ -1,7 +1,5 @@
 """Configuration for Pymodbus REPL Reactive Module."""
 
-__all__ = ["DEFAULT_CONFIG"]
-
 DEFAULT_CONFIG = {
     "tcp": {
         "handler": "ModbusConnectedRequestHandler",

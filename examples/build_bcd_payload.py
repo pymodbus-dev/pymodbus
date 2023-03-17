@@ -5,8 +5,6 @@ that can be used in the pymodbus library. Below is a
 simple binary coded decimal builder and decoder.
 """
 
-__all__ = ["BcdPayloadBuilder", "BcdPayloadDecoder"]
-
 from struct import pack
 
 from pymodbus.constants import Endian

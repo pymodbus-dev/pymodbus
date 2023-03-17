@@ -4,15 +4,6 @@ This is the single location for storing default
 values for the servers and clients.
 """
 
-__all__ = [
-    "Defaults",
-    "ModbusStatus",
-    "Endian",
-    "ModbusPlusOperation",
-    "DeviceInformation",
-    "MoreData",
-]
-
 INTERNAL_ERROR = "Pymodbus internal error"
 
 

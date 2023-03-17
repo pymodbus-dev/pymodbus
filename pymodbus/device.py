@@ -9,7 +9,6 @@ __all__ = [
     "ModbusPlusStatistics",
     "ModbusDeviceIdentification",
     "DeviceInformationFactory",
-    "ModbusControlBlock",
 ]
 
 import struct

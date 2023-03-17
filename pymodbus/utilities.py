@@ -3,6 +3,18 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+
+__all__ = [
+    "pack_bitstring",
+    "unpack_bitstring",
+    "default",
+    "computeCRC",
+    "checkCRC",
+    "computeLRC",
+    "checkLRC",
+    "rtuFrameSize",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -266,18 +278,3 @@ def hexlify_packets(packet):
     if not packet:
         return ""
     return " ".join([hex(int(x)) for x in packet])
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-__all__ = [
-    "pack_bitstring",
-    "unpack_bitstring",
-    "default",
-    "computeCRC",
-    "checkCRC",
-    "computeLRC",
-    "checkLRC",
-    "rtuFrameSize",
-]

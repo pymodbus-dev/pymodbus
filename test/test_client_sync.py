@@ -1,8 +1,8 @@
 """Test client sync."""
 import ssl
 from itertools import count
-from test import mock
 from test.conftest import mockSocket
+from unittest import mock
 
 import pytest
 import serial

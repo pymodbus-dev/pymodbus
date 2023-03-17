@@ -1,6 +1,6 @@
 """Test datastore."""
 import logging
-from test import mock
+from unittest import mock
 
 import pytest
 

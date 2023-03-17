@@ -307,16 +307,3 @@ class MoreData:  # pylint: disable=too-few-public-methods
     def __init__(self):
         """Prohibit objects."""
         raise RuntimeError(INTERNAL_ERROR)
-
-
-# ---------------------------------------------------------------------------#
-#  Exported Identifiers
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "Defaults",
-    "ModbusStatus",
-    "Endian",
-    "ModbusPlusOperation",
-    "DeviceInformation",
-    "MoreData",
-]

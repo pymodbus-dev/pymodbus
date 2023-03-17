@@ -3,6 +3,12 @@
 A collection of utilities for building and decoding
 modbus messages payloads.
 """
+
+__all__ = [
+    "BinaryPayloadBuilder",
+    "BinaryPayloadDecoder",
+]
+
 # pylint: disable=missing-type-doc
 from struct import pack, unpack
 
@@ -465,9 +471,3 @@ class BinaryPayloadDecoder:
         :param nbytes: The number of bytes to skip
         """
         self._pointer += nbytes
-
-
-# ---------------------------------------------------------------------------#
-#  Exported Identifiers
-# ---------------------------------------------------------------------------#
-__all__ = ["BinaryPayloadBuilder", "BinaryPayloadDecoder"]

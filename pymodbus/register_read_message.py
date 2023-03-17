@@ -1,4 +1,15 @@
 """Register Reading Request/Response."""
+
+__all__ = [
+    "ReadHoldingRegistersRequest",
+    "ReadHoldingRegistersResponse",
+    "ReadInputRegistersRequest",
+    "ReadInputRegistersResponse",
+    "ReadRegistersResponseBase",
+    "ReadWriteMultipleRegistersRequest",
+    "ReadWriteMultipleRegistersResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -390,17 +401,3 @@ class ReadWriteMultipleRegistersResponse(ModbusResponse):
         :returns: A string representation of the instance
         """
         return f"ReadWriteNRegisterResponse ({len(self.registers)})"
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadHoldingRegistersRequest",
-    "ReadHoldingRegistersResponse",
-    "ReadInputRegistersRequest",
-    "ReadInputRegistersResponse",
-    "ReadRegistersResponseBase",
-    "ReadWriteMultipleRegistersRequest",
-    "ReadWriteMultipleRegistersResponse",
-]

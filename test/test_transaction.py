@@ -1,7 +1,7 @@
 """Test transaction."""
 from binascii import a2b_hex
 from itertools import count
-from test import mock
+from unittest import mock
 
 import pytest
 

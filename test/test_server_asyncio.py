@@ -3,7 +3,7 @@ import asyncio
 import logging
 import ssl
 from asyncio import CancelledError
-from test import mock
+from unittest import mock
 
 import pytest
 

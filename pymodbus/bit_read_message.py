@@ -1,4 +1,13 @@
 """Bit Reading Request/Response messages."""
+
+__all__ = [
+    "ReadBitsResponseBase",
+    "ReadCoilsRequest",
+    "ReadCoilsResponse",
+    "ReadDiscreteInputsRequest",
+    "ReadDiscreteInputsResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -256,15 +265,3 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
         :param slave: Modbus slave slave ID
         """
         ReadBitsResponseBase.__init__(self, values, slave, **kwargs)
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadBitsResponseBase",
-    "ReadCoilsRequest",
-    "ReadCoilsResponse",
-    "ReadDiscreteInputsRequest",
-    "ReadDiscreteInputsResponse",
-]

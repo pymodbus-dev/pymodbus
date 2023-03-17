@@ -485,9 +485,3 @@ class ReportSlaveIdResponse(ModbusResponse):
             "ReportSlaveIdResponse(%s, %s, %s)"  # pylint: disable=consider-using-f-string
             % arguments
         )
-
-
-# ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial # pylint: disable=fixme
-# ---------------------------------------------------------------------------#
-# report device identification 43, 14

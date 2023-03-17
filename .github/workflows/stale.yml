@@ -27,4 +27,3 @@ jobs:
         exempt-pr-labels: 'IN REVIEW,Reviewing,Draft,in progress,3.x,2.5.0'
         remove-stale-when-updated: true
 #         only-labels: "More Information Required, Not an Issue, question, Won't Do"
-

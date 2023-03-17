@@ -1,6 +1,9 @@
 """Sync diag."""
 
-__all__ = ["ModbusTcpDiagClient", "get_client"]
+__all__ = [
+    "ModbusTcpDiagClient",
+    "get_client",
+]
 
 import socket
 import time

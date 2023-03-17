@@ -4,7 +4,10 @@ A collection of utilities for building and decoding
 modbus messages payloads.
 """
 
-__all__ = ["BinaryPayloadBuilder", "BinaryPayloadDecoder"]
+__all__ = [
+    "BinaryPayloadBuilder",
+    "BinaryPayloadDecoder",
+]
 
 # pylint: disable=missing-type-doc
 from struct import pack, unpack

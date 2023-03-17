@@ -1,4 +1,10 @@
 """Encapsulated Interface (MEI) Transport Messages."""
+
+__all__ = [
+    "ReadDeviceInformationRequest",
+    "ReadDeviceInformationResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -210,12 +216,3 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         return f"ReadDeviceInformationResponse({self.read_code})"
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadDeviceInformationRequest",
-    "ReadDeviceInformationResponse",
-]

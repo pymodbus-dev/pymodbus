@@ -1,4 +1,7 @@
 """Sync diag."""
+
+__all__ = ["ModbusTcpDiagClient", "get_client"]
+
 import socket
 import time
 
@@ -160,10 +163,3 @@ def get_client():
     :returns: ModbusTcpClient or a child class thereof
     """
     return ModbusTcpDiagClient
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-__all__ = ["ModbusTcpDiagClient", "get_client"]

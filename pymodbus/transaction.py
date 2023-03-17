@@ -1,4 +1,15 @@
 """Collection of transaction based abstractions."""
+
+__all__ = [
+    "FifoTransactionManager",
+    "DictTransactionManager",
+    "ModbusSocketFramer",
+    "ModbusTlsFramer",
+    "ModbusRtuFramer",
+    "ModbusAsciiFramer",
+    "ModbusBinaryFramer",
+]
+
 # pylint: disable=missing-type-doc
 import socket
 import struct
@@ -569,19 +580,3 @@ class FifoTransactionManager(ModbusTransactionManager):
         Log.debug("Deleting transaction {}", tid)
         if self.transactions:
             self.transactions.pop(0)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-
-__all__ = [
-    "FifoTransactionManager",
-    "DictTransactionManager",
-    "ModbusSocketFramer",
-    "ModbusTlsFramer",
-    "ModbusRtuFramer",
-    "ModbusAsciiFramer",
-    "ModbusBinaryFramer",
-]

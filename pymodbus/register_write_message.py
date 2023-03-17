@@ -1,4 +1,14 @@
 """Register Writing Request/Response Messages."""
+
+__all__ = [
+    "WriteSingleRegisterRequest",
+    "WriteSingleRegisterResponse",
+    "WriteMultipleRegistersRequest",
+    "WriteMultipleRegistersResponse",
+    "MaskWriteRegisterRequest",
+    "MaskWriteRegisterResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -359,16 +369,3 @@ class MaskWriteRegisterResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "WriteSingleRegisterRequest",
-    "WriteSingleRegisterResponse",
-    "WriteMultipleRegistersRequest",
-    "WriteMultipleRegistersResponse",
-    "MaskWriteRegisterRequest",
-    "MaskWriteRegisterResponse",
-]

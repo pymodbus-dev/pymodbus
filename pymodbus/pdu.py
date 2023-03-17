@@ -1,4 +1,13 @@
 """Contains base classes for modbus request/response/error packets."""
+
+__all__ = [
+    "ModbusRequest",
+    "ModbusResponse",
+    "ModbusExceptions",
+    "ExceptionResponse",
+    "IllegalFunctionRequest",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -243,17 +252,3 @@ class IllegalFunctionRequest(ModbusRequest):
         :returns: The error response packet
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-
-__all__ = [
-    "ModbusRequest",
-    "ModbusResponse",
-    "ModbusExceptions",
-    "ExceptionResponse",
-    "IllegalFunctionRequest",
-]

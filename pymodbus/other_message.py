@@ -2,6 +2,18 @@
 
 Currently not all implemented
 """
+
+__all__ = [
+    "ReadExceptionStatusRequest",
+    "ReadExceptionStatusResponse",
+    "GetCommEventCounterRequest",
+    "GetCommEventCounterResponse",
+    "GetCommEventLogRequest",
+    "GetCommEventLogResponse",
+    "ReportSlaveIdRequest",
+    "ReportSlaveIdResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -479,18 +491,3 @@ class ReportSlaveIdResponse(ModbusResponse):
 #  TODO Make these only work on serial # pylint: disable=fixme
 # ---------------------------------------------------------------------------#
 # report device identification 43, 14
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadExceptionStatusRequest",
-    "ReadExceptionStatusResponse",
-    "GetCommEventCounterRequest",
-    "GetCommEventCounterResponse",
-    "GetCommEventLogRequest",
-    "GetCommEventLogResponse",
-    "ReportSlaveIdRequest",
-    "ReportSlaveIdResponse",
-]

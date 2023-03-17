@@ -2,6 +2,17 @@
 
 Currently none of these messages are implemented
 """
+
+__all__ = [
+    "FileRecord",
+    "ReadFileRecordRequest",
+    "ReadFileRecordResponse",
+    "WriteFileRecordRequest",
+    "WriteFileRecordResponse",
+    "ReadFifoQueueRequest",
+    "ReadFifoQueueResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -424,17 +435,3 @@ class ReadFifoQueueResponse(ModbusResponse):
         for index in range(0, count - 4):
             idx = 4 + index * 2
             self.values.append(struct.unpack(">H", data[idx : idx + 2])[0])
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "FileRecord",
-    "ReadFileRecordRequest",
-    "ReadFileRecordResponse",
-    "WriteFileRecordRequest",
-    "WriteFileRecordResponse",
-    "ReadFifoQueueRequest",
-    "ReadFifoQueueResponse",
-]

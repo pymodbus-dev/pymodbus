@@ -4,6 +4,9 @@ This is an example of building a custom payload builder
 that can be used in the pymodbus library. Below is a
 simple binary coded decimal builder and decoder.
 """
+
+__all__ = ["BcdPayloadBuilder", "BcdPayloadDecoder"]
+
 from struct import pack
 
 from pymodbus.constants import Endian
@@ -219,9 +222,3 @@ class BcdPayloadDecoder:
 
 if __name__ == "__main__":
     print("Test")
-
-# --------------------------------------------------------------------------- #
-# Exported Identifiers
-# --------------------------------------------------------------------------- #
-
-__all__ = ["BcdPayloadBuilder", "BcdPayloadDecoder"]

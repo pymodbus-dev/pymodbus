@@ -2,9 +2,9 @@
 import asyncio
 import logging
 import os
-from test import mock
 from threading import Thread
 from time import sleep
+from unittest import mock
 
 import pytest
 

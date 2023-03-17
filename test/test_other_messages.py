@@ -1,5 +1,5 @@
 """Test other messages."""
-from test import mock
+from unittest import mock
 
 import pymodbus.other_message as pymodbus_message
 

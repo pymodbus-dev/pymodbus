@@ -1,5 +1,5 @@
 """Test remote datastore."""
-from test import mock
+from unittest import mock
 
 import pytest
 

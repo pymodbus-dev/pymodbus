@@ -37,4 +37,4 @@ class Version:
         return f"[{self.package}, version {self.short()}]"
 
 
-version = Version("pymodbus", 3, 2, 1, "")
+version = Version("pymodbus", 3, 2, "x", "")

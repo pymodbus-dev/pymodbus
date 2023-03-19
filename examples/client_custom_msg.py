@@ -124,9 +124,25 @@ class Read16CoilsRequest(ReadCoilsRequest):
 # --------------------------------------------------------------------------- #
 
 
-if __name__ == "__main__":
+def run_custom_client():
+    """Run versions of read coil."""
     with ModbusClient(host="localhost", port=5020) as client:
-        client.register(CustomModbusResponse)
-        request = CustomModbusRequest(1, slave=1)
+        # Standard call
+        request = ReadCoilsRequest(32, 1, slave=1)
         result = client.execute(request)
-        print(result.values)
+        print(result)
+
+        # inherited request
+        request = Read16CoilsRequest(32, slave=1)
+        result = client.execute(request)
+        print(result)
+
+        # new modbus function code.
+        client.register(CustomModbusResponse)
+        request = CustomModbusRequest(32, slave=1)
+        result = client.execute(request)
+        print(result)
+
+
+if __name__ == "__main__":
+    run_custom_client()

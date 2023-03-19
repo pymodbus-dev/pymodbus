@@ -21,6 +21,7 @@ import pytest_asyncio
 
 from examples.build_bcd_payload import BcdPayloadBuilder, BcdPayloadDecoder
 from examples.client_async import run_async_client, setup_async_client
+from examples.client_custom_msg import run_custom_client
 from examples.client_payload import run_payload_calls
 from examples.client_test import run_async_calls as run_client_test
 from examples.message_generator import generate_messages
@@ -156,6 +157,14 @@ async def test_exp_server_callback():
     await asyncio.sleep(0.1)
     task.cancel()
     await task
+
+
+@pytest.mark.xdist_group(name="server_serialize")
+async def test_exp_client_custom_msg(mock_run_server):
+    """Test client with custome message."""
+    assert not mock_run_server
+
+    run_custom_client()
 
 
 # to be updated:

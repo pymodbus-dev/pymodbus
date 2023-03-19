@@ -1,3 +1,15 @@
+version 3.2.1 (picked from dev, only bugfixes)
+----------------------------------------------------------
+* add missing server.start(). (#1443)
+* Don't publish univeral (Python2 / Python 3) wheels (#1423)
+* Remove unneccesary custom LOG_LEVEL check (#1424)
+* Include py.typed in package (#1422)
+
+Thanks to:
+  Alex,
+  jan iversen,
+  Thijs W
+
 version 3.2.0
 ----------------------------------------------------------
 * Add value <-> registers converter helpers. (#1413)

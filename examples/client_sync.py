@@ -39,8 +39,13 @@ from pymodbus.client import (
 _logger = logging.getLogger()
 
 
-def setup_sync_client(args):
+def setup_sync_client(description=None, cmdline=None):
     """Run client setup."""
+    args = get_commandline(
+        server=False,
+        description=description,
+        cmdline=cmdline,
+    )
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = ModbusTcpClient(
@@ -126,9 +131,5 @@ def run_sync_client(client, modbus_calls=None):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run synchronous client.",
-    )
-    testclient = setup_sync_client(cmd_args)
+    testclient = setup_sync_client(description="Run synchronous client.")
     run_sync_client(testclient)

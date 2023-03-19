@@ -12,7 +12,6 @@ import logging
 from collections import OrderedDict
 
 from examples.client_async import run_async_client, setup_async_client
-from examples.helper import get_commandline
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
@@ -138,8 +137,5 @@ async def run_payload_calls(client):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        description="Run payload client.",
-    )
-    testclient = setup_async_client(cmd_args)
+    testclient = setup_async_client(description="Run payload client.")
     asyncio.run(run_async_client(testclient, modbus_calls=run_payload_calls))

@@ -2,12 +2,8 @@
 """Modbus Message Parser.
 
 The following is an example of how to parse modbus messages
-using the supplied framers for a number of protocols:
+using the supplied framers.
 
-* tcp
-* ascii
-* rtu
-* binary
 """
 import argparse
 import codecs as c
@@ -27,10 +23,42 @@ from pymodbus.transaction import (
 _logger = logging.getLogger()
 
 
+def get_commandline(cmdline):
+    """Parse the command line options"""
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--framer",
+        choices=["ascii", "binary", "rtu", "socket"],
+        help="set framer, default is rtu",
+        type=str,
+        default="rtu",
+        dest="framer",
+    )
+    parser.add_argument(
+        "-l",
+        "--log",
+        choices=["critical", "error", "warning", "info", "debug"],
+        help="set log level, default is info",
+        default="info",
+        type=str,
+        dest="log",
+    )
+    parser.add_argument(
+        "-m",
+        "--message",
+        help="The message to parse",
+        type=str,
+        default=None,
+        dest="message",
+    )
+    return parser.parse_args(cmdline)
+
+
 class Decoder:
     """Decoder.
 
-    build a quick wrapper around the framers
+    build custom wrapper around the framers
     """
 
     def __init__(self, framer, encode=False):
@@ -86,7 +114,6 @@ class Decoder:
                         "  %-12s => %s"  # pylint: disable=consider-using-f-string
                         % (k_item, v_item)
                     )
-
             elif isinstance(v_dict, collections.abc.Iterable):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 value = str([int(x) for x in v_dict])
@@ -112,88 +139,27 @@ class Decoder:
 # -------------------------------------------------------------------------- #
 # and decode our message
 # -------------------------------------------------------------------------- #
-def get_options(cmdline):
-    """Parse the command line options"""
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--framer",
-        choices=["ascii", "binary", "rtu", "socket", "tls"],
-        help="set framer, default depends on --comm",
-        type=str,
-        default="rtu",
-        dest="framer",
-    )
-    parser.add_argument(
-        "--log",
-        choices=["critical", "error", "warning", "info", "debug"],
-        help="set log level, default is info",
-        default="info",
-        type=str,
-        dest="log",
-    )
-    parser.add_argument(
-        "--message", help="The message to parse", default=None, type=str, dest="message"
-    )
-    parser.add_argument(
-        "--file",
-        help="The file containing messages to parse",
-        default=None,
-        type=str,
-        dest="file",
-    )
-    parser.add_argument(
-        "-t",
-        "--type",
-        choices=["ascii", "binary", "hex"],
-        help="message/file format",
-        dest="type",
-        default="hex",
-    )
-    return parser.parse_args(cmdline)
 
 
-def get_messages(option):
+def parse_messages(cmdline=None):
     """Do a helper method to generate the messages to parse"""
-    if option.message:
-        if option.transaction:
-            msg = ""
-            for segment in option.message.split():
-                segment = segment.replace("0x", "")
-                segment = "0" + segment if len(segment) == 1 else segment
-                msg = msg + segment
-            option.message = msg
-
-        if option.type != "ascii":
-            option.message = c.decode(option.message.encode(), "hex_codec")
-        yield option.message
-    elif option.file:
-        with open(option.file, "r") as handle:  # pylint: disable=unspecified-encoding
-            for line in handle:
-                if line.startswith("#"):
-                    continue
-                if option.type != "ascii":
-                    line = line.strip()
-                    line = line.decode("hex")
-                yield line
-
-
-def main(cmdline=None):
-    """Run main runner function"""
-    option = get_options(cmdline)
-    _logger.setLevel(option.log.upper())
+    args = get_commandline(cmdline=cmdline)
+    _logger.setLevel(args.log.upper())
+    if not args.message:
+        _logger.error("Missing --message.")
+        return
 
     framer = {
-        "tcp": ModbusSocketFramer,
-        "rtu": ModbusRtuFramer,
-        "binary": ModbusBinaryFramer,
         "ascii": ModbusAsciiFramer,
-    }.get(option.framer, ModbusSocketFramer)
-
+        "binary": ModbusBinaryFramer,
+        "rtu": ModbusRtuFramer,
+        "socket": ModbusSocketFramer,
+    }[args.framer]
     decoder = Decoder(framer)
-    for message in get_messages(option):
-        decoder.decode(message)
+
+    raw_message = c.decode(args.message.encode(), "hex_codec")
+    decoder.decode(raw_message)
 
 
 if __name__ == "__main__":
-    main()
+    parse_messages()

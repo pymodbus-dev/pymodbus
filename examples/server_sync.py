@@ -35,7 +35,6 @@ a lot slower.
 import logging
 import os
 
-from examples.helper import get_commandline
 from examples.server_async import setup_server
 
 # --------------------------------------------------------------------------- #
@@ -146,10 +145,6 @@ def run_sync_server(args):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run synchronous server.",
-    )
-    run_args = setup_server(cmd_args)
+    run_args = setup_server(description="Run synchronous server.")
     server = run_sync_server(run_args)
     server.shutdown()

@@ -42,7 +42,6 @@ import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
 from examples.client_async import run_async_client, setup_async_client
 from examples.client_sync import run_sync_client, setup_sync_client
-from examples.helper import get_commandline
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 
@@ -289,11 +288,11 @@ def run_sync_calls(client):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run modbus calls in asynchronous client.",
+    testclient = setup_async_client(
+        description="Run modbus calls in asynchronous client."
     )
-    testclient = setup_async_client(cmd_args)
     asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))
-    testclient = setup_sync_client(cmd_args)
+    testclient = setup_sync_client(
+        description="Run modbus calls in synchronous client."
+    )
     run_sync_client(testclient, modbus_calls=run_sync_calls)

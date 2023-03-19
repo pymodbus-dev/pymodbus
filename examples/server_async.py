@@ -56,14 +56,17 @@ from pymodbus.server import (
 _logger = logging.getLogger()
 
 
-def setup_server(args):
+def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
-    # The datastores only respond to the addresses that are initialized
-    # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
-    # 0x100 will respond with an invalid address exception.
-    # This is because many devices exhibit this kind of behavior (but not all)
+    args = get_commandline(server=True, description=description, cmdline=cmdline)
+    if context:
+        args.context = context
     if not args.context:
         _logger.info("### Create datastore")
+        # The datastores only respond to the addresses that are initialized
+        # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
+        # 0x100 will respond with an invalid address exception.
+        # This is because many devices exhibit this kind of behavior (but not all)
         if args.store == "sequential":
             # Continuing, use a sequential block without gaps.
             datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
@@ -229,9 +232,5 @@ async def run_async_server(args):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run asynchronous server.",
-    )
-    run_args = setup_server(cmd_args)
+    run_args = setup_server(description="Run asynchronous server.")
     asyncio.run(run_async_server(run_args), debug=True)

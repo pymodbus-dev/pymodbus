@@ -84,28 +84,3 @@ Serial Forwarder
 Sqlalchemy datastore
 ^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/contrib/sql_datastore.py
-
-
-Examples version 2.5.3
-----------------------
-
-These examples have not been upgraded to v3.0.0 but are still relevant.
-
-Help is wanted to upgrade the examples.
-
-
-Deviceinfo showcase client
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/deviceinfo_showcase_client.py
-
-Deviceinfo showcase server
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/deviceinfo_showcase_server.py
-
-Modbus Saver
-^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/modbus_saver.py
-
-performance module
-^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/performance.py

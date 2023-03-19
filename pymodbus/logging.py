@@ -35,7 +35,6 @@ class Log:
     :meta private:
     """
 
-    LOG_LEVEL = logging.NOTSET
     _logger = logging.getLogger(__name__)
 
     @classmethod
@@ -59,7 +58,6 @@ class Log:
     def setLevel(cls, level):
         """Apply basic logging level"""
         cls._logger.setLevel(level)
-        cls.LOG_LEVEL = level
 
     @classmethod
     def build_msg(cls, txt, *args):
@@ -90,39 +88,29 @@ class Log:
     @classmethod
     def info(cls, txt, *args):
         """Log info messagees."""
-        if cls.LOG_LEVEL == logging.NOTSET:
-            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
-        if logging.INFO >= cls.LOG_LEVEL:
+        if cls._logger.isEnabledFor(logging.INFO):
             cls._logger.info(cls.build_msg(txt, *args))
 
     @classmethod
     def debug(cls, txt, *args):
         """Log debug messagees."""
-        if cls.LOG_LEVEL == logging.NOTSET:
-            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
-        if logging.DEBUG >= cls.LOG_LEVEL:
+        if cls._logger.isEnabledFor(logging.DEBUG):
             cls._logger.debug(cls.build_msg(txt, *args))
 
     @classmethod
     def warning(cls, txt, *args):
         """Log warning messagees."""
-        if cls.LOG_LEVEL == logging.NOTSET:
-            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
-        if logging.WARNING >= cls.LOG_LEVEL:
+        if cls._logger.isEnabledFor(logging.WARNING):
             cls._logger.warning(cls.build_msg(txt, *args))
 
     @classmethod
     def error(cls, txt, *args):
         """Log error messagees."""
-        if cls.LOG_LEVEL == logging.NOTSET:
-            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
-        if logging.ERROR >= cls.LOG_LEVEL:
+        if cls._logger.isEnabledFor(logging.ERROR):
             cls._logger.error(cls.build_msg(txt, *args))
 
     @classmethod
     def critical(cls, txt, *args):
         """Log critical messagees."""
-        if cls.LOG_LEVEL == logging.NOTSET:
-            cls.LOG_LEVEL = cls._logger.getEffectiveLevel()
-        if logging.CRITICAL >= cls.LOG_LEVEL:
+        if cls._logger.isEnabledFor(logging.CRITICAL):
             cls._logger.critical(cls.build_msg(txt, *args))

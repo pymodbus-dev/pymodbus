@@ -161,7 +161,7 @@ async def test_exp_server_callback():
 
 @pytest.mark.xdist_group(name="server_serialize")
 async def test_exp_client_custom_msg(mock_run_server):
-    """Test client with custome message."""
+    """Test client with custom message."""
     assert not mock_run_server
 
     run_custom_client()

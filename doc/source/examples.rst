@@ -26,6 +26,10 @@ Build bcd Payload example
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/build_bcd_payload.py
 
+Callback Server example
+^^^^^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../examples/server_callback.py
+
 Message generator example
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/message_generator.py
@@ -85,10 +89,6 @@ These examples have not been upgraded to v3.0.0 but are still relevant.
 
 Help is wanted to upgrade the examples.
 
-
-Callback Server example
-^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../examples/v2.5.3/callback_server.py
 
 Custom Message example
 ^^^^^^^^^^^^^^^^^^^^^^

@@ -26,6 +26,7 @@ from examples.client_test import run_async_calls as run_client_test
 from examples.message_generator import generate_messages
 from examples.message_parser import parse_messages
 from examples.server_async import run_async_server, setup_server
+from examples.server_callback import run_callback_server
 from examples.server_payload import setup_payload_server
 from examples.server_simulator import run_server_simulator, setup_simulator
 from examples.server_updating import run_updating_server, setup_updating_server
@@ -141,6 +142,20 @@ def test_exp_message_parser():
     """Test message parser."""
     parse_messages(["--framer", "socket", "-m", "000100000006010100200001"])
     parse_messages(["--framer", "socket", "-m", "00010000000401010101"])
+
+
+@pytest.mark.xdist_group(name="server_serialize")
+async def test_exp_server_callback():
+    """Test server/client with payload."""
+    task = asyncio.create_task(run_callback_server(cmdline=CMDARGS))
+    await asyncio.sleep(0.1)
+    testclient = setup_async_client(cmdline=CMDARGS)
+    await run_async_client(testclient, modbus_calls=run_client_test)
+    await asyncio.sleep(0.1)
+    await ServerAsyncStop()
+    await asyncio.sleep(0.1)
+    task.cancel()
+    await task
 
 
 # to be updated:

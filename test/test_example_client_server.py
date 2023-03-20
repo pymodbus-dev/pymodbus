@@ -13,7 +13,7 @@ import pytest
 import pytest_asyncio
 
 from examples.client_async import run_async_client, setup_async_client
-from examples.client_calls import run_async_calls, run_sync_calls
+from examples.client_calls import run_sync_calls
 from examples.client_sync import run_sync_client, setup_sync_client
 from examples.client_test import run_async_calls as run_async_simple_calls
 from examples.helper import get_commandline
@@ -33,6 +33,8 @@ TEST_COMMS_FRAMER = [
     ("udp", "socket", 5020),
     ("udp", "rtu", 5020),
     ("serial", "rtu", "socket://127.0.0.1:5020"),
+    # awaiting fix: ("serial", "ascii", "socket://127.0.0.1:5020"),
+    # awaiting fix: ("serial", "binary", "socket://127.0.0.1:5020"),
 ]
 
 
@@ -81,7 +83,6 @@ async def test_exp_async_server_client(
 ):
     """Run async client and server."""
     assert not mock_run_server
-
     cmdline = [
         "--comm",
         test_comm,
@@ -100,9 +101,9 @@ async def test_exp_async_server_client(
     await run_async_client(test_client, modbus_calls=run_async_simple_calls)
 
 
-# @pytest.mark.xdist_group(name="server_serialize")
-# @pytest.mark.parametrize("test_comm, test_framer, test_port", [TEST_COMMS_FRAMER[0]])
-def xtest_exp_sync_server_client(
+@pytest.mark.xdist_group(name="server_serialize")
+@pytest.mark.parametrize("test_comm, test_framer, test_port", [TEST_COMMS_FRAMER[0]])
+def test_exp_sync_server_client(
     test_comm,
     test_framer,
     test_port,
@@ -128,39 +129,3 @@ def xtest_exp_sync_server_client(
     test_client = setup_sync_client(cmdline=cmdline)
     run_sync_client(test_client, modbus_calls=run_sync_calls)
     ServerStop()
-
-
-# JAN
-# @pytest.mark.xdist_group(name="server_serialize")
-# @pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
-async def xtest_exp_framers_calls(
-    test_comm,
-    test_framer,
-    test_port,
-    mock_run_server,
-):
-    """Test client-server async with different framers and calls."""
-    assert not mock_run_server
-    if test_comm == "serial" and test_framer in {"ascii", "binary"}:
-        return
-    if pytest.IS_WINDOWS and test_comm == "serial":
-        return
-    if test_comm == "serial":
-        test_port = f"socket://127.0.0.1:{test_port}"
-    cmdline = [
-        "--comm",
-        test_comm,
-        "--host",
-        "127.0.0.1",
-        "--framer",
-        test_framer,
-        "--port",
-        str(test_port),
-        "--baudrate",
-        "9600",
-        "--log",
-        "debug",
-    ]
-    test_client = setup_async_client(cmdline=cmdline)
-    await run_async_client(test_client, modbus_calls=run_async_calls)
-    await asyncio.sleep(0.1)

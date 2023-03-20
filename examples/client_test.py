@@ -81,15 +81,23 @@ async def _execute_diagnostic_requests(client):
 # ------------------------
 # Run the calls in groups.
 # ------------------------
-
-
-async def run_async_calls(client):
+async def run_async_simple_calls(client):
     """Demonstrate basic read/write calls."""
     await _handle_coils(client)
     await _handle_discrete_input(client)
     await _handle_holding_registers(client)
+
+
+async def run_async_extended_calls(client):
+    """Demonstrate basic read/write calls."""
     await _execute_information_requests(client)
     await _execute_diagnostic_requests(client)
+
+
+async def run_async_calls(client):
+    """Demonstrate basic read/write calls."""
+    await run_async_simple_calls(client)
+    await run_async_extended_calls(client)
 
 
 if __name__ == "__main__":

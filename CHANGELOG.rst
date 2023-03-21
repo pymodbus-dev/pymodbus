@@ -1,3 +1,7 @@
+version 3.2.3 (picked from dev, only bugfixes)
+----------------------------------------------------------
+* mypy problem ModbusResponse
+
 version 3.2.2 (picked from dev, only bugfixes)
 ----------------------------------------------------------
 * Add forgotten await

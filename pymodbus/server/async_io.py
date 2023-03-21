@@ -1225,7 +1225,7 @@ async def StartAsyncSerialServer(  # pylint: disable=invalid-name,dangerous-defa
     server = ModbusSerialServer(
         context, kwargs.pop("framer", ModbusAsciiFramer), identity=identity, **kwargs
     )
-    server.start()
+    await server.start()
     await _serverList.run(server, custom_functions)
 
 

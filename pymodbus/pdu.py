@@ -144,6 +144,8 @@ class ModbusResponse(ModbusPDU):
 
         """
         super().__init__(slave, **kwargs)
+        self.bits = []
+        self.registers = []
 
     def isError(self):
         """Check if the error is a success or failure."""

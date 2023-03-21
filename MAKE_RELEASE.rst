@@ -38,5 +38,6 @@ Prepare/make release on dev.
 ------------------------------------------------------------
 Prepare release on dev for new commits.
 ------------------------------------------------------------
+* git branch -D master
 * Make pull request "prepare dev", with the following:
    * Update pymodbus/version.py with version number (last line)

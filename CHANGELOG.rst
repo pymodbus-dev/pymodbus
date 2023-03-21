@@ -1,3 +1,7 @@
+version 3.2.2 (picked from dev, only bugfixes)
+----------------------------------------------------------
+* Add forgotten await
+
 version 3.2.1 (picked from dev, only bugfixes)
 ----------------------------------------------------------
 * add missing server.start(). (#1443)

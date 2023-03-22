@@ -237,19 +237,20 @@ class ModbusRtuFramer(ModbusFramer):
         single = kwargs.get("single", False)
         skip_cur_frame = False
         while self.getFrameStart(slave, broadcast, skip_cur_frame):
-            skip_cur_frame = True
             if not self.isFrameReady():
                 Log.debug("Frame - [{}] not ready", data)
                 break
             if not self.checkFrame():
                 Log.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
-                break
+                skip_cur_frame = True
+                continue
             if not self._validate_slave_id(slave, single):
                 header_txt = self._header["uid"]
                 Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                 self.resetFrame()
-                break
+                skip_cur_frame = True
+                continue
             self._process(callback)
 
     def buildPacket(self, message):

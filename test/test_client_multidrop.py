@@ -30,21 +30,25 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
+    def test_ok_2frame(self, framer, callback):
+        """Test ok frame."""
+        serial_event = self.good_frame + self.good_frame
+        framer.processIncomingPacket(serial_event, callback, self.slaves)
+        assert callback.call_count == 2
+
     def test_bad_crc(self, framer, callback):
         """Test bad crc."""
         serial_event = b"\x02\x03\x00\x01\x00}\xd4\x19"  # Manually mangled crc
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_not_called()
 
-    def test_wrong_unit(self, framer, callback):
-        """Test frame wrong unit"""
-        serial_event = (
-            b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other unit id
-        )
+    def test_wrong_id(self, framer, callback):
+        """Test frame wrong id"""
+        serial_event = b"\x01\x03\x00\x01\x00}\xd4+"  # Frame with good CRC but other id
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_not_called()
 
-    def test_big_split_response_frame_from_other_unit(self, framer, callback):
+    def test_big_split_response_frame_from_other_id(self, framer, callback):
         """Test split response."""
         # This is a single *response* from device id 1 after being queried for 125 holding register values
         # Because the response is so long it spans several serial events
@@ -70,25 +74,23 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    def test_complete_frame_trailing_data_without_unit_id(self, framer, callback):
+    def test_complete_frame_trailing_data_without_id(self, framer, callback):
         """Test trailing data."""
-        garbage = b"\x05\x04\x03"  # Note the garbage doesn't contain our unit id
+        garbage = b"\x05\x04\x03"  # without id
         serial_event = garbage + self.good_frame
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
     @pytest.mark.skip
-    def test_complete_frame_trailing_data_with_unit_id(self, framer, callback):
+    def test_complete_frame_trailing_data_with_id(self, framer, callback):
         """Test trailing data."""
-        garbage = (
-            b"\x05\x04\x03\x02\x01\x00"  # Note the garbage does contain our unit id
-        )
+        garbage = b"\x05\x04\x03\x02\x01\x00"  # with id
         serial_event = garbage + self.good_frame
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
     @pytest.mark.skip
-    def test_split_frame_trailing_data_with_unit_id(self, framer, callback):
+    def test_split_frame_trailing_data_with_id(self, framer, callback):
         """Test split frame."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
         serial_events = [garbage + self.good_frame[:5], self.good_frame[5:]]

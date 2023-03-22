@@ -63,7 +63,6 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_not_called()
 
-    @pytest.mark.skip
     def test_split_frame(self, framer, callback):
         """Test split frame."""
         serial_events = [self.good_frame[:5], self.good_frame[5:]]
@@ -71,7 +70,6 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_complete_frame_trailing_data_without_unit_id(self, framer, callback):
         """Test trailing data."""
         garbage = b"\x05\x04\x03"  # Note the garbage doesn't contain our unit id
@@ -138,13 +136,29 @@ class TestMultidrop:
         # We should not respond in this case for identical reasons as test_wrapped_frame
         callback.assert_not_called()
 
-    @pytest.mark.skip
-    def test_getFrameStart(self, framer, callback):
+    def test_getFrameStart(self, framer):
         """Test getFrameStart."""
         framer_ok = b"\x02\x03\x00\x01\x00}\xd4\x18"
-        framer._buffer = framer_ok + framer_ok
-        assert framer.getFrameStart(self.slaves, False)
-        assert framer_ok + framer_ok == framer._buffer
-        assert framer.getFrameStart(self.slaves, True)
-        assert framer_ok == framer._buffer
-        assert not framer.getFrameStart(self.slaves, True)
+        framer._buffer = framer_ok  # pylint: disable=protected-access
+        assert framer.getFrameStart(self.slaves, False, False)
+        assert framer_ok == framer._buffer  # pylint: disable=protected-access
+
+        framer_2ok = framer_ok + framer_ok
+        framer._buffer = framer_2ok  # pylint: disable=protected-access
+        assert framer.getFrameStart(self.slaves, False, False)
+        assert framer_2ok == framer._buffer  # pylint: disable=protected-access
+        assert framer.getFrameStart(self.slaves, False, True)
+        assert framer_ok == framer._buffer  # pylint: disable=protected-access
+
+        framer._buffer = framer_ok[:2]  # pylint: disable=protected-access
+        assert not framer.getFrameStart(self.slaves, False, False)
+        assert framer_ok[:2] == framer._buffer  # pylint: disable=protected-access
+
+        framer._buffer = framer_ok[:3]  # pylint: disable=protected-access
+        assert not framer.getFrameStart(self.slaves, False, False)
+        assert framer_ok[:3] == framer._buffer  # pylint: disable=protected-access
+
+        framer_ok = b"\xF0\x03\x00\x01\x00}\xd4\x18"
+        framer._buffer = framer_ok  # pylint: disable=protected-access
+        assert not framer.getFrameStart(self.slaves, False, False)
+        assert framer._buffer == framer_ok[-3:]  # pylint: disable=protected-access

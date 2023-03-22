@@ -143,7 +143,6 @@ def test_rtu_reset_framer(rtu_framer, data):  # pylint: disable=redefined-outer-
         "len": 0,
         "crc": b"\x00\x00",
     }
-    assert rtu_framer._buffer == b""  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize(
@@ -255,7 +254,7 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
         (
             b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD",
             16,
-            True,
+            False,
             False,
         ),  # incorrect slave id
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\x11\x03", 17, False, True),

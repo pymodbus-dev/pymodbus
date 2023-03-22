@@ -164,7 +164,7 @@ class ServerDecoder:
     def __init__(self):
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.__function_table}
-        self.__lookup = self.getFCdict()
+        self.lookup = self.getFCdict()
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -187,7 +187,7 @@ class ServerDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.__lookup.get(function_code, ExceptionResponse)
+        return self.lookup.get(function_code, ExceptionResponse)
 
     def _helper(self, data):
         """Generate the correct request object from a valid request packet.
@@ -198,12 +198,12 @@ class ServerDecoder:
         :returns: The decoded request or illegal function request object
         """
         function_code = int(data[0])
-        if not (request := self.__lookup.get(function_code, lambda: None)()):
+        if not (request := self.lookup.get(function_code, lambda: None)()):
             Log.debug("Factory Request[{}]", function_code)
             request = IllegalFunctionRequest(function_code)
         else:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
-                str(self.__lookup[function_code])  # pylint: disable=use-maxsplit-arg
+                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),
                 function_code,
@@ -230,7 +230,7 @@ class ServerDecoder:
                 ". Class needs to be derived from "
                 "`pymodbus.pdu.ModbusRequest` "
             )
-        self.__lookup[function.function_code] = function
+        self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = {}
@@ -293,7 +293,7 @@ class ClientDecoder:
     def __init__(self):
         """Initialize the client lookup tables."""
         functions = {f.function_code for f in self.function_table}
-        self.__lookup = {f.function_code: f for f in self.function_table}
+        self.lookup = {f.function_code: f for f in self.function_table}
         self.__sub_lookup = {f: {} for f in functions}
         for f in self.__sub_function_table:
             self.__sub_lookup[f.function_code][f.sub_function_code] = f
@@ -304,7 +304,7 @@ class ClientDecoder:
         :param function_code: The function code specified in a frame.
         :returns: The class of the PDU that has a matching `function_code`.
         """
-        return self.__lookup.get(function_code, ExceptionResponse)
+        return self.lookup.get(function_code, ExceptionResponse)
 
     def decode(self, message):
         """Decode a response packet.
@@ -330,15 +330,15 @@ class ClientDecoder:
         :raises ModbusException:
         """
         fc_string = function_code = int(data[0])
-        if function_code in self.__lookup:
+        if function_code in self.lookup:
             fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
-                str(self.__lookup[function_code])  # pylint: disable=use-maxsplit-arg
+                str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),
                 function_code,
             )
         Log.debug("Factory Response[{}]", fc_string)
-        response = self.__lookup.get(function_code, lambda: None)()
+        response = self.lookup.get(function_code, lambda: None)()
         if function_code > 0x80:
             code = function_code & 0x7F  # strip error portion
             response = ExceptionResponse(code, ecode.IllegalFunction)
@@ -361,7 +361,7 @@ class ClientDecoder:
                 ". Class needs to be derived from "
                 "`pymodbus.pdu.ModbusResponse` "
             )
-        self.__lookup[function.function_code] = function
+        self.lookup[function.function_code] = function
         if hasattr(function, "sub_function_code"):
             if function.function_code not in self.__sub_lookup:
                 self.__sub_lookup[function.function_code] = {}

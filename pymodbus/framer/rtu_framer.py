@@ -118,7 +118,7 @@ class ModbusRtuFramer(ModbusFramer):
         Log.debug(
             "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
         )
-        self._buffer = b""
+        # self._buffer = b""
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def isFrameReady(self):

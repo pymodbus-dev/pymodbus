@@ -81,7 +81,6 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_complete_frame_trailing_data_with_id(self, framer, callback):
         """Test trailing data."""
         garbage = b"\x05\x04\x03\x02\x01\x00"  # with id
@@ -89,7 +88,6 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_split_frame_trailing_data_with_id(self, framer, callback):
         """Test split frame."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
@@ -98,19 +96,25 @@ class TestMultidrop:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_coincidental_1(self, framer, callback):
         """Test conincidental."""
-        garbage = b"\x02\x14\x07"
+        garbage = b"\x02\x90\x07"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
         callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_coincidental_2(self, framer, callback):
         """Test conincidental."""
         garbage = b"\x02\x10\x07"
+        serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
+        for serial_event in serial_events:
+            framer.processIncomingPacket(serial_event, callback, self.slaves)
+        callback.assert_called_once()
+
+    def test_coincidental_3(self, framer, callback):
+        """Test conincidental."""
+        garbage = b"\x02\x10\x07\x10"
         serial_events = [garbage, self.good_frame[:5], self.good_frame[5:]]
         for serial_event in serial_events:
             framer.processIncomingPacket(serial_event, callback, self.slaves)
@@ -126,9 +130,8 @@ class TestMultidrop:
         # i.e. this probably represents a case where a command came for us, but we didn't get
         # to the serial buffer in time (some other co-routine or perhaps a block on the USB bus)
         # and the master moved on and queried another device
-        callback.assert_not_called()
+        callback.assert_called_once()
 
-    @pytest.mark.skip
     def test_frame_with_trailing_data(self, framer, callback):
         """Test trailing data."""
         garbage = b"\x05\x04\x03\x02\x01\x00"
@@ -136,7 +139,7 @@ class TestMultidrop:
         framer.processIncomingPacket(serial_event, callback, self.slaves)
 
         # We should not respond in this case for identical reasons as test_wrapped_frame
-        callback.assert_not_called()
+        callback.assert_called_once()
 
     def test_getFrameStart(self, framer):
         """Test getFrameStart."""

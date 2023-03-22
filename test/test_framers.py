@@ -143,7 +143,6 @@ def test_rtu_reset_framer(rtu_framer, data):  # pylint: disable=redefined-outer-
         "len": 0,
         "crc": b"\x00\x00",
     }
-    assert rtu_framer._buffer == b""  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize(

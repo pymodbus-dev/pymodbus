@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
+import time
 from dataclasses import dataclass
 from typing import Any, Callable, Optional, Tuple, Type
 
@@ -32,6 +33,7 @@ class ModbusBaseClient(ModbusClientMixin):
     :param reconnect_delay: (optional) Minimum delay in milliseconds before reconnecting.
     :param reconnect_delay_max: (optional) Maximum delay in milliseconds before reconnecting.
     :param on_reconnect_callback: (optional) Function that will be called just before a reconnection attempt.
+    :param after_connect_delay: (optional) Delay after connecting before starting communication
     :param kwargs: (optional) Experimental parameters.
 
     .. tip::
@@ -81,6 +83,7 @@ class ModbusBaseClient(ModbusClientMixin):
         reconnect_delay: int = None
         reconnect_delay_max: int = None
         on_reconnect_callback: Optional[Callable[[], None]] = None
+        after_connect_delay: Optional[int] = None
 
         baudrate: int = None
         bytesize: int = None
@@ -108,6 +111,7 @@ class ModbusBaseClient(ModbusClientMixin):
         reconnect_delay: int = Defaults.ReconnectDelay,
         reconnect_delay_max: int = Defaults.ReconnectDelayMax,
         on_reconnect_callback: Optional[Callable[[], None]] = None,
+        after_connect_delay: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
@@ -122,6 +126,7 @@ class ModbusBaseClient(ModbusClientMixin):
         self.params.reconnect_delay = int(reconnect_delay)
         self.params.reconnect_delay_max = int(reconnect_delay_max)
         self.params.on_reconnect_callback = on_reconnect_callback
+        self.params.after_connect_delay = after_connect_delay
         self.params.kwargs = kwargs
 
         # Common variables.
@@ -242,6 +247,10 @@ class ModbusBaseClient(ModbusClientMixin):
         self.transport = transport
         Log.debug("Client connected to modbus server")
         self._connected = True
+
+        if self.params.after_connect_delay:
+            time.sleep(self.params.after_connect_delay / 1000)
+
         self.client_made_connection(self)
 
     def connection_lost(self, reason):

@@ -274,6 +274,21 @@ async def test_client_instanciate(
         client.execute()
 
 
+def test_delay_after_connect():
+    """Test protocol lost connection."""
+    with mock.patch("time.sleep", return_value=None) as mock_sleep:
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1", after_connect_delay=10)
+        client.connection_made(client)
+
+        mock_sleep.assert_called_once_with(0.01)
+
+    with mock.patch("time.sleep", return_value=None) as mock_sleep:
+        client = lib_client.AsyncModbusTcpClient("127.0.0.1")
+        client.connection_made(client)
+
+        mock_sleep.assert_not_called()
+
+
 def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(framer=ModbusAsciiFramer)

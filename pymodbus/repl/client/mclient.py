@@ -104,7 +104,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_discrete_inputs(self, address, count=1, slave=Defaults.Slave, **kwargs):
         """Read `count` number of discrete inputs starting at offset `address`.
@@ -120,7 +120,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     @handle_brodcast
     def write_coil(self, address, value, slave=Defaults.Slave, **kwargs):
@@ -196,7 +196,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_input_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
         """Read `count` number of input registers starting at `address`.
@@ -212,7 +212,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def readwrite_registers(
         self,
@@ -246,7 +246,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def mask_write_register(
         self,
@@ -266,7 +266,8 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         resp = super().mask_write_register(  # pylint: disable=no-member
-            address=address, and_mask=and_mask, or_mask=or_mask, slave=slave, **kwargs
+            address=address, and_mask=and_mask,
+            or_mask=or_mask, slave=slave, **kwargs
         )
         if not resp.isError():
             return {
@@ -275,7 +276,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "and mask": resp.and_mask,
                 "or mask": resp.or_mask,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=slave
+        )
 
     def read_device_information(self, read_code=None, object_id=0x00, **kwargs):
         """Read the identification and additional information of remote slave.
@@ -297,7 +301,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "more follows": resp.more_follows,
                 "space left": resp.space_left,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=request.slave_id
+        )
 
     def report_slave_id(self, slave=Defaults.Slave, **kwargs):
         """Report information about remote slave ID.
@@ -315,7 +322,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "status": resp.status,
                 "byte count": resp.byte_count,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_exception_status(self, slave=Defaults.Slave, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
@@ -328,7 +335,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {"function_code": resp.function_code, "status": resp.status}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=request.slave_id
+        )
 
     def get_com_event_counter(self, **kwargs):
         """Read status word and an event count.
@@ -346,7 +356,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "status": resp.status,
                 "count": resp.count,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=request.slave_id
+        )
 
     def get_com_event_log(self, **kwargs):
         """Read status word.
@@ -367,7 +380,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "event count": resp.event_count,
                 "events": resp.events,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=request.slave_id
+        )
 
     def _execute_diagnostic_request(self, request):
         """Execute diagnostic request."""
@@ -378,7 +394,10 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "sub function code": resp.sub_function_code,
                 "message": resp.message,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(
+            resp,
+            slave=request.slave_id
+        )
 
     def return_query_data(self, message=0, **kwargs):
         """Loop back data sent in response.
@@ -420,7 +439,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ChangeAsciiInputDelimiterRequest(data, **kwargs)
-        return self._execute_diagnostic_request(request)
+        return self._execute_diagnostic_request(request, slave=request.slave_id)
 
     def force_listen_only_mode(self, data=0, **kwargs):
         """Force addressed remote device to its Listen Only Mode.

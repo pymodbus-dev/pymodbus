@@ -439,7 +439,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :return:
         """
         request = ChangeAsciiInputDelimiterRequest(data, **kwargs)
-        return self._execute_diagnostic_request(request, slave=request.slave_id)
+        return self._execute_diagnostic_request(request)
 
     def force_listen_only_mode(self, data=0, **kwargs):
         """Force addressed remote device to its Listen Only Mode.

@@ -277,7 +277,7 @@ def main(
         logging.basicConfig(format=use_format)
         _logger.setLevel(logging.DEBUG)
     ctx.obj = {
-        "broadcast": broadcast_support,
+        "broadcast_enable": broadcast_support,
         "retry_on_empty": retry_on_empty,
         "retry_on_invalid": retry_on_error,
         "retries": retries,

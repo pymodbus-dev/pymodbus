@@ -109,8 +109,6 @@ def get_commandline():
 async def run_main():
     """Run server async."""
     cmd_args = get_commandline()
-    cmd_args["http_port"] = 8081
-    cmd_args["json_file"] = "./pymodbus/server/simulator/setup.json"
     task = ModbusSimulatorServer(**cmd_args)
     await task.run_forever()
 

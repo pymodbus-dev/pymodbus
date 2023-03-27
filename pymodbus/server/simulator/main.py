@@ -84,6 +84,7 @@ def get_commandline():
         "--json_file",
         help='name of json file, default is "setup.json"',
         type=str,
+        default="./pymodbus/server/simulator/setup.json",
     )
     parser.add_argument(
         "--log_file",

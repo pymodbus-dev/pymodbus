@@ -66,6 +66,7 @@ def get_commandline():
         "--http_host",
         help="use <http_host> as host to bind http listen",
         type=str,
+        default=8081,
     )
     parser.add_argument(
         "--http_port",

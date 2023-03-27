@@ -66,6 +66,7 @@ def get_commandline():
         "--http_host",
         help="use <http_host> as host to bind http listen",
         type=str,
+        default=8081,
     )
     parser.add_argument(
         "--http_port",
@@ -83,6 +84,7 @@ def get_commandline():
         "--json_file",
         help='name of json file, default is "setup.json"',
         type=str,
+        default="./pymodbus/server/simulator/setup.json",
     )
     parser.add_argument(
         "--log_file",
@@ -109,8 +111,6 @@ def get_commandline():
 async def run_main():
     """Run server async."""
     cmd_args = get_commandline()
-    cmd_args["http_port"] = 8081
-    cmd_args["json_file"] = "./pymodbus/server/simulator/setup.json"
     task = ModbusSimulatorServer(**cmd_args)
     await task.run_forever()
 

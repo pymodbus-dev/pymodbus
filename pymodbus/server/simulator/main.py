@@ -41,6 +41,7 @@ options:
 """
 import argparse
 import asyncio
+import os
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.logging import Log
@@ -84,7 +85,7 @@ def get_commandline():
         "--json_file",
         help='name of json file, default is "setup.json"',
         type=str,
-        default="./pymodbus/server/simulator/setup.json",
+        default=os.path.join(os.path.dirname(__file__), "setup.json"),
     )
     parser.add_argument(
         "--log_file",

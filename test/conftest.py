@@ -1,6 +1,7 @@
 """Configure pytest."""
 import functools
 import platform
+from collections import deque
 
 import pytest
 
@@ -126,6 +127,64 @@ class mockSocket:  # pylint: disable=invalid-name
     def sendto(self, msg, *_args):
         """Send to."""
         self.mock_store(msg)
+        return len(msg)
+
+    def setblocking(self, _flag):
+        """Set blocking."""
+        return None
+
+class mockSocket2:  # pylint: disable=invalid-name
+    """Mock socket."""
+
+    timeout = 2
+
+    def __init__(self):
+        """Initialize."""
+        self.receive = deque()
+        self.send = deque()
+
+    def mock_prepare_receive(self, msg):
+        """Store message."""
+        self.receive.append(msg);
+
+    def mock_read_sent(self):
+        self.send.popleft()
+
+    def mock_retrieve(self, size):
+        """Get message."""
+        if len(self.receive) == 0 or not size: 
+            return b"";
+        if size >= len(self.receive[0]):
+            retval = self.receive.popleft()
+        else:
+            retval = self.receive[0][0:size]
+            self.data[0] = self.receive[0][size:-1]
+        return retval
+
+    def close(self):
+        """Close."""
+        return True
+
+    def recv(self, size):
+        """Receive."""
+        return self.mock_retrieve(size)
+
+    def read(self, size):
+        """Read."""
+        return self.mock_retrieve(size)
+
+    def send(self, msg):
+        """Send."""
+        self.mock_store(msg)
+        return len(msg)
+
+    def recvfrom(self, size):
+        """Receive from."""
+        return [self.mock_retrieve(size)]
+
+    def sendto(self, msg, *_args):
+        """Send to."""
+        self.send.append(msg)
         return len(msg)
 
     def setblocking(self, _flag):

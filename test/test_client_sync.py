@@ -2,6 +2,7 @@
 import ssl
 from itertools import count
 from test.conftest import mockSocket
+from test.conftest import mockSocket2
 from unittest import mock
 
 import pytest
@@ -78,6 +79,27 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         client.socket.mock_store(b"\x00" * 4)
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
+
+    def test_udp_client_recv_duplicate(self):
+        """Test the udp client receive method"""
+        client = ModbusUdpClient("127.0.0.1")
+
+        client.socket = mockSocket2()
+        client.socket.mock_prepare_receive(b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03");            # Response 1
+        reply1 = client.read_input_registers(0x820, 1, 1)
+        client.socket.mock_prepare_receive(b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03");            # Duplicate response 1
+        client.socket.mock_prepare_receive(b"\x00\x02\x00\x00\x00\x07\x01\x04\x04\x00\x03\xf6\x3e")     # Response 2
+        reply2 = client.read_input_registers(0x820, 2, 1)
+        reply3 = client.read_input_registers(0x820, 100, 1)
+
+        print(reply1.registers)
+        print(reply2.registers)
+        print(reply3.registers)
+        print(reply1.transaction_id)
+        print(reply2.transaction_id)
+        print(reply3.transaction_id)
+
+        assert 1 == 0
 
     def test_udp_client_repr(self):
         """Test udp client representation."""

@@ -489,7 +489,7 @@ def test_client_udp_connect():
         assert client.connect()
 
     with mock.patch.object(socket, "socket") as mock_method:
-        mock_method.side_effect = socket.error()
+        mock_method.side_effect = OSError()
         client = lib_client.ModbusUdpClient("127.0.0.1")
         assert not client.connect()
 
@@ -504,7 +504,7 @@ def test_client_tcp_connect():
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
-        mock_method.side_effect = socket.error()
+        mock_method.side_effect = OSError()
         client = lib_client.ModbusTcpClient("127.0.0.1")
         assert not client.connect()
 
@@ -516,7 +516,7 @@ def test_client_tls_connect():
         assert client.connect()
 
     with mock.patch.object(socket, "create_connection") as mock_method:
-        mock_method.side_effect = socket.error()
+        mock_method.side_effect = OSError()
         client = lib_client.ModbusTlsClient("127.0.0.1")
         assert not client.connect()
 

@@ -176,7 +176,7 @@ class ModbusTlsClient(ModbusTcpClient):
             )
             self.socket.settimeout(self.params.timeout)
             self.socket.connect((self.params.host, self.params.port))
-        except socket.error as msg:
+        except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
                 self.params.host,

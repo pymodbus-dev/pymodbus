@@ -218,7 +218,7 @@ class ModbusTcpClient(ModbusBaseClient):
                 "Connection to Modbus server established. Socket {}",
                 self.socket.getsockname(),
             )
-        except socket.error as msg:
+        except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
                 self.params.host,

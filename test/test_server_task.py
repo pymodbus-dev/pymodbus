@@ -181,6 +181,40 @@ async def test_async_task_ok(comm):
 
 @pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
+async def test_async_task_reuse(comm):
+    """Test normal client/server handling."""
+    run_server, server_args, run_client, client_args = helper_config(comm, "async")
+
+    task = asyncio.create_task(run_server(**server_args))
+    await asyncio.sleep(0.1)
+    client = run_client(**client_args)
+    await client.connect()
+    await asyncio.sleep(0.1)
+    assert client._connected  # pylint: disable=protected-access
+    rr = await client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
+
+    await client.close()
+    await asyncio.sleep(0.1)
+    assert not client._connected  # pylint: disable=protected-access
+
+    await client.connect()
+    await asyncio.sleep(0.1)
+    assert client._connected  # pylint: disable=protected-access
+    rr = await client.read_coils(1, 1, slave=0x01)
+    assert len(rr.bits) == 8
+
+    await client.close()
+    await asyncio.sleep(0.1)
+    assert not client._connected  # pylint: disable=protected-access
+
+    await server.ServerAsyncStop()
+    task.cancel()
+    await task
+
+
+@pytest.mark.xdist_group(name="server_serialize")
+@pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_server_stop(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "async")

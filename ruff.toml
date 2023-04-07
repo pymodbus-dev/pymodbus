@@ -5,7 +5,6 @@ exclude = [
     ".venv",
     ".git",
     "build",
-    "examples/v2.5.3",
 ]
 ignore = [
     "D202", # No blank lines allowed after function docstring (to work with black)

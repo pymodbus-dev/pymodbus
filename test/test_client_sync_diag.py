@@ -48,7 +48,7 @@ class TestSynchronousDiagnosticClient:
             assert client.connect()
 
         with mock.patch.object(socket, "create_connection") as mock_method:
-            mock_method.side_effect = socket.error()
+            mock_method.side_effect = OSError()
             client = ModbusTcpDiagClient()
             assert not client.connect()
 

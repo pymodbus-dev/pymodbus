@@ -11,7 +11,6 @@ __all__ = [
 ]
 
 # pylint: disable=missing-type-doc
-import socket
 import struct
 import time
 from functools import partial
@@ -317,11 +316,7 @@ class ModbusTransactionManager:
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")
-        except (
-            socket.error,
-            ModbusIOException,
-            InvalidMessageReceivedException,
-        ) as msg:
+        except (OSError, ModbusIOException, InvalidMessageReceivedException) as msg:
             if self.reset_socket:
                 self.client.close()
             Log.debug("Transaction failed. ({}) ", msg)

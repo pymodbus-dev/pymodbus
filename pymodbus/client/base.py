@@ -335,7 +335,7 @@ class ModbusBaseClient(ModbusClientMixin):
         """Get the correct address family."""
         try:
             _ = socket.inet_pton(socket.AF_INET6, address)
-        except socket.error:  # not a valid ipv6 address
+        except OSError:  # not a valid ipv6 address
             return socket.AF_INET
         return socket.AF_INET6
 

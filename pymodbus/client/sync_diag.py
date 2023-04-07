@@ -101,7 +101,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
                 timeout=self.params.timeout,
                 source_address=self.params.source_address,
             )
-        except socket.error as msg:
+        except OSError as msg:
             Log.error(LOG_MSGS["connfail_msg"], self.params.host, self.params.port, msg)
             self.close()
         return self.socket is not None

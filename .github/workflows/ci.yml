@@ -34,10 +34,7 @@ jobs:
           - name: bandit
             cmd: bandit -r -c bandit.yaml .
             type: lint
-          - name: flake8
-            cmd: flake8
-            type: lint
-          - name: precommit (isort and black)
+          - name: precommit (isort, black, and ruff)
             cmd: pre-commit run --all-files
             type: lint
           - name: docs

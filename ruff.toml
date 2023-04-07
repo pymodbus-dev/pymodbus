@@ -1,0 +1,23 @@
+target-version="py38"
+exclude = [
+    "pymodbus/client/serial_asyncio",
+    "venv",
+    ".venv",
+    ".git",
+    "build",
+]
+ignore = [
+    "D202", # No blank lines allowed after function docstring (to work with black)
+    "E501", # line too long
+    "E731", # lambda expressions
+    "D400"  # docstrings ending in period
+]
+line-length = 120
+select = [
+    "D",
+    "E",
+    "F",
+    "W",
+]
+[pydocstyle]
+convention = "pep257"

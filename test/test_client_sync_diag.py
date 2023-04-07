@@ -65,28 +65,28 @@ class TestSynchronousDiagnosticClient:
             client.recv(1024)
         client.socket = mockSocket()
         # Test logging of non-delayed responses
-        client.socket.mock_store(b"\x00")
+        client.socket.mock_prepare_receive(b"\x00")
         assert b"\x00" in client.recv(None)
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00")
+        client.socket.mock_prepare_receive(b"\x00")
         assert client.recv(1) == b"\x00"
 
         # Fool diagnostic logger into thinking we"re running late,
         # test logging of delayed responses
         mock_diag_time.time.side_effect = count(step=3)
-        client.socket.mock_store(b"\x00" * 4)
+        client.socket.mock_prepare_receive(b"\x00" * 4)
         assert client.recv(4) == b"\x00" * 4
         assert client.recv(0) == b""
 
-        client.socket.mock_store(b"\x00\x01\x02")
+        client.socket.mock_prepare_receive(b"\x00\x01\x02")
         client.timeout = 3
         assert client.recv(3) == b"\x00\x01\x02"
-        client.socket.mock_store(b"\x00\x01\x02")
+        client.socket.mock_prepare_receive(b"\x00\x01\x02")
         assert client.recv(2) == b"\x00\x01"
         mock_select.select.return_value = [False]
         assert client.recv(2) == b""
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00")
+        client.socket.mock_prepare_receive(b"\x00")
         mock_select.select.return_value = [True]
         assert b"\x00" in client.recv(None)
 
@@ -96,7 +96,7 @@ class TestSynchronousDiagnosticClient:
         with pytest.raises(ConnectionException):
             client.recv(1024)
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00\x01\x02")
+        client.socket.mock_prepare_receive(b"\x00\x01\x02")
         assert client.recv(1024) == b"\x00\x01\x02"
 
     def test_tcp_diag_client_repr(self):

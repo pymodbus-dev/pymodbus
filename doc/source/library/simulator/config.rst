@@ -253,13 +253,13 @@ Example "setup" configuration:
     Defines if the blocks are independent or shared (true)
 
     .. tip::
-        if shared is set to false, please remember to adjust the adresses, depending on in which group they are.
+        if shared is set to false, please remember to adjust the addresses, depending on in which group they are.
 
         assuming all sizes are set to 10, the addresses for configuration are as follows:
             - coils have addresses 0-9,
             - discrete_inputs have addresses 10-19,
             - holding_registers have addresses 20-29,
-            - input_registers have adresses 30-39
+            - input_registers have addresses 30-39
 
             when configuring the the datatypes (when calling each block start with 0).
 

@@ -509,6 +509,24 @@ def test_client_tcp_connect():
         assert not client.connect()
 
 
+def test_client_tcp_reuse():
+    """Test the tcp client connection method"""
+    with mock.patch.object(socket, "create_connection") as mock_method:
+        _socket = mock.MagicMock()
+        mock_method.return_value = _socket
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        _socket.getsockname.return_value = ("dmmy", 1234)
+        assert client.connect()
+    client.close()
+    with mock.patch.object(socket, "create_connection") as mock_method:
+        _socket = mock.MagicMock()
+        mock_method.return_value = _socket
+        client = lib_client.ModbusTcpClient("127.0.0.1")
+        _socket.getsockname.return_value = ("dmmy", 1234)
+        assert client.connect()
+    client.close()
+
+
 def test_client_tls_connect():
     """Test the tls client connection method"""
     with mock.patch.object(ssl.SSLSocket, "connect") as mock_method:

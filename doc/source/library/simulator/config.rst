@@ -252,6 +252,20 @@ Example "setup" configuration:
 
     Defines if the blocks are independent or shared (true)
 
+    .. tip::
+        if shared is set to false, please remember to adjust the adresses, depending on in which group they are.
+
+        assuming all sizes are set to 10, the addresses for configuration are as follows:
+            - coils have addresses 0-9,
+            - discrete_inputs have addresses 10-19,
+            - holding_registers have addresses 20-29,
+            - input_registers have adresses 30-39
+
+            when configuring the the datatypes (when calling each block start with 0).
+
+        This is needed because the datatypes can be in different blocks.
+
+
 **"type exception"**
 
     Defines is the server returns a modbus exception if a read/write request violates the specified type.
@@ -294,8 +308,6 @@ Defines invalid registers which cannot be read or written. When accessed the res
 In the example registers 5, 10, 11, 12, 13, 14, 15 will produce an exception response.
 
 Registers can be singulars (first entry) or arrays (second entry)
-
-
 
 Write section
 ^^^^^^^^^^^^^

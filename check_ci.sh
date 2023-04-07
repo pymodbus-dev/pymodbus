@@ -8,7 +8,6 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 codespell
 pre-commit run --all-files
 pylint --recursive=y examples pymodbus test
-flake8
 mypy pymodbus
 pytest --numprocesses auto
 echo "Ready to push"

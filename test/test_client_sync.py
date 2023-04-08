@@ -83,30 +83,39 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         """Test the udp client receive method"""
         test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
         client = ModbusUdpClient("127.0.0.1")
-        client.socket = mockSocket()
+        client.socket = mockSocket(copy_send=False)
+
+        # test normal receive
         client.socket.mock_prepare_receive(test_msg)
-        reply1 = client.read_input_registers(0x820, 1, 1)
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        reply_timeout = client.read_input_registers(0x820, 1, 1)
+        assert reply_timeout.isError()
+        client.close()
 
-        return
+        # test duplicate receive
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket(copy_send=False)
+        client.socket.mock_prepare_receive(test_msg)
+        client.socket.mock_prepare_receive(test_msg)
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        client.close()
 
-        client.socket.mock_prepare_receive(
-            b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
-        )
-        # Duplicate response 1
-        client.socket.mock_prepare_receive(
-            b"\x00\x02\x00\x00\x00\x07\x01\x04\x04\x00\x03\xf6\x3e"
-        )  # Response 2
-        reply2 = client.read_input_registers(0x820, 2, 1)
-        reply3 = client.read_input_registers(0x820, 100, 1)
-
-        print(reply1.registers)
-        print(reply2.registers)
-        print(reply3.registers)
-        print(reply1.transaction_id)
-        print(reply2.transaction_id)
-        print(reply3.transaction_id)
-
-        # assert False
+        # test duplicate receive with garbage
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket(copy_send=False)
+        client.socket.mock_prepare_receive(test_msg)
+        client.socket.mock_prepare_receive(test_msg + b"\xf6\x3e")
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        client.close()
 
     def test_udp_client_repr(self):
         """Test udp client representation."""

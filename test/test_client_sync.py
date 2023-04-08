@@ -81,16 +81,14 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
 
     def test_udp_client_recv_duplicate(self):
         """Test the udp client receive method"""
+        test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket()
+        client.socket.mock_prepare_receive(test_msg)
+        reply1 = client.read_input_registers(0x820, 1, 1)
+
         return
 
-        client = ModbusUdpClient("127.0.0.1")  # pylint: disable=unreachable
-
-        client.socket = mockSocket()
-        client.socket.mock_prepare_receive(
-            b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
-        )
-        # Response 1
-        reply1 = client.read_input_registers(0x820, 1, 1)
         client.socket.mock_prepare_receive(
             b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
         )

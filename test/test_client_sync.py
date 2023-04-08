@@ -75,9 +75,47 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         with pytest.raises(ConnectionException):
             client.recv(1024)
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00" * 4)
+        client.socket.mock_prepare_receive(b"\x00" * 4)
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
+
+    def test_udp_client_recv_duplicate(self):
+        """Test the udp client receive method"""
+        test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket(copy_send=False)
+
+        # test normal receive
+        client.socket.mock_prepare_receive(test_msg)
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        reply_timeout = client.read_input_registers(0x820, 1, 1)
+        assert reply_timeout.isError()
+        client.close()
+
+        # test duplicate receive
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket(copy_send=False)
+        client.socket.mock_prepare_receive(test_msg)
+        client.socket.mock_prepare_receive(test_msg)
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        client.close()
+
+        # test duplicate receive with garbage
+        client = ModbusUdpClient("127.0.0.1")
+        client.socket = mockSocket(copy_send=False)
+        client.socket.mock_prepare_receive(test_msg)
+        client.socket.mock_prepare_receive(test_msg + b"\xf6\x3e")
+        reply_ok = client.read_input_registers(0x820, 1, 1)
+        assert not reply_ok.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
+        # ERROR hanging transaction --> assert reply_timeout.isError()
+        client.close()
 
     def test_udp_client_repr(self):
         """Test udp client representation."""
@@ -143,7 +181,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
             client.recv(1024)
         client.socket = mockSocket()
         assert client.recv(0) == b""
-        client.socket.mock_store(b"\x00" * 4)
+        client.socket.mock_prepare_receive(b"\x00" * 4)
         assert client.recv(4) == b"\x00" * 4
 
         mock_socket = mock.MagicMock()
@@ -156,7 +194,7 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         mock_select.select.return_value = [False]
         assert client.recv(2) == b""
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00")
+        client.socket.mock_prepare_receive(b"\x00")
         mock_select.select.return_value = [True]
         assert client.recv(None) in b"\x00"
 
@@ -271,12 +309,12 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         mock_time.time.side_effect = count()
 
         client.socket = mockSocket()
-        client.socket.mock_store(b"\x00" * 4)
+        client.socket.mock_prepare_receive(b"\x00" * 4)
         assert client.recv(0) == b""
         assert client.recv(4) == b"\x00" * 4
 
         client.params.timeout = 2
-        client.socket.mock_store(b"\x00")
+        client.socket.mock_prepare_receive(b"\x00")
         assert b"\x00" in client.recv(None)
 
     def test_tls_client_repr(self):
@@ -422,10 +460,10 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
             client.recv(1024)
         client.socket = mockSocket()
         assert client.recv(0) == b""
-        client.socket.mock_store(b"\x00" * 4)
+        client.socket.mock_prepare_receive(b"\x00" * 4)
         assert client.recv(4) == b"\x00" * 4
         client.socket = mockSocket()
-        client.socket.mock_store(b"")
+        client.socket.mock_prepare_receive(b"")
         assert client.recv(None) == b""
         client.socket.timeout = 0
         assert client.recv(0) == b""

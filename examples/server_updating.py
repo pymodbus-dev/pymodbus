@@ -42,10 +42,9 @@ _logger = logging.getLogger()
 
 
 async def updating_task(context):
-    """Run every so often,
+    """Run every so often and update live values of the context.
 
-    and updates live values of the context. It should be noted
-    that there is a lrace condition for the update.
+    It should be noted that there is a race condition for the update.
     """
     _logger.debug("updating the context")
     fc_as_hex = 3
@@ -77,7 +76,7 @@ def setup_updating_server(cmdline=None):
 
 async def run_updating_server(args):
     """Start updater task and async server."""
-    asyncio.create_task(updating_task(args.context))
+    asyncio.create_task(updating_task(args.context))  # noqa: RUF006
     await run_async_server(args)
 
 

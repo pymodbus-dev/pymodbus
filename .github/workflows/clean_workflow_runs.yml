@@ -5,13 +5,13 @@ on:
   #  - cron: '35 0 1 1-12 *'
   workflow_dispatch:
     inputs:
-      days:
+      retain_days:
         description: 'retain days (default 14)'
-        required: false
+        required: true
         default: 14
-      keeps:
+      keep_minimum_runs:
         description: 'keep minimum runs (default 6)'
-        required: false
+        required: true
         default: 6
 
 permissions:
@@ -26,8 +26,8 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: ${{ github.events.inputs.days }}
-          keep_minimum_runs: ${{ github.events.inputs.keeps }}
+          retain_days: ${{ github.events.inputs.retain_days }}
+          keep_minimum_runs: ${{ github.events.inputs.keep_minimum_runs }}
 
   clear-cache:
     runs-on: ubuntu-latest

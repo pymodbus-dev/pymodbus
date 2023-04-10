@@ -26,7 +26,14 @@ select = [
     "SIM300",
     "SIM401",
     "RUF",
+    "I",
     "U",
 ]
 [pydocstyle]
 convention = "pep257"
+[isort]
+lines-after-imports = 2
+known-local-folder = [
+    "common",
+    "contrib",
+]

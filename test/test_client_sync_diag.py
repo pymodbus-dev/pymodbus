@@ -1,7 +1,7 @@
 """Test client sync diag."""
 import socket
 from itertools import count
-from test.test_client_sync import mockSocket
+from test.conftest import mockSocket
 from unittest import mock
 
 import pytest

@@ -67,9 +67,7 @@ class BinaryPayloadBuilder:
         :param value: Value to be packed
         :return:
         """
-        value = pack(
-            "!{}".format(fstring), value  # pylint: disable=consider-using-f-string
-        )
+        value = pack(f"!{fstring}", value)
         wordorder = WC.get(fstring.lower()) // 2
         upperbyte = f"!{wordorder}H"
         payload = unpack(upperbyte, value)

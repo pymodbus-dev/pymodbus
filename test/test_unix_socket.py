@@ -31,7 +31,7 @@ async def _helper_server(path_addon):
     context = ModbusSlaveContext(
         di=datablock, co=datablock, hr=datablock, ir=datablock, slave=1
     )
-    asyncio.create_task(
+    asyncio.create_task(  # noqa: RUF006
         StartAsyncUnixServer(
             context=ModbusServerContext(slaves=context, single=True),
             path=PATH + path_addon,

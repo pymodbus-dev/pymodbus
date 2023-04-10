@@ -25,6 +25,7 @@ select = [
     "SIM212",
     "SIM300",
     "SIM401",
+    "RUF",
 ]
 [pydocstyle]
 convention = "pep257"

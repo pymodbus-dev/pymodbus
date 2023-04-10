@@ -76,7 +76,7 @@ def setup_updating_server(cmdline=None):
 
 async def run_updating_server(args):
     """Start updater task and async server."""
-    asyncio.create_task(updating_task(args.context))
+    asyncio.create_task(updating_task(args.context))  # noqa: RUF006
     await run_async_server(args)
 
 

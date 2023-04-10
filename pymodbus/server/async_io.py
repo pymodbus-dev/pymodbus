@@ -4,6 +4,7 @@ import asyncio
 import ssl
 import time
 import traceback
+from contextlib import suppress
 from typing import Union
 
 from pymodbus.client.serial_asyncio import create_serial_connection
@@ -22,10 +23,8 @@ from pymodbus.transaction import (
 )
 
 
-try:
+with suppress(ImportError):
     import serial
-except ImportError:
-    pass
 
 
 def sslctx_provider(
@@ -1072,10 +1071,8 @@ class _serverList:
         for func in custom_functions:
             server.decoder.register(func)
         cls.active_server = _serverList(server)
-        try:
+        with suppress(asyncio.exceptions.CancelledError):
             await server.serve_forever()
-        except asyncio.CancelledError:
-            pass
 
     @classmethod
     async def async_stop(cls):

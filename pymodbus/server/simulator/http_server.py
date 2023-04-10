@@ -598,7 +598,7 @@ class ModbusSimulatorServer:
             self.call_list.append(tracer)
             self.call_monitor.trace_response = False
 
-        if not self.call_response.active == RESPONSE_INACTIVE:
+        if self.call_response.active != RESPONSE_INACTIVE:
             return response, False
 
         skip_encoding = False

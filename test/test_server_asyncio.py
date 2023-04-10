@@ -3,6 +3,7 @@ import asyncio
 import logging
 import ssl
 from asyncio import CancelledError
+from contextlib import suppress
 from unittest import mock
 
 import pytest
@@ -127,19 +128,15 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
             await asyncio.sleep(0.1)
             if not self.task.cancelled():
                 self.task.cancel()
-                try:
+                with suppress(CancelledError):
                     await self.task
-                except CancelledError:
-                    pass
                 self.task = None
         BasicClient.clear()
 
     def handle_task(self, result):
         """Handle task exit."""
-        try:
+        with suppress(CancelledError):
             result = result.result()
-        except CancelledError:
-            pass
 
     async def start_server(
         self, do_forever=True, do_defer=True, do_tls=False, do_udp=False, do_ident=False
@@ -297,11 +294,10 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         """Test StartAsyncTcpServer serve_forever() method"""
         with mock.patch(
             "asyncio.base_events.Server.serve_forever", new_callable=mock.AsyncMock
-        ) as serve:
-            with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
-                await self.start_server(do_tls=True, do_forever=False)
-                await self.server.serve_forever()
-                serve.assert_awaited()
+        ) as serve, mock.patch.object(ssl.SSLContext, "load_cert_chain"):
+            await self.start_server(do_tls=True, do_forever=False)
+            await self.server.serve_forever()
+            serve.assert_awaited()
 
     async def test_async_tls_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error"""

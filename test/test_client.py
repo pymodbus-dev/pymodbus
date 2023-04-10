@@ -258,9 +258,9 @@ async def test_client_instanciate(
     assert client.delay_ms == initial_delay
 
     rc1 = client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
-    assert socket.AF_INET == rc1
+    assert rc1 == socket.AF_INET
     rc2 = client._get_address_family("::1")  # pylint: disable=protected-access
-    assert socket.AF_INET6 == rc2
+    assert rc2 == socket.AF_INET6
 
     # a successful execute
     client.connect = lambda: True

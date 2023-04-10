@@ -294,11 +294,10 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         """Test StartAsyncTcpServer serve_forever() method"""
         with mock.patch(
             "asyncio.base_events.Server.serve_forever", new_callable=mock.AsyncMock
-        ) as serve:
-            with mock.patch.object(ssl.SSLContext, "load_cert_chain"):
-                await self.start_server(do_tls=True, do_forever=False)
-                await self.server.serve_forever()
-                serve.assert_awaited()
+        ) as serve, mock.patch.object(ssl.SSLContext, "load_cert_chain"):
+            await self.start_server(do_tls=True, do_forever=False)
+            await self.server.serve_forever()
+            serve.assert_awaited()
 
     async def test_async_tls_server_serve_forever_twice(self):
         """Call on serve_forever() twice should result in a runtime error"""

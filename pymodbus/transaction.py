@@ -13,6 +13,7 @@ __all__ = [
 # pylint: disable=missing-type-doc
 import struct
 import time
+from contextlib import suppress
 from functools import partial
 from threading import RLock
 
@@ -374,15 +375,14 @@ class ModbusTransactionManager:
                     elif expected_response_length is None and isinstance(
                         self.client.framer, ModbusRtuFramer
                     ):
-                        try:
+                        with suppress(
+                            IndexError  # response length indeterminate with available bytes
+                        ):
                             expected_response_length = (
                                 self.client.framer.get_expected_response_length(
                                     read_min
                                 )
                             )
-                        except IndexError:
-                            # Could not determine response length with available bytes
-                            pass
                     if expected_response_length is not None:
                         expected_response_length -= min_size
                         total = expected_response_length + min_size

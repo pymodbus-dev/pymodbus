@@ -1,6 +1,7 @@
 """Modbus client async serial communication."""
 import asyncio
 import time
+from contextlib import suppress
 from functools import partial
 from typing import Any, Type
 
@@ -14,10 +15,8 @@ from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState
 
 
-try:
+with suppress(ImportError):
     import serial
-except ImportError:
-    pass
 
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):

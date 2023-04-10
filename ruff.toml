@@ -18,6 +18,7 @@ select = [
     "E",
     "F",
     "W",
+    "SIM105",
 ]
 [pydocstyle]
 convention = "pep257"

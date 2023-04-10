@@ -1,11 +1,10 @@
 """Datastore using redis."""
 # pylint: disable=missing-type-doc
+from contextlib import suppress
 
 
-try:
+with suppress(ImportError):
     import redis
-except ImportError:
-    pass
 
 from pymodbus.datastore import ModbusBaseSlaveContext
 from pymodbus.logging import Log

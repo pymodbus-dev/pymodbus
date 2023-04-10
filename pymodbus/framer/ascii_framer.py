@@ -196,15 +196,10 @@ class ModbusAsciiFramer(ModbusFramer):
         checksum = computeLRC(encoded + buffer)
 
         packet = bytearray()
-        params = (message.slave_id, message.function_code)
         packet.extend(self._start)
-        packet.extend(
-            ("%02x%02x" % params).encode()  # pylint: disable=consider-using-f-string
-        )
+        packet.extend(f"{message.slave_id:02x}{message.function_code:02x}".encode())
         packet.extend(b2a_hex(encoded))
-        packet.extend(
-            ("%02x" % checksum).encode()  # pylint: disable=consider-using-f-string
-        )
+        packet.extend(f"{checksum:02x}".encode())
         packet.extend(self._end)
         return bytes(packet).upper()
 

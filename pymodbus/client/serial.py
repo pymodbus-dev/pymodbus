@@ -220,7 +220,7 @@ class ModbusSerialClient(ModbusBaseClient):
 
         self.last_frame_end = None
 
-        self._t0 = float((1 + 8 + 2)) / self.params.baudrate
+        self._t0 = float(1 + 8 + 2) / self.params.baudrate
 
         """
         The minimum delay is 0.01s and the maximum can be set to 0.05s.

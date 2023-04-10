@@ -202,7 +202,7 @@ class ServerDecoder:
             Log.debug("Factory Request[{}]", function_code)
             request = IllegalFunctionRequest(function_code)
         else:
-            fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
+            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),
@@ -331,7 +331,7 @@ class ClientDecoder:
         """
         fc_string = function_code = int(data[0])
         if function_code in self.lookup:
-            fc_string = "%s: %s" % (  # pylint: disable=consider-using-f-string
+            fc_string = "{}: {}".format(  # pylint: disable=consider-using-f-string
                 str(self.lookup[function_code])  # pylint: disable=use-maxsplit-arg
                 .split(".")[-1]
                 .rstrip('">"'),

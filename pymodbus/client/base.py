@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Tuple, Type
+from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
@@ -70,7 +70,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
         host: str = None
         port: str | int = None
-        framer: Type[ModbusFramer] = None
+        framer: type[ModbusFramer] = None
         timeout: float = None
         retries: int = None
         retry_on_empty: bool = None
@@ -80,7 +80,7 @@ class ModbusBaseClient(ModbusClientMixin):
         kwargs: dict = None
         reconnect_delay: int = None
         reconnect_delay_max: int = None
-        on_reconnect_callback: Optional[Callable[[], None]] = None
+        on_reconnect_callback: Callable[[], None] | None = None
 
         baudrate: int = None
         bytesize: int = None
@@ -88,7 +88,7 @@ class ModbusBaseClient(ModbusClientMixin):
         stopbits: int = None
         handle_local_echo: bool = None
 
-        source_address: Tuple[str, int] = None
+        source_address: tuple[str, int] = None
 
         sslctx: str = None
         certfile: str = None
@@ -98,7 +98,7 @@ class ModbusBaseClient(ModbusClientMixin):
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        framer: Type[ModbusFramer] = None,
+        framer: type[ModbusFramer] = None,
         timeout: str | float = Defaults.Timeout,
         retries: str | int = Defaults.Retries,
         retry_on_empty: bool = Defaults.RetryOnEmpty,
@@ -107,7 +107,7 @@ class ModbusBaseClient(ModbusClientMixin):
         broadcast_enable: bool = Defaults.BroadcastEnable,
         reconnect_delay: int = Defaults.ReconnectDelay,
         reconnect_delay_max: int = Defaults.ReconnectDelayMax,
-        on_reconnect_callback: Optional[Callable[[], None]] = None,
+        on_reconnect_callback: Callable[[], None] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""

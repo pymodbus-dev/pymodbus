@@ -14,20 +14,25 @@ ignore = [
 ]
 line-length = 120
 select = [
-    "D",
-    "E",
-    "F",
-    "W",
-    "SIM105",
-    "SIM117",
-    "SIM118",
-    "SIM201",
-    "SIM212",
-    "SIM300",
-    "SIM401",
-    "RUF",
-    "I",
-    "U",
+    "D",      # docstrings
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "SIM105", # flake8-simplify
+    "SIM117", #
+    "SIM118", #
+    "SIM201", #
+    "SIM212", #
+    "SIM300", #
+    "SIM401", #
+    "RUF",    # ruff builtins
+    "I",      # isort
+    "UP",     # pyupgrade
+    "PLC",    # pylint
+    "PGH",    # pygrep-hooks
+    # "TRY",    # tryceratops
+    # "B",      # bandit
+    # "C",      # complexity
 ]
 [pydocstyle]
 convention = "pep257"

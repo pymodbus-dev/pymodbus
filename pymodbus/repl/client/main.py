@@ -214,16 +214,15 @@ def cli(client):  # pylint: disable=too-complex
                     else:
                         result = Result(getattr(client, cmd)(**kwargs))
                     result.print_result()
-            elif text.strip().lower().startswith("result."):
-                if result:
-                    words = text.lower().split()
-                    if words[0] == "result.raw":
-                        result.raw()
-                    if words[0] == "result.decode":
-                        args = words[1:]
-                        kwargs, execute = _process_args(args)
-                        if execute:
-                            result.decode(**kwargs)
+            elif text.strip().lower().startswith("result.") and result:
+                words = text.lower().split()
+                if words[0] == "result.raw":
+                    result.raw()
+                if words[0] == "result.decode":
+                    args = words[1:]
+                    kwargs, execute = _process_args(args)
+                    if execute:
+                        result.decode(**kwargs)
         except KeyboardInterrupt:
             continue  # Control-C pressed. Try again.
         except EOFError:

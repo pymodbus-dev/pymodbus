@@ -31,10 +31,7 @@ jobs:
           - name: codespell
             cmd: codespell
             type: lint
-          - name: bandit
-            cmd: bandit -r -c bandit.yaml .
-            type: lint
-          - name: precommit (isort, black, and ruff)
+          - name: precommit (black, bandit, and ruff)
             cmd: pre-commit run --all-files
             type: lint
           - name: docs

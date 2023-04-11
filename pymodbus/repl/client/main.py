@@ -204,19 +204,16 @@ def cli(client):  # pylint: disable=too-complex
             if text.strip().lower() == "exit":
                 raise EOFError()
             if text.strip().lower().startswith("client."):
-                try:
-                    text = text.strip().split()
-                    cmd = text[0].split(".")[1]
-                    args = text[1:]
-                    kwargs, execute = _process_args(args, string=False)
-                    if execute:
-                        if text[0] in CLIENT_ATTRIBUTES:
-                            result = Result(getattr(client, cmd))
-                        else:
-                            result = Result(getattr(client, cmd)(**kwargs))
-                        result.print_result()
-                except Exception as exc:  # pylint: disable=broad-except
-                    click.secho(repr(exc), fg="red")
+                text = text.strip().split()
+                cmd = text[0].split(".")[1]
+                args = text[1:]
+                kwargs, execute = _process_args(args, string=False)
+                if execute:
+                    if text[0] in CLIENT_ATTRIBUTES:
+                        result = Result(getattr(client, cmd))
+                    else:
+                        result = Result(getattr(client, cmd)(**kwargs))
+                    result.print_result()
             elif text.strip().lower().startswith("result."):
                 if result:
                     words = text.lower().split()

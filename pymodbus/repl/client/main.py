@@ -151,86 +151,103 @@ def _process_args(args: list, string: bool = True):
     return kwargs, execute
 
 
-def cli(client):  # pylint: disable=too-complex
-    """Run client definition."""
-    use_keys = KeyBindings()
-    history_file = pathlib.Path.home().joinpath(".pymodhis")
+class CLI:  # pylint: disable=too-few-public-methods
+    """Client definition."""
 
-    @use_keys.add("c-space")
-    def _(event):
-        """Initialize autocompletion, or select the next completion."""
-        buff = event.app.current_buffer
-        if buff.complete_state:
-            buff.complete_next()
-        else:
-            buff.start_completion(select_first=False)
+    def __init__(self, client):
+        """Set up client and keybindings."""
 
-    @use_keys.add("enter", filter=has_selected_completion)
-    def _(event):
-        """Make the enter key work as the tab key only when showing the menu."""
-        event.current_buffer.complete_state = None
-        buffer = event.cli.current_buffer
-        buffer.complete_state = None
+        use_keys = KeyBindings()
+        history_file = pathlib.Path.home().joinpath(".pymodhis")
+        self.client = client
 
-    session = PromptSession(
-        lexer=PygmentsLexer(PythonLexer),
-        completer=CmdCompleter(client),
-        style=style,
-        complete_while_typing=True,
-        bottom_toolbar=bottom_toolbar,
-        key_bindings=use_keys,
-        history=FileHistory(history_file),
-        auto_suggest=AutoSuggestFromHistory(),
-    )
-    click.secho(TITLE, fg="green")
-    result = None
-    while True:  # pylint: disable=too-many-nested-blocks
-        try:
+        @use_keys.add("c-space")
+        def _(event):
+            """Initialize autocompletion, or select the next completion."""
+            buff = event.app.current_buffer
+            if buff.complete_state:
+                buff.complete_next()
+            else:
+                buff.start_completion(select_first=False)
 
-            text = session.prompt("> ", complete_while_typing=True)
-            if text.strip().lower() == "help":
-                print_formatted_text(HTML("<u>Available commands:</u>"))
-                for cmd, obj in sorted(session.completer.commands.items()):
-                    if cmd != "help":
-                        print_formatted_text(
-                            HTML(
-                                "<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string
-                                "<seagreen>{:100s}"
-                                "</seagreen>".format(cmd, obj.help_text)
-                            )
-                        )
+        @use_keys.add("enter", filter=has_selected_completion)
+        def _(event):
+            """Make the enter key work as the tab key only when showing the menu."""
+            event.current_buffer.complete_state = None
+            buffer = event.cli.current_buffer
+            buffer.complete_state = None
 
-                continue
-            if text.strip().lower() == "exit":
-                raise EOFError()
-            if text.strip().lower().startswith("client."):
-                text = text.strip().split()
-                cmd = text[0].split(".")[1]
-                args = text[1:]
-                kwargs, execute = _process_args(args, string=False)
-                if execute:
-                    if text[0] in CLIENT_ATTRIBUTES:
-                        result = Result(getattr(client, cmd))
-                    else:
-                        result = Result(getattr(client, cmd)(**kwargs))
-                    result.print_result()
-            elif text.strip().lower().startswith("result.") and result:
-                words = text.lower().split()
-                if words[0] == "result.raw":
-                    result.raw()
-                if words[0] == "result.decode":
-                    args = words[1:]
-                    kwargs, execute = _process_args(args)
-                    if execute:
-                        result.decode(**kwargs)
-        except KeyboardInterrupt:
-            continue  # Control-C pressed. Try again.
-        except EOFError:
-            break  # Control-D pressed.
-        except Exception as exc:  # pylint: disable=broad-except
-            click.secho(str(exc), fg="red")
+        self.session = PromptSession(
+            lexer=PygmentsLexer(PythonLexer),
+            completer=CmdCompleter(client),
+            style=style,
+            complete_while_typing=True,
+            bottom_toolbar=bottom_toolbar,
+            key_bindings=use_keys,
+            history=FileHistory(history_file),
+            auto_suggest=AutoSuggestFromHistory(),
+        )
+        click.secho(TITLE, fg="green")
 
-    click.secho("GoodBye!", fg="blue")
+    def _print_command_help(self, commands):
+        """Print a list of commands with help text."""
+        for cmd, obj in sorted(commands.items()):
+            if cmd != "help":
+                print_formatted_text(
+                    HTML(
+                        "<skyblue>{:45s}</skyblue>"  # pylint: disable=consider-using-f-string
+                        "<seagreen>{:100s}"
+                        "</seagreen>".format(cmd, obj.help_text)
+                    )
+                )
+
+    def _process_client(self, text, client):
+        """Process client commands."""
+        text = text.strip().split()
+        cmd = text[0].split(".")[1]
+        args = text[1:]
+        kwargs, execute = _process_args(args, string=False)
+        if execute:
+            if text[0] in CLIENT_ATTRIBUTES:
+                result = Result(getattr(client, cmd))
+            else:
+                result = Result(getattr(client, cmd)(**kwargs))
+            result.print_result()
+
+    def _process_result(self, text, result):
+        """Process result commands."""
+        words = text.split()
+        if words[0] == "result.raw":
+            result.raw()
+        if words[0] == "result.decode":
+            args = words[1:]
+            kwargs, execute = _process_args(args)
+            if execute:
+                result.decode(**kwargs)
+
+    def run(self):
+        """Run the REPL."""
+        result = None
+        while True:
+            try:
+                text = self.session.prompt("> ", complete_while_typing=True)
+                if text.strip().lower() == "help":
+                    print_formatted_text(HTML("<u>Available commands:</u>"))
+                    self._print_command_help(self.session.completer.commands)
+                elif text.strip().lower() == "exit":
+                    raise EOFError()
+                elif text.strip().lower().startswith("client."):
+                    self._process_client(text, self.client)
+                elif text.strip().lower().startswith("result.") and result:
+                    self._process_result(text, result)
+            except KeyboardInterrupt:
+                continue  # Control-C pressed. Try again.
+            except EOFError:
+                break  # Control-D pressed.
+            except Exception as exc:  # pylint: disable=broad-except
+                click.secho(str(exc), fg="red")
+
+        click.secho("GoodBye!", fg="blue")
 
 
 @click.group("pymodbus-repl")
@@ -303,7 +320,8 @@ def tcp(ctx, host, port, framer):
     if framer == "rtu":
         kwargs["framer"] = ModbusRtuFramer
     client = ModbusTcpClient(**kwargs)
-    cli(client)
+    cli = CLI(client)
+    cli.run()
 
 
 @main.command("serial")
@@ -423,7 +441,8 @@ def serial(  # pylint: disable=too-many-arguments
         write_timeout=write_timeout,
         **ctx.obj,
     )
-    cli(client)
+    cli = CLI(client)
+    cli.run()
 
 
 if __name__ == "__main__":

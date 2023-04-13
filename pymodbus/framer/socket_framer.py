@@ -137,7 +137,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, slave, tid=None, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, tid: int = None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -148,12 +148,6 @@ class ModbusSocketFramer(ModbusFramer):
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
-
-        :param data: The new packet data
-        :param callback: The function to send results to
-        :param slave: Process if slave id matches, ignore otherwise (could be a
-               list of slave ids (server) or single slave id(client/server)
-        :param kwargs:
         """
         if not isinstance(slave, (list, tuple)):
             slave = [slave]
@@ -165,7 +159,7 @@ class ModbusSocketFramer(ModbusFramer):
                 if len(self._buffer):
                     # Possible error ???
                     if self._header["len"] < 2:
-                        self._process(callback, error=True)
+                        self._process(callback, tid, error=True)
                 break
             if not self.checkFrame():
                 Log.debug("Frame check failed, ignoring!!")

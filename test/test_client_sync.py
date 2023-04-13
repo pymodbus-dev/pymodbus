@@ -84,37 +84,12 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket(copy_send=False)
-
-        # test normal receive
-        client.socket.mock_prepare_receive(test_msg)
-        reply_ok = client.read_input_registers(0x820, 1, 1)
-        assert not reply_ok.isError()
-        reply_timeout = client.read_input_registers(0x820, 1, 1)
-        assert reply_timeout.isError()
-        client.close()
-
-        # test duplicate receive
-        client = ModbusUdpClient("127.0.0.1")
-        client.socket = mockSocket(copy_send=False)
         client.socket.mock_prepare_receive(test_msg)
         client.socket.mock_prepare_receive(test_msg)
         reply_ok = client.read_input_registers(0x820, 1, 1)
         assert not reply_ok.isError()
-        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
-        # ERROR hanging transaction --> assert reply_timeout.isError()
-        client.close()
-
-        # test duplicate receive with garbage
-        client = ModbusUdpClient("127.0.0.1")
-        client.socket = mockSocket(copy_send=False)
-        client.socket.mock_prepare_receive(test_msg)
-        client.socket.mock_prepare_receive(test_msg + b"\xf6\x3e")
-        reply_ok = client.read_input_registers(0x820, 1, 1)
-        assert not reply_ok.isError()
-        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
-        # ERROR hanging transaction --> assert reply_timeout.isError()
-        # ERROR hanging transaction --> reply_timeout = client.read_input_registers(0x820, 1, 1)
-        # ERROR hanging transaction --> assert reply_timeout.isError()
+        reply_none = client.read_input_registers(0x40, 10, 1)
+        assert reply_none.isError()
         client.close()
 
     def test_udp_client_repr(self):

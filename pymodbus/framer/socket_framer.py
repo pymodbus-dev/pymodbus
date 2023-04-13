@@ -161,23 +161,22 @@ class ModbusSocketFramer(ModbusFramer):
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
         while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    if self._validate_slave_id(slave, single):
-                        self._process(callback)
-                    else:
-                        header_txt = self._header["uid"]
-                        Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-                        self.resetFrame()
-                else:
-                    Log.debug("Frame check failed, ignoring!!")
-                    self.resetFrame()
-            else:
+            if not self.isFrameReady():
                 if len(self._buffer):
                     # Possible error ???
                     if self._header["len"] < 2:
                         self._process(callback, error=True)
                 break
+            if not self.checkFrame():
+                Log.debug("Frame check failed, ignoring!!")
+                self.resetFrame()
+                continue
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                continue
+            self._process(callback)
 
     def _process(self, callback, error=False):
         """Process incoming packets irrespective error condition."""

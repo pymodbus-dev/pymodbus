@@ -126,16 +126,16 @@ class ModbusTlsFramer(ModbusFramer):
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
 
-        if self.isFrameReady():
-            if self.checkFrame():
-                if self._validate_slave_id(slave, single):
-                    self._process(callback)
-                else:
-                    Log.debug("Not in valid slave id - {}, ignoring!!", slave)
-                    self.resetFrame()
-            else:
-                Log.debug("Frame check failed, ignoring!!")
-                self.resetFrame()
+        if not self.isFrameReady():
+            return
+        if not self.checkFrame():
+            Log.debug("Frame check failed, ignoring!!")
+            self.resetFrame()
+            return
+        if not self._validate_slave_id(slave, single):
+            Log.debug("Not in valid slave id - {}, ignoring!!", slave)
+            self.resetFrame()
+        self._process(callback)
 
     def _process(self, callback, error=False):
         """Process incoming packets irrespective error condition."""

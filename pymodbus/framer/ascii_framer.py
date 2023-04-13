@@ -166,20 +166,20 @@ class ModbusAsciiFramer(ModbusFramer):
         single = kwargs.get("single", False)
         self.addToFrame(data)
         while self.isFrameReady():
-            if self.checkFrame():
-                if self._validate_slave_id(slave, single):
-                    frame = self.getFrame()
-                    if (result := self.decoder.decode(frame)) is None:
-                        raise ModbusIOException("Unable to decode response")
-                    self.populateResult(result)
-                    self.advanceFrame()
-                    callback(result)  # defer this
-                else:
-                    header_txt = self._header["uid"]
-                    Log.error("Not a valid slave id - {}, ignoring!!", header_txt)
-                    self.resetFrame()
-            else:
+            if not self.checkFrame():
                 break
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.error("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                continue
+
+            frame = self.getFrame()
+            if (result := self.decoder.decode(frame)) is None:
+                raise ModbusIOException("Unable to decode response")
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer this
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.

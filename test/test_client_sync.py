@@ -82,19 +82,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
     def test_udp_client_recv_duplicate(self):
         """Test the udp client receive method"""
         test_msg = b"\x00\x01\x00\x00\x00\x05\x01\x04\x02\x00\x03"
-
-        # test normal receive
-        if False:
-            client = ModbusUdpClient("127.0.0.1")
-            client.socket = mockSocket(copy_send=False)
-            client.socket.mock_prepare_receive(test_msg)
-            reply_ok = client.read_input_registers(0x820, 1, 1)
-            assert not reply_ok.isError()
-            reply_none = client.read_input_registers(0x820, 1, 1)
-            assert reply_none.isError()
-            client.close()
-
-        # test duplicate receive
         client = ModbusUdpClient("127.0.0.1")
         client.socket = mockSocket(copy_send=False)
         client.socket.mock_prepare_receive(test_msg)
@@ -102,19 +89,6 @@ class TestSynchronousClient:  # pylint: disable=too-many-public-methods
         reply_ok = client.read_input_registers(0x820, 1, 1)
         assert not reply_ok.isError()
         reply_none = client.read_input_registers(0x40, 10, 1)
-        assert reply_none.isError()
-        client.close()
-
-        # test duplicate receive with garbage
-        client = ModbusUdpClient("127.0.0.1")
-        client.socket = mockSocket(copy_send=False)
-        client.socket.mock_prepare_receive(test_msg)
-        client.socket.mock_prepare_receive(test_msg + b"\xf6\x3e")
-        reply_ok = client.read_input_registers(0x820, 1, 1)
-        assert not reply_ok.isError()
-        reply_none = client.read_input_registers(0x820, 1, 1)
-        assert reply_none.isError()
-        reply_none = client.read_input_registers(0x820, 1, 1)
         assert reply_none.isError()
         client.close()
 

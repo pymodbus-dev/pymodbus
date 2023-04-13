@@ -217,7 +217,10 @@ class ModbusTransactionManager:
                         tid=request.transaction_id,
                     )
                     self.client.framer.processIncomingPacket(
-                        response, addTransaction, request.slave_id
+                        response,
+                        addTransaction,
+                        request.slave_id,
+                        tid=request.transaction_id,
                     )
                     if not (response := self.getTransaction(request.transaction_id)):
                         if len(self.transactions):

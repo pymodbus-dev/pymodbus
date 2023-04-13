@@ -137,7 +137,7 @@ class ModbusSocketFramer(ModbusFramer):
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, slave, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, tid=None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -176,9 +176,9 @@ class ModbusSocketFramer(ModbusFramer):
                 Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
                 self.resetFrame()
                 continue
-            self._process(callback)
+            self._process(callback, tid)
 
-    def _process(self, callback, error=False):
+    def _process(self, callback, tid, error=False):
         """Process incoming packets irrespective error condition."""
         data = self.getRawFrame() if error else self.getFrame()
         if (result := self.decoder.decode(data)) is None:
@@ -187,7 +187,10 @@ class ModbusSocketFramer(ModbusFramer):
             raise InvalidMessageReceivedException(result)
         self.populateResult(result)
         self.advanceFrame()
-        callback(result)  # defer or push to a thread?
+        if tid and tid != result.transaction_id:
+            self.resetFrame()
+        else:
+            callback(result)  # defer or push to a thread?
 
     def resetFrame(self):
         """Reset the entire message frame.

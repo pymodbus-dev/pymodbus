@@ -7,12 +7,8 @@ Pymodbus offers clients with transport protocols for
 - *TCP*
 - *TLS*
 - *UDP*
-- possibility to add a custom transport protocol
 
-communication in 2 versions:
-
-- :mod:`synchronous client`,
-- :mod:`asynchronous client` using asyncio.
+communication can be either using a :mod:`synchronous client` or a :mod:`asynchronous client` using asyncio.
 
 Using pymodbus client to set/get information from a device (server)
 is done in a few simple steps, like the following synchronous example::

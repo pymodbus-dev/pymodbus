@@ -43,23 +43,7 @@ class ModbusBaseClient(ModbusClientMixin):
         **reconnect_delay** to **reconnect_delay_max**.
         Set `reconnect_delay=0` to avoid automatic reconnection.
 
-    :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`,
-    unless you want to make a custom client.
-
-    Custom client class **must** inherit :mod:`ModbusBaseClient`, example::
-
-        from pymodbus.client import ModbusBaseClient
-
-        class myOwnClient(ModbusBaseClient):
-
-            def __init__(self, **kwargs):
-                super().__init__(kwargs)
-
-        def run():
-            client = myOwnClient(...)
-            client.connect()
-            rr = client.read_coils(0x01)
-            client.close()
+    :mod:`ModbusBaseClient` is normally not referenced outside :mod:`pymodbus`.
 
     **Application methods, common to all clients**:
     """

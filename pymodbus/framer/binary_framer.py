@@ -163,23 +163,20 @@ class ModbusBinaryFramer(ModbusFramer):
             slave = [slave]
         single = kwargs.get("single", False)
         while self.isFrameReady():
-            if self.checkFrame():
-                if self._validate_slave_id(slave, single):
-                    if (result := self.decoder.decode(self.getFrame())) is None:
-                        raise ModbusIOException("Unable to decode response")
-                    self.populateResult(result)
-                    self.advanceFrame()
-                    callback(result)  # defer or push to a thread?
-                else:
-                    header_txt = self._header["uid"]
-                    Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
-                    self.resetFrame()
-                    break
-
-            else:
+            if not self.checkFrame():
                 Log.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
                 break
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                break
+            if (result := self.decoder.decode(self.getFrame())) is None:
+                raise ModbusIOException("Unable to decode response")
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.

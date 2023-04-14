@@ -3,7 +3,7 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.utilities import checkCRC, computeCRC
 

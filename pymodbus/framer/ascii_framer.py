@@ -4,7 +4,7 @@ import struct
 from binascii import a2b_hex, b2a_hex
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.utilities import checkLRC, computeLRC
 

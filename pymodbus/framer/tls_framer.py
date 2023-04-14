@@ -6,7 +6,7 @@ from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
 )
-from pymodbus.framer import TLS_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 
 

@@ -6,7 +6,7 @@ from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
 )
-from pymodbus.framer import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 
 

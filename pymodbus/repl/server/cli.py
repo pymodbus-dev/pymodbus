@@ -104,6 +104,7 @@ def print_help():
             HTML(f"<skyblue>{cmd:45s}</skyblue><seagreen>{hlp:100s}</seagreen>")
         )
 
+
 def print_title():
     """Print title - large if there are sufficient columns, otherwise small."""
     col = get_terminal_width()
@@ -117,7 +118,8 @@ def print_title():
             HTML(f'<u><b><style color="green">{SMALL_TITLE}</style></b></u>')
         )
 
-async def interactive_shell(server):
+
+async def interactive_shell(server):  # pylint: disable=too-complex
     """Run CLI interactive shell."""
     print_title()
     info("")
@@ -127,7 +129,7 @@ async def interactive_shell(server):
     )
 
     # Run echo loop. Read text from stdin, and reply it back.
-    while True:  # pylint: disable=too-many-nested-blocks
+    while True:
         try:
             result = await session.prompt_async()
             if result == "exit":
@@ -147,7 +149,7 @@ async def interactive_shell(server):
                     warning(f'Usage: "{USAGE}"')
                 else:
                     val_dict = _process_args(command[1:])
-                    if val_dict:
+                    if val_dict:  # pylint: disable=consider-using-assignment-expr
                         server.update_manipulator_config(val_dict)
                         # server.manipulator_config = val_dict
                 # result = await run_command(tester, *command)
@@ -155,7 +157,9 @@ async def interactive_shell(server):
         except (EOFError, KeyboardInterrupt):
             return
 
-def _process_args(args) -> dict:
+
+def _process_args(args) -> dict:  # pylint: disable=too-complex
+    """Process arguments passed to CLI."""
     skip_next = False
     val_dict = {}
     for index, arg in enumerate(args):
@@ -190,6 +194,7 @@ def _process_args(args) -> dict:
                 continue
         val_dict[arg] = value
     return val_dict
+
 
 async def main(server):
     """Run main."""

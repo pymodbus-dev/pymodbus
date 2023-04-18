@@ -8,6 +8,8 @@ TO BE DOCUMENTED.
 pymodbus.simulator
 ------------------
 
+The easiest way to run the simulator with web is to use "pymodbus.simulator" from the commandline.
+
 TO BE DOCUMENTED.
 
 

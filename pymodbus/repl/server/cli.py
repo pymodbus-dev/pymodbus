@@ -126,7 +126,6 @@ async def interactive_shell(server):  # pylint: disable=too-complex
     # Run echo loop. Read text from stdin, and reply it back.
     while True:  # pylint: disable=too-many-nested-blocks
         try:
-            invalid_command = False
             result = await session.prompt_async()
             if result == "exit":
                 await server.web_app.shutdown()
@@ -139,8 +138,6 @@ async def interactive_shell(server):  # pylint: disable=too-complex
                 continue
             if command := result.split():
                 if command[0] not in COMMANDS:
-                    invalid_command = True
-                if invalid_command:
                     warning(f"Invalid command or invalid usage of command - {command}")
                     continue
                 if len(command) == 1:
@@ -172,12 +169,11 @@ def _process_args(args) -> dict:
                 error(f"Missing value for argument - {arg}")
             warning('Usage: "{USAGE}"')
             break
-        valid = True
         if arg == "response_type":
             if value not in RESPONSE_TYPES:
                 warning(f"Invalid response type request - {value}")
                 warning(f"Choose from {RESPONSE_TYPES}")
-                valid = False
+                continue
         elif arg in {  # pylint: disable=confusing-consecutive-elif
             "error_code",
             "delay_by",
@@ -188,9 +184,7 @@ def _process_args(args) -> dict:
                 value = int(value)
             except ValueError:
                 warning(f"Expected integer value for {arg}")
-                valid = False
-
-    if valid:
+                continue
         val_dict[arg] = value
     return val_dict
 

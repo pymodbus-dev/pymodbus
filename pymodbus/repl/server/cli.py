@@ -104,9 +104,8 @@ def print_help():
             HTML(f"<skyblue>{cmd:45s}</skyblue><seagreen>{hlp:100s}</seagreen>")
         )
 
-
-async def interactive_shell(server):  # pylint: disable=too-complex
-    """Run CLI interactive shell."""
+def print_title():
+    """Print title - large if there are sufficient columns, otherwise small."""
     col = get_terminal_width()
     max_len = max(  # pylint: disable=consider-using-generator
         [len(t) for t in TITLE.split("\n")]
@@ -117,6 +116,10 @@ async def interactive_shell(server):  # pylint: disable=too-complex
         print_formatted_text(
             HTML(f'<u><b><style color="green">{SMALL_TITLE}</style></b></u>')
         )
+
+async def interactive_shell(server):
+    """Run CLI interactive shell."""
+    print_title()
     info("")
     completer = NestedCompleter.from_nested_dict(COMMANDS)
     session = PromptSession(

@@ -146,43 +146,7 @@ async def interactive_shell(server):  # pylint: disable=too-complex
                 if len(command) == 1:
                     warning(f'Usage: "{USAGE}"')
                 else:
-                    args = command[1:]
-                    skip_next = False
-                    val_dict = {}
-                    for index, arg in enumerate(args):
-                        if skip_next:
-                            skip_next = False
-                            continue
-                        if "=" in arg:
-                            arg, value = arg.split("=")
-                        elif arg in COMMAND_ARGS:
-                            try:
-                                value = args[index + 1]
-                                skip_next = True
-                            except IndexError:
-                                error(f"Missing value for argument - {arg}")
-                                warning('Usage: "{USAGE}"')
-                                break
-                        valid = True
-                        if arg == "response_type":
-                            if value not in RESPONSE_TYPES:
-                                warning(f"Invalid response type request - {value}")
-                                warning(f"Choose from {RESPONSE_TYPES}")
-                                valid = False
-                        elif arg in {  # pylint: disable=confusing-consecutive-elif
-                            "error_code",
-                            "delay_by",
-                            "clear_after",
-                            "data_len",
-                        }:
-                            try:
-                                value = int(value)
-                            except ValueError:
-                                warning(f"Expected integer value for {arg}")
-                                valid = False
-
-                        if valid:
-                            val_dict[arg] = value
+                    val_dict = _process_args(command[1:])
                     if val_dict:
                         server.update_manipulator_config(val_dict)
                         # server.manipulator_config = val_dict
@@ -191,6 +155,44 @@ async def interactive_shell(server):  # pylint: disable=too-complex
         except (EOFError, KeyboardInterrupt):
             return
 
+def _process_args(args) -> dict:
+    skip_next = False
+    val_dict = {}
+    for index, arg in enumerate(args):
+        if skip_next:
+            skip_next = False
+            continue
+        if "=" in arg:
+            arg, value = arg.split("=")
+        elif arg in COMMAND_ARGS:
+            try:
+                value = args[index + 1]
+                skip_next = True
+            except IndexError:
+                error(f"Missing value for argument - {arg}")
+            warning('Usage: "{USAGE}"')
+            break
+        valid = True
+        if arg == "response_type":
+            if value not in RESPONSE_TYPES:
+                warning(f"Invalid response type request - {value}")
+                warning(f"Choose from {RESPONSE_TYPES}")
+                valid = False
+        elif arg in {  # pylint: disable=confusing-consecutive-elif
+            "error_code",
+            "delay_by",
+            "clear_after",
+            "data_len",
+        }:
+            try:
+                value = int(value)
+            except ValueError:
+                warning(f"Expected integer value for {arg}")
+                valid = False
+
+    if valid:
+        val_dict[arg] = value
+    return val_dict
 
 async def main(server):
     """Run main."""

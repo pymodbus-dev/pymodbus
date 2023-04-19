@@ -422,20 +422,23 @@ class SerialTransport(asyncio.Transport):
         assert self._closing
         assert not self._has_writer
         assert not self._has_reader
-        try:
-            self._serial.flush()
-        except (serial.SerialException if os.name == "nt" else termios.error):
-            # ignore serial errors which may happen if the serial device was
-            # hot-unplugged.
-            pass
-        try:
-            self._protocol.connection_lost(exc)
-        finally:
-            self._write_buffer.clear()
+        if self._serial:
+            try:
+                self._serial.flush()
+            except (serial.SerialException if os.name == "nt" else termios.error):
+                # ignore serial errors which may happen if the serial device was
+                # hot-unplugged.
+                pass
             self._serial.close()
             self._serial = None
-            self._protocol = None
-            self._loop = None
+        if self._protocol:
+            try:
+                self._protocol.connection_lost(exc)
+            except:
+                pass
+            self._write_buffer.clear()
+        self._write_buffer.clear()
+        self._loop = None
 
 
 async def create_serial_connection(loop, protocol_factory, *args, **kwargs):

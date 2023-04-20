@@ -267,22 +267,11 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             self._reconnect_task.cancel()
             self._reconnect_task = None
 
-        if not reconnect:
+        if not reconnect or not self.delay_ms:
             self.delay_ms = 0
             return
 
-        self._launch_reconnect()
-
-    def _launch_reconnect(self):
-        """Launch delayed reconnection coroutine"""
-        if not self.delay_ms:
-            return
-        if self._reconnect_task:
-            Log.warning(
-                "Ignoring launch of delayed reconnection, another is in progress"
-            )
-        else:
-            self._reconnect_task = asyncio.create_task(self._reconnect())
+        self._reconnect_task = asyncio.create_task(self._reconnect())
 
     async def _reconnect(self):
         """Reconnect."""

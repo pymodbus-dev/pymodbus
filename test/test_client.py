@@ -316,21 +316,11 @@ async def test_client_connection_lost():
     # fake client is connected and *then* looses connection:
     client.params.host = mock.sentinel.HOST
     client.params.port = mock.sentinel.PORT
-    with mock.patch(
-        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
-    ) as mock_reconnect:
-        mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-
-        client.connection_lost(mock.sentinel.PROTOCOL_UNEXPECTED)
+    client.connection_lost(mock.sentinel.PROTOCOL_UNEXPECTED)
     assert not client.connected
-
-    with mock.patch(
-        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
-    ) as mock_reconnect:
-        mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-
-        client.connection_lost(mock.sentinel.PROTOCOL)
+    client.connection_lost(mock.sentinel.PROTOCOL)
     assert not client.connected
+    await client.close()
 
 
 async def test_client_base_async():

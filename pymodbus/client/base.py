@@ -208,14 +208,8 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
 
         The argument is either an exception object or None
         """
-        if self.transport:
-            self.transport.abort()
-            if hasattr(self.transport, "_sock"):
-                self.transport._sock.close()  # pylint: disable=protected-access
-            self.transport = None
-        self.close(reconnect=True)
-
         Log.debug("Client disconnected from modbus server: {}", reason)
+        self.close(reconnect=True)
         for tid in list(self.transaction):
             self.raise_future(
                 self.transaction.getTransaction(tid),

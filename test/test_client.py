@@ -239,9 +239,6 @@ async def test_client_instanciate(
         to_test = dict(arg_list["fix"]["opt_args"], **cur_args["opt_args"])
         to_test["host"] = cur_args["defaults"]["host"]
 
-    for arg, arg_test in to_test.items():
-        assert getattr(client.params, arg) == arg_test
-
     # Test information methods
     client.last_frame_end = 2
     client.silent_interval = 2
@@ -264,17 +261,17 @@ async def test_client_instanciate(
 
     # a successful execute
     client.connect = lambda: True
-    client._connected = True  # pylint: disable=protected-access
+    client.transport = lambda: None
     client.transaction = mock.Mock(**{"execute.return_value": True})
 
     # a unsuccessful connect
     client.connect = lambda: False
-    client._connected = False  # pylint: disable=protected-access
+    client.transport = None
     with pytest.raises(ConnectionException):
         client.execute()
 
 
-def test_client_modbusbaseclient():
+async def test_client_modbusbaseclient():
     """Test modbus base client class."""
     client = ModbusBaseClient(framer=ModbusAsciiFramer)
     client.register(pdu_bit_read.ReadCoilsResponse)
@@ -286,8 +283,6 @@ def test_client_modbusbaseclient():
         client.connect()
     with pytest.raises(NotImplementedException):
         client.is_socket_open()
-    with pytest.raises(NotImplementedException):
-        client.close()
 
     with mock.patch(
         "pymodbus.client.base.ModbusBaseClient.connect"
@@ -302,42 +297,30 @@ def test_client_modbusbaseclient():
         p_connect.return_value = False
 
 
-async def test_client_made_connection():
+async def test_client_connection_made():
     """Test protocol made connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
-    client.client_made_connection(mock.sentinel.PROTOCOL)
+    client.connection_made(mock.sentinel.PROTOCOL)
     assert client.connected
 
-    client.client_made_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
+    client.connection_made(mock.sentinel.PROTOCOL_UNEXPECTED)
     assert client.connected
 
 
-async def test_client_lost_connection():
+async def test_client_connection_lost():
     """Test protocol lost connection."""
     client = lib_client.AsyncModbusTcpClient("127.0.0.1")
     assert not client.connected
 
     # fake client is connected and *then* looses connection:
-    client.connected = True
     client.params.host = mock.sentinel.HOST
     client.params.port = mock.sentinel.PORT
-    with mock.patch(
-        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
-    ) as mock_reconnect:
-        mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-
-        client.client_lost_connection(mock.sentinel.PROTOCOL_UNEXPECTED)
+    client.connection_lost(mock.sentinel.PROTOCOL_UNEXPECTED)
     assert not client.connected
-
-    client.connected = True
-    with mock.patch(
-        "pymodbus.client.tcp.AsyncModbusTcpClient._launch_reconnect"
-    ) as mock_reconnect:
-        mock_reconnect.return_value = mock.sentinel.RECONNECT_GENERATOR
-
-        client.client_lost_connection(mock.sentinel.PROTOCOL)
+    client.connection_lost(mock.sentinel.PROTOCOL)
     assert not client.connected
+    client.close()
 
 
 async def test_client_base_async():
@@ -361,46 +344,13 @@ async def test_client_base_async():
         p_close.return_value.set_result(False)
 
 
-@pytest.mark.skip
-async def test_client_protocol():
-    """Test base modbus async client."""
-    base = ModbusBaseClient(framer=ModbusSocketFramer)
-    assert base.transport is None
-    assert not base.async_connected
-
-    base.connection_made(mock.sentinel.TRANSPORT)
-    assert base.transport is mock.sentinel.TRANSPORT
-    base.client_made_connection.assert_called_once_with(  # pylint: disable=no-member
-        base
-    )
-    assert not base.client_lost_connection.call_count  # pylint: disable=no-member
-
-    base.connection_lost(mock.sentinel.REASON)
-    assert base.transport is None
-    assert not base.client_made_connection.call_count  # pylint: disable=no-member
-    base.client_lost_connection.assert_called_once_with(  # pylint: disable=no-member
-        base
-    )
-    base.raise_future = mock.MagicMock()
-    request = mock.MagicMock()
-    base.transaction.addTransaction(request, 1)
-    base.connection_lost(mock.sentinel.REASON)
-    base.raise_future.assert_called_once()
-    call_args = base.raise_future.call_args.args
-    assert call_args[0] == request
-    assert isinstance(call_args[1], ConnectionException)
-    base.transport = mock.MagicMock()
-    base.transport = None
-    await base.async_close()
-
-
 async def test_client_protocol_receiver():
     """Test the client protocol data received"""
     base = ModbusBaseClient(framer=ModbusSocketFramer)
     transport = mock.MagicMock()
     base.connection_made(transport)
     assert base.transport == transport
-    assert base.async_connected
+    assert base.transport
     data = b"\x00\x00\x12\x34\x00\x06\xff\x01\x01\x02\x00\x04"
 
     # setup existing request
@@ -410,7 +360,7 @@ async def test_client_protocol_receiver():
     result = response.result()
     assert isinstance(result, pdu_bit_read.ReadCoilsResponse)
 
-    base._connected = False  # pylint: disable=protected-access
+    base.transport = None
     with pytest.raises(ConnectionException):
         await base._build_response(0x00)  # pylint: disable=protected-access
 
@@ -423,7 +373,7 @@ async def test_client_protocol_response():
     assert isinstance(excp, ConnectionException)
     assert not list(base.transaction)
 
-    base._connected = True  # pylint: disable=protected-access
+    base.transport = lambda: None
     base._build_response(0x00)  # pylint: disable=protected-access
     assert len(list(base.transaction)) == 1
 

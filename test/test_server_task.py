@@ -153,7 +153,7 @@ async def test_async_task_no_server(comm):
     await asyncio.sleep(0.1)
     with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
         await client.read_coils(1, 1, slave=0x01)
-    await client.close()
+    client.close()
 
 
 @pytest.mark.xdist_group(name="server_serialize")
@@ -171,7 +171,7 @@ async def test_async_task_ok(comm):
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
-    await client.close()
+    client.close()
     await asyncio.sleep(0.1)
     assert not client.transport
     await server.ServerAsyncStop()
@@ -194,7 +194,7 @@ async def test_async_task_reuse(comm):
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
-    await client.close()
+    client.close()
     await asyncio.sleep(0.1)
     assert not client.transport
 
@@ -204,7 +204,7 @@ async def test_async_task_reuse(comm):
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
-    await client.close()
+    client.close()
     await asyncio.sleep(0.1)
     assert not client.transport
 
@@ -254,7 +254,7 @@ async def test_async_task_server_stop(comm):
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
-    await client.close()
+    client.close()
     await asyncio.sleep(0.5)
     assert not client.transport
     await server.ServerAsyncStop()

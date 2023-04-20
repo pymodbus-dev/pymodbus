@@ -320,7 +320,7 @@ async def test_client_connection_lost():
     assert not client.connected
     client.connection_lost(mock.sentinel.PROTOCOL)
     assert not client.connected
-    await client.close()
+    client.close()
 
 
 async def test_client_base_async():

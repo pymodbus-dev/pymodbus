@@ -42,7 +42,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     transport = None
@@ -100,7 +100,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             Log.info("Connected to {}", self.params.port)
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
-            await self.close(reconnect=True)
+            self.close(reconnect=True)
         return self.connected
 
 

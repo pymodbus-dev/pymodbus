@@ -34,7 +34,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     def __init__(
@@ -95,7 +95,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
                 )
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
-            await self.close(reconnect=True)
+            self.close(reconnect=True)
         else:
             Log.info("Connected to {}:{}.", self.params.host, self.params.port)
             self.reset_delay()

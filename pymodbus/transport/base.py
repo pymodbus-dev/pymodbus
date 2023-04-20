@@ -91,7 +91,7 @@ class BaseTransport:
         Log.debug("send: {}", data, ":hex")
         return False
 
-    async def close(self) -> None:
+    def close(self) -> None:
         """Close the underlying  connection."""
 
     # ----------------------------------------------------------------------- #
@@ -103,7 +103,7 @@ class BaseTransport:
 
     async def __aexit__(self, _class, _value, _traceback) -> None:
         """Implement the client with async exit block."""
-        await self.close()
+        self.close()
 
     def __str__(self) -> str:
         """Build a string representation of the connection."""

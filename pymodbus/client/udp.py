@@ -37,7 +37,7 @@ class AsyncModbusUdpClient(
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     def __init__(
@@ -95,7 +95,7 @@ class AsyncModbusUdpClient(
             return endpoint
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
-            await self.close(reconnect=True)
+            self.close(reconnect=True)
 
 
 class ModbusUdpClient(ModbusBaseClient):

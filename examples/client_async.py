@@ -124,7 +124,7 @@ async def run_async_client(client, modbus_calls=None):
     assert client.connected
     if modbus_calls:
         await modbus_calls(client)
-    await client.close()
+    client.close()
     _logger.info("### End of Program")
 
 

@@ -213,7 +213,9 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             if hasattr(self.transport, "_sock"):
                 self.transport._sock.close()  # pylint: disable=protected-access
             self.transport = None
-        self.loop.call_soon(self.close, self)
+        x = self.delay_ms
+        self.close()
+        self.delay_ms = x
 
         Log.info("Protocol lost connection.")
         self._launch_reconnect()
@@ -261,7 +263,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             self.transaction.addTransaction(my_future, tid)
         return my_future
 
-    async def close(self, reconnect: bool = False) -> None:
+    def close(self, reconnect: bool = False) -> None:
         """Close connection.
 
         :param reconnect: (default false), try to reconnect
@@ -272,19 +274,15 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             self.transport.abort()
             self.transport.close()
             self.transport = None
-            await asyncio.sleep(0.1)
-
         if self._reconnect_task:
             self._reconnect_task.cancel()
             self._reconnect_task = None
-            await asyncio.sleep(0.1)
 
         if not reconnect:
             self.delay_ms = 0
             return
 
         self._launch_reconnect()
-        await asyncio.sleep(0.1)
 
     def _launch_reconnect(self):
         """Launch delayed reconnection coroutine"""
@@ -367,7 +365,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
 
     async def __aexit__(self, klass, value, traceback):
         """Implement the client with exit block."""
-        await self.close()
+        self.close()
 
     def __str__(self):
         """Build a string representation of the connection.

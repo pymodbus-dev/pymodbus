@@ -156,7 +156,7 @@ class ModbusUdpClient(ModbusBaseClient):
             self.close()
         return self.socket is not None
 
-    def close(self):  # pylint: disable=invalid-overridden-method,arguments-differ
+    def close(self):  # pylint: disable=arguments-differ
         """Close the underlying socket connection.
 
         :meta private:

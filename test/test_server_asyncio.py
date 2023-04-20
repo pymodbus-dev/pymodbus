@@ -176,9 +176,9 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
 
     async def connect_server(self):
         """Handle connect to server"""
-        BasicClient.connected = self.loop.create_future()
-        BasicClient.done = self.loop.create_future()
-        BasicClient.eof = self.loop.create_future()
+        BasicClient.connected = asyncio.Future()
+        BasicClient.done = asyncio.Future()
+        BasicClient.eof = asyncio.Future()
         random_port = self.server.server.sockets[0].getsockname()[
             1
         ]  # get the random server port
@@ -382,7 +382,7 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         """Test sending and receiving data on udp socket"""
         expected_response = b"\x01\x00\x00\x00\x00\x05\x01\x03\x02\x00\x11"  # value of 17 as per context
         BasicClient.dataTo = TEST_DATA  # slave 1, read register
-        BasicClient.done = self.loop.create_future()
+        BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         random_port = self.server.protocol._sock.getsockname()[  # pylint: disable=protected-access
             1
@@ -397,8 +397,8 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
     async def test_async_udp_server_exception(self):
         """Test sending garbage data on a TCP socket should drop the connection"""
         BasicClient.dataTo = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
-        BasicClient.connected = self.loop.create_future()
-        BasicClient.done = self.loop.create_future()
+        BasicClient.connected = asyncio.Future()
+        BasicClient.done = asyncio.Future()
         await self.start_server(do_udp=True)
         with mock.patch(
             "pymodbus.transaction.ModbusSocketFramer.processIncomingPacket",

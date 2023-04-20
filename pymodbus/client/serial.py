@@ -78,7 +78,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         """Connect internal."""
         return self.transport is not None
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    async def connect(self):
         """Connect Async client."""
         # get current loop, if there are no loop a RuntimeError will be raised
         Log.debug("Starting serial connection")
@@ -101,6 +101,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
             self.close(reconnect=True)
+        self.reset_delay()
         return self.connected
 
 
@@ -185,7 +186,7 @@ class ModbusSerialClient(ModbusBaseClient):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus serial server."""
         if self.socket:
             return True

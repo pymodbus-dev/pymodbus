@@ -166,7 +166,7 @@ class ModbusTlsClient(ModbusTcpClient):
     @property
     def connected(self):
         """Connect internal."""
-        return self.connect()
+        return self.transport is not None
 
     def connect(self):
         """Connect to the modbus tls server."""

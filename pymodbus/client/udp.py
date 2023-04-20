@@ -54,15 +54,13 @@ class AsyncModbusUdpClient(
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
-        self.delay_ms = self.params.reconnect_delay
-        self.reset_delay()
 
     @property
     def connected(self):
         """Return true if connected."""
         return self.transport is not None
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    async def connect(self):
         """Start reconnecting asynchronous udp client.
 
         :meta private:
@@ -96,6 +94,7 @@ class AsyncModbusUdpClient(
         except Exception as exc:  # pylint: disable=broad-except
             Log.warning("Failed to connect: {}", exc)
             self.close(reconnect=True)
+        self.reset_delay()
 
 
 class ModbusUdpClient(ModbusBaseClient):
@@ -140,7 +139,7 @@ class ModbusUdpClient(ModbusBaseClient):
 
         self.socket = None
 
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.
 
         :meta private:
@@ -190,9 +189,7 @@ class ModbusUdpClient(ModbusBaseClient):
 
         :meta private:
         """
-        if self.socket:
-            return True
-        return self.connect()
+        return True
 
     def __str__(self):
         """Build a string representation of the connection."""

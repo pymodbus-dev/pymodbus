@@ -213,12 +213,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             if hasattr(self.transport, "_sock"):
                 self.transport._sock.close()  # pylint: disable=protected-access
             self.transport = None
-        x = self.delay_ms
-        self.close()
-        self.delay_ms = x
-
-        Log.info("Protocol lost connection.")
-        self._launch_reconnect()
+        self.close(reconnect=True)
 
         Log.debug("Client disconnected from modbus server: {}", reason)
         for tid in list(self.transaction):

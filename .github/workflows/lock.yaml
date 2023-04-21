@@ -1,0 +1,33 @@
+name: 'Lock Threads'
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - dev
+  schedule:
+    # Every night at 02:20 UTC.
+    - cron: '20 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: lock
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/lock-threads@v4
+        with:
+          github-token: ${{ github.token }}
+          issue-inactive-days: '10'
+          pr-inactive-days: '10'

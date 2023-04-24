@@ -201,8 +201,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     addr = (None,)  # empty tuple
 
-                if not isinstance(slaves, (list, tuple)):
-                    slaves = [slaves]
                 # if broadcast is enabled make sure to
                 # process requests to address 0
                 if self.server.broadcast_enable:  # pragma: no cover

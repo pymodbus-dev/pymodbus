@@ -259,9 +259,7 @@ class ModbusTcpClient(ModbusBaseClient):
 
         return b"".join(data)
 
-    def _handle_abrupt_socket_close(
-        self, size, data, duration
-    ):  # pylint: disable=missing-type-doc
+    def _handle_abrupt_socket_close(self, size, data, duration):
         """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end

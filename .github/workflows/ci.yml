@@ -93,7 +93,7 @@ jobs:
           cache: 'pip'
           cache-dependency-path: requirements.txt
 
-      - name: venv create
+      - name: create venv
         if: steps.setup-python.outputs.cache-hit != 'true'
         run: pip install -e . -r requirements.txt
 

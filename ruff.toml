@@ -32,7 +32,7 @@ select = [
     "PGH",    # pygrep-hooks
     # "TRY",    # tryceratops
     # "B",      # bandit
-    # "C",      # complexity
+    "C",      # complexity
 ]
 [pydocstyle]
 convention = "pep257"

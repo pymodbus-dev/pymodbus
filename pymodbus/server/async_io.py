@@ -163,7 +163,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 traceback.format_exc(),
             )
 
-    async def handle(self):  # pylint: disable=too-complex
+    async def handle(self):
         """Return Asyncio coroutine which represents a single conversation.
 
         between the modbus slave and master

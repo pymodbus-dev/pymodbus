@@ -14,6 +14,7 @@ ignore = [
 ]
 line-length = 120
 select = [
+    "B007",   # Loop control variable {name} not used within loop body
     "D",      # docstrings
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings

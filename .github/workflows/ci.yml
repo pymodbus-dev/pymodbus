@@ -86,18 +86,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up ${{ matrix.python.version }}
+        id: setup-python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python.version }}
-
-      - name: venv restore
-        id: cache-venv
-        uses: syphar/restore-virtualenv@v1
-        with:
-          requirement_files: requirements.txt
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: venv create
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+        if: steps.setup-python.outputs.cache-hit != 'true'
         run: pip install -e . -r requirements.txt
 
       - name: test/lint

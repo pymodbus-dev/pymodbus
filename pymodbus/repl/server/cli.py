@@ -119,7 +119,7 @@ def print_title():
         )
 
 
-async def interactive_shell(server):  # pylint: disable=too-complex
+async def interactive_shell(server):
     """Run CLI interactive shell."""
     print_title()
     info("")
@@ -158,7 +158,7 @@ async def interactive_shell(server):  # pylint: disable=too-complex
             return
 
 
-def _process_args(args) -> dict:  # pylint: disable=too-complex
+def _process_args(args) -> dict:
     """Process arguments passed to CLI."""
     skip_next = False
     val_dict = {}

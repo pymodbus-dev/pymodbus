@@ -124,7 +124,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):  # pylint: disable=too-complex
+    def execute(self, request):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -332,7 +332,7 @@ class ModbusTransactionManager:
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):  # pylint: disable=too-complex
+    def _recv(self, expected_response_length, full):  # noqa: C901
         """Receive."""
         total = None
         if not full:

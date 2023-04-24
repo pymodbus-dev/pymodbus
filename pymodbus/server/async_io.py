@@ -163,7 +163,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 traceback.format_exc(),
             )
 
-    async def handle(self):  # pylint: disable=too-complex
+    async def handle(self):
         """Return Asyncio coroutine which represents a single conversation.
 
         between the modbus slave and master
@@ -201,8 +201,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     addr = (None,)  # empty tuple
 
-                if not isinstance(slaves, (list, tuple)):
-                    slaves = [slaves]
                 # if broadcast is enabled make sure to
                 # process requests to address 0
                 if self.server.broadcast_enable:  # pragma: no cover

@@ -119,7 +119,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
-        self._reconnect_task = None
+        self._reconnect_task: asyncio.Task = None
 
         # Initialize  mixin
         ModbusClientMixin.__init__(self)

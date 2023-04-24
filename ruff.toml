@@ -15,6 +15,8 @@ ignore = [
 line-length = 120
 select = [
     "B007",   # Loop control variable {name} not used within loop body
+    "B014",   # Exception handler with duplicate exception
+    "C",      # complexity
     "D",      # docstrings
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -32,8 +34,8 @@ select = [
     "PLC",    # pylint
     "PGH",    # pygrep-hooks
     # "TRY",    # tryceratops
+    "TRY004", # Prefer TypeError exception for invalid type
     # "B",      # bandit
-    "C",      # complexity
 ]
 [pydocstyle]
 convention = "pep257"

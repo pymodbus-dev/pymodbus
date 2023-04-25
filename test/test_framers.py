@@ -83,7 +83,7 @@ def test_framer_initialization(framer):
 
 
 @pytest.mark.parametrize("data", [(b"", {}), (b"abcd", {"fcode": 98, "slave": 97})])
-def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_decode_data(rtu_framer, data):
     """Test decode data."""
     data, expected = data
     decoded = rtu_framer.decode_data(data)
@@ -99,7 +99,7 @@ def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", False),  # invalid frame CRC
     ],
 )
-def test_check_frame(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_check_frame(rtu_framer, data):
     """Test check frame."""
     data, expected = data
     rtu_framer._buffer = data  # pylint: disable=protected-access
@@ -118,7 +118,7 @@ def test_check_frame(rtu_framer, data):  # pylint: disable=redefined-outer-name
         ),
     ],
 )
-def test_rtu_advance_framer(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_rtu_advance_framer(rtu_framer, data):
     """Test rtu advance framer."""
     before_buf, before_header, after_buf = data
 
@@ -134,7 +134,7 @@ def test_rtu_advance_framer(rtu_framer, data):  # pylint: disable=redefined-oute
 
 
 @pytest.mark.parametrize("data", [b"", b"abcd"])
-def test_rtu_reset_framer(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_rtu_reset_framer(rtu_framer, data):
     """Test rtu reset framer."""
     rtu_framer._buffer = data  # pylint: disable=protected-access
     rtu_framer.resetFrame()
@@ -157,7 +157,7 @@ def test_rtu_reset_framer(rtu_framer, data):  # pylint: disable=redefined-outer-
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD\xAB\xCD", True),
     ],
 )
-def test_is_frame_ready(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_is_frame_ready(rtu_framer, data):
     """Test is frame ready."""
     data, expected = data
     rtu_framer._buffer = data  # pylint: disable=protected-access
@@ -175,9 +175,7 @@ def test_is_frame_ready(rtu_framer, data):  # pylint: disable=redefined-outer-na
         b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x43",
     ],
 )
-def test_rtu_populate_header_fail(
-    rtu_framer, data
-):  # pylint: disable=redefined-outer-name
+def test_rtu_populate_header_fail(rtu_framer, data):
     """Test rtu populate header fail."""
     with pytest.raises(IndexError):
         rtu_framer.populateHeader(data)
@@ -196,28 +194,28 @@ def test_rtu_populate_header_fail(
         ),
     ],
 )
-def test_rtu_populate_header(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_rtu_populate_header(rtu_framer, data):
     """Test rtu populate header."""
     buffer, expected = data
     rtu_framer.populateHeader(buffer)
     assert rtu_framer._header == expected  # pylint: disable=protected-access
 
 
-def test_add_to_frame(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_add_to_frame(rtu_framer):
     """Test add to frame."""
     assert rtu_framer._buffer == b""  # pylint: disable=protected-access
     rtu_framer.addToFrame(b"abcd")
     assert rtu_framer._buffer == b"abcd"  # pylint: disable=protected-access
 
 
-def test_get_frame(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_get_frame(rtu_framer):
     """Test get frame."""
     rtu_framer.addToFrame(b"\x02\x01\x01\x00Q\xcc")
     rtu_framer.populateHeader(b"\x02\x01\x01\x00Q\xcc")
     assert rtu_framer.getFrame() == b"\x01\x01\x00"
 
 
-def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_populate_result(rtu_framer):
     """Test populate result."""
     rtu_framer._header["uid"] = 255  # pylint: disable=protected-access
     result = mock.Mock()
@@ -261,7 +259,7 @@ def test_populate_result(rtu_framer):  # pylint: disable=redefined-outer-name
         # good frame + part of next frame
     ],
 )
-def test_rtu_incoming_packet(rtu_framer, data):  # pylint: disable=redefined-outer-name
+def test_rtu_incoming_packet(rtu_framer, data):
     """Test rtu process incoming packet."""
     buffer, slaves, reset_called, process_called = data
 
@@ -277,13 +275,13 @@ def test_rtu_incoming_packet(rtu_framer, data):  # pylint: disable=redefined-out
         assert mock_reset.call_count == (1 if reset_called else 0)
 
 
-def test_build_packet(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_build_packet(rtu_framer):
     """Test build packet."""
     message = ReadCoilsRequest(1, 10)
     assert rtu_framer.buildPacket(message) == TEST_MESSAGE
 
 
-def test_send_packet(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_send_packet(rtu_framer):
     """Test send packet."""
     message = TEST_MESSAGE
     client = ModbusBaseClient(framer=ModbusRtuFramer)
@@ -299,7 +297,7 @@ def test_send_packet(rtu_framer):  # pylint: disable=redefined-outer-name
     assert rtu_framer.sendPacket(message) == len(message)
 
 
-def test_recv_packet(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_recv_packet(rtu_framer):
     """Test receive packet."""
     message = TEST_MESSAGE
     client = mock.Mock()
@@ -308,7 +306,7 @@ def test_recv_packet(rtu_framer):  # pylint: disable=redefined-outer-name
     assert rtu_framer.recvPacket(len(message)) == message
 
 
-def test_process(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_process(rtu_framer):
     """Test process."""
 
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
@@ -316,7 +314,7 @@ def test_process(rtu_framer):  # pylint: disable=redefined-outer-name
         rtu_framer._process(None)  # pylint: disable=protected-access
 
 
-def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_get_raw_frame(rtu_framer):
     """Test get raw frame."""
     rtu_framer._buffer = TEST_MESSAGE  # pylint: disable=protected-access
     assert (
@@ -325,7 +323,7 @@ def test_get_raw_frame(rtu_framer):  # pylint: disable=redefined-outer-name
     )
 
 
-def test_validate__slave_id(rtu_framer):  # pylint: disable=redefined-outer-name
+def test_validate__slave_id(rtu_framer):
     """Test validate slave."""
     rtu_framer.populateHeader(TEST_MESSAGE)
     assert rtu_framer._validate_slave_id([0], False)  # pylint: disable=protected-access
@@ -333,7 +331,7 @@ def test_validate__slave_id(rtu_framer):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.parametrize("data", [b":010100010001FC\r\n", b""])
-def test_decode_ascii_data(ascii_framer, data):  # pylint: disable=redefined-outer-name
+def test_decode_ascii_data(ascii_framer, data):
     """Test decode ascii."""
     data = ascii_framer.decode_data(data)
     assert isinstance(data, dict)

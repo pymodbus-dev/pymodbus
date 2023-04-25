@@ -148,7 +148,7 @@ async def test_async_task_no_server(comm):
     client = run_client(**client_args)
     try:
         await client.connect()
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         raise AssertionError(f"unexpected exception: {exc}") from exc
     await asyncio.sleep(0.1)
     with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
@@ -269,7 +269,7 @@ def test_sync_task_no_server(comm):
     client = run_client(**client_args)
     try:
         client.connect()
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         raise AssertionError(f"unexpected exception: {exc}") from exc
     sleep(0.1)
     if comm == "udp":

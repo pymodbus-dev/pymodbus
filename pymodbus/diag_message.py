@@ -161,7 +161,7 @@ class DiagnosticStatusResponse(ModbusResponse):
         word_len = len(data) // 2
         if len(data) % 2:
             word_len += 1
-            data = data + b"0"
+            data += b"0"
         data = struct.unpack(">" + "H" * word_len, data)
         (
             self.sub_function_code,  # pylint: disable=attribute-defined-outside-init

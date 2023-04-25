@@ -164,7 +164,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         if not self.zero_mode:
-            address = address + 1
+            address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         _block_type = self.decode(fc_as_hex)
         if self._randomize > 0 and _block_type in {"d", "i"}:
@@ -215,7 +215,7 @@ class ReactiveServer:
         self._add_routes()
         self._counter = 0
         self._modbus_server.response_manipulator = self.manipulate_response
-        self._manipulator_config = dict(**DEFAULT_MANIPULATOR)
+        self._manipulator_config = {**DEFAULT_MANIPULATOR}
         self._web_app.on_startup.append(self.start_modbus_server)
         self._web_app.on_shutdown.append(self.stop_modbus_server)
 

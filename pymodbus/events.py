@@ -54,7 +54,7 @@ class RemoteReceiveEvent(ModbusEvent):
         self.listen = kwargs.get("listen", False)
         self.broadcast = kwargs.get("broadcast", False)
 
-    def encode(self):
+    def encode(self) -> bytes:
         """Encode the status bits to an event message.
 
         :returns: The encoded event message
@@ -64,7 +64,7 @@ class RemoteReceiveEvent(ModbusEvent):
         packet = pack_bitstring(bits)
         return packet
 
-    def decode(self, event):
+    def decode(self, event: bytes) -> None:
         """Decode the event message to its status bits.
 
         :param event: The event to decode

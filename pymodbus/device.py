@@ -464,7 +464,7 @@ class ModbusControlBlock:
     __mode = "ASCII"
     __diagnostic = [False] * 16
     __listen_only = False
-    __delimiter = "\r"
+    __delimiter = b"\r"
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()

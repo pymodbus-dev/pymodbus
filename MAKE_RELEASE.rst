@@ -8,13 +8,13 @@ Making a release.
 ------------------------------------------------------------
 Prepare/make release on dev.
 ------------------------------------------------------------
-* Make pull request "prepare v3.0.x", with the following:
-   * Update pymodbus/version.py with version number (last line)
+* Make pull request "prepare v3.3.x", with the following:
+   * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.2.0..HEAD > commit.log
-        git log v3.2.0..HEAD | grep Author > contributors.log
+        git log --oneline v3.2.2..HEAD > commit.log
+        git log v3.2.2..HEAD | grep Author > contributors.log
    * Commit, push and merge.
 * Checkout master locally
    * git merge dev

@@ -59,7 +59,7 @@ class TestPayloadUtility:
         builder.add_16bit_uint(1)  # placeholder
         builder.add_string(b"test")
         builder.add_bits(self.bitstring)
-        assert self.little_endian_payload == builder.to_string()
+        assert self.little_endian_payload == builder.encode()
 
     def test_big_endian_payload_builder(self):
         """Test basic bit message encoding/decoding"""
@@ -77,7 +77,7 @@ class TestPayloadUtility:
         builder.add_16bit_uint(1)  # placeholder
         builder.add_string("test")
         builder.add_bits(self.bitstring)
-        assert self.big_endian_payload == builder.to_string()
+        assert self.big_endian_payload == builder.encode()
 
     def test_payload_builder_reset(self):
         """Test basic bit message encoding/decoding"""
@@ -86,10 +86,10 @@ class TestPayloadUtility:
         builder.add_8bit_uint(0x34)
         builder.add_8bit_uint(0x56)
         builder.add_8bit_uint(0x78)
-        assert builder.to_string() == b"\x12\x34\x56\x78"
+        assert builder.encode() == b"\x12\x34\x56\x78"
         assert builder.build() == [b"\x12\x34", b"\x56\x78"]
         builder.reset()
-        assert not builder.to_string()
+        assert not builder.encode()
         assert not builder.build()
 
     def test_payload_builder_with_raw_payload(self):
@@ -166,7 +166,7 @@ class TestPayloadUtility:
         builder = BinaryPayloadBuilder(
             [b"\x12", b"\x34", b"\x56", b"\x78"], repack=True
         )
-        assert builder.to_string() == b"\x12\x34\x56\x78"
+        assert builder.encode() == b"\x12\x34\x56\x78"
         assert builder.to_registers() == [13330, 30806]
         coils = builder.to_coils()
         assert _coils1 == coils
@@ -174,7 +174,7 @@ class TestPayloadUtility:
         builder = BinaryPayloadBuilder(
             [b"\x12", b"\x34", b"\x56", b"\x78"], byteorder=Endian.Big
         )
-        assert builder.to_string() == b"\x12\x34\x56\x78"
+        assert builder.encode() == b"\x12\x34\x56\x78"
         assert builder.to_registers() == [4660, 22136]
         assert str(builder) == "\x12\x34\x56\x78"
         coils = builder.to_coils()

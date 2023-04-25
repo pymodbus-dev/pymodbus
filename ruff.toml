@@ -7,10 +7,11 @@ exclude = [
     "build",
 ]
 ignore = [
-    "D202", # No blank lines allowed after function docstring (to work with black)
-    "E501", # line too long
-    "E731", # lambda expressions
-    "D400"  # docstrings ending in period
+    "D202",  # No blank lines allowed after function docstring (to work with black)
+    "D400",  # docstrings ending in period
+    "E501",  # line too long
+    "E731",  # lambda expressions
+    "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
 ]
 line-length = 120
 select = [

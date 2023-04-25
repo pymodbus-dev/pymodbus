@@ -82,10 +82,7 @@ class BinaryPayloadBuilder:
         return payload
 
     def encode(self) -> bytes:
-        """Return the payload buffer as a string.
-
-        :returns: The payload buffer as a string
-        """
+        """Get the payload buffer encoded in bytes."""
         return b"".join(self._payload)
 
     def __str__(self) -> str:

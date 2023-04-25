@@ -81,19 +81,16 @@ class BinaryPayloadBuilder:
 
         return payload
 
-    def to_string(self):
-        """Return the payload buffer as a string.
-
-        :returns: The payload buffer as a string
-        """
+    def encode(self) -> bytes:
+        """Get the payload buffer encoded in bytes."""
         return b"".join(self._payload)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the payload buffer as a string.
 
         :returns: The payload buffer as a string
         """
-        return self.to_string().decode("utf-8")
+        return self.encode().decode("utf-8")
 
     def reset(self):
         """Reset the payload buffer."""
@@ -131,10 +128,10 @@ class BinaryPayloadBuilder:
 
         :returns: The payload buffer as a list
         """
-        string = self.to_string()
-        length = len(string)
-        string += b"\x00" * (length % 2)
-        return [string[i : i + 2] for i in range(0, length, 2)]
+        buffer = self.encode()
+        length = len(buffer)
+        buffer += b"\x00" * (length % 2)
+        return [buffer[i : i + 2] for i in range(0, length, 2)]
 
     def add_bits(self, values):
         """Add a collection of bits to be encoded.

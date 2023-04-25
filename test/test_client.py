@@ -38,7 +38,7 @@ from pymodbus.framer.tls_framer import ModbusTlsFramer
     ],
 )
 @pytest.mark.parametrize(
-    "method, arg, pdu_request",
+    ("method", "arg", "pdu_request"),
     [
         ("read_coils", 1, pdu_bit_read.ReadCoilsRequest),
         ("read_discrete_inputs", 1, pdu_bit_read.ReadDiscreteInputsRequest),
@@ -206,7 +206,7 @@ def test_client_mixin(arglist, method, arg, pdu_request):
     ],
 )
 @pytest.mark.parametrize(
-    "type_args, clientclass",
+    ("type_args", "clientclass"),
     [
         # TBD ("serial", lib_client.AsyncModbusSerialClient),
         # TBD ("serial", lib_client.ModbusSerialClient),
@@ -488,7 +488,7 @@ def test_client_tls_connect():
 
 
 @pytest.mark.parametrize(
-    "datatype,value,registers",
+    ("datatype", "value", "registers"),
     [
         (ModbusClientMixin.DATATYPE.STRING, "abcd", [0x6162, 0x6364]),
         (ModbusClientMixin.DATATYPE.STRING, "a", [0x6100]),

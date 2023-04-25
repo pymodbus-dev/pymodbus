@@ -15,12 +15,12 @@ class TestMultidrop:
     good_frame = b"\x02\x03\x00\x01\x00}\xd4\x18"
 
     @pytest.fixture(name="framer")
-    def _framer(self):
+    def fixture_framer(self):
         """Prepare framer."""
         return ModbusRtuFramer(ServerDecoder())
 
     @pytest.fixture(name="callback")
-    def _callback(self):
+    def fixture_callback(self):
         """Prepare dummy callback."""
         return mock.Mock()
 

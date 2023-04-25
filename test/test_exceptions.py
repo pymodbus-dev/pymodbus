@@ -24,9 +24,5 @@ class TestExceptions:  # pylint: disable=too-few-public-methods
     def test_exceptions(self):
         """Test all module exceptions"""
         for exc in self.exceptions:
-            try:
+            with pytest.raises(ModbusException, match="Modbus Error:"):
                 raise exc
-            except ModbusException as exc:
-                assert "Modbus Error:" in str(exc)
-                return
-            pytest.fail("Excepted a ModbusExceptions")

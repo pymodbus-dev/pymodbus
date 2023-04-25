@@ -7,20 +7,26 @@ exclude = [
     "build",
 ]
 ignore = [
-    "D202", # No blank lines allowed after function docstring (to work with black)
-    "E501", # line too long
-    "E731", # lambda expressions
-    "D400"  # docstrings ending in period
+    "D202",  # No blank lines allowed after function docstring (to work with black)
+    "D400",  # docstrings ending in period
+    "E501",  # line too long
+    "E731",  # lambda expressions
+    "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
 ]
 line-length = 120
 select = [
+    # "B",      # bandit
     "B007",   # Loop control variable {name} not used within loop body
     "B014",   # Exception handler with duplicate exception
     "C",      # complexity
     "D",      # docstrings
     "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
     "F",      # pyflakes
+    "I",      # isort
+    "PGH",    # pygrep-hooks
+    "PLC",    # pylint
+    "PT",     # flake8-pytest-style
+    "RUF",    # ruff builtins
     "SIM105", # flake8-simplify
     "SIM117", #
     "SIM118", #
@@ -28,14 +34,10 @@ select = [
     "SIM212", #
     "SIM300", #
     "SIM401", #
-    "RUF",    # ruff builtins
-    "I",      # isort
     "UP",     # pyupgrade
-    "PLC",    # pylint
-    "PGH",    # pygrep-hooks
+    "W",      # pycodestyle warnings
     # "TRY",    # tryceratops
     "TRY004", # Prefer TypeError exception for invalid type
-    # "B",      # bandit
 ]
 [pydocstyle]
 convention = "pep257"

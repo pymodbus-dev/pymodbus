@@ -105,7 +105,7 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
     identity = None
 
     @pytest.fixture(autouse=True)
-    async def setup_teardown(self):
+    async def _setup_teardown(self):
         """Initialize the test environment by setting up a dummy store and context."""
         self.loop = asyncio.get_running_loop()
         self.store = ModbusSlaveContext(

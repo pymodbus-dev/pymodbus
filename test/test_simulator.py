@@ -404,7 +404,7 @@ class TestSimulator:
             assert cell.count_write == str(reg.count_write), f"at register {test_reg}"
 
     @pytest.mark.parametrize(
-        "func,addr",
+        ("func", "addr"),
         [
             (FX_READ_BIT, 12),
             (FX_READ_REG, 16),

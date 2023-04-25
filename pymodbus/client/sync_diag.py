@@ -84,7 +84,7 @@ class ModbusTcpDiagClient(ModbusTcpClient):
             self.warn_delay_limit = self.params.timeout / 2
 
         # Set logging messages, defaulting to LOG_MSGS
-        for (k_item, v_item) in LOG_MSGS.items():
+        for k_item, v_item in LOG_MSGS.items():
             self.__dict__[k_item] = kwargs.get(k_item, v_item)
 
     def connect(self):

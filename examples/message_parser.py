@@ -106,7 +106,7 @@ class Decoder:
                 message.__class__.__name__,
             )
         )
-        for (k_dict, v_dict) in message.__dict__.items():
+        for k_dict, v_dict in message.__dict__.items():
             if isinstance(v_dict, dict):
                 print("%-15s =" % k_dict)  # pylint: disable=consider-using-f-string
                 for k_item, v_item in v_dict.items():

@@ -76,7 +76,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :returns: True if the request in within range, False otherwise
         """
         if not self.zero_mode:
-            address = address + 1
+            address += 1
         Log.debug("validate: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].validate(address, count)
 
@@ -89,7 +89,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :returns: The requested values from a:a+c
         """
         if not self.zero_mode:
-            address = address + 1
+            address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         return self.store[self.decode(fc_as_hex)].getValues(address, count)
 
@@ -101,7 +101,7 @@ class ModbusSlaveContext(ModbusBaseSlaveContext):
         :param values: The new values to be set
         """
         if not self.zero_mode:
-            address = address + 1
+            address += 1
         Log.debug("setValues[{}] address-{}: count-{}", fc_as_hex, address, len(values))
         self.store[self.decode(fc_as_hex)].setValues(address, values)
 

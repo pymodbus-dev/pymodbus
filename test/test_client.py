@@ -289,7 +289,6 @@ async def test_client_modbusbaseclient():
     ) as p_connect, mock.patch(
         "pymodbus.client.base.ModbusBaseClient.close"
     ) as p_close:
-
         p_connect.return_value = True
         p_close.return_value = True
         with ModbusBaseClient(framer=ModbusAsciiFramer) as b_client:
@@ -330,7 +329,6 @@ async def test_client_base_async():
     ) as p_connect, mock.patch(
         "pymodbus.client.base.ModbusBaseClient.close"
     ) as p_close:
-
         loop = asyncio.get_event_loop()
         p_connect.return_value = loop.create_future()
         p_connect.return_value.set_result(True)

@@ -98,10 +98,10 @@ class BcdPayloadBuilder:
         """
         string = str(self)
         length = len(string)
-        string = string + ("\x00" * (length % 2))
+        string += "\x00" * (length % 2)
         return [string[i : i + 2] for i in range(0, length, 2)]
 
-    def add_bits(self, values: int) -> int:
+    def add_bits(self, values: int) -> None:
         """Add a collection of bits to be encoded
 
         If these are less than a multiple of eight,

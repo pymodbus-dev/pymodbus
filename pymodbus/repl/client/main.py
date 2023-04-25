@@ -95,10 +95,7 @@ class NumericChoice(click.Choice):
                     return choice
 
         self.fail(
-            "invalid choice: {}. (choose from {})".format(
-                value,
-                ", ".join(self.choices),
-            ),
+            f"invalid choice: {value}. (choose from {', '.join(self.choices)})",
             param,
             ctx,
         )

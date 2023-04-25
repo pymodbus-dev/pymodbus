@@ -475,10 +475,9 @@ class ReportSlaveIdResponse(ModbusResponse):
         status = int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Build a representation of the response.
 
         :returns: The string representation of the response
         """
-        arguments = (self.function_code, self.identifier, self.status)
-        return "ReportSlaveIdResponse({}, {}, {})".format(*arguments)
+        return f"ReportSlaveIdResponse({self.function_code}, {self.identifier}, {self.status})"

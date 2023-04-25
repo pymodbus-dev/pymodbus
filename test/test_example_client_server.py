@@ -74,7 +74,7 @@ def test_get_commandline():
 
 
 @pytest.mark.xdist_group(name="server_serialize")
-@pytest.mark.parametrize("test_comm, test_framer, test_port", TEST_COMMS_FRAMER)
+@pytest.mark.parametrize(("test_comm", "test_framer", "test_port"), TEST_COMMS_FRAMER)
 async def test_exp_async_server_client(
     test_comm,
     test_framer,
@@ -102,7 +102,9 @@ async def test_exp_async_server_client(
 
 
 @pytest.mark.xdist_group(name="server_serialize")
-@pytest.mark.parametrize("test_comm, test_framer, test_port", [TEST_COMMS_FRAMER[0]])
+@pytest.mark.parametrize(
+    ("test_comm", "test_framer", "test_port"), [TEST_COMMS_FRAMER[0]]
+)
 def test_exp_sync_server_client(
     test_comm,
     test_framer,

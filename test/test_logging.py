@@ -28,7 +28,7 @@ class TestLogging:
         assert log_txt == txt
 
     @pytest.mark.parametrize(
-        "txt, result, params",
+        ("txt", "result", "params"),
         [
             ("string {} {} {}", "string 101 102 103", (101, 102, 103)),
             ("string {}", "string 0x41 0x42 0x43 0x44", (b"ABCD", ":hex")),

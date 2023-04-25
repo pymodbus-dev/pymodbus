@@ -96,7 +96,7 @@ class TestFactory:
     )
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         """Do common setup function."""
         self.client = ClientDecoder()
         self.server = ServerDecoder()

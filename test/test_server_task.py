@@ -149,7 +149,7 @@ async def test_async_task_no_server(comm):
     try:
         await client.connect()
     except Exception as exc:  # pylint: disable=broad-except
-        assert False, f"unexpected exception: {exc}"
+        raise AssertionError(f"unexpected exception: {exc}") from exc
     await asyncio.sleep(0.1)
     with pytest.raises((asyncio.exceptions.TimeoutError, ConnectionException)):
         await client.read_coils(1, 1, slave=0x01)
@@ -247,7 +247,7 @@ async def test_async_task_server_stop(comm):
         await asyncio.sleep(0.1)
         timer_allowed -= 1
         if not timer_allowed:
-            assert False, "client do not reconnect"
+            pytest.fail("client do not reconnect")
     assert client.transport
     on_reconnect_callback.assert_called()
 
@@ -270,7 +270,7 @@ def test_sync_task_no_server(comm):
     try:
         client.connect()
     except Exception as exc:  # pylint: disable=broad-except
-        assert False, f"unexpected exception: {exc}"
+        raise AssertionError(f"unexpected exception: {exc}") from exc
     sleep(0.1)
     if comm == "udp":
         rr = client.read_coils(1, 1, slave=0x01)
@@ -345,7 +345,7 @@ def test_sync_task_server_stop(comm):
         sleep(0.1)
         timer_allowed -= 1
         if not timer_allowed:
-            assert False, "client do not reconnect"
+            pytest.fail("client do not reconnect")
     assert client.socket
 
     rr = client.read_coils(1, 1, slave=0x01)

@@ -16,14 +16,14 @@ from pymodbus.utilities import ModbusTransactionState
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"
 
 
-@pytest.fixture
-def rtu_framer():
+@pytest.fixture(name="rtu_framer")
+def fixture_rtu_framer():
     """RTU framer."""
     return ModbusRtuFramer(ClientDecoder())
 
 
-@pytest.fixture
-def ascii_framer():
+@pytest.fixture(name="ascii_framer")
+def fixture_ascii_framer():
     """Ascii framer."""
     return ModbusAsciiFramer(ClientDecoder())
 

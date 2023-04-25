@@ -367,8 +367,7 @@ Contributing
 ------------------------------------------------------------
 Just fork the repo and raise your PR against `dev` branch.
 
-Here are some of the items waiting to be done:
-   https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/TODO
+We always have more work than time, so feel free to open a discussion / issue on a theme you want to solve.
 
 ------------------------------------------------------------
 License Information

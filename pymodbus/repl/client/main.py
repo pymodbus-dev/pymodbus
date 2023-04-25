@@ -95,8 +95,7 @@ class NumericChoice(click.Choice):
                     return choice
 
         self.fail(
-            "invalid choice: %s. (choose from %s)"  # pylint: disable=consider-using-f-string
-            % (
+            "invalid choice: {}. (choose from {})".format(
                 value,
                 ", ".join(self.choices),
             ),

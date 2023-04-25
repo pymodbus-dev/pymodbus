@@ -481,7 +481,4 @@ class ReportSlaveIdResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         arguments = (self.function_code, self.identifier, self.status)
-        return (
-            "ReportSlaveIdResponse(%s, %s, %s)"  # pylint: disable=consider-using-f-string
-            % arguments
-        )
+        return "ReportSlaveIdResponse({}, {}, {})".format(*arguments)

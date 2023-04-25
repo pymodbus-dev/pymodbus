@@ -425,7 +425,7 @@ class SerialTransport(asyncio.Transport):
         if self._serial:
             try:
                 self._serial.flush()
-            except (serial.SerialException if os.name == "nt" else termios.error):
+            except serial.SerialException if os.name == "nt" else termios.error:
                 # ignore serial errors which may happen if the serial device was
                 # hot-unplugged.
                 pass

@@ -121,7 +121,7 @@ class TestFactory:
 
     def test_response_working(self):
         """Test a working response factory decoders"""
-        for func, msg in self.response:
+        for _func, msg in self.response:
             self.client.decode(msg)
 
     def test_response_errors(self):
@@ -134,7 +134,7 @@ class TestFactory:
 
     def test_requests_working(self):
         """Test a working request factory decoders"""
-        for func, msg in self.request:
+        for _func, msg in self.request:
             self.server.decode(msg)
 
     def test_client_factory_fails(self):

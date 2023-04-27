@@ -146,7 +146,7 @@ class DiagnosticStatusResponse(ModbusResponse):
                 packet += self.message.encode()
             elif isinstance(self.message, bytes):
                 packet += self.message
-            elif isinstance(self.message, list):
+            elif isinstance(self.message, (list, tuple)):
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
             elif isinstance(self.message, int):

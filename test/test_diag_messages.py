@@ -119,12 +119,23 @@ class TestDataStore:
         (GetClearModbusPlusResponse, b"\x00\x15\x00\x04" + b"\x00\x00" * 55),
     ]
 
+    def test_diagnostic_encode_decode(self):
+        """Testing diagnostic request/response can be decoded and encoded."""
+        for msg in (DiagnosticStatusRequest, DiagnosticStatusResponse):
+            msg_obj = msg()
+            data = b"\x00\x01\x02\x03"
+            msg_obj.decode(data)
+            result = msg_obj.encode()
+            assert data == result
+
     def test_diagnostic_requests_decode(self):
         """Testing diagnostic request messages encoding"""
         for msg, enc, _ in self.requests:
             handle = DiagnosticStatusRequest()
             handle.decode(enc)
             assert handle.sub_function_code == msg.sub_function_code
+            encoded = handle.encode()
+            assert enc == encoded
 
     def test_diagnostic_simple_requests(self):
         """Testing diagnostic request messages encoding"""

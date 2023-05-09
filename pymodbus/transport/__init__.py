@@ -4,4 +4,4 @@ __all__ = [
     "BaseTransport",
 ]
 
-from pymodbus.transport.base import BaseTransport
+from pymodbus.transport.transport import BaseTransport

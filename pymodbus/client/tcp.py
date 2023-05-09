@@ -51,12 +51,11 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
-        self.delay_ms = self.params.reconnect_delay
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    async def connect(self):
         """Initiate connection to start client."""
 
-        # if delay_ms was set to 0 by close(), we need to set it back again
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
         self.reset_delay()
 
@@ -145,9 +144,9 @@ class ModbusTcpClient(ModbusBaseClient):
     @property
     def connected(self):
         """Connect internal."""
-        return self.connect()
+        return self.transport is not None
 
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server."""
         if self.socket:
             return True

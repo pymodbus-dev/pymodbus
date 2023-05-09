@@ -386,7 +386,7 @@ class ModbusDisconnectedRequestHandler(
     def __init__(self, owner):
         """Initialize."""
         super().__init__(owner)
-        _future = asyncio.get_running_loop().create_future()
+        _future = asyncio.Future()
         self.server.on_connection_terminated = _future
 
     def connection_lost(self, call_exc):
@@ -533,7 +533,7 @@ class ModbusUnixServer:
             self.control.Identity.update(identity)
 
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -641,7 +641,7 @@ class ModbusTcpServer:
             self.control.Identity.update(identity)
 
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -824,7 +824,7 @@ class ModbusUdpServer:
         self.endpoint = None
         self.on_connection_terminated = None
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         self.factory_parms = {
             "local_addr": self.address,
             "allow_broadcast": True,

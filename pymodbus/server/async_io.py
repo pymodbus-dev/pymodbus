@@ -663,9 +663,11 @@ class ModbusTcpServer:
             try:
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
+                self.serving.set_result(False)
                 raise
             except Exception as exc:  # pylint: disable=broad-except
                 Log.error("Server unexpected exception {}", exc)
+                self.serving.set_result(False)
         else:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
@@ -836,9 +838,11 @@ class ModbusUdpServer:
                     **self.factory_parms,
                 )
             except asyncio.exceptions.CancelledError:
+                self.serving.set_result(False)
                 raise
             except Exception as exc:
                 Log.error("Server unexpected exception {}", exc)
+                self.serving.set_result(False)
                 raise RuntimeError(exc) from exc
             Log.info("Server(UDP) listening.")
             self.serving.set_result(True)

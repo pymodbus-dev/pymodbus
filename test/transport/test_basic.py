@@ -71,6 +71,7 @@ class TestTransportBase:
         base.cb_connection_made.assert_called_once()
         base.cb_connection_lost.assert_not_called()
         base.cb_handle_data.assert_not_called()
+        base.close()
 
     def test_connection_lost(self):
         """Test properties."""

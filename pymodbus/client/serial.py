@@ -6,12 +6,12 @@ from functools import partial
 from typing import Any, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.logging import Log
+from pymodbus.transport.serial_asyncio import create_serial_connection
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -173,13 +173,12 @@ class ModbusSerialClient(ModbusBaseClient):
             else 0.05
         )
 
-        if isinstance(self.framer, ModbusRtuFramer):
-            if self.params.baudrate > 19200:
-                self.silent_interval = 1.75 / 1000  # ms
-            else:
-                self.inter_char_timeout = 1.5 * self._t0
-                self.silent_interval = 3.5 * self._t0
-            self.silent_interval = round(self.silent_interval, 6)
+        if self.params.baudrate > 19200:
+            self.silent_interval = 1.75 / 1000  # ms
+        else:
+            self.inter_char_timeout = 1.5 * self._t0
+            self.silent_interval = 3.5 * self._t0
+        self.silent_interval = round(self.silent_interval, 6)
 
     @property
     def connected(self):

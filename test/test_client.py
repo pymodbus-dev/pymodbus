@@ -246,14 +246,6 @@ async def test_client_instanciate(
     client.last_frame_end = None
     assert not client.idle_time()
 
-    initial_delay = client.reconnect_delay_current
-    assert initial_delay > 0
-    client.reconnect_delay_current *= 2
-
-    assert client.reconnect_delay_current > initial_delay
-    client.reset_delay()
-    assert client.reconnect_delay_current == initial_delay
-
     rc1 = client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
     assert rc1 == socket.AF_INET
     rc2 = client._get_address_family("::1")  # pylint: disable=protected-access

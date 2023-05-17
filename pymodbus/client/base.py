@@ -95,8 +95,16 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
     ) -> None:
         """Initialize a client instance."""
         BaseTransport.__init__(
-            self, "comm", framer, reconnect_delay, reconnect_delay_max, timeout, timeout
+            self,
+            "comm",
+            (reconnect_delay, reconnect_delay_max),
+            timeout,
+            framer,
+            lambda: None,
+            self.cb_base_connection_lost,
+            self.cb_base_handle_data,
         )
+        self.framer = framer
         self.params = self._params()
         self.params.framer = framer
         self.params.timeout = float(timeout)
@@ -198,24 +206,16 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
                 raise
         return resp
 
-    def data_received(self, data):
-        """Call when some data is received.
-
-        data is a non-empty bytes object containing the incoming data.
-        """
-        Log.debug("recv: {}", data, ":hex")
-        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
-
-    def cb_handle_data(self, _data: bytes) -> int:
+    def cb_base_handle_data(self, data: bytes) -> int:
         """Handle received data
 
         returns number of bytes consumed
         """
+        Log.debug("recv: {}", data, ":hex")
+        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
+        return len(data)
 
-    def cb_connection_made(self) -> None:
-        """Handle new connection"""
-
-    def cb_connection_lost(self, _reason: Exception) -> None:
+    def cb_base_connection_lost(self, _reason: Exception) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(

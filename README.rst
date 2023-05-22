@@ -245,7 +245,7 @@ Install with Docker
 -----------------------------------------------------------
 Pull the latest image on ``dev`` branch with ``docker pull ghcr.io/pymodbus-dev/pymodbus:dev``::
 
-   doker pull ghcr.io/pymodbus-dev/pymodbus:dev
+   ❯ docker pull ghcr.io/pymodbus-dev/pymodbus:dev
    dev: Pulling from pymodbus-dev/pymodbus
    548fcab5fe88: Pull complete
    a4d3f9f008ef: Pull complete

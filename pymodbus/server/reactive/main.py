@@ -509,7 +509,6 @@ class ReactiveServer:
                 framer=framer,
                 identity=identity,
                 address=(host, modbus_port),
-                defer_start=False,
                 **kwargs,
             )
         return ReactiveServer(host, web_port, server)

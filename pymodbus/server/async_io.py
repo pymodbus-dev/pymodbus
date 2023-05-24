@@ -593,7 +593,6 @@ class ModbusTcpServer:
         address=None,
         handler=None,
         allow_reuse_address=False,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -648,7 +647,7 @@ class ModbusTcpServer:
         self.factory_parms = {
             "reuse_address": allow_reuse_address,
             "backlog": backlog,
-            "start_serving": not defer_start,
+            "start_serving": True,
         }
 
     async def serve_forever(self):
@@ -714,7 +713,6 @@ class ModbusTlsServer(ModbusTcpServer):
         reqclicert=False,
         handler=None,
         allow_reuse_address=False,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -755,7 +753,6 @@ class ModbusTlsServer(ModbusTcpServer):
             address=address,
             handler=handler,
             allow_reuse_address=allow_reuse_address,
-            defer_start=defer_start,
             backlog=backlog,
             **kwargs,
         )
@@ -778,7 +775,6 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -801,7 +797,6 @@ class ModbusUdpServer:
                             manipulating the response
         """
         # TO BE REMOVED:
-        self.defer_start = defer_start
         self.backlog = backlog
         # ----------------
         self.loop = asyncio.get_running_loop()

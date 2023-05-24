@@ -160,7 +160,6 @@ async def run_async_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "udp":
         address = ("127.0.0.1", args.port) if args.port else None
@@ -175,7 +174,6 @@ async def run_async_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -196,7 +194,6 @@ async def run_async_server(args):
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
@@ -226,7 +223,6 @@ async def run_async_server(args):
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=False,  # Only define server do not activate
         )
     return server
 

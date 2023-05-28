@@ -139,13 +139,12 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
             result = result.result()
 
     async def start_server(
-        self, do_forever=True, do_defer=True, do_tls=False, do_udp=False, do_ident=False
+        self, do_forever=True, do_tls=False, do_udp=False, do_ident=False
     ):
         """Handle setup and control of tcp server."""
         args = {
             "context": self.context,
             "address": SERV_ADDR,
-            "defer_start": do_defer,
         }
         if do_ident:
             args["identity"] = self.identity

@@ -16,7 +16,7 @@ import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
-from pymodbus.exceptions import ConnectionException, NotImplementedException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -270,9 +270,6 @@ async def test_client_modbusbaseclient():
     buffer = "123ABC"
     assert client.send(buffer) == buffer
     assert client.recv(10) == 10
-
-    with pytest.raises(NotImplementedException):
-        client.is_socket_open()
 
     with mock.patch(
         "pymodbus.client.base.ModbusBaseClient.connect"

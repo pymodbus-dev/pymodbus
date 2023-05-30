@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
-from pymodbus.exceptions import ConnectionException, NotImplementedException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
@@ -135,7 +135,6 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
-        self._reconnect_task: asyncio.Task = None
 
         # Initialize  mixin
         ModbusClientMixin.__init__(self)
@@ -153,10 +152,6 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
-
-    def is_socket_open(self) -> bool:
-        """Return whether socket/serial is open or not (call **sync**)."""
-        raise NotImplementedException
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).

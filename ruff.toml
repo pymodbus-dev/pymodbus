@@ -14,6 +14,7 @@ ignore = [
     "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
     "S101",  # Use of `assert`
     "S311",  # PRNG for cryptography
+    "S104",  # binding on all interfaces
 ]
 line-length = 120
 select = [

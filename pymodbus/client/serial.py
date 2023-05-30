@@ -61,7 +61,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
         self.params.port = port
         self.params.baudrate = baudrate
         self.params.bytesize = bytesize
@@ -158,6 +157,7 @@ class ModbusSerialClient(ModbusBaseClient):
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
         self.socket = None
+        self.use_sync = True
 
         self.last_frame_end = None
 

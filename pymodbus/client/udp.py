@@ -50,7 +50,6 @@ class AsyncModbusUdpClient(
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
         super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
@@ -138,6 +137,7 @@ class ModbusUdpClient(ModbusBaseClient):
         self.params.source_address = source_address
 
         self.socket = None
+        self.use_sync = True
 
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.

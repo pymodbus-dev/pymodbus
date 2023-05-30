@@ -130,7 +130,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
-        self.use_protocol = False
+        self.use_sync = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
@@ -175,13 +175,13 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
-        if self.use_protocol:
-            if not self.transport:
-                raise ConnectionException(f"Not connected[{str(self)}]")
-            return self.async_execute(request)
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{str(self)}]")
-        return self.transaction.execute(request)
+        if self.use_sync:
+            if not self.connect():
+                raise ConnectionException(f"Failed to connect[{str(self)}]")
+            return self.transaction.execute(request)
+        if not self.transport:
+            raise ConnectionException(f"Not connected[{str(self)}]")
+        return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #
     # Merged client methods

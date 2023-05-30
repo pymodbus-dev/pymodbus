@@ -57,13 +57,13 @@ jobs:
           - version: '3.8'
             lint: 'yes'
           - version: '3.9'
-            lint: 'no'
+            lint: 'yes'
           - version: '3.10'
-            lint: 'no'
+            lint: 'yes'
           - version: '3.11'
-            lint: 'no'
+            lint: 'yes'
           - version: pypy-3.8
-            lint: 'no'
+            lint: 'yes'
         exclude:
           - task:
               type: lint

@@ -18,9 +18,7 @@ on:
 
 jobs:
   linters:
-    env:
-      python: 3.8
-    name: Linters - python $python
+    name: Linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -32,7 +30,7 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v4
         with:
-          python-version: $python
+          python-version: 3.8
 
       - name: venv restore
         id: cache-venv

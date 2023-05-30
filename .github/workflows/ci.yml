@@ -17,9 +17,53 @@ on:
 
 
 jobs:
+  linters:
+    env:
+      python: 3.8
+    name: Linters - python $python
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: $python
+
+      - name: venv restore
+        id: cache-venv
+        uses: syphar/restore-virtualenv@v1
+        with:
+          requirement_files: requirements.txt
+
+      - name: venv create
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: pip install -e . -r requirements.txt
+
+      - name: codespell
+        run: codespell
+
+      - name: pylint
+        run: pylint --recursive=y examples pymodbus test
+
+      - name: precommit (black, bandit, and ruff)
+        run: pre-commit run --all-files
+
+      - name: docs
+        run: make -C doc/ html
+
+      - name: mypy
+        run: mypy pymodbus
+
+
   integreation_test:
     name: ${{ matrix.task.name }} - ${{ matrix.os.on }} - ${{ matrix.python.version }}
     runs-on: ${{ matrix.os.on }}
+    needs: linters
     timeout-minutes: 10
     strategy:
       fail-fast: false

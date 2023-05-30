@@ -17,7 +17,7 @@ class ModbusEvent:
 
         :raises NotImplementedException:
         """
-        raise NotImplementedException()
+        raise NotImplementedException
 
     def decode(self, event):
         """Decode the event message to its status bits.
@@ -25,7 +25,7 @@ class ModbusEvent:
         :param event: The event to decode
         :raises NotImplementedException:
         """
-        raise NotImplementedException()
+        raise NotImplementedException
 
 
 class RemoteReceiveEvent(ModbusEvent):

@@ -59,62 +59,27 @@ jobs:
 
 
   integreation_test:
-    name: ${{ matrix.task.name }} - ${{ matrix.os.on }} - ${{ matrix.python.version }}
+    name: pytest - ${{ matrix.os.on }} - ${{ matrix.python.version }}
     runs-on: ${{ matrix.os.on }}
     needs: linters
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        task:
-          - name: pylint
-            cmd: pylint --recursive=y examples pymodbus test
-            type: lint
-          - name: codespell
-            cmd: codespell
-            type: lint
-          - name: precommit (black, bandit, and ruff)
-            cmd: pre-commit run --all-files
-            type: lint
-          - name: docs
-            cmd: make -C doc/ html
-            type: lint
-          - name: mypy
-            cmd: mypy pymodbus
-            type: lint
-          - name: pytest
-            cmd: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
-            type: test
         os:
           - name: Linux
             on: ubuntu-latest
-            lint: 'yes'
           - name: Macos
             on: macos-latest
-            lint: 'no'
           - name: Windows
             on: windows-latest
-            lint: 'no'
         python:
           - version: '3.8'
-            lint: 'yes'
           - version: '3.9'
-            lint: 'yes'
           - version: '3.10'
-            lint: 'yes'
           - version: '3.11'
-            lint: 'yes'
           - version: pypy-3.8
-            lint: 'yes'
         exclude:
-          - task:
-              type: lint
-            os:
-              lint: 'no'
-          - task:
-              type: lint
-            python:
-              lint: 'no'
           - os:
               name: Macos
             python:
@@ -142,8 +107,8 @@ jobs:
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: pip install -e . -r requirements.txt
 
-      - name: test/lint
-        run: ${{ matrix.task.cmd }}
+      - name: pytest
+        run: pytest --cov=pymodbus --cov=test --cov-report=term-missing --cov-report=xml -v --full-trace --timeout=20
 
   ci_complete:
     name: ci_complete
@@ -152,5 +117,5 @@ jobs:
       - integreation_test
     timeout-minutes: 1
     steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3.5.2
+      - name: Dummy
+        run: ls

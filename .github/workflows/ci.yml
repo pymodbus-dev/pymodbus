@@ -67,12 +67,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - name: Linux
-            on: ubuntu-latest
-          - name: Macos
-            on: macos-latest
-          - name: Windows
-            on: windows-latest
+          - on: ubuntu-latest
+          - on: macos-latest
+          - on: windows-latest
         python:
           - version: '3.8'
           - version: '3.9'
@@ -81,11 +78,11 @@ jobs:
           - version: pypy-3.8
         exclude:
           - os:
-              name: Macos
+              on: macos-latest
             python:
               version: pypy-3.8
           - os:
-              name: Windows
+              on: windows-latest
             python:
               version: pypy-3.8
     steps:

@@ -175,9 +175,10 @@ class BaseTransport:
             sslctx.options |= ssl.OP_NO_TLSv1
             sslctx.options |= ssl.OP_NO_SSLv3
             sslctx.options |= ssl.OP_NO_SSLv2
-            sslctx.load_cert_chain(
-                certfile=certfile, keyfile=keyfile, password=password
-            )
+            if certfile:
+                sslctx.load_cert_chain(
+                    certfile=certfile, keyfile=keyfile, password=password
+                )
         self.comm_params.ssl = sslctx
         if setup_server:
             self.call_connect_listen = lambda: self.loop.create_server(

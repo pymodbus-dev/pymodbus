@@ -46,7 +46,6 @@ sphinx-rtd-theme==1.1.1
 # development, everything needed to develop/test/check.
 # -------------------------------------------------------------------
 # install:development
-bandit==1.7.4
 codespell==2.2.2
 coverage==7.1.0
 mypy==1.0.1

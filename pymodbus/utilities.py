@@ -154,17 +154,6 @@ def unpack_bitstring(data: bytes) -> List[bool]:
     return bits
 
 
-def make_byte_string(byte_string):
-    """Return byte string from a given string, python3 specific fix.
-
-    :param byte_string:
-    :return:
-    """
-    if isinstance(byte_string, str):
-        byte_string = byte_string.encode()
-    return byte_string
-
-
 # --------------------------------------------------------------------------- #
 # Error Detection Functions
 # --------------------------------------------------------------------------- #

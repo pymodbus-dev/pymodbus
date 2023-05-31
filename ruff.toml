@@ -12,10 +12,12 @@ ignore = [
     "E501",  # line too long
     "E731",  # lambda expressions
     "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
+    "S101",  # Use of `assert`
+    "S311",  # PRNG for cryptography
+    "S104",  # binding on all interfaces
 ]
 line-length = 120
 select = [
-    # "B",      # bandit
     "B007",   # Loop control variable {name} not used within loop body
     "B014",   # Exception handler with duplicate exception
     "C",      # complexity
@@ -27,6 +29,7 @@ select = [
     "PLC",    # pylint
     "PT",     # flake8-pytest-style
     "RUF",    # ruff builtins
+    "S",      # bandit
     "SIM105", # flake8-simplify
     "SIM117", #
     "SIM118", #

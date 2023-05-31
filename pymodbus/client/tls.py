@@ -82,32 +82,29 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
         **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
-        super().__init__(host, port=port, framer=framer, **kwargs)
+        AsyncModbusTcpClient.__init__(
+            self, host, port=port, framer=framer, internal_no_setup=True, **kwargs
+        )
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         self.params.sslctx = sslctx
         self.params.certfile = certfile
         self.params.keyfile = keyfile
         self.params.password = password
         self.params.server_hostname = server_hostname
-        AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
+        self.setup_tls(
+            False, host, port, sslctx, certfile, keyfile, password, server_hostname
+        )
 
-    async def _connect(self):
-        """Connect to server."""
-        Log.debug("Connecting tls.")
-        try:
-            return await self.loop.create_connection(
-                self._create_protocol,
-                self.params.host,
-                self.params.port,
-                ssl=self.sslctx,
-                server_hostname=self.params.server_hostname,
-            )
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            self.close(reconnect=True)
-            return
-        Log.info("Connected to {}:{}.", self.params.host, self.params.port)
+    async def connect(self):
+        """Initiate connection to start client."""
+
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
         self.reset_delay()
+
+        # force reconnect if required:
+        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        return await self.transport_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):

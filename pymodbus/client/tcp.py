@@ -50,6 +50,12 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
+        if "internal_no_setup" in kwargs:
+            return
+        if host.startswith("unix:"):
+            self.setup_unix(False, host[5:])
+        else:
+            self.setup_tcp(False, host, port)
 
     async def connect(self):
         """Initiate connection to start client."""
@@ -60,44 +66,12 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
 
         # force reconnect if required:
         Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self._connect()
+        return await self.transport_connect()
 
     @property
     def connected(self):
         """Return true if connected."""
         return self.transport is not None
-
-    def _create_protocol(self):
-        """Create initialized protocol instance with function."""
-        return self
-
-    async def _connect(self):
-        """Connect."""
-        Log.debug("Connecting.")
-        try:
-            if self.params.host.startswith("unix:"):
-                transport, protocol = await asyncio.wait_for(
-                    self.loop.create_unix_connection(
-                        self._create_protocol, path=self.params.host[5:]
-                    ),
-                    timeout=self.params.timeout,
-                )
-            else:
-                transport, protocol = await asyncio.wait_for(
-                    self.loop.create_connection(
-                        self._create_protocol,
-                        host=self.params.host,
-                        port=self.params.port,
-                    ),
-                    timeout=self.params.timeout,
-                )
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            self.close(reconnect=True)
-        else:
-            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
-            self.reset_delay()
-            return transport, protocol
 
 
 class ModbusTcpClient(ModbusBaseClient):

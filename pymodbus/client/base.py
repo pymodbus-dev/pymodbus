@@ -97,8 +97,8 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         BaseTransport.__init__(
             self,
             "comm",
-            (reconnect_delay, reconnect_delay_max),
-            timeout,
+            (reconnect_delay * 1000, reconnect_delay_max * 1000),
+            timeout * 1000,
             framer,
             lambda: None,
             self.cb_base_connection_lost,

@@ -57,7 +57,7 @@ class TestPayloadUtility:
         builder.add_32bit_float(1.25)
         builder.add_64bit_float(6.25)
         builder.add_16bit_uint(1)  # placeholder
-        builder.add_string(b"test")
+        builder.add_string("test")
         builder.add_bits(self.bitstring)
         assert self.little_endian_payload == builder.encode()
 

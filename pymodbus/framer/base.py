@@ -1,5 +1,8 @@
 """Framer start."""
 # pylint: disable=missing-type-doc
+from typing import Any, Dict, Union
+
+from pymodbus.factory import ClientDecoder, ServerDecoder
 
 
 # Unit ID, Function Code
@@ -18,15 +21,20 @@ class ModbusFramer:
 
     name = ""
 
-    def __init__(self, decoder, client=None):
+    def __init__(
+        self,
+        decoder: Union[ClientDecoder, ServerDecoder],
+        client=None,
+    ) -> None:
         """Initialize a new instance of the framer.
 
         :param decoder: The decoder implementation to use
         """
         self.decoder = decoder
         self.client = client
+        self._header: Dict[str, Any] = {}
 
-    def _validate_slave_id(self, slaves, single):
+    def _validate_slave_id(self, slaves: list, single: bool) -> bool:
         """Validate if the received data is valid for the client.
 
         :param slaves: list of slave id for which the transaction is valid
@@ -39,7 +47,7 @@ class ModbusFramer:
             # Handle Modbus TCP slave identifier (0x00 0r 0xFF)
             # in asynchronous requests
             return True
-        return self._header["uid"] in slaves  # pylint: disable=no-member
+        return self._header["uid"] in slaves
 
     def sendPacket(self, message):
         """Send packets on the bus.

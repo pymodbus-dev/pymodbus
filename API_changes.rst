@@ -10,6 +10,7 @@ Version 3.3.0
 - move SqlSlaveContext, RedisSlaveContext to examples/contrib (due to lack of maintenance)
 - :code:`BinaryPayloadBuilder.to_string` was renamed to :code:`BinaryPayloadBuilder.encode`
 - on_reconnect_callback for async clients works slightly different
+- utilities/unpack_bitstring now expects an argument named `data` not `string`
 
 -------------
 Version 3.2.0

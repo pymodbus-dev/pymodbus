@@ -17,6 +17,7 @@ __all__ = [
 
 # pylint: disable=missing-type-doc
 import struct
+from typing import List
 
 
 class ModbusTransactionState:  # pylint: disable=too-few-public-methods
@@ -106,10 +107,10 @@ def dict_property(store, index):
 # --------------------------------------------------------------------------- #
 # Bit packing functions
 # --------------------------------------------------------------------------- #
-def pack_bitstring(bits):
-    """Create a string out of an array of bits.
+def pack_bitstring(bits: List[bool]) -> bytes:
+    """Create a bytestring out of a list of bits.
 
-    :param bits: A bit array
+    :param bits: A list of bits
 
     example::
 
@@ -133,20 +134,20 @@ def pack_bitstring(bits):
     return ret
 
 
-def unpack_bitstring(string):
-    """Create bit array out of a string.
+def unpack_bitstring(data: bytes) -> List[bool]:
+    """Create bit list out of a bytestring.
 
-    :param string: The modbus data packet to decode
+    :param data: The modbus data packet to decode
 
     example::
 
         bytes  = "bytes to decode"
         result = unpack_bitstring(bytes)
     """
-    byte_count = len(string)
+    byte_count = len(data)
     bits = []
     for byte in range(byte_count):
-        value = int(int(string[byte]))
+        value = int(int(data[byte]))
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1

@@ -65,7 +65,7 @@ class ModbusBinaryFramer(ModbusFramer):
             return {"slave": uid, "fcode": fcode}
         return {}
 
-    def checkFrame(self):
+    def checkFrame(self) -> bool:
         """Check and decode the next frame.
 
         :returns: True if we are successful, False otherwise
@@ -84,7 +84,7 @@ class ModbusBinaryFramer(ModbusFramer):
             return checkCRC(data, self._header["crc"])
         return False
 
-    def advanceFrame(self):
+    def advanceFrame(self) -> None:
         """Skip over the current framed message.
 
         This allows us to skip over the current message after we have processed
@@ -94,7 +94,7 @@ class ModbusBinaryFramer(ModbusFramer):
         self._buffer = self._buffer[self._header["len"] + 2 :]
         self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
-    def isFrameReady(self):
+    def isFrameReady(self) -> bool:
         """Check if we should continue decode logic.
 
         This is meant to be used in a while loop in the decoding phase to let

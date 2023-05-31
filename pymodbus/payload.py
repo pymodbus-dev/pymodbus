@@ -16,7 +16,6 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.logging import Log
 from pymodbus.utilities import (
-    make_byte_string,
     pack_bitstring,
     unpack_bitstring,
 )
@@ -241,14 +240,13 @@ class BinaryPayloadBuilder:
         p_string = self._pack_words(fstring, value)
         self._payload.append(p_string)
 
-    def add_string(self, value):
+    def add_string(self, value: str):
         """Add a string to the buffer.
 
         :param value: The value to add to the buffer
         """
-        value = make_byte_string(value)
         fstring = self._byteorder + str(len(value)) + "s"
-        self._payload.append(pack(fstring, value))
+        self._payload.append(pack(fstring, value.encode()))
 
 
 class BinaryPayloadDecoder:
@@ -339,7 +337,6 @@ class BinaryPayloadDecoder:
         :param handle: Value to be unpacked
         :return:
         """
-        handle = make_byte_string(handle)
         wc_value = WC.get(fstring.lower()) // 2
         handle = unpack(f"!{wc_value}H", handle)
         if self._wordorder == Endian.Little:
@@ -360,7 +357,6 @@ class BinaryPayloadDecoder:
         self._pointer += 1
         fstring = self._byteorder + "B"
         handle = self._payload[self._pointer - 1 : self._pointer]
-        handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
 
     def decode_bits(self, package_len=1):
@@ -368,7 +364,6 @@ class BinaryPayloadDecoder:
         self._pointer += package_len
         # fstring = self._endian + "B"
         handle = self._payload[self._pointer - 1 : self._pointer]
-        handle = make_byte_string(handle)
         return unpack_bitstring(handle)
 
     def decode_16bit_uint(self):
@@ -376,14 +371,12 @@ class BinaryPayloadDecoder:
         self._pointer += 2
         fstring = self._byteorder + "H"
         handle = self._payload[self._pointer - 2 : self._pointer]
-        handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
 
     def decode_32bit_uint(self):
         """Decode a 32 bit unsigned int from the buffer."""
         self._pointer += 4
         fstring = "I"
-        # fstring = "I"
         handle = self._payload[self._pointer - 4 : self._pointer]
         handle = self._unpack_words(fstring, handle)
         return unpack("!" + fstring, handle)[0]
@@ -401,7 +394,6 @@ class BinaryPayloadDecoder:
         self._pointer += 1
         fstring = self._byteorder + "b"
         handle = self._payload[self._pointer - 1 : self._pointer]
-        handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
 
     def decode_16bit_int(self):
@@ -409,7 +401,6 @@ class BinaryPayloadDecoder:
         self._pointer += 2
         fstring = self._byteorder + "h"
         handle = self._payload[self._pointer - 2 : self._pointer]
-        handle = make_byte_string(handle)
         return unpack(fstring, handle)[0]
 
     def decode_32bit_int(self):

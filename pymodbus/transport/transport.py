@@ -205,13 +205,8 @@ class BaseTransport:
         self.comm_params.host = host
         self.comm_params.port = port
         if setup_server:
-            self.call_connect_listen = lambda: self.loop.create_datagram_endpoint(
-                self.handle_listen,
-                (self.comm_params.host, self.comm_params.port),
-            )
-        else:
 
-            async def call_async_listen():
+            async def call_async_listen(self):
                 """Remove protocol return value."""
                 transport, _protocol = await self.loop.create_datagram_endpoint(
                     lambda: self,
@@ -219,7 +214,12 @@ class BaseTransport:
                 )
                 return transport
 
-            self.call_connect_listen = call_async_listen
+            self.call_connect_listen = lambda: call_async_listen(self)
+        else:
+            self.call_connect_listen = lambda: self.loop.create_datagram_endpoint(
+                self.handle_listen,
+                (self.comm_params.host, self.comm_params.port),
+            )
         self.use_udp = True
 
     def setup_serial(

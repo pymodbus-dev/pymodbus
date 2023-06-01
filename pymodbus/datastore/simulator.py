@@ -658,35 +658,21 @@ class ModbusSimulatorContext:
 
         :meta private:
         """
-        print('increment', _kwargs, cls)
-
         reg = registers[inx]
         reg2 = registers[inx + 1]
         if cell.type in (CellType.BITS, CellType.UINT16):
-            reg.value += 1
-            if _kwargs :
-                minval,maxval = cls.validate_range(_kwargs, 0, 65536)
-                if _kwargs.get('cycle', False) and reg.value > maxval :
-                    reg.value = int(minval)
+            reg.value = cls.cycle_value(_kwargs, reg.value +1, 0, 65536)
         elif cell.type == CellType.FLOAT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, False)
-            value += 1.0
-            if _kwargs :
-                minval,maxval = cls.validate_range(_kwargs, 0.0, 65000.0)
-                if _kwargs.get('cycle', False) and value > maxval :
-                    value = float(minval)
+            value = cls.cycle_value(_kwargs, value +1.0, 0.0, 65000.0)
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
         elif cell.type == CellType.UINT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
-            value += 1
-            if _kwargs :
-                minval,maxval = cls.validate_range(_kwargs, 1, 65536)
-                if _kwargs.get('cycle', False) and value > maxval :
-                    value = int(minval)
+            value = cls.cycle_value(_kwargs, value +1, 1, 65536)
             new_regs = cls.build_registers_from_value(value, True)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
@@ -777,6 +763,18 @@ class ModbusSimulatorContext:
         assert minval > mindef
         assert maxval < maxdef
         return minval,maxval
+
+    @classmethod
+    def cycle_value(cls, _kwargs, val, minval, maxval):
+        """Sets the val to _kwargs.min if it exceeds _kwargs.maxval and _kwargs.cycle == true.
+        Calls validate_range() to get the mkin/max values,
+
+        :meta private:
+        """
+        minval,maxval = cls.validate_range(_kwargs, minval, maxval)
+        if _kwargs and _kwargs.get('cycle', False) and val > maxval :
+            val = minval
+        return val
 
     @classmethod
     def build_registers_from_value(cls, value, is_int):

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from abc import abstractmethod
+from contextlib import suppress
 
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
@@ -44,7 +45,8 @@ class BaseTransport:
         # properties, can be read, but may not be mingled with
         self.reconnect_delay_current = self.reconnect_delay
         self.transport: asyncio.BaseTransport = None
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+        with suppress(RuntimeError):
+            self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self.reconnect_timer: asyncio.TimerHandle = None
         self.recv_buffer: bytes = b""
 

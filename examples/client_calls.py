@@ -289,11 +289,14 @@ def run_sync_calls(client):
     template_call(client)
 
 
+async def helper():
+    """Combine the setup and run"""
+    testclient = setup_async_client(description="Run asynchronous client.")
+    await run_async_client(testclient, modbus_calls=run_async_calls)
+
+
 if __name__ == "__main__":
-    testclient = setup_async_client(
-        description="Run modbus calls in asynchronous client."
-    )
-    asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))
+    asyncio.run(helper())
     testclient = setup_sync_client(
         description="Run modbus calls in synchronous client."
     )

@@ -121,6 +121,7 @@ async def run_async_client(client, modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client starting")
     await client.connect()
+    print("jan " + str(client.connected))
     assert client.connected
     if modbus_calls:
         await modbus_calls(client)
@@ -128,6 +129,11 @@ async def run_async_client(client, modbus_calls=None):
     _logger.info("### End of Program")
 
 
-if __name__ == "__main__":
+async def helper():
+    """Combine the setup and run"""
     testclient = setup_async_client(description="Run asynchronous client.")
-    asyncio.run(run_async_client(testclient), debug=True)
+    await run_async_client(testclient)
+
+
+if __name__ == "__main__":
+    asyncio.run(helper(), debug=True)

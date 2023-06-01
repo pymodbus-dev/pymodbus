@@ -177,11 +177,11 @@ async def _handle_holding_registers(client):
         "read_address": 1,
         "read_count": 8,
         "write_address": 1,
-        "write_registers": [256, 128, 100, 50, 25, 10, 5, 1],
+        "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     _check_call(await client.readwrite_registers(slave=SLAVE, **arguments))
     rr = _check_call(await client.read_holding_registers(1, 8, slave=SLAVE))
-    assert rr.registers == arguments["write_registers"]
+    assert rr.registers == arguments["values"]
 
 
 async def _handle_input_registers(client):

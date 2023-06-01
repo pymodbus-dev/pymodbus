@@ -751,7 +751,7 @@ class ModbusSimulatorContext:
 
     @classmethod
     def validate_range(cls, _range, mindef, maxdef):
-        """Validates "min" and "max" values in ?range dict, if exist, against mindef/maxdef values.
+        """Validate "min" and "max" values in _range dict, if exist, against mindef/maxdef values.
 
         :meta private:
         """
@@ -766,8 +766,9 @@ class ModbusSimulatorContext:
 
     @classmethod
     def cycle_value(cls, _kwargs, val, minval, maxval):
-        """Sets the val to _kwargs.min if it exceeds _kwargs.maxval and _kwargs.cycle == true.
-        Calls validate_range() to get the mkin/max values,
+        """Set the val to _kwargs.min if it exceeds _kwargs.maxval and _kwargs.cycle == true.
+
+        Calls validate_range() to get the min/max values,
 
         :meta private:
         """

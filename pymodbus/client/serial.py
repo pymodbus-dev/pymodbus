@@ -6,7 +6,6 @@ from functools import partial
 from typing import Any, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -60,18 +59,15 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
+        asyncio.Protocol.__init__(self)
+        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate
         self.params.bytesize = bytesize
         self.params.parity = parity
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
-
-    def _create_protocol(self):
-        """Create a protocol instance."""
-        return self
+        self.setup_serial(False, port, baudrate, bytesize, parity, stopbits)
 
     @property
     def connected(self):
@@ -80,29 +76,13 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
     async def connect(self):
         """Connect Async client."""
-        # get current loop, if there are no loop a RuntimeError will be raised
-        Log.debug("Starting serial connection")
-        try:
-            await asyncio.wait_for(
-                create_serial_connection(
-                    self.loop,
-                    self._create_protocol,
-                    self.params.port,
-                    baudrate=self.params.baudrate,
-                    bytesize=self.params.bytesize,
-                    stopbits=self.params.stopbits,
-                    parity=self.params.parity,
-                    timeout=self.params.timeout,
-                    **self.params.kwargs,
-                ),
-                timeout=self.params.timeout,
-            )
-            Log.info("Connected to {}", self.params.port)
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            self.close(reconnect=True)
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
         self.reset_delay()
-        return self.connected
+
+        # force reconnect if required:
+        Log.debug("Connecting to {}.", self.params.host)
+        return await self.transport_connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):
@@ -158,6 +138,7 @@ class ModbusSerialClient(ModbusBaseClient):
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
         self.socket = None
+        self.use_sync = True
 
         self.last_frame_end = None
 
@@ -173,13 +154,12 @@ class ModbusSerialClient(ModbusBaseClient):
             else 0.05
         )
 
-        if isinstance(self.framer, ModbusRtuFramer):
-            if self.params.baudrate > 19200:
-                self.silent_interval = 1.75 / 1000  # ms
-            else:
-                self.inter_char_timeout = 1.5 * self._t0
-                self.silent_interval = 3.5 * self._t0
-            self.silent_interval = round(self.silent_interval, 6)
+        if self.params.baudrate > 19200:
+            self.silent_interval = 1.75 / 1000  # ms
+        else:
+            self.inter_char_timeout = 1.5 * self._t0
+            self.silent_interval = 3.5 * self._t0
+        self.silent_interval = round(self.silent_interval, 6)
 
     @property
     def connected(self):

@@ -7,7 +7,6 @@ import traceback
 from contextlib import suppress
 from typing import Union
 
-from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -21,6 +20,7 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
+from pymodbus.transport.serial_asyncio import create_serial_connection
 
 
 with suppress(ImportError):

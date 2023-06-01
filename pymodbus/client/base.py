@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
-from pymodbus.exceptions import ConnectionException, NotImplementedException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.factory import ClientDecoder
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
@@ -95,8 +95,16 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
     ) -> None:
         """Initialize a client instance."""
         BaseTransport.__init__(
-            self, "comm", framer, reconnect_delay, reconnect_delay_max, timeout, timeout
+            self,
+            "comm",
+            (reconnect_delay * 1000, reconnect_delay_max * 1000),
+            timeout * 1000,
+            framer,
+            lambda: None,
+            self.cb_base_connection_lost,
+            self.cb_base_handle_data,
         )
+        self.framer = framer
         self.params = self._params()
         self.params.framer = framer
         self.params.timeout = float(timeout)
@@ -122,12 +130,11 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         )
         self.reconnect_delay = self.params.reconnect_delay
         self.reconnect_delay_current = self.params.reconnect_delay
-        self.use_protocol = False
+        self.use_sync = False
         self.use_udp = False
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
-        self._reconnect_task: asyncio.Task = None
 
         # Initialize  mixin
         ModbusClientMixin.__init__(self)
@@ -146,10 +153,6 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         """
         self.framer.decoder.register(custom_response_class)
 
-    def is_socket_open(self) -> bool:
-        """Return whether socket/serial is open or not (call **sync**)."""
-        raise NotImplementedException
-
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
 
@@ -167,13 +170,13 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         :returns: The result of the request execution
         :raises ConnectionException: Check exception text.
         """
-        if self.use_protocol:
-            if not self.transport:
-                raise ConnectionException(f"Not connected[{str(self)}]")
-            return self.async_execute(request)
-        if not self.connect():
-            raise ConnectionException(f"Failed to connect[{str(self)}]")
-        return self.transaction.execute(request)
+        if self.use_sync:
+            if not self.connect():
+                raise ConnectionException(f"Failed to connect[{str(self)}]")
+            return self.transaction.execute(request)
+        if not self.transport:
+            raise ConnectionException(f"Not connected[{str(self)}]")
+        return self.async_execute(request)
 
     # ----------------------------------------------------------------------- #
     # Merged client methods
@@ -198,24 +201,16 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
                 raise
         return resp
 
-    def data_received(self, data):
-        """Call when some data is received.
-
-        data is a non-empty bytes object containing the incoming data.
-        """
-        Log.debug("recv: {}", data, ":hex")
-        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
-
-    def cb_handle_data(self, _data: bytes) -> int:
+    def cb_base_handle_data(self, data: bytes) -> int:
         """Handle received data
 
         returns number of bytes consumed
         """
+        Log.debug("recv: {}", data, ":hex")
+        self.framer.processIncomingPacket(data, self._handle_response, slave=0)
+        return len(data)
 
-    def cb_connection_made(self) -> None:
-        """Handle new connection"""
-
-    def cb_connection_lost(self, _reason: Exception) -> None:
+    def cb_base_connection_lost(self, _reason: Exception) -> None:
         """Handle lost connection"""
         for tid in list(self.transaction):
             self.raise_future(

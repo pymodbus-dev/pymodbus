@@ -217,7 +217,7 @@ class BaseTransport:
         else:
             self.call_connect_listen = lambda: self.loop.create_datagram_endpoint(
                 lambda: self,
-                (self.comm_params.host, self.comm_params.port),
+                remote_addr=(self.comm_params.host, self.comm_params.port),
             )
         self.use_udp = True
 

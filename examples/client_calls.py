@@ -177,11 +177,11 @@ async def _handle_holding_registers(client):
         "read_address": 1,
         "read_count": 8,
         "write_address": 1,
-        "write_registers": [256, 128, 100, 50, 25, 10, 5, 1],
+        "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     _check_call(await client.readwrite_registers(slave=SLAVE, **arguments))
     rr = _check_call(await client.read_holding_registers(1, 8, slave=SLAVE))
-    assert rr.registers == arguments["write_registers"]
+    assert rr.registers == arguments["values"]
 
 
 async def _handle_input_registers(client):
@@ -289,11 +289,14 @@ def run_sync_calls(client):
     template_call(client)
 
 
+async def helper():
+    """Combine the setup and run"""
+    testclient = setup_async_client(description="Run asynchronous client.")
+    await run_async_client(testclient, modbus_calls=run_async_calls)
+
+
 if __name__ == "__main__":
-    testclient = setup_async_client(
-        description="Run modbus calls in asynchronous client."
-    )
-    asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))
+    asyncio.run(helper())
     testclient = setup_sync_client(
         description="Run modbus calls in synchronous client."
     )

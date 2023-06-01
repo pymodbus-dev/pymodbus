@@ -1,6 +1,6 @@
 target-version="py38"
 exclude = [
-    "pymodbus/client/serial_asyncio",
+    "pymodbus/transport/serial_asyncio",
     "venv",
     ".venv",
     ".git",

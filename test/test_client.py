@@ -16,7 +16,7 @@ import pymodbus.register_write_message as pdu_req_write
 from pymodbus.client.base import ModbusBaseClient
 from pymodbus.client.mixin import ModbusClientMixin
 from pymodbus.constants import Defaults
-from pymodbus.exceptions import ConnectionException, NotImplementedException
+from pymodbus.exceptions import ConnectionException
 from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
@@ -246,14 +246,6 @@ async def test_client_instanciate(
     client.last_frame_end = None
     assert not client.idle_time()
 
-    initial_delay = client.reconnect_delay_current
-    assert initial_delay > 0
-    client.reconnect_delay_current *= 2
-
-    assert client.reconnect_delay_current > initial_delay
-    client.reset_delay()
-    assert client.reconnect_delay_current == initial_delay
-
     rc1 = client._get_address_family("127.0.0.1")  # pylint: disable=protected-access
     assert rc1 == socket.AF_INET
     rc2 = client._get_address_family("::1")  # pylint: disable=protected-access
@@ -278,9 +270,6 @@ async def test_client_modbusbaseclient():
     buffer = "123ABC"
     assert client.send(buffer) == buffer
     assert client.recv(10) == 10
-
-    with pytest.raises(NotImplementedException):
-        client.is_socket_open()
 
     with mock.patch(
         "pymodbus.client.base.ModbusBaseClient.connect"

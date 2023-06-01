@@ -49,11 +49,12 @@ class AsyncModbusUdpClient(
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
-        self.params.host = host
+        asyncio.DatagramProtocol.__init__(self)
+        asyncio.Protocol.__init__(self)
+        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.port = port
         self.params.source_address = source_address
+        self.setup_udp(False, host, port)
 
     @property
     def connected(self):
@@ -65,36 +66,13 @@ class AsyncModbusUdpClient(
 
         :meta private:
         """
-        # get current loop, if there are no loop a RuntimeError will be raised
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-
-        # getaddrinfo returns a list of tuples
-        # - [(family, type, proto, canonname, sockaddr),]
-        # We want sockaddr which is a (ip, port) tuple
-        # udp needs ip addresses, not hostnames
-        # TBD: addrinfo = await getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
-        # TBD: self.params.host, self.params.port = addrinfo[-1][-1]
-        return await self._connect()
-
-    def _create_protocol(self):
-        """Create initialized protocol instance with function."""
-        self.use_udp = True
-        return self
-
-    async def _connect(self):
-        """Connect."""
-        Log.debug("Connecting.")
-        try:
-            endpoint = await self.loop.create_datagram_endpoint(
-                self._create_protocol,
-                remote_addr=(self.params.host, self.params.port),
-            )
-            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
-            return endpoint
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            self.close(reconnect=True)
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
         self.reset_delay()
+
+        # force reconnect if required:
+        Log.debug("Connecting to {}:{}.", self.comm_params.host, self.comm_params.port)
+        return await self.transport_connect()
 
 
 class ModbusUdpClient(ModbusBaseClient):
@@ -138,6 +116,7 @@ class ModbusUdpClient(ModbusBaseClient):
         self.params.source_address = source_address
 
         self.socket = None
+        self.use_sync = True
 
     def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.

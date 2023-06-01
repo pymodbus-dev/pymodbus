@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Implementation of asyncio support.
 #
@@ -16,12 +15,13 @@ Windows event loops can not wait for serial ports with the current
 implementation. It should be possible to get that working though.
 """
 import asyncio
+import contextlib
 import os
 
-try:
+
+with contextlib.suppress(ImportError):
     import serial
-except ImportError:
-    pass
+
 
 try:
     import termios
@@ -41,7 +41,7 @@ class SerialTransport(asyncio.Transport):
     indeed a serial port.
 
 
-    You generally won’t instantiate a transport yourself; instead, you
+    You generally won`t instantiate a transport yourself; instead, you
     will call `create_serial_connection` which will create the
     transport and try to initiate the underlying communication channel,
     calling you back when it succeeds.
@@ -129,7 +129,8 @@ class SerialTransport(asyncio.Transport):
 
         This method does not block; it buffers the data and arranges
         for it to be sent out asynchronously.  Writes made after the
-        transport has been closed will be ignored."""
+        transport has been closed will be ignored.
+        """
         if self._closing:
             return
 
@@ -151,7 +152,7 @@ class SerialTransport(asyncio.Transport):
     def pause_reading(self):
         """Pause the receiving end of the transport.
 
-        No data will be passed to the protocol’s data_received() method
+        No data will be passed to the protocol`s data_received() method
         until resume_reading() is called.
         """
         self._remove_reader()
@@ -167,7 +168,7 @@ class SerialTransport(asyncio.Transport):
     def set_write_buffer_limits(self, high=None, low=None):
         """Set the high- and low-water limits for write flow control.
 
-        These two values control when the protocol’s
+        These two values control when the protocol`s
         pause_writing()and resume_writing() methods are called. If
         specified, the low-water limit must be less than or equal to
         the high-water limit. Neither high nor low can be negative.
@@ -197,7 +198,7 @@ class SerialTransport(asyncio.Transport):
         self._abort(None)
 
     def flush(self):
-        """clears output buffer and stops any more data being written"""
+        """Clears output buffer and stops any more data being written"""
         self._remove_writer()
         self._write_buffer.clear()
         self._maybe_resume_protocol()
@@ -361,7 +362,7 @@ class SerialTransport(asyncio.Transport):
         if low is None:
             low = high // 4
         if not high >= low >= 0:
-            raise ValueError("high (%r) must be >= low (%r) must be >= 0" % (high, low))
+            raise ValueError(f"high ({high!r}) must be >= low ({low!r}) must be >= 0")
         self._high_water = high
         self._low_water = low
 
@@ -423,19 +424,15 @@ class SerialTransport(asyncio.Transport):
         assert not self._has_writer
         assert not self._has_reader
         if self._serial:
-            try:
+            with contextlib.suppress(Exception):
                 self._serial.flush()
-            except serial.SerialException if os.name == "nt" else termios.error:
-                # ignore serial errors which may happen if the serial device was
-                # hot-unplugged.
-                pass
+
             self._serial.close()
             self._serial = None
         if self._protocol:
-            try:
+            with contextlib.suppress(Exception):
                 self._protocol.connection_lost(exc)
-            except:
-                pass
+
             self._write_buffer.clear()
         self._write_buffer.clear()
         self._loop = None

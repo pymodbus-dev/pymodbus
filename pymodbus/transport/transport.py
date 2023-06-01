@@ -7,7 +7,6 @@ import ssl
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Coroutine
-from contextlib import suppress
 
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
@@ -209,7 +208,7 @@ class BaseTransport:
             async def call_async_listen(self):
                 """Remove protocol return value."""
                 transport, _protocol = await self.loop.create_datagram_endpoint(
-                    lambda: self,
+                    self.handle_listen,
                     local_addr=(self.comm_params.host, self.comm_params.port),
                 )
                 return transport
@@ -217,7 +216,7 @@ class BaseTransport:
             self.call_connect_listen = lambda: call_async_listen(self)
         else:
             self.call_connect_listen = lambda: self.loop.create_datagram_endpoint(
-                self.handle_listen,
+                lambda: self,
                 (self.comm_params.host, self.comm_params.port),
             )
         self.use_udp = True

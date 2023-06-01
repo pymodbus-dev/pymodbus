@@ -131,7 +131,21 @@ async def run_async_client(client, modbus_calls=None):
 
 async def helper():
     """Combine the setup and run"""
-    testclient = setup_async_client(description="Run asynchronous client.")
+    args = [
+        "--comm",
+        "udp",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5020",
+        "--framer",
+        "socket",
+        "--log",
+        "debug",
+    ]
+    testclient = setup_async_client(
+        description="Run asynchronous client.", cmdline=args
+    )
     await run_async_client(testclient)
 
 

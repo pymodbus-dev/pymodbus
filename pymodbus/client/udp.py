@@ -71,7 +71,7 @@ class AsyncModbusUdpClient(
         self.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        Log.debug("Connecting to {}:{}.", self.comm_params.host, self.comm_params.port)
         return await self.transport_connect()
 
 

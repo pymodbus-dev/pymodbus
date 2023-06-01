@@ -25,7 +25,7 @@ class TestTransportBase:
             self.close = mock.MagicMock()
 
     @classmethod
-    def setup_BaseTransport(self):
+    async def setup_BaseTransport(self):
         """Create base object."""
         base = BaseTransport(
             self.base_comm_name,
@@ -40,9 +40,9 @@ class TestTransportBase:
         base.cb_handle_data = mock.MagicMock()
         return base
 
-    def test_properties(self):
+    async def test_properties(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         assert self.base_comm_name == base.comm_name
         assert self.base_framer == base.framer
         assert self.base_reconnect_delay == base.reconnect_delay
@@ -53,16 +53,16 @@ class TestTransportBase:
 
     async def test_magic(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         base.close = mock.MagicMock()
         async with base:
             pass
         base.close.assert_called_once()
         assert str(base) == f"BaseTransport({self.base_comm_name})"
 
-    def test_connection_made(self):
+    async def test_connection_made(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         transport = self.dummy_transport()
         base.connection_made(transport)
         assert base.transport == transport
@@ -73,9 +73,9 @@ class TestTransportBase:
         base.cb_handle_data.assert_not_called()
         base.close()
 
-    def test_connection_lost(self):
+    async def test_connection_lost(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         transport = self.dummy_transport()
         base.connection_lost(transport)
         assert not base.transport
@@ -86,9 +86,9 @@ class TestTransportBase:
         base.cb_handle_data.assert_not_called()
         base.close()
 
-    def test_close_simple(self):
+    async def test_close_simple(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         transport = self.dummy_transport()
         base.connection_made(transport)
         base.cb_connection_made.reset_mock()
@@ -105,9 +105,9 @@ class TestTransportBase:
         assert not base.recv_buffer
         assert not base.reconnect_timer
 
-    def test_close_reconnect(self):
+    async def test_close_reconnect(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         transport = self.dummy_transport()
         base.connection_made(transport)
         base.reconnect_timer = None
@@ -116,16 +116,16 @@ class TestTransportBase:
         base.close()
         assert not base.reconnect_timer
 
-    def test_reset_delay(self):
+    async def test_reset_delay(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         base.reconnect_delay_current = self.base_reconnect_delay + 1
         base.reset_delay()
         assert base.reconnect_delay_current == self.base_reconnect_delay
 
     async def test_connect(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         base.reconnect_delay_current = self.base_reconnect_delay + 1
         base.close(reconnect=True)
         base.complete_connect()
@@ -139,7 +139,7 @@ class TestTransportBase:
 
     async def test_reconnect(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         transport = self.dummy_transport()
         base.connection_made(transport)
         base.connect = mock.MagicMock()
@@ -151,7 +151,7 @@ class TestTransportBase:
 
     async def test_datagram(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         base.data_received = mock.MagicMock()
         base.datagram_received(b"abc", "127.0.0.1")
         base.data_received.assert_called_once()
@@ -159,7 +159,7 @@ class TestTransportBase:
 
     async def test_receive(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         base.cb_handle_data = mock.MagicMock(return_value=2)
         base.data_received(b"123456")
         base.cb_handle_data.assert_called_once()
@@ -170,6 +170,6 @@ class TestTransportBase:
 
     async def test_send(self):
         """Test properties."""
-        base = self.setup_BaseTransport()
+        base = await self.setup_BaseTransport()
         await base.send(b"abc")
         base.close()

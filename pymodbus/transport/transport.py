@@ -93,7 +93,7 @@ class BaseTransport:
         )
 
         self.reconnect_delay_current: float = 0
-        self.transport: asyncio.BaseTransport | asyncio.Server = None
+        self.transport: asyncio.BaseTransport | asyncio.Server = None  # type: ignore[name-defined]
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()

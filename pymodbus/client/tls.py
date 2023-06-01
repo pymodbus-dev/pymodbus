@@ -12,7 +12,7 @@ from pymodbus.logging import Log
 
 def sslctx_provider(
     sslctx=None, certfile=None, keyfile=None, password=None
-) -> ssl.SSLContext:  # pylint: disable=missing-type-doc
+):  # pylint: disable=missing-type-doc
     """Provide the SSLContext for ModbusTlsClient.
 
     If the user defined SSLContext is not passed in, sslctx_provider will

@@ -637,14 +637,17 @@ class ModbusSimulatorContext:
         :meta private:
         """
         if cell.type in (CellType.BITS, CellType.UINT16):
-            registers[inx].value = random.randint(1, 65536)
+            minval,maxval = cls.validate_range(_kwargs, 1, 65536)
+            registers[inx].value = random.randint(int(minval), int(maxval))
         elif cell.type == CellType.FLOAT32:
-            regs = cls.build_registers_from_value(random.uniform(1.0, 65000.0), False)
+            minval,maxval = cls.validate_range(_kwargs, 1.0, 65000.0)
+            regs = cls.build_registers_from_value(random.uniform(float(minval), float(maxval)), False)
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
         elif cell.type == CellType.UINT32:
+            minval,maxval = cls.validate_range(_kwargs, 0.0, 65000.0)
             regs = cls.build_registers_from_value(
-                int(random.uniform(0.0, 65000.0)), True
+                int(random.uniform(float(minval), float(maxval))), True
             )
             registers[inx].value = regs[0]
             registers[inx + 1].value = regs[1]
@@ -655,14 +658,24 @@ class ModbusSimulatorContext:
 
         :meta private:
         """
+        print('increment', _kwargs, cls)
+
         reg = registers[inx]
         reg2 = registers[inx + 1]
         if cell.type in (CellType.BITS, CellType.UINT16):
             reg.value += 1
+            if _kwargs :
+                minval,maxval = cls.validate_range(_kwargs, 0, 65536)
+                if _kwargs.get('cycle', False) and reg.value > maxval :
+                    reg.value = int(minval)
         elif cell.type == CellType.FLOAT32:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, False)
             value += 1.0
+            if _kwargs :
+                minval,maxval = cls.validate_range(_kwargs, 0.0, 65000.0)
+                if _kwargs.get('cycle', False) and value > maxval :
+                    value = float(minval)
             new_regs = cls.build_registers_from_value(value, False)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
@@ -670,6 +683,10 @@ class ModbusSimulatorContext:
             tmp_reg = [reg.value, reg2.value]
             value = cls.build_value_from_registers(tmp_reg, True)
             value += 1
+            if _kwargs :
+                minval,maxval = cls.validate_range(_kwargs, 1, 65536)
+                if _kwargs.get('cycle', False) and value > maxval :
+                    value = int(minval)
             new_regs = cls.build_registers_from_value(value, True)
             reg.value = new_regs[0]
             reg2.value = new_regs[1]
@@ -745,6 +762,17 @@ class ModbusSimulatorContext:
                 continue
             return False
         return True
+
+    @classmethod
+    def validate_range(cls, _range, mindef, maxdef):
+        if not _range :
+            return mindef,maxdef
+
+        minval  = _range.get('min', mindef)
+        maxval  = _range.get('max', maxdef)
+        assert minval > mindef
+        assert maxval < maxdef
+        return minval,maxval
 
     @classmethod
     def build_registers_from_value(cls, value, is_int):

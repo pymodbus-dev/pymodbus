@@ -12,7 +12,7 @@ from pymodbus.logging import Log
 
 def sslctx_provider(
     sslctx=None, certfile=None, keyfile=None, password=None
-):  # pylint: disable=missing-type-doc
+) -> ssl.SSLContext:  # pylint: disable=missing-type-doc
     """Provide the SSLContext for ModbusTlsClient.
 
     If the user defined SSLContext is not passed in, sslctx_provider will
@@ -73,7 +73,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         host: str,
         port: int = Defaults.TlsPort,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: str = None,
+        sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
@@ -85,7 +85,6 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             self, host, port=port, framer=framer, internal_no_setup=True, **kwargs
         )
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.sslctx = sslctx
         self.params.certfile = certfile
         self.params.keyfile = keyfile
         self.params.password = password

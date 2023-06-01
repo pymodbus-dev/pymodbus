@@ -818,6 +818,7 @@ class ModbusUdpServer:
         self.protocol = None
         self.endpoint = None
         self.on_connection_terminated = None
+        self.stop_serving = self.loop.create_future()
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
         self.factory_parms = {
@@ -841,6 +842,7 @@ class ModbusUdpServer:
                 raise RuntimeError(exc) from exc
             Log.info("Server(UDP) listening.")
             self.serving.set_result(True)
+            await self.stop_serving
         else:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
@@ -854,10 +856,13 @@ class ModbusUdpServer:
         """Close server."""
         if self.endpoint:
             self.endpoint.running = False
+        if not self.stop_serving.done():
+            self.stop_serving.set_result(True)
         if self.endpoint is not None and self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()
         if self.protocol is not None:
             self.protocol.close()
+            # TBD await self.protocol.wait_closed()
             self.protocol = None
 
 

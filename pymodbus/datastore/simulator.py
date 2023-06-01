@@ -765,6 +765,10 @@ class ModbusSimulatorContext:
 
     @classmethod
     def validate_range(cls, _range, mindef, maxdef):
+        """Validates "min" and "max" values in ?range dict, if exist, against mindef/maxdef values.
+
+        :meta private:
+        """
         if not _range :
             return mindef,maxdef
 

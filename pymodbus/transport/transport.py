@@ -10,17 +10,22 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Coroutine
 
-from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
 
 
-class BaseTransport:
-    """Base class for transport types.
+class Transport:
+    """Transport layer.
 
-    BaseTransport contains functions common to all transport types and client/server.
+    Contains pure transport methods needed to connect/listen, send/receive and close connections
+    for unix socket, tcp, tls and serial communications.
 
-    This class is not available in the pymodbus API, and should not be referenced in Applications.
+    Contains high level methods like reconnect.
+
+    This class is not available in the pymodbus API, and should not be referenced in Applications
+    nor in the pymodbus documentation.
+
+    The class is designed to be an object in the message level class.
     """
 
     @dataclass
@@ -33,7 +38,6 @@ class BaseTransport:
         reconnect_delay: float = None
         reconnect_delay_max: float = None
         timeout_connect: float = None
-        framer: ModbusFramer = None
 
         # tcp / tls / udp / serial
         host: str = None
@@ -60,9 +64,9 @@ class BaseTransport:
     def __init__(
         self,
         comm_name: str,
-        reconnect_delay: tuple[int, int],
+        reconnect_delay: int,
+        reconnect_max: int,
         timeout_connect: int,
-        framer: ModbusFramer,
         callback_connected: Callable[[], None],
         callback_disconnected: Callable[[Exception], None],
         callback_data: Callable[[bytes], int],
@@ -70,9 +74,9 @@ class BaseTransport:
         """Initialize a transport instance.
 
         :param comm_name: name of this transport connection
-        :param reconnect_delay: delay and max in milliseconds for first reconnect (0,0 for no reconnect)
+        :param reconnect_delay: delay in milliseconds for first reconnect (0 for no reconnect)
+        :param reconnect_delay: max reconnect delay in milliseconds
         :param timeout_connect: Max. time in milliseconds for connect to complete
-        :param framer: Modbus framer to decode/encode messagees.
         :param callback_connected: Called when connection is established
         :param callback_disconnected: Called when connection is disconnected
         :param callback_data: Called when data is received
@@ -84,19 +88,18 @@ class BaseTransport:
         # properties, can be read, but may not be mingled with
         self.comm_params = self.CommParamsClass(
             comm_name=comm_name,
-            reconnect_delay=reconnect_delay[0] / 1000,
-            reconnect_delay_max=reconnect_delay[1] / 1000,
+            reconnect_delay=reconnect_delay / 1000,
+            reconnect_delay_max=reconnect_max / 1000,
             timeout_connect=timeout_connect / 1000,
-            framer=framer,
         )
 
-        self.reconnect_delay_current: float = 0
+        self.reconnect_delay_current: float = 0.0
         self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.protocol: asyncio.BaseProtocol = None
         self.loop: asyncio.AbstractEventLoop = None
         with suppress(RuntimeError):
             self.loop = asyncio.get_running_loop()
-        self.reconnect_timer: asyncio.Task = None
+        self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
         self.call_connect_listen: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
         self.use_udp = False
@@ -314,7 +317,7 @@ class BaseTransport:
         self.cb_connection_lost(reason)
         if self.transport:
             self.close()
-            self.reconnect_timer = asyncio.create_task(self.reconnect_connect())
+            self.reconnect_task = asyncio.create_task(self.reconnect_connect())
 
     def eof_received(self):
         """Call when eof received (other end closed connection).
@@ -360,9 +363,9 @@ class BaseTransport:
             self.transport.close()
             self.transport = None
         self.protocol = None
-        if not reconnect and self.reconnect_timer:
-            self.reconnect_timer.cancel()
-            self.reconnect_timer = None
+        if not reconnect and self.reconnect_task:
+            self.reconnect_task.cancel()
+            self.reconnect_task = None
         self.recv_buffer = b""
 
     def reset_delay(self) -> None:
@@ -395,7 +398,7 @@ class BaseTransport:
                 )
         except asyncio.CancelledError:
             pass
-        self.reconnect_timer = None
+        self.reconnect_task = None
 
     # ----------------- #
     # The magic methods #

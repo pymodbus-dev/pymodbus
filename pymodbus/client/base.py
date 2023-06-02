@@ -14,11 +14,11 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport import BaseTransport
+from pymodbus.transport.transport import Transport
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, BaseTransport):
+class ModbusBaseClient(ModbusClientMixin, Transport):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -94,12 +94,12 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        BaseTransport.__init__(
+        Transport.__init__(
             self,
             "comm",
-            (reconnect_delay * 1000, reconnect_delay_max * 1000),
+            reconnect_delay * 1000,
+            reconnect_delay_max * 1000,
             timeout * 1000,
-            framer,
             lambda: None,
             self.cb_base_connection_lost,
             self.cb_base_handle_data,

@@ -238,7 +238,7 @@ Example "setup" configuration:
                 "uint16": "register",
                 "uint32": "register",
                 "float32": "register",
-                            "string": null
+                "string": null
             }
     }
 
@@ -289,6 +289,14 @@ The datastore simulator have a number of builtin actions, and allows custom acti
 - **"timestamp"**, uses 6 registers and build a timestamp,
 - **"reset"**, causes a reboot of the simulator,
 - **"uptime"**, sets the number of seconds the server have been running.
+
+The **"random"** and **"increment"** actions may have optioally defined minimum and maximum limitation (any or both).
+In case of **"increment"**, the counter is reset back to minimum value, if maximum value is crossed.
+
+.. code-block::
+
+    {"addr": 9, "value": 7, "action": "random", "kwargs": {"min": 0, "max": 12} },
+    {"addr": 10, "value": 100, "action": "increment", "kwargs": {"min": 50} }
 
 
 Invalid section

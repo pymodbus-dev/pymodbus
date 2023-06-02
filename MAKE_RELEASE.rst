@@ -8,21 +8,21 @@ Making a release.
 ------------------------------------------------------------
 Prepare/make release on dev.
 ------------------------------------------------------------
-* Make pull request "prepare v3.3.x", with the following:
+* Make pull request "prepare v3.4.x", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)
    * Update README.rst "Supported versions"
    * Update CHANGELOG.rst
       * Add commits from last release, but selectively !
-        git log --oneline v3.2.2..HEAD > commit.log
-        git log v3.2.2..HEAD | grep Author > contributors.log
+        git log --oneline v3.3.0..HEAD > commit.log
+        git log v3.3.0..HEAD | grep Author > contributors.log
    * Commit, push and merge.
 * Checkout master locally
    * git merge dev
    * git push
    * wait for CI to complete on all branches
 * On github "prepare release"
-   * Create tag e.g. v3.0.1dev0
-   * Title "pymodbus v3.0.1dev0"
+   * Create tag e.g. v3.4.0dev0
+   * Title "pymodbus v3.4.0dev0"
    * do NOT generate release notes, but copy from CHANGELOG.rst
    * make release (remember to mark pre-release if so)
 * on local repo
@@ -40,4 +40,4 @@ Prepare release on dev for new commits.
 ------------------------------------------------------------
 * git branch -D master
 * Make pull request "prepare dev", with the following:
-   * Update pymodbus/version.py with version number (last line)
+   * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)

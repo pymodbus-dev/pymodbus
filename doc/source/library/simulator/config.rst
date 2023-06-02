@@ -258,8 +258,8 @@ Example "setup" configuration:
         assuming all sizes are set to 10, the addresses for configuration are as follows:
             - coils have addresses 0-9,
             - discrete_inputs have addresses 10-19,
-            - holding_registers have addresses 20-29,
-            - input_registers have addresses 30-39
+            - input_registers have addresses 20-29,
+            - holding_registers have addresses 30-39
 
             when configuring the the datatypes (when calling each block start with 0).
 

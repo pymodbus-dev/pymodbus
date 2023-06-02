@@ -6,18 +6,11 @@ import ssl
 import sys
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, NewType
+from typing import Any, Callable, Coroutine
 
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
-
-
-# Needed due to python 3.8 where Server is not defined
-try:
-    from asyncio import Server as asyncio_server
-except ImportError:
-    NewType("asyncio_server", Any)
 
 
 class BaseTransport:
@@ -96,7 +89,7 @@ class BaseTransport:
         )
 
         self.reconnect_delay_current: float = 0
-        self.transport: asyncio.BaseTransport | asyncio_server = None
+        self.transport: asyncio.BaseTransport | asyncio.Server = None  # type: ignore[attr-defined, unused-ignore]
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()

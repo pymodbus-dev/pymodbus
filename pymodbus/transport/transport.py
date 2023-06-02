@@ -13,6 +13,12 @@ from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
 
 
+# Needed due to python 3.8 where Server is not defined
+try:
+    from asyncio import Server as asyncio_server
+except ImportError:
+    asyncio_server: Any = None  # type: ignore[no-redef]
+
 with suppress(ImportError):
     pass
 
@@ -93,7 +99,7 @@ class BaseTransport:
         )
 
         self.reconnect_delay_current: float = 0
-        self.transport: asyncio.BaseTransport | asyncio.Server = None  # type: ignore[name-defined]
+        self.transport: asyncio.BaseTransport | asyncio_server = None
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
@@ -366,7 +372,7 @@ class BaseTransport:
         Log.debug(
             "Waiting {} {} ms reconnecting.",
             self.comm_params.comm_name,
-            self.reconnect_delay_current,
+            self.reconnect_delay_current * 1000,
         )
         self.reconnect_timer = self.loop.call_later(
             self.reconnect_delay_current,

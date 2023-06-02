@@ -144,7 +144,7 @@ def helper_config(request, def_type):
 @pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_no_server(comm):
     """Test normal client/server handling."""
-    run_server, server_args, run_client, client_args = helper_config(comm, "async")
+    _run_server, _server_args, run_client, client_args = helper_config(comm, "async")
     client = run_client(**client_args)
     try:
         await client.connect()
@@ -215,11 +215,11 @@ async def test_async_task_reuse(comm):
 
 @pytest.mark.xdist_group(name="server_serialize")
 @pytest.mark.parametrize("comm", TEST_TYPES)
-async def xtest_async_task_server_stop(comm):
+async def test_async_task_server_stop(comm):
     """Test normal client/server handling."""
     run_server, server_args, run_client, client_args = helper_config(comm, "async")
     task = asyncio.create_task(run_server(**server_args))
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
 
     on_reconnect_callback = mock.Mock()
 
@@ -243,12 +243,10 @@ async def xtest_async_task_server_stop(comm):
     await asyncio.sleep(1)
 
     timer_allowed = 100
-    while not client.transport:
+    while not client.transport and timer_allowed:
         await asyncio.sleep(0.1)
         timer_allowed -= 1
-        if not timer_allowed:
-            pytest.fail("client do not reconnect")
-    assert client.transport
+    assert client.transport, "client do not reconnect"
     # TBD on_reconnect_callback.assert_called()
 
     rr = await client.read_coils(1, 1, slave=0x01)

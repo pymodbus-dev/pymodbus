@@ -760,7 +760,7 @@ class ModbusSimulatorContext:
         return True
 
     @classmethod
-    def limit_value(cls, mindef, maxdef, min = None, max = None, **kws):
+    def limit_value(cls, mindef, maxdef, min = None, max = None, **kws): # pylint: disable=W0622,W0613
         """Validate "min" and "max" values in _range dict, if exist, against mindef/maxdef values.
 
         :meta private:

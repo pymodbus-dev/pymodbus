@@ -1,3 +1,64 @@
+version 3.3.0
+----------------------------------------------------------
+* Stabilize windows tests. (#1567)
+* Bump mypy 1.3.0 (#1568)
+* Transport integrated in async clients. (#1541)
+* Client async corrections (due to 3.1.2) (#1565)
+* Server_async[udp], solve 3.1.1 problem. (#1564)
+* Remove ModbusTcpDiagClient. (#1560)
+* Remove old method from Python2/3 transition (#1559)
+* Switch to ruff's version of bandit (#1557)
+* Allow reading/writing address 0 in the simulator (#1552)
+* Remove references to "defer_start". (#1548)
+* Client more robust against faulty response. (#1547)
+* Fix missing package_data directives for simulator web (#1544)
+* Fix installation instructions (#1543)
+* Solve pytest timeout problem. (#1540)
+* DiagnosticStatus encode missing tuple check. (#1533)
+* test SparseDataStore. (#1532)
+* BinaryPayloadBuilder.to_string to BinaryPayloadBuilder.encode (#1526)
+* Adding flake8-pytest-style` to ruff (#1520)
+* Simplify version management. (#1522)
+* pylint and pre-commit autoupdate (#1519)
+* Add type hint (#1512)
+* Add action to lock issues/PR. (#1508)
+* New common transport layer. (#1492)
+* Solve serial close raise problem.
+* Remove old config values (#1503)
+* Document pymodbus.simulator. (#1502)
+* Refactor REPL server to reduce complexity (#1499)
+* Don't catch KeyboardInterrupt twice for REPL server (#1498)
+* Refactor REPL client to reduce complexity (#1489)
+* pymodbus.server: listen on ID 1 by default (#1496)
+* Clean framer/__init__.py (#1494)
+* Duplicate transactions in UDP. (#1486)
+* clean ProcessIncommingPacket. (#1491)
+* Enable pyupgrade (U) rules in ruff (#1484)
+* clean_workflow.yaml solve parameter problem.
+* Correct wrong import in test. (#1483)
+* Implement pyflakes-simplify (#1480)
+* Test case for UDP duplicate msg issue (#1470)
+* Test of write_coil. (#1479)
+* Test reuse of client object. (#1475)
+* Comment about addressing when shared=false (#1474)
+* Remove old aliases to OSError (#1473)
+* pymodbus.simulator fixes (#1463)
+* Fix wrong error message with pymodbus console (#1456)
+* update modbusrtuframer (#1435)
+* Server multidrop test.: (#1451)
+* mypy problem ModbusResponse.
+
+Thanks to:
+  Alex
+  Christian Krause
+  corollaries
+  dhoomakethu
+  Ghostkeeper
+  jan iversen
+  James Braza
+  Kenny Johansson
+  Pavel Kostromitinov
+
 version 3.2.2 (picked from dev, only bugfixes)
 ----------------------------------------------------------
 * Add forgotten await

@@ -1,5 +1,4 @@
 """Test register read messages."""
-import unittest
 from test.conftest import FakeList, MockContext
 
 from pymodbus.pdu import ModbusExceptions
@@ -22,7 +21,7 @@ TEST_MESSAGE = b"\x06\x00\x0a\x00\x0b\x00\x0c"
 # ---------------------------------------------------------------------------#
 
 
-class ReadRegisterMessagesTest(unittest.TestCase):
+class TestReadRegisterMessages:
     """Register Message Test Fixture.
 
     This fixture tests the functionality of all the
@@ -32,7 +31,12 @@ class ReadRegisterMessagesTest(unittest.TestCase):
     * Read Holding Registers
     """
 
-    def setUp(self):
+    value = None
+    values = None
+    request_read = None
+    response_read = None
+
+    def setup_method(self):
         """Initialize the test environment and builds request/result encoding pairs."""
         arguments = {
             "read_address": 1,
@@ -64,26 +68,21 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             ReadWriteMultipleRegistersResponse(self.values): TEST_MESSAGE,
         }
 
-    def tearDown(self):
-        """Clean up the test environment."""
-        del self.request_read
-        del self.response_read
-
     def test_read_register_response_base(self):
         """Test read register response."""
         response = ReadRegistersResponseBase(list(range(10)))
         for index in range(10):
-            self.assertEqual(response.getRegister(index), index)
+            assert response.getRegister(index) == index
 
     def test_register_read_requests(self):
         """Test register read requests."""
         for request, response in iter(self.request_read.items()):
-            self.assertEqual(request.encode(), response)
+            assert request.encode() == response
 
     def test_register_read_responses(self):
         """Test register read response."""
         for request, response in iter(self.response_read.items()):
-            self.assertEqual(request.encode(), response)
+            assert request.encode() == response
 
     def test_register_read_response_decode(self):
         """Test register read response."""
@@ -100,7 +99,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         for packet, register in zip(values, registers):
             request, response = packet
             request.decode(response)
-            self.assertEqual(request.registers, register)
+            assert request.registers == register
 
     def test_register_read_requests_count_errors(self):
         """This tests that the register request messages.
@@ -120,7 +119,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(None)
-            self.assertEqual(ModbusExceptions.IllegalValue, result.exception_code)
+            assert ModbusExceptions.IllegalValue == result.exception_code
 
     def test_register_read_requests_validate_errors(self):
         """This tests that the register request messages.
@@ -136,7 +135,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         ]
         for request in requests:
             result = request.execute(context)
-            self.assertEqual(ModbusExceptions.IllegalAddress, result.exception_code)
+            assert ModbusExceptions.IllegalAddress == result.exception_code
 
     def test_register_read_requests_execute(self):
         """This tests that the register request messages.
@@ -150,7 +149,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
         ]
         for request in requests:
             response = request.execute(context)
-            self.assertEqual(request.function_code, response.function_code)
+            assert request.function_code == response.function_code
 
     def test_read_write_multiple_registers_request(self):
         """Test read/write multiple registers."""
@@ -159,7 +158,7 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             read_address=1, read_count=10, write_address=1, write_registers=[0x00]
         )
         response = request.execute(context)
-        self.assertEqual(request.function_code, response.function_code)
+        assert request.function_code == response.function_code
 
     def test_read_write_multiple_registers_validate(self):
         """Test read/write multiple registers."""
@@ -169,15 +168,15 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             read_address=1, read_count=10, write_address=2, write_registers=[0x00]
         )
         response = request.execute(context)
-        self.assertEqual(response.exception_code, ModbusExceptions.IllegalAddress)
+        assert response.exception_code == ModbusExceptions.IllegalAddress
 
         context.validate = lambda f, a, c: a == 2
         response = request.execute(context)
-        self.assertEqual(response.exception_code, ModbusExceptions.IllegalAddress)
+        assert response.exception_code == ModbusExceptions.IllegalAddress
 
         request.write_byte_count = 0x100
         response = request.execute(context)
-        self.assertEqual(response.exception_code, ModbusExceptions.IllegalValue)
+        assert response.exception_code == ModbusExceptions.IllegalValue
 
     def test_read_write_multiple_registers_request_decode(self):
         """Test read/write multiple registers."""
@@ -187,16 +186,16 @@ class ReadRegisterMessagesTest(unittest.TestCase):
             if getattr(k, "function_code", 0) == 23
         )
         request.decode(response)
-        self.assertEqual(request.read_address, 0x01)
-        self.assertEqual(request.write_address, 0x01)
-        self.assertEqual(request.read_count, 0x05)
-        self.assertEqual(request.write_count, 0x05)
-        self.assertEqual(request.write_byte_count, 0x0A)
-        self.assertEqual(request.write_registers, [0x00] * 5)
+        assert request.read_address == 0x01
+        assert request.write_address == 0x01
+        assert request.read_count == 0x05
+        assert request.write_count == 0x05
+        assert request.write_byte_count == 0x0A
+        assert request.write_registers == [0x00] * 5
 
     def test_serializing_to_string(self):
         """Test serializing to string."""
         for request in iter(self.request_read.keys()):
-            self.assertTrue(str(request) is not None)
+            assert str(request)
         for request in iter(self.response_read.keys()):
-            self.assertTrue(str(request) is not None)
+            assert str(request)

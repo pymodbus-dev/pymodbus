@@ -1,5 +1,4 @@
 """Modbus client async TLS communication."""
-import asyncio
 import socket
 import ssl
 from typing import Any, Type
@@ -40,7 +39,7 @@ def sslctx_provider(
     return sslctx
 
 
-class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
+class AsyncModbusTlsClient(AsyncModbusTcpClient):
     """**AsyncModbusTlsClient**.
 
     :param host: Host IP address or host name
@@ -54,6 +53,9 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
     :param server_hostname: (optional) Bind certificate to host
     :param kwargs: (optional) Experimental parameters
 
+    ..tip::
+        See ModbusBaseClient for common parameters.
+
     Example::
 
         from pymodbus.client import AsyncModbusTlsClient
@@ -63,7 +65,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     def __init__(
@@ -71,7 +73,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
         host: str,
         port: int = Defaults.TlsPort,
         framer: Type[ModbusFramer] = ModbusTlsFramer,
-        sslctx: str = None,
+        sslctx: ssl.SSLContext = None,
         certfile: str = None,
         keyfile: str = None,
         password: str = None,
@@ -79,33 +81,28 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient, asyncio.Protocol):
         **kwargs: Any,
     ):
         """Initialize Asyncio Modbus TLS Client."""
-        super().__init__(host, port=port, framer=framer, **kwargs)
+        AsyncModbusTcpClient.__init__(
+            self, host, port=port, framer=framer, internal_no_setup=True, **kwargs
+        )
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
-        self.params.sslctx = sslctx
         self.params.certfile = certfile
         self.params.keyfile = keyfile
         self.params.password = password
         self.params.server_hostname = server_hostname
-        AsyncModbusTcpClient.__init__(self, host, port=port, framer=framer, **kwargs)
+        self.setup_tls(
+            False, host, port, sslctx, certfile, keyfile, password, server_hostname
+        )
 
-    async def _connect(self):
-        """Connect to server."""
-        Log.debug("Connecting tls.")
-        try:
-            return await self.loop.create_connection(
-                self._create_protocol,
-                self.params.host,
-                self.params.port,
-                ssl=self.sslctx,
-                server_hostname=self.params.server_hostname,
-            )
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            if self.delay_ms > 0:
-                self._launch_reconnect()
-            return
-        Log.info("Connected to {}:{}.", self.params.host, self.params.port)
+    async def connect(self):
+        """Initiate connection to start client."""
+
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
         self.reset_delay()
+
+        # force reconnect if required:
+        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        return await self.transport_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -121,6 +118,9 @@ class ModbusTlsClient(ModbusTcpClient):
     :param password: (optional) Password for decrypting private key file
     :param server_hostname: (optional) Bind certificate to host
     :param kwargs: (optional) Experimental parameters
+
+    ..tip::
+        See ModbusBaseClient for common parameters.
 
     Example::
 
@@ -161,7 +161,7 @@ class ModbusTlsClient(ModbusTcpClient):
     @property
     def connected(self):
         """Connect internal."""
-        return self.connect()
+        return self.transport is not None
 
     def connect(self):
         """Connect to the modbus tls server."""
@@ -176,7 +176,7 @@ class ModbusTlsClient(ModbusTcpClient):
             )
             self.socket.settimeout(self.params.timeout)
             self.socket.connect((self.params.host, self.params.port))
-        except socket.error as msg:
+        except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
                 self.params.host,

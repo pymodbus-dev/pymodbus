@@ -32,12 +32,3 @@ pymodbus\.framer\.socket_framer module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pymodbus.framer
-    :members:
-    :undoc-members:
-    :show-inheritance:

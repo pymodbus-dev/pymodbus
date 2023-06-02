@@ -40,8 +40,9 @@ from pymodbus.client import (
 _logger = logging.getLogger()
 
 
-def setup_async_client(args):
+def setup_async_client(description=None, cmdline=None):
     """Run client setup."""
+    args = get_commandline(server=False, description=description, cmdline=cmdline)
     _logger.info("### Create client object")
     if args.comm == "tcp":
         client = AsyncModbusTcpClient(
@@ -120,17 +121,33 @@ async def run_async_client(client, modbus_calls=None):
     """Run sync client."""
     _logger.info("### Client starting")
     await client.connect()
+    print("jan " + str(client.connected))
     assert client.connected
     if modbus_calls:
         await modbus_calls(client)
-    await client.close()
+    client.close()
     _logger.info("### End of Program")
 
 
-if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run asynchronous client.",
+async def helper():
+    """Combine the setup and run"""
+    args = [
+        "--comm",
+        "udp",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5020",
+        "--framer",
+        "socket",
+        "--log",
+        "debug",
+    ]
+    testclient = setup_async_client(
+        description="Run asynchronous client.", cmdline=args
     )
-    testclient = setup_async_client(cmd_args)
-    asyncio.run(run_async_client(testclient), debug=True)
+    await run_async_client(testclient)
+
+
+if __name__ == "__main__":
+    asyncio.run(helper(), debug=True)

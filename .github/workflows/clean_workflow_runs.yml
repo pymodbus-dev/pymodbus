@@ -1,18 +1,21 @@
 name: Clean workflow runs
 on:
+  # schedule:
+  #  # Monthly day 1 at 0:35 UTC.
+  #  - cron: '35 0 1 1-12 *'
   workflow_dispatch:
     inputs:
-      days:
+      retain_days:
         description: 'retain days (default 14)'
-        required: false
+        required: true
         default: 14
-      keeps:
+      keep_minimum_runs:
         description: 'keep minimum runs (default 6)'
-        required: false
+        required: true
         default: 6
-  schedule:
-    # Sunday at 02:35 UTC.
-    - cron: '35 2 * * 0'
+
+permissions:
+  actions: write
 
 jobs:
   del_runs:
@@ -23,5 +26,27 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: ${{ github.events.inputs.days }}
-          keep_minimum_runs: ${{ github.events.inputs.keeps }}
+          retain_days: ${{ github.events.inputs.retain_days }}
+          keep_minimum_runs: ${{ github.events.inputs.keep_minimum_runs }}
+
+  clear-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("About to clear")
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            for (const cache of caches.data.actions_caches) {
+              console.log(cache)
+              github.rest.actions.deleteActionsCacheById({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                cache_id: cache.id,
+              })
+            }
+            console.log("Clear completed")

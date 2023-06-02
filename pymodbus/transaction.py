@@ -1,8 +1,19 @@
 """Collection of transaction based abstractions."""
+
+__all__ = [
+    "FifoTransactionManager",
+    "DictTransactionManager",
+    "ModbusSocketFramer",
+    "ModbusTlsFramer",
+    "ModbusRtuFramer",
+    "ModbusAsciiFramer",
+    "ModbusBinaryFramer",
+]
+
 # pylint: disable=missing-type-doc
-import socket
 import struct
 import time
+from contextlib import suppress
 from functools import partial
 from threading import RLock
 
@@ -104,7 +115,7 @@ class ModbusTransactionManager:
 
         mbap = self.client.framer.decode_data(response)
         if (
-            mbap.get("unit") != request.unit_id
+            mbap.get("slave") != request.slave_id
             or mbap.get("fcode") & 0x7F != request.function_code
         ):
             return False
@@ -113,7 +124,7 @@ class ModbusTransactionManager:
             return mbap.get("length") == exp_resp_len
         return True
 
-    def execute(self, request):  # pylint: disable=too-complex
+    def execute(self, request):  # noqa: C901
         """Start the producer to send the next request to consumer.write(Frame(request))."""
         with self._transaction_lock:
             try:
@@ -130,7 +141,7 @@ class ModbusTransactionManager:
                     Log.debug("Clearing current Frame: - {}", _buffer)
                     self.client.framer.resetFrame()
                 if broadcast := (
-                    self.client.params.broadcast_enable and not request.unit_id
+                    self.client.params.broadcast_enable and not request.slave_id
                 ):
                     self._transact(request, None, broadcast=True)
                     response = b"Broadcast write sent - no response expected"
@@ -140,13 +151,13 @@ class ModbusTransactionManager:
                         if hasattr(request, "get_response_pdu_size"):
                             response_pdu_size = request.get_response_pdu_size()
                             if isinstance(self.client.framer, ModbusAsciiFramer):
-                                response_pdu_size = response_pdu_size * 2
+                                response_pdu_size *= 2
                             if response_pdu_size:
                                 expected_response_length = (
                                     self._calculate_response_length(response_pdu_size)
                                 )
                     if (  # pylint: disable=simplifiable-if-statement
-                        request.unit_id in self._no_response_devices
+                        request.slave_id in self._no_response_devices
                     ):
                         full = True
                     else:
@@ -168,15 +179,15 @@ class ModbusTransactionManager:
                         )
                         if valid_response:
                             if (
-                                request.unit_id in self._no_response_devices
+                                request.slave_id in self._no_response_devices
                                 and response
                             ):
-                                self._no_response_devices.remove(request.unit_id)
+                                self._no_response_devices.remove(request.slave_id)
                                 Log.debug("Got response!!!")
                             break
                         if not response:
-                            if request.unit_id not in self._no_response_devices:
-                                self._no_response_devices.append(request.unit_id)
+                            if request.slave_id not in self._no_response_devices:
+                                self._no_response_devices.append(request.slave_id)
                             if self.retry_on_empty:
                                 response, last_exception = self._retry_transaction(
                                     retries,
@@ -206,14 +217,17 @@ class ModbusTransactionManager:
                         tid=request.transaction_id,
                     )
                     self.client.framer.processIncomingPacket(
-                        response, addTransaction, request.unit_id
+                        response,
+                        addTransaction,
+                        request.slave_id,
+                        tid=request.transaction_id,
                     )
                     if not (response := self.getTransaction(request.transaction_id)):
                         if len(self.transactions):
                             response = self.getTransaction(tid=0)
                         else:
                             last_exception = last_exception or (
-                                "No Response received from the remote unit"
+                                "No Response received from the remote slave"
                                 "/Unable to decode response"
                             )
                             response = ModbusIOException(
@@ -306,11 +320,7 @@ class ModbusTransactionManager:
             result = self._recv(response_length, full)
             # result2 = self._recv(response_length, full)
             Log.debug("RECV: {}", result, ":hex")
-        except (
-            socket.error,
-            ModbusIOException,
-            InvalidMessageReceivedException,
-        ) as msg:
+        except (OSError, ModbusIOException, InvalidMessageReceivedException) as msg:
             if self.reset_socket:
                 self.client.close()
             Log.debug("Transaction failed. ({}) ", msg)
@@ -322,7 +332,7 @@ class ModbusTransactionManager:
         """Send."""
         return self.client.framer.sendPacket(packet)
 
-    def _recv(self, expected_response_length, full):  # pylint: disable=too-complex
+    def _recv(self, expected_response_length, full):  # noqa: C901
         """Receive."""
         total = None
         if not full:
@@ -368,15 +378,14 @@ class ModbusTransactionManager:
                     elif expected_response_length is None and isinstance(
                         self.client.framer, ModbusRtuFramer
                     ):
-                        try:
+                        with suppress(
+                            IndexError  # response length indeterminate with available bytes
+                        ):
                             expected_response_length = (
                                 self.client.framer.get_expected_response_length(
                                     read_min
                                 )
                             )
-                        except IndexError:
-                            # Could not determine response length with available bytes
-                            pass
                     if expected_response_length is not None:
                         expected_response_length -= min_size
                         total = expected_response_length + min_size
@@ -569,19 +578,3 @@ class FifoTransactionManager(ModbusTransactionManager):
         Log.debug("Deleting transaction {}", tid)
         if self.transactions:
             self.transactions.pop(0)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-
-__all__ = [
-    "FifoTransactionManager",
-    "DictTransactionManager",
-    "ModbusSocketFramer",
-    "ModbusTlsFramer",
-    "ModbusRtuFramer",
-    "ModbusAsciiFramer",
-    "ModbusBinaryFramer",
-]

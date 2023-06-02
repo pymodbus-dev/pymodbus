@@ -4,6 +4,13 @@ These are the device management handlers.  They should be
 maintained in the server context and the various methods
 should be inserted in the correct locations.
 """
+
+__all__ = [
+    "ModbusPlusStatistics",
+    "ModbusDeviceIdentification",
+    "DeviceInformationFactory",
+]
+
 import struct
 
 # pylint: disable=missing-type-doc
@@ -457,7 +464,7 @@ class ModbusControlBlock:
     __mode = "ASCII"
     __diagnostic = [False] * 16
     __listen_only = False
-    __delimiter = "\r"
+    __delimiter = b"\r"
     __counters = ModbusCountersHandler()
     __identity = ModbusDeviceIdentification()
     __plus = ModbusPlusStatistics()
@@ -599,14 +606,3 @@ class ModbusControlBlock:
         :returns: The diagnostic register collection
         """
         return self.__diagnostic
-
-
-# ---------------------------------------------------------------------------#
-#  Exported Identifiers
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ModbusPlusStatistics",
-    "ModbusDeviceIdentification",
-    "DeviceInformationFactory",
-    "ModbusControlBlock",
-]

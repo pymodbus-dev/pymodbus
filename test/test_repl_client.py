@@ -1,4 +1,6 @@
 """Test client sync."""
+from contextlib import suppress
+
 from pymodbus.repl.client.main import _process_args
 from pymodbus.server.reactive.default_config import DEFAULT_CONFIG
 
@@ -32,17 +34,11 @@ def test_repl_client_process_args():
     resp = _process_args(["address=0b11", "value=0x10"], False)
     assert resp == ({"address": 3, "value": 16}, True)
 
-    try:
+    with suppress(ValueError):
         resp = _process_args(["address=0xhj", "value=0x10"], False)
-    except ValueError:
-        pass
 
-    try:
+    with suppress(ValueError):
         resp = _process_args(["address=11ah", "value=0x10"], False)
-    except ValueError:
-        pass
 
-    try:
+    with suppress(ValueError):
         resp = _process_args(["address=0b12", "value=0x10"], False)
-    except ValueError:
-        pass

@@ -35,7 +35,6 @@ a lot slower.
 import logging
 import os
 
-from examples.helper import get_commandline
 from examples.server_async import setup_server
 
 # --------------------------------------------------------------------------- #
@@ -69,10 +68,9 @@ def run_sync_server(args):
             # TBD handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "udp":
         address = ("", args.port) if args.port else None
@@ -86,10 +84,9 @@ def run_sync_server(args):
             framer=args.framer,  # The framer strategy to use
             # TBD handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -108,9 +105,8 @@ def run_sync_server(args):
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
@@ -137,19 +133,14 @@ def run_sync_server(args):
             # password=None,  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     return server
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run synchronous server.",
-    )
-    run_args = setup_server(cmd_args)
+    run_args = setup_server(description="Run synchronous server.")
     server = run_sync_server(run_args)
     server.shutdown()

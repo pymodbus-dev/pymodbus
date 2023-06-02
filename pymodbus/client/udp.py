@@ -25,6 +25,9 @@ class AsyncModbusUdpClient(
     :param source_address: (optional) source address of client,
     :param kwargs: (optional) Experimental parameters
 
+    ..tip::
+        See ModbusBaseClient for common parameters.
+
     Example::
 
         from pymodbus.client import AsyncModbusUdpClient
@@ -34,7 +37,7 @@ class AsyncModbusUdpClient(
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     def __init__(
@@ -46,110 +49,30 @@ class AsyncModbusUdpClient(
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus UDP Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
-        self.params.host = host
+        asyncio.DatagramProtocol.__init__(self)
+        asyncio.Protocol.__init__(self)
+        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.port = port
         self.params.source_address = source_address
-        self._reconnect_task = None
-        self.loop = asyncio.get_event_loop()
-        self.connected = False
-        self.delay_ms = self.params.reconnect_delay
-        self._reconnect_task = None
-        self.reset_delay()
+        self.setup_udp(False, host, port)
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    @property
+    def connected(self):
+        """Return true if connected."""
+        return self.transport is not None
+
+    async def connect(self):
         """Start reconnecting asynchronous udp client.
 
         :meta private:
         """
-        # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
+        self.reset_delay()
 
-        # getaddrinfo returns a list of tuples
-        # - [(family, type, proto, canonname, sockaddr),]
-        # We want sockaddr which is a (ip, port) tuple
-        # udp needs ip addresses, not hostnames
-        # TBD: addrinfo = await self.loop.getaddrinfo(self.params.host, self.params.port, type=DGRAM_TYPE)
-        # TBD: self.params.host, self.params.port = addrinfo[-1][-1]
-        return await self._connect()
-
-    async def close(self):  # pylint: disable=invalid-overridden-method
-        """Stop connection and prevents reconnect.
-
-        :meta private:
-        """
-        self.delay_ms = 0
-        if self.connected:
-            if self.transport:
-                self.transport.abort()
-                self.transport.close()
-            await self.async_close()
-            await asyncio.sleep(0.1)
-
-        if self._reconnect_task:
-            self._reconnect_task.cancel()
-            self._reconnect_task = None
-
-    def _create_protocol(self):
-        """Create initialized protocol instance with function."""
-        self.use_udp = True
-        return self
-
-    async def _connect(self):
-        """Connect."""
-        Log.debug("Connecting.")
-        try:
-            endpoint = await self.loop.create_datagram_endpoint(
-                self._create_protocol,
-                remote_addr=(self.params.host, self.params.port),
-            )
-            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
-            return endpoint
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            self._reconnect_task = asyncio.ensure_future(self._reconnect())
-
-    def client_made_connection(self, protocol):
-        """Notify successful connection.
-
-        :meta private:
-        """
-        Log.info("Protocol made connection.")
-        if not self.connected:
-            self.connected = True
-        else:
-            Log.error("Factory protocol connect callback called while connected.")
-
-    def client_lost_connection(self, protocol):
-        """Notify lost connection.
-
-        :meta private:
-        """
-        Log.info("Protocol lost connection.")
-        if protocol is not self:
-            Log.error("Factory protocol cb from unexpected protocol instance.")
-
-        self.connected = False
-        if self.delay_ms > 0:
-            self._launch_reconnect()
-
-    def _launch_reconnect(self):
-        """Launch delayed reconnection coroutine"""
-        if self._reconnect_task:
-            Log.warning(
-                "Ignoring launch of delayed reconnection, another is in progress"
-            )
-        else:
-            self._reconnect_task = asyncio.create_task(self._reconnect())
-
-    async def _reconnect(self):
-        """Reconnect."""
-        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
-        await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = 2 * self.delay_ms
-        return await self._connect()
+        # force reconnect if required:
+        Log.debug("Connecting to {}:{}.", self.comm_params.host, self.comm_params.port)
+        return await self.transport_connect()
 
 
 class ModbusUdpClient(ModbusBaseClient):
@@ -160,6 +83,9 @@ class ModbusUdpClient(ModbusBaseClient):
     :param framer: (optional) Framer class.
     :param source_address: (optional) source address of client,
     :param kwargs: (optional) Experimental parameters
+
+    ..tip::
+        See ModbusBaseClient for common parameters.
 
     Example::
 
@@ -190,16 +116,9 @@ class ModbusUdpClient(ModbusBaseClient):
         self.params.source_address = source_address
 
         self.socket = None
+        self.use_sync = True
 
-    @property
-    def connected(self):
-        """Connect internal.
-
-        :meta private:
-        """
-        return self.connect()
-
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server.
 
         :meta private:
@@ -210,12 +129,12 @@ class ModbusUdpClient(ModbusBaseClient):
             family = ModbusUdpClient._get_address_family(self.params.host)
             self.socket = socket.socket(family, socket.SOCK_DGRAM)
             self.socket.settimeout(self.params.timeout)
-        except socket.error as exc:
+        except OSError as exc:
             Log.error("Unable to create udp socket {}", exc)
             self.close()
         return self.socket is not None
 
-    def close(self):
+    def close(self):  # pylint: disable=arguments-differ
         """Close the underlying socket connection.
 
         :meta private:
@@ -249,9 +168,7 @@ class ModbusUdpClient(ModbusBaseClient):
 
         :meta private:
         """
-        if self.socket:
-            return True
-        return self.connect()
+        return True
 
     def __str__(self):
         """Build a string representation of the connection."""

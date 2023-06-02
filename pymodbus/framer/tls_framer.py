@@ -6,7 +6,7 @@ from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
 )
-from pymodbus.framer import TLS_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import TLS_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 
 
@@ -101,7 +101,7 @@ class ModbusTlsFramer(ModbusFramer):
             return {"fcode": fcode}
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -115,27 +115,27 @@ class ModbusTlsFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matcheks, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
-        # no unit id for Modbus Security Application Protocol
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
+        # no slave id for Modbus Security Application Protocol
         single = kwargs.get("single", True)
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
 
-        if self.isFrameReady():
-            if self.checkFrame():
-                if self._validate_unit_id(unit, single):
-                    self._process(callback)
-                else:
-                    Log.debug("Not in valid unit id - {}, ignoring!!", unit)
-                    self.resetFrame()
-            else:
-                Log.debug("Frame check failed, ignoring!!")
-                self.resetFrame()
+        if not self.isFrameReady():
+            return
+        if not self.checkFrame():
+            Log.debug("Frame check failed, ignoring!!")
+            self.resetFrame()
+            return
+        if not self._validate_slave_id(slave, single):
+            Log.debug("Not in valid slave id - {}, ignoring!!", slave)
+            self.resetFrame()
+        self._process(callback)
 
     def _process(self, callback, error=False):
         """Process incoming packets irrespective error condition."""

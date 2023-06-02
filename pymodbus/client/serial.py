@@ -1,11 +1,11 @@
 """Modbus client async serial communication."""
 import asyncio
 import time
+from contextlib import suppress
 from functools import partial
 from typing import Any, Type
 
 from pymodbus.client.base import ModbusBaseClient
-from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
@@ -14,10 +14,8 @@ from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState
 
 
-try:
+with suppress(ImportError):
     import serial
-except ImportError:
-    pass
 
 
 class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
@@ -43,7 +41,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     transport = None
@@ -61,106 +59,30 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
+        asyncio.Protocol.__init__(self)
+        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate
         self.params.bytesize = bytesize
         self.params.parity = parity
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
-        self.loop = None
-        self._connected_event = asyncio.Event()
-        self._reconnect_task = None
-
-    async def close(self):  # pylint: disable=invalid-overridden-method
-        """Stop connection."""
-
-        # prevent reconnect:
-        self.delay_ms = 0
-        if self.connected:
-            if self.transport:
-                self.transport.close()
-            await self.async_close()
-            await asyncio.sleep(0.1)
-
-        # if there is an unfinished delayed reconnection attempt pending, cancel it
-        if self._reconnect_task:
-            self._reconnect_task.cancel()
-            self._reconnect_task = None
-
-    def _create_protocol(self):
-        """Create a protocol instance."""
-        return self
+        self.setup_serial(False, port, baudrate, bytesize, parity, stopbits)
 
     @property
     def connected(self):
         """Connect internal."""
-        return self._connected_event.is_set()
+        return self.transport is not None
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    async def connect(self):
         """Connect Async client."""
-        # get current loop, if there are no loop a RuntimeError will be raised
-        self.loop = asyncio.get_running_loop()
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
+        # so this instance will work
+        self.reset_delay()
 
-        Log.debug("Starting serial connection")
-        try:
-            await create_serial_connection(
-                self.loop,
-                self._create_protocol,
-                self.params.port,
-                baudrate=self.params.baudrate,
-                bytesize=self.params.bytesize,
-                stopbits=self.params.stopbits,
-                parity=self.params.parity,
-                timeout=self.params.timeout,
-                **self.params.kwargs,
-            )
-            await self._connected_event.wait()
-            Log.info("Connected to {}", self.params.port)
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            if self.delay_ms > 0:
-                self._launch_reconnect()
-        return self.connected
-
-    def client_made_connection(self, protocol):
-        """Notify successful connection."""
-        Log.info("Serial connected.")
-        if not self.connected:
-            self._connected_event.set()
-        else:
-            Log.error("Factory protocol connect callback called while connected.")
-
-    def client_lost_connection(self, protocol):
-        """Notify lost connection."""
-        Log.info("Serial lost connection.")
-        if protocol is not self:
-            Log.error("Serial: protocol is not self.")
-
-        self._connected_event.clear()
-        if self.delay_ms:
-            self._launch_reconnect()
-
-    def _launch_reconnect(self):
-        """Launch delayed reconnection coroutine"""
-        if self._reconnect_task:
-            Log.warning(
-                "Ignoring launch of delayed reconnection, another is in progress"
-            )
-        else:
-            # store the future in a member variable so we know we have a pending reconnection attempt
-            # also prevents its garbage collection
-            self._reconnect_task = asyncio.create_task(self._reconnect())
-
-    async def _reconnect(self):
-        """Reconnect."""
-        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
-        await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
-
-        self._reconnect_task = None
-        return await self.connect()
+        # force reconnect if required:
+        Log.debug("Connecting to {}.", self.params.host)
+        return await self.transport_connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):
@@ -216,10 +138,11 @@ class ModbusSerialClient(ModbusBaseClient):
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
         self.socket = None
+        self.use_sync = True
 
         self.last_frame_end = None
 
-        self._t0 = float((1 + 8 + 2)) / self.params.baudrate
+        self._t0 = float(1 + 8 + 2) / self.params.baudrate
 
         """
         The minimum delay is 0.01s and the maximum can be set to 0.05s.
@@ -231,20 +154,19 @@ class ModbusSerialClient(ModbusBaseClient):
             else 0.05
         )
 
-        if isinstance(self.framer, ModbusRtuFramer):
-            if self.params.baudrate > 19200:
-                self.silent_interval = 1.75 / 1000  # ms
-            else:
-                self.inter_char_timeout = 1.5 * self._t0
-                self.silent_interval = 3.5 * self._t0
-            self.silent_interval = round(self.silent_interval, 6)
+        if self.params.baudrate > 19200:
+            self.silent_interval = 1.75 / 1000  # ms
+        else:
+            self.inter_char_timeout = 1.5 * self._t0
+            self.silent_interval = 3.5 * self._t0
+        self.silent_interval = round(self.silent_interval, 6)
 
     @property
     def connected(self):
         """Connect internal."""
         return self.connect()
 
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus serial server."""
         if self.socket:
             return True
@@ -266,7 +188,7 @@ class ModbusSerialClient(ModbusBaseClient):
             self.close()
         return self.socket is not None
 
-    def close(self):
+    def close(self):  # pylint: disable=arguments-differ
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()

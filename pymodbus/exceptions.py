@@ -3,6 +3,17 @@
 Custom exceptions to be used in the Modbus code.
 """
 
+__all__ = [
+    "ModbusException",
+    "ModbusIOException",
+    "ParameterException",
+    "NotImplementedException",
+    "ConnectionException",
+    "NoSuchSlaveException",
+    "InvalidMessageReceivedException",
+    "MessageRegisterException",
+]
+
 
 class ModbusException(Exception):
     """Base modbus exception."""
@@ -104,18 +115,3 @@ class MessageRegisterException(ModbusException):
         """Initialize."""
         message = f"[Error registering message] {string}"
         ModbusException.__init__(self, message)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-__all__ = [
-    "ModbusException",
-    "ModbusIOException",
-    "ParameterException",
-    "NotImplementedException",
-    "ConnectionException",
-    "NoSuchSlaveException",
-    "InvalidMessageReceivedException",
-    "MessageRegisterException",
-]

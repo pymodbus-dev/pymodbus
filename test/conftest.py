@@ -1,6 +1,7 @@
 """Configure pytest."""
 import functools
 import platform
+from collections import deque
 
 import pytest
 
@@ -80,27 +81,17 @@ class mockSocket:  # pylint: disable=invalid-name
 
     timeout = 2
 
-    def __init__(self):
+    def __init__(self, copy_send=True):
         """Initialize."""
-        self.data = None
+        self.packets = deque()
+        self.buffer = None
         self.in_waiting = 0
+        self.copy_send = copy_send
 
-    def mock_store(self, msg):
+    def mock_prepare_receive(self, msg):
         """Store message."""
-        self.data = msg
-        self.in_waiting = len(self.data)
-
-    def mock_retrieve(self, size):
-        """Get message."""
-        if not self.data or not size:
-            return b""
-        if size >= len(self.data):
-            retval = self.data
-        else:
-            retval = self.data[0:size]
-        self.data = None
-        self.in_waiting = 0
-        return retval
+        self.packets.append(msg)
+        self.in_waiting += len(msg)
 
     def close(self):
         """Close."""
@@ -108,25 +99,38 @@ class mockSocket:  # pylint: disable=invalid-name
 
     def recv(self, size):
         """Receive."""
-        return self.mock_retrieve(size)
+        if not self.packets or not size:
+            return b""
+        if not self.buffer:
+            self.buffer = self.packets.popleft()
+        if size >= len(self.buffer):
+            retval = self.buffer
+            self.buffer = None
+        else:
+            retval = self.buffer[0:size]
+            self.buffer = self.buffer[size]
+        self.in_waiting -= len(retval)
+        return retval
 
     def read(self, size):
         """Read."""
-        return self.mock_retrieve(size)
-
-    def send(self, msg):
-        """Send."""
-        self.mock_store(msg)
-        return len(msg)
+        return self.recv(size)
 
     def recvfrom(self, size):
         """Receive from."""
-        return [self.mock_retrieve(size)]
+        return [self.recv(size)]
+
+    def send(self, msg):
+        """Send."""
+        if not self.copy_send:
+            return len(msg)
+        self.packets.append(msg)
+        self.in_waiting += len(msg)
+        return len(msg)
 
     def sendto(self, msg, *_args):
         """Send to."""
-        self.mock_store(msg)
-        return len(msg)
+        return self.send(msg)
 
     def setblocking(self, _flag):
         """Set blocking."""

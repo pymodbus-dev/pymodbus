@@ -20,9 +20,9 @@ The move from a company organization to pymodbus-dev was done to allow a 100% op
 Supported versions
 ------------------------------------------------------------
 
-Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python 2.7.x - 3.7).
+Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python >= 2.7, no longer supported).
 
-Version `3.2.2 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.2.2>`_ is the current release (Supports Python >=3.8).
+Version `3.3.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.0>`_ is the current release (Supports Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_
@@ -70,7 +70,7 @@ Server Features
   * TCP, RTU-OVER-TCP, UDP, TLS, Serial ASCII, Serial RTU, and Serial Binary
   * asynchronous and synchronous versions
   * Full server control context (device information, counters, etc)
-  * A number of backend contexts (database, redis, sqlite, a slave device) as datastore
+  * A number of backend contexts as datastore
 
 ^^^^^^^^^^^
 Use Cases
@@ -179,8 +179,6 @@ Available options are:
 
 - **serial**, installs serial drivers.
 
-- **datastore**, installs databases (SQLAlchemy and Redis) for datastore.
-
 - **documentation**, installs tools to generate documentation.
 
 - **development**, installs development tools needed to enable test/check of pymodbus changes.
@@ -247,7 +245,7 @@ Install with Docker
 -----------------------------------------------------------
 Pull the latest image on ``dev`` branch with ``docker pull ghcr.io/pymodbus-dev/pymodbus:dev``::
 
-   doker pull ghcr.io/pymodbus-dev/pymodbus:dev
+   ❯ docker pull ghcr.io/pymodbus-dev/pymodbus:dev
    dev: Pulling from pymodbus-dev/pymodbus
    548fcab5fe88: Pull complete
    a4d3f9f008ef: Pull complete
@@ -369,8 +367,7 @@ Contributing
 ------------------------------------------------------------
 Just fork the repo and raise your PR against `dev` branch.
 
-Here are some of the items waiting to be done:
-   https://github.com/pymodbus-dev/pymodbus/blob/dev/doc/TODO
+We always have more work than time, so feel free to open a discussion / issue on a theme you want to solve.
 
 ------------------------------------------------------------
 License Information

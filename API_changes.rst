@@ -3,6 +3,17 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.3.0
+-------------
+- ModbusTcpDiagClient is removed due to lack of support
+- Clients have an optional parameter: on_reconnect_callback, Function that will be called just before a reconnection attempt.
+- general parameter unit= -> slave=
+- move SqlSlaveContext, RedisSlaveContext to examples/contrib (due to lack of maintenance)
+- :code:`BinaryPayloadBuilder.to_string` was renamed to :code:`BinaryPayloadBuilder.encode`
+- on_reconnect_callback for async clients works slightly different
+- utilities/unpack_bitstring now expects an argument named `data` not `string`
+
+-------------
 Version 3.2.0
 -------------
 - helper to convert values in mixin: convert_from_registers, convert_to_registers

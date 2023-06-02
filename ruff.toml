@@ -1,0 +1,52 @@
+target-version="py38"
+exclude = [
+    "pymodbus/transport/serial_asyncio",
+    "venv",
+    ".venv",
+    ".git",
+    "build",
+]
+ignore = [
+    "D202",  # No blank lines allowed after function docstring (to work with black)
+    "D400",  # docstrings ending in period
+    "E501",  # line too long
+    "E731",  # lambda expressions
+    "PT019",  # Bug: https://github.com/m-burst/flake8-pytest-style/issues/202
+    "S101",  # Use of `assert`
+    "S311",  # PRNG for cryptography
+    "S104",  # binding on all interfaces
+]
+line-length = 120
+select = [
+    "B007",   # Loop control variable {name} not used within loop body
+    "B014",   # Exception handler with duplicate exception
+    "C",      # complexity
+    "D",      # docstrings
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "PGH",    # pygrep-hooks
+    "PLC",    # pylint
+    "PT",     # flake8-pytest-style
+    "RUF",    # ruff builtins
+    "S",      # bandit
+    "SIM105", # flake8-simplify
+    "SIM117", #
+    "SIM118", #
+    "SIM201", #
+    "SIM212", #
+    "SIM300", #
+    "SIM401", #
+    "UP",     # pyupgrade
+    "W",      # pycodestyle warnings
+    # "TRY",    # tryceratops
+    "TRY004", # Prefer TypeError exception for invalid type
+]
+[pydocstyle]
+convention = "pep257"
+[isort]
+lines-after-imports = 2
+known-local-folder = [
+    "common",
+    "contrib",
+]

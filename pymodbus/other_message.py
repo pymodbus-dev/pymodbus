@@ -2,6 +2,18 @@
 
 Currently not all implemented
 """
+
+__all__ = [
+    "ReadExceptionStatusRequest",
+    "ReadExceptionStatusResponse",
+    "GetCommEventCounterRequest",
+    "GetCommEventCounterResponse",
+    "GetCommEventLogRequest",
+    "GetCommEventLogResponse",
+    "ReportSlaveIdRequest",
+    "ReportSlaveIdResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -28,9 +40,9 @@ class ReadExceptionStatusRequest(ModbusRequest):
     function_code_name = "read_exception_status"
     _rtu_frame_size = 4
 
-    def __init__(self, unit=None, **kwargs):
+    def __init__(self, slave=None, **kwargs):
         """Initialize a new instance."""
-        ModbusRequest.__init__(self, unit=unit, **kwargs)
+        ModbusRequest.__init__(self, slave=slave, **kwargs)
 
     def encode(self):
         """Encode the message."""
@@ -365,13 +377,13 @@ class ReportSlaveIdRequest(ModbusRequest):
     function_code_name = "report_slave_id"
     _rtu_frame_size = 4
 
-    def __init__(self, unit=Defaults.Slave, **kwargs):
+    def __init__(self, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
 
         """
-        ModbusRequest.__init__(self, unit, **kwargs)
+        ModbusRequest.__init__(self, slave, **kwargs)
 
     def encode(self):
         """Encode the message."""
@@ -463,34 +475,9 @@ class ReportSlaveIdResponse(ModbusResponse):
         status = int(data[-1])
         self.status = status == ModbusStatus.SlaveOn
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Build a representation of the response.
 
         :returns: The string representation of the response
         """
-        arguments = (self.function_code, self.identifier, self.status)
-        return (
-            "ReportSlaveIdResponse(%s, %s, %s)"  # pylint: disable=consider-using-f-string
-            % arguments
-        )
-
-
-# ---------------------------------------------------------------------------#
-#  TODO Make these only work on serial # pylint: disable=fixme
-# ---------------------------------------------------------------------------#
-# report device identification 43, 14
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadExceptionStatusRequest",
-    "ReadExceptionStatusResponse",
-    "GetCommEventCounterRequest",
-    "GetCommEventCounterResponse",
-    "GetCommEventLogRequest",
-    "GetCommEventLogResponse",
-    "ReportSlaveIdRequest",
-    "ReportSlaveIdResponse",
-]
+        return f"ReportSlaveIdResponse({self.function_code}, {self.identifier}, {self.status})"

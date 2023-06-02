@@ -3,7 +3,7 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.utilities import checkCRC, computeCRC
 
@@ -62,10 +62,10 @@ class ModbusBinaryFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = struct.unpack(">B", data[1:2])[0]
             fcode = struct.unpack(">B", data[2:3])[0]
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
-    def checkFrame(self):
+    def checkFrame(self) -> bool:
         """Check and decode the next frame.
 
         :returns: True if we are successful, False otherwise
@@ -84,7 +84,7 @@ class ModbusBinaryFramer(ModbusFramer):
             return checkCRC(data, self._header["crc"])
         return False
 
-    def advanceFrame(self):
+    def advanceFrame(self) -> None:
         """Skip over the current framed message.
 
         This allows us to skip over the current message after we have processed
@@ -94,7 +94,7 @@ class ModbusBinaryFramer(ModbusFramer):
         self._buffer = self._buffer[self._header["len"] + 2 :]
         self._header = {"crc": 0x0000, "len": 0, "uid": 0x00}
 
-    def isFrameReady(self):
+    def isFrameReady(self) -> bool:
         """Check if we should continue decode logic.
 
         This is meant to be used in a while loop in the decoding phase to let
@@ -134,12 +134,12 @@ class ModbusBinaryFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -153,33 +153,30 @@ class ModbusBinaryFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         :raises ModbusIOException:
         """
         self.addToFrame(data)
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         while self.isFrameReady():
-            if self.checkFrame():
-                if self._validate_unit_id(unit, single):
-                    if (result := self.decoder.decode(self.getFrame())) is None:
-                        raise ModbusIOException("Unable to decode response")
-                    self.populateResult(result)
-                    self.advanceFrame()
-                    callback(result)  # defer or push to a thread?
-                else:
-                    header_txt = self._header["uid"]
-                    Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
-                    self.resetFrame()
-                    break
-
-            else:
+            if not self.checkFrame():
                 Log.debug("Frame check failed, ignoring!!")
                 self.resetFrame()
                 break
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                break
+            if (result := self.decoder.decode(self.getFrame())) is None:
+                raise ModbusIOException("Unable to decode response")
+            self.populateResult(result)
+            self.advanceFrame()
+            callback(result)  # defer or push to a thread?
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
@@ -189,7 +186,7 @@ class ModbusBinaryFramer(ModbusFramer):
         """
         data = self._preflight(message.encode())
         packet = (
-            struct.pack(BINARY_FRAME_HEADER, message.unit_id, message.function_code)
+            struct.pack(BINARY_FRAME_HEADER, message.slave_id, message.function_code)
             + data
         )
         packet += struct.pack(">H", computeCRC(packet))

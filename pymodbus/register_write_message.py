@@ -1,4 +1,14 @@
 """Register Writing Request/Response Messages."""
+
+__all__ = [
+    "WriteSingleRegisterRequest",
+    "WriteSingleRegisterResponse",
+    "WriteMultipleRegistersRequest",
+    "WriteMultipleRegistersResponse",
+    "MaskWriteRegisterRequest",
+    "MaskWriteRegisterResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -18,13 +28,13 @@ class WriteSingleRegisterRequest(ModbusRequest):
     function_code_name = "write_register"
     _rtu_frame_size = 8
 
-    def __init__(self, address=None, value=None, unit=None, **kwargs):
+    def __init__(self, address=None, value=None, slave=None, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing add
         :param value: The values to write
         """
-        super().__init__(unit=unit, **kwargs)
+        super().__init__(slave=slave, **kwargs)
         self.address = address
         self.value = value
 
@@ -148,13 +158,13 @@ class WriteMultipleRegistersRequest(ModbusRequest):
     _rtu_byte_count_pos = 6
     _pdu_length = 5  # func + adress1 + adress2 + outputQuant1 + outputQuant2
 
-    def __init__(self, address=None, values=None, unit=None, **kwargs):
+    def __init__(self, address=None, values=None, slave=None, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start writing to
         :param values: The values to write
         """
-        super().__init__(unit=unit, **kwargs)
+        super().__init__(slave=slave, **kwargs)
         self.address = address
         if values is None:
             values = []
@@ -359,16 +369,3 @@ class MaskWriteRegisterResponse(ModbusResponse):
         :param data: The packet data to decode
         """
         self.address, self.and_mask, self.or_mask = struct.unpack(">HHH", data)
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "WriteSingleRegisterRequest",
-    "WriteSingleRegisterResponse",
-    "WriteMultipleRegistersRequest",
-    "WriteMultipleRegistersResponse",
-    "MaskWriteRegisterRequest",
-    "MaskWriteRegisterResponse",
-]

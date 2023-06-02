@@ -12,7 +12,6 @@
 # Required packages.
 # -------------------------------------------------------------------
 # install:required
-setuptools<66.0.0
 
 # -------------------------------------------------------------------
 # optional packages.
@@ -33,10 +32,6 @@ click>=8.0.0
 # install:serial
 pyserial>=3.5
 
-# install:datastore
-redis>=2.10.6
-sqlalchemy>=1.1.15
-
 
 # -------------------------------------------------------------------
 # documentation, everything needed to generate documentation.
@@ -51,24 +46,19 @@ sphinx-rtd-theme==1.1.1
 # development, everything needed to develop/test/check.
 # -------------------------------------------------------------------
 # install:development
-bandit==1.7.4
 codespell==2.2.2
 coverage==7.1.0
-flake8==6.0.0
-flake8-docstrings==1.7.0
-flake8-noqa==1.3.0
-flake8-comprehensions==3.10.1
-mypy==1.0.1
+mypy==1.3.0
 pre-commit==3.1.1
 pyflakes==3.0.1
 pydocstyle==6.3.0
 pycodestyle==2.10.0
-pylint==2.15.10
+pylint==2.17.2
 pytest==7.2.1
 pytest-asyncio==0.20.3
 pytest-cov==4.0.0
 pytest-timeout==2.1.0
 pytest-xdist==3.1.0
-types-redis
+ruff==0.0.261
 types-Pygments
 types-pyserial

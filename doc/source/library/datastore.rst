@@ -22,13 +22,3 @@ Datastore classes
 .. autoclass:: pymodbus.datastore.ModbusSimulatorContext
     :members:
     :member-order: bysource
-
-.. autoclass:: pymodbus.datastore.RedisSlaveContext
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. autoclass:: pymodbus.datastore.SqlSlaveContext
-    :members:
-    :undoc-members:
-    :show-inheritance:

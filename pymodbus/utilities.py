@@ -3,8 +3,21 @@
 A collection of utilities for packing data, unpacking
 data computing checksums, and decode checksums.
 """
+
+__all__ = [
+    "pack_bitstring",
+    "unpack_bitstring",
+    "default",
+    "computeCRC",
+    "checkCRC",
+    "computeLRC",
+    "checkLRC",
+    "rtuFrameSize",
+]
+
 # pylint: disable=missing-type-doc
 import struct
+from typing import List
 
 
 class ModbusTransactionState:  # pylint: disable=too-few-public-methods
@@ -94,10 +107,10 @@ def dict_property(store, index):
 # --------------------------------------------------------------------------- #
 # Bit packing functions
 # --------------------------------------------------------------------------- #
-def pack_bitstring(bits):
-    """Create a string out of an array of bits.
+def pack_bitstring(bits: List[bool]) -> bytes:
+    """Create a bytestring out of a list of bits.
 
-    :param bits: A bit array
+    :param bits: A list of bits
 
     example::
 
@@ -121,35 +134,24 @@ def pack_bitstring(bits):
     return ret
 
 
-def unpack_bitstring(string):
-    """Create bit array out of a string.
+def unpack_bitstring(data: bytes) -> List[bool]:
+    """Create bit list out of a bytestring.
 
-    :param string: The modbus data packet to decode
+    :param data: The modbus data packet to decode
 
     example::
 
         bytes  = "bytes to decode"
         result = unpack_bitstring(bytes)
     """
-    byte_count = len(string)
+    byte_count = len(data)
     bits = []
     for byte in range(byte_count):
-        value = int(int(string[byte]))
+        value = int(int(data[byte]))
         for _ in range(8):
             bits.append((value & 1) == 1)
             value >>= 1
     return bits
-
-
-def make_byte_string(byte_string):
-    """Return byte string from a given string, python3 specific fix.
-
-    :param byte_string:
-    :return:
-    """
-    if isinstance(byte_string, str):
-        byte_string = byte_string.encode()
-    return byte_string
 
 
 # --------------------------------------------------------------------------- #
@@ -266,18 +268,3 @@ def hexlify_packets(packet):
     if not packet:
         return ""
     return " ".join([hex(int(x)) for x in packet])
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-__all__ = [
-    "pack_bitstring",
-    "unpack_bitstring",
-    "default",
-    "computeCRC",
-    "checkCRC",
-    "computeLRC",
-    "checkLRC",
-    "rtuFrameSize",
-]

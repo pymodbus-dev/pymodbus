@@ -3,6 +3,46 @@
 These need to be tied into a the current server context
 or linked to the appropriate data
 """
+
+__all__ = [
+    "DiagnosticStatusRequest",
+    "DiagnosticStatusResponse",
+    "ReturnQueryDataRequest",
+    "ReturnQueryDataResponse",
+    "RestartCommunicationsOptionRequest",
+    "RestartCommunicationsOptionResponse",
+    "ReturnDiagnosticRegisterRequest",
+    "ReturnDiagnosticRegisterResponse",
+    "ChangeAsciiInputDelimiterRequest",
+    "ChangeAsciiInputDelimiterResponse",
+    "ForceListenOnlyModeRequest",
+    "ForceListenOnlyModeResponse",
+    "ClearCountersRequest",
+    "ClearCountersResponse",
+    "ReturnBusMessageCountRequest",
+    "ReturnBusMessageCountResponse",
+    "ReturnBusCommunicationErrorCountRequest",
+    "ReturnBusCommunicationErrorCountResponse",
+    "ReturnBusExceptionErrorCountRequest",
+    "ReturnBusExceptionErrorCountResponse",
+    "ReturnSlaveMessageCountRequest",
+    "ReturnSlaveMessageCountResponse",
+    "ReturnSlaveNoResponseCountRequest",
+    "ReturnSlaveNoResponseCountResponse",
+    "ReturnSlaveNAKCountRequest",
+    "ReturnSlaveNAKCountResponse",
+    "ReturnSlaveBusyCountRequest",
+    "ReturnSlaveBusyCountResponse",
+    "ReturnSlaveBusCharacterOverrunCountRequest",
+    "ReturnSlaveBusCharacterOverrunCountResponse",
+    "ReturnIopOverrunCountRequest",
+    "ReturnIopOverrunCountResponse",
+    "ClearOverrunCountRequest",
+    "ClearOverrunCountResponse",
+    "GetClearModbusPlusRequest",
+    "GetClearModbusPlusResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -106,7 +146,7 @@ class DiagnosticStatusResponse(ModbusResponse):
                 packet += self.message.encode()
             elif isinstance(self.message, bytes):
                 packet += self.message
-            elif isinstance(self.message, list):
+            elif isinstance(self.message, (list, tuple)):
                 for piece in self.message:
                     packet += struct.pack(">H", piece)
             elif isinstance(self.message, int):
@@ -121,7 +161,7 @@ class DiagnosticStatusResponse(ModbusResponse):
         word_len = len(data) // 2
         if len(data) % 2:
             word_len += 1
-            data = data + b"0"
+            data += b"0"
         data = struct.unpack(">" + "H" * word_len, data)
         (
             self.sub_function_code,  # pylint: disable=attribute-defined-outside-init
@@ -191,12 +231,12 @@ class ReturnQueryDataRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0000
 
-    def __init__(self, message=0x0000, unit=None, **kwargs):
+    def __init__(self, message=0x0000, slave=None, **kwargs):
         """Initialize a new instance of the request.
 
         :param message: The message to send to loopback
         """
-        DiagnosticStatusRequest.__init__(self, unit=unit, **kwargs)
+        DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
         if isinstance(message, list):
             self.message = message
         else:
@@ -248,12 +288,12 @@ class RestartCommunicationsOptionRequest(DiagnosticStatusRequest):
 
     sub_function_code = 0x0001
 
-    def __init__(self, toggle=False, unit=None, **kwargs):
+    def __init__(self, toggle=False, slave=None, **kwargs):
         """Initialize a new request.
 
         :param toggle: Set to True to toggle, False otherwise
         """
-        DiagnosticStatusRequest.__init__(self, unit=unit, **kwargs)
+        DiagnosticStatusRequest.__init__(self, slave=slave, **kwargs)
         if toggle:
             self.message = [ModbusStatus.On]
         else:
@@ -774,9 +814,9 @@ class GetClearModbusPlusRequest(DiagnosticStatusSimpleRequest):
 
     sub_function_code = 0x0015
 
-    def __init__(self, unit=None, **kwargs):
+    def __init__(self, slave=None, **kwargs):
         """Initialize."""
-        super().__init__(unit=unit, **kwargs)
+        super().__init__(slave=slave, **kwargs)
 
     def get_response_pdu_size(self):
         """Return a series of 54 16-bit words (108 bytes) in the data field of the response.
@@ -826,46 +866,3 @@ class GetClearModbusPlusResponse(DiagnosticStatusSimpleResponse):
     """
 
     sub_function_code = 0x0015
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "DiagnosticStatusRequest",
-    "DiagnosticStatusResponse",
-    "ReturnQueryDataRequest",
-    "ReturnQueryDataResponse",
-    "RestartCommunicationsOptionRequest",
-    "RestartCommunicationsOptionResponse",
-    "ReturnDiagnosticRegisterRequest",
-    "ReturnDiagnosticRegisterResponse",
-    "ChangeAsciiInputDelimiterRequest",
-    "ChangeAsciiInputDelimiterResponse",
-    "ForceListenOnlyModeRequest",
-    "ForceListenOnlyModeResponse",
-    "ClearCountersRequest",
-    "ClearCountersResponse",
-    "ReturnBusMessageCountRequest",
-    "ReturnBusMessageCountResponse",
-    "ReturnBusCommunicationErrorCountRequest",
-    "ReturnBusCommunicationErrorCountResponse",
-    "ReturnBusExceptionErrorCountRequest",
-    "ReturnBusExceptionErrorCountResponse",
-    "ReturnSlaveMessageCountRequest",
-    "ReturnSlaveMessageCountResponse",
-    "ReturnSlaveNoResponseCountRequest",
-    "ReturnSlaveNoResponseCountResponse",
-    "ReturnSlaveNAKCountRequest",
-    "ReturnSlaveNAKCountResponse",
-    "ReturnSlaveBusyCountRequest",
-    "ReturnSlaveBusyCountResponse",
-    "ReturnSlaveBusCharacterOverrunCountRequest",
-    "ReturnSlaveBusCharacterOverrunCountResponse",
-    "ReturnIopOverrunCountRequest",
-    "ReturnIopOverrunCountResponse",
-    "ClearOverrunCountRequest",
-    "ClearOverrunCountResponse",
-    "GetClearModbusPlusRequest",
-    "GetClearModbusPlusResponse",
-]

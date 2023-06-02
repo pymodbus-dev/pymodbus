@@ -392,7 +392,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param address: Start address to write to
         :param values: List of values to write, or a single value to write
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
@@ -405,7 +405,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     def report_slave_id(self, slave: int = 0, **kwargs: Any) -> ModbusResponse:
         """Report slave ID (code 0x11).
 
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs: (optional) Experimental parameters.
         :raises ModbusException:
         """
@@ -463,7 +463,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
         :param read_count: The number of registers to read from address
         :param write_address: The address to start writing to
         :param values: List of values to write, or a single value to write
-        :param slave: (optional) Modbus slave unit ID
+        :param slave: (optional) Modbus slave ID
         :param kwargs:
         :raises ModbusException:
         """
@@ -472,8 +472,8 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
                 read_address=read_address,
                 read_count=read_count,
                 write_address=write_address,
-                values=values,
-                unit=slave,
+                write_registers=values,
+                slave=slave,
                 **kwargs,
             )
         )
@@ -508,7 +508,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     # ------------------
 
     class DATATYPE(Enum):
-        """Datatype enum for convert_* calls."""
+        """Datatype enum (name and number of bytes), used for convert_* calls."""
 
         INT16 = ("h", 1)
         UINT16 = ("H", 1)
@@ -528,7 +528,7 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
 
         :param registers: list of registers received from e.g. read_holding_registers()
         :param data_type: data type to convert to
-        :returns: int, float or str depending on "to_type"
+        :returns: int, float or str depending on "data_type"
         :raises ModbusException: when size of registers is not 1, 2 or 4
         """
         byte_list = bytearray()
@@ -550,12 +550,15 @@ class ModbusClientMixin:  # pylint: disable=too-many-public-methods
     ) -> List[int]:
         """Convert int/float/str to registers (16/32/64 bit).
 
-        :param value: value to be converted:
-        :param data_type: data type to convert to
+        :param value: value to be converted
+        :param data_type: data type to be encoded as registers
         :returns: List of registers, can be used directly in e.g. write_registers()
+        :raises TypeError: when there is a mismatch between data_type and value
         """
         if data_type == cls.DATATYPE.STRING:
-            byte_list = value.encode()  # type: ignore[union-attr]
+            if not isinstance(value, str):
+                raise TypeError(f"Value should be string but is {type(value)}.")
+            byte_list = value.encode()
             if len(byte_list) % 2:
                 byte_list += b"\x00"
         else:

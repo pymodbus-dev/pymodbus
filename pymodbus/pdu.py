@@ -1,4 +1,13 @@
 """Contains base classes for modbus request/response/error packets."""
+
+__all__ = [
+    "ModbusRequest",
+    "ModbusResponse",
+    "ModbusExceptions",
+    "ExceptionResponse",
+    "IllegalFunctionRequest",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -24,7 +33,7 @@ class ModbusPDU:
        This is a constant set at 0 to indicate Modbus.  It is
        put here for ease of expansion.
 
-    .. attribute:: unit
+    .. attribute:: slave_id
 
        This is used to route the request to the correct child. In
        the TCP modbus, it is used for routing (or not used at all. However,
@@ -45,15 +54,15 @@ class ModbusPDU:
        of encoding it again.
     """
 
-    def __init__(self, unit=Defaults.Slave, **kwargs):
+    def __init__(self, slave=Defaults.Slave, **kwargs):
         """Initialize the base data for a modbus request.
 
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
 
         """
         self.transaction_id = kwargs.get("transaction", Defaults.TransactionId)
         self.protocol_id = kwargs.get("protocol", Defaults.ProtocolId)
-        self.unit_id = unit
+        self.slave_id = slave
         self.skip_encode = kwargs.get("skip_encode", False)
         self.check = 0x0000
 
@@ -94,12 +103,12 @@ class ModbusRequest(ModbusPDU):
 
     function_code = -1
 
-    def __init__(self, unit=Defaults.Slave, **kwargs):
+    def __init__(self, slave=Defaults.Slave, **kwargs):
         """Proxy to the lower level initializer.
 
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        super().__init__(unit, **kwargs)
+        super().__init__(slave, **kwargs)
 
     def doException(self, exception):
         """Build an error response based on the function.
@@ -128,13 +137,15 @@ class ModbusResponse(ModbusPDU):
 
     should_respond = True
 
-    def __init__(self, unit=Defaults.Slave, **kwargs):
+    def __init__(self, slave=Defaults.Slave, **kwargs):
         """Proxy the lower level initializer.
 
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
 
         """
-        super().__init__(unit, **kwargs)
+        super().__init__(slave, **kwargs)
+        self.bits = []
+        self.registers = []
 
     def isError(self):
         """Check if the error is a success or failure."""
@@ -243,17 +254,3 @@ class IllegalFunctionRequest(ModbusRequest):
         :returns: The error response packet
         """
         return ExceptionResponse(self.function_code, self.ErrorCode)
-
-
-# --------------------------------------------------------------------------- #
-# Exported symbols
-# --------------------------------------------------------------------------- #
-
-
-__all__ = [
-    "ModbusRequest",
-    "ModbusResponse",
-    "ModbusExceptions",
-    "ExceptionResponse",
-    "IllegalFunctionRequest",
-]

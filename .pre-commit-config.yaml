@@ -1,21 +1,24 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
+---
+default_language_version:
+  python: python
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v4.4.0
     hooks:
     -   id: trailing-whitespace
-    # -   id: end-of-file-fixer
+    -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
--   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+# run ruff with --fix before black
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.263'
     hooks:
-    -   id: isort
-        exclude: ^(doc/_build|venv|.venv|.git|pymodbus/client/serial_asyncio)
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
 -   repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.3.0
     hooks:
     -   id: black
-        args: [--safe,--quiet]
+        args: [--safe, --quiet]
         files: (examples|pymodbus|test)/

@@ -56,14 +56,17 @@ from pymodbus.server import (
 _logger = logging.getLogger()
 
 
-def setup_server(args):
+def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
-    # The datastores only respond to the addresses that are initialized
-    # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
-    # 0x100 will respond with an invalid address exception.
-    # This is because many devices exhibit this kind of behavior (but not all)
+    args = get_commandline(server=True, description=description, cmdline=cmdline)
+    if context:
+        args.context = context
     if not args.context:
         _logger.info("### Create datastore")
+        # The datastores only respond to the addresses that are initialized
+        # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
+        # 0x100 will respond with an invalid address exception.
+        # This is because many devices exhibit this kind of behavior (but not all)
         if args.store == "sequential":
             # Continuing, use a sequential block without gaps.
             datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
@@ -78,11 +81,11 @@ def setup_server(args):
 
         if args.slaves:
             # The server then makes use of a server context that allows the server
-            # to respond with different slave contexts for different unit ids.
-            # By default it will return the same context for every unit id supplied
+            # to respond with different slave contexts for different slave ids.
+            # By default it will return the same context for every slave id supplied
             # (broadcast mode).
             # However, this can be overloaded by setting the single flag to False and
-            # then supplying a dictionary of unit id to context mapping::
+            # then supplying a dictionary of slave id to context mapping::
             #
             # The slave context can also be initialized in zero_mode which means
             # that a request to address(0-7) will map to the address (0-7).
@@ -112,7 +115,7 @@ def setup_server(args):
             single = False
         else:
             context = ModbusSlaveContext(
-                di=datablock, co=datablock, hr=datablock, ir=datablock, unit=1
+                di=datablock, co=datablock, hr=datablock, ir=datablock
             )
             single = True
 
@@ -154,10 +157,9 @@ async def run_async_server(args):
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "udp":
         address = ("127.0.0.1", args.port) if args.port else None
@@ -169,10 +171,9 @@ async def run_async_server(args):
             framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "serial":
         # socat -d -d PTY,link=/tmp/ptyp0,raw,echo=0,ispeed=9600
@@ -191,9 +192,8 @@ async def run_async_server(args):
             baudrate=args.baudrate,  # The baud rate to use for the serial device
             # handle_local_echo=False,  # Handle local echo of the USB-to-RS485 adaptor
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # strict=True,  # use strict timing, t1.5 for Modbus RTU
-            # defer_start=False,  # Only define server do not activate
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
@@ -220,18 +220,13 @@ async def run_async_server(args):
             # password="none",  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave
-            # broadcast_enable=False,  # treat unit_id 0 as broadcast address,
+            # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
             # TBD strict=True,  # use strict timing, t1.5 for Modbus RTU
-            defer_start=False,  # Only define server do not activate
         )
     return server
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run asynchronous server.",
-    )
-    run_args = setup_server(cmd_args)
+    run_args = setup_server(description="Run asynchronous server.")
     asyncio.run(run_async_server(run_args), debug=True)

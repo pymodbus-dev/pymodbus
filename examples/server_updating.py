@@ -30,7 +30,6 @@ The corresponding client can be started as:
 import asyncio
 import logging
 
-from examples.helper import get_commandline
 from examples.server_async import run_async_server, setup_server
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -43,10 +42,9 @@ _logger = logging.getLogger()
 
 
 async def updating_task(context):
-    """Run every so often,
+    """Run every so often and update live values of the context.
 
-    and updates live values of the context. It should be noted
-    that there is a lrace condition for the update.
+    It should be noted that there is a race condition for the update.
     """
     _logger.debug("updating the context")
     fc_as_hex = 3
@@ -60,7 +58,7 @@ async def updating_task(context):
     await asyncio.sleep(1)
 
 
-def setup_updating_server(args):
+def setup_updating_server(cmdline=None):
     """Run server setup."""
     # The datastores only respond to the addresses that are initialized
     # If you initialize a DataBlock to addresses of 0x00 to 0xFF, a request to
@@ -69,23 +67,19 @@ def setup_updating_server(args):
 
     # Continuing, use a sequential block without gaps.
     datablock = ModbusSequentialDataBlock(0x00, [17] * 100)
-    context = ModbusSlaveContext(
-        di=datablock, co=datablock, hr=datablock, ir=datablock, unit=1
+    context = ModbusSlaveContext(di=datablock, co=datablock, hr=datablock, ir=datablock)
+    context = ModbusServerContext(slaves=context, single=True)
+    return setup_server(
+        description="Run asynchronous server.", context=context, cmdline=cmdline
     )
-    args.context = ModbusServerContext(slaves=context, single=True)
-    return setup_server(args)
 
 
 async def run_updating_server(args):
     """Start updater task and async server."""
-    asyncio.create_task(updating_task(args.context))
+    asyncio.create_task(updating_task(args.context))  # noqa: RUF006
     await run_async_server(args)
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=True,
-        description="Run asynchronous server.",
-    )
-    run_args = setup_updating_server(cmd_args)
+    run_args = setup_updating_server()
     asyncio.run(run_updating_server(run_args), debug=True)

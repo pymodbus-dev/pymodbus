@@ -42,7 +42,6 @@ import pymodbus.mei_message as req_mei
 import pymodbus.other_message as req_other
 from examples.client_async import run_async_client, setup_async_client
 from examples.client_sync import run_sync_client, setup_sync_client
-from examples.helper import get_commandline
 from pymodbus.exceptions import ModbusException
 from pymodbus.pdu import ExceptionResponse
 
@@ -178,11 +177,11 @@ async def _handle_holding_registers(client):
         "read_address": 1,
         "read_count": 8,
         "write_address": 1,
-        "write_registers": [256, 128, 100, 50, 25, 10, 5, 1],
+        "values": [256, 128, 100, 50, 25, 10, 5, 1],
     }
     _check_call(await client.readwrite_registers(slave=SLAVE, **arguments))
     rr = _check_call(await client.read_holding_registers(1, 8, slave=SLAVE))
-    assert rr.registers == arguments["write_registers"]
+    assert rr.registers == arguments["values"]
 
 
 async def _handle_input_registers(client):
@@ -196,71 +195,77 @@ async def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
     rr = _check_call(
-        await client.execute(req_mei.ReadDeviceInformationRequest(unit=SLAVE))
+        await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     )
     assert rr.information[0] == b"Pymodbus"
 
-    rr = _check_call(await client.execute(req_other.ReportSlaveIdRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_other.ReportSlaveIdRequest(slave=SLAVE)))
     assert rr.status
 
     rr = _check_call(
-        await client.execute(req_other.ReadExceptionStatusRequest(unit=SLAVE))
+        await client.execute(req_other.ReadExceptionStatusRequest(slave=SLAVE))
     )
     assert not rr.status
 
     rr = _check_call(
-        await client.execute(req_other.GetCommEventCounterRequest(unit=SLAVE))
+        await client.execute(req_other.GetCommEventCounterRequest(slave=SLAVE))
     )
-    assert rr.status and not rr.count
+    assert rr.status
+    assert not rr.count
 
-    rr = _check_call(await client.execute(req_other.GetCommEventLogRequest(unit=SLAVE)))
-    assert rr.status and not (rr.event_count + rr.message_count + len(rr.events))
+    rr = _check_call(
+        await client.execute(req_other.GetCommEventLogRequest(slave=SLAVE))
+    )
+    assert rr.status
+    assert not (rr.event_count + rr.message_count + len(rr.events))
 
 
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(slave=SLAVE)))
     assert not rr.message[0]
 
     _check_call(
-        await client.execute(req_diag.RestartCommunicationsOptionRequest(unit=SLAVE))
+        await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnDiagnosticRegisterRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnDiagnosticRegisterRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(unit=SLAVE))
+        await client.execute(req_diag.ChangeAsciiInputDelimiterRequest(slave=SLAVE))
     )
 
-    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(unit=SLAVE)))
+    # NOT WORKING: _check_call(await client.execute(req_diag.ForceListenOnlyModeRequest(slave=SLAVE)))
     # does not send a response
 
     _check_call(await client.execute(req_diag.ClearCountersRequest()))
     _check_call(
         await client.execute(
-            req_diag.ReturnBusCommunicationErrorCountRequest(unit=SLAVE)
+            req_diag.ReturnBusCommunicationErrorCountRequest(slave=SLAVE)
         )
     )
     _check_call(
-        await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnBusExceptionErrorCountRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnSlaveMessageCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnSlaveMessageCountRequest(slave=SLAVE))
     )
     _check_call(
-        await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(unit=SLAVE))
+        await client.execute(req_diag.ReturnSlaveNoResponseCountRequest(slave=SLAVE))
     )
-    _check_call(await client.execute(req_diag.ReturnSlaveNAKCountRequest(unit=SLAVE)))
-    _check_call(await client.execute(req_diag.ReturnSlaveBusyCountRequest(unit=SLAVE)))
+    _check_call(await client.execute(req_diag.ReturnSlaveNAKCountRequest(slave=SLAVE)))
+    _check_call(await client.execute(req_diag.ReturnSlaveBusyCountRequest(slave=SLAVE)))
     _check_call(
         await client.execute(
-            req_diag.ReturnSlaveBusCharacterOverrunCountRequest(unit=SLAVE)
+            req_diag.ReturnSlaveBusCharacterOverrunCountRequest(slave=SLAVE)
         )
     )
-    _check_call(await client.execute(req_diag.ReturnIopOverrunCountRequest(unit=SLAVE)))
-    _check_call(await client.execute(req_diag.ClearOverrunCountRequest(unit=SLAVE)))
-    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(unit=SLAVE)))
+    _check_call(
+        await client.execute(req_diag.ReturnIopOverrunCountRequest(slave=SLAVE))
+    )
+    _check_call(await client.execute(req_diag.ClearOverrunCountRequest(slave=SLAVE)))
+    # NOT WORKING _check_call(await client.execute(req_diag.GetClearModbusPlusRequest(slave=SLAVE)))
 
 
 # ------------------------
@@ -284,12 +289,15 @@ def run_sync_calls(client):
     template_call(client)
 
 
+async def helper():
+    """Combine the setup and run"""
+    testclient = setup_async_client(description="Run asynchronous client.")
+    await run_async_client(testclient, modbus_calls=run_async_calls)
+
+
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run modbus calls in asynchronous client.",
+    asyncio.run(helper())
+    testclient = setup_sync_client(
+        description="Run modbus calls in synchronous client."
     )
-    testclient = setup_async_client(cmd_args)
-    asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))
-    testclient = setup_sync_client(cmd_args)
     run_sync_client(testclient, modbus_calls=run_sync_calls)

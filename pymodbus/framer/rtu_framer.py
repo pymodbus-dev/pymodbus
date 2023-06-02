@@ -7,7 +7,7 @@ from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
 )
-from pymodbus.framer import BYTE_ORDER, FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import BYTE_ORDER, FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.utilities import ModbusTransactionState, checkCRC, computeCRC
 
@@ -64,6 +64,7 @@ class ModbusRtuFramer(ModbusFramer):
         self._hsize = 0x01
         self._end = b"\x0d\x0a"
         self._min_frame_size = 4
+        self.function_codes = set(self.decoder.lookup) if self.decoder else {}
 
     # ----------------------------------------------------------------------- #
     # Private Helper Functions
@@ -73,7 +74,7 @@ class ModbusRtuFramer(ModbusFramer):
         if len(data) > self._hsize:
             uid = int(data[0])
             fcode = int(data[1])
-            return {"unit": uid, "fcode": fcode}
+            return {"slave": uid, "fcode": fcode}
         return {}
 
     def checkFrame(self):
@@ -117,7 +118,7 @@ class ModbusRtuFramer(ModbusFramer):
         Log.debug(
             "Resetting frame - Current Frame in buffer - {}", self._buffer, ":hex"
         )
-        self._buffer = b""
+        # self._buffer = b""
         self._header = {"uid": 0x00, "len": 0, "crc": b"\x00\x00"}
 
     def isFrameReady(self):
@@ -188,13 +189,30 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param result: The response packet
         """
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
         result.transaction_id = self._header["uid"]
+
+    def getFrameStart(self, slaves, broadcast, skip_cur_frame):
+        """Scan buffer for a relevant frame start."""
+        start = 1 if skip_cur_frame else 0
+        if (buf_len := len(self._buffer)) < 4:
+            return False
+        for i in range(start, buf_len - 3):  # <slave id><function code><crc 2 bytes>
+            if not broadcast and self._buffer[i] not in slaves:
+                continue
+            if self._buffer[i + 1] not in self.function_codes:
+                continue
+            if i:
+                self._buffer = self._buffer[i:]  # remove preceding trash.
+            return True
+        if buf_len > 3:
+            self._buffer = self._buffer[-3:]
+        return False
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
     # ----------------------------------------------------------------------- #
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -208,31 +226,32 @@ class ModbusRtuFramer(ModbusFramer):
 
         :param data: The new packet data
         :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
+        :param slave: Process if slave id matches, ignore otherwise (could be a
+               list of slave ids (server) or single slave id(client/server)
         :param kwargs:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
+        broadcast = not slave[0]
         self.addToFrame(data)
         single = kwargs.get("single", False)
-        while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
-                        self._process(callback)
-                    else:
-                        header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
-                        self.resetFrame()
-                        break
-                else:
-                    Log.debug("Frame check failed, ignoring!!")
-                    self.resetFrame()
-                    break
-            else:
+        skip_cur_frame = False
+        while self.getFrameStart(slave, broadcast, skip_cur_frame):
+            if not self.isFrameReady():
                 Log.debug("Frame - [{}] not ready", data)
                 break
+            if not self.checkFrame():
+                Log.debug("Frame check failed, ignoring!!")
+                self.resetFrame()
+                skip_cur_frame = True
+                continue
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                skip_cur_frame = True
+                continue
+            self._process(callback)
 
     def buildPacket(self, message):
         """Create a ready to send modbus packet.
@@ -241,11 +260,12 @@ class ModbusRtuFramer(ModbusFramer):
         """
         data = message.encode()
         packet = (
-            struct.pack(RTU_FRAME_HEADER, message.unit_id, message.function_code) + data
+            struct.pack(RTU_FRAME_HEADER, message.slave_id, message.function_code)
+            + data
         )
         packet += struct.pack(">H", computeCRC(packet))
-        # Ensure that transaction is actually the unit id for serial comms
-        message.transaction_id = message.unit_id
+        # Ensure that transaction is actually the slave id for serial comms
+        message.transaction_id = message.slave_id
         return packet
 
     def sendPacket(self, message):

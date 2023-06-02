@@ -4,9 +4,9 @@ import asyncio
 import ssl
 import time
 import traceback
+from contextlib import suppress
 from typing import Union
 
-from pymodbus.client.serial_asyncio import create_serial_connection
 from pymodbus.constants import Defaults
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
@@ -20,12 +20,11 @@ from pymodbus.transaction import (
     ModbusSocketFramer,
     ModbusTlsFramer,
 )
+from pymodbus.transport.serial_asyncio import create_serial_connection
 
 
-try:
+with suppress(ImportError):
     import serial
-except ImportError:
-    pass
 
 
 def sslctx_provider(
@@ -164,7 +163,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 traceback.format_exc(),
             )
 
-    async def handle(self):  # pylint: disable=too-complex
+    async def handle(self):
         """Return Asyncio coroutine which represents a single conversation.
 
         between the modbus slave and master
@@ -193,7 +192,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         reset_frame = False
         while self.running:
             try:
-                units = self.server.context.slaves()
+                slaves = self.server.context.slaves()
                 # this is an asyncio.Queue await, it will never fail
                 data = await self._recv_()
                 if isinstance(data, tuple):
@@ -202,13 +201,11 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 else:
                     addr = (None,)  # empty tuple
 
-                if not isinstance(units, (list, tuple)):
-                    units = [units]
                 # if broadcast is enabled make sure to
                 # process requests to address 0
                 if self.server.broadcast_enable:  # pragma: no cover
-                    if 0 not in units:
-                        units.append(0)
+                    if 0 not in slaves:
+                        slaves.append(0)
 
                 Log.debug("Handling data: {}", data, ":hex")
 
@@ -216,7 +213,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.framer.processIncomingPacket(
                     data=data,
                     callback=lambda x: self.execute(x, *addr),
-                    unit=units,
+                    slave=slaves,
                     single=single,
                 )
 
@@ -256,17 +253,17 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         broadcast = False
         try:
-            if self.server.broadcast_enable and not request.unit_id:
+            if self.server.broadcast_enable and not request.slave_id:
                 broadcast = True
                 # if broadcasting then execute on all slave contexts,
                 # note response will be ignored
-                for unit_id in self.server.context.slaves():
-                    response = request.execute(self.server.context[unit_id])
+                for slave_id in self.server.context.slaves():
+                    response = request.execute(self.server.context[slave_id])
             else:
-                context = self.server.context[request.unit_id]
+                context = self.server.context[request.slave_id]
                 response = request.execute(context)
         except NoSuchSlaveException:
-            Log.error("requested slave does not exist: {}", request.unit_id)
+            Log.error("requested slave does not exist: {}", request.slave_id)
             if self.server.ignore_missing_slaves:
                 return  # the client will simply timeout waiting for a response
             response = request.doException(merror.GatewayNoResponse)
@@ -280,7 +277,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         # no response when broadcasting
         if not broadcast:
             response.transaction_id = request.transaction_id
-            response.unit_id = request.unit_id
+            response.slave_id = request.slave_id
             skip_encoding = False
             if self.server.response_manipulator:
                 response, skip_encoding = self.server.response_manipulator(response)
@@ -389,7 +386,7 @@ class ModbusDisconnectedRequestHandler(
     def __init__(self, owner):
         """Initialize."""
         super().__init__(owner)
-        _future = asyncio.get_running_loop().create_future()
+        _future = asyncio.Future()
         self.server.on_connection_terminated = _future
 
     def connection_lost(self, call_exc):
@@ -513,8 +510,8 @@ class ModbusUnixServer:
                         reuse of an address.
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
@@ -536,7 +533,7 @@ class ModbusUnixServer:
             self.control.Identity.update(identity)
 
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -552,6 +549,7 @@ class ModbusUnixServer:
                     self.path,
                 )
                 self.serving.set_result(True)
+                Log.info("Server(Unix) listening.")
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
                 raise
@@ -595,7 +593,6 @@ class ModbusTcpServer:
         address=None,
         handler=None,
         allow_reuse_address=False,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -618,8 +615,8 @@ class ModbusTcpServer:
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
@@ -643,14 +640,14 @@ class ModbusTcpServer:
             self.control.Identity.update(identity)
 
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
         self.factory_parms = {
             "reuse_address": allow_reuse_address,
             "backlog": backlog,
-            "start_serving": not defer_start,
+            "start_serving": True,
         }
 
     async def serve_forever(self):
@@ -662,6 +659,7 @@ class ModbusTcpServer:
                 **self.factory_parms,
             )
             self.serving.set_result(True)
+            Log.info("Server(TCP) listening.")
             try:
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
@@ -715,7 +713,6 @@ class ModbusTlsServer(ModbusTcpServer):
         reqclicert=False,
         handler=None,
         allow_reuse_address=False,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -744,8 +741,8 @@ class ModbusTlsServer(ModbusTcpServer):
                     connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                        False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                        False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for
                         manipulating the response
         """
@@ -756,7 +753,6 @@ class ModbusTlsServer(ModbusTcpServer):
             address=address,
             handler=handler,
             allow_reuse_address=allow_reuse_address,
-            defer_start=defer_start,
             backlog=backlog,
             **kwargs,
         )
@@ -779,7 +775,6 @@ class ModbusUdpServer:
         identity=None,
         address=None,
         handler=None,
-        defer_start=False,
         backlog=20,
         **kwargs,
     ):
@@ -796,13 +791,12 @@ class ModbusUdpServer:
                             ModbusDisonnectedRequestHandler
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                            False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                            False to treat 0 as any other slave_id
         :param response_manipulator: Callback method for
                             manipulating the response
         """
         # TO BE REMOVED:
-        self.defer_start = defer_start
         self.backlog = backlog
         # ----------------
         self.loop = asyncio.get_running_loop()
@@ -824,8 +818,9 @@ class ModbusUdpServer:
         self.protocol = None
         self.endpoint = None
         self.on_connection_terminated = None
+        self.stop_serving = self.loop.create_future()
         # asyncio future that will be done once server has started
-        self.serving = self.loop.create_future()
+        self.serving = asyncio.Future()
         self.factory_parms = {
             "local_addr": self.address,
             "allow_broadcast": True,
@@ -845,7 +840,9 @@ class ModbusUdpServer:
             except Exception as exc:
                 Log.error("Server unexpected exception {}", exc)
                 raise RuntimeError(exc) from exc
+            Log.info("Server(UDP) listening.")
             self.serving.set_result(True)
+            await self.stop_serving
         else:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
@@ -859,10 +856,13 @@ class ModbusUdpServer:
         """Close server."""
         if self.endpoint:
             self.endpoint.running = False
+        if not self.stop_serving.done():
+            self.stop_serving.set_result(True)
         if self.endpoint is not None and self.endpoint.handler_task is not None:
             self.endpoint.handler_task.cancel()
         if self.protocol is not None:
             self.protocol.close()
+            # TBD await self.protocol.wait_closed()
             self.protocol = None
 
 
@@ -895,8 +895,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         :param handle_local_echo: (optional) Discard local echo from dongle.
         :param ignore_missing_slaves: True to not send errors on a request
                             to a missing slave
-        :param broadcast_enable: True to treat unit_id 0 as broadcast address,
-                            False to treat 0 as any other unit_id
+        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
+                            False to treat 0 as any other slave_id
         :param auto_reconnect: True to enable automatic reconnection,
                             False otherwise
         :param reconnect_delay: reconnect delay in seconds
@@ -1019,6 +1019,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        Log.info("Server(Serial) listening.")
         if self.device.startswith("socket:"):
             # Socket server means listen so start a socket server
             parts = self.device[9:].split(":")
@@ -1068,10 +1069,8 @@ class _serverList:
         for func in custom_functions:
             server.decoder.register(func)
         cls.active_server = _serverList(server)
-        try:
+        with suppress(asyncio.exceptions.CancelledError):
             await server.serve_forever()
-        except asyncio.CancelledError:
-            pass
 
     @classmethod
     async def async_stop(cls):

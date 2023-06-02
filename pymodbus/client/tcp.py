@@ -34,7 +34,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
 
             await client.connect()
             ...
-            await client.close()
+            client.close()
     """
 
     def __init__(
@@ -46,110 +46,33 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         **kwargs: Any,
     ) -> None:
         """Initialize Asyncio Modbus TCP Client."""
-        super().__init__(framer=framer, **kwargs)
-        self.use_protocol = True
+        asyncio.Protocol.__init__(self)
+        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port
         self.params.source_address = source_address
-        self.loop = None
-        self.connected = False
-        self.delay_ms = self.params.reconnect_delay
-        self._reconnect_task = None
+        if "internal_no_setup" in kwargs:
+            return
+        if host.startswith("unix:"):
+            self.setup_unix(False, host[5:])
+        else:
+            self.setup_tcp(False, host, port)
 
-    async def connect(self):  # pylint: disable=invalid-overridden-method
+    async def connect(self):
         """Initiate connection to start client."""
 
-        # if delay_ms was set to 0 by close(), we need to set it back again
+        # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
         self.reset_delay()
 
         # force reconnect if required:
-        self.loop = asyncio.get_running_loop()
         Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self._connect()
+        return await self.transport_connect()
 
-    async def close(self):  # pylint: disable=invalid-overridden-method
-        """Stop client."""
-        self.delay_ms = 0
-        if self.connected:
-            if self.transport:
-                self.transport.abort()
-                self.transport.close()
-            await self.async_close()
-            await asyncio.sleep(0.1)
-
-        if self._reconnect_task:
-            self._reconnect_task.cancel()
-            self._reconnect_task = None
-
-    def _create_protocol(self):
-        """Create initialized protocol instance with function."""
-        return self
-
-    async def _connect(self):
-        """Connect."""
-        Log.debug("Connecting.")
-        try:
-            if self.params.host.startswith("unix:"):
-                transport, protocol = await asyncio.wait_for(
-                    self.loop.create_unix_connection(
-                        self._create_protocol, path=self.params.host[5:]
-                    ),
-                    timeout=self.params.timeout,
-                )
-            else:
-                transport, protocol = await asyncio.wait_for(
-                    self.loop.create_connection(
-                        self._create_protocol,
-                        host=self.params.host,
-                        port=self.params.port,
-                    ),
-                    timeout=self.params.timeout,
-                )
-        except Exception as exc:  # pylint: disable=broad-except
-            Log.warning("Failed to connect: {}", exc)
-            if self.delay_ms > 0:
-                self._launch_reconnect()
-        else:
-            Log.info("Connected to {}:{}.", self.params.host, self.params.port)
-            self.reset_delay()
-            return transport, protocol
-
-    def client_made_connection(self, protocol):
-        """Notify successful connection."""
-        Log.info("Protocol made connection.")
-        if not self.connected:
-            self.connected = True
-        else:
-            Log.error("Factory protocol connect callback called while connected.")
-
-    def client_lost_connection(self, protocol):
-        """Notify lost connection."""
-        Log.info("Protocol lost connection.")
-        if protocol is not self:
-            Log.error("Factory protocol cb from unknown protocol instance.")
-
-        self.connected = False
-        if self.delay_ms > 0:
-            self._launch_reconnect()
-
-    def _launch_reconnect(self):
-        """Launch delayed reconnection coroutine"""
-        if self._reconnect_task:
-            Log.warning(
-                "Ignoring launch of delayed reconnection, another is in progress"
-            )
-        else:
-            self._reconnect_task = asyncio.create_task(self._reconnect())
-
-    async def _reconnect(self):
-        """Reconnect."""
-        Log.debug("Waiting {} ms before next connection attempt.", self.delay_ms)
-        await asyncio.sleep(self.delay_ms / 1000)
-        self.delay_ms = min(2 * self.delay_ms, self.params.reconnect_delay_max)
-
-        self._reconnect_task = None
-        return await self._connect()
+    @property
+    def connected(self):
+        """Return true if connected."""
+        return self.transport is not None
 
 
 class ModbusTcpClient(ModbusBaseClient):
@@ -191,13 +114,14 @@ class ModbusTcpClient(ModbusBaseClient):
         self.params.port = port
         self.params.source_address = source_address
         self.socket = None
+        self.use_sync = True
 
     @property
     def connected(self):
         """Connect internal."""
-        return self.connect()
+        return self.transport is not None
 
-    def connect(self):
+    def connect(self):  # pylint: disable=invalid-overridden-method
         """Connect to the modbus tcp server."""
         if self.socket:
             return True
@@ -216,7 +140,7 @@ class ModbusTcpClient(ModbusBaseClient):
                 "Connection to Modbus server established. Socket {}",
                 self.socket.getsockname(),
             )
-        except socket.error as msg:
+        except OSError as msg:
             Log.error(
                 "Connection to ({}, {}) failed: {}",
                 self.params.host,
@@ -226,7 +150,7 @@ class ModbusTcpClient(ModbusBaseClient):
             self.close()
         return self.socket is not None
 
-    def close(self):
+    def close(self):  # pylint: disable=arguments-differ
         """Close the underlying socket connection."""
         if self.socket:
             self.socket.close()
@@ -309,9 +233,7 @@ class ModbusTcpClient(ModbusBaseClient):
 
         return b"".join(data)
 
-    def _handle_abrupt_socket_close(
-        self, size, data, duration
-    ):  # pylint: disable=missing-type-doc
+    def _handle_abrupt_socket_close(self, size, data, duration):
         """Handle unexpected socket close by remote end.
 
         Intended to be invoked after determining that the remote end
@@ -338,7 +260,7 @@ class ModbusTcpClient(ModbusBaseClient):
             result = b"".join(data)
             Log.warning(" after returning {} bytes: {} ", len(result), result)
             return result
-        msg += " without response from unit before it closed connection"
+        msg += " without response from slave before it closed connection"
         raise ConnectionException(msg)
 
     def is_socket_open(self):

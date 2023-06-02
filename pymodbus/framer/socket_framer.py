@@ -6,7 +6,7 @@ from pymodbus.exceptions import (
     InvalidMessageReceivedException,
     ModbusIOException,
 )
-from pymodbus.framer import SOCKET_FRAME_HEADER, ModbusFramer
+from pymodbus.framer.base import SOCKET_FRAME_HEADER, ModbusFramer
 from pymodbus.logging import Log
 
 
@@ -117,7 +117,7 @@ class ModbusSocketFramer(ModbusFramer):
         """
         result.transaction_id = self._header["tid"]
         result.protocol_id = self._header["pid"]
-        result.unit_id = self._header["uid"]
+        result.slave_id = self._header["uid"]
 
     # ----------------------------------------------------------------------- #
     # Public Member Functions
@@ -132,12 +132,12 @@ class ModbusSocketFramer(ModbusFramer):
                 "tid": tid,
                 "pid": pid,
                 "length": length,
-                "unit": uid,
+                "slave": uid,
                 "fcode": fcode,
             }
         return {}
 
-    def processIncomingPacket(self, data, callback, unit, **kwargs):
+    def processIncomingPacket(self, data, callback, slave, tid: int = None, **kwargs):
         """Process new packet pattern.
 
         This takes in a new request packet, adds it to the current
@@ -148,47 +148,44 @@ class ModbusSocketFramer(ModbusFramer):
 
         The processed and decoded messages are pushed to the callback
         function to process and send.
-
-        :param data: The new packet data
-        :param callback: The function to send results to
-        :param unit: Process if unit id matches, ignore otherwise (could be a
-               list of unit ids (server) or single unit id(client/server)
-        :param kwargs:
         """
-        if not isinstance(unit, (list, tuple)):
-            unit = [unit]
+        if not isinstance(slave, (list, tuple)):
+            slave = [slave]
         single = kwargs.get("single", False)
         Log.debug("Processing: {}", data, ":hex")
         self.addToFrame(data)
         while True:
-            if self.isFrameReady():
-                if self.checkFrame():
-                    if self._validate_unit_id(unit, single):
-                        self._process(callback)
-                    else:
-                        header_txt = self._header["uid"]
-                        Log.debug("Not a valid unit id - {}, ignoring!!", header_txt)
-                        self.resetFrame()
-                else:
-                    Log.debug("Frame check failed, ignoring!!")
-                    self.resetFrame()
-            else:
+            if not self.isFrameReady():
                 if len(self._buffer):
                     # Possible error ???
                     if self._header["len"] < 2:
-                        self._process(callback, error=True)
+                        self._process(callback, tid, error=True)
                 break
+            if not self.checkFrame():
+                Log.debug("Frame check failed, ignoring!!")
+                self.resetFrame()
+                continue
+            if not self._validate_slave_id(slave, single):
+                header_txt = self._header["uid"]
+                Log.debug("Not a valid slave id - {}, ignoring!!", header_txt)
+                self.resetFrame()
+                continue
+            self._process(callback, tid)
 
-    def _process(self, callback, error=False):
+    def _process(self, callback, tid, error=False):
         """Process incoming packets irrespective error condition."""
         data = self.getRawFrame() if error else self.getFrame()
         if (result := self.decoder.decode(data)) is None:
+            self.resetFrame()
             raise ModbusIOException("Unable to decode request")
         if error and result.function_code < 0x80:
             raise InvalidMessageReceivedException(result)
         self.populateResult(result)
         self.advanceFrame()
-        callback(result)  # defer or push to a thread?
+        if tid and tid != result.transaction_id:
+            self.resetFrame()
+        else:
+            callback(result)  # defer or push to a thread?
 
     def resetFrame(self):
         """Reset the entire message frame.
@@ -217,7 +214,7 @@ class ModbusSocketFramer(ModbusFramer):
             message.transaction_id,
             message.protocol_id,
             len(data) + 2,
-            message.unit_id,
+            message.slave_id,
             message.function_code,
         )
         packet += data

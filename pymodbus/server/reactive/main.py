@@ -164,7 +164,7 @@ class ReactiveModbusSlaveContext(ModbusSlaveContext):
         :returns: The requested values from a:a+c
         """
         if not self.zero_mode:
-            address = address + 1
+            address += 1
         Log.debug("getValues: fc-[{}] address-{}: count-{}", fc_as_hex, address, count)
         _block_type = self.decode(fc_as_hex)
         if self._randomize > 0 and _block_type in {"d", "i"}:
@@ -215,7 +215,7 @@ class ReactiveServer:
         self._add_routes()
         self._counter = 0
         self._modbus_server.response_manipulator = self.manipulate_response
-        self._manipulator_config = dict(**DEFAULT_MANIPULATOR)
+        self._manipulator_config = {**DEFAULT_MANIPULATOR}
         self._web_app.on_startup.append(self.start_modbus_server)
         self._web_app.on_shutdown.append(self.stop_modbus_server)
 
@@ -322,7 +322,7 @@ class ReactiveServer:
             Log.warning("Sending error response for all incoming requests")
             err_response = ExceptionResponse(response.function_code, error_code)
             err_response.transaction_id = response.transaction_id
-            err_response.unit_id = response.unit_id
+            err_response.slave_id = response.slave_id
             response = err_response
             self._counter += 1
         elif response_type == "delayed":
@@ -396,7 +396,7 @@ class ReactiveServer:
     def create_context(
         cls,
         data_block_settings: dict = {},
-        unit: list[int] | int = [1],
+        slave: list[int] | int = [1],
         single: bool = False,
         randomize: int = 0,
         change_rate: int = 0,
@@ -404,17 +404,17 @@ class ReactiveServer:
         """Create Modbus context.
 
         :param data_block_settings: Datablock (dict) Refer DEFAULT_DATA_BLOCK
-        :param unit: Unit id for the slave
+        :param slave: Unit id for the slave
         :param single: To run as a single slave
         :param randomize: Randomize every <n> reads for DI and IR.
         :param change_rate: Rate in % of registers to change for DI and IR.
         :return: ModbusServerContext object
         """
         data_block = data_block_settings.pop("data_block", DEFAULT_DATA_BLOCK)
-        if not isinstance(unit, list):
-            unit = [unit]
+        if not isinstance(slave, list):
+            slave = [slave]
         slaves = {}
-        for i in unit:
+        for i in slave:
             block = {}
             for modbus_entity, block_desc in data_block.items():
                 start_address = block_desc.get("block_start", 0)
@@ -454,7 +454,7 @@ class ReactiveServer:
         server,
         framer=None,
         context=None,
-        unit=1,
+        slave=1,
         single=False,
         host="localhost",
         modbus_port=5020,
@@ -468,7 +468,7 @@ class ReactiveServer:
         :param server: Modbus server type (tcp, rtu, tls, udp)
         :param framer: Modbus framer (ModbusSocketFramer, ModbusRTUFramer, ModbusTLSFramer)
         :param context: Modbus server context to use
-        :param unit: Modbus unit id
+        :param slave: Modbus slave id
         :param single: Run in single mode
         :param host: Host address to use for both web app and modbus server (default localhost)
         :param modbus_port: Modbus port for TCP and UDP server(default: 5020)
@@ -493,7 +493,7 @@ class ReactiveServer:
         if not context:
             context = cls.create_context(
                 data_block_settings=data_block_settings,
-                unit=unit,
+                slave=slave,
                 single=single,
                 randomize=randomize,
                 change_rate=change_rate,
@@ -509,7 +509,6 @@ class ReactiveServer:
                 framer=framer,
                 identity=identity,
                 address=(host, modbus_port),
-                defer_start=False,
                 **kwargs,
             )
         return ReactiveServer(host, web_port, server)

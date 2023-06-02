@@ -1,4 +1,10 @@
 """Encapsulated Interface (MEI) Transport Messages."""
+
+__all__ = [
+    "ReadDeviceInformationRequest",
+    "ReadDeviceInformationResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -164,7 +170,7 @@ class ReadDeviceInformationResponse(ModbusResponse):
         self.space_left = 253 - 6
         objects = b""
         try:
-            for (object_id, data) in iter(self.information.items()):
+            for object_id, data in iter(self.information.items()):
                 if isinstance(data, list):
                     for item in data:
                         objects += self._encode_object(object_id, item)
@@ -210,12 +216,3 @@ class ReadDeviceInformationResponse(ModbusResponse):
         :returns: The string representation of the response
         """
         return f"ReadDeviceInformationResponse({self.read_code})"
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadDeviceInformationRequest",
-    "ReadDeviceInformationResponse",
-]

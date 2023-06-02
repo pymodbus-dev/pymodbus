@@ -1,4 +1,13 @@
 """Bit Reading Request/Response messages."""
+
+__all__ = [
+    "ReadBitsResponseBase",
+    "ReadCoilsRequest",
+    "ReadCoilsResponse",
+    "ReadDiscreteInputsRequest",
+    "ReadDiscreteInputsResponse",
+]
+
 # pylint: disable=missing-type-doc
 import struct
 
@@ -13,14 +22,14 @@ class ReadBitsRequestBase(ModbusRequest):
 
     _rtu_frame_size = 8
 
-    def __init__(self, address, count, unit=Defaults.Slave, **kwargs):
+    def __init__(self, address, count, slave=Defaults.Slave, **kwargs):
         """Initialize the read request data.
 
         :param address: The start address to read from
         :param count: The number of bits after "address" to read
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ModbusRequest.__init__(self, unit, **kwargs)
+        ModbusRequest.__init__(self, slave, **kwargs)
         self.address = address
         self.count = count
 
@@ -67,13 +76,13 @@ class ReadBitsResponseBase(ModbusResponse):
 
     _rtu_byte_count_pos = 2
 
-    def __init__(self, values, unit=Defaults.Slave, **kwargs):
+    def __init__(self, values, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param values: The requested values to be returned
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ModbusResponse.__init__(self, unit, **kwargs)
+        ModbusResponse.__init__(self, slave, **kwargs)
 
         #: A list of booleans representing bit values
         self.bits = values or []
@@ -138,14 +147,14 @@ class ReadCoilsRequest(ReadBitsRequestBase):
     function_code = 1
     function_code_name = "read_coils"
 
-    def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         :param count: The number of bits to read
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ReadBitsRequestBase.__init__(self, address, count, unit, **kwargs)
+        ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
 
     def execute(self, context):
         """Run a read coils request against a datastore.
@@ -183,13 +192,13 @@ class ReadCoilsResponse(ReadBitsResponseBase):
 
     function_code = 1
 
-    def __init__(self, values=None, unit=Defaults.Slave, **kwargs):
+    def __init__(self, values=None, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ReadBitsResponseBase.__init__(self, values, unit, **kwargs)
+        ReadBitsResponseBase.__init__(self, values, slave, **kwargs)
 
 
 class ReadDiscreteInputsRequest(ReadBitsRequestBase):
@@ -204,14 +213,14 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
     function_code = 2
     function_code_name = "read_discrete_input"
 
-    def __init__(self, address=None, count=None, unit=Defaults.Slave, **kwargs):
+    def __init__(self, address=None, count=None, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param address: The address to start reading from
         :param count: The number of bits to read
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ReadBitsRequestBase.__init__(self, address, count, unit, **kwargs)
+        ReadBitsRequestBase.__init__(self, address, count, slave, **kwargs)
 
     def execute(self, context):
         """Run a read discrete input request against a datastore.
@@ -249,22 +258,10 @@ class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     function_code = 2
 
-    def __init__(self, values=None, unit=Defaults.Slave, **kwargs):
+    def __init__(self, values=None, slave=Defaults.Slave, **kwargs):
         """Initialize a new instance.
 
         :param values: The request values to respond with
-        :param unit: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         """
-        ReadBitsResponseBase.__init__(self, values, unit, **kwargs)
-
-
-# ---------------------------------------------------------------------------#
-#  Exported symbols
-# ---------------------------------------------------------------------------#
-__all__ = [
-    "ReadBitsResponseBase",
-    "ReadCoilsRequest",
-    "ReadCoilsResponse",
-    "ReadDiscreteInputsRequest",
-    "ReadDiscreteInputsResponse",
-]
+        ReadBitsResponseBase.__init__(self, values, slave, **kwargs)

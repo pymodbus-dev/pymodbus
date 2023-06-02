@@ -13,7 +13,6 @@ import logging
 import pymodbus.diag_message as req_diag
 import pymodbus.mei_message as req_mei
 from examples.client_async import run_async_client, setup_async_client
-from examples.helper import get_commandline
 from pymodbus.pdu import ExceptionResponse
 
 
@@ -50,53 +49,59 @@ async def _handle_discrete_input(client):
 async def _handle_holding_registers(client):
     """Read/write holding registers."""
     _logger.info("### write holding register and read holding registers")
-    _check_call(await client.write_register(3, 17, slave=SLAVE))
+    _check_call(await client.write_register(3, 21, slave=SLAVE))
     rr = None
-    rr = _check_call(await client.read_holding_registers(3, 1, slave=SLAVE))
-    assert rr.registers[0] == 17
     rr = _check_call(await client.read_holding_registers(4, 2, slave=SLAVE))
-    assert rr.registers[0] == 9
-    assert rr.registers[1] == 27177
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
+    rr = _check_call(await client.read_holding_registers(3, 1, slave=SLAVE))
+    assert rr.registers[0] == 21
 
 
 async def _execute_information_requests(client):
     """Execute extended information requests."""
     _logger.info("### Running information requests.")
     rr = _check_call(
-        await client.execute(req_mei.ReadDeviceInformationRequest(unit=SLAVE))
+        await client.execute(req_mei.ReadDeviceInformationRequest(slave=SLAVE))
     )
-    assert rr.information[0] == b"pymodbus"
+    assert rr.information[0] == b"Pymodbus"
 
 
 async def _execute_diagnostic_requests(client):
     """Execute extended diagnostic requests."""
     _logger.info("### Running diagnostic requests.")
-    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(unit=SLAVE)))
+    rr = _check_call(await client.execute(req_diag.ReturnQueryDataRequest(slave=SLAVE)))
     assert not rr.message[0]
 
     _check_call(
-        await client.execute(req_diag.RestartCommunicationsOptionRequest(unit=SLAVE))
+        await client.execute(req_diag.RestartCommunicationsOptionRequest(slave=SLAVE))
     )
 
 
 # ------------------------
 # Run the calls in groups.
 # ------------------------
-
-
-async def run_async_calls(client):
+async def run_async_simple_calls(client):
     """Demonstrate basic read/write calls."""
     await _handle_coils(client)
     await _handle_discrete_input(client)
     await _handle_holding_registers(client)
+
+
+async def run_async_extended_calls(client):
+    """Demonstrate basic read/write calls."""
     await _execute_information_requests(client)
     await _execute_diagnostic_requests(client)
 
 
+async def run_async_calls(client):
+    """Demonstrate basic read/write calls."""
+    await run_async_simple_calls(client)
+    await run_async_extended_calls(client)
+
+
 if __name__ == "__main__":
-    cmd_args = get_commandline(
-        server=False,
-        description="Run modbus calls in asynchronous client.",
+    testclient = setup_async_client(
+        description="Run modbus calls in asynchronous client."
     )
-    testclient = setup_async_client(cmd_args)
     asyncio.run(run_async_client(testclient, modbus_calls=run_async_calls))

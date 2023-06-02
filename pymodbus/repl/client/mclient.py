@@ -54,7 +54,7 @@ def handle_brodcast(func):
     def _wrapper(*args, **kwargs):
         self = args[0]
         resp = func(*args, **kwargs)
-        if not kwargs.get("unit") and self.params.broadcast_enable:
+        if not kwargs.get("slave") and self.params.broadcast_enable:
             return {"broadcasted": True}
         if not resp.isError():
             return make_response_dict(resp)
@@ -71,11 +71,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
     @staticmethod
     def _process_exception(resp, **kwargs):
         """Set internal process exception."""
-        unit = kwargs.get("unit")
-        if (
-            unit  # pylint: disable=compare-to-zero,disable=consider-using-assignment-expr
-            == 0
-        ):
+        if "slave" not in kwargs:
             err = {"message": "Broadcast message, ignoring errors!!!"}
         else:
             if isinstance(resp, ExceptionResponse):  # pylint: disable=else-if-used
@@ -99,7 +95,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :returns: List of register values
         """
@@ -108,14 +104,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_discrete_inputs(self, address, count=1, slave=Defaults.Slave, **kwargs):
         """Read `count` number of discrete inputs starting at offset `address`.
 
         :param address: The starting address to read from
         :param count: The number of coils to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return: List of bits
         """
@@ -124,7 +120,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "bits": resp.bits}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     @handle_brodcast
     def write_coil(self, address, value, slave=Defaults.Slave, **kwargs):
@@ -132,7 +128,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param value: bit value to write
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -147,7 +143,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: coil offset to write to
         :param values: list of bit values to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -162,7 +158,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param value: register value to write
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -177,7 +173,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: register offset to write to
         :param values: list of register value to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -191,7 +187,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
 
         :param address: starting register offset to read from
         :param count: Number of registers to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -200,14 +196,14 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_input_registers(self, address, count=1, slave=Defaults.Slave, **kwargs):
         """Read `count` number of input registers starting at `address`.
 
         :param address: starting register offset to read from to
         :param count: Number of registers to read
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -216,7 +212,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def readwrite_registers(
         self,
@@ -236,7 +232,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param read_count: Number of registers to read
         :param write_address: register offset to write to
         :param values: List of register values to write (comma separated)
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -250,7 +246,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         )
         if not resp.isError():
             return {"function_code": resp.function_code, "registers": resp.registers}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def mask_write_register(
         self,
@@ -265,7 +261,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         :param address: Reference address of register
         :param and_mask: And Mask
         :param or_mask: OR Mask
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave slave ID
         :param kwargs:
         :return:
         """
@@ -279,7 +275,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "and mask": resp.and_mask,
                 "or mask": resp.or_mask,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_device_information(self, read_code=None, object_id=0x00, **kwargs):
         """Read the identification and additional information of remote slave.
@@ -301,12 +297,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "more follows": resp.more_follows,
                 "space left": resp.space_left,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
     def report_slave_id(self, slave=Defaults.Slave, **kwargs):
         """Report information about remote slave ID.
 
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave ID
         :param kwargs:
         :return:
         """
@@ -319,12 +315,12 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "status": resp.status,
                 "byte count": resp.byte_count,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=slave)
 
     def read_exception_status(self, slave=Defaults.Slave, **kwargs):
         """Read contents of eight Exception Status output in a remote device.
 
-        :param slave: Modbus slave unit ID
+        :param slave: Modbus slave ID
         :param kwargs:
         :return:
         """
@@ -332,7 +328,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
         resp = self.execute(request)  # pylint: disable=no-member
         if not resp.isError():
             return {"function_code": resp.function_code, "status": resp.status}
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
     def get_com_event_counter(self, **kwargs):
         """Read status word and an event count.
@@ -350,7 +346,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "status": resp.status,
                 "count": resp.count,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
     def get_com_event_log(self, **kwargs):
         """Read status word.
@@ -371,7 +367,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "event count": resp.event_count,
                 "events": resp.events,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
     def _execute_diagnostic_request(self, request):
         """Execute diagnostic request."""
@@ -382,7 +378,7 @@ class ExtendedRequestSupport:  # pylint: disable=(too-many-public-methods
                 "sub function code": resp.sub_function_code,
                 "message": resp.message,
             }
-        return ExtendedRequestSupport._process_exception(resp)
+        return ExtendedRequestSupport._process_exception(resp, slave=request.slave_id)
 
     def return_query_data(self, message=0, **kwargs):
         """Loop back data sent in response.

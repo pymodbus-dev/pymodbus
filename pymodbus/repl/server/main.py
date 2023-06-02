@@ -138,8 +138,8 @@ def run(
         help="Modbus framer to use",
     ),
     modbus_port: int = typer.Option(5020, "--modbus-port", "-p", help="Modbus port"),
-    modbus_unit_id: List[int] = typer.Option(
-        None, "--unit-id", "-u", help="Supported Modbus unit id's"
+    modbus_slave_id: List[int] = typer.Option(
+        [1], "--slave-id", "-u", help="Supported Modbus slave id's"
     ),
     modbus_config_path: Path = typer.Option(
         None, help="Path to additional modbus server config"
@@ -191,21 +191,18 @@ def run(
         modbus_server,
         framer,
         modbus_port=modbus_port,
-        unit=modbus_unit_id,
+        slave=modbus_slave_id,
         loop=loop,
         single=False,
         data_block_settings=data_block_settings,
         **web_app_config,
         **modbus_config,
     )
-    try:
+    if repl:
+        loop.run_until_complete(run_repl(app))
+    else:
         loop.run_until_complete(app.run_async(repl))
-        if repl:
-            loop.run_until_complete(run_repl(app))
         loop.run_forever()
-
-    except CANCELLED_ERROR:
-        print("Done!!!!!")
 
 
 if __name__ == "__main__":

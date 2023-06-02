@@ -64,7 +64,7 @@ docker run -it pymodbus-dev/pymodbus pymodbus.server --help
 │ --modbus-server  -s      TEXT     Modbus Server [default: ModbusServerTypes.tcp]                                           │
 │ --framer         -f      TEXT     Modbus framer to use [default: ModbusFramerTypes.socket]                                 │
 │ --modbus-port    -p      INTEGER  Modbus port [default: 5020]                                                              │
-│ --unit-id        -u      INTEGER  Supported Modbus unit id's [default: None]                                               │
+│ --slave-id       -u      INTEGER  Supported Modbus slave id's [default: None]                                              │
 │ --modbus-config-path     PATH     Path to additional modbus server config [default: None]                                  │
 │ --random         -r      INTEGER  Randomize every `r` reads. 0=never, 1=always,2=every-second-read, and so on. Applicable  │
 │                                   IR and DI.                                                                               │
@@ -81,7 +81,7 @@ Don't forget to restart the terminal for the auto-completion to kick-in. Use `TA
 Example usage.
 
 ```shell
-✗ pymodbus.server run --modbus-server tcp --framer socket --unit-id 1 --unit-id 4 --random 2
+✗ pymodbus.server run --modbus-server tcp --framer socket --slave-id 1 --slave-id 4 --random 2
 
 __________                          .______.                    _________
 \______   \___.__. _____   ____   __| _/\_ |__  __ __  ______  /   _____/ ______________  __ ___________
@@ -121,7 +121,7 @@ Usage: manipulator response_type=|normal|error|delayed|empty|stray
 To run the Reactive server in the non-repl mode use `--no-repl` flag while starting the server. The server responses can still be manipulated with REST API calls.
 
 ```
-pymodbus.server --no-repl --verbose run  --modbus-server tcp --framer socket --unit-id 1 --unit-id 4 --random 2 --modbus-port 5020
+pymodbus.server --no-repl --verbose run  --modbus-server tcp --framer socket --slave-id 1 --slave-id 4 --random 2 --modbus-port 5020
 2022-10-27 13:32:56,062 MainThread      INFO     main           :246      Modbus server started
 
 Reactive Modbus Server started.

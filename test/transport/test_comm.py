@@ -1,7 +1,6 @@
 """Test transport."""
 import asyncio
 import os
-import sys
 import time
 from tempfile import gettempdir
 
@@ -364,19 +363,16 @@ class TestCommTransport:
         client.setup_tcp(False, "localhost", 5101)
         assert await client.transport_connect() != (None, None)
         server.close()
-        count = 100
+        count = 500
         while client.transport and count:
             await asyncio.sleep(0.1)
             count -= 1
-        if not sys.platform.startswith("win"):
-            assert not client.transport
-            assert client.reconnect_timer
-            assert (
-                client.reconnect_delay_current == 2 * client.comm_params.reconnect_delay
-            )
-            await asyncio.sleep(client.reconnect_delay_current * 1.2)
-            assert client.transport
-            assert client.reconnect_timer
-            assert client.reconnect_delay_current == client.comm_params.reconnect_delay
+        assert not client.transport
+        assert client.reconnect_timer
+        assert client.reconnect_delay_current == client.comm_params.reconnect_delay
+        await asyncio.sleep(client.reconnect_delay_current * 1.2)
+        assert client.transport
+        assert client.reconnect_timer
+        assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         client.close()
         server.close()

@@ -95,14 +95,14 @@ class BaseTransport:
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
-        self.reconnect_timer: asyncio.TimerHandle = None
+        self.reconnect_timer: asyncio.Task = None
         self.recv_buffer: bytes = b""
         self.call_connect_listen: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
         self.use_udp = False
 
-    # ----------------------------- #
-    # Transport specific parameters #
-    # ----------------------------- #
+    # ------------------------ #
+    # Transport specific setup #
+    # ------------------------ #
     def setup_unix(self, setup_server: bool, host: str):
         """Prepare transport unix"""
         if sys.platform.startswith("win"):
@@ -263,6 +263,7 @@ class BaseTransport:
     async def transport_connect(self):
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
+        self.transport, self.protocol = None, None
         try:
             self.transport, self.protocol = await asyncio.wait_for(
                 self.call_connect_listen(),
@@ -306,7 +307,8 @@ class BaseTransport:
         """
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
         self.cb_connection_lost(reason)
-        self.close(reconnect=True)
+        self.close()
+        self.reconnect_timer = asyncio.create_task(self.reconnect_connect())
 
     def eof_received(self):
         """Call when eof received (other end closed connection).
@@ -352,28 +354,10 @@ class BaseTransport:
             self.transport.close()
             self.transport = None
         self.protocol = None
-        if self.reconnect_timer:
+        if not reconnect and self.reconnect_timer:
             self.reconnect_timer.cancel()
             self.reconnect_timer = None
         self.recv_buffer = b""
-
-        if not reconnect or not self.reconnect_delay_current:
-            self.reconnect_delay_current = 0
-            return
-
-        Log.debug(
-            "Waiting {} {} ms reconnecting.",
-            self.comm_params.comm_name,
-            self.reconnect_delay_current * 1000,
-        )
-        self.reconnect_timer = self.loop.call_later(
-            self.reconnect_delay_current,
-            asyncio.create_task,
-            self.transport_connect(),
-        )
-        self.reconnect_delay_current = min(
-            2 * self.reconnect_delay_current, self.comm_params.reconnect_delay_max
-        )
 
     def reset_delay(self) -> None:
         """Reset wait time before next reconnect to minimal period."""
@@ -385,6 +369,22 @@ class BaseTransport:
     def handle_listen(self):
         """Handle incoming connect."""
         return self
+
+    async def reconnect_connect(self):
+        """Handle reconnect as a task."""
+        self.reconnect_delay_current = self.comm_params.reconnect_delay
+        transport = None
+        while not transport:
+            Log.debug(
+                "Wait {} {} ms before reconnecting.",
+                self.comm_params.comm_name,
+                self.reconnect_delay_current * 1000,
+            )
+            await asyncio.sleep(self.reconnect_delay_current)
+            transport, _protocol = await self.transport_connect()
+            self.reconnect_delay_current = min(
+                2 * self.reconnect_delay_current, self.comm_params.reconnect_delay_max
+            )
 
     # ----------------- #
     # The magic methods #

@@ -1,4 +1,6 @@
 """Base for all transport types."""
+# mypy: disable-error-code="attr-defined"
+# needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
 
 import asyncio
@@ -89,7 +91,7 @@ class BaseTransport:
         )
 
         self.reconnect_delay_current: float = 0
-        self.transport: asyncio.BaseTransport | asyncio.Server = None  # type: ignore[attr-defined, unused-ignore]
+        self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()

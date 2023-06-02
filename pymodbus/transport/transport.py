@@ -1,9 +1,11 @@
 """Base for all transport types."""
+# mypy: disable-error-code="name-defined"
+# needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
 
 import asyncio
-import platform
 import ssl
+import sys
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Coroutine
@@ -11,10 +13,6 @@ from typing import Any, Callable, Coroutine
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
-
-
-with suppress(ImportError):
-    pass
 
 
 class BaseTransport:
@@ -93,7 +91,7 @@ class BaseTransport:
         )
 
         self.reconnect_delay_current: float = 0
-        self.transport: asyncio.BaseTransport | asyncio.Server = None  # type: ignore[name-defined]
+        self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.protocol: asyncio.BaseProtocol = None
         with suppress(RuntimeError):
             self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
@@ -107,7 +105,7 @@ class BaseTransport:
     # ----------------------------- #
     def setup_unix(self, setup_server: bool, host: str):
         """Prepare transport unix"""
-        if platform.system().lower() == "windows":
+        if sys.platform.startswith("win"):
             raise RuntimeError("Modbus_unix is not supported on Windows!")
         self.comm_params.check_done()
         self.comm_params.done = True
@@ -366,7 +364,7 @@ class BaseTransport:
         Log.debug(
             "Waiting {} {} ms reconnecting.",
             self.comm_params.comm_name,
-            self.reconnect_delay_current,
+            self.reconnect_delay_current * 1000,
         )
         self.reconnect_timer = self.loop.call_later(
             self.reconnect_delay_current,

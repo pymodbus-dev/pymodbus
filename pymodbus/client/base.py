@@ -88,8 +88,8 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         close_comm_on_error: bool = Defaults.CloseCommOnError,
         strict: bool = Defaults.Strict,
         broadcast_enable: bool = Defaults.BroadcastEnable,
-        reconnect_delay: int = Defaults.ReconnectDelay,
-        reconnect_delay_max: int = Defaults.ReconnectDelayMax,
+        reconnect_delay: int = 0.1,
+        reconnect_delay_max: int = 300,
         on_reconnect_callback: Callable[[], None] | None = None,
         **kwargs: Any,
     ) -> None:

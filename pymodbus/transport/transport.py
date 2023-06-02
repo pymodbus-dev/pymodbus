@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import asyncio
-import platform
 import ssl
+import sys
+
+# Needed due to python 3.8 where Server is not defined
+from asyncio import Server as asyncio_server
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Coroutine
@@ -11,16 +14,6 @@ from typing import Any, Callable, Coroutine
 from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.transport.serial_asyncio import create_serial_connection
-
-
-# Needed due to python 3.8 where Server is not defined
-try:
-    from asyncio import Server as asyncio_server
-except ImportError:
-    asyncio_server: Any = None  # type: ignore[no-redef]
-
-with suppress(ImportError):
-    pass
 
 
 class BaseTransport:
@@ -113,7 +106,7 @@ class BaseTransport:
     # ----------------------------- #
     def setup_unix(self, setup_server: bool, host: str):
         """Prepare transport unix"""
-        if platform.system().lower() == "windows":
+        if sys.platform.startswith("win"):
             raise RuntimeError("Modbus_unix is not supported on Windows!")
         self.comm_params.check_done()
         self.comm_params.done = True

@@ -1,5 +1,5 @@
 """Base for all transport types."""
-# mypy: disable-error-code="attr-defined"
+# mypy: disable-error-code="name-defined"
 # needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
 

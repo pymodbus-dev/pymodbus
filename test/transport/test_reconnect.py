@@ -89,8 +89,41 @@ class TestBaseTransport:
         await asyncio.sleep(transport.reconnect_delay_current * 1.2)
         assert transport.call_connect_listen.call_count == 1
         assert transport.reconnect_delay_current == self.base_reconnect_delay * 2
+        transport.close()
 
-        await asyncio.sleep(transport.reconnect_delay_current * 4)
+    async def test_multi_reconnect_call(self):
+        """Test connection_lost()."""
+        transport, _params = await self.setup_BaseTransport()
+        transport.setup_tcp(False, self.base_host, self.base_port)
+        transport.call_connect_listen = mock.AsyncMock(return_value=(None, None))
+        transport.connection_made(mock.Mock())
+        transport.connection_lost(RuntimeError("Connection lost"))
+
+        await asyncio.sleep(transport.reconnect_delay_current * 1.2)
+        assert transport.call_connect_listen.call_count == 1
+        assert transport.reconnect_delay_current == self.base_reconnect_delay * 2
+
+        await asyncio.sleep(transport.reconnect_delay_current * 1.2)
         assert transport.call_connect_listen.call_count == 2
         assert transport.reconnect_delay_current == self.base_reconnect_delay * 4
+
+        await asyncio.sleep(transport.reconnect_delay_current * 1.2)
+        assert transport.call_connect_listen.call_count == 3
+        assert transport.reconnect_delay_current == self.base_reconnect_delay_max
+        transport.close()
+
+    async def test_reconnect_call_ok(self):
+        """Test connection_lost()."""
+        transport, _params = await self.setup_BaseTransport()
+        transport.setup_tcp(False, self.base_host, self.base_port)
+        transport.call_connect_listen = mock.AsyncMock(
+            return_value=(mock.Mock(), mock.Mock())
+        )
+        transport.connection_made(mock.Mock())
+        transport.connection_lost(RuntimeError("Connection lost"))
+
+        await asyncio.sleep(transport.reconnect_delay_current * 1.2)
+        assert transport.call_connect_listen.call_count == 1
+        assert transport.reconnect_delay_current == self.base_reconnect_delay * 2
+        assert not transport.reconnect_timer
         transport.close()

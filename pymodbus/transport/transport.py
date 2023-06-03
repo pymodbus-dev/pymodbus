@@ -385,6 +385,7 @@ class BaseTransport:
             self.reconnect_delay_current = min(
                 2 * self.reconnect_delay_current, self.comm_params.reconnect_delay_max
             )
+        self.reconnect_timer = None
 
     # ----------------- #
     # The magic methods #

@@ -212,11 +212,13 @@ class TestBaseTransport:
         """Test connection_lost()."""
         base, params = await self.setup_BaseTransport()
         transport = self.dummy_transport()
-        base.connection_lost(transport)
+        base.connection_made(transport)
+        base.cb_connection_made.reset_mock()
+        base.connection_lost(RuntimeError("not implemented"))
         assert not base.transport
         assert not base.recv_buffer
         assert base.reconnect_timer
-        assert not base.reconnect_delay_current
+        assert base.reconnect_delay_current
         base.cb_connection_made.assert_not_called()
         base.cb_handle_data.assert_not_called()
         base.cb_connection_lost.assert_called_once()

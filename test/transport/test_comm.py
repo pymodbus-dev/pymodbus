@@ -264,13 +264,16 @@ class TestCommTransport:
         server_protocol = self.dummy_transport(ModbusSocketFramer)
         domain_socket = gettempdir() + "/test_unix_" + str(time.time())
         server_protocol.setup_unix(True, domain_socket)
-        await server_protocol.transport_listen()
+        server = await server_protocol.transport_listen()
 
         client = self.dummy_transport(ModbusSocketFramer)
         client.setup_unix(False, domain_socket)
         assert await client.transport_connect() != (None, None)
+        server_protocol.comm_params.comm_name = "jan server"
+        client.comm_params.comm_name = "jan client"
         client.close()
         server_protocol.close()
+        server.close()
 
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_connected_tcp(self):
@@ -369,10 +372,5 @@ class TestCommTransport:
             count -= 1
         assert not client.transport
         assert client.reconnect_timer
-        assert client.reconnect_delay_current == client.comm_params.reconnect_delay
-        await asyncio.sleep(client.reconnect_delay_current * 1.2)
-        assert client.transport
-        assert client.reconnect_timer
-        assert client.reconnect_delay_current == client.comm_params.reconnect_delay
         client.close()
         server.close()

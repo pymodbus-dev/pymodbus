@@ -307,8 +307,9 @@ class BaseTransport:
         """
         Log.debug("Connection lost {} due to {}", self.comm_params.comm_name, reason)
         self.cb_connection_lost(reason)
-        self.close()
-        self.reconnect_timer = asyncio.create_task(self.reconnect_connect())
+        if self.transport:
+            self.close()
+            self.reconnect_timer = asyncio.create_task(self.reconnect_connect())
 
     def eof_received(self):
         """Call when eof received (other end closed connection).
@@ -372,19 +373,23 @@ class BaseTransport:
 
     async def reconnect_connect(self):
         """Handle reconnect as a task."""
-        self.reconnect_delay_current = self.comm_params.reconnect_delay
-        transport = None
-        while not transport:
-            Log.debug(
-                "Wait {} {} ms before reconnecting.",
-                self.comm_params.comm_name,
-                self.reconnect_delay_current * 1000,
-            )
-            await asyncio.sleep(self.reconnect_delay_current)
-            transport, _protocol = await self.transport_connect()
-            self.reconnect_delay_current = min(
-                2 * self.reconnect_delay_current, self.comm_params.reconnect_delay_max
-            )
+        try:
+            self.reconnect_delay_current = self.comm_params.reconnect_delay
+            transport = None
+            while not transport:
+                Log.debug(
+                    "Wait {} {} ms before reconnecting.",
+                    self.comm_params.comm_name,
+                    self.reconnect_delay_current * 1000,
+                )
+                await asyncio.sleep(self.reconnect_delay_current)
+                transport, _protocol = await self.transport_connect()
+                self.reconnect_delay_current = min(
+                    2 * self.reconnect_delay_current,
+                    self.comm_params.reconnect_delay_max,
+                )
+        except asyncio.CancelledError:
+            pass
         self.reconnect_timer = None
 
     # ----------------- #

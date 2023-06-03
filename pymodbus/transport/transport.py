@@ -368,8 +368,7 @@ class BaseTransport:
         )
         self.reconnect_timer = self.loop.call_later(
             self.reconnect_delay_current,
-            asyncio.create_task,
-            self.transport_connect(),
+            lambda: asyncio.create_task(self.transport_connect()),
         )
         self.reconnect_delay_current = min(
             2 * self.reconnect_delay_current, self.comm_params.reconnect_delay_max

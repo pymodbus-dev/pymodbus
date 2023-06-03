@@ -354,6 +354,7 @@ class TestCommTransport:
         client.close()
         server_protocol.close()
 
+    @pytest.mark.skipif(pytest.IS_WINDOWS, reason="Windows 3.8 problem.")
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect_reconnect(self):
         """Test connect() reconnecting."""

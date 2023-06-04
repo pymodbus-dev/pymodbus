@@ -534,6 +534,7 @@ class ModbusUnixServer:
 
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -552,6 +553,7 @@ class ModbusUnixServer:
                 Log.info("Server(Unix) listening.")
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
+                self.serving_done.set_result(True)
                 raise
             except Exception as exc:  # pylint: disable=broad-except
                 Log.error("Server unexpected exception {}", exc)
@@ -559,6 +561,7 @@ class ModbusUnixServer:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
         Log.info("Server graceful shutdown.")
 
     async def shutdown(self):
@@ -641,6 +644,7 @@ class ModbusTcpServer:
 
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -663,15 +667,15 @@ class ModbusTcpServer:
             try:
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
-                self.serving.set_result(False)
+                self.serving_done.set_result(False)
                 raise
             except Exception as exc:  # pylint: disable=broad-except
                 Log.error("Server unexpected exception {}", exc)
-                self.serving.set_result(False)
         else:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
         Log.info("Server graceful shutdown.")
 
     async def shutdown(self):
@@ -823,6 +827,7 @@ class ModbusUdpServer:
         self.stop_serving = self.loop.create_future()
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         self.factory_parms = {
             "local_addr": self.address,
             "allow_broadcast": True,
@@ -838,11 +843,11 @@ class ModbusUdpServer:
                     **self.factory_parms,
                 )
             except asyncio.exceptions.CancelledError:
-                self.serving.set_result(False)
+                self.serving_done.set_result(False)
                 raise
             except Exception as exc:
                 Log.error("Server unexpected exception {}", exc)
-                self.serving.set_result(False)
+                self.serving_done.set_result(False)
                 raise RuntimeError(exc) from exc
             Log.info("Server(UDP) listening.")
             self.serving.set_result(True)
@@ -851,6 +856,7 @@ class ModbusUdpServer:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
 
     async def shutdown(self):
         """Shutdown server."""

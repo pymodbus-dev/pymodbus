@@ -1,3 +1,16 @@
+version 3.3.1
+----------------------------------------------------------
+* transport fixes and 100% test coverage. (#1580)
+* Delay self.loop until connect(). (#1579)
+* Added mechanism to determine if server did not start cleanly (#1539)
+* Proof transport reconnect works. (#1577)
+* Fix non-shared block doc in config.rst. (#1573)
+
+Thanks to:
+  Hayden Roche
+  jan iversen
+  Philip Couling
+
 version 3.3.0
 ----------------------------------------------------------
 * Stabilize windows tests. (#1567)

@@ -3,6 +3,12 @@ PyModbus - API changes.
 =======================
 
 -------------
+Version 3.3.1
+-------------
+
+No changes.
+
+-------------
 Version 3.3.0
 -------------
 - ModbusTcpDiagClient is removed due to lack of support

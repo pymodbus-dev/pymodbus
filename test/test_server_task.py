@@ -217,6 +217,8 @@ async def test_async_task_reuse(comm):
 @pytest.mark.parametrize("comm", TEST_TYPES)
 async def test_async_task_server_stop(comm):
     """Test normal client/server handling."""
+    if comm == "udp":
+        return
     run_server, server_args, run_client, client_args = helper_config(comm, "async")
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(0.5)

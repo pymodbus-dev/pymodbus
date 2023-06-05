@@ -93,8 +93,9 @@ class BaseTransport:
         self.reconnect_delay_current: float = 0
         self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.protocol: asyncio.BaseProtocol = None
+        self.loop: asyncio.AbstractEventLoop = None
         with suppress(RuntimeError):
-            self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+            self.loop = asyncio.get_running_loop()
         self.reconnect_timer: asyncio.Task = None
         self.recv_buffer: bytes = b""
         self.call_connect_listen: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
@@ -263,6 +264,8 @@ class BaseTransport:
     async def transport_connect(self):
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
+        if not self.loop:
+            self.loop = asyncio.get_running_loop()
         self.transport, self.protocol = None, None
         try:
             self.transport, self.protocol = await asyncio.wait_for(
@@ -296,6 +299,8 @@ class BaseTransport:
         :param transport: socket etc. representing the connection.
         """
         Log.debug("Connected to {}", self.comm_params.comm_name)
+        if not self.loop:
+            self.loop = asyncio.get_running_loop()
         self.transport = transport
         self.reset_delay()
         self.cb_connection_made()

@@ -102,7 +102,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
         # force reconnect if required:
         Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self.transport_connect()
+        return await self.new_transport.transport_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -150,6 +150,7 @@ class ModbusTlsClient(ModbusTcpClient):
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
+        self.transport = None
         super().__init__(host, port=port, framer=framer, **kwargs)
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         self.params.sslctx = sslctx

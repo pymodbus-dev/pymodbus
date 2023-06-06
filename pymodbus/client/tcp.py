@@ -67,12 +67,12 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
 
         # force reconnect if required:
         Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self.transport_connect()
+        return await self.new_transport.transport_connect()
 
     @property
     def connected(self):
         """Return true if connected."""
-        return self.transport is not None
+        return self.new_transport.is_active()
 
 
 class ModbusTcpClient(ModbusBaseClient):
@@ -109,6 +109,7 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
+        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port

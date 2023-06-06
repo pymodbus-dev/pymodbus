@@ -3,7 +3,7 @@ import asyncio
 from unittest import mock
 
 
-BASE_PORT = 5250
+BASE_PORT = 5260
 
 
 class TestReconnectTransport:

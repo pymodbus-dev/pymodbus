@@ -72,7 +72,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     @property
     def connected(self):
         """Connect internal."""
-        return self.transport is not None
+        return self.new_transport.is_active()
 
     async def connect(self) -> bool:
         """Connect Async client."""
@@ -82,7 +82,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
 
         # force reconnect if required:
         Log.debug("Connecting to {}.", self.params.host)
-        return await self.transport_connect()
+        return await self.new_transport.transport_connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):
@@ -130,6 +130,7 @@ class ModbusSerialClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
+        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate

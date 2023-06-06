@@ -59,7 +59,7 @@ class AsyncModbusUdpClient(
     @property
     def connected(self):
         """Return true if connected."""
-        return self.transport is not None
+        return self.new_transport.is_active()
 
     async def connect(self) -> bool:
         """Start reconnecting asynchronous udp client.
@@ -72,7 +72,7 @@ class AsyncModbusUdpClient(
 
         # force reconnect if required:
         Log.debug("Connecting to {}:{}.", self.comm_params.host, self.comm_params.port)
-        return await self.transport_connect()
+        return await self.new_transport.transport_connect()
 
 
 class ModbusUdpClient(ModbusBaseClient):
@@ -110,6 +110,7 @@ class ModbusUdpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus UDP Client."""
+        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port

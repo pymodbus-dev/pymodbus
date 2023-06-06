@@ -135,6 +135,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
+        self.new_transport = self
 
         # Initialize  mixin
         ModbusClientMixin.__init__(self)

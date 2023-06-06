@@ -2,7 +2,7 @@
 import asyncio
 
 
-BASE_PORT = 5260
+BASE_PORT = 5240
 
 
 class TestDataTransport:  # pylint: disable=too-few-public-methods

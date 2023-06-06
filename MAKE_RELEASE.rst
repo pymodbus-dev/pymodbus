@@ -19,6 +19,7 @@ Prepare/make release on dev.
 * Checkout master locally
    * git merge dev
    * git push
+   * git branch -D master
    * wait for CI to complete on all branches
 * On github "prepare release"
    * Create tag e.g. v3.4.0dev0
@@ -38,6 +39,5 @@ Prepare/make release on dev.
 ------------------------------------------------------------
 Prepare release on dev for new commits.
 ------------------------------------------------------------
-* git branch -D master
 * Make pull request "prepare dev", with the following:
    * Update pymodbus/__init__.py with version number (__version__ X.Y.Zpre)

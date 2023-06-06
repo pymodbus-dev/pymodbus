@@ -1,8 +1,8 @@
 ================================
 PyModbus - A Python Modbus Stack
 ================================
-We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
-The move from a company organization to pymodbus-dev was done to allow a 100% openness in the spirit of FOSS.
+We are constantly working the modernize pymodbus and add new features, and we look for people who want to help a bit.
+There are challenges small and large not only programming but also documentation and testing.
 
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml

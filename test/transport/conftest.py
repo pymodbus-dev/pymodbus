@@ -1,5 +1,7 @@
 """Test transport."""
+import asyncio
 import os
+from contextlib import suppress
 from dataclasses import dataclass
 from unittest import mock
 
@@ -63,7 +65,7 @@ def prepare_testparams():
 @pytest.fixture(name="transport")
 async def prepare_transport():
     """Prepare transport object."""
-    return Transport(
+    transport = Transport(
         BaseParams.comm_name,
         BaseParams.reconnect_delay,
         BaseParams.reconnect_delay_max,
@@ -72,12 +74,15 @@ async def prepare_transport():
         mock.Mock(name="cb_connection_lost"),
         mock.Mock(name="cb_handle_data", return_value=0),
     )
+    with suppress(RuntimeError):
+        transport.loop = asyncio.get_running_loop()
+    return transport
 
 
 @pytest_asyncio.fixture(name="transport_server")
 async def prepare_transport_server():
     """Prepare transport object."""
-    return Transport(
+    transport = Transport(
         BaseParams.comm_name,
         BaseParams.reconnect_delay,
         BaseParams.reconnect_delay_max,
@@ -86,3 +91,6 @@ async def prepare_transport_server():
         mock.Mock(name="cb_connection_lost"),
         mock.Mock(name="cb_handle_data", return_value=0),
     )
+    with suppress(RuntimeError):
+        transport.loop = asyncio.get_running_loop()
+    return transport

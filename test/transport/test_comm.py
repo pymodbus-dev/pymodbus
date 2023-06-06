@@ -33,7 +33,7 @@ class TestCommUnixTransport:
         """Test connect_unix()."""
         transport.setup_unix(False, domain_socket)
         start = time.time()
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         delta = time.time() - start
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
@@ -56,7 +56,7 @@ class TestCommUnixTransport:
         await transport_server.transport_listen()
 
         transport.setup_unix(False, domain_socket)
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         transport.close()
         transport_server.close()
 
@@ -69,7 +69,7 @@ class TestCommTcpTransport:
         """Test connect_tcp()."""
         transport.setup_tcp(False, domain_host, BASE_PORT + 1)
         start = time.time()
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         delta = time.time() - start
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
@@ -92,7 +92,7 @@ class TestCommTcpTransport:
         server = await transport_server.transport_listen()
         assert server
         transport.setup_tcp(False, domain_host, BASE_PORT + 3)
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         transport.close()
         transport_server.close()
         server.close()
@@ -115,7 +115,7 @@ class TestCommTlsTransport:
             "localhost",
         )
         start = time.time()
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         delta = time.time() - start
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
@@ -157,7 +157,7 @@ class TestCommTlsTransport:
         assert server
 
         transport.setup_tcp(False, domain_host, BASE_PORT + 7)
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         transport.close()
         transport_server.close()
         server.close()
@@ -188,7 +188,7 @@ class TestCommUdpTransport:
         server = await transport_server.transport_listen()
         assert server
         transport.setup_udp(False, domain_host, BASE_PORT + 11)
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         transport.close()
         transport_server.close()
         server.close()
@@ -212,7 +212,7 @@ class TestCommSerialTransport:
             2,
         )
         start = time.time()
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         delta = time.time() - start
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
@@ -247,7 +247,7 @@ class TestCommSerialTransport:
             "E",
             2,
         )
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         transport.close()
         transport_server.close()
         server.close()

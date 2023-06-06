@@ -137,13 +137,11 @@ class TestBasicTransport:
     async def test_reconnect_connect(self, transport):
         """Test handle_listen()."""
         transport.comm_params.reconnect_delay = 0.01
-        transport.transport_connect = mock.AsyncMock(
-            side_effect=[(None, None), (117, 118)]
-        )
+        transport.transport_connect = mock.AsyncMock(side_effect=[False, True])
         await transport.reconnect_connect()
         assert (
             transport.reconnect_delay_current
-            == transport.comm_params.reconnect_delay * 4
+            == transport.comm_params.reconnect_delay * 2
         )
         assert not transport.reconnect_task
         transport.transport_connect = mock.AsyncMock(
@@ -183,11 +181,11 @@ class TestBasicUnixTransport:
         mocker = mock.AsyncMock()
         transport.loop.create_unix_connection = mocker
         mocker.side_effect = FileNotFoundError("testing")
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         mocker.side_effect = None
 
         mocker.return_value = (mock.Mock(), mock.Mock())
-        assert mocker.return_value == await transport.transport_connect()
+        assert await transport.transport_connect()
         transport.close()
 
     async def test_listen(self, params, transport):
@@ -223,11 +221,11 @@ class TestBasicTcpTransport:
         mocker = mock.AsyncMock()
         transport.loop.create_connection = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         mocker.side_effect = None
 
         mocker.return_value = (mock.Mock(), mock.Mock())
-        assert mocker.return_value == await transport.transport_connect()
+        assert await transport.transport_connect()
         transport.close()
 
     async def test_listen(self, params, transport):
@@ -285,11 +283,11 @@ class TestBasicTlsTransport:
         mocker = mock.AsyncMock()
         transport.loop.create_connection = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         mocker.side_effect = None
 
         mocker.return_value = (mock.Mock(), mock.Mock())
-        assert mocker.return_value == await transport.transport_connect()
+        assert await transport.transport_connect()
         transport.close()
 
     async def test_listen(self, params, transport):
@@ -334,11 +332,11 @@ class TestBasicUdpTransport:
         mocker = mock.AsyncMock()
         transport.loop.create_datagram_endpoint = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
-        assert await transport.transport_connect() == (None, None)
+        assert not await transport.transport_connect()
         mocker.side_effect = None
 
         mocker.return_value = (mock.Mock(), mock.Mock())
-        assert mocker.return_value == await transport.transport_connect()
+        assert await transport.transport_connect()
         transport.close()
 
     async def test_listen(self, params, transport):
@@ -393,11 +391,11 @@ class TestBasicSerialTransport:
             "pymodbus.transport.transport.create_serial_connection", new=mocker
         ):
             mocker.side_effect = asyncio.TimeoutError("testing")
-            assert await transport.transport_connect() == (None, None)
+            assert not await transport.transport_connect()
             mocker.side_effect = None
 
             mocker.return_value = (mock.Mock(), mock.Mock())
-            assert mocker.return_value == await transport.transport_connect()
+            assert await transport.transport_connect()
             transport.close()
 
     async def test_listen(self, params, transport):

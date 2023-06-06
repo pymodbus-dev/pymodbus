@@ -74,7 +74,7 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         """Connect internal."""
         return self.transport is not None
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Connect Async client."""
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work

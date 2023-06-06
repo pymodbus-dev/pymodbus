@@ -61,7 +61,7 @@ class AsyncModbusUdpClient(
         """Return true if connected."""
         return self.transport is not None
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Start reconnecting asynchronous udp client.
 
         :meta private:

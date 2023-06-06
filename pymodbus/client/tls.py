@@ -93,7 +93,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
             False, host, port, sslctx, certfile, keyfile, password, server_hostname
         )
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Initiate connection to start client."""
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again

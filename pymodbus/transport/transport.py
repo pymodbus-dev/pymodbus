@@ -6,7 +6,6 @@ from __future__ import annotations
 import asyncio
 import ssl
 import sys
-from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Coroutine
 
@@ -97,8 +96,6 @@ class Transport:
         self.transport: asyncio.BaseTransport | asyncio.Server = None
         self.protocol: asyncio.BaseProtocol = None
         self.loop: asyncio.AbstractEventLoop = None
-        with suppress(RuntimeError):
-            self.loop = asyncio.get_running_loop()
         self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
         self.call_connect_listen: Callable[[], Coroutine[Any, Any, Any]] = lambda: None
@@ -264,7 +261,7 @@ class Transport:
                 timeout=self.comm_params.timeout_connect,
             )
 
-    async def transport_connect(self):
+    async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("Connecting {}", self.comm_params.comm_name)
         if not self.loop:
@@ -281,7 +278,8 @@ class Transport:
         ) as exc:
             Log.warning("Failed to connect {}", exc)
             self.close(reconnect=True)
-        return self.transport, self.protocol
+            return False
+        return bool(self.transport)
 
     async def transport_listen(self):
         """Handle generic listen and call on to specific transport listen."""
@@ -383,15 +381,15 @@ class Transport:
         """Handle reconnect as a task."""
         try:
             self.reconnect_delay_current = self.comm_params.reconnect_delay
-            transport = None
-            while not transport:
+            while True:
                 Log.debug(
                     "Wait {} {} ms before reconnecting.",
                     self.comm_params.comm_name,
                     self.reconnect_delay_current * 1000,
                 )
                 await asyncio.sleep(self.reconnect_delay_current)
-                transport, _protocol = await self.transport_connect()
+                if await self.transport_connect():
+                    break
                 self.reconnect_delay_current = min(
                     2 * self.reconnect_delay_current,
                     self.comm_params.reconnect_delay_max,

@@ -61,6 +61,6 @@ class TestReconnectTransport:
         transport.connection_lost(RuntimeError("Connection lost"))
         await asyncio.sleep(transport.reconnect_delay_current * 1.8)
         assert mocker.call_count == 1
-        assert transport.reconnect_delay_current == commparams.reconnect_delay * 2
+        assert transport.reconnect_delay_current == commparams.reconnect_delay
         assert not transport.reconnect_task
         transport.close()

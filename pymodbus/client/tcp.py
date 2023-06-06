@@ -58,7 +58,7 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         else:
             self.setup_tcp(False, host, port)
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Initiate connection to start client."""
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again

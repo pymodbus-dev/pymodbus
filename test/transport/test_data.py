@@ -15,7 +15,7 @@ class TestDataTransport:  # pylint: disable=too-few-public-methods
         assert transport_server.transport
 
         transport.setup_tcp(False, "localhost", BASE_PORT + 1)
-        assert await transport.transport_connect() != (None, None)
+        assert await transport.transport_connect()
         await transport.send(b"ABC")
         await asyncio.sleep(2)
         assert transport_server.recv_buffer == b"ABC"

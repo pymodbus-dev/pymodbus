@@ -24,12 +24,12 @@ from examples.client_async import run_async_client, setup_async_client
 from examples.client_custom_msg import run_custom_client
 from examples.client_payload import run_payload_calls
 from examples.client_test import run_async_calls as run_client_test
+from examples.datastore_simulator import run_server_simulator, setup_simulator
 from examples.message_generator import generate_messages
 from examples.message_parser import parse_messages
 from examples.server_async import run_async_server, setup_server
 from examples.server_callback import run_callback_server
 from examples.server_payload import setup_payload_server
-from examples.server_simulator import run_server_simulator, setup_simulator
 from examples.server_updating import run_updating_server, setup_updating_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop

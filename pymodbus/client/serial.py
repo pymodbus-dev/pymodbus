@@ -44,9 +44,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             client.close()
     """
 
-    transport = None
-    framer = None
-
     def __init__(
         self,
         port: str,

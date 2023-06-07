@@ -16,11 +16,11 @@ These examples are very basic examples, showing how a client can communicate wit
 
 You need to modify the code to adapt it to your situation.
 
-Asynchronous client
+Simple asynchronous client
 ^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/simple_async_client.py
 
-Synchronous client
+Simple synchronous client
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../examples/simple_sync_client.py
 

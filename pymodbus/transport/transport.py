@@ -1,4 +1,4 @@
-"""Base for all transport types."""
+"""Transport layer."""
 # mypy: disable-error-code="name-defined"
 # needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
@@ -346,9 +346,9 @@ class Transport:
         Log.debug("-> error_received {}", exc)
         raise RuntimeError(str(exc))
 
-    # -------------------------------- #
-    # Helper methods for child classes #
-    # -------------------------------- #
+    # ----------------------------------- #
+    # Helper methods for external classes #
+    # ----------------------------------- #
     async def send(self, data: bytes) -> bool:
         """Send request.
 

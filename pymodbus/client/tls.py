@@ -98,10 +98,14 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.reset_delay()
+        self.new_transport.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.new_transport.comm_params.host,
+            self.new_transport.comm_params.port,
+        )
         return await self.new_transport.transport_connect()
 
 

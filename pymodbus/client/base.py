@@ -18,7 +18,7 @@ from pymodbus.transport.transport import Transport
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, Transport):
+class ModbusBaseClient(ModbusClientMixin):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -94,9 +94,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        # JIX self.new_transport = Transport(
-        Transport.__init__(
-            self,
+        self.new_transport = Transport(
             "comm",
             reconnect_delay * 1000,
             reconnect_delay_max * 1000,
@@ -105,7 +103,6 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
             self.cb_base_connection_lost,
             self.cb_base_handle_data,
         )
-        self.new_transport = self
 
         self.framer = framer
         self.params = self._params()
@@ -158,8 +155,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
 
     def close(self, reconnect: bool = False) -> None:
         """Close connection."""
-        # JIX self.new_transport.close(reconnect=reconnect)
-        Transport.close(self, reconnect=reconnect)
+        self.new_transport.close(reconnect=reconnect)
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -194,10 +190,11 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         Log.debug("send: {}", packet, ":hex")
-        if self.use_udp:
-            self.new_transport.transport.sendto(packet)
-        else:
-            self.new_transport.transport.write(packet)
+        # if self.use_udp:
+        #     self.new_transport.transport.sendto(packet)
+        # else:
+        #     self.new_transport.transport.write(packet)
+        await self.new_transport.send(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
@@ -256,7 +253,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request):  # pylint: disable=invalid-overridden-method
+    def send(self, request):
         """Send request.
 
         :meta private:

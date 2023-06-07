@@ -80,10 +80,10 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         """Connect Async client."""
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.reset_delay()
+        self.new_transport.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}.", self.params.host)
+        Log.debug("Connecting to {}.", self.new_transport.comm_params.host)
         return await self.new_transport.transport_connect()
 
 

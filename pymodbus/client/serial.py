@@ -67,7 +67,9 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         self.params.parity = parity
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
-        self.setup_serial(False, port, baudrate, bytesize, parity, stopbits)
+        self.new_transport.setup_serial(
+            False, port, baudrate, bytesize, parity, stopbits
+        )
 
     @property
     def connected(self):

@@ -94,6 +94,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
+        # JIX self.new_transport = Transport(
         Transport.__init__(
             self,
             "comm",
@@ -104,6 +105,8 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
             self.cb_base_connection_lost,
             self.cb_base_handle_data,
         )
+        self.new_transport = self
+
         self.framer = framer
         self.params = self._params()
         self.params.framer = framer
@@ -135,7 +138,6 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         self.state = ModbusTransactionState.IDLE
         self.last_frame_end: float = 0
         self.silent_interval: float = 0
-        self.new_transport = self
 
         # Initialize  mixin
         ModbusClientMixin.__init__(self)
@@ -153,6 +155,11 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         have them interpreted automatically.
         """
         self.framer.decoder.register(custom_response_class)
+
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        # JIX self.new_transport.close(reconnect=reconnect)
+        Transport.close(self, reconnect=reconnect)
 
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
@@ -175,7 +182,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
             if not self.connect():
                 raise ConnectionException(f"Failed to connect[{str(self)}]")
             return self.transaction.execute(request)
-        if not self.transport:
+        if not self.new_transport.transport:
             raise ConnectionException(f"Not connected[{str(self)}]")
         return self.async_execute(request)
 
@@ -188,9 +195,9 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
         packet = self.framer.buildPacket(request)
         Log.debug("send: {}", packet, ":hex")
         if self.use_udp:
-            self.transport.sendto(packet)
+            self.new_transport.transport.sendto(packet)
         else:
-            self.transport.write(packet)
+            self.new_transport.transport.write(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
@@ -240,7 +247,7 @@ class ModbusBaseClient(ModbusClientMixin, Transport):
     def _build_response(self, tid):
         """Return a deferred response for the current request."""
         my_future = asyncio.Future()
-        if not self.transport:
+        if not self.new_transport.transport:
             self.raise_future(my_future, ConnectionException("Client is not connected"))
         else:
             self.transaction.addTransaction(my_future, tid)

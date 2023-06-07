@@ -89,7 +89,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.params.keyfile = keyfile
         self.params.password = password
         self.params.server_hostname = server_hostname
-        self.setup_tls(
+        self.new_transport.setup_tls(
             False, host, port, sslctx, certfile, keyfile, password, server_hostname
         )
 

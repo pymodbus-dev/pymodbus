@@ -54,7 +54,7 @@ class AsyncModbusUdpClient(
         ModbusBaseClient.__init__(self, framer=framer, **kwargs)
         self.params.port = port
         self.params.source_address = source_address
-        self.setup_udp(False, host, port)
+        self.new_transport.setup_udp(False, host, port)
 
     @property
     def connected(self):

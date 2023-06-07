@@ -54,9 +54,9 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         if "internal_no_setup" in kwargs:
             return
         if host.startswith("unix:"):
-            self.setup_unix(False, host[5:])
+            self.new_transport.setup_unix(False, host[5:])
         else:
-            self.setup_tcp(False, host, port)
+            self.new_transport.setup_tcp(False, host, port)
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""

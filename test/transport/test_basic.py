@@ -6,6 +6,9 @@ import pytest
 from serial import SerialException
 
 
+BASE_PORT = 5200
+
+
 class TestBasicTransport:
     """Test transport module, base part."""
 
@@ -127,8 +130,9 @@ class TestBasicTransport:
         transport.transport = mock.AsyncMock()
         await transport.send(b"abc")
 
-        transport.setup_udp(False, params.host, params.port)
+        transport.setup_udp(False, params.host, BASE_PORT + 1)
         await transport.send(b"abc")
+        transport.close()
 
     async def test_handle_listen(self, transport):
         """Test handle_listen()."""
@@ -208,16 +212,16 @@ class TestBasicTcpTransport:
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
-        transport.setup_tcp(setup_server, params.host, params.port)
+        transport.setup_tcp(setup_server, params.host, BASE_PORT + 2)
         commparams.host = params.host
-        commparams.port = params.port
+        commparams.port = BASE_PORT + 2
         assert transport.comm_params == commparams
         assert transport.call_connect_listen
         transport.close()
 
     async def test_connect(self, params, transport):
         """Test connect_tcp()."""
-        transport.setup_tcp(False, params.host, params.port)
+        transport.setup_tcp(False, params.host, BASE_PORT + 3)
         mocker = mock.AsyncMock()
         transport.loop.create_connection = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
@@ -230,7 +234,7 @@ class TestBasicTcpTransport:
 
     async def test_listen(self, params, transport):
         """Test listen_tcp()."""
-        transport.setup_tcp(True, params.host, params.port)
+        transport.setup_tcp(True, params.host, BASE_PORT + 4)
         mocker = mock.AsyncMock()
         transport.loop.create_server = mocker
         mocker.side_effect = OSError("testing")
@@ -239,6 +243,14 @@ class TestBasicTcpTransport:
 
         mocker.return_value = mock.Mock()
         assert mocker.return_value == await transport.transport_listen()
+        transport.close()
+
+    async def test_is_active(self, params, transport):
+        """Test properties."""
+        transport.setup_tcp(False, params.host, BASE_PORT + 5)
+        assert not transport.is_active()
+        transport.connection_made(mock.AsyncMock())
+        assert transport.is_active()
         transport.close()
 
 
@@ -253,7 +265,7 @@ class TestBasicTlsTransport:
             transport.setup_tls(
                 setup_server,
                 params.host,
-                params.port,
+                BASE_PORT + 6,
                 sslctx,
                 "certfile dummy",
                 None,
@@ -261,7 +273,7 @@ class TestBasicTlsTransport:
                 params.server_hostname,
             )
             commparams.host = params.host
-            commparams.port = params.port
+            commparams.port = BASE_PORT + 6
             commparams.server_hostname = params.server_hostname
             commparams.ssl = sslctx if sslctx else transport.comm_params.ssl
             assert transport.comm_params == commparams
@@ -273,7 +285,7 @@ class TestBasicTlsTransport:
         transport.setup_tls(
             False,
             params.host,
-            params.port,
+            BASE_PORT + 7,
             "no ssl",
             None,
             None,
@@ -295,7 +307,7 @@ class TestBasicTlsTransport:
         transport.setup_tls(
             True,
             params.host,
-            params.port,
+            BASE_PORT + 8,
             "no ssl",
             None,
             None,
@@ -319,16 +331,16 @@ class TestBasicUdpTransport:
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
-        transport.setup_udp(setup_server, params.host, params.port)
+        transport.setup_udp(setup_server, params.host, BASE_PORT + 9)
         commparams.host = params.host
-        commparams.port = params.port
+        commparams.port = BASE_PORT + 9
         assert transport.comm_params == commparams
         assert transport.call_connect_listen
         transport.close()
 
     async def test_connect(self, params, transport):
         """Test connect_udp()."""
-        transport.setup_udp(False, params.host, params.port)
+        transport.setup_udp(False, params.host, BASE_PORT + 10)
         mocker = mock.AsyncMock()
         transport.loop.create_datagram_endpoint = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
@@ -341,7 +353,7 @@ class TestBasicUdpTransport:
 
     async def test_listen(self, params, transport):
         """Test listen_udp()."""
-        transport.setup_udp(True, params.host, params.port)
+        transport.setup_udp(True, params.host, BASE_PORT + 11)
         mocker = mock.AsyncMock()
         transport.loop.create_datagram_endpoint = mocker
         mocker.side_effect = OSError("testing")

@@ -54,25 +54,29 @@ class AsyncModbusTcpClient(ModbusBaseClient, asyncio.Protocol):
         if "internal_no_setup" in kwargs:
             return
         if host.startswith("unix:"):
-            self.setup_unix(False, host[5:])
+            self.new_transport.setup_unix(False, host[5:])
         else:
-            self.setup_tcp(False, host, port)
+            self.new_transport.setup_tcp(False, host, port)
 
     async def connect(self) -> bool:
         """Initiate connection to start client."""
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.reset_delay()
+        self.new_transport.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self.transport_connect()
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.new_transport.comm_params.host,
+            self.new_transport.comm_params.port,
+        )
+        return await self.new_transport.transport_connect()
 
     @property
     def connected(self):
         """Return true if connected."""
-        return self.transport is not None
+        return self.new_transport.is_active()
 
 
 class ModbusTcpClient(ModbusBaseClient):
@@ -109,6 +113,7 @@ class ModbusTcpClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus TCP Client."""
+        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.host = host
         self.params.port = port

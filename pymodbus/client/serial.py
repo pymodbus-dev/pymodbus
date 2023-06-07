@@ -44,9 +44,6 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
             client.close()
     """
 
-    transport = None
-    framer = None
-
     def __init__(
         self,
         port: str,
@@ -67,22 +64,24 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
         self.params.parity = parity
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
-        self.setup_serial(False, port, baudrate, bytesize, parity, stopbits)
+        self.new_transport.setup_serial(
+            False, port, baudrate, bytesize, parity, stopbits
+        )
 
     @property
     def connected(self):
         """Connect internal."""
-        return self.transport is not None
+        return self.new_transport.is_active()
 
     async def connect(self) -> bool:
         """Connect Async client."""
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.reset_delay()
+        self.new_transport.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}.", self.params.host)
-        return await self.transport_connect()
+        Log.debug("Connecting to {}.", self.new_transport.comm_params.host)
+        return await self.new_transport.transport_connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):
@@ -130,6 +129,7 @@ class ModbusSerialClient(ModbusBaseClient):
         **kwargs: Any,
     ) -> None:
         """Initialize Modbus Serial Client."""
+        self.transport = None
         super().__init__(framer=framer, **kwargs)
         self.params.port = port
         self.params.baudrate = baudrate

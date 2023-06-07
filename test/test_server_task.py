@@ -167,13 +167,13 @@ async def test_async_task_ok(comm):
     client = run_client(**client_args)
     await client.connect()
     await asyncio.sleep(0.1)
-    assert client.transport
+    assert client.new_transport.is_active()
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
     client.close()
     await asyncio.sleep(0.1)
-    assert not client.transport
+    assert not client.new_transport.is_active()
     await server.ServerAsyncStop()
     task.cancel()
     await task
@@ -190,23 +190,23 @@ async def test_async_task_reuse(comm):
     client = run_client(**client_args)
     await client.connect()
     await asyncio.sleep(0.1)
-    assert client.transport
+    assert client.new_transport.is_active()
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
     client.close()
     await asyncio.sleep(0.1)
-    assert not client.transport
+    assert not client.new_transport.is_active()
 
     await client.connect()
     await asyncio.sleep(0.1)
-    assert client.transport
+    assert client.new_transport.is_active()
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
 
     client.close()
     await asyncio.sleep(0.1)
-    assert not client.transport
+    assert not client.new_transport.is_active()
 
     await server.ServerAsyncStop()
     task.cancel()
@@ -227,7 +227,7 @@ async def test_async_task_server_stop(comm):
 
     client = run_client(**client_args, on_reconnect_callback=on_reconnect_callback)
     await client.connect()
-    assert client.transport
+    assert client.new_transport.is_active()
     rr = await client.read_coils(1, 1, slave=0x01)
     assert len(rr.bits) == 8
     on_reconnect_callback.assert_not_called()
@@ -238,17 +238,17 @@ async def test_async_task_server_stop(comm):
 
     with pytest.raises((ConnectionException, asyncio.exceptions.TimeoutError)):
         rr = await client.read_coils(1, 1, slave=0x01)
-    assert not client.transport
+    assert not client.new_transport.is_active()
 
     # Server back online
     task = asyncio.create_task(run_server(**server_args))
     await asyncio.sleep(1)
 
     timer_allowed = 100
-    while not client.transport and timer_allowed:
+    while not client.new_transport.is_active() and timer_allowed:
         await asyncio.sleep(0.1)
         timer_allowed -= 1
-    assert client.transport, "client do not reconnect"
+    assert client.new_transport.is_active(), "client do not reconnect"
     # TBD on_reconnect_callback.assert_called()
 
     rr = await client.read_coils(1, 1, slave=0x01)
@@ -256,7 +256,7 @@ async def test_async_task_server_stop(comm):
 
     client.close()
     await asyncio.sleep(0.5)
-    assert not client.transport
+    assert not client.new_transport.is_active()
     await server.ServerAsyncStop()
     await task
 

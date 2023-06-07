@@ -89,7 +89,7 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
         self.params.keyfile = keyfile
         self.params.password = password
         self.params.server_hostname = server_hostname
-        self.setup_tls(
+        self.new_transport.setup_tls(
             False, host, port, sslctx, certfile, keyfile, password, server_hostname
         )
 
@@ -98,11 +98,15 @@ class AsyncModbusTlsClient(AsyncModbusTcpClient):
 
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.reset_delay()
+        self.new_transport.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}:{}.", self.params.host, self.params.port)
-        return await self.transport_connect()
+        Log.debug(
+            "Connecting to {}:{}.",
+            self.new_transport.comm_params.host,
+            self.new_transport.comm_params.port,
+        )
+        return await self.new_transport.transport_connect()
 
 
 class ModbusTlsClient(ModbusTcpClient):
@@ -150,6 +154,7 @@ class ModbusTlsClient(ModbusTcpClient):
         **kwargs: Any,
     ):
         """Initialize Modbus TLS Client."""
+        self.transport = None
         super().__init__(host, port=port, framer=framer, **kwargs)
         self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password)
         self.params.sslctx = sslctx

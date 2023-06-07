@@ -370,6 +370,10 @@ class Transport:
         """Reset wait time before next reconnect to minimal period."""
         self.reconnect_delay_current = self.comm_params.reconnect_delay
 
+    def is_active(self) -> bool:
+        """Return true if connected/listening."""
+        return bool(self.transport)
+
     # ---------------- #
     # Internal methods #
     # ---------------- #

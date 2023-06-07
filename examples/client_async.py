@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Pymodbus Aynchronous Client Example.
+"""Pymodbus aynchronous client example.
 
-An example of a single threaded synchronous client.
+An example of a asynchronous client.
 
 usage: client_async.py [-h] [--comm {tcp,udp,serial,tls}]
                        [--framer {ascii,binary,rtu,socket,tls}]

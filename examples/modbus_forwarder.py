@@ -14,12 +14,12 @@ a) server receives a read/write request from external client:
 Both server and client are tcp based, but it can be easily modified to any server/client
 (see client_sync.py and server_sync.py for other communication types)
 
-**WARNING** This example is a simple solution, that do only forward data (read/write) requests.
+**WARNING** This example is a simple solution, that do only forward read requests.
 """
 import asyncio
 import logging
 
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import ModbusServerContext
 from pymodbus.datastore.remote import RemoteSlaveContext
@@ -63,7 +63,7 @@ async def run_forwarder(args):
 
 
 if __name__ == "__main__":
-    cmd_args = get_commandline(
+    cmd_args = helper.get_commandline(
         server=True,
         description="Run asynchronous forwarder.",
         extras=[

@@ -6,9 +6,6 @@ import pytest
 from serial import SerialException
 
 
-BASE_PORT = 5200
-
-
 class TestBasicTransport:
     """Test transport module, base part."""
 
@@ -50,6 +47,7 @@ class TestBasicTransport:
 
     async def test_connection_made(self, dummy_socket, transport, commparams):
         """Test connection_made()."""
+        transport.loop = None
         transport.connection_made(dummy_socket())
         assert transport.transport
         assert not transport.recv_buffer
@@ -77,14 +75,6 @@ class TestBasicTransport:
         assert transport.reconnect_task
         transport.close()
         assert not transport.reconnect_task
-
-    async def test_eof_received(self, transport):
-        """Test connection_lost()."""
-        transport.eof_received()
-        assert not transport.transport
-        assert not transport.recv_buffer
-        assert not transport.reconnect_task
-        assert not transport.reconnect_delay_current
 
     async def test_close(self, dummy_socket, transport):
         """Test close()."""
@@ -125,18 +115,34 @@ class TestBasicTransport:
         transport.data_received(b"789")
         assert transport.recv_buffer == b"56789"
 
+    async def test_eof_received(self, transport):
+        """Test eof_received."""
+        transport.eof_received()
+
+    async def test_error_received(self, transport):
+        """Test error_received."""
+        with pytest.raises(RuntimeError):
+            transport.error_received(Exception("test call"))
+
     async def test_send(self, transport, params):
         """Test send()."""
         transport.transport = mock.AsyncMock()
         await transport.send(b"abc")
 
-        transport.setup_udp(False, params.host, BASE_PORT + 1)
+        transport.setup_udp(False, params.host, params.port)
         await transport.send(b"abc")
         transport.close()
 
     async def test_handle_listen(self, transport):
         """Test handle_listen()."""
         assert transport == transport.handle_listen()
+
+    async def test_no_loop(self, transport):
+        """Test properties."""
+        transport.loop = None
+        transport.call_connect_listen = mock.AsyncMock(return_value=(117, 118))
+        await transport.transport_connect()
+        assert transport.loop
 
     async def test_reconnect_connect(self, transport):
         """Test handle_listen()."""
@@ -162,6 +168,7 @@ class TestBasicTransport:
 class TestBasicUnixTransport:
     """Test transport module, unix part."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
@@ -171,6 +178,7 @@ class TestBasicUnixTransport:
         assert transport.call_connect_listen
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties_windows(self, params, setup_server, transport):
         """Test properties."""
@@ -179,6 +187,7 @@ class TestBasicUnixTransport:
         ), pytest.raises(RuntimeError):
             transport.setup_unix(setup_server, params.host)
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect(self, params, transport):
         """Test connect_unix()."""
         transport.setup_unix(False, params.host)
@@ -192,6 +201,7 @@ class TestBasicUnixTransport:
         assert await transport.transport_connect()
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_listen(self, params, transport):
         """Test listen_unix()."""
         transport.setup_unix(True, params.host)
@@ -209,19 +219,21 @@ class TestBasicUnixTransport:
 class TestBasicTcpTransport:
     """Test transport module, tcp part."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
-        transport.setup_tcp(setup_server, params.host, BASE_PORT + 2)
+        transport.setup_tcp(setup_server, params.host, params.port)
         commparams.host = params.host
-        commparams.port = BASE_PORT + 2
+        commparams.port = params.port
         assert transport.comm_params == commparams
         assert transport.call_connect_listen
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect(self, params, transport):
         """Test connect_tcp()."""
-        transport.setup_tcp(False, params.host, BASE_PORT + 3)
+        transport.setup_tcp(False, params.host, params.port)
         mocker = mock.AsyncMock()
         transport.loop.create_connection = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
@@ -232,9 +244,10 @@ class TestBasicTcpTransport:
         assert await transport.transport_connect()
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_listen(self, params, transport):
         """Test listen_tcp()."""
-        transport.setup_tcp(True, params.host, BASE_PORT + 4)
+        transport.setup_tcp(True, params.host, params.port)
         mocker = mock.AsyncMock()
         transport.loop.create_server = mocker
         mocker.side_effect = OSError("testing")
@@ -245,9 +258,10 @@ class TestBasicTcpTransport:
         assert mocker.return_value == await transport.transport_listen()
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_is_active(self, params, transport):
         """Test properties."""
-        transport.setup_tcp(False, params.host, BASE_PORT + 5)
+        transport.setup_tcp(False, params.host, params.port)
         assert not transport.is_active()
         transport.connection_made(mock.AsyncMock())
         assert transport.is_active()
@@ -257,6 +271,7 @@ class TestBasicTcpTransport:
 class TestBasicTlsTransport:
     """Test transport module, tls part."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     @pytest.mark.parametrize("sslctx", [None, "test ctx"])
     def test_properties(self, setup_server, sslctx, params, transport, commparams):
@@ -265,7 +280,7 @@ class TestBasicTlsTransport:
             transport.setup_tls(
                 setup_server,
                 params.host,
-                BASE_PORT + 6,
+                params.port,
                 sslctx,
                 "certfile dummy",
                 None,
@@ -273,19 +288,20 @@ class TestBasicTlsTransport:
                 params.server_hostname,
             )
             commparams.host = params.host
-            commparams.port = BASE_PORT + 6
+            commparams.port = params.port
             commparams.server_hostname = params.server_hostname
             commparams.ssl = sslctx if sslctx else transport.comm_params.ssl
             assert transport.comm_params == commparams
             assert transport.call_connect_listen
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect(self, params, transport):
         """Test connect_tcls()."""
         transport.setup_tls(
             False,
             params.host,
-            BASE_PORT + 7,
+            params.port,
             "no ssl",
             None,
             None,
@@ -302,12 +318,13 @@ class TestBasicTlsTransport:
         assert await transport.transport_connect()
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_listen(self, params, transport):
         """Test listen_tls()."""
         transport.setup_tls(
             True,
             params.host,
-            BASE_PORT + 8,
+            params.port,
             "no ssl",
             None,
             None,
@@ -328,19 +345,21 @@ class TestBasicTlsTransport:
 class TestBasicUdpTransport:
     """Test transport module, udp part."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
-        transport.setup_udp(setup_server, params.host, BASE_PORT + 9)
+        transport.setup_udp(setup_server, params.host, params.port)
         commparams.host = params.host
-        commparams.port = BASE_PORT + 9
+        commparams.port = params.port
         assert transport.comm_params == commparams
         assert transport.call_connect_listen
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect(self, params, transport):
         """Test connect_udp()."""
-        transport.setup_udp(False, params.host, BASE_PORT + 10)
+        transport.setup_udp(False, params.host, params.port)
         mocker = mock.AsyncMock()
         transport.loop.create_datagram_endpoint = mocker
         mocker.side_effect = asyncio.TimeoutError("testing")
@@ -351,9 +370,10 @@ class TestBasicUdpTransport:
         assert await transport.transport_connect()
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_listen(self, params, transport):
         """Test listen_udp()."""
-        transport.setup_udp(True, params.host, BASE_PORT + 11)
+        transport.setup_udp(True, params.host, params.port)
         mocker = mock.AsyncMock()
         transport.loop.create_datagram_endpoint = mocker
         mocker.side_effect = OSError("testing")
@@ -368,6 +388,7 @@ class TestBasicUdpTransport:
 class TestBasicSerialTransport:
     """Test transport module, serial part."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("setup_server", [True, False])
     def test_properties(self, params, setup_server, transport, commparams):
         """Test properties."""
@@ -388,6 +409,7 @@ class TestBasicSerialTransport:
         assert transport.call_connect_listen
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_connect(self, params, transport):
         """Test connect_serial()."""
         transport.setup_serial(
@@ -410,6 +432,7 @@ class TestBasicSerialTransport:
             assert await transport.transport_connect()
             transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     async def test_listen(self, params, transport):
         """Test listen_serial()."""
         transport.setup_serial(

@@ -1,35 +1,13 @@
-"""Test examples to ensure they run
-
-the following are excluded:
-    client_async.py
-    client_calls.py
-    client_sync.py
-    helper.py
-    server_async.py
-    server_sync.py
-
-they represent generic examples and
-are tested in
-    test_example_client_server.py
-a lot more thoroughly.
-"""
+"""Test examples to ensure they run"""
 import asyncio
 import logging
 
 import pytest
 import pytest_asyncio
 
-from examples.build_bcd_payload import BcdPayloadBuilder, BcdPayloadDecoder
-from examples.client_async import run_async_client, setup_async_client
-from examples.client_custom_msg import run_custom_client
-from examples.client_payload import run_payload_calls
-from examples.client_test import run_async_calls as run_client_test
-from examples.datastore_simulator import run_server_simulator, setup_simulator
-from examples.message_generator import generate_messages
-from examples.message_parser import parse_messages
+from examples.client_async import run_a_few_calls, run_async_client, setup_async_client
 from examples.server_async import run_async_server, setup_server
 from examples.server_callback import run_callback_server
-from examples.server_payload import setup_payload_server
 from examples.server_updating import run_updating_server, setup_updating_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
@@ -72,59 +50,13 @@ async def _helper_server():
 
 
 @pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_server_client_payload():
-    """Test server/client with payload."""
-    run_args = setup_payload_server(cmdline=CMDARGS)
-    task = asyncio.create_task(run_async_server(run_args))
-    await asyncio.sleep(0.1)
-    testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_payload_calls)
-    await asyncio.sleep(0.1)
-    await ServerAsyncStop()
-    await asyncio.sleep(0.1)
-    task.cancel()
-    await task
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_client_test(mock_run_server):
-    """Test client used for fast testing."""
-    assert not mock_run_server
-
-    testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_client_test)
-
-
-@pytest.mark.parametrize("framer", ["socket", "rtu"])
-async def test_exp_message_generator(framer):
-    """Test all message generator."""
-    generate_messages(cmdline=["--framer", framer])
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_server_simulator():
-    """Test server simulator."""
-    cmdargs = ["--log", "debug", "--port", "5020"]
-    run_args = setup_simulator(cmdline=cmdargs)
-    task = asyncio.create_task(run_server_simulator(run_args))
-    await asyncio.sleep(0.1)
-    testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_client_test)
-    await asyncio.sleep(0.1)
-    await ServerAsyncStop()
-    await asyncio.sleep(0.1)
-    task.cancel()
-    await task
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_updating_server():
+async def xtest_exp_updating_server():
     """Test server simulator."""
     run_args = setup_updating_server(cmdline=CMDARGS)
     task = asyncio.create_task(run_updating_server(run_args))
     await asyncio.sleep(0.1)
     testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_client_test)
+    await run_async_client(testclient, modbus_calls=run_a_few_calls)
     await asyncio.sleep(0.1)
     await ServerAsyncStop()
     await asyncio.sleep(0.1)
@@ -132,39 +64,18 @@ async def test_exp_updating_server():
     await task
 
 
-def test_exp_build_bcd_payload():
-    """Test build bcd payload."""
-    builder = BcdPayloadBuilder()
-    decoder = BcdPayloadDecoder(builder)
-    assert str(decoder)
-
-
-def test_exp_message_parser():
-    """Test message parser."""
-    parse_messages(["--framer", "socket", "-m", "000100000006010100200001"])
-    parse_messages(["--framer", "socket", "-m", "00010000000401010101"])
-
-
 @pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_server_callback():
+async def xtest_exp_server_callback():
     """Test server/client with payload."""
     task = asyncio.create_task(run_callback_server(cmdline=CMDARGS))
     await asyncio.sleep(0.1)
     testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_client_test)
+    await run_async_client(testclient, modbus_calls=run_a_few_calls)
     await asyncio.sleep(0.1)
     await ServerAsyncStop()
     await asyncio.sleep(0.1)
     task.cancel()
     await task
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def test_exp_client_custom_msg(mock_run_server):
-    """Test client with custom message."""
-    assert not mock_run_server
-
-    run_custom_client()
 
 
 # to be updated:

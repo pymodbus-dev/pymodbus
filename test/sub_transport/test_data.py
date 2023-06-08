@@ -1,20 +1,20 @@
 """Test transport."""
 import asyncio
 
-
-BASE_PORT = 5240
+import pytest
 
 
 class TestDataTransport:  # pylint: disable=too-few-public-methods
     """Test for the transport module."""
 
-    async def test_client_send(self, transport, transport_server):
+    @pytest.mark.xdist_group(name="server_serialize")
+    async def test_client_send(self, transport, transport_server, use_port):
         """Test send()."""
-        transport_server.setup_tcp(True, "localhost", BASE_PORT + 1)
+        transport_server.setup_tcp(True, "localhost", use_port)
         server = await transport_server.transport_listen()
         assert transport_server.transport
 
-        transport.setup_tcp(False, "localhost", BASE_PORT + 1)
+        transport.setup_tcp(False, "localhost", use_port)
         assert await transport.transport_connect()
         await transport.send(b"ABC")
         await asyncio.sleep(2)

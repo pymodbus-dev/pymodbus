@@ -179,3 +179,14 @@ def return_as_coroutine(return_value=None):
             result = run_coroutine(my_coro_under_test)
     """
     return functools.partial(_yielded_return, return_value)
+
+
+_CURRENT_PORT = 5200
+
+
+@pytest.fixture(name="use_port")
+def get_port():
+    """Get next port."""
+    global _CURRENT_PORT  # pylint: disable=global-statement
+    _CURRENT_PORT += 1
+    return _CURRENT_PORT

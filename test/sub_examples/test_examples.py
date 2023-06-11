@@ -20,6 +20,8 @@ from examples.server_async import run_async_server
 from examples.server_callback import run_callback_server
 from examples.server_payload import setup_payload_server
 from examples.server_updating import run_updating_server, setup_updating_server
+from examples.simple_async_client import run_async_client as run_simple_async_client
+from examples.simple_sync_client import run_sync_client as run_simple_sync_client
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
 
@@ -146,6 +148,30 @@ class TestExamples:
         await asyncio.sleep(0.1)
         task.cancel()
         await task
+
+    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize(
+        ("use_comm", "use_framer"),
+        [
+            ("tcp", "socket"),
+        ],
+    )
+    async def test_simple_async_client(self, use_port, mock_server):
+        """Run simple async client."""
+        _cmdline = mock_server
+        await run_simple_async_client("127.0.0.1", str(use_port))
+
+    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize(
+        ("use_comm", "use_framer"),
+        [
+            ("tcp", "socket"),
+        ],
+    )
+    async def test_simple_sync_client(self, use_port, mock_server):
+        """Run simple async client."""
+        _cmdline = mock_server
+        run_simple_sync_client("127.0.0.1", str(use_port))
 
     async def xtest_exp_forwarder(
         self,

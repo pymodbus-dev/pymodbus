@@ -33,7 +33,7 @@ from pymodbus.transaction import (
 )
 
 
-async def run_async_client():
+async def run_async_client(host, port):
     """Run async client."""
 
     # activate debugging
@@ -45,8 +45,8 @@ async def run_async_client():
     print("get client")
     if select_my_client == "tcp":
         client = AsyncModbusTcpClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusSocketFramer,
             # timeout=10,
             # retries=3,
@@ -57,8 +57,8 @@ async def run_async_client():
         )
     elif select_my_client == "udp":
         client = AsyncModbusUdpClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusSocketFramer,
             # timeout=10,
             # retries=3,
@@ -69,7 +69,7 @@ async def run_async_client():
         )
     elif select_my_client == "serial":
         client = AsyncModbusSerialClient(
-            "/dev/tty01",  # tty port
+            port,
             framer=ModbusRtuFramer,
             # timeout=10,
             # retries=3,
@@ -84,8 +84,8 @@ async def run_async_client():
         )
     elif select_my_client == "tls":
         client = AsyncModbusTlsClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusTlsFramer,
             # timeout=10,
             # retries=3,
@@ -129,4 +129,4 @@ async def run_async_client():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_async_client(), debug=True)
+    asyncio.run(run_async_client("127.0.0.1", "5020"), debug=True)

@@ -41,8 +41,20 @@ class NullModem(Transport):
     client: NullModem = None
     is_server: bool = False
 
-    class dummy_transport(asyncio.BaseTransport):
+    class DummyTransport(asyncio.BaseTransport):
         """Use in connection_made calls."""
+
+        def close(self):
+            """Define dummy."""
+
+        def get_protocol(self):
+            """Define dummy."""
+
+        def is_closing(self):
+            """Define dummy."""
+
+        def set_protocol(self, _protocol):
+            """Define dummy."""
 
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
@@ -53,8 +65,8 @@ class NullModem(Transport):
             self.loop = asyncio.get_running_loop()
         self.transport, self.protocol = None, None
         if self.server:
-            self.server.connection_made(self.dummy_transport())
-            self.connection_made(self.dummy_transport())
+            self.server.connection_made(self.DummyTransport())
+            self.connection_made(self.DummyTransport())
             return True
         return False
 
@@ -63,7 +75,7 @@ class NullModem(Transport):
         self.is_server = True
         self.server = self
         Log.debug("NullModem: Simulate listen on {}", self.comm_params.comm_name)
-        return self
+        return self.DummyTransport()
 
     # -------------------------------- #
     # Helper methods for child classes #

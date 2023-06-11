@@ -1,8 +1,10 @@
-"""Test transport."""
+"""Fixtures for transport tests."""
 import asyncio
 import os
+import time
 from contextlib import suppress
 from dataclasses import dataclass
+from tempfile import gettempdir
 from unittest import mock
 
 import pytest
@@ -30,8 +32,9 @@ class BaseParams(Transport.CommParamsClass):
 
 
 @pytest.fixture(name="params")
-def prepare_baseparams():
+def prepare_baseparams(use_port):
     """Prepare BaseParams class."""
+    BaseParams.port = use_port
     return BaseParams
 
 
@@ -94,3 +97,19 @@ async def prepare_transport_server():
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     return transport
+
+
+@pytest.fixture(name="domain_host")
+def get_domain_host(positive):
+    """Get test host."""
+    return "localhost" if positive else "/illegal_host_name"
+
+
+@pytest.fixture(name="domain_socket")
+def get_domain_socket(positive):
+    """Get test file."""
+    return (
+        gettempdir() + "/test_unix_" + str(time.time())
+        if positive
+        else "/illegal_file_name"
+    )

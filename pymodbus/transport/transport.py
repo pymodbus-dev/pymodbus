@@ -317,12 +317,6 @@ class Transport:
             self.close()
             self.reconnect_task = asyncio.create_task(self.reconnect_connect())
 
-    def eof_received(self):
-        """Call when eof received (other end closed connection).
-
-        Handling is moved to connection_lost()
-        """
-
     def data_received(self, data: bytes):
         """Call when some data is received.
 
@@ -336,6 +330,21 @@ class Transport:
     def datagram_received(self, data, _addr):
         """Receive datagram (UDP connections)."""
         self.data_received(data)
+
+    def eof_received(self):
+        """Accept other end terminates connection.
+
+        Actual handling are in connection_lost()
+        """
+        Log.debug("-> eof_received")
+
+    def error_received(self, exc):
+        """Get error detected in UDP.
+
+        Actual handling are in connection_lost()
+        """
+        Log.debug("-> error_received {}", exc)
+        raise RuntimeError(str(exc))
 
     # -------------------------------- #
     # Helper methods for child classes #

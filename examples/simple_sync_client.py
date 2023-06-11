@@ -31,7 +31,7 @@ from pymodbus.transaction import (
 )
 
 
-def run_sync_client():
+def run_sync_client(host, port):
     """Run sync client."""
 
     # activate debugging
@@ -43,8 +43,8 @@ def run_sync_client():
     print("get client")
     if select_my_client == "tcp":
         client = ModbusTcpClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusSocketFramer,
             # timeout=10,
             # retries=3,
@@ -55,8 +55,8 @@ def run_sync_client():
         )
     elif select_my_client == "tcp":
         client = ModbusUdpClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusSocketFramer,
             # timeout=10,
             # retries=3,
@@ -67,7 +67,7 @@ def run_sync_client():
         )
     elif select_my_client == "serial":
         client = ModbusSerialClient(
-            "/dev/tty01",  # tty port
+            port,
             framer=ModbusRtuFramer,
             # timeout=10,
             # retries=3,
@@ -82,8 +82,8 @@ def run_sync_client():
         )
     elif select_my_client == "tls":
         client = ModbusTlsClient(
-            "127.0.0.1",  # host
-            port=5020,
+            host,
+            port=port,
             framer=ModbusTlsFramer,
             # timeout=10,
             # retries=3,
@@ -124,4 +124,4 @@ def run_sync_client():
 
 
 if __name__ == "__main__":
-    run_sync_client()
+    run_sync_client("127.0.0.1", "5020")

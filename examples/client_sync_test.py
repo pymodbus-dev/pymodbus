@@ -29,17 +29,18 @@ import pymodbus.bit_write_message as pdu_bit_write
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusException
 
 
 _logger = logging.getLogger()
+_logger.setLevel("DEBUG")
 
 
 def run_sync_client():
     """Run sync client."""
-    args = get_commandline()
+    args = helper.get_commandline(server=False)
     _logger.info("### Create client object")
     client = ModbusTcpClient(
         args.host,

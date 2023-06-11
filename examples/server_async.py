@@ -30,9 +30,8 @@ The corresponding client can be started as:
 """
 import asyncio
 import logging
-import os
 
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus import __version__ as pymodbus_version
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -54,11 +53,12 @@ from pymodbus.server import (
 
 
 _logger = logging.getLogger()
+_logger.setLevel("DEBUG")
 
 
 def setup_server(description=None, context=None, cmdline=None):
     """Run server setup."""
-    args = get_commandline(server=True, description=description, cmdline=cmdline)
+    args = helper.get_commandline(server=True, description=description, cmdline=cmdline)
     if context:
         args.context = context
     if not args.context:
@@ -197,13 +197,6 @@ async def run_async_server(args):
         )
     elif args.comm == "tls":
         address = ("", args.port) if args.port else None
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
         server = await StartAsyncTlsServer(
             context=args.context,  # Data storage
             host="localhost",  # define tcp address where to connect to.
@@ -214,9 +207,13 @@ async def run_async_server(args):
             framer=args.framer,  # The framer strategy to use
             # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
-            certfile=f"{path}/certificates/pymodbus.crt",  # The cert file path for TLS (used if sslctx is None)
+            certfile=helper.get_certificate(
+                "crt"
+            ),  # The cert file path for TLS (used if sslctx is None)
             # sslctx=sslctx,  # The SSLContext to use for TLS (default None and auto create)
-            keyfile=f"{path}/certificates/pymodbus.key",  # The key file path for TLS (used if sslctx is None)
+            keyfile=helper.get_certificate(
+                "key"
+            ),  # The key file path for TLS (used if sslctx is None)
             # password="none",  # The password for for decrypting the private key file
             # reqclicert=False,  # Force the sever request client"s certificate
             # ignore_missing_slaves=True,  # ignore request to a missing slave

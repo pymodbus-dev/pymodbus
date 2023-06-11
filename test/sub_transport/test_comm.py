@@ -1,27 +1,7 @@
 """Test transport."""
 import time
-from tempfile import gettempdir
 
 import pytest
-
-
-BASE_PORT = 5220
-
-
-@pytest.fixture(name="domain_host")
-def get_domain_host(positive):
-    """Get test host."""
-    return "localhost" if positive else "/illegal_host_name"
-
-
-@pytest.fixture(name="domain_socket")
-def get_domain_socket(positive):
-    """Get test file."""
-    return (
-        gettempdir() + "/test_unix_" + str(time.time())
-        if positive
-        else "/illegal_file_name"
-    )
 
 
 @pytest.mark.skipif(pytest.IS_WINDOWS, reason="not implemented.")
@@ -64,20 +44,22 @@ class TestCommUnixTransport:
 class TestCommTcpTransport:
     """Test for the transport module."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
-    async def test_connect(self, transport, domain_host):
+    async def test_connect(self, transport, use_port, domain_host):
         """Test connect_tcp()."""
-        transport.setup_tcp(False, domain_host, BASE_PORT + 1)
+        transport.setup_tcp(False, domain_host, use_port)
         start = time.time()
         assert not await transport.transport_connect()
         delta = time.time() - start
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
-    async def test_listen(self, transport_server, positive, domain_host):
+    async def test_listen(self, transport_server, use_port, positive, domain_host):
         """Test listen_tcp()."""
-        transport_server.setup_tcp(True, domain_host, BASE_PORT + 2)
+        transport_server.setup_tcp(True, domain_host, use_port)
         server = await transport_server.transport_listen()
         assert positive == bool(server)
         assert positive == bool(transport_server.transport)
@@ -85,13 +67,14 @@ class TestCommTcpTransport:
         if server:
             server.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True])
-    async def test_connected(self, transport, transport_server, domain_host):
+    async def test_connected(self, transport, transport_server, use_port, domain_host):
         """Test listen/connect tcp()."""
-        transport_server.setup_tcp(True, domain_host, BASE_PORT + 3)
+        transport_server.setup_tcp(True, domain_host, use_port)
         server = await transport_server.transport_listen()
         assert server
-        transport.setup_tcp(False, domain_host, BASE_PORT + 3)
+        transport.setup_tcp(False, domain_host, use_port)
         assert await transport.transport_connect()
         transport.close()
         transport_server.close()
@@ -101,13 +84,14 @@ class TestCommTcpTransport:
 class TestCommTlsTransport:
     """Test for the transport module."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
     async def test_connect(self, transport, params, domain_host):
         """Test connect_tls()."""
         transport.setup_tls(
             False,
             domain_host,
-            BASE_PORT + 4,
+            params.port,
             None,
             params.cwd + "crt",
             params.cwd + "key",
@@ -120,13 +104,14 @@ class TestCommTlsTransport:
         assert delta < transport.comm_params.timeout_connect * 1.2
         transport.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
     async def test_listen(self, transport_server, params, positive, domain_host):
         """Test listen_tls()."""
         transport_server.setup_tls(
             True,
             domain_host,
-            BASE_PORT + 5,
+            params.port,
             None,
             params.cwd + "crt",
             params.cwd + "key",
@@ -140,13 +125,14 @@ class TestCommTlsTransport:
         if server:
             server.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True])
     async def test_connected(self, transport, transport_server, params, domain_host):
         """Test listen/connect tls()."""
         transport_server.setup_tls(
             True,
             domain_host,
-            BASE_PORT + 6,
+            params.port,
             None,
             params.cwd + "crt",
             params.cwd + "key",
@@ -156,7 +142,7 @@ class TestCommTlsTransport:
         server = await transport_server.transport_listen()
         assert server
 
-        transport.setup_tcp(False, domain_host, BASE_PORT + 6)
+        transport.setup_tcp(False, domain_host, params.port)
         assert await transport.transport_connect()
         transport.close()
         transport_server.close()
@@ -170,10 +156,11 @@ class TestCommUdpTransport:
         """Test connect_udp()."""
         # always true, since udp is connectionless.
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
-    async def test_listen(self, transport_server, positive, domain_host):
+    async def test_listen(self, transport_server, use_port, positive, domain_host):
         """Test listen_udp()."""
-        transport_server.setup_udp(True, domain_host, BASE_PORT + 7)
+        transport_server.setup_udp(True, domain_host, use_port)
         server = await transport_server.transport_listen()
         assert positive == bool(server)
         assert positive == bool(transport_server.transport)
@@ -181,13 +168,14 @@ class TestCommUdpTransport:
         if server:
             server.close()
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True])
-    async def test_connected(self, transport, transport_server, domain_host):
+    async def test_connected(self, transport, transport_server, use_port, domain_host):
         """Test listen/connect udp()."""
-        transport_server.setup_udp(True, domain_host, BASE_PORT + 8)
+        transport_server.setup_udp(True, domain_host, use_port)
         server = await transport_server.transport_listen()
         assert server
-        transport.setup_udp(False, domain_host, BASE_PORT + 8)
+        transport.setup_udp(False, domain_host, use_port)
         assert await transport.transport_connect()
         transport.close()
         transport_server.close()
@@ -197,12 +185,11 @@ class TestCommUdpTransport:
 class TestCommSerialTransport:
     """Test for the transport module."""
 
+    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize("positive", [True, False])
-    async def test_connect(self, transport, positive):
+    async def test_connect(self, transport, use_port, positive):
         """Test connect_serial()."""
-        domain_port = (
-            f"unix:/localhost:{BASE_PORT + 9}" if positive else "/illegal_port"
-        )
+        domain_port = f"unix:/localhost:{use_port}" if positive else "/illegal_port"
         transport.setup_serial(
             False,
             domain_port,
@@ -234,14 +221,15 @@ class TestCommSerialTransport:
 
         # there are no positive test, since there are no standard tty port
 
-    async def test_connected(self, transport, transport_server):
+    @pytest.mark.xdist_group(name="server_serialize")
+    async def test_connected(self, transport, transport_server, use_port):
         """Test listen/connect serial()."""
-        transport_server.setup_tcp(True, "localhost", BASE_PORT + 10)
+        transport_server.setup_tcp(True, "localhost", use_port)
         server = await transport_server.transport_listen()
         assert server
         transport.setup_serial(
             False,
-            f"socket://localhost:{BASE_PORT + 10}",
+            f"socket://localhost:{use_port}",
             9600,
             8,
             "E",

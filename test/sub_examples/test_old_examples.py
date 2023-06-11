@@ -5,10 +5,7 @@ import logging
 import pytest
 import pytest_asyncio
 
-from examples.client_async import run_a_few_calls, run_async_client, setup_async_client
 from examples.server_async import run_async_server, setup_server
-from examples.server_callback import run_callback_server
-from examples.server_updating import run_updating_server, setup_updating_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
 
@@ -47,35 +44,6 @@ async def _helper_server():
     task.cancel()
     await task
     await asyncio.sleep(0.1)
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def xtest_exp_updating_server():
-    """Test server simulator."""
-    run_args = setup_updating_server(cmdline=CMDARGS)
-    task = asyncio.create_task(run_updating_server(run_args))
-    await asyncio.sleep(0.1)
-    testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_a_few_calls)
-    await asyncio.sleep(0.1)
-    await ServerAsyncStop()
-    await asyncio.sleep(0.1)
-    task.cancel()
-    await task
-
-
-@pytest.mark.xdist_group(name="server_serialize")
-async def xtest_exp_server_callback():
-    """Test server/client with payload."""
-    task = asyncio.create_task(run_callback_server(cmdline=CMDARGS))
-    await asyncio.sleep(0.1)
-    testclient = setup_async_client(cmdline=CMDARGS)
-    await run_async_client(testclient, modbus_calls=run_a_few_calls)
-    await asyncio.sleep(0.1)
-    await ServerAsyncStop()
-    await asyncio.sleep(0.1)
-    task.cancel()
-    await task
 
 
 # to be updated:

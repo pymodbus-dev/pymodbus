@@ -17,7 +17,9 @@ from examples.datastore_simulator import run_server_simulator, setup_simulator
 from examples.message_generator import generate_messages
 from examples.message_parser import parse_messages
 from examples.server_async import run_async_server
+from examples.server_callback import run_callback_server
 from examples.server_payload import setup_payload_server
+from examples.server_updating import run_updating_server, setup_updating_server
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
 
@@ -116,8 +118,36 @@ class TestExamples:
         task.cancel()
         await task
 
+    @pytest.mark.xdist_group(name="server_serialize")
+    async def test_server_callback(self, use_port):
+        """Test server/client with payload."""
+        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
+        await asyncio.sleep(0.1)
+        testclient = setup_async_client(cmdline=cmdargs)
+        await run_async_client(testclient, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(0.1)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
+    @pytest.mark.xdist_group(name="server_serialize")
+    async def test_updating_server(self, use_port):
+        """Test server simulator."""
+        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        run_args = setup_updating_server(cmdline=cmdargs)
+        task = asyncio.create_task(run_updating_server(run_args))
+        await asyncio.sleep(0.1)
+        testclient = setup_async_client(cmdline=cmdargs)
+        await run_async_client(testclient, modbus_calls=run_a_few_calls)
+        await asyncio.sleep(0.1)
+        await ServerAsyncStop()
+        await asyncio.sleep(0.1)
+        task.cancel()
+        await task
+
     # modbus_forwarder.py
-    # server_callback.py
     # server_updating.py
 
     # simple_async_client.py

@@ -45,32 +45,39 @@ class DummyTransport(asyncio.BaseTransport):
 class NullModem(Transport):
     """Transport layer.
 
-    Contains pure transport methods needed to connect/listen, send/receive and close connections
-    for unix socket, tcp, tls and serial communications.
-
-    Contains high level methods like reconnect.
-
-    This class is not available in the pymodbus API, and should not be referenced in Applications
-    nor in the pymodbus documentation.
-
-    The class is designed to be an object in the message level class.
+    Contains methods to act as a null modem between 2 objects.
+    (Allowing tests to be shortcut without actual network calls)
     """
 
-    other_end: NullModem = None
+    nullmodem_client: NullModem = None
+    nullmodem_server: NullModem = None
+
+    def __init__(self, *arg):
+        """Overwrite init."""
+        self.is_server: bool = False
+        self.other_end: NullModem = None
+        super().__init__(*arg)
 
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
         Log.debug("NullModem: Simulate connect on {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        self.transport = None
-        if self.other_end:
+        if self.nullmodem_server:
+            self.__class__.nullmodem_client = self
+            self.other_end = self.nullmodem_server
+            self.cb_connection_made()
+            self.other_end.cb_connection_made()
             return True
         return False
 
     async def transport_listen(self):
         """Handle generic listen and call on to specific transport listen."""
         Log.debug("NullModem: Simulate listen on {}", self.comm_params.comm_name)
+        if not self.loop:
+            self.loop = asyncio.get_running_loop()
+        self.is_server = True
+        self.__class__.nullmodem_server = self
         return DummyTransport()
 
     # -------------------------------- #
@@ -92,18 +99,10 @@ class NullModem(Transport):
         """
         self.recv_buffer = b""
         if not reconnect:
-            self.connection_lost(None)
-            self.other_end.connection_lost.cb_connection_lost(None)
-
-    def connection_made(self, transport: asyncio.BaseTransport):
-        """Simulate call from asyncio"""
-        self.other_end = transport
-        super().connection_made(transport)
-
-    def connection_lost(self, reason: Exception):
-        """Simulate call from asyncio"""
-        self.other_end = None
-        super().connection_lost(reason)
+            self.nullmodem_client.cb_connection_lost(None)
+            self.nullmodem_server.cb_connection_lost(None)
+            self.__class__.nullmodem_client = None
+            self.__class__.nullmodem_server = None
 
     # ----------------- #
     # The magic methods #

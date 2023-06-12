@@ -39,21 +39,6 @@ def prepare_baseparams(use_port):
     return BaseParams
 
 
-class DummySocket:  # pylint: disable=too-few-public-methods
-    """Socket simulator for test."""
-
-    def __init__(self):
-        """Initialize."""
-        self.close = mock.Mock()
-        self.abort = mock.Mock()
-
-
-@pytest.fixture(name="dummy_socket")
-def prepare_dummysocket():
-    """Prepare dummy_socket class."""
-    return DummySocket
-
-
 @pytest.fixture(name="commparams")
 def prepare_testparams():
     """Prepare CommParamsClass object."""

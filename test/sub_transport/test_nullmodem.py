@@ -1,5 +1,4 @@
 """Test transport."""
-from unittest import mock
 
 from pymodbus.transport.nullmodem import DummyTransport
 
@@ -102,20 +101,18 @@ class TestNullModemTransport:
         nullmodem_server.cb_connection_lost.assert_called_once()
         nullmodem_server.cb_handle_data.assert_not_called()
 
-    async def xtest_nullmodem_data(self, transport):
-        """Test data_received."""
-        transport.cb_handle_data = mock.MagicMock(return_value=2)
-        transport.data_received(b"123456")
-        transport.cb_handle_data.assert_called_once()
-        assert transport.recv_buffer == b"3456"
-        transport.data_received(b"789")
-        assert transport.recv_buffer == b"56789"
-
-    async def xtest_nullmodem_send(self, transport, params):
-        """Test send()."""
-        transport.transport = mock.AsyncMock()
-        await transport.send(b"abc")
-
-        transport.setup_udp(False, params.host, params.port)
-        await transport.send(b"abc")
-        transport.close()
+    async def test_data(self, nullmodem, nullmodem_server):
+        """Test data exchange."""
+        data = b"abcd"
+        assert await nullmodem_server.transport_listen()
+        assert await nullmodem.transport_connect()
+        assert await nullmodem.send(data)
+        assert nullmodem_server.recv_buffer == data
+        assert not nullmodem.recv_buffer
+        nullmodem.cb_handle_data.assert_not_called()
+        nullmodem_server.cb_handle_data.assert_called_once()
+        assert await nullmodem_server.send(data)
+        assert nullmodem_server.recv_buffer == data
+        assert nullmodem.recv_buffer == data
+        nullmodem.cb_handle_data.assert_called_once()
+        nullmodem_server.cb_handle_data.assert_called_once()

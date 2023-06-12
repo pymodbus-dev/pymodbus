@@ -66,6 +66,7 @@ class NullModem(Transport):
         if self.nullmodem_server:
             self.__class__.nullmodem_client = self
             self.other_end = self.nullmodem_server
+            self.nullmodem_server.other_end = self
             self.cb_connection_made()
             self.other_end.cb_connection_made()
             return True

@@ -1,4 +1,4 @@
-"""Base for all transport types."""
+"""Transport layer."""
 # mypy: disable-error-code="name-defined"
 # needed because asyncio.Server is not defined (to mypy) in v3.8.16
 from __future__ import annotations
@@ -94,7 +94,6 @@ class Transport:
 
         self.reconnect_delay_current: float = 0.0
         self.transport: asyncio.BaseTransport | asyncio.Server = None
-        self.protocol: asyncio.BaseProtocol = None
         self.loop: asyncio.AbstractEventLoop = None
         self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
@@ -266,9 +265,9 @@ class Transport:
         Log.debug("Connecting {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        self.transport, self.protocol = None, None
+        self.transport = None
         try:
-            self.transport, self.protocol = await asyncio.wait_for(
+            self.transport, _protocol = await asyncio.wait_for(
                 self.call_connect_listen(),
                 timeout=self.comm_params.timeout_connect,
             )
@@ -346,9 +345,9 @@ class Transport:
         Log.debug("-> error_received {}", exc)
         raise RuntimeError(str(exc))
 
-    # -------------------------------- #
-    # Helper methods for child classes #
-    # -------------------------------- #
+    # ----------------------------------- #
+    # Helper methods for external classes #
+    # ----------------------------------- #
     async def send(self, data: bytes) -> bool:
         """Send request.
 
@@ -369,7 +368,6 @@ class Transport:
                 self.transport.abort()
             self.transport.close()
             self.transport = None
-        self.protocol = None
         if not reconnect and self.reconnect_task:
             self.reconnect_task.cancel()
             self.reconnect_task = None

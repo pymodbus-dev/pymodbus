@@ -5,6 +5,8 @@ from unittest import mock
 import pytest
 from serial import SerialException
 
+from pymodbus.transport.nullmodem import DummyTransport
+
 
 class TestBasicTransport:
     """Test transport module, base part."""
@@ -45,10 +47,10 @@ class TestBasicTransport:
         """Test magic."""
         assert str(transport) == f"Transport({params.comm_name})"
 
-    async def test_connection_made(self, dummy_socket, transport, commparams):
+    async def test_connection_made(self, transport, commparams):
         """Test connection_made()."""
         transport.loop = None
-        transport.connection_made(dummy_socket())
+        transport.connection_made(DummyTransport())
         assert transport.transport
         assert not transport.recv_buffer
         assert not transport.reconnect_task
@@ -76,9 +78,11 @@ class TestBasicTransport:
         transport.close()
         assert not transport.reconnect_task
 
-    async def test_close(self, dummy_socket, transport):
+    async def test_close(self, transport):
         """Test close()."""
-        socket = dummy_socket()
+        socket = DummyTransport()
+        socket.abort = mock.Mock()
+        socket.close = mock.Mock()
         transport.connection_made(socket)
         transport.cb_connection_made.reset_mock()
         transport.cb_connection_lost.reset_mock()

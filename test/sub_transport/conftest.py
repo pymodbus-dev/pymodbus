@@ -80,6 +80,8 @@ async def prepare_nullmodem():
         mock.Mock(name="cb_connection_lost"),
         mock.Mock(name="cb_handle_data", return_value=0),
     )
+    transport.__class__.nullmodem_client = None
+    transport.__class__.nullmodem_server = None
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     return transport
@@ -97,6 +99,8 @@ async def prepare_nullmodem_server():
         mock.Mock(name="cb_connection_lost"),
         mock.Mock(name="cb_handle_data", return_value=0),
     )
+    transport.__class__.nullmodem_client = None
+    transport.__class__.nullmodem_server = None
     with suppress(RuntimeError):
         transport.loop = asyncio.get_running_loop()
     return transport

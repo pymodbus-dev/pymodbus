@@ -99,8 +99,10 @@ class NullModem(Transport):
         """
         self.recv_buffer = b""
         if not reconnect:
-            self.nullmodem_client.cb_connection_lost(None)
-            self.nullmodem_server.cb_connection_lost(None)
+            if self.nullmodem_client:
+                self.nullmodem_client.cb_connection_lost(None)
+            if self.nullmodem_server:
+                self.nullmodem_server.cb_connection_lost(None)
             self.__class__.nullmodem_client = None
             self.__class__.nullmodem_server = None
 

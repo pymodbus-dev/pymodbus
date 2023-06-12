@@ -74,8 +74,33 @@ class TestNullModemTransport:
         nullmodem_server.cb_connection_lost.assert_not_called()
         nullmodem_server.cb_handle_data.assert_not_called()
 
-    async def xtest_nullmodem_close(self, transport):
+    async def test_client_close(self, nullmodem, nullmodem_server):
         """Test close()."""
+        assert await nullmodem_server.transport_listen()
+        assert await nullmodem.transport_connect()
+        nullmodem.close()
+        assert not nullmodem.nullmodem_client
+        assert not nullmodem.nullmodem_server
+        nullmodem.cb_connection_made.assert_called_once()
+        nullmodem.cb_connection_lost.assert_called_once()
+        nullmodem.cb_handle_data.assert_not_called()
+        nullmodem_server.cb_connection_made.assert_called_once()
+        nullmodem_server.cb_connection_lost.assert_called_once()
+        nullmodem_server.cb_handle_data.assert_not_called()
+
+    async def test_server_close(self, nullmodem, nullmodem_server):
+        """Test close()."""
+        assert await nullmodem_server.transport_listen()
+        assert await nullmodem.transport_connect()
+        nullmodem_server.close()
+        assert not nullmodem.nullmodem_client
+        assert not nullmodem.nullmodem_server
+        nullmodem.cb_connection_made.assert_called_once()
+        nullmodem.cb_connection_lost.assert_called_once()
+        nullmodem.cb_handle_data.assert_not_called()
+        nullmodem_server.cb_connection_made.assert_called_once()
+        nullmodem_server.cb_connection_lost.assert_called_once()
+        nullmodem_server.cb_handle_data.assert_not_called()
 
     async def xtest_nullmodem_data(self, transport):
         """Test data_received."""

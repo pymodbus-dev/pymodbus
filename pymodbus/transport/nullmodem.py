@@ -56,28 +56,20 @@ class NullModem(Transport):
     The class is designed to be an object in the message level class.
     """
 
-    server: NullModem = None
-    client: NullModem = None
-    is_server: bool = False
+    other_end: NullModem = None
 
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""
-        self.is_server = False
-        self.client = self
         Log.debug("NullModem: Simulate connect on {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        self.transport, self.protocol = None, None
-        if self.server:
-            self.server.connection_made(DummyTransport())
-            self.connection_made(DummyTransport())
+        (self.transport,) = None, None
+        if self.other_end:
             return True
         return False
 
     async def transport_listen(self):
         """Handle generic listen and call on to specific transport listen."""
-        self.is_server = True
-        self.server = self
         Log.debug("NullModem: Simulate listen on {}", self.comm_params.comm_name)
         return DummyTransport()
 
@@ -90,10 +82,7 @@ class NullModem(Transport):
         :param data: non-empty bytes object with data to send.
         """
         Log.debug("NullModem: simulate send {}", data, ":hex")
-        if self.is_server:
-            self.client.data_received(data)
-        else:
-            self.server.data_received(data)
+        self.other_end.data_received(data)
         return True
 
     def close(self, reconnect: bool = False) -> None:
@@ -103,12 +92,18 @@ class NullModem(Transport):
         """
         self.recv_buffer = b""
         if not reconnect:
-            self.client.cb_connection_lost(None)
-            self.server.cb_connection_lost(None)
+            self.connection_lost(None)
+            self.other_end.connection_lost.cb_connection_lost(None)
 
-    def is_active(self) -> bool:
-        """Return true if connected/listening."""
-        return True
+    def connection_made(self, transport: asyncio.BaseTransport):
+        """Simulate call from asyncio"""
+        self.other_end = transport
+        super().connection_made(transport)
+
+    def connection_lost(self, reason: Exception):
+        """Simulate call from asyncio"""
+        self.other_end = None
+        super().connection_lost(reason)
 
     # ----------------- #
     # The magic methods #

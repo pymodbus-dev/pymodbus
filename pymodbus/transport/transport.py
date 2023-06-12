@@ -94,7 +94,6 @@ class Transport:
 
         self.reconnect_delay_current: float = 0.0
         self.transport: asyncio.BaseTransport | asyncio.Server = None
-        self.protocol: asyncio.BaseProtocol = None
         self.loop: asyncio.AbstractEventLoop = None
         self.reconnect_task: asyncio.Task = None
         self.recv_buffer: bytes = b""
@@ -266,9 +265,9 @@ class Transport:
         Log.debug("Connecting {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        self.transport, self.protocol = None, None
+        self.transport = None
         try:
-            self.transport, self.protocol = await asyncio.wait_for(
+            self.transport, _protocol = await asyncio.wait_for(
                 self.call_connect_listen(),
                 timeout=self.comm_params.timeout_connect,
             )
@@ -369,7 +368,6 @@ class Transport:
                 self.transport.abort()
             self.transport.close()
             self.transport = None
-        self.protocol = None
         if not reconnect and self.reconnect_task:
             self.reconnect_task.cancel()
             self.reconnect_task = None

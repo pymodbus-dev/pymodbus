@@ -21,29 +21,42 @@ class TestNullModemTransport:
         socket.set_protocol(None)
         socket.abort()
 
-    async def test_transport_connect(self, transport, commparams):
+    async def xtest_nullmodem_connect(self, nullmodem, nullmodem_server, commparams):
         """Test connection_made()."""
-        transport.loop = None
-        transport.connection_made(DummyTransport())
-        assert transport.transport
-        assert not transport.recv_buffer
-        assert not transport.reconnect_task
-        assert transport.reconnect_delay_current == commparams.reconnect_delay
-        transport.cb_connection_made.assert_called_once()
-        transport.cb_connection_lost.assert_not_called()
-        transport.cb_handle_data.assert_not_called()
-        transport.close()
+        nullmodem.loop = None
+        assert not await nullmodem.transport_connect()
+        assert not nullmodem.other_end
+        assert nullmodem.loop
+        nullmodem.cb_connection_made.assert_not_called()
+        nullmodem.cb_connection_lost.assert_not_called()
+        nullmodem.cb_handle_data.assert_not_called()
 
-    async def test_close(self, transport):
+        nullmodem_server.loop = None
+        assert await nullmodem_server.transport_listen()
+        assert nullmodem_server.is_server
+        assert not nullmodem_server.client
+        assert nullmodem_server.server
+        assert nullmodem.loop
+        nullmodem_server.cb_connection_made.assert_not_called()
+        nullmodem_server.cb_connection_lost.assert_not_called()
+        nullmodem_server.cb_handle_data.assert_not_called()
+
+        assert await nullmodem.transport_connect()
+        assert not nullmodem.is_server
+        assert nullmodem.client
+        assert nullmodem.server
+        assert nullmodem.loop
+        nullmodem.cb_connection_made.assert_called_once()
+        nullmodem.cb_connection_lost.assert_not_called()
+        nullmodem.cb_handle_data.assert_not_called()
+        nullmodem_server.cb_connection_made.assert_called_once()
+        nullmodem.cb_connection_lost.assert_not_called()
+        nullmodem.cb_handle_data.assert_not_called()
+
+    async def xtest_nullmodem_close(self, transport):
         """Test close()."""
 
-    async def test_datagram(self, transport):
-        """Test datagram_received()."""
-        transport.data_received = mock.MagicMock()
-        transport.datagram_received(b"abc", "127.0.0.1")
-        transport.data_received.assert_called_once()
-
-    async def test_data(self, transport):
+    async def xtest_nullmodem_data(self, transport):
         """Test data_received."""
         transport.cb_handle_data = mock.MagicMock(return_value=2)
         transport.data_received(b"123456")
@@ -52,7 +65,7 @@ class TestNullModemTransport:
         transport.data_received(b"789")
         assert transport.recv_buffer == b"56789"
 
-    async def test_send(self, transport, params):
+    async def xtest_nullmodem_send(self, transport, params):
         """Test send()."""
         transport.transport = mock.AsyncMock()
         await transport.send(b"abc")

@@ -21,7 +21,7 @@ class TestNullModemTransport:
         socket.set_protocol(None)
         socket.abort()
 
-    async def xtest_nullmodem_connect(self, nullmodem, nullmodem_server, commparams):
+    async def xtest_nullmodem_connect(self, nullmodem, nullmodem_server):
         """Test connection_made()."""
         nullmodem.loop = None
         assert not await nullmodem.transport_connect()

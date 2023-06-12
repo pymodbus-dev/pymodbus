@@ -63,7 +63,7 @@ class NullModem(Transport):
         Log.debug("NullModem: Simulate connect on {}", self.comm_params.comm_name)
         if not self.loop:
             self.loop = asyncio.get_running_loop()
-        (self.transport,) = None, None
+        self.transport = None
         if self.other_end:
             return True
         return False

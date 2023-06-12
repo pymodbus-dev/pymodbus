@@ -10,6 +10,7 @@ from unittest import mock
 import pytest
 import pytest_asyncio
 
+from pymodbus.transport.nullmodem import NullModem
 from pymodbus.transport.transport import Transport
 
 
@@ -69,6 +70,23 @@ def prepare_testparams():
 async def prepare_transport():
     """Prepare transport object."""
     transport = Transport(
+        BaseParams.comm_name,
+        BaseParams.reconnect_delay,
+        BaseParams.reconnect_delay_max,
+        BaseParams.timeout_connect,
+        mock.Mock(name="cb_connection_made"),
+        mock.Mock(name="cb_connection_lost"),
+        mock.Mock(name="cb_handle_data", return_value=0),
+    )
+    with suppress(RuntimeError):
+        transport.loop = asyncio.get_running_loop()
+    return transport
+
+
+@pytest.fixture(name="nullmodem")
+async def prepare_nullmodem():
+    """Prepare nullmodem object."""
+    transport = NullModem(
         BaseParams.comm_name,
         BaseParams.reconnect_delay,
         BaseParams.reconnect_delay_max,

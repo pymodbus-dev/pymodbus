@@ -23,6 +23,25 @@ from pymodbus.logging import Log
 from pymodbus.transport.transport import Transport
 
 
+class DummyTransport(asyncio.BaseTransport):
+    """Use in connection_made calls."""
+
+    def close(self):
+        """Define dummy."""
+
+    def get_protocol(self):
+        """Define dummy."""
+
+    def is_closing(self):
+        """Define dummy."""
+
+    def set_protocol(self, _protocol):
+        """Define dummy."""
+
+    def abort(self):
+        """Define dummy."""
+
+
 class NullModem(Transport):
     """Transport layer.
 
@@ -40,21 +59,6 @@ class NullModem(Transport):
     server: NullModem = None
     client: NullModem = None
     is_server: bool = False
-
-    class DummyTransport(asyncio.BaseTransport):
-        """Use in connection_made calls."""
-
-        def close(self):
-            """Define dummy."""
-
-        def get_protocol(self):
-            """Define dummy."""
-
-        def is_closing(self):
-            """Define dummy."""
-
-        def set_protocol(self, _protocol):
-            """Define dummy."""
 
     async def transport_connect(self) -> bool:
         """Handle generic connect and call on to specific transport connect."""

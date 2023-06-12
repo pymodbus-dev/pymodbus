@@ -69,8 +69,8 @@ class NullModem(Transport):
             self.loop = asyncio.get_running_loop()
         self.transport, self.protocol = None, None
         if self.server:
-            self.server.connection_made(self.DummyTransport())
-            self.connection_made(self.DummyTransport())
+            self.server.connection_made(DummyTransport())
+            self.connection_made(DummyTransport())
             return True
         return False
 
@@ -79,7 +79,7 @@ class NullModem(Transport):
         self.is_server = True
         self.server = self
         Log.debug("NullModem: Simulate listen on {}", self.comm_params.comm_name)
-        return self.DummyTransport()
+        return DummyTransport()
 
     # -------------------------------- #
     # Helper methods for child classes #

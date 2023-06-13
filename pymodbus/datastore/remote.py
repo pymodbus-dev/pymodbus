@@ -48,7 +48,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
             values = self.__extract_result(self.decode(fc_as_hex), self.result)
             # try to write the same values to see if the registers are writable
             func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
-            if (fc_as_hex == 0x0F or fc_as_hex == 0x10):
+            if fc_as_hex in (0x0F, 0x10):
                 self.result = func_fc(address, values)
             else:
                 self.result = func_fc(address, values[0])
@@ -65,7 +65,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         group_fx = self.decode(fc_as_hex)
         if fc_as_hex in self._write_fc:
             func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
-            if (fc_as_hex == 0x0F or fc_as_hex == 0x10):
+            if fc_as_hex in (0x0F, 0x10):
                 self.result = func_fc(address, values)
             else:
                 self.result = func_fc(address, values[0])

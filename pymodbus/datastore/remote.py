@@ -42,11 +42,16 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         """
         Log.debug("validate[{}] {}:{}", fc_as_hex, address, count)
         group_fx = self.decode(fc_as_hex)
-        if fc_as_hex in self._write_fc:
-            func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
-        else:
-            func_fc = self.__get_callbacks[group_fx]
+        func_fc = self.__get_callbacks[group_fx]
         self.result = func_fc(address, count)
+        if not self.result.isError() and fc_as_hex in self._write_fc:
+            values = self.__extract_result(self.decode(fc_as_hex), self.result)
+            # try to write the same values to see if the registers are writable
+            func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
+            if (fc_as_hex == 0x0F or fc_as_hex == 0x10):
+                self.result = func_fc(address, values)
+            else:
+                self.result = func_fc(address, values[0])
         return not self.result.isError()
 
     def getValues(self, fc_as_hex, _address, _count=1):
@@ -56,10 +61,14 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         return self.__extract_result(self.decode(fc_as_hex), self.result)
 
     def setValues(self, fc_as_hex, address, values):
-        """Set the datastore with the supplied values.
-
-        Already done in validate
-        """
+        """Set the datastore with the supplied values."""
+        group_fx = self.decode(fc_as_hex)
+        if fc_as_hex in self._write_fc:
+            func_fc = self.__set_callbacks[f"{group_fx}{fc_as_hex}"]
+            if (fc_as_hex == 0x0F or fc_as_hex == 0x10):
+                self.result = func_fc(address, values)
+            else:
+                self.result = func_fc(address, values[0])
 
     def __str__(self):
         """Return a string representation of the context.

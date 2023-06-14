@@ -154,7 +154,6 @@ async def run_async_server(args):
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
@@ -169,7 +168,6 @@ async def run_async_server(args):
             address=address,  # listen address
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             # ignore_missing_slaves=True,  # ignore request to a missing slave
             # broadcast_enable=False,  # treat slave_id 0 as broadcast address,
             # timeout=1,  # waiting time for request to complete
@@ -185,7 +183,6 @@ async def run_async_server(args):
             port=args.port,  # serial port
             # custom_functions=[],  # allow custom handling
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             # stopbits=1,  # The number of stop bits to use
             # bytesize=8,  # The bytesize of the serial messages
             # parity="N",  # Which kind of parity to use
@@ -205,7 +202,6 @@ async def run_async_server(args):
             # custom_functions=[],  # allow custom handling
             address=address,  # listen address
             framer=args.framer,  # The framer strategy to use
-            # handler=None,  # handler for each session
             allow_reuse_address=True,  # allow the reuse of an address
             certfile=helper.get_certificate(
                 "crt"

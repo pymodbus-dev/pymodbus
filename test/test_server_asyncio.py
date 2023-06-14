@@ -239,7 +239,7 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         await asyncio.sleep(0.2)  # so we have to wait a bit
         assert not self.server.active_connections
 
-    async def test_async_tcp_server_close_active_connection(self):
+    async def test_async_tcp_server_close_connection(self):
         """Test server_close() while there are active TCP connections"""
         await self.start_server()
         await self.connect_server()
@@ -333,8 +333,6 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
     async def test_async_udp_server_serve_forever_close(self):
         """Test StarAsyncUdpServer serve_forever() method"""
         await self.start_server(do_udp=True)
-        assert asyncio.isfuture(self.server.on_connection_terminated)
-        assert not self.server.on_connection_terminated.done()
         await self.server.server_close()
         self.server = None
 

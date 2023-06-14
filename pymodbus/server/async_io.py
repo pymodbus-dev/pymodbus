@@ -68,7 +68,7 @@ def sslctx_provider(
 class ModbusBaseRequestHandler(asyncio.BaseProtocol):
     """Implements modbus slave wire protocol.
 
-    This uses the asyncio.Protocol to implement the client handler.
+    This uses the asyncio.Protocol to implement the server protocol.
 
     When a connection is established, the asyncio.Protocol.connection_made
     callback is called. This callback will setup the connection and
@@ -491,7 +491,6 @@ class ModbusUnixServer:
         path,
         framer=None,
         identity=None,
-        handler=None,
         **kwargs,
     ):
         """Initialize the socket server.
@@ -503,9 +502,6 @@ class ModbusUnixServer:
         :param path: unix socket path
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param ignore_missing_slaves: True to not send errors on a request
@@ -522,7 +518,7 @@ class ModbusUnixServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.path = path
-        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler = ModbusConnectedRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -594,7 +590,6 @@ class ModbusTcpServer:
         framer=None,
         identity=None,
         address=None,
-        handler=None,
         allow_reuse_address=False,
         backlog=20,
         **kwargs,
@@ -608,9 +603,6 @@ class ModbusTcpServer:
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
@@ -631,7 +623,7 @@ class ModbusTcpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler = ModbusConnectedRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -717,7 +709,6 @@ class ModbusTlsServer(ModbusTcpServer):
         keyfile=None,
         password=None,
         reqclicert=False,
-        handler=None,
         allow_reuse_address=False,
         backlog=20,
         **kwargs,
@@ -737,9 +728,6 @@ class ModbusTlsServer(ModbusTcpServer):
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
         :param reqclicert: Force the sever request client's certificate
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
@@ -757,7 +745,6 @@ class ModbusTlsServer(ModbusTcpServer):
             framer=framer,
             identity=identity,
             address=address,
-            handler=handler,
             allow_reuse_address=allow_reuse_address,
             backlog=backlog,
             **kwargs,
@@ -780,7 +767,6 @@ class ModbusUdpServer:
         framer=None,
         identity=None,
         address=None,
-        handler=None,
         backlog=20,
         **kwargs,
     ):
@@ -811,7 +797,7 @@ class ModbusUdpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = handler or ModbusDisconnectedRequestHandler
+        self.handler = ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )

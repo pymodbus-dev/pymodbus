@@ -198,11 +198,14 @@ def run(
         **web_app_config,
         **modbus_config,
     )
-    if repl:
-        loop.run_until_complete(run_repl(app))
-    else:
+    try:
         loop.run_until_complete(app.run_async(repl))
+        if repl:
+            loop.run_until_complete(run_repl(app))
         loop.run_forever()
+
+    except CANCELLED_ERROR:
+        print("Done!!!!!")
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         raise NotImplementedException()
 
     def validate(self, fc_as_hex, address, count=1):
+        # pylint: disable=unused-argument
         """Validate the request to make sure it is in range.
 
         :param fc_as_hex: The function we are working with
@@ -62,6 +63,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
                 self.result = func_fc(address, values[0])
         if self.result.isError():
             return self.result
+        return None
 
     def __str__(self):
         """Return a string representation of the context.

@@ -37,9 +37,10 @@ jobs:
         uses: syphar/restore-virtualenv@v1
         with:
           requirement_files: requirements.txt
+        if: github.event_name != 'pull_request'
 
       - name: venv create
-        if: steps.cache-venv.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+        if: github.event_name == 'pull_request' || steps.cache-venv.outputs.cache-hit != 'true'
         run: pip install -e . -r requirements.txt
 
       - name: codespell

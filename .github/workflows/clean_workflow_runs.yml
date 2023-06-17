@@ -8,11 +8,11 @@ on:
       retain_days:
         description: 'retain days (default 14)'
         required: true
-        default: 14
+        default: "14"
       keep_minimum_runs:
         description: 'keep minimum runs (default 6)'
         required: true
-        default: 6
+        default: "6"
 
 permissions:
   actions: write

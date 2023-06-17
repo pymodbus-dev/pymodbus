@@ -329,7 +329,9 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalAddress)
         if not context.validate(self.function_code, self.read_address, self.read_count):
             return self.doException(merror.IllegalAddress)
-        result = context.setValues(self.function_code, self.write_address, self.write_registers)
+        result = context.setValues(
+            self.function_code, self.write_address, self.write_registers
+        )
         if isinstance(result, ExceptionResponse):
             return result
         registers = context.getValues(

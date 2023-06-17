@@ -14,9 +14,8 @@ __all__ = [
 import struct
 
 from pymodbus.constants import Defaults
+from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
-from pymodbus.pdu import ExceptionResponse
 
 
 class ReadRegistersRequestBase(ModbusRequest):

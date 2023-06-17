@@ -14,10 +14,9 @@ __all__ = [
 import struct
 
 from pymodbus.constants import ModbusStatus
+from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
-from pymodbus.pdu import ExceptionResponse
 
 
 # ---------------------------------------------------------------------------#

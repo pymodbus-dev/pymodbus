@@ -1,8 +1,8 @@
 ================================
 PyModbus - A Python Modbus Stack
 ================================
-We are happy to announce that we have a new home: pymodbus-dev, which is pure 100% FOSS.
-The move from a company organization to pymodbus-dev was done to allow a 100% openness in the spirit of FOSS.
+We are constantly working the modernize pymodbus and add new features, and we look for people who want to help a bit.
+There are challenges small and large not only programming but also documentation and testing.
 
 .. image:: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml/badge.svg?branch=dev
    :target: https://github.com/pymodbus-dev/pymodbus/actions/workflows/ci.yml
@@ -22,7 +22,7 @@ Supported versions
 
 Version `2.5.3 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v2.5.3>`_ is the last 2.x release (Supports python >= 2.7, no longer supported).
 
-Version `3.3.0 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.0>`_ is the current release (Supports Python >= 3.8).
+Version `3.3.1 <https://github.com/pymodbus-dev/pymodbus/releases/tag/v3.3.1>`_ is the current release (Supports Python >= 3.8).
 
 .. important::
    All API changes after 3.0.0 are documented in `API_changes.rst <https://github.com/pymodbus-dev/pymodbus/blob/dev/API_changes.rst>`_

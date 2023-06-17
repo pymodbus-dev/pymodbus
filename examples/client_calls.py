@@ -47,6 +47,7 @@ from pymodbus.pdu import ExceptionResponse
 
 
 _logger = logging.getLogger()
+_logger.setLevel("DEBUG")
 
 
 SLAVE = 0x01
@@ -84,7 +85,7 @@ async def async_template_call(client):
 def template_call(client):
     """Show complete modbus call, sync version."""
     try:
-        rr = client.read_coils(1, 1, slave=SLAVE)
+        rr = client.read_coils(32, 1, slave=SLAVE)
     except ModbusException as exc:
         txt = f"ERROR: exception in pymodbus {exc}"
         _logger.error(txt)
@@ -289,14 +290,14 @@ def run_sync_calls(client):
     template_call(client)
 
 
-async def helper():
+async def async_helper():
     """Combine the setup and run"""
     testclient = setup_async_client(description="Run asynchronous client.")
     await run_async_client(testclient, modbus_calls=run_async_calls)
 
 
 if __name__ == "__main__":
-    asyncio.run(helper())
+    asyncio.run(async_helper())
     testclient = setup_sync_client(
         description="Run modbus calls in synchronous client."
     )

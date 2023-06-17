@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pymodbus Simulator Example.
+"""Pymodbus datastore simulator Example.
 
 An example of using simulator datastore with json interface.
 
@@ -17,6 +17,8 @@ options:
 
 The corresponding client can be started as:
     python3 client_sync.py
+
+.. tip:: This is NOT the pymodbus simulator, that is started as pymodbus.simulator.
 """
 import argparse
 import asyncio

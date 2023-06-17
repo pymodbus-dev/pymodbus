@@ -22,12 +22,11 @@ The corresponding server must be started before e.g. as:
     python3 server_sync.py
 """
 import logging
-import os
 
 # --------------------------------------------------------------------------- #
 # import the various client implementations
 # --------------------------------------------------------------------------- #
-from examples.helper import get_commandline
+from examples import helper
 from pymodbus.client import (
     ModbusSerialClient,
     ModbusTcpClient,
@@ -37,11 +36,12 @@ from pymodbus.client import (
 
 
 _logger = logging.getLogger()
+_logger.setLevel("DEBUG")
 
 
 def setup_sync_client(description=None, cmdline=None):
     """Run client setup."""
-    args = get_commandline(
+    args = helper.get_commandline(
         server=False,
         description=description,
         cmdline=cmdline,
@@ -93,13 +93,6 @@ def setup_sync_client(description=None, cmdline=None):
             #    handle_local_echo=False,
         )
     elif args.comm == "tls":
-        cwd = os.getcwd().split("/")[-1]
-        if cwd == "examples":
-            path = "."
-        elif cwd == "test":
-            path = "../examples"
-        else:
-            path = "examples"
         client = ModbusTlsClient(
             args.host,
             port=args.port,
@@ -112,8 +105,8 @@ def setup_sync_client(description=None, cmdline=None):
             #    strict=True,
             # TLS setup parameters
             #    sslctx=None,
-            certfile=f"{path}/certificates/pymodbus.crt",
-            keyfile=f"{path}/certificates/pymodbus.key",
+            certfile=helper.get_certificate("crt"),
+            keyfile=helper.get_certificate("key"),
             #    password=None,
             server_hostname="localhost",
         )
@@ -130,6 +123,15 @@ def run_sync_client(client, modbus_calls=None):
     _logger.info("### End of Program")
 
 
+def run_a_few_calls(client):
+    """Test connection works."""
+    rr = client.read_coils(32, 1, slave=1)
+    assert len(rr.bits) == 8
+    rr = client.read_holding_registers(4, 2, slave=1)
+    assert rr.registers[0] == 17
+    assert rr.registers[1] == 17
+
+
 if __name__ == "__main__":
     testclient = setup_sync_client(description="Run synchronous client.")
-    run_sync_client(testclient)
+    run_sync_client(testclient, modbus_calls=run_a_few_calls)

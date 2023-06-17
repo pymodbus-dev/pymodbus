@@ -68,7 +68,7 @@ def sslctx_provider(
 class ModbusBaseRequestHandler(asyncio.BaseProtocol):
     """Implements modbus slave wire protocol.
 
-    This uses the asyncio.Protocol to implement the client handler.
+    This uses the asyncio.Protocol to implement the server protocol.
 
     When a connection is established, the asyncio.Protocol.connection_made
     callback is called. This callback will setup the connection and
@@ -491,7 +491,6 @@ class ModbusUnixServer:
         path,
         framer=None,
         identity=None,
-        handler=None,
         **kwargs,
     ):
         """Initialize the socket server.
@@ -503,9 +502,6 @@ class ModbusUnixServer:
         :param path: unix socket path
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param ignore_missing_slaves: True to not send errors on a request
@@ -522,7 +518,7 @@ class ModbusUnixServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.path = path
-        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler = ModbusConnectedRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -534,6 +530,7 @@ class ModbusUnixServer:
 
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -552,6 +549,7 @@ class ModbusUnixServer:
                 Log.info("Server(Unix) listening.")
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
+                self.serving_done.set_result(True)
                 raise
             except Exception as exc:  # pylint: disable=broad-except
                 Log.error("Server unexpected exception {}", exc)
@@ -559,6 +557,7 @@ class ModbusUnixServer:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
         Log.info("Server graceful shutdown.")
 
     async def shutdown(self):
@@ -591,7 +590,6 @@ class ModbusTcpServer:
         framer=None,
         identity=None,
         address=None,
-        handler=None,
         allow_reuse_address=False,
         backlog=20,
         **kwargs,
@@ -605,9 +603,6 @@ class ModbusTcpServer:
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
@@ -628,7 +623,7 @@ class ModbusTcpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = handler or ModbusConnectedRequestHandler
+        self.handler = ModbusConnectedRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -641,6 +636,7 @@ class ModbusTcpServer:
 
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         # constructors cannot be declared async, so we have to
         # defer the initialization of the server
         self.server = None
@@ -663,6 +659,7 @@ class ModbusTcpServer:
             try:
                 await self.server.serve_forever()
             except asyncio.exceptions.CancelledError:
+                self.serving_done.set_result(False)
                 raise
             except Exception as exc:  # pylint: disable=broad-except
                 Log.error("Server unexpected exception {}", exc)
@@ -670,6 +667,7 @@ class ModbusTcpServer:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
         Log.info("Server graceful shutdown.")
 
     async def shutdown(self):
@@ -711,7 +709,6 @@ class ModbusTlsServer(ModbusTcpServer):
         keyfile=None,
         password=None,
         reqclicert=False,
-        handler=None,
         allow_reuse_address=False,
         backlog=20,
         **kwargs,
@@ -731,9 +728,6 @@ class ModbusTlsServer(ModbusTcpServer):
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
         :param reqclicert: Force the sever request client's certificate
-        :param handler: A handler for each client session; default is
-                        ModbusConnectedRequestHandler. The handler class
-                        receives connection create/teardown events
         :param allow_reuse_address: Whether the server will allow the
                         reuse of an address.
         :param backlog:  is the maximum number of queued connections
@@ -751,7 +745,6 @@ class ModbusTlsServer(ModbusTcpServer):
             framer=framer,
             identity=identity,
             address=address,
-            handler=handler,
             allow_reuse_address=allow_reuse_address,
             backlog=backlog,
             **kwargs,
@@ -774,7 +767,6 @@ class ModbusUdpServer:
         framer=None,
         identity=None,
         address=None,
-        handler=None,
         backlog=20,
         **kwargs,
     ):
@@ -805,7 +797,7 @@ class ModbusUdpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = handler or ModbusDisconnectedRequestHandler
+        self.handler = ModbusDisconnectedRequestHandler
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
@@ -821,6 +813,7 @@ class ModbusUdpServer:
         self.stop_serving = self.loop.create_future()
         # asyncio future that will be done once server has started
         self.serving = asyncio.Future()
+        self.serving_done = asyncio.Future()
         self.factory_parms = {
             "local_addr": self.address,
             "allow_broadcast": True,
@@ -836,9 +829,11 @@ class ModbusUdpServer:
                     **self.factory_parms,
                 )
             except asyncio.exceptions.CancelledError:
+                self.serving_done.set_result(False)
                 raise
             except Exception as exc:
                 Log.error("Server unexpected exception {}", exc)
+                self.serving_done.set_result(False)
                 raise RuntimeError(exc) from exc
             Log.info("Server(UDP) listening.")
             self.serving.set_result(True)
@@ -847,6 +842,7 @@ class ModbusUdpServer:
             raise RuntimeError(
                 "Can't call serve_forever on an already running server object"
             )
+        self.serving_done.set_result(True)
 
     async def shutdown(self):
         """Shutdown server."""

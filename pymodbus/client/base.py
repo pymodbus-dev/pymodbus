@@ -14,11 +14,11 @@ from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.transaction import DictTransactionManager
-from pymodbus.transport import BaseTransport
+from pymodbus.transport.transport import Transport
 from pymodbus.utilities import ModbusTransactionState
 
 
-class ModbusBaseClient(ModbusClientMixin, BaseTransport):
+class ModbusBaseClient(ModbusClientMixin):
     """**ModbusBaseClient**
 
     **Parameters common to all clients**:
@@ -94,16 +94,16 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         **kwargs: Any,
     ) -> None:
         """Initialize a client instance."""
-        BaseTransport.__init__(
-            self,
+        self.new_transport = Transport(
             "comm",
-            (reconnect_delay * 1000, reconnect_delay_max * 1000),
+            reconnect_delay * 1000,
+            reconnect_delay_max * 1000,
             timeout * 1000,
-            framer,
             lambda: None,
             self.cb_base_connection_lost,
             self.cb_base_handle_data,
         )
+
         self.framer = framer
         self.params = self._params()
         self.params.framer = framer
@@ -153,6 +153,10 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         """
         self.framer.decoder.register(custom_response_class)
 
+    def close(self, reconnect: bool = False) -> None:
+        """Close connection."""
+        self.new_transport.close(reconnect=reconnect)
+
     def idle_time(self) -> float:
         """Time before initiating next transaction (call **sync**).
 
@@ -174,7 +178,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
             if not self.connect():
                 raise ConnectionException(f"Failed to connect[{str(self)}]")
             return self.transaction.execute(request)
-        if not self.transport:
+        if not self.new_transport.transport:
             raise ConnectionException(f"Not connected[{str(self)}]")
         return self.async_execute(request)
 
@@ -186,10 +190,11 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
         request.transaction_id = self.transaction.getNextTID()
         packet = self.framer.buildPacket(request)
         Log.debug("send: {}", packet, ":hex")
-        if self.use_udp:
-            self.transport.sendto(packet)
-        else:
-            self.transport.write(packet)
+        # if self.use_udp:
+        #     self.new_transport.transport.sendto(packet)
+        # else:
+        #     self.new_transport.transport.write(packet)
+        await self.new_transport.send(packet)
         req = self._build_response(request.transaction_id)
         if self.params.broadcast_enable and not request.slave_id:
             resp = b"Broadcast write sent - no response expected"
@@ -239,7 +244,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
     def _build_response(self, tid):
         """Return a deferred response for the current request."""
         my_future = asyncio.Future()
-        if not self.transport:
+        if not self.new_transport.transport:
             self.raise_future(my_future, ConnectionException("Client is not connected"))
         else:
             self.transaction.addTransaction(my_future, tid)
@@ -248,7 +253,7 @@ class ModbusBaseClient(ModbusClientMixin, BaseTransport):
     # ----------------------------------------------------------------------- #
     # Internal methods
     # ----------------------------------------------------------------------- #
-    def send(self, request):  # pylint: disable=invalid-overridden-method
+    def send(self, request):
         """Send request.
 
         :meta private:

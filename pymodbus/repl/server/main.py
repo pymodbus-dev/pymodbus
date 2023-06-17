@@ -198,10 +198,10 @@ def run(
         **web_app_config,
         **modbus_config,
     )
+    loop.run_until_complete(app.run_async(repl))
     if repl:
         loop.run_until_complete(run_repl(app))
     else:
-        loop.run_until_complete(app.run_async(repl))
         loop.run_forever()
 
 

@@ -136,11 +136,11 @@ async def run_payload_calls(client):
         print("\n")
 
 
-async def helper():
+async def async_helper():
     """Combine the setup and run"""
     testclient = setup_async_client(description="Run asynchronous client.")
     await run_async_client(testclient, modbus_calls=run_payload_calls)
 
 
 if __name__ == "__main__":
-    asyncio.run(helper())
+    asyncio.run(async_helper())

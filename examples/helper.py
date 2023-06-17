@@ -6,6 +6,7 @@ get_command_line
 """
 import argparse
 import logging
+import os
 
 from pymodbus import pymodbus_apply_logging_config
 from pymodbus.transaction import (
@@ -116,3 +117,20 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
     if args.comm != "serial" and args.port:
         args.port = int(args.port)
     return args
+
+
+def get_certificate(suffix: str):
+    """Get example certificate."""
+    delimiter = "\\" if os.name == "nt" else "/"
+    cwd = os.getcwd().split(delimiter)[-1]
+    if cwd == "examples":
+        path = "."
+    elif cwd == "sub_examples":
+        path = "../../examples"
+    elif cwd == "test":
+        path = "../examples"
+    elif cwd == "pymodbus":
+        path = "examples"
+    else:
+        raise RuntimeError(f"**Error** Cannot find certificate path={cwd}")
+    return f"{path}/certificates/pymodbus.{suffix}"

@@ -113,7 +113,7 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
                 a, v, **kwargs
             ),
         }
-        self._write_fc = (0x05, 0x06, 0x15, 0x16, 0x17)
+        self._write_fc = (0x05, 0x06, 0x0F, 0x10)
 
     def __extract_result(self, fc_as_hex, result):
         """Extract the values out of a response.

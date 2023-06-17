@@ -32,14 +32,10 @@ class RemoteSlaveContext(ModbusBaseSlaveContext):
         """Reset all the datastores to their default values."""
         raise NotImplementedException()
 
-    def validate(self, fc_as_hex, address, count=1):
-        # pylint: disable=unused-argument
+    def validate(self, _fc_as_hex, _address, _count):
         """Validate the request to make sure it is in range.
 
-        :param fc_as_hex: The function we are working with
-        :param address: The starting address
-        :param count: The number of values to test
-        :returns: True if the request in within range, False otherwise
+        :returns: True
         """
         return True
 

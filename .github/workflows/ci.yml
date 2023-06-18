@@ -39,7 +39,7 @@ jobs:
           requirement_files: requirements.txt
 
       - name: venv create
-        if: steps.cache-venv.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: pip install -e . -r requirements.txt
 
       - name: codespell

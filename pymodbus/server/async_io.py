@@ -151,13 +151,14 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         try:
             if self.handler_task:
                 self.handler_task.cancel()
+            if self.client_address in self.server.active_connections:
+                self.server.active_connections.pop(self.client_address)
             if call_exc is None:
                 self._log_exception()
             else:
                 Log.debug(
                     "Client Disconnection {} due to {}", self.client_address, call_exc
                 )
-
             self.running = False
         except Exception as exc:  # pylint: disable=broad-except
             Log.error(
@@ -365,9 +366,6 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     def connection_lost(self, call_exc):
         """Call when the connection is lost or closed."""
         super().connection_lost(call_exc)
-        Log.debug("TCP client disconnected [{}]", self.client_address)
-        if self.client_address in self.server.active_connections:
-            self.server.active_connections.pop(self.client_address)
         if hasattr(self.server, "on_connection_lost"):
             self.server.on_connection_lost()
 
@@ -888,7 +886,9 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if self.transport:
             self.transport.abort()
             self.transport = None
-        for k_item, v_item in self.active_connections.items():
+        loop_list = list(self.active_connections)
+        for k_item in loop_list:
+            v_item = self.active_connections[k_item]
             Log.warning("aborting active session {}", k_item)
             v_item.transport.close()
             await asyncio.sleep(0.1)

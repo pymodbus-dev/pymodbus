@@ -893,8 +893,8 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
             Log.warning("aborting active session {}", k_item)
             v_item.transport.close()
             await asyncio.sleep(0.1)
-            v_item.handler_task.cancel()  # pylint: disable=no-member
-            await v_item.handler_task  # pylint: disable=no-member
+            v_item.handler_task.cancel()
+            await v_item.handler_task
         self.active_connections = {}
         if self.server:
             self.server.close()

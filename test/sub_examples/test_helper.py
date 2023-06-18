@@ -33,7 +33,9 @@ class TestHelperExamples:
 
     def test_commandline(self):
         """Test defaults"""
-        args = helper.get_commandline(server=False, cmdline=["--comm", "udp"])
+        args = helper.get_commandline(
+            server=False, cmdline=["--log", "debug", "--comm", "udp"]
+        )
         assert args.comm == "udp"
         assert args.log == "debug"
 

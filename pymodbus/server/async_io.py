@@ -391,7 +391,7 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
 
     def connection_made(self, transport):
         """Handle connect made."""
-        self.server.active_connections = self
+        self.server.active_connections["serial"] = self
         super().connection_made(transport)
         Log.debug("Serial connection established")
 
@@ -912,12 +912,13 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if self.transport:
             self.transport.abort()
             self.transport = None
-        if self.active_connections:
-            self.active_connections.transport.close()  # pylint: disable=no-member
+        for k_item, v_item in self.active_connections.items():
+            Log.warning("aborting active session {}", k_item)
+            v_item.transport.close()
             await asyncio.sleep(0.1)
-            self.active_connections.handler_task.cancel()  # pylint: disable=no-member
-            await self.active_connections.handler_task  # pylint: disable=no-member
-            self.active_connections = None
+            v_item.handler_task.cancel()  # pylint: disable=no-member
+            await v_item.handler_task  # pylint: disable=no-member
+        self.active_connections = {}
         if self.server:
             self.server.close()
             await asyncio.wait_for(self.server.wait_closed(), 10)

@@ -12,8 +12,8 @@ __all__ = [
 import struct
 
 from pymodbus.constants import Defaults
+from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import pack_bitstring, unpack_bitstring
 
 
@@ -171,6 +171,8 @@ class ReadCoilsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if isinstance(values, ExceptionResponse):
+            return values
         return ReadCoilsResponse(values)
 
 
@@ -237,6 +239,8 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if isinstance(values, ExceptionResponse):
+            return values
         return ReadDiscreteInputsResponse(values)
 
 

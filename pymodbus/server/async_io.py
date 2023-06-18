@@ -113,12 +113,13 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         try:
             if (
                 hasattr(transport, "get_extra_info")
-                and transport.get_extra_info("sockname") is not None
+                and transport.get_extra_info("peername") is not None
             ):
-                sockname = transport.get_extra_info("sockname")[:2]
-                Log.debug("Socket [{}] opened", sockname)
+                self.client_address = transport.get_extra_info("peername")[:2]
+                Log.debug("Peer [{}] opened", self.client_address)
             elif hasattr(transport, "serial"):
                 Log.debug("Serial connection opened on port: {}", transport.serial.port)
+                self.client_address = "serial"
             else:
                 Log.warning("Unable to get information about transport {}", transport)
             self.transport = transport  # pylint: disable=attribute-defined-outside-init
@@ -129,12 +130,13 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                     client=None,
                 )
             )
+            self.server.active_connections[self.client_address] = self
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
         except Exception as exc:  # pragma: no cover pylint: disable=broad-except
             Log.error(
-                "Datastore unable to fulfill request: {}; {}",
+                "Server connection_made unable to fulfill request: {}; {}",
                 exc,
                 traceback.format_exc(),
             )
@@ -360,17 +362,6 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     the client handler for a connected protocol (TCP).
     """
 
-    def connection_made(self, transport):
-        """Call when a connection is made."""
-        super().connection_made(transport)
-
-        self.client_address = (  # pylint: disable=attribute-defined-outside-init
-            transport.get_extra_info("peername")
-        )
-        self.server.active_connections[self.client_address] = self
-        txt = f"TCP client connection established [{self.client_address[:2]}]"
-        Log.debug(txt)
-
     def connection_lost(self, call_exc):
         """Call when the connection is lost or closed."""
         super().connection_lost(call_exc)
@@ -388,12 +379,6 @@ class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     This uses asyncio.Protocol to implement
     the client handler for a serial connection.
     """
-
-    def connection_made(self, transport):
-        """Handle connect made."""
-        self.server.active_connections["serial"] = self
-        super().connection_made(transport)
-        Log.debug("Serial connection established")
 
 
 # --------------------------------------------------------------------------- #

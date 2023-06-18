@@ -35,7 +35,6 @@ from pymodbus.server.async_io import (
     ModbusBaseRequestHandler,
     ModbusConnectedRequestHandler,
     ModbusSerialServer,
-    ModbusSingleRequestHandler,
     ModbusTcpServer,
     ModbusTlsServer,
     ModbusUdpServer,
@@ -72,7 +71,7 @@ DEFAULT_MANIPULATOR = {
     "clear_after": 5,  # request count
 }
 DEFUALT_HANDLERS = {
-    "ModbusSingleRequestHandler": ModbusSingleRequestHandler,
+    "ModbusSingleRequestHandler": ModbusBaseRequestHandler,
     "ModbusConnectedRequestHandler": ModbusConnectedRequestHandler,
     "ModbusDisconnectedRequestHandler": ModbusBaseRequestHandler,
 }

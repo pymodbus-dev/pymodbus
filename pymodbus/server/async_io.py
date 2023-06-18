@@ -92,7 +92,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
             Log.debug(
                 "Handler for stream [{}] has been canceled", self.client_address[:2]
             )
-        elif isinstance(self, ModbusSingleRequestHandler):
+        elif isinstance(self, ModbusBaseRequestHandler):
             Log.debug("Handler for serial port has been cancelled")
         else:
             if hasattr(self, "protocol"):
@@ -371,14 +371,6 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
             self.server.active_connections.pop(self.client_address)
         if hasattr(self.server, "on_connection_lost"):
             self.server.on_connection_lost()
-
-
-class ModbusSingleRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
-    """Implement the modbus server protocol.
-
-    This uses asyncio.Protocol to implement
-    the client handler for a serial connection.
-    """
 
 
 # --------------------------------------------------------------------------- #
@@ -783,7 +775,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    handler: ModbusSingleRequestHandler = None
+    handler: ModbusBaseRequestHandler = None
 
     def __init__(
         self, context, framer=ModbusRtuFramer, identity=None, **kwargs
@@ -829,7 +821,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None
-        self.handler = kwargs.get("handler") or ModbusSingleRequestHandler
+        self.handler = kwargs.get("handler") or ModbusBaseRequestHandler
         self.framer = framer or ModbusRtuFramer
         self.decoder = ServerDecoder()
         self.context = context or ModbusServerContext()

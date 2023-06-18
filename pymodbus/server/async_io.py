@@ -119,7 +119,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 Log.debug("Peer [{}] opened", self.client_address)
             elif hasattr(transport, "serial"):
                 Log.debug("Serial connection opened on port: {}", transport.serial.port)
-                self.client_address = "serial"
+                self.client_address = ("serial", "server")
             else:
                 Log.warning("Unable to get information about transport {}", transport)
             self.transport = transport  # pylint: disable=attribute-defined-outside-init

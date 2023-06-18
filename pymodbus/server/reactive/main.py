@@ -33,7 +33,6 @@ from pymodbus.logging import Log
 from pymodbus.pdu import ExceptionResponse, ModbusExceptions
 from pymodbus.server.async_io import (
     ModbusBaseRequestHandler,
-    ModbusConnectedRequestHandler,
     ModbusSerialServer,
     ModbusTcpServer,
     ModbusTlsServer,
@@ -72,7 +71,7 @@ DEFAULT_MANIPULATOR = {
 }
 DEFUALT_HANDLERS = {
     "ModbusSingleRequestHandler": ModbusBaseRequestHandler,
-    "ModbusConnectedRequestHandler": ModbusConnectedRequestHandler,
+    "ModbusConnectedRequestHandler": ModbusBaseRequestHandler,
     "ModbusDisconnectedRequestHandler": ModbusBaseRequestHandler,
 }
 DEFAULT_MODBUS_MAP = {

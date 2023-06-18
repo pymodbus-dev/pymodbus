@@ -88,20 +88,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
     def _log_exception(self):
         """Show log exception."""
-        if isinstance(self, ModbusConnectedRequestHandler):
-            Log.debug(
-                "Handler for stream [{}] has been canceled", self.client_address[:2]
-            )
-        elif isinstance(self, ModbusBaseRequestHandler):
-            Log.debug("Handler for serial port has been cancelled")
-        else:
-            if hasattr(self, "protocol"):
-                sock_name = (
-                    self.protocol._sock.getsockname()  # pylint: disable=protected-access
-                )
-            else:
-                sock_name = "No socket"
-            Log.debug("Handler for UDP socket [{}] has been canceled", sock_name[1])
+        Log.debug("Handler for stream [{}] has been canceled", self.client_address)
 
     def connection_made(self, transport):
         """Call for socket establish
@@ -224,7 +211,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
                 # for UDP sockets, simply reset the frame
-                if isinstance(self, ModbusConnectedRequestHandler):
+                if isinstance(self, ModbusBaseRequestHandler):
                     client_addr = self.client_address[:2]
                     Log.error(
                         'Unknown exception "{}" on stream {} forcing disconnect',
@@ -358,14 +345,6 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
         Log.error("datagram connection error [{}]", exc)
 
 
-class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
-    """Implements the modbus server protocol
-
-    This uses asyncio.Protocol to implement
-    the client handler for a connected protocol (TCP).
-    """
-
-
 # --------------------------------------------------------------------------- #
 # Server Implementations
 # --------------------------------------------------------------------------- #
@@ -412,7 +391,7 @@ class ModbusUnixServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.path = path
-        self.handler = ModbusConnectedRequestHandler
+        self.handler = ModbusBaseRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -518,7 +497,7 @@ class ModbusTcpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = ModbusConnectedRequestHandler
+        self.handler = ModbusBaseRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves

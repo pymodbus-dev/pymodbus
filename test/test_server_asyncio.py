@@ -190,10 +190,6 @@ class TestAsyncioServer:  # pylint: disable=too-many-public-methods
         await asyncio.wait_for(BasicClient.connected, timeout=0.1)
         await asyncio.sleep(0.1)
 
-    # -----------------------------------------------------------------------#
-    #  Test ModbusConnectedRequestHandler
-    # -----------------------------------------------------------------------#
-
     async def test_async_start_server_no_loop(self):
         """Test that the modbus tcp asyncio server starts correctly"""
         await self.start_server(do_forever=False)

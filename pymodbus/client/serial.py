@@ -10,6 +10,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.logging import Log
+from pymodbus.transport.transport import CommType
 from pymodbus.utilities import ModbusTransactionState
 
 
@@ -56,31 +57,38 @@ class AsyncModbusSerialClient(ModbusBaseClient, asyncio.Protocol):
     ) -> None:
         """Initialize Asyncio Modbus Serial Client."""
         asyncio.Protocol.__init__(self)
-        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
+        ModbusBaseClient.__init__(
+            self,
+            framer=framer,
+            CommType=CommType.SERIAL,
+            host=port,
+            baudrate=baudrate,
+            bytesize=bytesize,
+            parity=parity,
+            stopbits=stopbits,
+            **kwargs,
+        )
         self.params.port = port
         self.params.baudrate = baudrate
         self.params.bytesize = bytesize
         self.params.parity = parity
         self.params.stopbits = stopbits
         self.params.handle_local_echo = handle_local_echo
-        self.new_transport.setup_serial(
-            False, port, baudrate, bytesize, parity, stopbits
-        )
 
     @property
     def connected(self):
         """Connect internal."""
-        return self.new_transport.is_active()
+        return self.is_active()
 
     async def connect(self) -> bool:
         """Connect Async client."""
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.new_transport.reset_delay()
+        self.reset_delay()
 
         # force reconnect if required:
-        Log.debug("Connecting to {}.", self.new_transport.comm_params.host)
-        return await self.new_transport.transport_connect()
+        Log.debug("Connecting to {}.", self.comm_params.host)
+        return await self.transport_connect()
 
 
 class ModbusSerialClient(ModbusBaseClient):

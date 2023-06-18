@@ -3,458 +3,219 @@ import asyncio
 from unittest import mock
 
 import pytest
-from serial import SerialException
 
-from pymodbus.transport.nullmodem import DummyTransport
+from pymodbus.transport.transport import NULLMODEM_HOST, CommType, NullModem, Transport
+
+
+COMM_TYPES = [
+    CommType.TCP,
+    CommType.TLS,
+    CommType.UDP,
+    CommType.SERIAL,
+]
 
 
 class TestBasicTransport:
-    """Test transport module, base part."""
+    """Test transport module."""
 
-    async def test_init(self, transport, commparams):
+    @pytest.mark.parametrize("use_comm_type", COMM_TYPES)
+    async def test_init(self, client, server, commparams):
         """Test init()"""
-        commparams.done = False
-        assert transport.comm_params == commparams
-        assert (
-            transport.cb_connection_made._extract_mock_name()  # pylint: disable=protected-access
-            == "cb_connection_made"
-        )
-        assert (
-            transport.cb_connection_lost._extract_mock_name()  # pylint: disable=protected-access
-            == "cb_connection_lost"
-        )
-        assert (
-            transport.cb_handle_data._extract_mock_name()  # pylint: disable=protected-access
-            == "cb_handle_data"
-        )
-        assert not transport.reconnect_delay_current
-        assert not transport.reconnect_task
+        if commparams.comm_type == CommType.SERIAL:
+            client.comm_params.host = commparams.host
+            server.comm_params.comm_type = commparams.comm_type
+        client.comm_params.sslctx = None
+        assert client.comm_params == commparams
+        assert client.unique_id == str(id(client))
+        assert not client.is_server
+        server.comm_params.sslctx = None
+        assert server.comm_params == commparams
+        assert server.unique_id == str(id(server))
+        assert server.is_server
 
-    async def test_property_done(self, transport):
-        """Test done property"""
-        transport.comm_params.check_done()
-        with pytest.raises(RuntimeError):
-            transport.comm_params.check_done()
+        commparams.host = NULLMODEM_HOST
+        Transport(commparams, False)
 
-    async def test_with_magic(self, transport):
-        """Test magic."""
-        transport.close = mock.MagicMock()
-        async with transport:
-            pass
-        transport.close.assert_called_once()
+    async def test_connect(self, client, dummy_transport):
+        """Test properties."""
+        client.loop = None
+        client.call_create = mock.AsyncMock(return_value=(dummy_transport, None))
+        assert await client.transport_connect()
+        assert client.loop
+        client.call_create.side_effect = asyncio.TimeoutError("test")
+        assert not await client.transport_connect()
 
-    async def test_str_magic(self, params, transport):
-        """Test magic."""
-        assert str(transport) == f"Transport({params.comm_name})"
+    async def test_listen(self, server, dummy_transport):
+        """Test listen_tcp()."""
+        server.call_create = mock.AsyncMock(return_value=(dummy_transport, None))
+        assert await server.transport_listen()
+        server.call_create.side_effect = OSError("testing")
+        assert not await server.transport_listen()
 
-    async def test_connection_made(self, transport, commparams):
+    async def test_connection_made(self, client, commparams, dummy_transport):
         """Test connection_made()."""
-        transport.loop = None
-        transport.connection_made(DummyTransport())
-        assert transport.transport
-        assert not transport.recv_buffer
-        assert not transport.reconnect_task
-        assert transport.reconnect_delay_current == commparams.reconnect_delay
-        transport.cb_connection_made.assert_called_once()
-        transport.cb_connection_lost.assert_not_called()
-        transport.cb_handle_data.assert_not_called()
-        transport.close()
+        client.connection_made(dummy_transport)
+        assert client.transport
+        assert not client.recv_buffer
+        assert not client.reconnect_task
+        assert client.reconnect_delay_current == commparams.reconnect_delay
+        client.callback_connected.assert_called_once()
 
-    async def test_connection_lost(self, transport):
+    async def test_connection_lost(self, client, dummy_transport):
         """Test connection_lost()."""
-        transport.connection_lost(RuntimeError("not implemented"))
-        assert not transport.transport
-        assert not transport.recv_buffer
-        assert not transport.reconnect_task
-        assert not transport.reconnect_delay_current
-        transport.cb_connection_made.assert_not_called()
-        transport.cb_handle_data.assert_not_called()
-        transport.cb_connection_lost.assert_called_once()
+        client.connection_lost(RuntimeError("not implemented"))
+        client.connection_made(dummy_transport)
+        client.connection_lost(RuntimeError("not implemented"))
+        assert not client.transport
+        assert not client.recv_buffer
+        assert client.reconnect_task
+        client.callback_disconnected.assert_called_once()
+        client.transport_close()
+        assert not client.reconnect_task
+        assert not client.reconnect_delay_current
 
-        transport.transport = mock.Mock()
-        transport.connection_lost(RuntimeError("not implemented"))
-        assert not transport.transport
-        assert transport.reconnect_task
-        transport.close()
-        assert not transport.reconnect_task
-
-    async def test_close(self, transport):
-        """Test close()."""
-        socket = DummyTransport()
-        socket.abort = mock.Mock()
-        socket.close = mock.Mock()
-        transport.connection_made(socket)
-        transport.cb_connection_made.reset_mock()
-        transport.cb_connection_lost.reset_mock()
-        transport.cb_handle_data.reset_mock()
-        transport.recv_buffer = b"abc"
-        transport.reconnect_task = mock.MagicMock()
-        transport.close()
-        socket.abort.assert_called_once()
-        socket.close.assert_called_once()
-        transport.cb_connection_made.assert_not_called()
-        transport.cb_connection_lost.assert_not_called()
-        transport.cb_handle_data.assert_not_called()
-        assert not transport.recv_buffer
-        assert not transport.reconnect_task
-
-    async def test_reset_delay(self, transport, commparams):
-        """Test reset_delay()."""
-        transport.reconnect_delay_current += 5.17
-        transport.reset_delay()
-        assert transport.reconnect_delay_current == commparams.reconnect_delay
-
-    async def test_datagram(self, transport):
-        """Test datagram_received()."""
-        transport.data_received = mock.MagicMock()
-        transport.datagram_received(b"abc", "127.0.0.1")
-        transport.data_received.assert_called_once()
-
-    async def test_data(self, transport):
+    async def test_data_received(self, client):
         """Test data_received."""
-        transport.cb_handle_data = mock.MagicMock(return_value=2)
-        transport.data_received(b"123456")
-        transport.cb_handle_data.assert_called_once()
-        assert transport.recv_buffer == b"3456"
-        transport.data_received(b"789")
-        assert transport.recv_buffer == b"56789"
+        client.callback_data = mock.MagicMock(return_value=2)
+        client.data_received(b"123456")
+        client.callback_data.assert_called_once()
+        assert client.recv_buffer == b"3456"
+        client.data_received(b"789")
+        assert client.recv_buffer == b"56789"
 
-    async def test_eof_received(self, transport):
+    async def test_datagram(self, client):
+        """Test datagram_received()."""
+        client.callback_data = mock.MagicMock()
+        client.datagram_received(b"abc", "127.0.0.1")
+        client.callback_data.assert_called_once()
+
+    async def test_eof_received(self, client):
         """Test eof_received."""
-        transport.eof_received()
+        client.eof_received()
 
-    async def test_error_received(self, transport):
+    async def test_error_received(self, client):
         """Test error_received."""
         with pytest.raises(RuntimeError):
-            transport.error_received(Exception("test call"))
+            client.error_received(Exception("test call"))
 
-    async def test_send(self, transport, params):
-        """Test send()."""
-        transport.transport = mock.AsyncMock()
-        await transport.send(b"abc")
+    async def test_callbacks(self, commparams):
+        """Test callbacks."""
+        client = Transport(commparams, False)
+        client.callback_connected()
+        client.callback_disconnected(Exception("test"))
+        client.callback_data(b"abcd")
 
-        transport.setup_udp(False, params.host, params.port)
-        await transport.send(b"abc")
-        transport.close()
+    async def test_transport_send(self, client):
+        """Test transport_send()."""
+        client.transport = mock.AsyncMock()
+        client.transport_send(b"abc")
 
-    async def test_handle_listen(self, transport):
-        """Test handle_listen()."""
-        assert transport == transport.handle_listen()
+        client.comm_params.comm_type = CommType.UDP
+        client.transport_send(b"abc")
+        client.transport_send(b"abc", addr=("localhost", 502))
 
-    async def test_no_loop(self, transport):
-        """Test properties."""
-        transport.loop = None
-        transport.call_connect_listen = mock.AsyncMock(return_value=(117, 118))
-        await transport.transport_connect()
-        assert transport.loop
+    async def test_transport_close(self, server, dummy_transport):
+        """Test transport_close()."""
+        dummy_transport.abort = mock.Mock()
+        dummy_transport.close = mock.Mock()
+        server.connection_made(dummy_transport)
+        server.recv_buffer = b"abc"
+        server.reconnect_task = mock.MagicMock()
+        server.listener = mock.MagicMock()
+        server.transport_close()
+        dummy_transport.abort.assert_called_once()
+        dummy_transport.close.assert_called_once()
+        assert not server.recv_buffer
+        assert not server.reconnect_task
+        server.listener = None
+        server.active_connections = {"a": dummy_transport}
+        server.transport_close()
+        assert not server.active_connections
 
-    async def test_reconnect_connect(self, transport):
-        """Test handle_listen()."""
-        transport.comm_params.reconnect_delay = 0.01
-        transport.transport_connect = mock.AsyncMock(side_effect=[False, True])
-        await transport.reconnect_connect()
-        assert (
-            transport.reconnect_delay_current
-            == transport.comm_params.reconnect_delay * 2
-        )
-        assert not transport.reconnect_task
-        transport.transport_connect = mock.AsyncMock(
-            side_effect=asyncio.CancelledError("stop loop")
-        )
-        await transport.reconnect_connect()
-        assert (
-            transport.reconnect_delay_current == transport.comm_params.reconnect_delay
-        )
-        assert not transport.reconnect_task
+    async def test_reset_delay(self, client, commparams):
+        """Test reset_delay()."""
+        client.reconnect_delay_current += 5.17
+        client.reset_delay()
+        assert client.reconnect_delay_current == commparams.reconnect_delay
 
+    async def test_is_active(self, client):
+        """Test is_active()."""
+        assert not client.is_active()
+        client.connection_made(mock.AsyncMock())
+        assert client.is_active()
 
-@pytest.mark.skipif(pytest.IS_WINDOWS, reason="not implemented")
-class TestBasicUnixTransport:
-    """Test transport module, unix part."""
+    @pytest.mark.parametrize("use_host", [NULLMODEM_HOST])
+    async def test_create_nullmodem(self, client, server):
+        """Test create_nullmodem."""
+        await server.transport_listen()
+        await client.transport_listen()
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    def test_properties(self, params, setup_server, transport, commparams):
-        """Test properties."""
-        transport.setup_unix(setup_server, params.host)
-        commparams.host = params.host
-        assert transport.comm_params == commparams
-        assert transport.call_connect_listen
-        transport.close()
+    async def test_handle_new_connection(self, client, server):
+        """Test handle_new_connection()."""
+        server.handle_new_connection()
+        client.handle_new_connection()
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    def test_properties_windows(self, params, setup_server, transport):
-        """Test properties."""
-        with mock.patch(
-            "pymodbus.transport.transport.sys.platform", return_value="windows"
-        ), pytest.raises(RuntimeError):
-            transport.setup_unix(setup_server, params.host)
+    async def test_do_reconnect(self, client):
+        """Test do_reconnect()."""
+        client.comm_params.reconnect_delay = 0.01
+        client.transport_connect = mock.AsyncMock(side_effect=[False, True])
+        await client.do_reconnect()
+        assert client.reconnect_delay_current == client.comm_params.reconnect_delay * 2
+        assert not client.reconnect_task
+        client.transport_connect.side_effect = asyncio.CancelledError("stop loop")
+        await client.do_reconnect()
+        assert client.reconnect_delay_current == client.comm_params.reconnect_delay
+        assert not client.reconnect_task
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_connect(self, params, transport):
-        """Test connect_unix()."""
-        transport.setup_unix(False, params.host)
-        mocker = mock.AsyncMock()
-        transport.loop.create_unix_connection = mocker
-        mocker.side_effect = FileNotFoundError("testing")
-        assert not await transport.transport_connect()
-        mocker.side_effect = None
+    async def test_with_magic(self, client):
+        """Test magic."""
+        client.transport_close = mock.MagicMock()
+        async with client:
+            pass
+        client.transport_close.assert_called_once()
 
-        mocker.return_value = (mock.Mock(), mock.Mock())
-        assert await transport.transport_connect()
-        transport.close()
+    async def test_str_magic(self, commparams, client):
+        """Test magic."""
+        assert str(client) == f"Transport({commparams.comm_name})"
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_listen(self, params, transport):
-        """Test listen_unix()."""
-        transport.setup_unix(True, params.host)
-        mocker = mock.AsyncMock()
-        transport.loop.create_unix_server = mocker
-        mocker.side_effect = OSError("testing")
-        assert await transport.transport_listen() is None
-        mocker.side_effect = None
-
-        mocker.return_value = mock.Mock()
-        assert mocker.return_value == await transport.transport_listen()
-        transport.close()
-
-
-class TestBasicTcpTransport:
-    """Test transport module, tcp part."""
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    def test_properties(self, params, setup_server, transport, commparams):
-        """Test properties."""
-        transport.setup_tcp(setup_server, params.host, params.port)
-        commparams.host = params.host
-        commparams.port = params.port
-        assert transport.comm_params == commparams
-        assert transport.call_connect_listen
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_connect(self, params, transport):
-        """Test connect_tcp()."""
-        transport.setup_tcp(False, params.host, params.port)
-        mocker = mock.AsyncMock()
-        transport.loop.create_connection = mocker
-        mocker.side_effect = asyncio.TimeoutError("testing")
-        assert not await transport.transport_connect()
-        mocker.side_effect = None
-
-        mocker.return_value = (mock.Mock(), mock.Mock())
-        assert await transport.transport_connect()
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_listen(self, params, transport):
-        """Test listen_tcp()."""
-        transport.setup_tcp(True, params.host, params.port)
-        mocker = mock.AsyncMock()
-        transport.loop.create_server = mocker
-        mocker.side_effect = OSError("testing")
-        assert await transport.transport_listen() is None
-        mocker.side_effect = None
-
-        mocker.return_value = mock.Mock()
-        assert mocker.return_value == await transport.transport_listen()
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_is_active(self, params, transport):
-        """Test properties."""
-        transport.setup_tcp(False, params.host, params.port)
-        assert not transport.is_active()
-        transport.connection_made(mock.AsyncMock())
-        assert transport.is_active()
-        transport.close()
-
-
-class TestBasicTlsTransport:
-    """Test transport module, tls part."""
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    @pytest.mark.parametrize("sslctx", [None, "test ctx"])
-    def test_properties(self, setup_server, sslctx, params, transport, commparams):
-        """Test properties."""
+    def test_generate_ssl(self, commparams):
+        """Test ssl generattion"""
         with mock.patch("pymodbus.transport.transport.ssl.SSLContext"):
-            transport.setup_tls(
-                setup_server,
-                params.host,
-                params.port,
-                sslctx,
-                "certfile dummy",
-                None,
-                None,
-                params.server_hostname,
-            )
-            commparams.host = params.host
-            commparams.port = params.port
-            commparams.server_hostname = params.server_hostname
-            commparams.ssl = sslctx if sslctx else transport.comm_params.ssl
-            assert transport.comm_params == commparams
-            assert transport.call_connect_listen
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_connect(self, params, transport):
-        """Test connect_tcls()."""
-        transport.setup_tls(
-            False,
-            params.host,
-            params.port,
-            "no ssl",
-            None,
-            None,
-            None,
-            params.server_hostname,
+            sslctx = commparams.generate_ssl(True, "cert_file", "key_file")
+        assert sslctx
+        test_value = "test igen"
+        assert test_value == commparams.generate_ssl(
+            True, "cert_file", "key_file", sslctx=test_value
         )
-        mocker = mock.AsyncMock()
-        transport.loop.create_connection = mocker
-        mocker.side_effect = asyncio.TimeoutError("testing")
-        assert not await transport.transport_connect()
-        mocker.side_effect = None
-
-        mocker.return_value = (mock.Mock(), mock.Mock())
-        assert await transport.transport_connect()
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_listen(self, params, transport):
-        """Test listen_tls()."""
-        transport.setup_tls(
-            True,
-            params.host,
-            params.port,
-            "no ssl",
-            None,
-            None,
-            None,
-            params.server_hostname,
-        )
-        mocker = mock.AsyncMock()
-        transport.loop.create_server = mocker
-        mocker.side_effect = OSError("testing")
-        assert await transport.transport_listen() is None
-        mocker.side_effect = None
-
-        mocker.return_value = mock.Mock()
-        assert mocker.return_value == await transport.transport_listen()
-        transport.close()
 
 
-class TestBasicUdpTransport:
-    """Test transport module, udp part."""
+class TestBasicNullModem:
+    """Test transport null modem module."""
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    def test_properties(self, params, setup_server, transport, commparams):
-        """Test properties."""
-        transport.setup_udp(setup_server, params.host, params.port)
-        commparams.host = params.host
-        commparams.port = params.port
-        assert transport.comm_params == commparams
-        assert transport.call_connect_listen
-        transport.close()
+    def test_init(self):
+        """Test null modem init"""
+        NullModem.server = None
+        with pytest.raises(RuntimeError):
+            NullModem(False, mock.Mock())
+        NullModem(True, mock.Mock())
+        NullModem(False, mock.Mock())
 
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_connect(self, params, transport):
-        """Test connect_udp()."""
-        transport.setup_udp(False, params.host, params.port)
-        mocker = mock.AsyncMock()
-        transport.loop.create_datagram_endpoint = mocker
-        mocker.side_effect = asyncio.TimeoutError("testing")
-        assert not await transport.transport_connect()
-        mocker.side_effect = None
+    def test_external_methods(self):
+        """Test external methods."""
+        modem = NullModem(True, mock.Mock())
+        modem.close()
+        modem.sendto(b"abcd")
+        modem.write(b"abcd")
 
-        mocker.return_value = (mock.Mock(), mock.Mock())
-        assert await transport.transport_connect()
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_listen(self, params, transport):
-        """Test listen_udp()."""
-        transport.setup_udp(True, params.host, params.port)
-        mocker = mock.AsyncMock()
-        transport.loop.create_datagram_endpoint = mocker
-        mocker.side_effect = OSError("testing")
-        assert await transport.transport_listen() is None
-        mocker.side_effect = None
-
-        mocker.return_value = (mock.Mock(), mock.Mock())
-        assert await transport.transport_listen() == mocker.return_value[0]
-        transport.close()
-
-
-class TestBasicSerialTransport:
-    """Test transport module, serial part."""
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    @pytest.mark.parametrize("setup_server", [True, False])
-    def test_properties(self, params, setup_server, transport, commparams):
-        """Test properties."""
-        transport.setup_serial(
-            setup_server,
-            params.host,
-            params.baudrate,
-            params.bytesize,
-            params.parity,
-            params.stopbits,
-        )
-        commparams.host = params.host
-        commparams.baudrate = params.baudrate
-        commparams.bytesize = params.bytesize
-        commparams.parity = params.parity
-        commparams.stopbits = params.stopbits
-        assert transport.comm_params == commparams
-        assert transport.call_connect_listen
-        transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_connect(self, params, transport):
-        """Test connect_serial()."""
-        transport.setup_serial(
-            False,
-            params.host,
-            params.baudrate,
-            params.bytesize,
-            params.parity,
-            params.stopbits,
-        )
-        mocker = mock.AsyncMock()
-        with mock.patch(
-            "pymodbus.transport.transport.create_serial_connection", new=mocker
-        ):
-            mocker.side_effect = asyncio.TimeoutError("testing")
-            assert not await transport.transport_connect()
-            mocker.side_effect = None
-
-            mocker.return_value = (mock.Mock(), mock.Mock())
-            assert await transport.transport_connect()
-            transport.close()
-
-    @pytest.mark.xdist_group(name="server_serialize")
-    async def test_listen(self, params, transport):
-        """Test listen_serial()."""
-        transport.setup_serial(
-            True,
-            params.host,
-            params.baudrate,
-            params.bytesize,
-            params.parity,
-            params.stopbits,
-        )
-        mocker = mock.AsyncMock()
-        with mock.patch(
-            "pymodbus.transport.transport.create_serial_connection", new=mocker
-        ):
-            mocker.side_effect = SerialException("testing")
-            assert await transport.transport_listen() is None
-            mocker.side_effect = None
-
-            mocker.return_value = mock.Mock()
-            assert await transport.transport_listen() == mocker.return_value
-            transport.close()
+    def test_abstract_methods(self):
+        """Test asyncio abstract methods."""
+        modem = NullModem(True, mock.Mock())
+        modem.abort()
+        modem.can_write_eof()
+        modem.get_write_buffer_size()
+        modem.get_write_buffer_limits()
+        modem.set_write_buffer_limits(1024, 1)
+        modem.write_eof()
+        modem.get_protocol()
+        modem.set_protocol(None)
+        modem.is_closing()

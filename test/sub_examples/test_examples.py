@@ -24,18 +24,21 @@ from examples.simple_sync_client import run_sync_client as run_simple_sync_clien
 from pymodbus.server import ServerAsyncStop
 
 
+BASE_PORT = 6400
+
+
 class TestExamples:
     """Test examples."""
 
     USE_CASES = [
-        ("tcp", "socket"),
-        ("tcp", "rtu"),
-        ("tls", "tls"),
-        ("udp", "socket"),
-        ("udp", "rtu"),
-        ("serial", "rtu"),
-        # awaiting fix: ("serial", "ascii"),
-        # awaiting fix: ("serial", "binary"),
+        ("tcp", "socket", BASE_PORT + 1),
+        ("tcp", "rtu", BASE_PORT + 2),
+        ("tls", "tls", BASE_PORT + 3),
+        ("udp", "socket", BASE_PORT + 4),
+        ("udp", "rtu", BASE_PORT + 5),
+        ("serial", "rtu", BASE_PORT + 6),
+        # awaiting fix: ("serial", "ascii", BASE_PORT + 7),
+        # awaiting fix: ("serial", "binary", BASE_PORT + 8),
     ]
 
     def test_build_bcd_payload(self):
@@ -54,9 +57,8 @@ class TestExamples:
         parse_messages(["--framer", "socket", "-m", "000100000006010100200001"])
         parse_messages(["--framer", "socket", "-m", "00010000000401010101"])
 
-    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         USE_CASES,
     )
     async def test_client_calls(self, mock_server):
@@ -65,11 +67,10 @@ class TestExamples:
         test_client = setup_async_client(cmdline=cmdline)
         await run_async_client(test_client, modbus_calls=run_async_calls)
 
-    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         [
-            ("tcp", "socket"),
+            ("tcp", "socket", BASE_PORT + 41),
         ],
     )
     def test_custom_msg(self, use_port, mock_server):
@@ -77,11 +78,10 @@ class TestExamples:
         _cmdline = mock_server
         run_custom_client("localhost", use_port)
 
-    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         [
-            ("tcp", "socket"),
+            ("tcp", "socket", BASE_PORT + 42),
         ],
     )
     async def test_payload(self, mock_cmdline):
@@ -97,7 +97,7 @@ class TestExamples:
         task.cancel()
         await task
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("use_port", [BASE_PORT + 43])
     async def test_datastore_simulator(self, use_port):
         """Test server simulator."""
         cmdargs = ["--port", str(use_port)]
@@ -113,7 +113,7 @@ class TestExamples:
         task.cancel()
         await task
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("use_port", [BASE_PORT + 44])
     async def test_server_callback(self, use_port):
         """Test server/client with payload."""
         cmdargs = ["--port", str(use_port)]
@@ -127,7 +127,7 @@ class TestExamples:
         task.cancel()
         await task
 
-    @pytest.mark.xdist_group(name="server_serialize")
+    @pytest.mark.parametrize("use_port", [BASE_PORT + 45])
     async def test_updating_server(self, use_port):
         """Test server simulator."""
         cmdargs = ["--port", str(use_port)]
@@ -142,11 +142,10 @@ class TestExamples:
         task.cancel()
         await task
 
-    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         [
-            ("tcp", "socket"),
+            ("tcp", "socket", BASE_PORT + 46),
         ],
     )
     async def test_simple_async_client(self, use_port, mock_server):
@@ -154,11 +153,10 @@ class TestExamples:
         _cmdline = mock_server
         await run_simple_async_client("127.0.0.1", str(use_port))
 
-    @pytest.mark.xdist_group(name="server_serialize")
     @pytest.mark.parametrize(
-        ("use_comm", "use_framer"),
+        ("use_comm", "use_framer", "use_port"),
         [
-            ("tcp", "socket"),
+            ("tcp", "socket", BASE_PORT + 47),
         ],
     )
     async def test_simple_sync_client(self, use_port, mock_server):

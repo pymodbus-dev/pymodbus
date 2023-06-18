@@ -8,6 +8,7 @@ from pymodbus.exceptions import ConnectionException
 from pymodbus.framer import ModbusFramer
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.logging import Log
+from pymodbus.transport.transport import CommType
 
 
 DGRAM_TYPE = socket.SOCK_DGRAM
@@ -50,15 +51,16 @@ class AsyncModbusUdpClient(
         """Initialize Asyncio Modbus UDP Client."""
         asyncio.DatagramProtocol.__init__(self)
         asyncio.Protocol.__init__(self)
-        ModbusBaseClient.__init__(self, framer=framer, **kwargs)
+        ModbusBaseClient.__init__(
+            self, framer=framer, CommType=CommType.UDP, host=host, port=port, **kwargs
+        )
         self.params.port = port
         self.params.source_address = source_address
-        self.new_transport.setup_udp(False, host, port)
 
     @property
     def connected(self):
         """Return true if connected."""
-        return self.new_transport.is_active()
+        return self.is_active()
 
     async def connect(self) -> bool:
         """Start reconnecting asynchronous udp client.
@@ -67,15 +69,15 @@ class AsyncModbusUdpClient(
         """
         # if reconnect_delay_current was set to 0 by close(), we need to set it back again
         # so this instance will work
-        self.new_transport.reset_delay()
+        self.reset_delay()
 
         # force reconnect if required:
         Log.debug(
             "Connecting to {}:{}.",
-            self.new_transport.comm_params.host,
-            self.new_transport.comm_params.port,
+            self.comm_params.host,
+            self.comm_params.port,
         )
-        return await self.new_transport.transport_connect()
+        return await self.transport_connect()
 
 
 class ModbusUdpClient(ModbusBaseClient):

@@ -1,7 +1,6 @@
 """Implementation of a Threaded Modbus Server."""
 # pylint: disable=missing-type-doc
 import asyncio
-import ssl
 import time
 import traceback
 from contextlib import suppress
@@ -11,6 +10,7 @@ from pymodbus.datastore import ModbusServerContext
 from pymodbus.device import ModbusControlBlock, ModbusDeviceIdentification
 from pymodbus.exceptions import NoSuchSlaveException
 from pymodbus.factory import ServerDecoder
+from pymodbus.framer import ModbusFramer
 from pymodbus.logging import Log
 from pymodbus.pdu import ModbusExceptions as merror
 from pymodbus.transaction import (
@@ -20,43 +20,11 @@ from pymodbus.transaction import (
     ModbusTlsFramer,
 )
 from pymodbus.transport.serial_asyncio import create_serial_connection
+from pymodbus.transport.transport import CommParams, CommType, Transport
 
 
 with suppress(ImportError):
     import serial
-
-
-def sslctx_provider(
-    sslctx=None, certfile=None, keyfile=None, password=None, reqclicert=False
-):
-    """Provide the SSLContext for ModbusTlsServer.
-
-    If the user defined SSLContext is not passed in, sslctx_provider will
-    produce a default one.
-
-    :param sslctx: The user defined SSLContext to use for TLS (default None and
-                   auto create)
-    :param certfile: The cert file path for TLS (used if sslctx is None)
-    :param keyfile: The key file path for TLS (used if sslctx is None)
-    :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
-    """
-    if sslctx is None:
-        # According to MODBUS/TCP Security Protocol Specification, it is
-        # TLSv2 at least
-        sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        sslctx.verify_mode = ssl.CERT_NONE
-        sslctx.check_hostname = False
-        sslctx.options |= ssl.OP_NO_TLSv1_1
-        sslctx.options |= ssl.OP_NO_TLSv1
-        sslctx.options |= ssl.OP_NO_SSLv3
-        sslctx.options |= ssl.OP_NO_SSLv2
-        sslctx.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-
-    if reqclicert:
-        sslctx.verify_mode = ssl.CERT_REQUIRED
-
-    return sslctx
 
 
 # --------------------------------------------------------------------------- #
@@ -64,7 +32,7 @@ def sslctx_provider(
 # --------------------------------------------------------------------------- #
 
 
-class ModbusServerRequestHandler(asyncio.BaseProtocol):
+class ModbusServerRequestHandler(Transport):
     """Implements modbus slave wire protocol.
 
     This uses the asyncio.Protocol to implement the server protocol.
@@ -78,45 +46,50 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
 
     def __init__(self, owner):
         """Initialize."""
+        params = CommParams(
+            comm_name="server",
+            reconnect_delay=0.0,
+            reconnect_delay_max=0.0,
+            timeout_connect=0.0,
+        )
+        super().__init__(params, True)
         self.server = owner
         self.running = False
         self.receive_queue = asyncio.Queue()
         self.handler_task = None  # coroutine to be run on asyncio loop
         self._sent = b""  # for handle_local_echo
         self.client_address = (None, None)
+        self.framer: ModbusFramer = None
 
     def _log_exception(self):
         """Show log exception."""
         Log.debug("Handler for stream [{}] has been canceled", self.client_address)
 
-    def connection_made(self, transport):
-        """Call for socket establish
-
-        For streamed protocols (TCP) this will also correspond to an
-        entire conversation; however for datagram protocols (UDP) this
-        corresponds to the socket being opened
-        """
+    def callback_connected(self) -> None:
+        """Call when connection is succcesfull."""
         try:
             if (
-                hasattr(transport, "get_extra_info")
-                and transport.get_extra_info("peername") is not None
+                hasattr(self.transport, "get_extra_info")
+                and self.transport.get_extra_info("peername") is not None
             ):
-                self.client_address = transport.get_extra_info("peername")[:2]
+                self.client_address = self.transport.get_extra_info("peername")[:2]
                 Log.debug("Peer [{}] opened", self.client_address)
-            elif hasattr(transport, "serial"):
-                Log.debug("Serial connection opened on port: {}", transport.serial.port)
+            elif hasattr(self.transport, "serial"):
+                Log.debug(
+                    "Serial connection opened on port: {}", self.transport.serial.port
+                )
                 self.client_address = ("serial", "server")
             else:
-                Log.warning("Unable to get information about transport {}", transport)
-            self.transport = transport  # pylint: disable=attribute-defined-outside-init
-            self.running = True
-            self.framer = (  # pylint: disable=attribute-defined-outside-init
-                self.server.framer(
-                    self.server.decoder,
-                    client=None,
+                Log.warning(
+                    "Unable to get information about transport {}", self.transport
                 )
+            self.transport = self.transport
+            self.running = True
+            self.framer = self.server.framer(
+                self.server.decoder,
+                client=None,
             )
-            self.server.active_connections[self.client_address] = self
+            self.server.local_active_connections[self.client_address] = self
 
             # schedule the connection handler on the event loop
             self.handler_task = asyncio.create_task(self.handle())
@@ -127,18 +100,13 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
                 traceback.format_exc(),
             )
 
-    def connection_lost(self, call_exc):
-        """Call for socket tear down.
-
-        For streamed protocols any break in the network connection will
-        be reported here; for datagram protocols, only a teardown of the
-        socket itself will result in this call.
-        """
+    def callback_disconnected(self, call_exc: Exception) -> None:
+        """Call when connection is lost."""
         try:
             if self.handler_task:
                 self.handler_task.cancel()
-            if self.client_address in self.server.active_connections:
-                self.server.active_connections.pop(self.client_address)
+            if self.client_address in self.server.local_active_connections:
+                self.server.local_active_connections.pop(self.client_address)
             if hasattr(self.server, "on_connection_lost"):
                 self.server.on_connection_lost()
             if call_exc is None:
@@ -273,7 +241,9 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
         def __send(msg, *addr):
             Log.debug("send: [{}]- {}", message, msg, ":b2a")
             if addr == (None,):
-                self._send_(msg)
+                self.transport.write(msg)
+                if self.server.handle_local_echo is True:
+                    self._sent = msg
             else:
                 self.transport.sendto(msg, *addr)
 
@@ -286,20 +256,6 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
         else:
             Log.debug("Skipping sending response!!")
 
-    # ----------------------------------------------------------------------- #
-    # Derived class implementations
-    # ----------------------------------------------------------------------- #
-
-    def _send_(self, data):  # pragma: no cover
-        """Send a request (string) to the network.
-
-        :param data: The unencoded modbus response
-        :raises NotImplementedException:
-        """
-        self.transport.write(data)
-        if self.server.handle_local_echo is True:
-            self._sent = data
-
     async def _recv_(self):  # pragma: no cover
         """Receive data from the network."""
         try:
@@ -309,8 +265,8 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
             result = None
         return result
 
-    def data_received(self, data):
-        """Call when some data is received."""
+    def callback_data(self, data: bytes, addr: tuple = None) -> int:
+        """Handle received data."""
         if self.server.handle_local_echo is True and self._sent:
             if self._sent in data:
                 data, self._sent = data.replace(self._sent, b"", 1), b""
@@ -319,29 +275,12 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
             else:
                 self._sent = b""
             if not data:
-                return
-        self.receive_queue.put_nowait(data)
-
-    def datagram_received(self, data, addr):
-        """Call when a datagram is received.
-
-        data is a bytes object containing the incoming data. addr
-        is the address of the peer sending the data; the exact
-        format depends on the transport.
-        """
-        self.receive_queue.put_nowait((data, addr))
-
-    def error_received(self, exc):  # pragma: no cover
-        """Call when a previous send/receive raises an OSError.
-
-        exc is the OSError instance.
-
-        This method is called in rare conditions,
-        when the transport (e.g. UDP) detects that a datagram could
-        not be delivered to its recipient. In many conditions
-        though, undeliverable datagrams will be silently dropped.
-        """
-        Log.error("datagram connection error [{}]", exc)
+                return 0
+        if addr:
+            self.receive_queue.put_nowait((data, addr))
+        else:
+            self.receive_queue.put_nowait(data)
+        return len(data)
 
 
 # --------------------------------------------------------------------------- #
@@ -349,105 +288,7 @@ class ModbusServerRequestHandler(asyncio.BaseProtocol):
 # --------------------------------------------------------------------------- #
 
 
-class ModbusUnixServer:
-    """A modbus threaded Unix socket server.
-
-    We inherit and overload the socket server so that we
-    can control the client threads as well as have a single
-    server context instance.
-    """
-
-    def __init__(
-        self,
-        context,
-        path,
-        framer=None,
-        identity=None,
-        **kwargs,
-    ):
-        """Initialize the socket server.
-
-        If the identify structure is not passed in, the ModbusControlBlock
-        uses its own default structure.
-
-        :param context: The ModbusServerContext datastore
-        :param path: unix socket path
-        :param framer: The framer strategy to use
-        :param identity: An optional identify structure
-        :param allow_reuse_address: Whether the server will allow the
-                        reuse of an address.
-        :param ignore_missing_slaves: True to not send errors on a request
-                        to a missing slave
-        :param broadcast_enable: True to treat slave_id 0 as broadcast address,
-                        False to treat 0 as any other slave_id
-        :param response_manipulator: Callback method for manipulating the
-                                        response
-        """
-        self.active_connections = {}
-        self.loop = kwargs.get("loop") or asyncio.get_event_loop()
-        self.decoder = ServerDecoder()
-        self.framer = framer or ModbusSocketFramer
-        self.context = context or ModbusServerContext()
-        self.control = ModbusControlBlock()
-        self.path = path
-        self.handler = ModbusServerRequestHandler
-        self.handler.server = self
-        self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
-        self.broadcast_enable = kwargs.get("broadcast_enable", False)
-        self.response_manipulator = kwargs.get("response_manipulator", None)
-        if isinstance(identity, ModbusDeviceIdentification):
-            self.control.Identity.update(identity)
-
-        # asyncio future that will be done once server has started
-        self.serving = asyncio.Future()
-        self.serving_done = asyncio.Future()
-        # constructors cannot be declared async, so we have to
-        # defer the initialization of the server
-        self.server = None
-        self.request_tracer = None
-        self.factory_parms = {}
-        self.handle_local_echo = False
-
-    async def serve_forever(self):
-        """Start endless loop."""
-        if self.server is None:
-            try:
-                self.server = await self.loop.create_unix_server(
-                    lambda: self.handler(self),
-                    self.path,
-                )
-                self.serving.set_result(True)
-                Log.info("Server(Unix) listening.")
-                await self.server.serve_forever()
-            except asyncio.exceptions.CancelledError:
-                self.serving_done.set_result(True)
-                raise
-            except Exception as exc:  # pylint: disable=broad-except
-                Log.error("Server unexpected exception {}", exc)
-        else:
-            raise RuntimeError(
-                "Can't call serve_forever on an already running server object"
-            )
-        self.serving_done.set_result(True)
-        Log.info("Server graceful shutdown.")
-
-    async def shutdown(self):
-        """Shutdown server."""
-        await self.server_close()
-
-    async def server_close(self):
-        """Close server."""
-        for k_item, v_item in self.active_connections.items():
-            Log.warning("aborting active session {}", k_item)
-            v_item.handler_task.cancel()
-        self.active_connections = {}
-        if self.server is not None:
-            self.server.close()
-            await self.server.wait_closed()
-            self.server = None
-
-
-class ModbusTcpServer:
+class ModbusTcpServer(Transport):
     """A modbus threaded tcp socket server.
 
     We inherit and overload the socket server so that we
@@ -461,8 +302,6 @@ class ModbusTcpServer:
         framer=None,
         identity=None,
         address=None,
-        allow_reuse_address=False,
-        backlog=20,
         **kwargs,
     ):
         """Initialize the socket server.
@@ -474,11 +313,6 @@ class ModbusTcpServer:
         :param framer: The framer strategy to use
         :param identity: An optional identify structure
         :param address: An optional (interface, port) to bind to.
-        :param allow_reuse_address: Whether the server will allow the
-                        reuse of an address.
-        :param backlog:  is the maximum number of queued connections
-                    passed to listen(). increase if many
-                    connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
@@ -486,16 +320,27 @@ class ModbusTcpServer:
         :param response_manipulator: Callback method for manipulating the
                                         response
         """
-        self.active_connections = {}
+        params = kwargs.get(
+            "internal_tls_setup",
+            CommParams(
+                comm_type=CommType.TCP,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+        )
+        super().__init__(
+            params,
+            True,
+        )
+        self.local_active_connections = {}
         self.loop = kwargs.get("loop") or asyncio.get_event_loop()
-        self.allow_reuse_address = allow_reuse_address
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", 502)
-        self.handler = ModbusServerRequestHandler
-        self.handler.server = self
         self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
         self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
@@ -510,17 +355,20 @@ class ModbusTcpServer:
         # defer the initialization of the server
         self.server = None
         self.factory_parms = {
-            "reuse_address": allow_reuse_address,
-            "backlog": backlog,
+            "reuse_address": True,
             "start_serving": True,
         }
+        if params.sslctx:
+            self.factory_parms["ssl"] = params.sslctx
         self.handle_local_echo = False
 
     async def serve_forever(self):
         """Start endless loop."""
         if self.server is None:
+            handler = ModbusServerRequestHandler
+            handler.server = self
             self.server = await self.loop.create_server(
-                lambda: self.handler(self),
+                lambda: handler(self),
                 *self.address,
                 **self.factory_parms,
             )
@@ -546,14 +394,14 @@ class ModbusTcpServer:
 
     async def server_close(self):
         """Close server."""
-        active_connecions = self.active_connections.copy()
+        active_connecions = self.local_active_connections.copy()
         for k_item, v_item in active_connecions.items():
             Log.warning("aborting active session {}", k_item)
             v_item.transport.close()
             await asyncio.sleep(0.1)
             v_item.handler_task.cancel()
             await v_item.handler_task
-        self.active_connections = {}
+        self.local_active_connections = {}
         if self.server is not None:
             self.server.close()
             await self.server.wait_closed()
@@ -568,7 +416,7 @@ class ModbusTlsServer(ModbusTcpServer):
     server context instance.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         context,
         framer=None,
@@ -578,9 +426,6 @@ class ModbusTlsServer(ModbusTcpServer):
         certfile=None,
         keyfile=None,
         password=None,
-        reqclicert=False,
-        allow_reuse_address=False,
-        backlog=20,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -597,12 +442,6 @@ class ModbusTlsServer(ModbusTcpServer):
         :param certfile: The cert file path for TLS (used if sslctx is None)
         :param keyfile: The key file path for TLS (used if sslctx is None)
         :param password: The password for for decrypting the private key file
-        :param reqclicert: Force the sever request client's certificate
-        :param allow_reuse_address: Whether the server will allow the
-                        reuse of an address.
-        :param backlog:  is the maximum number of queued connections
-                    passed to listen().  increase if many
-                    connections are being made and broken to your Modbus slave
         :param ignore_missing_slaves: True to not send errors on a request
                         to a missing slave
         :param broadcast_enable: True to treat slave_id 0 as broadcast address,
@@ -615,16 +454,21 @@ class ModbusTlsServer(ModbusTcpServer):
             framer=framer,
             identity=identity,
             address=address,
-            allow_reuse_address=allow_reuse_address,
-            backlog=backlog,
+            internal_tls_setup=CommParams(
+                comm_type=CommType.TLS,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+                sslctx=CommParams.generate_ssl(
+                    True, certfile, keyfile, password, sslctx=sslctx
+                ),
+            ),
             **kwargs,
         )
-        self.sslctx = sslctx_provider(sslctx, certfile, keyfile, password, reqclicert)
-        self.factory_parms["ssl"] = self.sslctx
-        self.handle_local_echo = False
 
 
-class ModbusUdpServer:
+class ModbusUdpServer(Transport):
     """A modbus threaded udp socket server.
 
     We inherit and overload the socket server so that we
@@ -638,7 +482,6 @@ class ModbusUdpServer:
         framer=None,
         identity=None,
         address=None,
-        backlog=20,
         **kwargs,
     ):
         """Overloaded initializer for the socket server.
@@ -659,17 +502,25 @@ class ModbusUdpServer:
         :param response_manipulator: Callback method for
                             manipulating the response
         """
-        # TO BE REMOVED:
-        self.backlog = backlog
         # ----------------
-        self.active_connections = {}
+        super().__init__(
+            CommParams(
+                comm_type=CommType.UDP,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+            True,
+        )
+
+        self.local_active_connections = {}
         self.loop = asyncio.get_running_loop()
         self.decoder = ServerDecoder()
         self.framer = framer or ModbusSocketFramer
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", 502)
-        self.handler = ModbusServerRequestHandler
         self.ignore_missing_slaves = kwargs.get("ignore_missing_slaves", False)
         self.broadcast_enable = kwargs.get("broadcast_enable", False)
         self.response_manipulator = kwargs.get("response_manipulator", None)
@@ -694,8 +545,10 @@ class ModbusUdpServer:
         """Start endless loop."""
         if self.protocol is None:
             try:
+                handler = ModbusServerRequestHandler
+                handler.server = self
                 self.protocol, self.endpoint = await self.loop.create_datagram_endpoint(
-                    lambda: self.handler(self),
+                    lambda: handler(self),
                     **self.factory_parms,
                 )
             except asyncio.exceptions.CancelledError:
@@ -732,7 +585,7 @@ class ModbusUdpServer:
             self.protocol = None
 
 
-class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
+class ModbusSerialServer(Transport):  # pylint: disable=too-many-instance-attributes
     """A modbus threaded serial socket server.
 
     We inherit and overload the socket server so that we
@@ -769,6 +622,17 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         :param response_manipulator: Callback method for
                     manipulating the response
         """
+        super().__init__(
+            CommParams(
+                comm_type=CommType.SERIAL,
+                comm_name="server_listener",
+                reconnect_delay=0.0,
+                reconnect_delay_max=0.0,
+                timeout_connect=0.0,
+            ),
+            True,
+        )
+
         self.loop = kwargs.get("loop") or asyncio.get_event_loop()
         self.bytesize = kwargs.get("bytesize", 8)
         self.parity = kwargs.get("parity", "N")
@@ -782,7 +646,6 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None
-        self.handler = kwargs.get("handler") or ModbusServerRequestHandler
         self.framer = framer or ModbusRtuFramer
         self.decoder = ServerDecoder()
         self.context = context or ModbusServerContext()
@@ -790,7 +653,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.control = ModbusControlBlock()
         if isinstance(identity, ModbusDeviceIdentification):
             self.control.Identity.update(identity)
-        self.active_connections = {}
+        self.local_active_connections = {}
         self.request_tracer = None
         self.protocol = None
         self.transport = None
@@ -818,9 +681,11 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if self.device.startswith("socket:"):
             return
         try:
+            handler = ModbusServerRequestHandler
+            handler.server = self
             self.transport, self.protocol = await create_serial_connection(
                 self.loop,
-                lambda: self.handler(self),
+                lambda: handler(self),
                 self.device,
                 baudrate=self.baudrate,
                 bytesize=self.bytesize,
@@ -850,15 +715,15 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         if self.transport:
             self.transport.abort()
             self.transport = None
-        loop_list = list(self.active_connections)
+        loop_list = list(self.local_active_connections)
         for k_item in loop_list:
-            v_item = self.active_connections[k_item]
+            v_item = self.local_active_connections[k_item]
             Log.warning("aborting active session {}", k_item)
             v_item.transport.close()
             await asyncio.sleep(0.1)
             v_item.handler_task.cancel()
             await v_item.handler_task
-        self.active_connections = {}
+        self.local_active_connections = {}
         if self.server:
             self.server.close()
             await asyncio.wait_for(self.server.wait_closed(), 10)
@@ -889,12 +754,13 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
             # Socket server means listen so start a socket server
             parts = self.device[9:].split(":")
             host_addr = (parts[0], int(parts[1]))
+            handler = ModbusServerRequestHandler
+            handler.server = self
             self.server = await self.loop.create_server(
-                lambda: self.handler(self),
+                lambda: handler(self),
                 *host_addr,
                 reuse_address=True,
                 start_serving=True,
-                backlog=20,
             )
             try:
                 await self.server.serve_forever()
@@ -919,9 +785,7 @@ class _serverList:
     :meta private:
     """
 
-    active_server: Union[
-        ModbusUnixServer, ModbusTcpServer, ModbusUdpServer, ModbusSerialServer
-    ] = None
+    active_server: Union[ModbusTcpServer, ModbusUdpServer, ModbusSerialServer] = None
 
     def __init__(self, server):
         """Register new server."""
@@ -957,28 +821,6 @@ class _serverList:
         time.sleep(10)
 
 
-async def StartAsyncUnixServer(  # pylint: disable=invalid-name,dangerous-default-value
-    context=None,
-    identity=None,
-    path=None,
-    custom_functions=[],
-    **kwargs,
-):
-    """Start and run a tcp modbus server.
-
-    :param context: The ModbusServerContext datastore
-    :param identity: An optional identify structure
-    :param path: An optional path to bind to.
-    :param custom_functions: An optional list of custom function classes
-        supported by server instance.
-    :param kwargs: The rest
-    """
-    server = ModbusUnixServer(
-        context, path, kwargs.pop("framer", ModbusSocketFramer), identity, **kwargs
-    )
-    await _serverList.run(server, custom_functions)
-
-
 async def StartAsyncTcpServer(  # pylint: disable=invalid-name,dangerous-default-value
     context=None,
     identity=None,
@@ -1009,8 +851,6 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     certfile=None,
     keyfile=None,
     password=None,
-    reqclicert=False,
-    allow_reuse_address=False,
     custom_functions=[],
     **kwargs,
 ):
@@ -1023,9 +863,6 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
     :param certfile: The cert file path for TLS (used if sslctx is None)
     :param keyfile: The key file path for TLS (used if sslctx is None)
     :param password: The password for for decrypting the private key file
-    :param reqclicert: Force the sever request client's certificate
-    :param allow_reuse_address: Whether the server will allow the reuse of an
-                                address.
     :param custom_functions: An optional list of custom function classes
         supported by server instance.
     :param kwargs: The rest
@@ -1039,8 +876,6 @@ async def StartAsyncTlsServer(  # pylint: disable=invalid-name,dangerous-default
         certfile,
         keyfile,
         password,
-        reqclicert,
-        allow_reuse_address=allow_reuse_address,
         **kwargs,
     )
     await _serverList.run(server, custom_functions)

@@ -7,14 +7,21 @@ from examples.server_async import run_async_server, setup_server
 from pymodbus.server import ServerAsyncStop
 
 
+@pytest_asyncio.fixture(name="port_offset")
+def _define_port_offset():
+    """Define port offset"""
+    return 0
+
+
 @pytest_asyncio.fixture(name="mock_cmdline")
 def _define_commandline(
     use_comm,
     use_framer,
     use_port,
+    port_offset,
 ):
     """Define commandline."""
-    my_port = str(use_port)
+    my_port = str(use_port + port_offset)
     cmdline = [
         "--comm",
         use_comm,

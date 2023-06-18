@@ -4,7 +4,6 @@ This is a thorough test of the clientexamples.
 
 """
 import asyncio
-import logging
 
 import pytest
 
@@ -22,13 +21,7 @@ from examples.server_payload import setup_payload_server
 from examples.server_updating import run_updating_server, setup_updating_server
 from examples.simple_async_client import run_async_client as run_simple_async_client
 from examples.simple_sync_client import run_sync_client as run_simple_sync_client
-from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
-
-
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
-pymodbus_apply_logging_config("DEBUG")
 
 
 class TestExamples:

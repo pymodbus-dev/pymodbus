@@ -25,9 +25,13 @@ class TestRemoteDataStore:
         """Test setting values against a remote slave context"""
         client = mock.MagicMock()
         client.write_coils = lambda a, b: WriteMultipleCoilsResponse()
+        client.write_registers = lambda a, b: ExceptionResponse(0x10, 0x02)
 
         context = RemoteSlaveContext(client)
-        context.setValues(1, 0, [1])
+        context.setValues(0x0F, 0, [1])
+        result = context.setValues(0x10, 1, [1])
+        assert result.exception_code == 0x02
+        assert result.function_code == 0x90
 
     def test_remote_slave_get_values(self):
         """Test getting values from a remote slave context"""
@@ -64,4 +68,4 @@ class TestRemoteDataStore:
         assert result
 
         result = context.validate(3, 0, 10)
-        assert not result
+        assert result

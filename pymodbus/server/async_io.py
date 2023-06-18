@@ -153,6 +153,8 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.handler_task.cancel()
             if self.client_address in self.server.active_connections:
                 self.server.active_connections.pop(self.client_address)
+            if hasattr(self.server, "on_connection_lost"):
+                self.server.on_connection_lost()
             if call_exc is None:
                 self._log_exception()
             else:
@@ -362,12 +364,6 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     This uses asyncio.Protocol to implement
     the client handler for a connected protocol (TCP).
     """
-
-    def connection_lost(self, call_exc):
-        """Call when the connection is lost or closed."""
-        super().connection_lost(call_exc)
-        if hasattr(self.server, "on_connection_lost"):
-            self.server.on_connection_lost()
 
 
 # --------------------------------------------------------------------------- #

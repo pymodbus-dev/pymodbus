@@ -136,7 +136,7 @@ def get_commandline(cmdline=None):
 def setup_simulator(setup=None, actions=None, cmdline=None):
     """Run server setup."""
     args = get_commandline(cmdline=cmdline)
-    pymodbus_apply_logging_config(args.log)
+    pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
     args.framer = ModbusSocketFramer
     args.port = int(args.port)
@@ -165,7 +165,6 @@ async def run_server_simulator(args):
     """Run server."""
     _logger.info("### start server simulator")
 
-    pymodbus_apply_logging_config(args.log.upper())
     await StartAsyncTcpServer(
         context=args.context,
         address=("", args.port),

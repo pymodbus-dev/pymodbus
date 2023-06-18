@@ -14,8 +14,8 @@ __all__ = [
 import struct
 
 from pymodbus.constants import Defaults
+from pymodbus.pdu import ExceptionResponse, ModbusRequest, ModbusResponse
 from pymodbus.pdu import ModbusExceptions as merror
-from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 
 class ReadRegistersRequestBase(ModbusRequest):
@@ -151,6 +151,9 @@ class ReadHoldingRegistersRequest(ReadRegistersRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if isinstance(values, ExceptionResponse):
+            return values
+
         return ReadHoldingRegistersResponse(values)
 
 
@@ -209,6 +212,8 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
         if not context.validate(self.function_code, self.address, self.count):
             return self.doException(merror.IllegalAddress)
         values = context.getValues(self.function_code, self.address, self.count)
+        if isinstance(values, ExceptionResponse):
+            return values
         return ReadInputRegistersResponse(values)
 
 
@@ -324,7 +329,11 @@ class ReadWriteMultipleRegistersRequest(ModbusRequest):
             return self.doException(merror.IllegalAddress)
         if not context.validate(self.function_code, self.read_address, self.read_count):
             return self.doException(merror.IllegalAddress)
-        context.setValues(self.function_code, self.write_address, self.write_registers)
+        result = context.setValues(
+            self.function_code, self.write_address, self.write_registers
+        )
+        if isinstance(result, ExceptionResponse):
+            return result
         registers = context.getValues(
             self.function_code, self.read_address, self.read_count
         )

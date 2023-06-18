@@ -1,12 +1,10 @@
 """Test client async."""
 import asyncio
-import logging
 from tempfile import gettempdir
 
 import pytest
 import pytest_asyncio
 
-from pymodbus import pymodbus_apply_logging_config
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.datastore import (
     ModbusSequentialDataBlock,
@@ -17,9 +15,6 @@ from pymodbus.server import ServerAsyncStop, StartAsyncUnixServer
 from pymodbus.transaction import ModbusSocketFramer
 
 
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
-pymodbus_apply_logging_config(logging.DEBUG)
 PATH = gettempdir() + "/unix_domain_socket"
 HOST = f"unix:{PATH}"
 

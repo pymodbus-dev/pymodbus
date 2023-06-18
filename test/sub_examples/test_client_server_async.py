@@ -8,17 +8,10 @@ examples.
 These are basis for most examples and thus tested separately
 """
 import asyncio
-import logging
 
 import pytest
 
 from examples.client_async import run_a_few_calls, run_async_client, setup_async_client
-from pymodbus import pymodbus_apply_logging_config
-
-
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
-pymodbus_apply_logging_config("DEBUG")
 
 
 class TestClientServerAsyncExamples:

@@ -110,7 +110,7 @@ def get_commandline(server=False, description=None, extras=None, cmdline=None):
         "socket": ModbusSocketFramer,
         "tls": ModbusTlsFramer,
     }
-    pymodbus_apply_logging_config(args.log)
+    pymodbus_apply_logging_config(args.log.upper())
     _logger.setLevel(args.log.upper())
     args.framer = framers[args.framer or comm_defaults[args.comm][0]]
     args.port = args.port or comm_defaults[args.comm][1]

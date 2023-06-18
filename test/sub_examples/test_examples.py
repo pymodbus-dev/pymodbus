@@ -4,7 +4,6 @@ This is a thorough test of the clientexamples.
 
 """
 import asyncio
-import logging
 
 import pytest
 
@@ -22,13 +21,7 @@ from examples.server_payload import setup_payload_server
 from examples.server_updating import run_updating_server, setup_updating_server
 from examples.simple_async_client import run_async_client as run_simple_async_client
 from examples.simple_sync_client import run_sync_client as run_simple_sync_client
-from pymodbus import pymodbus_apply_logging_config
 from pymodbus.server import ServerAsyncStop
-
-
-_logger = logging.getLogger()
-_logger.setLevel("DEBUG")
-pymodbus_apply_logging_config("DEBUG")
 
 
 class TestExamples:
@@ -107,7 +100,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_datastore_simulator(self, use_port):
         """Test server simulator."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         run_args = setup_simulator(cmdline=cmdargs)
         task = asyncio.create_task(run_server_simulator(run_args))
         await asyncio.sleep(0.1)
@@ -123,7 +116,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_server_callback(self, use_port):
         """Test server/client with payload."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
@@ -137,7 +130,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_updating_server(self, use_port):
         """Test server simulator."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         run_args = setup_updating_server(cmdline=cmdargs)
         task = asyncio.create_task(run_updating_server(run_args))
         await asyncio.sleep(0.1)

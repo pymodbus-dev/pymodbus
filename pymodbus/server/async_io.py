@@ -65,7 +65,7 @@ def sslctx_provider(
 # --------------------------------------------------------------------------- #
 
 
-class ModbusBaseRequestHandler(asyncio.BaseProtocol):
+class ModbusServerRequestHandler(asyncio.BaseProtocol):
     """Implements modbus slave wire protocol.
 
     This uses the asyncio.Protocol to implement the server protocol.
@@ -163,7 +163,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
 
         Once the client connection is established, the data chunks will be
         fed to this coroutine via the asyncio.Queue object which is fed by
-        the ModbusBaseRequestHandler class's callback Future.
+        the ModbusServerRequestHandler class's callback Future.
 
         This callback future gets data from either
         asyncio.DatagramProtocol.datagram_received or
@@ -211,7 +211,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 # force TCP socket termination as processIncomingPacket
                 # should handle application layer errors
                 # for UDP sockets, simply reset the frame
-                if isinstance(self, ModbusBaseRequestHandler):
+                if isinstance(self, ModbusServerRequestHandler):
                     client_addr = self.client_address[:2]
                     Log.error(
                         'Unknown exception "{}" on stream {} forcing disconnect',
@@ -391,7 +391,7 @@ class ModbusUnixServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.path = path
-        self.handler = ModbusBaseRequestHandler
+        self.handler = ModbusServerRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -497,7 +497,7 @@ class ModbusTcpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = ModbusBaseRequestHandler
+        self.handler = ModbusServerRequestHandler
         self.handler.server = self
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
@@ -674,7 +674,7 @@ class ModbusUdpServer:
         self.context = context or ModbusServerContext()
         self.control = ModbusControlBlock()
         self.address = address or ("", Defaults.TcpPort)
-        self.handler = ModbusBaseRequestHandler
+        self.handler = ModbusServerRequestHandler
         self.ignore_missing_slaves = kwargs.get(
             "ignore_missing_slaves", Defaults.IgnoreMissingSlaves
         )
@@ -747,7 +747,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
     server context instance.
     """
 
-    handler: ModbusBaseRequestHandler = None
+    handler: ModbusServerRequestHandler = None
 
     def __init__(
         self, context, framer=ModbusRtuFramer, identity=None, **kwargs
@@ -793,7 +793,7 @@ class ModbusSerialServer:  # pylint: disable=too-many-instance-attributes
         self.auto_reconnect = kwargs.get("auto_reconnect", False)
         self.reconnect_delay = kwargs.get("reconnect_delay", 2)
         self.reconnecting_task = None
-        self.handler = kwargs.get("handler") or ModbusBaseRequestHandler
+        self.handler = kwargs.get("handler") or ModbusServerRequestHandler
         self.framer = framer or ModbusRtuFramer
         self.decoder = ServerDecoder()
         self.context = context or ModbusServerContext()

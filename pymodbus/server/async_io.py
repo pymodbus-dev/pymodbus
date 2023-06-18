@@ -153,7 +153,7 @@ class ModbusBaseRequestHandler(asyncio.BaseProtocol):
                 self.handler_task.cancel()
             if call_exc is None:
                 self._log_exception()
-            elif hasattr(self, "client_address"):  # TCP connection
+            else:
                 Log.debug(
                     "Client Disconnection {} due to {}", self.client_address, call_exc
                 )
@@ -365,8 +365,7 @@ class ModbusConnectedRequestHandler(ModbusBaseRequestHandler, asyncio.Protocol):
     def connection_lost(self, call_exc):
         """Call when the connection is lost or closed."""
         super().connection_lost(call_exc)
-        client_addr = self.client_address[:2]
-        Log.debug("TCP client disconnected [{}]", client_addr)
+        Log.debug("TCP client disconnected [{}]", self.client_address)
         if self.client_address in self.server.active_connections:
             self.server.active_connections.pop(self.client_address)
         if hasattr(self.server, "on_connection_lost"):

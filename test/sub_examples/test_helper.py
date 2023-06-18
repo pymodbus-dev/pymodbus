@@ -23,7 +23,7 @@ class TestHelperExamples:
 
     def test_commandline_client_defaults(self):
         """Test defaults"""
-        args = helper.get_commandline(server=False, cmdline=["--log", "info"])
+        args = helper.get_commandline(server=False, cmdline=[])
         assert args.comm == "tcp"
         assert args.log == "info"
         assert args.baudrate == 9600
@@ -33,9 +33,7 @@ class TestHelperExamples:
 
     def test_commandline(self):
         """Test defaults"""
-        args = helper.get_commandline(
-            server=False, cmdline=["--log", "debug", "--comm", "udp"]
-        )
+        args = helper.get_commandline(server=False, cmdline=["--comm", "udp"])
         assert args.comm == "udp"
         assert args.log == "debug"
 

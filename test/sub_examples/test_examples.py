@@ -107,7 +107,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_datastore_simulator(self, use_port):
         """Test server simulator."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         run_args = setup_simulator(cmdline=cmdargs)
         task = asyncio.create_task(run_server_simulator(run_args))
         await asyncio.sleep(0.1)
@@ -123,7 +123,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_server_callback(self, use_port):
         """Test server/client with payload."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         task = asyncio.create_task(run_callback_server(cmdline=cmdargs))
         await asyncio.sleep(0.1)
         testclient = setup_async_client(cmdline=cmdargs)
@@ -137,7 +137,7 @@ class TestExamples:
     @pytest.mark.xdist_group(name="server_serialize")
     async def test_updating_server(self, use_port):
         """Test server simulator."""
-        cmdargs = ["--log", "debug", "--port", str(use_port)]
+        cmdargs = ["--port", str(use_port)]
         run_args = setup_updating_server(cmdline=cmdargs)
         task = asyncio.create_task(run_updating_server(run_args))
         await asyncio.sleep(0.1)

@@ -20,8 +20,6 @@ def _define_commandline(
         use_comm,
         "--framer",
         use_framer,
-        "--log",
-        "debug",
     ]
     if use_comm == "serial":
         cmdline.extend(

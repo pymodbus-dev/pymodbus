@@ -107,6 +107,7 @@ class ModbusRequest(ModbusPDU):
 
         :param slave: Modbus slave slave ID
         """
+        assert slave < 0
         super().__init__(slave, **kwargs)
 
     def doException(self, exception):

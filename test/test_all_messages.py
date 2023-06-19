@@ -90,6 +90,6 @@ class TestAllMessages:
         assert request.protocol_id == 0x12
 
         request = ReadCoilsRequest(1, 5)
-        assert request.slave_id == 0
+        assert not request.slave_id
         assert not request.transaction_id
-        assert request.protocol_id == 0
+        assert not request.protocol_id
